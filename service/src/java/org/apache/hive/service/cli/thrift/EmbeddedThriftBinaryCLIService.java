@@ -37,6 +37,11 @@ public class EmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
+	// Null HiveConf is passed in jdbc driver side code since driver side is supposed to be
+	// independent of hiveConf object. Create new HiveConf object here in this case.
+	if (hiveConf == null) {
+	  hiveConf = new HiveConf();
+	}
     cliService.init(hiveConf);
     cliService.start();
     super.init(hiveConf);

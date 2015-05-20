@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -58,7 +59,7 @@ import parquet.schema.MessageTypeParser;
 
 import com.google.common.base.Strings;
 
-public class ParquetRecordReaderWrapper  implements RecordReader<Void, ObjectArrayWritable> {
+public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, ObjectArrayWritable> {
   public static final Log LOG = LogFactory.getLog(ParquetRecordReaderWrapper.class);
 
   private final long splitLen; // for getPos()
@@ -166,7 +167,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ObjectArr
   }
 
   @Override
-  public Void createKey() {
+  public NullWritable createKey() {
     return null;
   }
 
@@ -194,7 +195,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ObjectArr
   }
 
   @Override
-  public boolean next(final Void key, final ObjectArrayWritable value) throws IOException {
+  public boolean next(final NullWritable key, final ObjectArrayWritable value) throws IOException {
     if (eof) {
       return false;
     }

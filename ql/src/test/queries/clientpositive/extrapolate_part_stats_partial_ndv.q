@@ -2,6 +2,8 @@ set hive.metastore.stats.ndv.densityfunction=true;
 set hive.stats.fetch.column.stats=true;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.metastore.aggregate.stats.cache.enabled=false;
+
 
 drop table if exists ext_loc;
 

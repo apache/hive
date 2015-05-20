@@ -21,7 +21,15 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptCostFactory;
 import org.apache.calcite.plan.RelOptUtil;
 
-// TODO: This should inherit from VolcanoCost and should just override isLE method.
+/***
+ * NOTE:<br>
+ * 1. Hivecost normalizes cpu and io in to time.<br>
+ * 2. CPU, IO cost is added together to find the query latency.<br>
+ * 3. If query latency is equal then row count is compared.
+ */
+
+// TODO: This should inherit from VolcanoCost and should just override isLE
+// method.
 public class HiveCost implements RelOptCost {
   // ~ Static fields/initializers ---------------------------------------------
 
@@ -90,22 +98,17 @@ public class HiveCost implements RelOptCost {
     return io;
   }
 
-  // TODO: If two cost is equal, could we do any better than comparing
-  // cardinality (may be some other heuristics to break the tie)
   public boolean isLe(RelOptCost other) {
-    return this == other || this.rowCount <= other.getRows();
-    /*
-     * if (((this.dCpu + this.dIo) < (other.getCpu() + other.getIo())) ||
-     * ((this.dCpu + this.dIo) == (other.getCpu() + other.getIo()) && this.dRows
-     * <= other.getRows())) { return true; } else { return false; }
-     */
+    if ( (this.cpu + this.io < other.getCpu() + other.getIo()) ||
+          ((this.cpu + this.io == other.getCpu() + other.getIo()) &&
+          (this.rowCount <= other.getRows()))) {
+      return true;
+    }
+    return false;
   }
 
   public boolean isLt(RelOptCost other) {
-    return this.rowCount < other.getRows();
-    /*
-     * return isLe(other) && !equals(other);
-     */
+    return isLe(other) && !equals(other);
   }
 
   public double getRows() {
@@ -113,21 +116,16 @@ public class HiveCost implements RelOptCost {
   }
 
   public boolean equals(RelOptCost other) {
-    return (this == other) || ((this.rowCount) == (other.getRows()));
-
-    /*
-     * //TODO: should we consider cardinality as well? return (this == other) ||
-     * ((this.dCpu + this.dIo) == (other.getCpu() + other.getIo()));
-     */
+    return (this == other) ||
+            ((this.cpu + this.io == other.getCpu() + other.getIo()) &&
+            (this.rowCount == other.getRows()));
   }
 
   public boolean isEqWithEpsilon(RelOptCost other) {
-    return (this == other) || (Math.abs((this.rowCount) - (other.getRows())) < RelOptUtil.EPSILON);
-    // Turn this one once we do the Algorithm selection in CBO
-    /*
-     * return (this == other) || (Math.abs((this.dCpu + this.dIo) -
-     * (other.getCpu() + other.getIo())) < RelOptUtil.EPSILON);
-     */
+    return (this == other)
+        || ((Math.abs(this.io - other.getIo()) < RelOptUtil.EPSILON)
+            && (Math.abs(this.cpu - other.getCpu()) < RelOptUtil.EPSILON) && (Math
+            .abs(this.rowCount - other.getRows()) < RelOptUtil.EPSILON));
   }
 
   public RelOptCost minus(RelOptCost other) {
@@ -135,8 +133,8 @@ public class HiveCost implements RelOptCost {
       return this;
     }
 
-    return new HiveCost(this.rowCount - other.getRows(), this.cpu - other.getCpu(), this.io
-        - other.getIo());
+    return new HiveCost(this.rowCount - other.getRows(), this.cpu - other.getCpu(),
+        this.io - other.getIo());
   }
 
   public RelOptCost multiplyBy(double factor) {

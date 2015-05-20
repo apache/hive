@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -444,4 +445,42 @@ public class ExprNodeDescUtils {
     // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
     return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
   }
+
+  /**
+   * Build ExprNodeColumnDesc for the projections in the input operator from
+   * sartpos to endpos(both included). Operator must have an associated
+   * colExprMap.
+   * 
+   * @param inputOp
+   *          Input Hive Operator
+   * @param startPos
+   *          starting position in the input operator schema; must be >=0 and <=
+   *          endPos
+   * @param endPos
+   *          end position in the input operator schema; must be >=0.
+   * @return List of ExprNodeDesc
+   */
+  public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,
+      boolean addEmptyTabAlias, boolean setColToNonVirtual) {
+    ArrayList<ExprNodeDesc> exprColLst = new ArrayList<ExprNodeDesc>();
+    List<ColumnInfo> colInfoLst = inputOp.getSchema().getSignature();
+
+    String tabAlias;
+    boolean vc;
+    ColumnInfo ci;
+    for (int i = startPos; i <= endPos; i++) {
+      ci = colInfoLst.get(i);
+      tabAlias = ci.getTabAlias();
+      if (addEmptyTabAlias) {
+        tabAlias = "";
+      }
+      vc = ci.getIsVirtualCol();
+      if (setColToNonVirtual) {
+        vc = false;
+      }
+      exprColLst.add(new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(), tabAlias, vc));
+    }
+
+    return exprColLst;
+  }  
 }

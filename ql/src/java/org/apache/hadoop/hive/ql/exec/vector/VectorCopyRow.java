@@ -210,7 +210,7 @@ public class VectorCopyRow {
       } else if (VectorizationContext.decimalTypePattern.matcher(typeName).matches()){
         copyRowByValue = new DecimalCopyRow(inputColumn, outputColumn);
       } else {
-        throw new Error("Cannot allocate vector copy row for " + typeName);
+        throw new RuntimeException("Cannot allocate vector copy row for " + typeName);
       }
       subRowToBatchCopiersByValue[i] = copyRowByValue;
       if (copyRowByReference == null) {

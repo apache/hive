@@ -20,23 +20,17 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColAddDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColDivideDoubleColumn;
+import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Level;
-import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -70,21 +64,18 @@ public class VectorizationBench {
    * $ java -jar target/benchmarks.jar org.apache.hive.benchmark.vectorization VectorizationBench
    * -wi 10 -i 5 -f 2 -bm avgt -tu us
    */
-  private static LongColumnVector longColumnVector = new LongColumnVector();
-  private static LongColumnVector dupLongColumnVector = new LongColumnVector();
-  private static DoubleColumnVector doubleColumnVector = new DoubleColumnVector();
-  private static DoubleColumnVector dupDoubleColumnVector = new DoubleColumnVector();
 
   @BenchmarkMode(Mode.AverageTime)
   @Fork(1)
   @State(Scope.Thread)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   public static abstract class AbstractExpression {
+    private static final int DEFAULT_ITER_TIME = 1000000;
     protected VectorExpression expression;
     protected VectorizedRowBatch rowBatch;
 
     protected VectorizedRowBatch buildRowBatch(ColumnVector output, int colNum, ColumnVector...
-        cols) {
+      cols) {
       VectorizedRowBatch rowBatch = new VectorizedRowBatch(colNum + 1);
       for (int i = 0; i < cols.length; i++) {
         rowBatch.cols[i] = cols[i];
@@ -100,94 +91,127 @@ public class VectorizationBench {
     @Warmup(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
     @Measurement(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
     public void bench() {
-      expression.evaluate(rowBatch);
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        expression.evaluate(rowBatch);
+      }
     }
+
+    protected LongColumnVector getLongColumnVector() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      Random random = new Random();
+      for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+        columnVector.vector[i] = random.nextLong();
+      }
+      return columnVector;
+    }
+
+    protected LongColumnVector getRepeatingLongColumnVector() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      columnVector.fill(2);
+      return columnVector;
+    }
+
+    protected LongColumnVector getLongColumnVectorWithNull() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      columnVector.noNulls = false;
+      Random random = new Random();
+      for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+        if (i % 100 == 0) {
+          columnVector.isNull[i] = true;
+        }
+        columnVector.vector[i] = random.nextLong();
+      }
+      return columnVector;
+    }
+
+    protected DoubleColumnVector getDoubleColumnVector() {
+      DoubleColumnVector columnVector = new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      Random random = new Random();
+      for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+        columnVector.vector[i] = random.nextDouble();
+      }
+      return columnVector;
+    }
+
+    protected DoubleColumnVector getRepeatingDoubleColumnVector() {
+      DoubleColumnVector columnVector = new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      columnVector.fill(2.0d);
+      return columnVector;
+    }
+
+    protected DoubleColumnVector getDoubleColumnVectorWithNull() {
+      DoubleColumnVector columnVector = new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      columnVector.noNulls = false;
+      Random random = new Random();
+      for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+        if (i % 100 == 0) {
+          columnVector.isNull[i] = true;
+        }
+        columnVector.vector[i] = random.nextDouble();
+      }
+      return columnVector;
+    }
+
   }
 
-  public static class DoubleAddDoubleExpr extends AbstractExpression {
+  public static class DoubleColAddRepeatingDoubleColumnBench extends AbstractExpression {
     @Override
     public void setup() {
-      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, doubleColumnVector,
-          dupDoubleColumnVector);
+      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getDoubleColumnVector(),
+        getRepeatingDoubleColumnVector());
       expression = new DoubleColAddDoubleColumn(0, 1, 2);
     }
   }
 
-  public static class LongAddLongExpr extends AbstractExpression {
+  public static class LongColAddRepeatingLongColumnBench extends AbstractExpression {
     @Override
     public void setup() {
-      rowBatch = buildRowBatch(new LongColumnVector(), 2, longColumnVector, dupLongColumnVector);
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(),
+        getRepeatingLongColumnVector());
       expression = new LongColAddLongColumn(0, 1, 2);
     }
   }
 
-  public static class LongAddDoubleExpr extends AbstractExpression {
-    @Override
-    public void setup() {
-      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, longColumnVector, doubleColumnVector);
-      expression = new LongColAddDoubleColumn(0, 1, 2);
-    }
-  }
 
-  public static class DoubleAddLongExpr extends AbstractExpression {
+  public static class DoubleColDivideDoubleColumnBench extends AbstractExpression {
     @Override
     public void setup() {
-      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, doubleColumnVector, longColumnVector);
-      expression = new DoubleColAddLongColumn(0, 1, 2);
-    }
-  }
-
-  public static class DoubleDivideDoubleExpr extends AbstractExpression {
-    @Override
-    public void setup() {
-      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, doubleColumnVector,
-          dupDoubleColumnVector);
+      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getDoubleColumnVector(),
+        getDoubleColumnVector());
       expression = new DoubleColDivideDoubleColumn(0, 1, 2);
     }
   }
 
-  public static class LongDivideLongExpr extends AbstractExpression {
+  public static class DoubleColDivideRepeatingDoubleColumnBench extends AbstractExpression {
     @Override
     public void setup() {
-      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, longColumnVector,
-          dupLongColumnVector);
+      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getDoubleColumnVector(),
+        getRepeatingDoubleColumnVector());
+      expression = new DoubleColDivideDoubleColumn(0, 1, 2);
+    }
+  }
+
+  public static class LongColDivideLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getLongColumnVector(),
+        getLongColumnVector());
       expression = new LongColDivideLongColumn(0, 1, 2);
     }
   }
 
-  public static class DoubleDivideLongExpr extends AbstractExpression {
+  public static class LongColDivideRepeatingLongColumnBench extends AbstractExpression {
     @Override
     public void setup() {
-      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, doubleColumnVector,
-          longColumnVector);
-      expression = new DoubleColDivideLongColumn(0, 1, 2);
-    }
-  }
-
-  public static class LongDivideDoubleExpr extends AbstractExpression {
-    @Override
-    public void setup() {
-      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, longColumnVector,
-          doubleColumnVector);
-      expression = new LongColDivideDoubleColumn(0, 1, 2);
-    }
-  }
-
-  @Setup(Level.Trial)
-  public void initialColumnVectors() {
-    Random random = new Random();
-
-    dupLongColumnVector.fill(random.nextLong());
-    dupDoubleColumnVector.fill(random.nextDouble());
-    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
-      doubleColumnVector.vector[i] = random.nextDouble();
-      longColumnVector.vector[i] = random.nextLong();
+      rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getLongColumnVector(),
+        getRepeatingLongColumnVector());
+      expression = new LongColDivideLongColumn(0, 1, 2);
     }
   }
 
   public static void main(String[] args) throws RunnerException {
     Options opt = new OptionsBuilder().include(".*" + VectorizationBench.class.getSimpleName() +
-        ".*").build();
+      ".*").build();
     new Runner(opt).run();
   }
 }

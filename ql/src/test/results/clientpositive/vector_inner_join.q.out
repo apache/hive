@@ -1,0 +1,799 @@
+PREHOOK: query: CREATE TABLE orc_table_1a(a INT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table_1a
+POSTHOOK: query: CREATE TABLE orc_table_1a(a INT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table_1a
+PREHOOK: query: CREATE TABLE orc_table_2a(c INT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table_2a
+POSTHOOK: query: CREATE TABLE orc_table_2a(c INT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table_2a
+PREHOOK: query: insert into table orc_table_1a values(1),(1), (2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@orc_table_1a
+POSTHOOK: query: insert into table orc_table_1a values(1),(1), (2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@orc_table_1a
+POSTHOOK: Lineage: orc_table_1a.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table orc_table_2a values(0),(2), (3),(null),(4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@orc_table_2a
+POSTHOOK: query: insert into table orc_table_2a values(0),(2), (3),(null),(4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@orc_table_2a
+POSTHOOK: Lineage: orc_table_2a.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: explain
+select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+                outputColumnNames: _col4
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col4 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1a
+PREHOOK: Input: default@orc_table_2a
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1a
+POSTHOOK: Input: default@orc_table_2a
+#### A masked pattern was here ####
+3
+PREHOOK: query: explain
+select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: a is not null (type: boolean)
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: a (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 _col0 (type: int)
+                      1 _col0 (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: c (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Left Semi Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1a
+PREHOOK: Input: default@orc_table_2a
+#### A masked pattern was here ####
+POSTHOOK: query: select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1a
+POSTHOOK: Input: default@orc_table_2a
+#### A masked pattern was here ####
+3
+PREHOOK: query: CREATE TABLE orc_table_1b(v1 STRING, a INT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table_1b
+POSTHOOK: query: CREATE TABLE orc_table_1b(v1 STRING, a INT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table_1b
+PREHOOK: query: CREATE TABLE orc_table_2b(c INT, v2 STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table_2b
+POSTHOOK: query: CREATE TABLE orc_table_2b(c INT, v2 STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table_2b
+PREHOOK: query: insert into table orc_table_1b values("one", 1),("one", 1), ("two", 2),("three", 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@orc_table_1b
+POSTHOOK: query: insert into table orc_table_1b values("one", 1),("one", 1), ("two", 2),("three", 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@orc_table_1b
+POSTHOOK: Lineage: orc_table_1b.a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_1b.v1 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table orc_table_2b values(0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL>"),(4, "FOUR")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@orc_table_2b
+POSTHOOK: query: insert into table orc_table_2b values(0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL>"),(4, "FOUR")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@orc_table_2b
+POSTHOOK: Lineage: orc_table_2b.c EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_2b.v2 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: explain
+select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+                outputColumnNames: _col5, _col6
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col5 (type: string), _col6 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+three	3
+PREHOOK: query: explain
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+                outputColumnNames: _col0, _col1, _col5, _col6
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col5 (type: string), _col6 (type: int), _col0 (type: int), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+three	3	3	THREE
+PREHOOK: query: explain
+select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+                outputColumnNames: _col0, _col1, _col5, _col6
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col5 (type: string), (_col6 * 2) (type: int), (_col0 * 5) (type: int), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+three	6	15	THREE
+PREHOOK: query: explain
+select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+                outputColumnNames: _col0, _col1, _col5
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col5 (type: string), _col1 (type: string), _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+three	THREE	3
+PREHOOK: query: explain
+select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 c (type: int)
+                  1 a (type: int)
+                outputColumnNames: _col1, _col5, _col6
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col6 (type: int), _col5 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+3	three	THREE
+PREHOOK: query: explain
+select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 a (type: int)
+                  1 c (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 a (type: int)
+                  1 c (type: int)
+                outputColumnNames: _col0, _col5, _col6
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col6 (type: string), _col5 (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+three	THREE	3
+PREHOOK: query: explain
+select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 a (type: int)
+                  1 c (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (c > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 a (type: int)
+                  1 c (type: int)
+                outputColumnNames: _col0, _col1, _col6
+                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: int), _col0 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
+3	three	THREE

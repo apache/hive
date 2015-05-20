@@ -31,13 +31,14 @@ import org.apache.calcite.rel.core.RelFactories.AggregateFactory;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 
 import com.google.common.collect.ImmutableList;
 
 public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   public static final HiveAggRelFactory HIVE_AGGR_REL_FACTORY = new HiveAggRelFactory();
+
+
 
   public HiveAggregate(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       boolean indicator, ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
@@ -66,13 +67,18 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return HiveCost.FACTORY.makeZeroCost();
+    return RelMetadataQuery.getNonCumulativeCost(this);
   }
 
   @Override
   public double getRows() {
     return RelMetadataQuery.getDistinctRowCount(this, groupSet, getCluster().getRexBuilder()
         .makeLiteral(true));
+  }
+
+  public boolean isBucketedInput() {
+    return RelMetadataQuery.distribution(this.getInput()).getKeys().
+            containsAll(groupSet.asList());
   }
 
   private static class HiveAggRelFactory implements AggregateFactory {

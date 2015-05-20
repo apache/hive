@@ -18,15 +18,12 @@
 
 package org.apache.hive.jdbc;
 
-import java.io.IOException;
+import java.util.Map;
 
 import org.apache.http.Header;
-import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.auth.AuthSchemeBase;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.protocol.HttpContext;
@@ -36,45 +33,23 @@ import org.apache.http.protocol.HttpContext;
  * used to add header with these credentials to HTTP requests
  *
  */
-public class HttpBasicAuthInterceptor implements HttpRequestInterceptor {
+public class HttpBasicAuthInterceptor extends HttpRequestInterceptorBase {
   UsernamePasswordCredentials credentials;
   AuthSchemeBase authScheme;
-  CookieStore cookieStore;
-  boolean isCookieEnabled;
-  String cookieName;
 
   public HttpBasicAuthInterceptor(String username, String password, CookieStore cookieStore,
-                           String cn) {
-    if(username != null){
-      credentials = new UsernamePasswordCredentials(username, password);
+                           String cn, boolean isSSL, Map<String, String> additionalHeaders) {
+    super(cookieStore, cn, isSSL, additionalHeaders);
+    this.authScheme = new BasicScheme();
+    if (username != null){
+      this.credentials = new UsernamePasswordCredentials(username, password);
     }
-    authScheme = new BasicScheme();
-    this.cookieStore = cookieStore;
-    isCookieEnabled = (cookieStore != null);
-    cookieName = cn;
   }
 
   @Override
-  public void process(HttpRequest httpRequest, HttpContext httpContext)
-      throws HttpException, IOException {
-    if (isCookieEnabled) {
-      httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-    }
-    // Add the authentication details under the following scenarios:
-    // 1. Cookie Authentication is disabled OR
-    // 2. The first time when the request is sent OR
-    // 3. The server returns a 401, which sometimes means the cookie has expired
-    if (!isCookieEnabled || ((httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) == null &&
-        (cookieStore == null || (cookieStore != null &&
-        Utils.needToSendCredentials(cookieStore, cookieName)))) ||
-        (httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY) != null &&
-         httpContext.getAttribute(Utils.HIVE_SERVER2_RETRY_KEY).
-         equals(Utils.HIVE_SERVER2_RETRY_TRUE)))) {
-      Header basicAuthHeader = authScheme.authenticate(credentials, httpRequest, httpContext);
-      httpRequest.addHeader(basicAuthHeader);
-    }
-    if (isCookieEnabled) {
-      httpContext.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_RETRY_FALSE);
-    }
+  protected void addHttpAuthHeader(HttpRequest httpRequest, HttpContext httpContext)
+    throws Exception {
+    Header basicAuthHeader = authScheme.authenticate(credentials, httpRequest, httpContext);
+    httpRequest.addHeader(basicAuthHeader);
   }
 }

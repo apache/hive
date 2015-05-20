@@ -220,6 +220,18 @@ public class TestBeeLineWithArgs {
   }
 
   /**
+   * Fix to HIVE-10541: Beeline requires a newline at the end of each query in a file.
+   * Otherwise, the last line of cmd in the script will be ignored.
+   */
+  @Test
+  public void testLastLineCmdInScriptFile() throws Throwable {
+    final String SCRIPT_TEXT = "show databases;\nshow tables;";
+    final String EXPECTED_PATTERN = " testbeelinetable1 ";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile( SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
+  
+  /**
    * Test Beeline -hivevar option. User can specify --hivevar name=value on Beeline command line.
    * In the script, user should be able to use it in the form of ${name}, which will be substituted with
    * the value.

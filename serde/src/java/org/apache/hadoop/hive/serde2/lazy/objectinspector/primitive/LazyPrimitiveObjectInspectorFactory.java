@@ -19,9 +19,8 @@
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -85,12 +84,12 @@ public final class LazyPrimitiveObjectInspectorFactory {
 
   // Lazy object inspectors for string/char/varchar will all be cached in the same map.
   // Map key will be list of [typeInfo, isEscaped, escapeChar]
-  private static HashMap<ArrayList<Object>, AbstractPrimitiveLazyObjectInspector> cachedLazyStringTypeOIs =
-      new HashMap<ArrayList<Object>, AbstractPrimitiveLazyObjectInspector>();
+  private static ConcurrentHashMap<ArrayList<Object>, AbstractPrimitiveLazyObjectInspector<?>> cachedLazyStringTypeOIs =
+      new ConcurrentHashMap<ArrayList<Object>, AbstractPrimitiveLazyObjectInspector<?>>();
 
-  private static Map<PrimitiveTypeInfo, AbstractPrimitiveLazyObjectInspector<?>>
+  private static ConcurrentHashMap<PrimitiveTypeInfo, AbstractPrimitiveLazyObjectInspector<?>>
      cachedPrimitiveLazyObjectInspectors =
-    new HashMap<PrimitiveTypeInfo, AbstractPrimitiveLazyObjectInspector<?>>();
+    new ConcurrentHashMap<PrimitiveTypeInfo, AbstractPrimitiveLazyObjectInspector<?>>();
   static {
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
         LAZY_BOOLEAN_OBJECT_INSPECTOR);
@@ -177,7 +176,11 @@ public final class LazyPrimitiveObjectInspectorFactory {
           "Primitve type " + typeInfo.getPrimitiveCategory() + " should not take parameters");
     }
 
-    cachedPrimitiveLazyObjectInspectors.put(typeInfo, poi);
+    AbstractPrimitiveLazyObjectInspector<?> prev =
+      cachedPrimitiveLazyObjectInspectors.putIfAbsent(typeInfo, poi);
+    if (prev != null) {
+      poi = prev;
+    }
     return poi;
   }
 
@@ -190,7 +193,11 @@ public final class LazyPrimitiveObjectInspectorFactory {
         .get(signature);
     if (result == null) {
       result = new LazyStringObjectInspector(escaped, escapeChar);
-      cachedLazyStringTypeOIs.put(signature, result);
+      AbstractPrimitiveLazyObjectInspector<?> prev =
+        cachedLazyStringTypeOIs.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = (LazyStringObjectInspector) prev;
+      }
     }
     return result;
   }
@@ -205,7 +212,11 @@ public final class LazyPrimitiveObjectInspectorFactory {
         .get(signature);
     if (result == null) {
       result = new LazyHiveCharObjectInspector(typeInfo, escaped, escapeChar);
-      cachedLazyStringTypeOIs.put(signature, result);
+      AbstractPrimitiveLazyObjectInspector<?> prev =
+        cachedLazyStringTypeOIs.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = (LazyHiveCharObjectInspector) prev;
+      }
     }
     return result;
   }
@@ -220,7 +231,11 @@ public final class LazyPrimitiveObjectInspectorFactory {
         .get(signature);
     if (result == null) {
       result = new LazyHiveVarcharObjectInspector(typeInfo, escaped, escapeChar);
-      cachedLazyStringTypeOIs.put(signature, result);
+      AbstractPrimitiveLazyObjectInspector<?> prev =
+        cachedLazyStringTypeOIs.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = (LazyHiveVarcharObjectInspector) prev;
+      }
     }
     return result;
   }
@@ -239,7 +254,11 @@ public final class LazyPrimitiveObjectInspectorFactory {
         .get(signature);
     if (result == null) {
       result = new LazyTimestampObjectInspector(tsFormats);
-      cachedLazyStringTypeOIs.put(signature, result);
+      AbstractPrimitiveLazyObjectInspector<?> prev =
+        cachedLazyStringTypeOIs.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = (LazyTimestampObjectInspector) prev;
+      }
     }
     return result;
   }

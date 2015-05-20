@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 
 /**
  * Expression processor factory for pruning. Each processor tries to
@@ -182,8 +181,6 @@ public abstract class PrunerExpressionOperatorFactory {
         Object... nodeOutputs) throws SemanticException {
       if (nd instanceof ExprNodeConstantDesc) {
         return ((ExprNodeConstantDesc) nd).clone();
-      } else if (nd instanceof ExprNodeNullDesc) {
-        return ((ExprNodeNullDesc) nd).clone();
       }
 
       return new ExprNodeConstantDesc(((ExprNodeDesc)nd).getTypeInfo(), null);

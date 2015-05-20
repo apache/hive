@@ -58,7 +58,7 @@ public class OrcUtils {
     int numFlattenedCols = getFlattenedColumnsCount(inspector);
     boolean[] results = new boolean[numFlattenedCols];
     if (selectedColumns != null && !selectedColumns.isEmpty()) {
-      includeColumnsImpl(results, selectedColumns, allColumns, inspector);
+      includeColumnsImpl(results, selectedColumns.toLowerCase(), allColumns, inspector);
     }
     return results;
   }

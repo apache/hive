@@ -1317,12 +1317,14 @@ public class Driver implements CommandProcessor {
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
 
     String queryId = plan.getQueryId();
-    String queryStr = plan.getQueryStr();
+    // Get the query string from the conf file as the compileInternal() method might
+    // hide sensitive information during query redaction.
+    String queryStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING);
 
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
     try {
-      LOG.info("Starting command: " + queryStr);
+      LOG.info("Starting command(queryId=" + queryId + "): " + queryStr);
       // compile and execute can get called from different threads in case of HS2
       // so clear timing in this thread's Hive object before proceeding.
       Hive.get().clearMetaCallTiming();

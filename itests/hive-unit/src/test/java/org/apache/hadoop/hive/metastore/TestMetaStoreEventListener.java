@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -175,8 +177,12 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals(expectedTableName, actualTableName);
   }
 
-  private void validateDropPartition(Partition expectedPartition, Partition actualPartition) {
-    validatePartition(expectedPartition, actualPartition);
+  private void validateDropPartition(Iterator<Partition> expectedPartitions, Iterator<Partition> actualPartitions) {
+    while (expectedPartitions.hasNext()){
+      assertTrue(actualPartitions.hasNext());
+      validatePartition(expectedPartitions.next(), actualPartitions.next());
+    }
+    assertFalse(actualPartitions.hasNext());
   }
 
   private void validateTableInDropPartition(Table expectedTable, Table actualTable) {
@@ -417,10 +423,10 @@ public class TestMetaStoreEventListener extends TestCase {
 
     DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(listSize - 1);
     assert dropPart.getStatus();
-    validateDropPartition(part, dropPart.getPartition());
+    validateDropPartition(Collections.singletonList(part).iterator(), dropPart.getPartitionIterator());
     validateTableInDropPartition(tbl, dropPart.getTable());
 
-    validateDropPartition(part, preDropPart.getPartition());
+    validateDropPartition(Collections.singletonList(part).iterator(), preDropPart.getPartitionIterator());
     validateTableInDropPartition(tbl, preDropPart.getTable());
 
     driver.run("drop table " + tblName);

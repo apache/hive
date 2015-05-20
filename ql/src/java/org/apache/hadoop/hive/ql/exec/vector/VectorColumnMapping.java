@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.ql.exec.vector.VectorColumnOrderedMap.Mapping;
-
 /**
  * This class collects column information for copying a row from one VectorizedRowBatch to
  * same/another batch.
@@ -36,8 +34,8 @@ public abstract class VectorColumnMapping {
 
   protected VectorColumnOrderedMap vectorColumnMapping;
 
-  public VectorColumnMapping() {
-    this.vectorColumnMapping = new VectorColumnOrderedMap();
+  public VectorColumnMapping(String name) {
+    this.vectorColumnMapping = new VectorColumnOrderedMap(name);
   }
 
   public abstract void add(int sourceColumn, int outputColumn, String typeName);

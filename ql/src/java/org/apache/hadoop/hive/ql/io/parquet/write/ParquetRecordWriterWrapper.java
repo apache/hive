@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -35,12 +36,12 @@ import parquet.hadoop.ParquetOutputFormat;
 import parquet.hadoop.metadata.CompressionCodecName;
 import parquet.hadoop.util.ContextUtil;
 
-public class ParquetRecordWriterWrapper implements RecordWriter<Void, ParquetHiveRecord>,
+public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, ParquetHiveRecord>,
   org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter {
 
   public static final Log LOG = LogFactory.getLog(ParquetRecordWriterWrapper.class);
 
-  private final org.apache.hadoop.mapreduce.RecordWriter<Void, ParquetHiveRecord> realWriter;
+  private final org.apache.hadoop.mapreduce.RecordWriter<NullWritable, ParquetHiveRecord> realWriter;
   private final TaskAttemptContext taskContext;
 
   public ParquetRecordWriterWrapper(
@@ -106,7 +107,7 @@ public class ParquetRecordWriterWrapper implements RecordWriter<Void, ParquetHiv
   }
 
   @Override
-  public void write(final Void key, final ParquetHiveRecord value) throws IOException {
+  public void write(final NullWritable key, final ParquetHiveRecord value) throws IOException {
     try {
       realWriter.write(key, value);
     } catch (final InterruptedException e) {

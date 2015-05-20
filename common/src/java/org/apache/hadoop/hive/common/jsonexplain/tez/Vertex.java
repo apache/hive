@@ -191,7 +191,7 @@ public class Vertex {
       out.println(TezJsonParser.prefixString(indentFlag) + this.name);
     }
     // print operators
-    if (hasMultiReduceOp) {
+    if (hasMultiReduceOp && !callingVertex.union) {
       // find the right op
       Op choose = null;
       for (Op op : this.rootOps) {

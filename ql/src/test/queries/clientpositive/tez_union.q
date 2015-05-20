@@ -92,3 +92,21 @@ right outer join src s on u.key = s.key;
 
 select * from ut order by ukey, skey limit 20;
 drop table ut;
+
+set hive.vectorized.execution.enabled=true;
+
+create table TABLE1(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1;
+
+explain formatted select count(*) from TABLE3;
+
+drop table table2;
+
+create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1 UNION ALL select EMP_NAME,EMP_ID from TABLE2;
+
+explain formatted select count(*) from TABLE3;

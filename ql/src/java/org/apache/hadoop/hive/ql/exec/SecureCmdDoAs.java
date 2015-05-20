@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.token.Token;
 
 /**
  * SecureCmdDoAs - Helper class for setting parameters and env necessary for
@@ -46,9 +45,7 @@ public class SecureCmdDoAs {
     String uname = UserGroupInformation.getLoginUser().getShortUserName();
     FileSystem fs = FileSystem.get(conf);
     Credentials cred = new Credentials();
-    // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
-    fs.addDelegationTokens(uname, cred);
-
+    ShimLoader.getHadoopShims().addDelegationTokens(fs, cred, uname);
     tokenFile = File.createTempFile("hive_hadoop_delegation_token", null);
     tokenPath = new Path(tokenFile.toURI());
 

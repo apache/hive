@@ -17,6 +17,7 @@
 
 package org.apache.hive.spark.client;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,5 +58,10 @@ public interface JobContext {
    * Return all added jar path which added through AddJarJob.
    */
   List<String> getAddedJars();
+
+  /**
+   * Returns a local tmp dir specific to the context
+   */
+  File getLocalTmpDir();
 
 }

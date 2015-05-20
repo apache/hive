@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
@@ -314,29 +318,65 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
               HiveOperation.ALTERTABLE_ADDPARTS.getOutputRequiredPrivileges());
         }
       }
-    } catch (AuthorizationException e) {
-      throw invalidOperationException(e);
-    } catch (NoSuchObjectException e) {
+    } catch (AuthorizationException | NoSuchObjectException e) {
       throw invalidOperationException(e);
     } catch (HiveException e) {
       throw metaException(e);
     }
   }
 
+  private void authorizeDropMultiPartition(HiveMultiPartitionAuthorizationProviderBase authorizer,
+                                           final PreDropPartitionEvent context)
+      throws AuthorizationException, HiveException {
+    Iterator<Partition> partitionIterator = context.getPartitionIterator();
+
+    final TableWrapper table = new TableWrapper(context.getTable());
+    final Iterator<org.apache.hadoop.hive.ql.metadata.Partition> qlPartitionIterator =
+        Iterators.transform(partitionIterator, new Function<Partition, org.apache.hadoop.hive.ql.metadata.Partition>() {
+          @Override
+          public org.apache.hadoop.hive.ql.metadata.Partition apply(Partition partition) {
+            try {
+              return new PartitionWrapper(table, partition);
+            } catch (Exception exception) {
+              LOG.error("Could not construct partition-object for: " + partition, exception);
+              throw new RuntimeException(exception);
+            }
+          }
+        });
+
+    authorizer.authorize(new TableWrapper(context.getTable()),
+                         new Iterable<org.apache.hadoop.hive.ql.metadata.Partition>() {
+                           @Override
+                           public Iterator<org.apache.hadoop.hive.ql.metadata.Partition> iterator() {
+                             return qlPartitionIterator;
+                           }
+                         },
+                         HiveOperation.ALTERTABLE_DROPPARTS.getInputRequiredPrivileges(),
+                         HiveOperation.ALTERTABLE_DROPPARTS.getOutputRequiredPrivileges());
+  }
+
   private void authorizeDropPartition(PreDropPartitionEvent context)
       throws InvalidOperationException, MetaException {
     try {
-      org.apache.hadoop.hive.metastore.api.Partition mapiPart = context.getPartition();
-      org.apache.hadoop.hive.ql.metadata.Partition wrappedPartition = new PartitionWrapper(
-          mapiPart, context);
- for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
-        authorizer.authorize(wrappedPartition,
-            HiveOperation.ALTERTABLE_DROPPARTS.getInputRequiredPrivileges(),
-            HiveOperation.ALTERTABLE_DROPPARTS.getOutputRequiredPrivileges());
+      for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+        if (authorizer instanceof HiveMultiPartitionAuthorizationProviderBase) {
+          // Authorize all dropped-partitions in one shot.
+          authorizeDropMultiPartition((HiveMultiPartitionAuthorizationProviderBase)authorizer, context);
+        }
+        else {
+          // Authorize individually.
+          TableWrapper table = new TableWrapper(context.getTable());
+          Iterator<Partition> partitionIterator = context.getPartitionIterator();
+          while (partitionIterator.hasNext()) {
+            authorizer.authorize(
+                new PartitionWrapper(table, partitionIterator.next()),
+                HiveOperation.ALTERTABLE_DROPPARTS.getInputRequiredPrivileges(),
+                HiveOperation.ALTERTABLE_DROPPARTS.getOutputRequiredPrivileges()
+            );
+          }
+        }
       }
     } catch (AuthorizationException e) {
-      throw invalidOperationException(e);
-    } catch (NoSuchObjectException e) {
       throw invalidOperationException(e);
     } catch (HiveException e) {
       throw metaException(e);
@@ -354,9 +394,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
             null,
             new Privilege[]{Privilege.ALTER_METADATA});
       }
-    } catch (AuthorizationException e) {
-      throw invalidOperationException(e);
-    } catch (NoSuchObjectException e) {
+    } catch (AuthorizationException | NoSuchObjectException e) {
       throw invalidOperationException(e);
     } catch (HiveException e) {
       throw metaException(e);

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde2.ColumnSet;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -39,8 +39,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public class MetadataListStructObjectInspector extends
     StandardStructObjectInspector {
 
-  static HashMap<List<List<String>>, MetadataListStructObjectInspector>
-      cached = new HashMap<List<List<String>>, MetadataListStructObjectInspector>();
+  static ConcurrentHashMap<List<List<String>>, MetadataListStructObjectInspector>
+      cached = new ConcurrentHashMap<List<List<String>>, MetadataListStructObjectInspector>();
 
   // public static MetadataListStructObjectInspector getInstance(int fields) {
   // return getInstance(ObjectInspectorUtils.getIntegerArray(fields));
@@ -49,10 +49,13 @@ public class MetadataListStructObjectInspector extends
       List<String> columnNames) {
     ArrayList<List<String>> key = new ArrayList<List<String>>(1);
     key.add(columnNames);
-    MetadataListStructObjectInspector result = cached.get(columnNames);
+    MetadataListStructObjectInspector result = cached.get(key);
     if (result == null) {
       result = new MetadataListStructObjectInspector(columnNames);
-      cached.put(key, result);
+      MetadataListStructObjectInspector prev = cached.putIfAbsent(key, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -65,7 +68,10 @@ public class MetadataListStructObjectInspector extends
     MetadataListStructObjectInspector result = cached.get(key);
     if (result == null) {
       result = new MetadataListStructObjectInspector(columnNames, columnComments);
-      cached.put(key, result);
+      MetadataListStructObjectInspector prev = cached.putIfAbsent(key, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }

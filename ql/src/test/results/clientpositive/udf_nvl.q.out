@@ -34,7 +34,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1 (type: int), if null is null returns5 (type: int)
+            expressions: 1 (type: int), 5 (type: int)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

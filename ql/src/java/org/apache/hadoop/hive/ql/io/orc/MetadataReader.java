@@ -74,7 +74,6 @@ public class MetadataReader {
       // filter and combine the io to read row index and bloom filters for that column together
       if (stream.hasKind() && (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX)) {
         boolean readBloomFilter = false;
-        // TODO#: HERE
         if (sargColumns != null && sargColumns[col] &&
             nextStream.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER) {
           len += nextStream.getLength();

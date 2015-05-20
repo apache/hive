@@ -105,6 +105,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 2
                       Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
@@ -314,6 +315,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 2
                       Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
@@ -523,6 +525,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 2
                       Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3

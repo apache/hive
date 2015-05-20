@@ -26,8 +26,10 @@ import java.util.Stack;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterators;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -69,6 +71,16 @@ public class IdentityProjectRemover implements Transform {
   private static final Log LOG = LogFactory.getLog(IdentityProjectRemover.class);
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
+    // 0. We check the conditions to apply this transformation,
+    //    if we do not meet them we bail out
+    final boolean cboEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_CBO_ENABLED);
+    final boolean returnPathEnabled = HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP);
+    final boolean cboSucceeded = pctx.getContext().isCboSucceeded();
+    if(cboEnabled && returnPathEnabled && cboSucceeded) {
+      return pctx;
+    }
+
+    // 1. We apply the transformation
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       "(" + SelectOperator.getOperatorName() + "%)"), new ProjectRemover());

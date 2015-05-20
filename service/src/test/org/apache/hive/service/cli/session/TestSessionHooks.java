@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -64,7 +63,7 @@ public class TestSessionHooks extends TestCase {
     System.setProperty(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         TestSessionHooks.SessionHookTest.class.getName());
     service = new EmbeddedThriftBinaryCLIService();
-    service.init(new HiveConf());
+    service.init(null);
     client = new ThriftCLIServiceClient(service);
   }
 

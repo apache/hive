@@ -87,9 +87,10 @@ public class GenTezUtils {
     sequenceNumber = 0;
   }
 
-  public UnionWork createUnionWork(GenTezProcContext context, Operator<?> operator, TezWork tezWork) {
+  public UnionWork createUnionWork(GenTezProcContext context, Operator<?> root, Operator<?> leaf, TezWork tezWork) {
     UnionWork unionWork = new UnionWork("Union "+ (++sequenceNumber));
-    context.unionWorkMap.put(operator, unionWork);
+    context.rootUnionWorkMap.put(root, unionWork);
+    context.unionWorkMap.put(leaf, unionWork);
     tezWork.add(unionWork);
     return unionWork;
   }
@@ -459,5 +460,21 @@ public class GenTezUtils {
     for (Operator<?> p : parents) {
       findRoots(p, ops);
     }
+  }
+
+  /**
+   * Remove an operator branch. When we see a fork, we know it's time to do the removal.
+   * @param event the leaf node of which branch to be removed
+   */
+  public void removeBranch(AppMasterEventOperator event) {
+    Operator<?> child = event;
+    Operator<?> curr = event;
+
+    while (curr.getChildOperators().size() <= 1) {
+      child = curr;
+      curr = curr.getParentOperators().get(0);
+    }
+
+    curr.removeChild(child);
   }
 }

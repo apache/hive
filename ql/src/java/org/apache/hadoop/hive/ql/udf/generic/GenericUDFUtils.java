@@ -175,7 +175,7 @@ public final class GenericUDFUtils {
        * that.
        */
       if (commonTypeInfo instanceof DecimalTypeInfo) {
-        if ((!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo) oiTypeInfo)) || 
+        if ((!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo) oiTypeInfo)) ||
             (!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo) rTypeInfo))) {
           commonTypeInfo = TypeInfoFactory.doubleTypeInfo;
         }
@@ -204,8 +204,8 @@ public final class GenericUDFUtils {
 
     /**
      * Convert the return Object if necessary (when the ObjectInspectors of
-     * different possibilities are not all the same). If reuse is true, 
-     * the result Object will be the same object as the last invocation 
+     * different possibilities are not all the same). If reuse is true,
+     * the result Object will be the same object as the last invocation
      * (as long as the oi is the same)
      */
     public Object convertIfNecessary(Object o, ObjectInspector oi, boolean reuse) {

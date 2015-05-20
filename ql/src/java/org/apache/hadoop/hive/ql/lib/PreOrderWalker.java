@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
@@ -57,6 +59,12 @@ public class PreOrderWalker extends DefaultGraphWalker {
     if (nd.getChildren() != null) {
       for (Node n : nd.getChildren()) {
         walk(n);
+      }
+    } else if (nd instanceof ConditionalTask) {
+      for (Task n : ((ConditionalTask) nd).getListTasks()) {
+        if (n.getParentTasks() == null || n.getParentTasks().isEmpty()) {
+          walk(n);
+        }
       }
     }
 

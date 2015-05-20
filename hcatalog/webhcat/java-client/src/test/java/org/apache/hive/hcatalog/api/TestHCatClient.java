@@ -32,9 +32,12 @@ import java.util.Random;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.ql.WindowsPathUtil;
@@ -52,12 +55,14 @@ import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.api.repl.ReplicationUtils;
 import org.apache.hive.hcatalog.api.repl.StagingDirectoryProvider;
+import org.apache.hive.hcatalog.api.repl.exim.EximReplicationTaskFactory;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
+import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -87,7 +92,7 @@ public class TestHCatClient {
   private static boolean useExternalMS = false;
   private static boolean useExternalMSForReplication = false;
 
-  private static class RunMS implements Runnable {
+  public static class RunMS implements Runnable {
 
     private final String msPort;
     private List<String> args = new ArrayList<String>();
@@ -156,6 +161,11 @@ public class TestHCatClient {
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
   }
+
+  public static HiveConf getConf(){
+    return hcatConf;
+  }
+
   public static String fixPath(String path) {
     if(!Shell.WINDOWS) {
       return path;
@@ -166,6 +176,11 @@ public class TestHCatClient {
     }
     return expectedDir;
   }
+
+  public static String makePartLocation(HCatTable table, Map<String, String> partitionSpec) throws MetaException {
+    return (new Path(table.getSd().getLocation(), Warehouse.makePartPath(partitionSpec))).toUri().toString();
+  }
+
   @Test
   public void testBasicDDLCommands() throws Exception {
     String db = "testdb";
@@ -603,6 +618,8 @@ public class TestHCatClient {
       HCatTable table = new HCatTable(dbName, tableName).cols(columns).partCols(partitionColumns);
       client.createTable(HCatCreateTableDesc.create(table, false).build());
 
+      HCatTable createdTable = client.getTable(dbName,tableName);
+
       Map<String, String> partitionSpec = new HashMap<String, String>();
       partitionSpec.put(partitionColumn, "foobar");
       try {  // Test that fetching a non-existent partition yields ObjectNotFound.
@@ -614,7 +631,8 @@ public class TestHCatClient {
             exception instanceof ObjectNotFoundException);
       }
 
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(createdTable, partitionSpec,
+          makePartLocation(createdTable,partitionSpec))).build());
 
       // Test that listPartitionsByFilter() returns an empty-set, if the filter selects no partitions.
       assertEquals("Expected empty set of partitions.",
@@ -718,16 +736,20 @@ public class TestHCatClient {
       Map<String, String> partitionSpec = new HashMap<String, String>();
       partitionSpec.put("grid", "AB");
       partitionSpec.put("dt", "2011_12_31");
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec,
+          makePartLocation(table,partitionSpec))).build());
       partitionSpec.put("grid", "AB");
       partitionSpec.put("dt", "2012_01_01");
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec,
+          makePartLocation(table,partitionSpec))).build());
       partitionSpec.put("dt", "2012_01_01");
       partitionSpec.put("grid", "OB");
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec,
+          makePartLocation(table,partitionSpec))).build());
       partitionSpec.put("dt", "2012_01_01");
       partitionSpec.put("grid", "XB");
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec,
+          makePartLocation(table,partitionSpec))).build());
 
       Map<String, String> partialPartitionSpec = new HashMap<String, String>();
       partialPartitionSpec.put("dt", "2012_01_01");
@@ -772,16 +794,20 @@ public class TestHCatClient {
       Map<String, String> partitionSpec = new HashMap<String, String>();
       partitionSpec.put("grid", "AB");
       partitionSpec.put("dt", "2011_12_31");
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec,
+          makePartLocation(table, partitionSpec))).build());
       partitionSpec.put("grid", "AB");
       partitionSpec.put("dt", "2012_01_01");
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec,
+          makePartLocation(table, partitionSpec))).build());
       partitionSpec.put("dt", "2012_01_01");
       partitionSpec.put("grid", "OB");
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec,
+          makePartLocation(table, partitionSpec))).build());
       partitionSpec.put("dt", "2012_01_01");
       partitionSpec.put("grid", "XB");
-      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec, "")).build());
+      client.addPartition(HCatAddPartitionDesc.create(new HCatPartition(table, partitionSpec,
+          makePartLocation(table, partitionSpec))).build());
 
       Map<String, String> partialPartitionSpec = new HashMap<String, String>();
       partialPartitionSpec.put("dt", "2012_01_01");
@@ -830,7 +856,69 @@ public class TestHCatClient {
   @Test
   public void testReplicationTaskIter() throws Exception {
 
-    HCatClient sourceMetastore = HCatClient.create(new Configuration(hcatConf));
+    Configuration cfg = new Configuration(hcatConf);
+    cfg.set(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX.varname,"10"); // set really low batch size to ensure batching
+    cfg.set(HiveConf.ConfVars.HIVE_REPL_TASK_FACTORY.varname, EximReplicationTaskFactory.class.getName());
+    HCatClient sourceMetastore = HCatClient.create(cfg);
+
+    String dbName = "testReplicationTaskIter";
+    long baseId = sourceMetastore.getCurrentNotificationEventId();
+
+    {
+      // Perform some operations
+
+      // 1: Create a db after dropping if needed => 1 or 2 events
+      sourceMetastore.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+      sourceMetastore.createDatabase(HCatCreateDBDesc.create(dbName).ifNotExists(false).build());
+
+      // 2: Create an unpartitioned table T1 => 1 event
+      String tblName1 = "T1";
+      List<HCatFieldSchema> cols1 = HCatSchemaUtils.getHCatSchema("a:int,b:string").getFields();
+      HCatTable table1 = (new HCatTable(dbName, tblName1)).cols(cols1);
+      sourceMetastore.createTable(HCatCreateTableDesc.create(table1).build());
+
+      // 3: Create a partitioned table T2 => 1 event
+
+      String tblName2 = "T2";
+      List<HCatFieldSchema> cols2 = HCatSchemaUtils.getHCatSchema("a:int").getFields();
+      List<HCatFieldSchema> pcols2 = HCatSchemaUtils.getHCatSchema("b:string").getFields();
+      HCatTable table2 = (new HCatTable(dbName, tblName2)).cols(cols2).partCols(pcols2);
+      sourceMetastore.createTable(HCatCreateTableDesc.create(table2).build());
+
+      // 4: Add a partition P1 to T2 => 1 event
+
+      HCatTable table2Created = sourceMetastore.getTable(dbName,tblName2);
+
+      Map<String, String> ptnDesc1 = new HashMap<String,String>();
+      ptnDesc1.put("b","test1");
+      HCatPartition ptn1 = (new HCatPartition(table2Created, ptnDesc1,
+          makePartLocation(table2Created,ptnDesc1)));
+      sourceMetastore.addPartition(HCatAddPartitionDesc.create(ptn1).build());
+
+      // 5 : Create and drop partition P2 to T2 10 times => 20 events
+
+      for (int i = 0; i < 20; i++){
+        Map<String, String> ptnDesc = new HashMap<String,String>();
+        ptnDesc.put("b","testmul"+i);
+        HCatPartition ptn = (new HCatPartition(table2Created, ptnDesc,
+            makePartLocation(table2Created,ptnDesc)));
+        sourceMetastore.addPartition(HCatAddPartitionDesc.create(ptn).build());
+        sourceMetastore.dropPartitions(dbName,tblName2,ptnDesc,true);
+      }
+
+      // 6 : Drop table T1 => 1 event
+      sourceMetastore.dropTable(dbName, tblName1, true);
+
+      // 7 : Drop table T2 => 1 event
+      sourceMetastore.dropTable(dbName, tblName2, true);
+
+      // verify that the number of events since we began is at least 25 more
+      long currId = sourceMetastore.getCurrentNotificationEventId();
+      assertTrue("currId[" + currId + "] must be more than 25 greater than baseId[" + baseId + "]", currId > baseId + 25);
+
+    }
+
+    // do rest of tests on db we just picked up above.
 
     List<HCatNotificationEvent> notifs = sourceMetastore.getNextNotification(
         0, 0, new IMetaStoreClient.NotificationFilter() {
@@ -844,7 +932,7 @@ public class TestHCatClient {
           + ":" + n.getEventTime() + ",t:" + n.getEventType() + ",o:" + n.getDbName() + "." + n.getTableName());
     }
 
-    Iterator<ReplicationTask> taskIter = sourceMetastore.getReplicationTasks(0, 0, "mydb", null);
+    Iterator<ReplicationTask> taskIter = sourceMetastore.getReplicationTasks(0, -1, dbName, null);
     while(taskIter.hasNext()){
       ReplicationTask task = taskIter.next();
       HCatNotificationEvent n = task.getEvent();
@@ -1064,7 +1152,8 @@ public class TestHCatClient {
       Map<String, String> partitionSpec_1 = new HashMap<String, String>();
       partitionSpec_1.put("grid", "AB");
       partitionSpec_1.put("dt", "2011_12_31");
-      HCatPartition sourcePartition_1 = new HCatPartition(sourceTable, partitionSpec_1, "");
+      HCatPartition sourcePartition_1 = new HCatPartition(sourceTable, partitionSpec_1,
+          makePartLocation(sourceTable,partitionSpec_1));
 
       sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_1).build());
       assertEquals("Unexpected number of partitions. ",
@@ -1107,7 +1196,8 @@ public class TestHCatClient {
       Map<String, String> partitionSpec_2 = new HashMap<String, String>();
       partitionSpec_2.put("grid", "AB");
       partitionSpec_2.put("dt", "2012_01_01");
-      HCatPartition sourcePartition_2 = new HCatPartition(sourceTable, partitionSpec_2, "");
+      HCatPartition sourcePartition_2 = new HCatPartition(sourceTable, partitionSpec_2,
+          makePartLocation(sourceTable,partitionSpec_2));
       sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_2).build());
 
       // The source table now has 2 partitions, one in TEXTFILE, the other in ORC.
@@ -1191,7 +1281,8 @@ public class TestHCatClient {
       Map<String, String> partitionSpec_1 = new HashMap<String, String>();
       partitionSpec_1.put("grid", "AB");
       partitionSpec_1.put("dt", "2011_12_31");
-      HCatPartition sourcePartition_1 = new HCatPartition(sourceTable, partitionSpec_1, "");
+      HCatPartition sourcePartition_1 = new HCatPartition(sourceTable, partitionSpec_1,
+          makePartLocation(sourceTable,partitionSpec_1));
 
       sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_1).build());
       assertEquals("Unexpected number of partitions. ",
@@ -1234,7 +1325,8 @@ public class TestHCatClient {
       Map<String, String> partitionSpec_2 = new HashMap<String, String>();
       partitionSpec_2.put("grid", "AB");
       partitionSpec_2.put("dt", "2012_01_01");
-      HCatPartition sourcePartition_2 = new HCatPartition(sourceTable, partitionSpec_2, "");
+      HCatPartition sourcePartition_2 = new HCatPartition(sourceTable, partitionSpec_2,
+          makePartLocation(sourceTable,partitionSpec_2));
       sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_2).build());
 
       // The source table now has 2 partitions, one in TEXTFILE, the other in ORC.

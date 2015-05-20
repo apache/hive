@@ -43,6 +43,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -69,6 +70,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 
 import com.google.common.collect.Lists;
@@ -112,7 +114,8 @@ class MetaStoreDirectSql {
    * Whether direct SQL can be used with the current datastore backing {@link #pm}.
    */
   private final boolean isCompatibleDatastore;
-
+  private final boolean isAggregateStatsCacheEnabled;
+  private AggregateStatsCache aggrStatsCache;
   public MetaStoreDirectSql(PersistenceManager pm, Configuration conf) {
     this.pm = pm;
     this.dbType = determineDbType();
@@ -128,6 +131,10 @@ class MetaStoreDirectSql {
     this.isCompatibleDatastore = ensureDbInit() && runTestQuery();
     if (isCompatibleDatastore) {
       LOG.info("Using direct SQL, underlying DB is " + dbType);
+    }
+    isAggregateStatsCacheEnabled = HiveConf.getBoolVar(conf, ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED);
+    if (isAggregateStatsCacheEnabled) {
+      aggrStatsCache = AggregateStatsCache.getInstance(conf);
     }
   }
 
@@ -460,7 +467,7 @@ class MetaStoreDirectSql {
     } else {
       result = getPartitionsFromPartitionIds(dbName, tblName, isView, sqlResult);
     }
- 
+
     timingTrace(doTrace, queryText, start, queryTime);
     query.closeAll();
     return result;
@@ -803,7 +810,7 @@ class MetaStoreDirectSql {
     if (value == null) return null;
     return value.toString();
   }
-  
+
   static Double extractSqlDouble(Object obj) throws MetaException {
     if (obj == null)
       return null;
@@ -1091,14 +1098,64 @@ class MetaStoreDirectSql {
   }
 
   public AggrStats aggrColStatsForPartitions(String dbName, String tableName,
-      List<String> partNames, List<String> colNames, boolean useDensityFunctionForNDVEstimation) throws MetaException {
+      List<String> partNames, List<String> colNames, boolean useDensityFunctionForNDVEstimation)
+      throws MetaException {
     long partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
-    List<ColumnStatisticsObj> stats = columnStatisticsObjForPartitions(dbName,
-        tableName, partNames, colNames, partsFound, useDensityFunctionForNDVEstimation);
+    List<ColumnStatisticsObj> colStatsList;
+    // Try to read from the cache first
+    if (isAggregateStatsCacheEnabled) {
+      AggrColStats colStatsAggrCached;
+      List<ColumnStatisticsObj> colStatsAggrFromDB;
+      int maxPartsPerCacheNode = aggrStatsCache.getMaxPartsPerCacheNode();
+      float fpp = aggrStatsCache.getFalsePositiveProbability();
+      int partitionsRequested = partNames.size();
+      if (partitionsRequested > maxPartsPerCacheNode) {
+        colStatsList =
+            columnStatisticsObjForPartitions(dbName, tableName, partNames, colNames, partsFound,
+                useDensityFunctionForNDVEstimation);
+      } else {
+        colStatsList = new ArrayList<ColumnStatisticsObj>();
+        // Bloom filter for the new node that we will eventually add to the cache
+        BloomFilter bloomFilter = createPartsBloomFilter(maxPartsPerCacheNode, fpp, partNames);
+        for (String colName : colNames) {
+          // Check the cache first
+          colStatsAggrCached = aggrStatsCache.get(dbName, tableName, colName, partNames);
+          if (colStatsAggrCached != null) {
+            colStatsList.add(colStatsAggrCached.getColStats());
+          } else {
+            List<String> colNamesForDB = new ArrayList<String>();
+            colNamesForDB.add(colName);
+            // Read aggregated stats for one column
+            colStatsAggrFromDB =
+                columnStatisticsObjForPartitions(dbName, tableName, partNames, colNamesForDB,
+                    partsFound, useDensityFunctionForNDVEstimation);
+            if (!colStatsAggrFromDB.isEmpty()) {
+              ColumnStatisticsObj colStatsAggr = colStatsAggrFromDB.get(0);
+              colStatsList.add(colStatsAggr);
+              // Update the cache to add this new aggregate node
+              aggrStatsCache.add(dbName, tableName, colName, partsFound, colStatsAggr, bloomFilter);
+            }
+          }
+        }
+      }
+    } else {
+      colStatsList =
+          columnStatisticsObjForPartitions(dbName, tableName, partNames, colNames, partsFound,
+              useDensityFunctionForNDVEstimation);
+    }
     LOG.info("useDensityFunctionForNDVEstimation = " + useDensityFunctionForNDVEstimation
         + "\npartsFound = " + partsFound + "\nColumnStatisticsObj = "
-        + Arrays.toString(stats.toArray()));
-    return new AggrStats(stats, partsFound);
+        + Arrays.toString(colStatsList.toArray()));
+    return new AggrStats(colStatsList, partsFound);
+  }
+
+  private BloomFilter createPartsBloomFilter(int maxPartsPerCacheNode, float fpp,
+      List<String> partNames) {
+    BloomFilter bloomFilter = new BloomFilter(maxPartsPerCacheNode, fpp);
+    for (String partName : partNames) {
+      bloomFilter.add(partName.getBytes());
+    }
+    return bloomFilter;
   }
 
   private long partsFoundForPartitions(String dbName, String tableName,
@@ -1127,8 +1184,8 @@ class MetaStoreDirectSql {
   }
 
   private List<ColumnStatisticsObj> columnStatisticsObjForPartitions(String dbName,
-      String tableName, List<String> partNames, List<String> colNames, long partsFound, boolean useDensityFunctionForNDVEstimation)
-      throws MetaException {
+      String tableName, List<String> partNames, List<String> colNames, long partsFound,
+      boolean useDensityFunctionForNDVEstimation) throws MetaException {
     // TODO: all the extrapolation logic should be moved out of this class,
     // only mechanical data retrieval should remain here.
     String commonPrefix = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", "
@@ -1421,7 +1478,7 @@ class MetaStoreDirectSql {
         avgDecimal, sumDist, useDensityFunctionForNDVEstimation);
     return cso;
   }
-  
+
   private Object[] prepareParams(String dbName, String tableName, List<String> partNames,
     List<String> colNames) throws MetaException {
 
@@ -1438,7 +1495,7 @@ class MetaStoreDirectSql {
 
     return params;
   }
-  
+
   public List<ColumnStatistics> getPartitionStats(String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException {
     if (colNames.isEmpty() || partNames.isEmpty()) {

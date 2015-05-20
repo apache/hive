@@ -23,12 +23,11 @@ import java.io.Serializable;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * A constant expression.
@@ -83,14 +82,8 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   @Override
   public ConstantObjectInspector getWritableObjectInspector() {
-    PrimitiveTypeInfo pti = (PrimitiveTypeInfo) getTypeInfo();
-    PrimitiveCategory pc = pti.getPrimitiveCategory();
-    // Convert from Java to Writable
-    Object writableValue = PrimitiveObjectInspectorFactory
-        .getPrimitiveJavaObjectInspector(pti).getPrimitiveWritableObject(
-          getValue());
-    return PrimitiveObjectInspectorFactory
-        .getPrimitiveWritableConstantObjectInspector((PrimitiveTypeInfo) getTypeInfo(), writableValue);
+    return ObjectInspectorUtils.getConstantObjectInspector(
+      TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo), value);
   }
 
 

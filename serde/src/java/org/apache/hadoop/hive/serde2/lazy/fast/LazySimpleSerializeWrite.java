@@ -106,12 +106,21 @@ public class LazySimpleSerializeWrite implements SerializeWrite {
   }
 
   /*
-   * Set the buffer that will receive the serialized data.
+   * Set the buffer that will receive the serialized data.  The output buffer will be reset.
    */
   @Override
   public void set(Output output) {
     this.output = output;
     output.reset();
+    index = 0;
+  }
+
+  /*
+   * Set the buffer that will receive the serialized data.  The output buffer will NOT be reset.
+   */
+  @Override
+  public void setAppend(Output output) {
+    this.output = output;
     index = 0;
   }
 
@@ -123,7 +132,7 @@ public class LazySimpleSerializeWrite implements SerializeWrite {
     output.reset();
     index = 0;
   }
-  
+
   /*
    * General Pattern:
    *

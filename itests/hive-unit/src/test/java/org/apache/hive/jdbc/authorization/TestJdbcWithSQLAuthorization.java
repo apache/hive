@@ -175,4 +175,29 @@ public class TestJdbcWithSQLAuthorization {
     fail("Message [" + message + "] does not contain substring [" + expectedSubString + "]");
   }
 
+  @Test
+  public void testConfigWhiteList() throws Exception {
+
+    // create tables as user1
+    Connection hs2Conn = getConnection("user1");
+
+    Statement stmt = hs2Conn.createStatement();
+    try {
+      stmt.execute("set hive.metastore.uris=x");
+      fail("exception expected");
+    } catch (SQLException e) {
+      String msg = "Cannot modify hive.metastore.uris at runtime. "
+          + "It is not in list of params that are allowed to be modified at runtime";
+      assertTrue(e.getMessage().contains(msg));
+    }
+
+    stmt.execute("set hive.exec.reducers.bytes.per.reducer=10000");
+    //no exception should be thrown
+
+    stmt.close();
+    hs2Conn.close();
+  }
+
+
+
 }

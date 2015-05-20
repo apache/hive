@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -85,8 +84,18 @@ public class SparkHashTableSinkOperator
       if (mapJoinTables == null || mapJoinTables.length < tag
           || mapJoinTables[tag] == null) {
         LOG.debug("mapJoinTable is null");
+      } else if (abort) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Aborting, skip dumping side-table for tag: " + tag);
+        }
       } else {
-        flushToFile(mapJoinTables[tag], tag);
+        String method = PerfLogger.SPARK_FLUSH_HASHTABLE + getName();
+        perfLogger.PerfLogBegin(CLASS_NAME, method);
+        try {
+          flushToFile(mapJoinTables[tag], tag);
+        } finally {
+          perfLogger.PerfLogEnd(CLASS_NAME, method);
+        }
       }
       super.closeOp(abort);
     } catch (HiveException e) {
@@ -97,8 +106,7 @@ public class SparkHashTableSinkOperator
   }
 
   protected void flushToFile(MapJoinPersistableTableContainer tableContainer,
-      byte tag) throws IOException, HiveException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_FLUSH_HASHTABLE + this.getName());
+      byte tag) throws Exception {
     MapredLocalWork localWork = getExecContext().getLocalWork();
     BucketMapJoinContext mapJoinCtx = localWork.getBucketMapjoinContext();
     Path inputPath = getExecContext().getCurrentInputPath();
@@ -135,11 +143,10 @@ public class SparkHashTableSinkOperator
       }
       // TODO find out numOfPartitions for the big table
       int numOfPartitions = replication;
-      replication = (short) Math.min(MIN_REPLICATION, numOfPartitions);
+      replication = (short) Math.max(MIN_REPLICATION, numOfPartitions);
     }
     htsOperator.console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag
       + " with group count: " + tableContainer.size() + " into file: " + path);
-    // get the hashtable file and path
     // get the hashtable file and path
     OutputStream os = null;
     ObjectOutputStream out = null;
@@ -148,6 +155,18 @@ public class SparkHashTableSinkOperator
       out = new ObjectOutputStream(new BufferedOutputStream(os, 4096));
       MapJoinTableContainerSerDe mapJoinTableSerde = htsOperator.mapJoinTableSerdes[tag];
       mapJoinTableSerde.persist(out, tableContainer);
+      FileStatus status = fs.getFileStatus(path);
+      htsOperator.console.printInfo(Utilities.now() + "\tUploaded 1 File to: " + path
+        + " (" + status.getLen() + " bytes)");
+    } catch (Exception e) {
+      // Failed to dump the side-table, remove the partial file
+      try {
+        fs.delete(path, false);
+      } catch (Exception ex) {
+        LOG.warn("Got exception in deleting partial side-table dump for tag: "
+          + tag + ", file " + path, ex);
+      }
+      throw e;
     } finally {
       if (out != null) {
         out.close();
@@ -156,10 +175,6 @@ public class SparkHashTableSinkOperator
       }
     }
     tableContainer.clear();
-    FileStatus status = fs.getFileStatus(path);
-    htsOperator.console.printInfo(Utilities.now() + "\tUploaded 1 File to: " + path
-      + " (" + status.getLen() + " bytes)");
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_FLUSH_HASHTABLE + this.getName());
   }
 
   public void setTag(byte tag) {

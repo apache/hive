@@ -1,4 +1,4 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
+PREHOOK: query: -- SORT_QUERY_RESULTS
 -- union :map-reduce sub-queries followed by join
 
 explain 
@@ -12,7 +12,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
+POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- union :map-reduce sub-queries followed by join
 
 explain 
@@ -98,6 +98,15 @@ STAGE PLANS:
                     Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
                     value expressions: _col1 (type: string)
           TableScan
+            Union
+              Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
+              Reduce Output Operator
+                key expressions: _col0 (type: string)
+                sort order: +
+                Map-reduce partition columns: _col0 (type: string)
+                Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
+                value expressions: _col1 (type: string)
+          TableScan
             alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -115,15 +124,6 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
                     value expressions: _col1 (type: string)
-          TableScan
-            Union
-              Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
-              Reduce Output Operator
-                key expressions: _col0 (type: string)
-                sort order: +
-                Map-reduce partition columns: _col0 (type: string)
-                Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
-                value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:

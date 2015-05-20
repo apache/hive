@@ -64,6 +64,14 @@ public final class WriteBuffers implements RandomAccessOutput {
     nextBufferToWrite();
   }
 
+  public int readVInt() {
+    return (int) readVLong(defaultReadPos);
+  }
+
+  public int readVInt(Position readPos) {
+    return (int) readVLong(readPos);
+  }
+
   public long readVLong() {
     return readVLong(defaultReadPos);
   }
@@ -358,6 +366,19 @@ public final class WriteBuffers implements RandomAccessOutput {
     return (readPos.bufferIndex * (long)wbSize) + readPos.offset;
   }
 
+  public void getByteSegmentRefToCurrent(ByteSegmentRef byteSegmentRef, int length,
+       Position readPos) {
+
+    byteSegmentRef.reset((readPos.bufferIndex * (long)wbSize) + readPos.offset, length);
+    if (length > 0) {
+      populateValue(byteSegmentRef);
+    }
+  }
+
+  public void writeVInt(int value) {
+    LazyBinaryUtils.writeVInt(this, value);
+  }
+
   public void writeVLong(long value) {
     LazyBinaryUtils.writeVLong(this, value);
   }
@@ -425,7 +446,9 @@ public final class WriteBuffers implements RandomAccessOutput {
     }
     public ByteBuffer copy() {
       byte[] copy = new byte[length];
-      System.arraycopy(bytes, (int)offset, copy, 0, length);
+      if (length > 0) {
+        System.arraycopy(bytes, (int)offset, copy, 0, length);
+      }
       return ByteBuffer.wrap(copy);
     }
     private byte[] bytes = null;

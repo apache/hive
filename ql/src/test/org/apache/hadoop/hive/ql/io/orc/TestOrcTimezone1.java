@@ -136,7 +136,7 @@ public class TestOrcTimezone1 {
     ts.add("2003-01-01 08:00:00.800000007");
     ts.add("1998-11-02 10:00:00.857340643");
     ts.add("2008-10-02 11:00:00.0");
-    ts.add("9999-01-01 00:00:00.000999");
+    ts.add("2037-01-01 00:00:00.000999");
     ts.add("2014-03-28 00:00:00.0");
     for (String t : ts) {
       writer.addRow(Timestamp.valueOf(t));
@@ -157,7 +157,7 @@ public class TestOrcTimezone1 {
     rows.close();
   }
 
-  //@Test
+  @Test
   public void testReadTimestampFormat_0_11() throws Exception {
     TimeZone.setDefault(TimeZone.getTimeZone(readerTimeZone));
     Path oldFilePath =

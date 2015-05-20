@@ -84,6 +84,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -152,6 +153,8 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
 import org.apache.hadoop.hive.ql.plan.api.Graph;
@@ -181,8 +184,8 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
+import org.apache.hive.common.util.ReflectionUtil;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -1101,6 +1104,28 @@ public final class Utilities {
     fld.removeField(fieldName);
     kryo.register(type, fld);
   }
+
+  public static ThreadLocal<Kryo> sparkSerializationKryo = new ThreadLocal<Kryo>() {
+    @Override
+    protected synchronized Kryo initialValue() {
+      Kryo kryo = new Kryo();
+      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+      kryo.register(java.sql.Date.class, new SqlDateSerializer());
+      kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
+      kryo.register(Path.class, new PathSerializer());
+      kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
+      removeField(kryo, Operator.class, "colExprMap");
+      removeField(kryo, ColumnInfo.class, "objectInspector");
+      kryo.register(SparkEdgeProperty.class);
+      kryo.register(MapWork.class);
+      kryo.register(ReduceWork.class);
+      kryo.register(SparkWork.class);
+      kryo.register(TableDesc.class);
+      kryo.register(Pair.class);
+      return kryo;
+    };
+  };
+
   private static ThreadLocal<Kryo> cloningQueryPlanKryo = new ThreadLocal<Kryo>() {
     @Override
     protected synchronized Kryo initialValue() {
@@ -1375,7 +1400,7 @@ public final class Utilities {
     if (isCompressed) {
       Class<? extends CompressionCodec> codecClass = FileOutputFormat.getOutputCompressorClass(jc,
           DefaultCodec.class);
-      CompressionCodec codec = ReflectionUtils.newInstance(codecClass, jc);
+      CompressionCodec codec = ReflectionUtil.newInstance(codecClass, jc);
       return codec.createOutputStream(out);
     } else {
       return (out);
@@ -1424,7 +1449,7 @@ public final class Utilities {
     if ((hiveOutputFormat instanceof HiveIgnoreKeyTextOutputFormat) && isCompressed) {
       Class<? extends CompressionCodec> codecClass = FileOutputFormat.getOutputCompressorClass(jc,
           DefaultCodec.class);
-      CompressionCodec codec = ReflectionUtils.newInstance(codecClass, jc);
+      CompressionCodec codec = ReflectionUtil.newInstance(codecClass, jc);
       return codec.getDefaultExtension();
     }
     return "";
@@ -1476,7 +1501,7 @@ public final class Utilities {
     if (isCompressed) {
       compressionType = SequenceFileOutputFormat.getOutputCompressionType(jc);
       codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
-      codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
+      codec = (CompressionCodec) ReflectionUtil.newInstance(codecClass, jc);
     }
     return SequenceFile.createWriter(fs, jc, file, keyClass, valClass, compressionType, codec,
       progressable);
@@ -1500,7 +1525,7 @@ public final class Utilities {
     CompressionCodec codec = null;
     if (isCompressed) {
       Class<?> codecClass = FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
-      codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
+      codec = (CompressionCodec) ReflectionUtil.newInstance(codecClass, jc);
     }
     return new RCFile.Writer(fs, jc, file, progressable, codec);
   }
@@ -2225,6 +2250,11 @@ public final class Utilities {
       }
     }
     JavaUtils.closeClassLoader(loader);
+//this loader is closed, remove it from cached registry loaders to avoid remove it again.
+    Registry reg = SessionState.getRegistry();
+    if(reg != null) {
+      reg.removeFromUDFLoaders(loader);
+    }
 
     loader = new URLClassLoader(newPath.toArray(new URL[0]));
     curThread.setContextClassLoader(loader);
@@ -2398,7 +2428,7 @@ public final class Utilities {
    * @param job
    *          configuration which receives configured properties
    */
-  public static void copyTableJobPropertiesToConf(TableDesc tbl, JobConf job) {
+  public static void copyTableJobPropertiesToConf(TableDesc tbl, Configuration job) {
     Properties tblProperties = tbl.getProperties();
     for(String name: tblProperties.stringPropertyNames()) {
       if (job.get(name) == null) {
@@ -2948,7 +2978,7 @@ public final class Utilities {
 
         if (reworkInputFormats.size() > 0) {
           for (Class<? extends InputFormat> inputFormatCls : reworkInputFormats) {
-            ReworkMapredInputFormat inst = (ReworkMapredInputFormat) ReflectionUtils
+            ReworkMapredInputFormat inst = (ReworkMapredInputFormat) ReflectionUtil
                 .newInstance(inputFormatCls, null);
             inst.rework(conf, mapredWork);
           }
@@ -3672,7 +3702,7 @@ public final class Utilities {
   public static boolean isVectorMode(Configuration conf) {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
         Utilities.getPlanPath(conf) != null && Utilities
-        .getMapRedWork(conf).getMapWork().getVectorMode()) {
+        .getMapWork(conf).getVectorMode()) {
       return true;
     }
     return false;
@@ -3820,5 +3850,30 @@ public final class Utilities {
    */
   public static boolean isDefaultNameNode(HiveConf conf) {
     return !conf.getChangedProperties().containsKey(HiveConf.ConfVars.HADOOPFS.varname);
+  }
+
+  /**
+   * Checks if the current HiveServer2 logging operation level is >= PERFORMANCE.
+   * @param conf Hive configuration.
+   * @return true if current HiveServer2 logging operation level is >= PERFORMANCE.
+   * Else, false.
+   */
+  public static boolean isPerfOrAboveLogging(HiveConf conf) {
+    String loggingLevel = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL);
+    return conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED) &&
+      (loggingLevel.equalsIgnoreCase("PERFORMANCE") || loggingLevel.equalsIgnoreCase("VERBOSE"));
+  }
+
+  /**
+   * Strips Hive password details from configuration
+   */
+  public static void stripHivePasswordDetails(Configuration conf) {
+    // Strip out all Hive related password information from the JobConf
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD) != null) {
+      HiveConf.setVar(conf, HiveConf.ConfVars.METASTOREPWD, "");
+    }
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD) != null) {
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD, "");
+    }
   }
 }

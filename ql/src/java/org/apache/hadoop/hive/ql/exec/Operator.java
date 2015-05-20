@@ -1181,6 +1181,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return useBucketizedHiveInputFormat;
   }
 
+  /**
+   * Before setting this to {@code true} make sure it's not reading ACID tables
+   * @param useBucketizedHiveInputFormat
+   */
   public void setUseBucketizedHiveInputFormat(boolean useBucketizedHiveInputFormat) {
     this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
   }

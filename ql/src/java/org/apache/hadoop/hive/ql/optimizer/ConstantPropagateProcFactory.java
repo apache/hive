@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -53,7 +54,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
@@ -65,11 +65,15 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -84,6 +88,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * Factory for generating the different node processors used by ConstantPropagate.
@@ -133,7 +138,7 @@ public final class ConstantPropagateProcFactory {
    * @return cast constant, or null if the type cast failed.
    */
   private static ExprNodeConstantDesc typeCast(ExprNodeDesc desc, TypeInfo ti) {
-    if (desc instanceof ExprNodeNullDesc) {
+    if (desc instanceof ExprNodeConstantDesc && null == ((ExprNodeConstantDesc)desc).getValue()) {
       return null;
     }
     if (!(ti instanceof PrimitiveTypeInfo) || !(desc.getTypeInfo() instanceof PrimitiveTypeInfo)) {
@@ -199,10 +204,11 @@ public final class ConstantPropagateProcFactory {
    * @param op processing operator
    * @param propagate if true, assignment expressions will be added to constants.
    * @return fold expression
+   * @throws UDFArgumentException
    */
   private static ExprNodeDesc foldExpr(ExprNodeDesc desc, Map<ColumnInfo, ExprNodeDesc> constants,
       ConstantPropagateProcCtx cppCtx, Operator<? extends Serializable> op, int tag,
-      boolean propagate) {
+      boolean propagate) throws UDFArgumentException {
     if (desc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) desc;
 
@@ -343,7 +349,7 @@ public final class ConstantPropagateProcFactory {
         ExprNodeColumnDesc c = (ExprNodeColumnDesc) operand;
         ColumnInfo ci = resolveColumn(rs, c);
         if (ci != null) {
-          constants.put(ci, new ExprNodeNullDesc());
+          constants.put(ci, new ExprNodeConstantDesc(ci.getType(), null));
         }
       }
     }
@@ -356,7 +362,58 @@ public final class ConstantPropagateProcFactory {
     return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
   }
 
-  private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs) {
+  private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs) throws UDFArgumentException {
+
+    if (udf instanceof GenericUDFOPEqual) {
+     assert newExprs.size() == 2;
+     boolean foundUDFInFirst = false;
+     ExprNodeGenericFuncDesc caseOrWhenexpr = null;
+     if (newExprs.get(0) instanceof ExprNodeGenericFuncDesc) {
+       caseOrWhenexpr = (ExprNodeGenericFuncDesc) newExprs.get(0);
+       if (caseOrWhenexpr.getGenericUDF() instanceof GenericUDFWhen || caseOrWhenexpr.getGenericUDF() instanceof GenericUDFCase) {
+         foundUDFInFirst = true;
+       }
+     }
+     if (!foundUDFInFirst && newExprs.get(1) instanceof ExprNodeGenericFuncDesc) {
+       caseOrWhenexpr = (ExprNodeGenericFuncDesc) newExprs.get(1);
+       if (!(caseOrWhenexpr.getGenericUDF() instanceof GenericUDFWhen || caseOrWhenexpr.getGenericUDF() instanceof GenericUDFCase)) {
+         return null;
+       }
+     }
+     if (null == caseOrWhenexpr) {
+       // we didn't find case or when udf
+       return null;
+     }
+     GenericUDF childUDF = caseOrWhenexpr.getGenericUDF();
+     List<ExprNodeDesc> children = caseOrWhenexpr.getChildren();
+     int i;
+     if (childUDF instanceof GenericUDFWhen) {
+       for (i = 1; i < children.size(); i+=2) {
+        children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
+            Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
+      }
+       if(children.size() % 2 == 1) {
+         i = children.size()-1;
+         children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
+             Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
+       }
+       return caseOrWhenexpr;
+     } else if (childUDF instanceof GenericUDFCase) {
+       for (i = 2; i < children.size(); i+=2) {
+         children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
+             Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
+       }
+        if(children.size() % 2 == 0) {
+          i = children.size()-1;
+          children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
+              Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
+        }
+        return caseOrWhenexpr;
+     } else {
+       // cant happen
+       return null;
+     }
+    }
     if (udf instanceof GenericUDFOPAnd) {
       for (int i = 0; i < 2; i++) {
         ExprNodeDesc childExpr = newExprs.get(i);
@@ -403,6 +460,70 @@ public final class ConstantPropagateProcFactory {
             // if true return true
             return childExpr;
           }
+        }
+      }
+    }
+
+    if (udf instanceof GenericUDFWhen) {
+      if (!(newExprs.size() == 2 || newExprs.size() == 3)) {
+        // In general, when can have unlimited # of branches,
+        // we currently only handle either 1 or 2 branch.
+        return null;
+      }
+      ExprNodeDesc thenExpr = newExprs.get(1);
+      ExprNodeDesc elseExpr = newExprs.size() == 3 ? newExprs.get(2) :
+        new ExprNodeConstantDesc(newExprs.get(1).getTypeInfo(),null);
+
+      ExprNodeDesc whenExpr = newExprs.get(0);
+      if (whenExpr instanceof ExprNodeConstantDesc) {
+        Boolean whenVal = (Boolean)((ExprNodeConstantDesc) whenExpr).getValue();
+        return (whenVal == null || Boolean.FALSE.equals(whenVal)) ? elseExpr : thenExpr;
+      }
+
+      if (thenExpr instanceof ExprNodeConstantDesc && elseExpr instanceof ExprNodeConstantDesc) {
+        ExprNodeConstantDesc constThen = (ExprNodeConstantDesc) thenExpr;
+        ExprNodeConstantDesc constElse = (ExprNodeConstantDesc) elseExpr;
+        Object thenVal = constThen.getValue();
+        Object elseVal = constElse.getValue();
+        if (thenVal == null) {
+          return elseVal == null ? thenExpr : null;
+        } else if(thenVal.equals(elseVal)){
+          return thenExpr;
+        } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
+          return Boolean.TRUE.equals(thenVal) ? whenExpr :
+            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), newExprs.subList(0, 1));
+        } else {
+          return null;
+        }
+      }
+    }
+    if (udf instanceof GenericUDFCase) {
+      // HIVE-9644 Attempt to fold expression like :
+      // where (case ss_sold_date when '1998-01-01' then 1=1 else null=1 end);
+      // where ss_sold_date= '1998-01-01' ;
+      if (!(newExprs.size() == 3 || newExprs.size() == 4)) {
+        // In general case can have unlimited # of branches,
+        // we currently only handle either 1 or 2 branch.
+        return null;
+      }
+      ExprNodeDesc thenExpr = newExprs.get(2);
+      ExprNodeDesc elseExpr = newExprs.size() == 4 ? newExprs.get(3) :
+        new ExprNodeConstantDesc(newExprs.get(2).getTypeInfo(),null);
+
+      if (thenExpr instanceof ExprNodeConstantDesc && elseExpr instanceof ExprNodeConstantDesc) {
+        ExprNodeConstantDesc constThen = (ExprNodeConstantDesc) thenExpr;
+        ExprNodeConstantDesc constElse = (ExprNodeConstantDesc) elseExpr;
+        Object thenVal = constThen.getValue();
+        Object elseVal = constElse.getValue();
+        if (thenVal == null) {
+          return elseVal == null ? thenExpr : null;
+        } else if(thenVal.equals(elseVal)){
+          return thenExpr;
+        } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
+          return Boolean.TRUE.equals(thenVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(), newExprs.subList(0, 2)) :
+            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNotEqual(), newExprs.subList(0, 2));
+        } else {
+          return null;
         }
       }
     }
@@ -480,17 +601,14 @@ public final class ConstantPropagateProcFactory {
         }
         Object value = constant.getValue();
         PrimitiveTypeInfo pti = (PrimitiveTypeInfo) constant.getTypeInfo();
-        Object writableValue =
+        Object writableValue = null == value ? value :
             PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(pti)
                 .getPrimitiveWritableObject(value);
         arguments[i] = new DeferredJavaObject(writableValue);
         argois[i] =
             ObjectInspectorUtils.getConstantObjectInspector(constant.getWritableObjectInspector(),
                 writableValue);
-      } else if (desc instanceof ExprNodeNullDesc) {
 
-        // FIXME: add null support.
-        return null;
       } else if (desc instanceof ExprNodeGenericFuncDesc) {
         ExprNodeDesc evaluatedFn = foldExpr((ExprNodeGenericFuncDesc)desc);
         if (null == evaluatedFn || !(evaluatedFn instanceof ExprNodeConstantDesc)) {
@@ -511,7 +629,7 @@ public final class ConstantPropagateProcFactory {
       Object o = udf.evaluate(arguments);
       LOG.debug(udf.getClass().getName() + "(" + exprs + ")=" + o);
       if (o == null) {
-        return new ExprNodeNullDesc();
+        return new ExprNodeConstantDesc(TypeInfoUtils.getTypeInfoFromObjectInspector(oi), o);
       }
       Class<?> clz = o.getClass();
       if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(clz)) {
@@ -603,6 +721,10 @@ public final class ConstantPropagateProcFactory {
         } else if (Boolean.FALSE.equals(c.getValue())) {
           LOG.warn("Filter expression " + condn + " holds false!");
         }
+      }
+      if (newCondn instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc)newCondn).getValue() == null) {
+        // where null is same as where false
+        newCondn = new ExprNodeConstantDesc(Boolean.FALSE);
       }
       LOG.debug("New filter FIL[" + op.getIdentifier() + "] conditions:" + newCondn.getExprString());
 
@@ -941,7 +1063,7 @@ public final class ConstantPropagateProcFactory {
         List<ExprNodeDesc> newExprs = new ArrayList<ExprNodeDesc>();
         for (ExprNodeDesc expr : exprs) {
           ExprNodeDesc newExpr = foldExpr(expr, constants, cppCtx, op, tag, false);
-          if (newExpr instanceof ExprNodeConstantDesc || newExpr instanceof ExprNodeNullDesc) {
+          if (newExpr instanceof ExprNodeConstantDesc) {
             LOG.info("expr " + newExpr + " fold from " + expr + " is removed.");
             continue;
           }

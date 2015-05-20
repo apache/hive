@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.security.sasl.SaslException;
 
@@ -41,9 +42,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class TestRpc {
 
@@ -188,6 +187,33 @@ public class TestRpc {
     Future<TestMessage> call = client.call(outbound, TestMessage.class);
     TestMessage reply = call.get(10, TimeUnit.SECONDS);
     assertEquals(outbound.message, reply.message);
+  }
+
+  @Test
+  public void testClientTimeout() throws Exception {
+    Map<String, String> conf = ImmutableMap.<String,String>builder()
+      .putAll(emptyConfig)
+      .build();
+    RpcServer server = autoClose(new RpcServer(conf));
+    String secret = server.createSecret();
+
+    try {
+      autoClose(server.registerClient("client", secret, new TestDispatcher(), 1L).get());
+      fail("Server should have timed out client.");
+    } catch (ExecutionException ee) {
+      assertTrue(ee.getCause() instanceof TimeoutException);
+    }
+
+    NioEventLoopGroup eloop = new NioEventLoopGroup();
+    Future<Rpc> clientRpcFuture = Rpc.createClient(conf, eloop,
+        "localhost", server.getPort(), "client", secret, new TestDispatcher());
+    try {
+      autoClose(clientRpcFuture.get());
+      fail("Client should have failed to connect to server.");
+    } catch (ExecutionException ee) {
+      // Error should not be a timeout.
+      assertFalse(ee.getCause() instanceof TimeoutException);
+    }
   }
 
   private void transfer(Rpc serverRpc, Rpc clientRpc) {

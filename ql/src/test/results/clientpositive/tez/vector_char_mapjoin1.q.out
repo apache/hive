@@ -154,6 +154,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: char(10)), _col5 (type: int), _col6 (type: char(10))
                         outputColumnNames: _col0, _col1, _col2, _col3
@@ -200,18 +201,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
-1	abc       	2	abc       
 1	abc       	1	abc       
-2	abc       	2	abc       
+1	abc       	2	abc       
 2	abc       	1	abc       
+2	abc       	2	abc       
 3	 abc      	3	 abc      
 PREHOOK: query: -- Join char with different length char
 explain select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
@@ -240,11 +245,11 @@ STAGE PLANS:
                     predicate: c2 is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: c2 (type: char(10))
+                      key expressions: c2 (type: char(20))
                       sort order: +
-                      Map-reduce partition columns: c2 (type: char(10))
+                      Map-reduce partition columns: c2 (type: char(20))
                       Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: c1 (type: int)
+                      value expressions: c1 (type: int), c2 (type: char(10))
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -258,12 +263,13 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 c2 (type: char(10))
+                        0 c2 (type: char(20))
                         1 c2 (type: char(20))
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: char(10)), _col5 (type: int), _col6 (type: char(20))
                         outputColumnNames: _col0, _col1, _col2, _col3
@@ -295,20 +301,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_join1_vc1_orc
 PREHOOK: Input: default@char_join1_vc2_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_join1_vc1_orc
 POSTHOOK: Input: default@char_join1_vc2_orc
 #### A masked pattern was here ####
-1	abc       	2	abc                 
 1	abc       	1	abc                 
-2	abc       	2	abc                 
+1	abc       	2	abc                 
 2	abc       	1	abc                 
+2	abc       	2	abc                 
 3	 abc      	3	 abc                
 PREHOOK: query: -- Join char with string
 explain select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
@@ -346,6 +356,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: char(10)), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
@@ -391,12 +402,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_join1_str_orc
 PREHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_join1_str_orc
 POSTHOOK: Input: default@char_join1_vc1_orc

@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
@@ -25,7 +27,11 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.InvalidRelException;
+import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelCollations;
+import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.RelFactories.JoinFactory;
@@ -33,38 +39,38 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.ImmutableIntList;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel.DefaultJoinAlgorithm;
+
+import com.google.common.collect.ImmutableList;
 
 //TODO: Should we convert MultiJoin to be a child of HiveJoin
 public class HiveJoin extends Join implements HiveRelNode {
-  // NOTE: COMMON_JOIN & SMB_JOIN are Sort Merge Join (in case of COMMON_JOIN
-  // each parallel computation handles multiple splits where as in case of SMB
-  // each parallel computation handles one bucket). MAP_JOIN and BUCKET_JOIN is
-  // hash joins where MAP_JOIN keeps the whole data set of non streaming tables
-  // in memory where as BUCKET_JOIN keeps only the b
-  public enum JoinAlgorithm {
-    NONE, COMMON_JOIN, MAP_JOIN, BUCKET_JOIN, SMB_JOIN
-  }
+  
+  public static final JoinFactory HIVE_JOIN_FACTORY = new HiveJoinFactoryImpl();
 
   public enum MapJoinStreamingRelation {
     NONE, LEFT_RELATION, RIGHT_RELATION
   }
 
-  public static final JoinFactory HIVE_JOIN_FACTORY = new HiveJoinFactoryImpl();
-
   private final boolean leftSemiJoin;
-  private final JoinAlgorithm      joinAlgorithm;
-  //This will be used once we do Join Algorithm selection
-  @SuppressWarnings("unused")
-  private final MapJoinStreamingRelation mapJoinStreamingSide = MapJoinStreamingRelation.NONE;
+  private final JoinPredicateInfo joinPredInfo;
+  private JoinAlgorithm joinAlgorithm;
+  private RelOptCost joinCost;
+
 
   public static HiveJoin getJoin(RelOptCluster cluster, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, boolean leftSemiJoin) {
     try {
       Set<String> variablesStopped = Collections.emptySet();
-      return new HiveJoin(cluster, null, left, right, condition, joinType, variablesStopped,
-          JoinAlgorithm.NONE, null, leftSemiJoin);
+      HiveJoin join = new HiveJoin(cluster, null, left, right, condition, joinType, variablesStopped,
+              DefaultJoinAlgorithm.INSTANCE, leftSemiJoin);
+      return join;
     } catch (InvalidRelException e) {
       throw new RuntimeException(e);
     }
@@ -72,10 +78,10 @@ public class HiveJoin extends Join implements HiveRelNode {
 
   protected HiveJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, Set<String> variablesStopped,
-      JoinAlgorithm joinAlgo, MapJoinStreamingRelation streamingSideForMapJoin, boolean leftSemiJoin)
-      throws InvalidRelException {
+      JoinAlgorithm joinAlgo, boolean leftSemiJoin) throws InvalidRelException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), left, right, condition, joinType,
         variablesStopped);
+    this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
     this.joinAlgorithm = joinAlgo;
     this.leftSemiJoin = leftSemiJoin;
   }
@@ -90,7 +96,7 @@ public class HiveJoin extends Join implements HiveRelNode {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       return new HiveJoin(getCluster(), traitSet, left, right, conditionExpr, joinType,
-          variablesStopped, JoinAlgorithm.NONE, null, leftSemiJoin);
+          variablesStopped, joinAlgorithm, leftSemiJoin);
     } catch (InvalidRelException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.
@@ -98,8 +104,97 @@ public class HiveJoin extends Join implements HiveRelNode {
     }
   }
 
+  public JoinPredicateInfo getJoinPredicateInfo() {
+    return joinPredInfo;
+  }
+
+  public void setJoinAlgorithm(JoinAlgorithm joinAlgorithm) {
+    this.joinAlgorithm = joinAlgorithm;
+  }
+
   public JoinAlgorithm getJoinAlgorithm() {
-    return joinAlgorithm;
+    return this.joinAlgorithm;
+  }
+
+  public ImmutableList<RelCollation> getCollation() {
+    return joinAlgorithm.getCollation(this);
+  }
+
+  public RelDistribution getDistribution() {
+    return joinAlgorithm.getDistribution(this);
+  }
+
+  public Double getMemory() {
+    return joinAlgorithm.getMemory(this);
+  }
+
+  public Double getCumulativeMemoryWithinPhaseSplit() {
+    return joinAlgorithm.getCumulativeMemoryWithinPhaseSplit(this);
+  }
+
+  public Boolean isPhaseTransition() {
+    return joinAlgorithm.isPhaseTransition(this);
+  }
+
+  public Integer getSplitCount() {
+    return joinAlgorithm.getSplitCount(this);
+  }
+
+  public MapJoinStreamingRelation getStreamingSide() {
+    Double leftInputSize = RelMetadataQuery.memory(left);
+    Double rightInputSize = RelMetadataQuery.memory(right);
+    if (leftInputSize == null && rightInputSize == null) {
+      return MapJoinStreamingRelation.NONE;
+    } else if (leftInputSize != null &&
+            (rightInputSize == null ||
+            (leftInputSize < rightInputSize))) {
+      return MapJoinStreamingRelation.RIGHT_RELATION;
+    } else if (rightInputSize != null &&
+            (leftInputSize == null ||
+            (rightInputSize <= leftInputSize))) {
+      return MapJoinStreamingRelation.LEFT_RELATION;
+    }
+    return MapJoinStreamingRelation.NONE;
+  }
+
+  public RelNode getStreamingInput() {
+    MapJoinStreamingRelation mapJoinStreamingSide = getStreamingSide();
+    RelNode smallInput;
+    if (mapJoinStreamingSide == MapJoinStreamingRelation.LEFT_RELATION) {
+      smallInput = this.getRight();
+    } else if (mapJoinStreamingSide == MapJoinStreamingRelation.RIGHT_RELATION) {
+      smallInput = this.getLeft();
+    } else {
+      smallInput = null;
+    }
+    return smallInput;
+  }
+
+  public ImmutableBitSet getSortedInputs() {
+    ImmutableBitSet.Builder sortedInputsBuilder = new ImmutableBitSet.Builder();
+    JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
+            constructJoinPredicateInfo(this);
+    List<ImmutableIntList> joinKeysInChildren = new ArrayList<ImmutableIntList>();
+    joinKeysInChildren.add(
+            ImmutableIntList.copyOf(
+                    joinPredInfo.getProjsFromLeftPartOfJoinKeysInChildSchema()));
+    joinKeysInChildren.add(
+            ImmutableIntList.copyOf(
+                    joinPredInfo.getProjsFromRightPartOfJoinKeysInChildSchema()));
+
+    for (int i=0; i<this.getInputs().size(); i++) {
+      boolean correctOrderFound = RelCollations.contains(
+              RelMetadataQuery.collations(this.getInputs().get(i)),
+              joinKeysInChildren.get(i));
+      if (correctOrderFound) {
+        sortedInputsBuilder.set(i);
+      }
+    }
+    return sortedInputsBuilder.build();
+  }
+
+  public void setJoinCost(RelOptCost joinCost) {
+    this.joinCost = joinCost;
   }
 
   public boolean isLeftSemiJoin() {
@@ -111,9 +206,16 @@ public class HiveJoin extends Join implements HiveRelNode {
    */
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    double leftRCount = RelMetadataQuery.getRowCount(getLeft());
-    double rightRCount = RelMetadataQuery.getRowCount(getRight());
-    return HiveCost.FACTORY.makeCost(leftRCount + rightRCount, 0.0, 0.0);
+    return RelMetadataQuery.getNonCumulativeCost(this);
+  }
+
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    return super.explainTerms(pw)
+        .item("algorithm", joinAlgorithm == null ?
+                "none" : joinAlgorithm)
+        .item("cost", joinCost == null ?
+                "not available" : joinCost);
   }
 
   /**
@@ -154,4 +256,5 @@ public class HiveJoin extends Join implements HiveRelNode {
       return getJoin(left.getCluster(), left, right, condition, joinType, false);
     }
   }
+
 }

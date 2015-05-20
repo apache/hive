@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -87,6 +88,7 @@ import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Tool;
@@ -207,6 +209,19 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
     return new JobContextImpl(job.getConfiguration(), job.getJobID());
+  }
+
+  @Override
+  public void startPauseMonitor(Configuration conf) {
+    try {
+      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
+      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor = new org.apache.hadoop.util
+          .JvmPauseMonitor(conf);
+      pauseMonitor.start();
+    } catch (Throwable t) {
+      LOG.warn("Could not initiate the JvmPauseMonitor thread." + " GCs and Pauses may not be " +
+          "warned upon.", t);
+    }
   }
 
   @Override
@@ -415,6 +430,18 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  private void configureImpersonation(Configuration conf) {
+    String user;
+    try {
+      user = Utils.getUGI().getShortUserName();
+    } catch (Exception e) {
+      String msg = "Cannot obtain username: " + e;
+      throw new IllegalStateException(msg, e);
+    }
+    conf.set("hadoop.proxyuser." + user + ".groups", "*");
+    conf.set("hadoop.proxyuser." + user + ".hosts", "*");
+  }
+
   /**
    * Returns a shim to wrap MiniSparkOnYARNCluster
    */
@@ -434,9 +461,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     public MiniSparkShim(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException {
-
       mr = new MiniSparkOnYARNCluster("sparkOnYarn");
       conf.set("fs.defaultFS", nameNode);
+      conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
+      configureImpersonation(conf);
       mr.init(conf);
       mr.start();
       this.conf = mr.getConfig();
@@ -491,6 +519,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       int numDataNodes,
       boolean format,
       String[] racks) throws IOException {
+    configureImpersonation(conf);
     MiniDFSCluster miniDFSCluster = new MiniDFSCluster(conf, numDataNodes, format, racks);
 
     // Need to set the client's KeyProvider to the NN's for JKS,
@@ -965,8 +994,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     final int maxDepth = 20;
     Throwable curErr = err;
     for (int idx = 0; curErr != null && idx < maxDepth; ++idx) {
+      // fs.permission.AccessControlException removed by HADOOP-11356, but Hive users on older
+      // Hadoop versions may still see this exception .. have to reference by name.
       if (curErr instanceof org.apache.hadoop.security.AccessControlException
-          || curErr instanceof org.apache.hadoop.fs.permission.AccessControlException) {
+          || curErr.getClass().getName().equals("org.apache.hadoop.fs.permission.AccessControlException")) {
         Exception newErr = new AccessControlException(curErr.getMessage());
         newErr.initCause(err);
         return newErr;
@@ -1310,5 +1341,20 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public Path getPathWithoutSchemeAndAuthority(Path path) {
     return Path.getPathWithoutSchemeAndAuthority(path);
+  }
+
+  @Override
+  public int readByteBuffer(FSDataInputStream file, ByteBuffer dest) throws IOException {
+    int pos = dest.position();
+    int result = file.read(dest);
+    if (result > 0) {
+      // Ensure this explicitly since versions before 2.7 read doesn't do it.
+      dest.position(pos + result);
+    }
+    return result;
+  }
+  public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
+    // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
+    fs.addDelegationTokens(uname, cred);
   }
 }

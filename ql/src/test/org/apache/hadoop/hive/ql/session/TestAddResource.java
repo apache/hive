@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.ql.session;
 
 import static org.junit.Assert.assertEquals;
@@ -13,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.After;
 import org.junit.Before;
@@ -20,6 +39,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.util.Shell;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -27,7 +47,7 @@ import java.io.FileWriter;
 
 public class TestAddResource {
 
-  private static final String TEST_JAR_DIR = System.getProperty("test.tmp.dir", ".") + "/";
+  private static final String TEST_JAR_DIR = System.getProperty("test.tmp.dir", ".") + File.pathSeparator;
   private HiveConf conf;
   private ResourceType t;
 
@@ -56,11 +76,11 @@ public class TestAddResource {
     // add all the dependencies to a list
     List<URI> list = new LinkedList<URI>();
     List<String> addList = new LinkedList<String>();
-    list.add(new URI(TEST_JAR_DIR + "testjar1.jar"));
-    list.add(new URI(TEST_JAR_DIR + "testjar2.jar"));
-    list.add(new URI(TEST_JAR_DIR + "testjar3.jar"));
-    list.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
-    list.add(new URI(TEST_JAR_DIR + "testjar5.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar1.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar2.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar5.jar"));
 
     //return all the dependency urls
     Mockito.when(ss.resolveAndDownload(t, query, false)).thenReturn(list);
@@ -69,7 +89,7 @@ public class TestAddResource {
     Set<String> dependencies = ss.list_resource(t, null);
     LinkedList<URI> actual = new LinkedList<URI>();
     for (String dependency : dependencies) {
-      actual.add(new URI(dependency));
+      actual.add(createURI(dependency));
     }
 
     // sort both the lists
@@ -91,11 +111,11 @@ public class TestAddResource {
 
     List<URI> list = new LinkedList<URI>();
     List<String> addList = new LinkedList<String>();
-    list.add(new URI(TEST_JAR_DIR + "testjar1.jar"));
-    list.add(new URI(TEST_JAR_DIR + "testjar2.jar"));
-    list.add(new URI(TEST_JAR_DIR + "testjar3.jar"));
-    list.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
-    list.add(new URI(TEST_JAR_DIR + "testjar5.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar1.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar2.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
+    list.add(createURI(TEST_JAR_DIR + "testjar5.jar"));
 
     Collections.sort(list);
 
@@ -107,7 +127,7 @@ public class TestAddResource {
     Set<String> dependencies = ss.list_resource(t, null);
     LinkedList<URI> actual = new LinkedList<URI>();
     for (String dependency : dependencies) {
-      actual.add(new URI(dependency));
+      actual.add(createURI(dependency));
     }
 
     Collections.sort(actual);
@@ -129,13 +149,13 @@ public class TestAddResource {
     // add dependencies for the jars
     List<URI> list1 = new LinkedList<URI>();
     List<URI> list2 = new LinkedList<URI>();
-    list1.add(new URI(TEST_JAR_DIR + "testjar1.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar2.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar3.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar5.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar3.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar1.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar2.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar5.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
 
     Mockito.when(ss.resolveAndDownload(t, query1, false)).thenReturn(list1);
     Mockito.when(ss.resolveAndDownload(t, query2, false)).thenReturn(list2);
@@ -146,7 +166,7 @@ public class TestAddResource {
     Set<String> dependencies = ss.list_resource(t, null);
     LinkedList<URI> actual = new LinkedList<URI>();
     for (String dependency : dependencies) {
-      actual.add(new URI(dependency));
+      actual.add(createURI(dependency));
     }
     List<URI> expected = union(list1, list2);
 
@@ -156,6 +176,20 @@ public class TestAddResource {
     assertEquals(expected, actual);
     ss.close();
 
+  }
+
+  /**
+   * @param path
+   * @return URI corresponding to the path.
+   */
+  private static URI createURI(String path) throws URISyntaxException {
+    if (!Shell.WINDOWS) {
+      // If this is not windows shell, path better follow unix convention.
+      // Else, the below call will throw an URISyntaxException
+      return new URI(path);
+    } else {
+      return new Path(path).toUri();
+    }
   }
 
   // Test when two jars are added with shared dependencies and one jar is deleted, the shared dependencies should not be deleted
@@ -169,13 +203,13 @@ public class TestAddResource {
     List<URI> list1 = new LinkedList<URI>();
     List<URI> list2 = new LinkedList<URI>();
     List<String> addList = new LinkedList<String>();
-    list1.add(new URI(TEST_JAR_DIR + "testjar1.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar2.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar3.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar5.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar3.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar1.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar2.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar5.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
 
     Collections.sort(list1);
     Collections.sort(list2);
@@ -193,7 +227,7 @@ public class TestAddResource {
     Set<String> dependencies = ss.list_resource(t, null);
     LinkedList<URI> actual = new LinkedList<URI>();
     for (String dependency : dependencies) {
-      actual.add(new URI(dependency));
+      actual.add(createURI(dependency));
     }
     List<URI> expected = list2;
     Collections.sort(expected);
@@ -224,16 +258,16 @@ public class TestAddResource {
     List<URI> list2 = new LinkedList<URI>();
     List<URI> list3 = new LinkedList<URI>();
     List<String> addList = new LinkedList<String>();
-    list1.add(new URI(TEST_JAR_DIR + "testjar1.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar2.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar3.jar"));
-    list1.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar5.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar3.jar"));
-    list2.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
-    list3.add(new URI(TEST_JAR_DIR + "testjar4.jar"));
-    list3.add(new URI(TEST_JAR_DIR + "testjar2.jar"));
-    list3.add(new URI(TEST_JAR_DIR + "testjar5.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar1.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar2.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
+    list1.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar5.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
+    list2.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
+    list3.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
+    list3.add(createURI(TEST_JAR_DIR + "testjar2.jar"));
+    list3.add(createURI(TEST_JAR_DIR + "testjar5.jar"));
 
     Collections.sort(list1);
     Collections.sort(list2);
@@ -255,7 +289,7 @@ public class TestAddResource {
     Set<String> dependencies = ss.list_resource(t, null);
     LinkedList<URI> actual = new LinkedList<URI>();
     for (String dependency : dependencies) {
-      actual.add(new URI(dependency));
+      actual.add(createURI(dependency));
     }
     List<URI> expected = union(list2, list3);
     Collections.sort(expected);
@@ -272,7 +306,7 @@ public class TestAddResource {
     dependencies = ss.list_resource(t, null);
     actual = new LinkedList<URI>();
     for (String dependency : dependencies) {
-      actual.add(new URI(dependency));
+      actual.add(createURI(dependency));
     }
     expected = new LinkedList<URI>(list3);
     Collections.sort(expected);

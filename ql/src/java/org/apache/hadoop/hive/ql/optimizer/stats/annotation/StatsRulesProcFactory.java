@@ -352,7 +352,7 @@ public class StatsRulesProcFactory {
 
         // special case for handling false constants
         ExprNodeConstantDesc encd = (ExprNodeConstantDesc) pred;
-        if (encd.getValue().equals(false)) {
+        if (Boolean.FALSE.equals(encd.getValue())) {
           return 0;
         } else {
           return stats.getNumRows();
@@ -383,7 +383,7 @@ public class StatsRulesProcFactory {
             return numRows - newNumRows;
           } else if (leaf instanceof ExprNodeConstantDesc) {
             ExprNodeConstantDesc encd = (ExprNodeConstantDesc) leaf;
-            if (encd.getValue().equals(true)) {
+            if (Boolean.TRUE.equals(encd.getValue())) {
               return 0;
             } else {
               return numRows;

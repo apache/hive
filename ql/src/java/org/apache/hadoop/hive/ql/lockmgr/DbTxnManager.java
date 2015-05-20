@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.thrift.TException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -87,6 +88,15 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public void acquireLocks(QueryPlan plan, Context ctx, String username) throws LockException {
+    acquireLocks(plan, ctx, username, true);
+  }
+
+  /**
+   * This is for testing only.  Normally client should call {@link #acquireLocks(org.apache.hadoop.hive.ql.QueryPlan, org.apache.hadoop.hive.ql.Context, String)}
+   * @param isBlocking if false, the method will return immediately; thus the locks may be in LockState.WAITING
+   * @return null if no locks were needed
+   */
+  LockState acquireLocks(QueryPlan plan, Context ctx, String username, boolean isBlocking) throws LockException {
     init();
         // Make sure we've built the lock manager
     getLockManager();
@@ -94,7 +104,8 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     boolean atLeastOneLock = false;
 
     LockRequestBuilder rqstBuilder = new LockRequestBuilder();
-    LOG.debug("Setting lock request transaction to " + txnId);
+    //link queryId to txnId
+    LOG.debug("Setting lock request transaction to " + txnId + " for queryId=" + plan.getQueryId());
     rqstBuilder.setTransactionId(txnId)
         .setUser(username);
 
@@ -206,10 +217,15 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
     // Make sure we need locks.  It's possible there's nothing to lock in
     // this operation.
-    if (!atLeastOneLock) return;
+    if (!atLeastOneLock) {
+      LOG.debug("No locks needed for queryId" + plan.getQueryId());
+      return null;
+    }
 
-    List<HiveLock> locks = lockMgr.lock(rqstBuilder.build());
+    List<HiveLock> locks = new ArrayList<HiveLock>(1); 
+    LockState lockState = lockMgr.lock(rqstBuilder.build(), plan.getQueryId(), isBlocking, locks);
     ctx.setHiveLocks(locks);
+    return lockState;
   }
 
   @Override

@@ -20,6 +20,7 @@
 package org.apache.hive.hcatalog.messaging;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * HCat message sent when an insert is done to a table or partition.
@@ -37,11 +38,11 @@ public abstract class InsertMessage extends HCatEventMessage {
   public abstract String getTable();
 
   /**
-   * Get the list of partition values.  Will be null if this insert is to a table and not a
+   * Get the map of partition keyvalues.  Will be null if this insert is to a table and not a
    * partition.
-   * @return List of partition values, or null.
+   * @return Map of partition keyvalues, or null.
    */
-  public abstract List<String> getPartitionValues();
+  public abstract Map<String,String> getPartitionKeyValues();
 
   /**
    * Get the list of files created as a result of this DML operation.  May be null.

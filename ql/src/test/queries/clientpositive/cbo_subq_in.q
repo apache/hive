@@ -8,7 +8,7 @@ set hive.auto.convert.join=false;
 -- non agg, non corr
 select * 
 from src_cbo 
-where src_cbo.key in (select key from src_cbo s1 where s1.key > '9')
+where src_cbo.key in (select key from src_cbo s1 where s1.key > '9') order by key
 ;
 
 -- agg, corr
@@ -21,7 +21,7 @@ where b.key in
         (select distinct a.key 
          from src_cbo a 
          where b.value = a.value and a.key > '9'
-        )
+        ) order by b.key
 ;
 
 -- non agg, corr, with join in Parent Query
@@ -41,7 +41,7 @@ select key, value, count(*)
 from src_cbo b
 where b.key in (select key from src_cbo where src_cbo.key > '8')
 group by key, value
-having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by s1.key )
+having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by s1.key ) order by key
 ;
 
 -- non agg, non corr, windowing
@@ -49,6 +49,6 @@ select p_mfgr, p_name, avg(p_size)
 from part 
 group by p_mfgr, p_name
 having p_name in 
-  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part)
+  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part) order by p_mfgr
 ;
 

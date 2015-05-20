@@ -1,0 +1,232 @@
+PREHOOK: query: CREATE TABLE orc_table_1(v1 STRING, a INT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table_1
+POSTHOOK: query: CREATE TABLE orc_table_1(v1 STRING, a INT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table_1
+PREHOOK: query: CREATE TABLE orc_table_2(c INT, v2 STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table_2
+POSTHOOK: query: CREATE TABLE orc_table_2(c INT, v2 STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table_2
+PREHOOK: query: insert into table orc_table_1 values ("<null1>", null),("one", 1),("one", 1),("two", 2),("three", 3),("<null2>", null)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@orc_table_1
+POSTHOOK: query: insert into table orc_table_1 values ("<null1>", null),("one", 1),("one", 1),("two", 2),("three", 3),("<null2>", null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@orc_table_1
+POSTHOOK: Lineage: orc_table_1.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_1.v1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table orc_table_2 values (0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL1>"),(4, "FOUR"),(null, "<NULL2>")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@orc_table_2
+POSTHOOK: query: insert into table orc_table_2 values (0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL1>"),(4, "FOUR"),(null, "<NULL2>")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@orc_table_2
+POSTHOOK: Lineage: orc_table_2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_2.v2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select * from orc_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1
+#### A masked pattern was here ####
+<null1>	NULL
+<null2>	NULL
+one	1
+one	1
+three	3
+two	2
+PREHOOK: query: select * from orc_table_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_table_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
+0	ZERO
+2	TWO
+3	THREE
+4	FOUR
+NULL	<NULL1>
+NULL	<NULL2>
+PREHOOK: query: explain
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Left Outer Join0 to 1
+                    keys:
+                      0 a (type: int)
+                      1 c (type: int)
+                    outputColumnNames: _col0, _col1, _col5, _col6
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
+                    HybridGraceHashJoin: true
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: int), _col5 (type: int), _col6 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: c (type: int)
+                    sort order: +
+                    Map-reduce partition columns: c (type: int)
+                    Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: v2 (type: string)
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1
+PREHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1
+POSTHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
+<null1>	NULL	NULL	NULL
+<null2>	NULL	NULL	NULL
+one	1	NULL	NULL
+one	1	NULL	NULL
+three	3	3	THREE
+two	2	2	TWO
+PREHOOK: query: explain
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: a (type: int)
+                    sort order: +
+                    Map-reduce partition columns: a (type: int)
+                    Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: v1 (type: string)
+            Execution mode: vectorized
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Right Outer Join0 to 1
+                    keys:
+                      0 a (type: int)
+                      1 c (type: int)
+                    outputColumnNames: _col0, _col1, _col5, _col6
+                    input vertices:
+                      0 Map 1
+                    Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
+                    HybridGraceHashJoin: true
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: int), _col5 (type: int), _col6 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 6 Data size: 598 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1
+PREHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1
+POSTHOOK: Input: default@orc_table_2
+#### A masked pattern was here ####
+NULL	NULL	0	ZERO
+NULL	NULL	4	FOUR
+NULL	NULL	NULL	<NULL1>
+NULL	NULL	NULL	<NULL2>
+three	3	3	THREE
+two	2	2	TWO

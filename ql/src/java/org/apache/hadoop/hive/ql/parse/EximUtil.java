@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import com.google.common.base.Function;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +40,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -52,6 +54,8 @@ import org.codehaus.jackson.JsonGenerator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -169,8 +173,18 @@ public class EximUtil {
   /* If null, then the major version number should match */
   public static final String METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION = null;
 
-  public static void createExportDump(FileSystem fs, Path metadataPath, org.apache.hadoop.hive.ql.metadata.Table tableHandle,
-      Iterable<org.apache.hadoop.hive.ql.metadata.Partition> partitions) throws SemanticException, IOException {
+  public static void createExportDump(FileSystem fs, Path metadataPath,
+      org.apache.hadoop.hive.ql.metadata.Table tableHandle,
+      Iterable<org.apache.hadoop.hive.ql.metadata.Partition> partitions,
+      ReplicationSpec replicationSpec) throws SemanticException, IOException {
+
+    if (replicationSpec == null){
+      replicationSpec = new ReplicationSpec(); // instantiate default values if not specified
+    }
+    if (tableHandle == null){
+      replicationSpec.setNoop(true);
+    }
+
     OutputStream out = fs.create(metadataPath);
     JsonGenerator jgen = (new JsonFactory()).createJsonGenerator(out);
     jgen.writeStartObject();
@@ -178,22 +192,63 @@ public class EximUtil {
     if (METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION != null) {
       jgen.writeStringField("fcversion",METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
     }
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    try {
-      jgen.writeStringField("table", serializer.toString(tableHandle.getTTable(), "UTF-8"));
-      jgen.writeFieldName("partitions");
-      jgen.writeStartArray();
-      if (partitions != null) {
-        for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
-          jgen.writeString(serializer.toString(partition.getTPartition(), "UTF-8"));
-          jgen.flush();
+
+    if (replicationSpec.isInReplicationScope()){
+      for (ReplicationSpec.KEY key : ReplicationSpec.KEY.values()){
+        String value = replicationSpec.get(key);
+        if (value != null){
+          jgen.writeStringField(key.toString(), value);
         }
       }
-      jgen.writeEndArray();
-    } catch (TException e) {
-      throw new SemanticException(
-          ErrorMsg.GENERIC_ERROR
-              .getMsg("Exception while serializing the metastore objects"), e);
+      if (tableHandle != null){
+        Table ttable = tableHandle.getTTable();
+        ttable.putToParameters(
+            ReplicationSpec.KEY.CURR_STATE_ID.toString(), replicationSpec.getCurrentReplicationState());
+        if ((ttable.getParameters().containsKey("EXTERNAL")) &&
+            (ttable.getParameters().get("EXTERNAL").equalsIgnoreCase("TRUE"))){
+          // Replication destination will not be external - override if set
+          ttable.putToParameters("EXTERNAL","FALSE");
+        }
+        if (ttable.isSetTableType() && ttable.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString())){
+          // Replication dest will not be external - override if set
+          ttable.setTableType(TableType.MANAGED_TABLE.toString());
+        }
+      }
+    } else {
+      // ReplicationSpec.KEY scopeKey = ReplicationSpec.KEY.REPL_SCOPE;
+      // write(out, ",\""+ scopeKey.toString() +"\":\"" + replicationSpec.get(scopeKey) + "\"");
+      // TODO: if we want to be explicit about this dump not being a replication dump, we can
+      // uncomment this else section, but currently unnneeded. Will require a lot of golden file
+      // regen if we do so.
+    }
+    if ((tableHandle != null) && (!replicationSpec.isNoop())){
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+      try {
+        jgen.writeStringField("table", serializer.toString(tableHandle.getTTable(), "UTF-8"));
+        jgen.writeFieldName("partitions");
+        jgen.writeStartArray();
+        if (partitions != null) {
+          for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
+            Partition tptn = partition.getTPartition();
+            if (replicationSpec.isInReplicationScope()){
+              tptn.putToParameters(
+                  ReplicationSpec.KEY.CURR_STATE_ID.toString(), replicationSpec.getCurrentReplicationState());
+              if ((tptn.getParameters().containsKey("EXTERNAL")) &&
+                  (tptn.getParameters().get("EXTERNAL").equalsIgnoreCase("TRUE"))){
+                // Replication destination will not be external
+                tptn.putToParameters("EXTERNAL", "FALSE");
+              }
+            }
+            jgen.writeString(serializer.toString(tptn, "UTF-8"));
+            jgen.flush();
+          }
+        }
+        jgen.writeEndArray();
+      } catch (TException e) {
+        throw new SemanticException(
+            ErrorMsg.GENERIC_ERROR
+                .getMsg("Exception while serializing the metastore objects"), e);
+      }
     }
     jgen.writeEndObject();
     jgen.close(); // JsonGenerator owns the OutputStream, so it closes it when we call close.
@@ -203,8 +258,37 @@ public class EximUtil {
     out.write(s.getBytes("UTF-8"));
   }
 
-  public static Map.Entry<Table, List<Partition>>
-      readMetaData(FileSystem fs, Path metadataPath)
+  /**
+   * Utility class to help return complex value from readMetaData function
+   */
+  public static class ReadMetaData {
+    private final Table table;
+    private final Iterable<Partition> partitions;
+    private final ReplicationSpec replicationSpec;
+
+    public ReadMetaData(){
+      this(null,null,new ReplicationSpec());
+    }
+    public ReadMetaData(Table table, Iterable<Partition> partitions, ReplicationSpec replicationSpec){
+      this.table = table;
+      this.partitions = partitions;
+      this.replicationSpec = replicationSpec;
+    }
+
+    public Table getTable() {
+      return table;
+    }
+
+    public Iterable<Partition> getPartitions() {
+      return partitions;
+    }
+
+    public ReplicationSpec getReplicationSpec() {
+      return replicationSpec;
+    }
+  };
+
+  public static ReadMetaData readMetaData(FileSystem fs, Path metadataPath)
       throws IOException, SemanticException {
     FSDataInputStream mdstream = null;
     try {
@@ -219,24 +303,27 @@ public class EximUtil {
       String md = new String(sb.toByteArray(), "UTF-8");
       JSONObject jsonContainer = new JSONObject(md);
       String version = jsonContainer.getString("version");
-      String fcversion = null;
-      try {
-        fcversion = jsonContainer.getString("fcversion");
-      } catch (JSONException ignored) {}
+      String fcversion = getJSONStringEntry(jsonContainer, "fcversion");
       checkCompatibility(version, fcversion);
-      String tableDesc = jsonContainer.getString("table");
-      Table table = new Table();
-      TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
-      deserializer.deserialize(table, tableDesc, "UTF-8");
-      JSONArray jsonPartitions = new JSONArray(jsonContainer.getString("partitions"));
-      List<Partition> partitionsList = new ArrayList<Partition>(jsonPartitions.length());
-      for (int i = 0; i < jsonPartitions.length(); ++i) {
-        String partDesc = jsonPartitions.getString(i);
-        Partition partition = new Partition();
-        deserializer.deserialize(partition, partDesc, "UTF-8");
-        partitionsList.add(partition);
+      String tableDesc = getJSONStringEntry(jsonContainer,"table");
+      Table table = null;
+      List<Partition> partitionsList = null;
+      if (tableDesc != null){
+        table = new Table();
+        TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
+        deserializer.deserialize(table, tableDesc, "UTF-8");
+        // TODO : jackson-streaming-iterable-redo this
+        JSONArray jsonPartitions = new JSONArray(jsonContainer.getString("partitions"));
+        partitionsList = new ArrayList<Partition>(jsonPartitions.length());
+        for (int i = 0; i < jsonPartitions.length(); ++i) {
+          String partDesc = jsonPartitions.getString(i);
+          Partition partition = new Partition();
+          deserializer.deserialize(partition, partDesc, "UTF-8");
+          partitionsList.add(partition);
+        }
       }
-      return new AbstractMap.SimpleEntry<Table, List<Partition>>(table, partitionsList);
+
+      return new ReadMetaData(table, partitionsList,readReplicationSpec(jsonContainer));
     } catch (JSONException e) {
       throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("Error in serializing metadata"), e);
     } catch (TException e) {
@@ -246,6 +333,24 @@ public class EximUtil {
         mdstream.close();
       }
     }
+  }
+
+  private static ReplicationSpec readReplicationSpec(final JSONObject jsonContainer){
+    Function<String,String> keyFetcher = new Function<String, String>() {
+      @Override
+      public String apply(@Nullable String s) {
+        return getJSONStringEntry(jsonContainer,s);
+      }
+    };
+    return new ReplicationSpec(keyFetcher);
+  }
+
+  private static String getJSONStringEntry(JSONObject jsonContainer, String name) {
+    String retval = null;
+    try {
+      retval = jsonContainer.getString(name);
+    } catch (JSONException ignored) {}
+    return retval;
   }
 
   /* check the forward and backward compatibility */

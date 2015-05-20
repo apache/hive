@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -43,7 +44,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -466,7 +466,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
    * @throws org.apache.hadoop.hive.metastore.api.MetaException the meta exception
    * @throws org.apache.thrift.TException the t exception
    */
-  private void updateTableSchema(HiveMetaStoreClient client, Table table,
+  private void updateTableSchema(IMetaStoreClient client, Table table,
                    HCatSchema partitionSchema) throws IOException, InvalidOperationException, MetaException, TException {
 
 
@@ -512,7 +512,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     final Path finalOutputPath = getFinalPath(fs, file, srcDir, destDir, immutable);
     FileStatus fileStatus = fs.getFileStatus(file);
 
-    if (fileStatus.isFile()) {
+    if (!fileStatus.isDir()) {
       if (dryRun){
         if (immutable){
           // Dryrun checks are meaningless for mutable table - we should always succeed
@@ -542,7 +542,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           }
         }
       }
-    } else if (fileStatus.isDirectory()) {
+    } else {
 
       FileStatus[] children = fs.listStatus(file);
       FileStatus firstChild = null;
@@ -612,10 +612,6 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
         }
       }
-    } else {
-      // Should never happen
-      final String msg = "Unknown file type being asked to be moved, erroring out";
-      throw new HCatException(ErrorType.ERROR_MOVE_FAILED, msg);
     }
   }
 
@@ -779,12 +775,12 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       return;
     }
 
-    HiveMetaStoreClient client = null;
+    IMetaStoreClient client = null;
     HCatTableInfo tableInfo = jobInfo.getTableInfo();
     List<Partition> partitionsAdded = new ArrayList<Partition>();
     try {
       HiveConf hiveConf = HCatUtil.getHiveConf(conf);
-      client = HCatUtil.getHiveClient(hiveConf);
+      client = HCatUtil.getHiveMetastoreClient(hiveConf);
       StorerInfo storer = InternalUtil.extractStorerInfo(table.getTTable().getSd(),table.getParameters());
 
       FileStatus tblStat = fs.getFileStatus(tblPath);
@@ -956,7 +952,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           // metastore
           for (Partition p : partitionsAdded) {
             client.dropPartition(tableInfo.getDatabaseName(),
-                tableInfo.getTableName(), p.getValues());
+                tableInfo.getTableName(), p.getValues(), true);
           }
         } catch (Exception te) {
           // Keep cause as the original exception
@@ -994,11 +990,11 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
   private void cancelDelegationTokens(JobContext context) throws IOException{
     LOG.info("Cancelling delegation token for the job.");
-    HiveMetaStoreClient client = null;
+    IMetaStoreClient client = null;
     try {
       HiveConf hiveConf = HCatUtil
           .getHiveConf(context.getConfiguration());
-      client = HCatUtil.getHiveClient(hiveConf);
+      client = HCatUtil.getHiveMetastoreClient(hiveConf);
       // cancel the deleg. tokens that were acquired for this job now that
       // we are done - we should cancel if the tokens were acquired by
       // HCatOutputFormat and not if they were supplied by Oozie.
