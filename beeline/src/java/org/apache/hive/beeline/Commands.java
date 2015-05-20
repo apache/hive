@@ -662,7 +662,11 @@ public class Commands {
   }
 
   public boolean sql(String line) {
-    return execute(line, false);
+    return execute(line, false, false);
+  }
+
+  public boolean sql(String line, boolean entireLineAsCommand) {
+    return execute(line, false, entireLineAsCommand);
   }
 
   public boolean sh(String line) {
@@ -696,10 +700,10 @@ public class Commands {
   }
 
   public boolean call(String line) {
-    return execute(line, true);
+    return execute(line, true, false);
   }
 
-  private boolean execute(String line, boolean call) {
+  private boolean execute(String line, boolean call, boolean entireLineAsCommand) {
     if (line == null || line.length() == 0) {
       return false; // ???
     }
@@ -748,7 +752,13 @@ public class Commands {
     }
 
     line = line.trim();
-    String[] cmds = line.split(";");
+    String[] cmds;
+    if (entireLineAsCommand) {
+      cmds = new String[1];
+      cmds[0] = line;
+    } else {
+      cmds = line.split(";");
+    }
     for (int i = 0; i < cmds.length; i++) {
       String sql = cmds[i].trim();
       if (sql.length() != 0) {
