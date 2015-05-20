@@ -19,13 +19,21 @@
 package org.apache.hive.service.cli.operation;
 
 import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hive.service.cli.ColumnDescriptor;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -130,9 +138,24 @@ public class GetColumnsOperation extends MetadataOperation {
 
       List<String> dbNames = metastoreClient.getDatabases(schemaPattern);
       Collections.sort(dbNames);
+      Map<String, List<String>> db2Tabs = new HashMap<>();
+
       for (String dbName : dbNames) {
         List<String> tableNames = metastoreClient.getTables(dbName, tablePattern);
         Collections.sort(tableNames);
+        db2Tabs.put(dbName, tableNames);
+      }
+
+      if (isAuthV2Enabled()) {
+        List<HivePrivilegeObject> privObjs = getPrivObjs(db2Tabs);
+        String cmdStr = "catalog : " + catalogName + ", schemaPattern : " + schemaName
+            + ", tablePattern : " + tableName;
+        authorizeMetaGets(HiveOperationType.GET_COLUMNS, privObjs, cmdStr);
+      }
+
+      for (Entry<String, List<String>> dbTabs : db2Tabs.entrySet()) {
+        String dbName = dbTabs.getKey();
+        List<String> tableNames = dbTabs.getValue();
         for (Table table : metastoreClient.getTableObjectsByName(dbName, tableNames)) {
           TableSchema schema = new TableSchema(metastoreClient.getSchema(dbName, table.getTableName()));
           for (ColumnDescriptor column : schema.getColumnDescriptors()) {
@@ -176,6 +199,17 @@ public class GetColumnsOperation extends MetadataOperation {
 
   }
 
+
+  private List<HivePrivilegeObject> getPrivObjs(Map<String, List<String>> db2Tabs) {
+    List<HivePrivilegeObject> privObjs = new ArrayList<>();
+    for (Entry<String, List<String>> dbTabs : db2Tabs.entrySet()) {
+      for (String tabName : dbTabs.getValue()) {
+        privObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbTabs.getKey(),
+            tabName));
+      }
+    }
+    return privObjs;
+  }
 
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.Operation#getResultSetSchema()
