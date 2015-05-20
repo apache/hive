@@ -21,9 +21,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,9 +29,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.CallableWithNdc;
+import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
@@ -50,9 +48,7 @@ import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.TezConstants;
-import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.runtime.api.ExecutionContext;
-import org.apache.tez.runtime.api.impl.InputSpec;
 import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 import org.apache.tez.runtime.internals.api.TaskReporterInterface;
@@ -76,9 +72,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private static final Logger LOG = LoggerFactory.getLogger(TaskRunnerCallable.class);
-  private final LlapDaemonProtocolProtos.SubmitWorkRequestProto request;
+  private final SubmitWorkRequestProto request;
   private final Configuration conf;
-  private final String[] localDirs;
   private final Map<String, String> envMap;
   private final String pid = null;
   private final ObjectRegistryImpl objectRegistry;
@@ -88,16 +83,17 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final ConfParams confParams;
   private final Token<JobTokenIdentifier> jobToken;
   private final AMReporter amReporter;
-  private final ConcurrentMap<String, LlapDaemonProtocolProtos.SourceStateProto> sourceCompletionMap;
   private final TaskSpec taskSpec;
+  private final QueryFragmentInfo fragmentInfo;
   private final KilledTaskHandler killedTaskHandler;
+  private final FragmentCompletionHandler fragmentCompletionHanler;
   private volatile TezTaskRunner2 taskRunner;
   private volatile TaskReporterInterface taskReporter;
   private volatile ListeningExecutorService executor;
   private LlapTaskUmbilicalProtocol umbilical;
   private volatile long startTime;
   private volatile String threadName;
-  private LlapDaemonExecutorMetrics metrics;
+  private final LlapDaemonExecutorMetrics metrics;
   private final String requestId;
   private boolean shouldRunTask = true;
   final Stopwatch runtimeWatch = new Stopwatch();
@@ -105,20 +101,20 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final AtomicBoolean isCompleted = new AtomicBoolean(false);
   private final AtomicBoolean killInvoked = new AtomicBoolean(false);
 
-  TaskRunnerCallable(LlapDaemonProtocolProtos.SubmitWorkRequestProto request, Configuration conf,
-      ExecutionContext executionContext, Map<String, String> envMap,
-      String[] localDirs, Credentials credentials,
-      long memoryAvailable, AMReporter amReporter,
-      ConcurrentMap<String, LlapDaemonProtocolProtos.SourceStateProto> sourceCompletionMap,
-      ConfParams confParams, LlapDaemonExecutorMetrics metrics,
-      KilledTaskHandler killedTaskHandler) {
+  TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
+                     Configuration conf,
+                     ExecutionContext executionContext, Map<String, String> envMap,
+                     Credentials credentials,
+                     long memoryAvailable, AMReporter amReporter,
+                     ConfParams confParams, LlapDaemonExecutorMetrics metrics,
+                     KilledTaskHandler killedTaskHandler,
+                     FragmentCompletionHandler fragmentCompleteHandler) {
     this.request = request;
+    this.fragmentInfo = fragmentInfo;
     this.conf = conf;
     this.executionContext = executionContext;
     this.envMap = envMap;
-    this.localDirs = localDirs;
     this.objectRegistry = new ObjectRegistryImpl();
-    this.sourceCompletionMap = sourceCompletionMap;
     this.credentials = credentials;
     this.memoryAvailable = memoryAvailable;
     this.confParams = confParams;
@@ -133,6 +129,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.metrics = metrics;
     this.requestId = getTaskAttemptId(request);
     this.killedTaskHandler = killedTaskHandler;
+    this.fragmentCompletionHanler = fragmentCompleteHandler;
   }
 
   @Override
@@ -189,7 +186,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
     synchronized (this) {
       if (shouldRunTask) {
-        taskRunner = new TezTaskRunner2(conf, taskUgi, localDirs,
+        taskRunner = new TezTaskRunner2(conf, taskUgi, fragmentInfo.getLocalDirs(),
             taskSpec,
             request.getAppAttemptNumber(),
             serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
@@ -240,6 +237,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             boolean killed = taskRunner.killTask();
             if (killed) {
               // Sending a kill message to the AM right here. Don't need to wait for the task to complete.
+              LOG.info("Kill request for task {} completed. Informing AM", taskSpec.getTaskAttemptID());
               reportTaskKilled();
             } else {
               LOG.info("Kill request for task {} did not complete because the task is already complete",
@@ -268,43 +266,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             taskSpec.getTaskAttemptID());
   }
 
-  /**
-   * Check whether a task can run to completion or may end up blocking on it's sources.
-   * This currently happens via looking up source state.
-   * TODO: Eventually, this should lookup the Hive Processor to figure out whether
-   * it's reached a state where it can finish - especially in cases of failures
-   * after data has been fetched.
-   *
-   * @return
-   */
   public boolean canFinish() {
-    List<InputSpec> inputSpecList = taskSpec.getInputs();
-    boolean canFinish = true;
-    if (inputSpecList != null && !inputSpecList.isEmpty()) {
-      for (InputSpec inputSpec : inputSpecList) {
-        if (isSourceOfInterest(inputSpec)) {
-          // Lookup the state in the map.
-          LlapDaemonProtocolProtos.SourceStateProto state = sourceCompletionMap
-              .get(inputSpec.getSourceVertexName());
-          if (state != null && state == LlapDaemonProtocolProtos.SourceStateProto.S_SUCCEEDED) {
-            continue;
-          } else {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Cannot finish due to source: " + inputSpec.getSourceVertexName());
-            }
-            canFinish = false;
-            break;
-          }
-        }
-      }
-    }
-    return canFinish;
-  }
-
-  private boolean isSourceOfInterest(InputSpec inputSpec) {
-    String inputClassName = inputSpec.getInputDescriptor().getClassName();
-    // MRInput is not of interest since it'll always be ready.
-    return !inputClassName.equals(MRInputLegacy.class.getName());
+    return fragmentInfo.canFinish();
   }
 
   private Multimap<String, String> createStartedInputMap(FragmentSpecProto fragmentSpec) {
@@ -371,10 +334,10 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
   final class TaskRunnerCallback implements FutureCallback<TaskRunner2Result> {
 
-    private final LlapDaemonProtocolProtos.SubmitWorkRequestProto request;
+    private final SubmitWorkRequestProto request;
     private final TaskRunnerCallable taskRunnerCallable;
 
-    TaskRunnerCallback(LlapDaemonProtocolProtos.SubmitWorkRequestProto request,
+    TaskRunnerCallback(SubmitWorkRequestProto request,
         TaskRunnerCallable taskRunnerCallable) {
       this.request = request;
       this.taskRunnerCallable = taskRunnerCallable;
@@ -385,6 +348,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     @Override
     public void onSuccess(TaskRunner2Result result) {
       isCompleted.set(true);
+
       switch(result.getEndReason()) {
         // Only the KILLED case requires a message to be sent out to the AM.
         case SUCCESS:
@@ -413,6 +377,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           metrics.incrExecutorTotalExecutionFailed();
           break;
       }
+      fragmentCompletionHanler.fragmentComplete(fragmentInfo);
 
       taskRunnerCallable.shutdown();
       HistoryLogger
@@ -427,8 +392,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
     @Override
     public void onFailure(Throwable t) {
-      isCompleted.set(true);
       LOG.error("TezTaskRunner execution failed for : " + getTaskIdentifierString(request), t);
+      isCompleted.set(true);
+      fragmentCompletionHanler.fragmentComplete(fragmentInfo);
       // TODO HIVE-10236 Report a fatal error over the umbilical
       taskRunnerCallable.shutdown();
       HistoryLogger
@@ -458,7 +424,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   }
 
   public static String getTaskIdentifierString(
-      LlapDaemonProtocolProtos.SubmitWorkRequestProto request) {
+      SubmitWorkRequestProto request) {
     StringBuilder sb = new StringBuilder();
     sb.append("AppId=").append(request.getApplicationIdString())
         .append(", containerId=").append(request.getContainerIdString())

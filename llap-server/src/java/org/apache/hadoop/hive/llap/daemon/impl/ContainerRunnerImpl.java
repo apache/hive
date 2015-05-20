@@ -20,13 +20,13 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
+import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentS
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
@@ -57,11 +56,11 @@ import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
 
 import com.google.common.base.Preconditions;
 
-public class ContainerRunnerImpl extends AbstractService implements ContainerRunner {
+// TODO Convert this to a CompositeService
+public class ContainerRunnerImpl extends AbstractService implements ContainerRunner, FragmentCompletionHandler {
 
-  public static final String THREAD_NAME_FORMAT_PREFIX = "ContainerExecutor ";
-  public static final String THREAD_NAME_FORMAT = THREAD_NAME_FORMAT_PREFIX + "%d";
   private static final Logger LOG = Logger.getLogger(ContainerRunnerImpl.class);
+  public static final String THREAD_NAME_FORMAT_PREFIX = "ContainerExecutor ";
 
   private volatile AMReporter amReporter;
   private final QueryTracker queryTracker;
@@ -73,10 +72,6 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   private final Configuration conf;
   private final TaskRunnerCallable.ConfParams confParams;
   private final KilledTaskHandler killedTaskHandler = new KilledTaskHandlerImpl();
-
-  // Map of dagId to vertices and associated state.
-  private final ConcurrentMap<String, ConcurrentMap<String, SourceStateProto>> sourceCompletionMap = new ConcurrentHashMap<>();
-  // TODO Support for removing queued containers, interrupting / killing specific containers
 
   public ContainerRunnerImpl(Configuration conf, int numExecutors, int waitQueueSize,
       boolean enablePreemption, String[] localDirsBase, int localShufflePort,
@@ -114,9 +109,14 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     );
   }
 
+  public void serviceInit(Configuration conf) {
+    queryTracker.init(conf);
+  }
+
   @Override
   public void serviceStart() {
     // The node id will only be available at this point, since the server has been started in LlapDaemon
+    queryTracker.start();
     LlapNodeId llapNodeId = LlapNodeId.getInstance(localAddress.get().getHostName(),
         localAddress.get().getPort());
     this.amReporter = new AMReporter(llapNodeId, conf);
@@ -130,7 +130,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
       amReporter.stop();
       amReporter = null;
     }
-    queryTracker.shutdown();
+    queryTracker.stop();
     super.serviceStop();
   }
 
@@ -151,7 +151,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
             request.getFragmentSpec().getAttemptNumber();
     NDC.push(ndcContextString);
     try {
-      Map<String, String> env = new HashMap<String, String>();
+      Map<String, String> env = new HashMap<>();
       // TODO What else is required in this environment map.
       env.putAll(localEnv);
       env.put(ApplicationConstants.Environment.USER.name(), request.getUser());
@@ -161,13 +161,13 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
           fragmentSpec.getTaskAttemptIdString());
       int dagIdentifier = taskAttemptId.getTaskID().getVertexID().getDAGId().getId();
 
-      queryTracker
+      QueryFragmentInfo fragmentInfo = queryTracker
           .registerFragment(null, request.getApplicationIdString(), fragmentSpec.getDagName(),
               dagIdentifier,
               fragmentSpec.getVertexName(), fragmentSpec.getFragmentNumber(),
-              fragmentSpec.getAttemptNumber(), request.getUser());
+              fragmentSpec.getAttemptNumber(), request.getUser(), request.getFragmentSpec());
 
-      String []localDirs = queryTracker.getLocalDirs(null, fragmentSpec.getDagName(), request.getUser());
+      String []localDirs = fragmentInfo.getLocalDirs();
       Preconditions.checkNotNull(localDirs);
 
       if (LOG.isDebugEnabled()) {
@@ -190,11 +190,17 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
           .registerDag(request.getApplicationIdString(), dagIdentifier, jobToken,
               request.getUser(), localDirs);
 
-      ConcurrentMap<String, SourceStateProto> sourceCompletionMap = getSourceCompletionMap(request.getFragmentSpec().getDagName());
-      TaskRunnerCallable callable = new TaskRunnerCallable(request, new Configuration(getConfig()),
-          new ExecutionContextImpl(localAddress.get().getHostName()), env, localDirs,
-          credentials, memoryPerExecutor, amReporter, sourceCompletionMap, confParams, metrics, killedTaskHandler);
-      executorService.schedule(callable);
+      TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, new Configuration(getConfig()),
+          new ExecutionContextImpl(localAddress.get().getHostName()), env,
+          credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
+          this);
+      try {
+        executorService.schedule(callable);
+      } catch (RejectedExecutionException e) {
+        // Stop tracking the fragment and re-throw the error.
+        fragmentComplete(fragmentInfo);
+        throw e;
+      }
       metrics.incrExecutorTotalRequestsHandled();
       metrics.incrExecutorNumQueuedRequests();
     } finally {
@@ -205,8 +211,8 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
   @Override
   public void sourceStateUpdated(SourceStateUpdatedRequestProto request) {
     LOG.info("Processing state update: " + stringifySourceStateUpdateRequest(request));
-    ConcurrentMap<String, SourceStateProto> dagMap = getSourceCompletionMap(request.getDagName());
-    dagMap.put(request.getSrcName(), request.getState());
+    queryTracker.registerSourceStateChange(request.getDagName(), request.getSrcName(),
+        request.getState());
   }
 
   @Override
@@ -280,14 +286,9 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     return sb.toString();
   }
 
-  private ConcurrentMap<String, SourceStateProto> getSourceCompletionMap(String dagName) {
-    ConcurrentMap<String, SourceStateProto> dagMap = sourceCompletionMap.get(dagName);
-    if (dagMap == null) {
-      dagMap = new ConcurrentHashMap<>();
-      ConcurrentMap<String, SourceStateProto> old = sourceCompletionMap.putIfAbsent(dagName, dagMap);
-      dagMap = (old != null) ? old : dagMap;
-    }
-    return dagMap;
+  @Override
+  public void fragmentComplete(QueryFragmentInfo fragmentInfo) {
+    queryTracker.fragmentComplete(fragmentInfo);
   }
 
   private class KilledTaskHandlerImpl implements KilledTaskHandler {

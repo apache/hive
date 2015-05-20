@@ -55,6 +55,8 @@ import org.slf4j.LoggerFactory;
  */
 public class AMReporter extends AbstractService {
 
+  // TODO In case of a failure to heartbeat, tasks for the specific DAG should ideally be KILLED
+
     /*
   registrations and un-registrations will happen as and when tasks are submitted or are removed.
   reference counting is likely required.
