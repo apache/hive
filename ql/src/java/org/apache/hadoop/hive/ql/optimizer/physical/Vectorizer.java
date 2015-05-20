@@ -1553,6 +1553,16 @@ public class Vectorizer implements PhysicalPlanResolver {
     return vectorOp;
   }
 
+  private boolean onExpressionHasNullSafes(MapJoinDesc desc) {
+    boolean[] nullSafes = desc.getNullSafes();
+    for (boolean nullSafe : nullSafes) {
+      if (nullSafe) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private boolean canSpecializeMapJoin(Operator<? extends OperatorDesc> op, MapJoinDesc desc,
       boolean isTez) {
 
@@ -1563,7 +1573,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_ENABLED)) {
 
       // Currently, only under Tez and non-N-way joins.
-      if (isTez && desc.getConds().length == 1) {
+      if (isTez && desc.getConds().length == 1 && !onExpressionHasNullSafes(desc)) {
 
         // Ok, all basic restrictions satisfied so far...
         specialize = true;
