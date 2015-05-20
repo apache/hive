@@ -976,7 +976,7 @@ public class BeeLine implements Closeable {
       return cmdMap.values().iterator().next()
           .execute(line);
     } else {
-      return commands.sql(line);
+      return commands.sql(line, getOpts().getEntireLineAsCommand());
     }
   }
 
