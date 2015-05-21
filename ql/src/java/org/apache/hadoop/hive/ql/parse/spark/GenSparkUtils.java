@@ -399,7 +399,7 @@ public class GenSparkUtils {
    */
   private static boolean groupByNeedParLevelOrder(ReduceSinkOperator reduceSinkOperator) {
     // whether we have to enforce sort anyway, e.g. in case of RS deduplication
-    if (reduceSinkOperator.getConf().isEnforceSort()) {
+    if (reduceSinkOperator.getConf().isDeduplicated()) {
       return true;
     }
     List<Operator<? extends OperatorDesc>> children = reduceSinkOperator.getChildOperators();

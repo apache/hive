@@ -38,7 +38,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 1)
+        Reducer 2 <- Map 1 (SORT, 4)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -117,7 +117,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	48                  
 	rawDataSize         	512                 
 	totalSize           	560                 
@@ -231,7 +231,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	48                  
 	rawDataSize         	512                 
 	totalSize           	560                 
