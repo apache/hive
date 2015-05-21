@@ -17,8 +17,14 @@ create table over10k(
 
 load data local inpath '../../data/files/over10k' into table over10k;
 
+-- sum
 select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100;
 select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100;
 select ts, f, sum(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100;
 select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100;
 
+-- count
+select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100;
+select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100;
+select ts, f, count(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100;
+select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100;

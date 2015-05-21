@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -37,14 +37,14 @@ public class PTFRollingPartition extends PTFPartition {
   int numRowsProcessed;
 
   /*
-   * number rows to maintain before nextRowToProcess
+   * Relative start position of the windowing. Can be negative.
    */
-  int precedingSpan;
+  int startPos;
 
   /*
-   * number rows to maintain after nextRowToProcess
+   * Relative end position of the windowing. Can be negative.
    */
-  int followingSpan;
+  int endPos;
 
   /*
    * number of rows received.
@@ -72,11 +72,11 @@ public class PTFRollingPartition extends PTFPartition {
 
   protected PTFRollingPartition(Configuration cfg, SerDe serDe,
       StructObjectInspector inputOI, StructObjectInspector outputOI,
-      int precedingSpan, int succeedingSpan) throws HiveException {
+      int startPos, int endPos) throws HiveException {
     super(cfg, serDe, inputOI, outputOI, false);
-    this.precedingSpan = precedingSpan;
-    this.followingSpan = succeedingSpan;
-    currWindow = new ArrayList<Object>(precedingSpan + followingSpan);
+    this.startPos = startPos;
+    this.endPos = endPos;
+    currWindow = new ArrayList<Object>(endPos - startPos + 1);
   }
 
   public void reset() throws HiveException {
@@ -101,7 +101,7 @@ public class PTFRollingPartition extends PTFPartition {
   public Object nextOutputRow() throws HiveException {
     Object row = getAt(numRowsProcessed);
     numRowsProcessed++;
-    if (numRowsProcessed > precedingSpan) {
+    if (numRowsProcessed > -startPos) {
       currWindow.remove(0);
     }
     return row;
@@ -111,9 +111,13 @@ public class PTFRollingPartition extends PTFPartition {
     return numRowsProcessed >= numRowsReceived;
   }
 
-  public int rowToProcess(WindowFunctionDef wFn) {
-    int rowToProcess = numRowsReceived - wFn.getWindowFrame().getEnd().getAmt()
-        - 1;
+  /**
+   * Gets the next row index that the data within the window are available and can be processed
+   * @param wFrameDef
+   * @return
+   */
+  public int rowToProcess(WindowFrameDef wFrameDef) {
+    int rowToProcess = numRowsReceived - 1 - Math.max(0, wFrameDef.getEnd().getRelativeOffset());
     return rowToProcess >= 0 ? rowToProcess : -1;
   }
 
