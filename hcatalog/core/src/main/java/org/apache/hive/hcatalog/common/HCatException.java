@@ -104,7 +104,7 @@ public class HCatException extends IOException {
   public static String buildErrorMessage(ErrorType type, String extraMessage, Throwable cause) {
 
     //Initial message is just the error type message
-    StringBuffer message = new StringBuffer(HCatException.class.getName());
+    StringBuilder message = new StringBuilder(HCatException.class.getName());
     message.append(" : " + type.getErrorCode());
     message.append(" : " + type.getErrorMessage());
 

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -413,7 +414,7 @@ public final class PlanUtils {
       // We basically use ReduceSinkOperators and set the transfer to
       // be broadcast (instead of partitioned). As a consequence we use
       // a different SerDe than in the MR mapjoin case.
-      StringBuffer order = new StringBuffer();
+      StringBuilder order = new StringBuilder();
       for (FieldSchema f: fieldSchemas) {
         order.append("+");
       }
@@ -930,7 +931,7 @@ public final class PlanUtils {
   }
 
   public static String getExprListString(Collection<?  extends ExprNodeDesc> exprs) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean first = true;
     for (ExprNodeDesc expr: exprs) {
       if (!first) {
@@ -944,11 +945,15 @@ public final class PlanUtils {
     return sb.length() == 0 ? null : sb.toString();
   }
 
-  public static void addExprToStringBuffer(ExprNodeDesc expr, StringBuffer sb) {
-    sb.append(expr.getExprString());
-    sb.append(" (type: ");
-    sb.append(expr.getTypeString());
-    sb.append(")");
+  public static void addExprToStringBuffer(ExprNodeDesc expr, Appendable sb) {
+    try {
+      sb.append(expr.getExprString());
+      sb.append(" (type: ");
+      sb.append(expr.getTypeString());
+      sb.append(")");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static void addInputsForView(ParseContext parseCtx) throws HiveException {

@@ -1811,11 +1811,12 @@ public final class Utilities {
   private static String adjustBucketNumLen(String bucketNum, String taskId) {
     int bucketNumLen = bucketNum.length();
     int taskIdLen = taskId.length();
-    StringBuffer s = new StringBuffer();
+    StringBuilder s = new StringBuilder();
     for (int i = 0; i < taskIdLen - bucketNumLen; i++) {
       s.append("0");
     }
-    return s.toString() + bucketNum;
+    s.append(bucketNum);
+    return s.toString();
   }
 
   /**
@@ -1836,7 +1837,7 @@ public final class Utilities {
       return filename.replaceAll(oldTaskId, newTaskId);
     }
 
-    StringBuffer snew = new StringBuffer();
+    StringBuilder snew = new StringBuilder();
     for (int idx = 0; idx < spl.length - 1; idx++) {
       if (idx > 0) {
         snew.append(oldTaskId);
@@ -3169,7 +3170,7 @@ public final class Utilities {
    * @return a string with escaped '_' and '%'.
    */
   public static String escapeSqlLike(String key) {
-    StringBuffer sb = new StringBuffer(key.length());
+    StringBuilder sb = new StringBuilder(key.length());
     for (char c: key.toCharArray()) {
       switch(c) {
       case '_':

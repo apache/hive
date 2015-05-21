@@ -134,7 +134,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "filterExpr")
   public String getFilterExprString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     PlanUtils.addExprToStringBuffer(filterExpr, sb);
     return sb.toString();
   }
