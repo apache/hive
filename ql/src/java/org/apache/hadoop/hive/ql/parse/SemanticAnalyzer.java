@@ -955,7 +955,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    */
   private ASTNode findCTEFromName(QB qb, String cteName) {
-    StringBuffer qId = new StringBuffer();
+    StringBuilder qId = new StringBuilder();
     if (qb.getId() != null) {
       qId.append(qb.getId());
     }

@@ -596,7 +596,7 @@ public class TezJobMonitor {
 
   private void printStatusInPlace(Map<String, Progress> progressMap, long startTime,
       boolean vextexStatusFromAM, DAGClient dagClient) {
-    StringBuffer reportBuffer = new StringBuffer();
+    StringBuilder reportBuffer = new StringBuilder();
     int sumComplete = 0;
     int sumTotal = 0;
 
@@ -781,7 +781,7 @@ public class TezJobMonitor {
   }
 
   private String getReport(Map<String, Progress> progressMap) {
-    StringBuffer reportBuffer = new StringBuffer();
+    StringBuilder reportBuffer = new StringBuilder();
 
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s: keys) {

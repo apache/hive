@@ -187,7 +187,7 @@ public class GenMRTableScan1 implements NodeProcessor {
       ParseContext parseCtx, Task<? extends Serializable> currTask,
       StatsWork statsWork, Task<StatsWork> statsTask) throws SemanticException {
     String aggregationKey = op.getConf().getStatsAggPrefix();
-    StringBuffer aggregationKeyBuffer = new StringBuffer(aggregationKey);
+    StringBuilder aggregationKeyBuffer = new StringBuilder(aggregationKey);
     List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(op, aggregationKeyBuffer);
     aggregationKey = aggregationKeyBuffer.toString();
 
