@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +51,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
   protected boolean isMap = false;
 
   protected RecordProcessor rproc = null;
+  private final AtomicBoolean aborted = new AtomicBoolean(false);
 
   protected JobConf jobConf;
 
@@ -115,12 +117,16 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     String taskAttemptIdStr = taskAttemptIdBuilder.toString();
     this.jobConf.set("mapred.task.id", taskAttemptIdStr);
     this.jobConf.set("mapreduce.task.attempt.id", taskAttemptIdStr);
-    this.jobConf.setInt("mapred.task.partition",processorContext.getTaskIndex());
+    this.jobConf.setInt("mapred.task.partition", processorContext.getTaskIndex());
   }
 
   @Override
   public void run(Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs)
       throws Exception {
+
+    if (aborted.get()) {
+      return;
+    }
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
       // in case of broadcast-join read the broadcast edge inputs
@@ -128,13 +134,17 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
       LOG.info("Running task: " + getContext().getUniqueIdentifier());
 
+    synchronized (this) {
       if (isMap) {
         rproc = new MapRecordProcessor(jobConf, getContext());
       } else {
         rproc = new ReduceRecordProcessor(jobConf, getContext());
       }
+    }
 
+    if (!aborted.get()) {
       initializeAndRunProcessor(inputs, outputs);
+    }
   }
 
   protected void initializeAndRunProcessor(Map<String, LogicalInput> inputs,
@@ -174,7 +184,14 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
   }
 
   public void abort() {
-    rproc.abort();
+    aborted.set(true);
+    RecordProcessor rProcLocal;
+    synchronized (this) {
+      rProcLocal = rproc;
+    }
+    if (rProcLocal != null) {
+      rProcLocal.abort();
+    }
   }
 
   /**
