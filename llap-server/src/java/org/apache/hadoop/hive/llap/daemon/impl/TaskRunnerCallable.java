@@ -324,6 +324,10 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     return requestId;
   }
 
+  public QueryFragmentInfo getFragmentInfo() {
+    return fragmentInfo;
+  }
+
   public TaskRunnerCallback getCallback() {
     return new TaskRunnerCallback(request, this);
   }
