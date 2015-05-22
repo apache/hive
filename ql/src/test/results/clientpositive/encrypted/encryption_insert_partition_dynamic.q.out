@@ -1,16 +1,16 @@
 PREHOOK: query: -- SORT_QUERY_RESULTS
 
 -- init
-drop table IF EXISTS encryptedTable
+drop table IF EXISTS encryptedTable PURGE
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- init
-drop table IF EXISTS encryptedTable
+drop table IF EXISTS encryptedTable PURGE
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table IF EXISTS unencryptedTable
+PREHOOK: query: drop table IF EXISTS unencryptedTable PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table IF EXISTS unencryptedTable
+POSTHOOK: query: drop table IF EXISTS unencryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table encryptedTable(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc
@@ -882,21 +882,21 @@ val_501	501
 val_502	502
 val_86	86
 PREHOOK: query: -- clean up
-drop table encryptedTable
+drop table encryptedTable PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Output: default@encryptedtable
 POSTHOOK: query: -- clean up
-drop table encryptedTable
+drop table encryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Output: default@encryptedtable
 Encryption key deleted: 'key_1'
-PREHOOK: query: drop table unencryptedTable
+PREHOOK: query: drop table unencryptedTable PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@unencryptedtable
 PREHOOK: Output: default@unencryptedtable
-POSTHOOK: query: drop table unencryptedTable
+POSTHOOK: query: drop table unencryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@unencryptedtable
 POSTHOOK: Output: default@unencryptedtable

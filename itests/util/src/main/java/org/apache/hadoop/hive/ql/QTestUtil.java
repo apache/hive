@@ -372,6 +372,7 @@ public class QTestUtil {
         // Set the security key provider so that the MiniDFS cluster is initialized
         // with encryption
         conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
+        conf.setInt("fs.trash.interval", 50);
 
         dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
         fs = dfs.getFileSystem();
@@ -678,7 +679,7 @@ public class QTestUtil {
           if(tblObj.isIndexTable()) {
             continue;
           }
-          db.dropTable(dbName, tblName);
+          db.dropTable(dbName, tblName, true, true, clusterType == MiniClusterType.encrypted);
         } else {
           // this table is defined in srcTables, drop all indexes on it
          List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
