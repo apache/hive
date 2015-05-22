@@ -3907,7 +3907,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private void handleInsertStatementSpec(List<ExprNodeDesc> col_list, String dest,
-                                         RowResolver out_rwsch, RowResolver inputRR, QB qb,
+                                         RowResolver outputRR, RowResolver inputRR, QB qb,
                                          ASTNode selExprList) throws SemanticException {
     //(z,x)
     List<String> targetTableSchema = qb.getParseInfo().getDestSchemaForClause(dest);//specified in the query
@@ -3929,7 +3929,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, ColumnInfo> targetCol2ColumnInfo = new HashMap<String, ColumnInfo>();
     int colListPos = 0;
     for(String targetCol : targetTableSchema) {
-      targetCol2ColumnInfo.put(targetCol, out_rwsch.getColumnInfos().get(colListPos));
+      targetCol2ColumnInfo.put(targetCol, outputRR.getColumnInfos().get(colListPos));
       targetCol2Projection.put(targetCol, col_list.get(colListPos++));
     }
     Table target = qb.getMetaData().getDestTableForAlias(dest);
@@ -3973,16 +3973,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         t.setText("TOK_NULL");
         ExprNodeDesc exp = genExprNodeDesc(new ASTNode(t), inputRR, tcCtx);
         new_col_list.add(exp);
-        final String tableAlias = "";//is this OK? this column doesn't come from any table
+        final String tableAlias = null;//this column doesn't come from any table
         ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(colListPos),
           exp.getWritableObjectInspector(), tableAlias, false);
         newSchema.add(colInfo);
+        outputRR.addMappingOnly(colInfo.getTabAlias(), colInfo.getInternalName(), colInfo);
       }
       colListPos++;
     }
     col_list.clear();
     col_list.addAll(new_col_list);
-    out_rwsch.setRowSchema(new RowSchema(newSchema));
+    outputRR.setRowSchema(new RowSchema(newSchema));
   }
   String recommendName(ExprNodeDesc exp, String colAlias) {
     if (!colAlias.startsWith(autogenColAliasPrfxLbl)) {
