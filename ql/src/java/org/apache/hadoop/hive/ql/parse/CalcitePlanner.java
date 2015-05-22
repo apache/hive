@@ -240,6 +240,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         try {
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             sinkOp = getOptimizedHiveOPDag();
+            LOG.info("CBO Succeeded; optimized logical plan.");
+            this.ctx.setCboInfo("Plan optimized by CBO.");
+            this.ctx.setCboSucceeded(true);
           } else {
             // 1. Gen Optimized AST
             ASTNode newAST = getOptimizedAST();
@@ -254,21 +257,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
               setAST(newAST);
               newAST = reAnalyzeCtasAfterCbo(newAST);
             }
-          Phase1Ctx ctx_1 = initPhase1Ctx();
-          if (!doPhase1(newAST, getQB(), ctx_1, null)) {
-            throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
-          }
-          // unfortunately making prunedPartitions immutable is not possible
-          // here with SemiJoins not all tables are costed in CBO, so their
-          // PartitionList is not evaluated until the run phase.
-          getMetaData(getQB());
-
-          disableJoinMerge = false;
-          sinkOp = genPlan(getQB());
-          LOG.info("CBO Succeeded; optimized logical plan.");
-          this.ctx.setCboInfo("Plan optimized by CBO.");
-          this.ctx.setCboSucceeded(true);
-          LOG.debug(newAST.dump());
+            Phase1Ctx ctx_1 = initPhase1Ctx();
+            if (!doPhase1(newAST, getQB(), ctx_1, null)) {
+              throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
+            }
+            // unfortunately making prunedPartitions immutable is not possible
+            // here with SemiJoins not all tables are costed in CBO, so their
+            // PartitionList is not evaluated until the run phase.
+            getMetaData(getQB());
+  
+            disableJoinMerge = false;
+            sinkOp = genPlan(getQB());
+            LOG.info("CBO Succeeded; optimized logical plan.");
+            this.ctx.setCboInfo("Plan optimized by CBO.");
+            this.ctx.setCboSucceeded(true);
+            LOG.debug(newAST.dump());
           }
         } catch (Exception e) {
           boolean isMissingStats = noColsMissingStats.get() > 0;
