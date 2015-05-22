@@ -207,6 +207,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
@@ -720,8 +721,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return this.nameToSplitSample;
   }
 
-  // Generate a temp table out of a value clause
-  private ASTNode genValuesTempTable(ASTNode originalFrom) throws SemanticException {
+  /**
+   * Generate a temp table out of a value clause
+   * See also {@link #preProcessForInsert(ASTNode, QB)}
+   */
+  private ASTNode genValuesTempTable(ASTNode originalFrom, QB qb) throws SemanticException {
+    Path dataDir = null;
+    if(!qb.getEncryptedTargetTablePaths().isEmpty()) {
+      //currently only Insert into T values(...) is supported thus only 1 values clause
+      //and only 1 target table are possible.  If/when support for 
+      //select ... from values(...) is added an insert statement may have multiple
+      //encrypted target tables.
+      dataDir = ctx.getMRTmpPath(qb.getEncryptedTargetTablePaths().get(0).toUri());
+    }
     // Pick a name for the table
     SessionState ss = SessionState.get();
     String tableName = VALUES_TMP_TABLE_NAME_PREFIX + ss.getNextValuesTempTableSuffix();
@@ -758,7 +770,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Path tablePath = null;
     FileSystem fs = null;
     try {
-      tablePath = Warehouse.getDnsPath(new Path(ss.getTempTableSpace(), tableName), conf);
+      if(dataDir == null) {
+        tablePath = Warehouse.getDnsPath(new Path(ss.getTempTableSpace(), tableName), conf);
+      }
+      else {
+        //if target table of insert is encrypted, make sure temporary table data is stored
+        //similarly encrypted
+        tablePath = Warehouse.getDnsPath(new Path(dataDir, tableName), conf);
+      }
       fs = tablePath.getFileSystem(conf);
       fs.mkdirs(tablePath);
       Path dataFile = new Path(tablePath, "data_file");
@@ -1202,7 +1221,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else if (frm.getToken().getType() == HiveParser.TOK_VIRTUAL_TABLE) {
           // Create a temp table with the passed values in it then rewrite this portion of the
           // tree to be from that table.
-          ASTNode newFrom = genValuesTempTable(frm);
+          ASTNode newFrom = genValuesTempTable(frm, qb);
           ast.setChild(0, newFrom);
           processTable(qb, newFrom);
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
@@ -10175,6 +10194,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 4. continue analyzing from the child ASTNode.
     Phase1Ctx ctx_1 = initPhase1Ctx();
+    preProcessForInsert(child, qb);
     if (!doPhase1(child, qb, ctx_1, plannerCtx)) {
       // if phase1Result false return
       return false;
@@ -10190,6 +10210,42 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
+  /**
+   * This will walk AST of an INSERT statement and assemble a list of target tables
+   * which are in an HDFS encryption zone.  This is needed to make sure that so that
+   * the data from values clause of Insert ... select values(...) is stored securely.
+   * See also {@link #genValuesTempTable(ASTNode, QB)}
+   * @throws SemanticException
+   */
+  private void preProcessForInsert(ASTNode node, QB qb) throws SemanticException {
+    try {
+      if(!(node != null && node.getToken() != null && node.getToken().getType() == HiveParser.TOK_QUERY)) {
+        return;
+      }
+      for (Node child : node.getChildren()) {
+        //each insert of multi insert looks like 
+        //(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME T1)))
+        if (((ASTNode) child).getToken().getType() != HiveParser.TOK_INSERT) {
+          continue;
+        }
+        ASTNode n = (ASTNode) ((ASTNode) child).getFirstChildWithType(HiveParser.TOK_INSERT_INTO);
+        if (n == null) continue;
+        n = (ASTNode) n.getFirstChildWithType(HiveParser.TOK_TAB);
+        if (n == null) continue;
+        n = (ASTNode) n.getFirstChildWithType(HiveParser.TOK_TABNAME);
+        if (n == null) continue;
+        String[] dbTab = getQualifiedTableName(n);
+        Table t = db.getTable(dbTab[0], dbTab[1]);
+        Path tablePath = t.getPath();
+        if (isPathEncrypted(tablePath)) {
+          qb.addEncryptedTargetTablePath(tablePath);
+        }
+      }
+    }
+    catch(Exception ex) {
+      throw new SemanticException(ex);
+    }
+  }
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     return genPlan(qb);
   }

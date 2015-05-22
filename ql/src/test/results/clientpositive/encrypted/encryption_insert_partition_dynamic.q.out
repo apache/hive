@@ -93,9 +93,9 @@ STAGE PLANS:
                 value expressions: _col0 (type: string), _col1 (type: string)
                 auto parallelism: false
       Path -> Alias:
-#### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
       Path -> Partition:
-#### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
           Partition
             base file name: Values__Tmp__Table__1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -106,6 +106,7 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
               name default.values__tmp__table__1
               serialization.ddl struct values__tmp__table__1 { string tmp_values_col1, string tmp_values_col2}
               serialization.format 1
@@ -120,6 +121,7 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
                 name default.values__tmp__table__1
                 serialization.ddl struct values__tmp__table__1 { string tmp_values_col1, string tmp_values_col2}
                 serialization.format 1
