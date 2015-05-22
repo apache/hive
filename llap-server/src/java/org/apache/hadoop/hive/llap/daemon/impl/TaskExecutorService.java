@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -29,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.slf4j.Logger;
@@ -62,29 +66,32 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * new tasks. Shutting down of the task executor service can be done gracefully or immediately.
  */
 public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
+
+
   private static final Logger LOG = LoggerFactory.getLogger(TaskExecutorService.class);
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
   private static final String TASK_EXECUTOR_THREAD_NAME_FORMAT = "Task-Executor-%d";
   private static final String WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT = "Wait-Queue-Scheduler-%d";
 
-  // some object to lock upon. Used by task scheduler to notify wait queue scheduler of new items
-  // to wait queue
-  private final Object waitLock;
   // Thread pool for actual execution of work.
   private final ListeningExecutorService executorService;
-  private final EvictingPriorityBlockingQueue<TaskRunnerCallable> waitQueue;
+  private final EvictingPriorityBlockingQueue<TaskWrapper> waitQueue;
   // Thread pool for taking entities off the wait queue.
   private final ListeningExecutorService waitQueueExecutorService;
   // Thread pool for callbacks on completion of execution of a work unit.
   private final ListeningExecutorService executionCompletionExecutorService;
-  private final BlockingQueue<TaskRunnerCallable> preemptionQueue;
+  private final BlockingQueue<TaskWrapper> preemptionQueue;
   private final boolean enablePreemption;
   private final ThreadPoolExecutor threadPoolExecutor;
   private final AtomicInteger numSlotsAvailable;
 
+  // Tracks known tasks.
+  private final Set<TaskWrapper> knownTasks = Collections.newSetFromMap(new ConcurrentHashMap<TaskWrapper, Boolean>());
+
+  private final Object lock = new Object();
+
   public TaskExecutorService(int numExecutors, int waitQueueSize, boolean enablePreemption) {
-    this.waitLock = new Object();
     this.waitQueue = new EvictingPriorityBlockingQueue<>(new WaitQueueComparator(), waitQueueSize);
     this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
         numExecutors, // max pool size
@@ -115,32 +122,36 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
             + ", enablePreemption=" + enablePreemption);
   }
 
+
   /**
    * Worker that takes tasks from wait queue and schedule it for execution.
    */
   private final class WaitQueueWorker implements Runnable {
-    TaskRunnerCallable task;
+    TaskWrapper task;
 
     @Override
     public void run() {
       try {
 
-        synchronized (waitLock) {
+        synchronized (lock) {
           while (waitQueue.isEmpty()) {
-            waitLock.wait();
+            lock.wait();
           }
         }
 
         // Since schedule() can be called from multiple threads, we peek the wait queue,
         // try scheduling the task and then remove the task if scheduling is successful.
         // This will make sure the task's place in the wait queue is held until it gets scheduled.
-        while ((task = waitQueue.peek()) != null) {
+        while (true) {
+          synchronized (lock) {
+            task = waitQueue.peek();
+            if (task == null) {
+              break;
+            }
 
           // if the task cannot finish and if no slots are available then don't schedule it.
-          // TODO: Event notifications that change canFinish state should notify waitLock
-          synchronized (waitLock) {
             boolean shouldWait = false;
-            if (task.canFinish()) {
+            if (task.getTaskRunnerCallable().canFinish()) {
               if (numSlotsAvailable.get() == 0 && preemptionQueue.isEmpty()) {
                 shouldWait = true;
               }
@@ -150,9 +161,9 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
               }
             }
             if (shouldWait) {
+              lock.wait();
               // Another task at a higher priority may have come in during the wait. Lookup the
               // queue again to pick up the task at the highest priority.
-              waitLock.wait();
               continue;
             }
           }
@@ -161,12 +172,14 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
           if (scheduled) {
             // wait queue could have been re-ordered in the mean time because of concurrent task
             // submission. So remove the specific task instead of the head task.
-            waitQueue.remove(task);
+            synchronized (lock) {
+              waitQueue.remove(task);
+            }
           }
 
-          synchronized (waitLock) {
+          synchronized (lock) {
             while (waitQueue.isEmpty()) {
-              waitLock.wait();
+              lock.wait();
             }
           }
         }
@@ -194,71 +207,92 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
   @Override
   public void schedule(TaskRunnerCallable task) throws RejectedExecutionException {
-    TaskRunnerCallable evictedTask = waitQueue.offer(task);
+    TaskWrapper taskWrapper = new TaskWrapper(task);
+    knownTasks.add(taskWrapper);
+    TaskWrapper evictedTask;
+    try {
+      // Don't need a lock. Not subscribed for notifications yet, and marked as inWaitQueue
+      evictedTask = waitQueue.offer(taskWrapper);
+    } catch (RejectedExecutionException e) {
+      knownTasks.remove(taskWrapper);
+      throw e;
+    }
     if (evictedTask == null) {
       if (isInfoEnabled) {
         LOG.info(task.getRequestId() + " added to wait queue.");
       }
-
       if (isDebugEnabled) {
         LOG.debug("Wait Queue: {}", waitQueue);
       }
-      synchronized (waitLock) {
-        waitLock.notify();
-      }
     } else {
-      evictedTask.killTask();
+      evictedTask.maybeUnregisterForFinishedStateNotifications();
+      evictedTask.getTaskRunnerCallable().killTask();
       if (isInfoEnabled) {
-        LOG.info(task.getRequestId() + " evicted from wait queue because of low priority");
+        LOG.info("{} evicted from wait queue in favor of {} because of lower priority",
+            evictedTask.getRequestId(), task.getRequestId());
       }
+    }
+    synchronized (lock) {
+      lock.notify();
     }
   }
 
-  private boolean trySchedule(final TaskRunnerCallable task) {
+  private boolean trySchedule(final TaskWrapper taskWrapper) {
 
     boolean scheduled = false;
     try {
-      ListenableFuture<TaskRunner2Result> future = executorService.submit(task);
-      FutureCallback<TaskRunner2Result> wrappedCallback = new InternalCompletionListener(task);
-      // Callback on a separate thread so that when a task completes, the thread in the main queue
-      // is actually available for execution and will not potentially result in a RejectedExecution
-      Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
+      synchronized (lock) {
+        boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
+        boolean stateChanged = taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
+        ListenableFuture<TaskRunner2Result> future = executorService.submit(taskWrapper.getTaskRunnerCallable());
+        taskWrapper.setIsInWaitQueue(false);
+        FutureCallback<TaskRunner2Result> wrappedCallback = new InternalCompletionListener(taskWrapper);
+        // Callback on a separate thread so that when a task completes, the thread in the main queue
+        // is actually available for execution and will not potentially result in a RejectedExecution
+        Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
 
-      if (isInfoEnabled) {
-        LOG.info(task.getRequestId() + " scheduled for execution.");
-      }
-
-      // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
-      // to the tasks are not ready yet, the task is eligible for pre-emptable.
-      if (enablePreemption && !task.canFinish()) {
         if (isInfoEnabled) {
-          LOG.info(task.getRequestId() + " is not finishable. Adding it to pre-emption queue.");
+          LOG.info("{} scheduled for execution. canFinish={}", taskWrapper.getRequestId(), canFinish);
         }
-        preemptionQueue.add(task);
-      }
 
+        // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
+        // to the tasks are not ready yet, the task is eligible for pre-emptable.
+        if (enablePreemption) {
+          if (!canFinish && !stateChanged) {
+            if (isInfoEnabled) {
+              LOG.info("{} is not finishable. Adding it to pre-emption queue", taskWrapper.getRequestId());
+            }
+            addToPreemptionQueue(taskWrapper);
+          }
+        }
+      }
       numSlotsAvailable.decrementAndGet();
       scheduled = true;
     } catch (RejectedExecutionException e) {
-
-      if (enablePreemption && task.canFinish() && !preemptionQueue.isEmpty()) {
+      if (enablePreemption && taskWrapper.getTaskRunnerCallable().canFinish() && !preemptionQueue.isEmpty()) {
 
         if (isDebugEnabled) {
           LOG.debug("Preemption Queue: " + preemptionQueue);
         }
 
-        TaskRunnerCallable pRequest = preemptionQueue.remove();
+        TaskWrapper pRequest = removeAndGetFromPreemptionQueue();
+
+        // Avoid preempting tasks which are finishable - callback still to be processed.
         if (pRequest != null) {
-
-          if (isInfoEnabled) {
-            LOG.info("Invoking kill task for {} due to pre-emption to run {}",
-                pRequest.getRequestId(), task.getRequestId());
+          if (pRequest.getTaskRunnerCallable().canFinish()) {
+            LOG.info(
+                "Removed {} from preemption queue, but not preempting since it's now finishable",
+                pRequest.getRequestId());
+          } else {
+            if (isInfoEnabled) {
+              LOG.info("Invoking kill task for {} due to pre-emption to run {}",
+                  pRequest.getRequestId(), taskWrapper.getRequestId());
+            }
+            // The task will either be killed or is already in the process of completing, which will
+            // trigger the next scheduling run, or result in available slots being higher than 0,
+            // which will cause the scheduler loop to continue.
+            pRequest.getTaskRunnerCallable().killTask();
           }
-
-          // The task will either be killed or is already in the process of completing, which will
-          // trigger the next scheduling run, or result in available slots being higher than 0,
-          // which will cause the scheduler loop to continue.
-          pRequest.killTask();
         }
       }
     }
@@ -266,23 +300,76 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     return scheduled;
   }
 
+  private void finishableStateUpdated(TaskWrapper taskWrapper, boolean newFinishableState) {
+    synchronized (lock) {
+      if (taskWrapper.isInWaitQueue()) {
+        // Re-order the wait queue
+        LOG.info("DEBUG: Re-ordering the wait queue since {} finishable state moved to {}",
+            taskWrapper.getRequestId(), newFinishableState);
+        if (waitQueue.remove(taskWrapper)) {
+          // Put element back onlt if it existed.
+          waitQueue.offer(taskWrapper);
+        } else {
+          LOG.warn("Failed to remove {} from waitQueue",
+              taskWrapper.getTaskRunnerCallable().getRequestId());
+        }
+      }
+
+      if (newFinishableState == true && taskWrapper.isInPreemptionQueue()) {
+        LOG.info("DEBUG: Removing {} from preemption queue because it's state changed to {}",
+            taskWrapper.getRequestId(), newFinishableState);
+        preemptionQueue.remove(taskWrapper.getTaskRunnerCallable());
+      } else if (newFinishableState == false && !taskWrapper.isInPreemptionQueue() &&
+          !taskWrapper.isInWaitQueue()) {
+        LOG.info("DEBUG: Adding {} to preemption queue since finishable state changed to {}",
+            taskWrapper.getRequestId(), newFinishableState);
+        preemptionQueue.offer(taskWrapper);
+      }
+      lock.notify();
+    }
+  }
+
+  private void addToPreemptionQueue(TaskWrapper taskWrapper) {
+    synchronized (lock) {
+      preemptionQueue.add(taskWrapper);
+      taskWrapper.setIsInPreemptableQueue(true);
+    }
+  }
+
+  private TaskWrapper removeAndGetFromPreemptionQueue() {
+    TaskWrapper taskWrapper;
+    synchronized (lock) {
+       taskWrapper = preemptionQueue.remove();
+      if (taskWrapper != null) {
+        taskWrapper.setIsInPreemptableQueue(false);
+      }
+    }
+    return taskWrapper;
+  }
+
   private final class InternalCompletionListener implements
       FutureCallback<TaskRunner2Result> {
-    private TaskRunnerCallable task;
+    private final TaskWrapper taskWrapper;
 
-    public InternalCompletionListener(TaskRunnerCallable task) {
-      this.task = task;
+    public InternalCompletionListener(TaskWrapper taskWrapper) {
+      this.taskWrapper = taskWrapper;
     }
 
     @Override
     public void onSuccess(TaskRunner2Result result) {
-      task.getCallback().onSuccess(result);
+      knownTasks.remove(taskWrapper);
+      taskWrapper.setIsInPreemptableQueue(false);
+      taskWrapper.maybeUnregisterForFinishedStateNotifications();
+      taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
       updatePreemptionListAndNotify(result.getEndReason());
     }
 
     @Override
     public void onFailure(Throwable t) {
-      task.getCallback().onFailure(t);
+      knownTasks.remove(taskWrapper);
+      taskWrapper.setIsInPreemptableQueue(false);
+      taskWrapper.maybeUnregisterForFinishedStateNotifications();
+      taskWrapper.getTaskRunnerCallable().getCallback().onFailure(t);
       updatePreemptionListAndNotify(null);
       LOG.error("Failed notification received: Stacktrace: " + ExceptionUtils.getStackTrace(t));
     }
@@ -291,17 +378,18 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       // if this task was added to pre-emption list, remove it
       if (enablePreemption) {
         String state = reason == null ? "FAILED" : reason.name();
-        preemptionQueue.remove(task.getRequest());
-        if (isInfoEnabled) {
-          LOG.info(TaskRunnerCallable.getTaskIdentifierString(task.getRequest())
+        boolean removed = preemptionQueue.remove(taskWrapper);
+        if (removed && isInfoEnabled) {
+          LOG.info(TaskRunnerCallable
+              .getTaskIdentifierString(taskWrapper.getTaskRunnerCallable().getRequest())
               + " request " + state + "! Removed from preemption list.");
         }
       }
 
       numSlotsAvailable.incrementAndGet();
-      if (!waitQueue.isEmpty()) {
-        synchronized (waitLock) {
-          waitLock.notify();
+      synchronized (lock) {
+        if (!waitQueue.isEmpty()) {
+          lock.notify();
         }
       }
     }
@@ -340,10 +428,12 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   }
 
   @VisibleForTesting
-  public static class WaitQueueComparator implements Comparator<TaskRunnerCallable> {
+  public static class WaitQueueComparator implements Comparator<TaskWrapper> {
 
     @Override
-    public int compare(TaskRunnerCallable o1, TaskRunnerCallable o2) {
+    public int compare(TaskWrapper t1, TaskWrapper t2) {
+      TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
+      TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
       boolean newCanFinish = o1.canFinish();
       boolean oldCanFinish = o2.canFinish();
       if (newCanFinish == true && oldCanFinish == false) {
@@ -368,16 +458,97 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   }
 
   @VisibleForTesting
-  public static class PreemptionQueueComparator implements Comparator<TaskRunnerCallable> {
+  public static class PreemptionQueueComparator implements Comparator<TaskWrapper> {
 
     @Override
-    public int compare(TaskRunnerCallable o1, TaskRunnerCallable o2) {
+    public int compare(TaskWrapper t1, TaskWrapper t2) {
+      TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
+      TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
       if (o1.getVertexParallelism() > o2.getVertexParallelism()) {
         return 1;
       } else if (o1.getVertexParallelism() < o2.getVertexParallelism()) {
         return -1;
       }
       return 0;
+    }
+  }
+
+
+  private class TaskWrapper implements FinishableStateUpdateHandler {
+    private final TaskRunnerCallable taskRunnerCallable;
+    private boolean inWaitQueue = true;
+    private boolean inPreemptionQueue = false;
+    private boolean registeredForNotifications = false;
+
+    public TaskWrapper(TaskRunnerCallable taskRunnerCallable) {
+      this.taskRunnerCallable = taskRunnerCallable;
+    }
+
+    // Methods are synchronized primarily for visibility.
+    /**
+     *
+     * @param currentFinishableState
+     * @return true if the current state is the same as the currentFinishableState. false if the state has already changed.
+     */
+    public synchronized boolean maybeRegisterForFinishedStateNotifications(
+        boolean currentFinishableState) {
+      if (!registeredForNotifications) {
+        registeredForNotifications = true;
+        return taskRunnerCallable.getFragmentInfo()
+            .registerForFinishableStateUpdates(this, currentFinishableState);
+      } else {
+        return true;
+      }
+    }
+
+    public synchronized void maybeUnregisterForFinishedStateNotifications() {
+      if (registeredForNotifications) {
+        registeredForNotifications = false;
+        taskRunnerCallable.getFragmentInfo().unregisterForFinishableStateUpdates(this);
+      }
+    }
+
+    public TaskRunnerCallable getTaskRunnerCallable() {
+      return taskRunnerCallable;
+    }
+
+    public synchronized boolean isInWaitQueue() {
+      return inWaitQueue;
+    }
+
+    public synchronized boolean isInPreemptionQueue() {
+      return inPreemptionQueue;
+    }
+
+    public synchronized void setIsInWaitQueue(boolean value) {
+      this.inWaitQueue = value;
+    }
+
+    public synchronized void setIsInPreemptableQueue(boolean value) {
+      this.inPreemptionQueue = value;
+    }
+
+    public String getRequestId() {
+      return taskRunnerCallable.getRequestId();
+    }
+
+    @Override
+    public String toString() {
+      return "TaskWrapper{" +
+          "task=" + taskRunnerCallable.getRequestId() +
+          ", inWaitQueue=" + inWaitQueue +
+          ", inPreemptionQueue=" + inPreemptionQueue +
+          ", registeredForNotifications=" + registeredForNotifications +
+          '}';
+    }
+
+    @Override
+    public void finishableStateUpdated(boolean finishableState) {
+      // This method should not by synchronized. Can lead to deadlocks since it calls a sync method.
+      // Meanwhile the scheduler could try updating states via a synchronized method.
+      LOG.info("DEBUG: Received finishable state update for {}, state={}",
+          taskRunnerCallable.getRequestId(), finishableState);
+      TaskExecutorService.this.finishableStateUpdated(this, finishableState);
     }
   }
 }

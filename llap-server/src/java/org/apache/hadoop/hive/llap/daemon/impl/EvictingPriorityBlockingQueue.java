@@ -61,8 +61,8 @@ public class EvictingPriorityBlockingQueue<E> {
     return deque.take();
   }
 
-  public synchronized void remove(E e) {
-    deque.remove(e);
+  public synchronized boolean remove(E e) {
+    return deque.remove(e);
   }
 
   public synchronized int size() {

@@ -178,7 +178,13 @@ public class QueryTracker extends CompositeService {
    */
   void registerSourceStateChange(String dagName, String sourceName, SourceStateProto sourceState) {
     getSourceCompletionMap(dagName).put(sourceName, sourceState);
-    // TODO HIVE-10758 source completion notifications
+    QueryInfo queryInfo = queryInfoMap.get(dagName);
+    if (queryInfo != null) {
+      queryInfo.sourceStateUpdated(sourceName);
+    } else {
+      // Could be null if there's a race between the threads processing requests, with a
+      // dag finish processed earlier.
+    }
   }
 
 

@@ -15,9 +15,11 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
@@ -109,6 +111,32 @@ public class QueryFragmentInfo {
    */
   public String[] getLocalDirs() throws IOException {
     return queryInfo.getLocalDirs();
+  }
+
+  /**
+   *
+   * @param handler
+   * @param lastFinishableState
+   * @return true if the current state is the same as the lastFinishableState. false if the state has already changed.
+   */
+  public boolean registerForFinishableStateUpdates(FinishableStateUpdateHandler handler,
+                                                boolean lastFinishableState) {
+    List<String> sourcesOfInterest = new LinkedList<>();
+    List<IOSpecProto> inputSpecList = fragmentSpec.getInputSpecsList();
+    if (inputSpecList != null && !inputSpecList.isEmpty()) {
+      for (IOSpecProto inputSpec : inputSpecList) {
+        if (isSourceOfInterest(inputSpec)) {
+          sourcesOfInterest.add(inputSpec.getConnectedVertexName());
+        }
+      }
+    }
+    return queryInfo.registerForFinishableStateUpdates(handler, sourcesOfInterest, this,
+        lastFinishableState);
+  }
+
+
+  public void unregisterForFinishableStateUpdates(FinishableStateUpdateHandler handler) {
+    queryInfo.unregisterFinishableStateUpdate(handler);
   }
 
   private boolean isSourceOfInterest(IOSpecProto inputSpec) {
