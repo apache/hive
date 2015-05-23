@@ -49,29 +49,37 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dim_pho
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 97) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
                       outputColumnNames: _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: '97' (type: string)
                         sort order: +
                         Map-reduce partition columns: '97' (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: jackson_sev_add
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 97) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
                       outputColumnNames: _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: '97' (type: string)
                         sort order: +
                         Map-reduce partition columns: '97' (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
         Map 4 
             Map Operator Tree:

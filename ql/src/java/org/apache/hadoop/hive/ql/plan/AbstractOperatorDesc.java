@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AbstractOperatorDesc implements OperatorDesc {
 
   protected boolean vectorMode = false;
-  protected transient Statistics statistics;
+  protected Statistics statistics;
   protected transient OpTraits opTraits;
   protected transient Map<String, String> opProps;
 
