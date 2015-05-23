@@ -1191,7 +1191,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private boolean validateExprNodeDescRecursive(ExprNodeDesc desc) {
+  private boolean validateExprNodeDescRecursive(ExprNodeDesc desc, VectorExpressionDescriptor.Mode mode) {
     if (desc instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
       // Currently, we do not support vectorized virtual columns (see HIVE-5570).
@@ -1201,7 +1201,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
     String typeName = desc.getTypeInfo().getTypeName();
-    boolean ret = validateDataType(typeName);
+    boolean ret = validateDataType(typeName, mode);
     if (!ret) {
       LOG.info("Cannot vectorize " + desc.toString() + " of type " + typeName);
       return false;
@@ -1215,7 +1215,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
     if (desc.getChildren() != null) {
       for (ExprNodeDesc d: desc.getChildren()) {
-        boolean r = validateExprNodeDescRecursive(d);
+        // Don't restrict child expressions for projection.  Always use looser FILTER mode.
+        boolean r = validateExprNodeDescRecursive(d, VectorExpressionDescriptor.Mode.FILTER);
         if (!r) {
           return false;
         }
@@ -1229,7 +1230,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   boolean validateExprNodeDesc(ExprNodeDesc desc, VectorExpressionDescriptor.Mode mode) {
-    if (!validateExprNodeDescRecursive(desc)) {
+    if (!validateExprNodeDescRecursive(desc, mode)) {
       return false;
     }
     try {
@@ -1312,8 +1313,13 @@ public class Vectorizer implements PhysicalPlanResolver {
     return false;
   }
 
-  private boolean validateDataType(String type) {
-    return supportedDataTypesPattern.matcher(type.toLowerCase()).matches();
+  private boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {
+    type = type.toLowerCase();
+    boolean result = supportedDataTypesPattern.matcher(type).matches();
+    if (result && mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+      return false;
+    }
+    return result;
   }
 
   private VectorizationContext getVectorizationContext(RowSchema rowSchema, String contextName,
