@@ -128,7 +128,6 @@ public abstract class MetadataOperation extends Operation {
       ss.getAuthorizerV2().checkPrivileges(HiveOperationType.GET_SCHEMAS, inpObjs, null,
           ctxBuilder.build());
     } catch (HiveAuthzPluginException | HiveAccessControlException e) {
-      setState(OperationState.ERROR);
       throw new HiveSQLException(e.getMessage(), e);
     }
   }
