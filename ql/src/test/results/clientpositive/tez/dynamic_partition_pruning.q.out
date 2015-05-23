@@ -221,25 +221,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Reducer 2 
@@ -335,12 +335,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -452,25 +452,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Map 6 
@@ -481,25 +481,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (hr is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: hr (type: string)
                       sort order: +
                       Map-reduce partition columns: hr (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: hr
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -618,12 +618,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -632,12 +632,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (hr is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: hr (type: string)
                       sort order: +
                       Map-reduce partition columns: hr (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -762,40 +762,40 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string), hr (type: string)
                       sort order: ++
                       Map-reduce partition columns: ds (type: string), hr (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: hr
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -891,12 +891,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string), hr (type: string)
                       sort order: ++
                       Map-reduce partition columns: ds (type: string), hr (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -1003,25 +1003,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Reducer 2 
@@ -1117,12 +1117,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -1230,25 +1230,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: double)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: UDFToDouble(hr)
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -1347,25 +1347,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (hr is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: hr (type: double)
                       sort order: +
                       Map-reduce partition columns: hr (type: double)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: double)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: (hr * 2)
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -1464,12 +1464,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -1566,12 +1566,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (hr is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: hr (type: double)
                       sort order: +
                       Map-reduce partition columns: hr (type: double)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -1681,25 +1681,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToString(hr) is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToString(hr) (type: string)
                       sort order: +
                       Map-reduce partition columns: UDFToString(hr) (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToString(hr) (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: UDFToString((hr * 2))
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -2044,40 +2044,40 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string), hr (type: string)
                       sort order: ++
                       Map-reduce partition columns: ds (type: string), hr (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: hr
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -2446,25 +2446,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Map 6 
@@ -2475,25 +2475,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((hr is not null and (hour = 11)) and (hr = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: '11' (type: string)
                       sort order: +
                       Map-reduce partition columns: '11' (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: '11' (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: hr
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -2592,15 +2592,15 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -2609,12 +2609,12 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -2637,12 +2637,12 @@ STAGE PLANS:
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: '13' (type: string)
                   sort order: +
                   Map-reduce partition columns: '13' (type: string)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Merge Join Operator
@@ -2651,7 +2651,7 @@ STAGE PLANS:
                 keys:
                   0 '13' (type: string)
                   1 '13' (type: string)
-                Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -2806,26 +2806,33 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Reducer 8 
@@ -2834,26 +2841,33 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Union 6 
@@ -2991,26 +3005,33 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Reducer 8 
@@ -3019,26 +3040,33 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Union 6 
@@ -3169,38 +3197,48 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 5
         Reducer 2 
@@ -3209,10 +3247,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
             Reduce Operator Tree:
               Merge Join Operator
@@ -3236,48 +3276,60 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Reducer 8 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 5
         Union 3 
@@ -3362,25 +3414,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Reducer 2 
@@ -3499,25 +3551,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Map 4 
@@ -3528,25 +3580,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (hr is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: hr (type: string)
                       sort order: +
                       Map-reduce partition columns: hr (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: hr
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -3654,40 +3706,40 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((ds is not null and hr is not null) and (date = '2008-04-08')) and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string), hr (type: string)
                       sort order: ++
                       Map-reduce partition columns: ds (type: string), hr (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: hr
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -3792,25 +3844,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = 'I DONT EXIST')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Reducer 2 
@@ -3894,25 +3946,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(UDFToInteger((hr / 2))) is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToDouble(UDFToInteger((hr / 2))) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: double)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: UDFToDouble(hr)
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -4007,25 +4059,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (hr is not null and (hour = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: hr (type: double)
                       sort order: +
                       Map-reduce partition columns: hr (type: double)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: double)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: (hr * 2)
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -4510,25 +4562,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string)
                       sort order: +
                       Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Map 4 
@@ -4539,25 +4591,25 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((hr is not null and (hour = 11)) and (hr = 11)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: '11' (type: string)
                       sort order: +
                       Map-reduce partition columns: '11' (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: '11' (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: hr
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 
@@ -4614,8 +4666,8 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
-        Map 3 <- Map 1 (BROADCAST_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Map 3 <- Map 2 (BROADCAST_EDGE)
         Reducer 4 <- Map 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -4624,25 +4676,15 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((ds is not null and hr is not null) and (hr = 13)) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 ds (type: string)
-                        1 ds (type: string)
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Reduce Output Operator
-                        key expressions: '13' (type: string)
-                        sort order: +
-                        Map-reduce partition columns: '13' (type: string)
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: ds (type: string)
+                      sort order: +
+                      Map-reduce partition columns: ds (type: string)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -4651,12 +4693,22 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ds is not null and (date = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: ds (type: string)
-                      sort order: +
-                      Map-reduce partition columns: ds (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 ds (type: string)
+                        1 ds (type: string)
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      HybridGraceHashJoin: true
+                      Reduce Output Operator
+                        key expressions: '13' (type: string)
+                        sort order: +
+                        Map-reduce partition columns: '13' (type: string)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -4673,8 +4725,8 @@ STAGE PLANS:
                         0 '13' (type: string)
                         1 '13' (type: string)
                       input vertices:
-                        0 Map 1
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        0 Map 2
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
@@ -4821,26 +4873,33 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Reducer 7 
@@ -4849,26 +4908,33 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart
                           Partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
         Union 5 
@@ -4987,40 +5053,40 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((ds is not null and UDFToDouble(hr) is not null) and (hour = 11)) and ((date = '2008-04-08') or (date = '2008-04-09'))) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: ds (type: string), UDFToDouble(hr) (type: double)
                       sort order: ++
                       Map-reduce partition columns: ds (type: string), UDFToDouble(hr) (type: double)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart_orc
                           Partition key expr: ds
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
                     Select Operator
                       expressions: UDFToDouble(hr) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: double)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target Input: srcpart_orc
                           Partition key expr: UDFToDouble(hr)
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                           Target column: hr
                           Target Vertex: Map 1
         Reducer 2 

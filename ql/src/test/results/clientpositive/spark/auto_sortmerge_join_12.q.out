@@ -374,7 +374,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  Statistics: Num rows: 0 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Spark HashTable Sink Operator
                     keys:

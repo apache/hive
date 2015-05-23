@@ -322,7 +322,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
             hiveColStats = new ArrayList<ColStatistics>();
             for (String c : nonPartColNamesThatRqrStats) {
               // add empty stats object for each column
-              hiveColStats.add(new ColStatistics(hiveTblMetadata.getTableName(), c, null));
+              hiveColStats.add(new ColStatistics(c, null));
             }
             colNamesFailedStats.clear();
           } else {
@@ -358,7 +358,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     if (colNamesFailedStats.isEmpty() && !partColNamesThatRqrStats.isEmpty()) {
       ColStatistics cStats = null;
       for (int i = 0; i < partColNamesThatRqrStats.size(); i++) {
-        cStats = new ColStatistics(hiveTblMetadata.getTableName(), partColNamesThatRqrStats.get(i),
+        cStats = new ColStatistics(partColNamesThatRqrStats.get(i),
             hivePartitionColsMap.get(partColIndxsThatRqrStats.get(i)).getTypeName());
         cStats.setCountDistint(getDistinctCount(partitionList.getPartitions(),
             partColNamesThatRqrStats.get(i)));

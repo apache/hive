@@ -337,10 +337,9 @@ public class StatsRulesProcFactory {
         // can be boolean column in which case return true count
         ExprNodeColumnDesc encd = (ExprNodeColumnDesc) pred;
         String colName = encd.getColumn();
-        String tabAlias = encd.getTabAlias();
         String colType = encd.getTypeString();
         if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
-          ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
+          ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
           if (cs != null) {
             return cs.getNumTrues();
           }
@@ -393,10 +392,9 @@ public class StatsRulesProcFactory {
             // NOT on boolean columns is possible. in which case return false count.
             ExprNodeColumnDesc encd = (ExprNodeColumnDesc) leaf;
             String colName = encd.getColumn();
-            String tabAlias = encd.getTabAlias();
             String colType = encd.getTypeString();
             if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
-              ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
+              ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
                 return cs.getNumFalses();
               }
@@ -423,8 +421,7 @@ public class StatsRulesProcFactory {
           if (leaf instanceof ExprNodeColumnDesc) {
             ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
             String colName = colDesc.getColumn();
-            String tabAlias = colDesc.getTabAlias();
-            ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
+            ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
             if (cs != null) {
               return cs.getNumNulls();
             }
@@ -450,7 +447,6 @@ public class StatsRulesProcFactory {
         if (udf instanceof GenericUDFOPEqual ||
             udf instanceof GenericUDFOPEqualNS) {
           String colName = null;
-          String tabAlias = null;
           boolean isConst = false;
           Object prevConst = null;
 
@@ -483,7 +479,7 @@ public class StatsRulesProcFactory {
                 return numRows;
               }
 
-              ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
+              ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
                 long dvs = cs.getCountDistint();
                 numRows = dvs == 0 ? numRows / 2 : numRows / dvs;
@@ -492,7 +488,6 @@ public class StatsRulesProcFactory {
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
               colName = colDesc.getColumn();
-              tabAlias = colDesc.getTabAlias();
 
               // if const is first argument then evaluate the result
               if (isConst) {
@@ -504,7 +499,7 @@ public class StatsRulesProcFactory {
                   return numRows;
                 }
 
-                ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
+                ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
                 if (cs != null) {
                   long dvs = cs.getCountDistint();
                   numRows = dvs == 0 ? numRows / 2 : numRows / dvs;
@@ -753,11 +748,11 @@ public class StatsRulesProcFactory {
             GroupByOperator mGop = OperatorUtils.findSingleOperatorUpstream(parent, GroupByOperator.class);
             if (mGop != null) {
               containsGroupingSet = mGop.getConf().isGroupingSetsPresent();
-              sizeOfGroupingSet = mGop.getConf().getListGroupingSets().size();
             }
 
             if (containsGroupingSet) {
               // Case 8: column stats, grouping sets
+              sizeOfGroupingSet = mGop.getConf().getListGroupingSets().size();
               cardinality = Math.min(parentNumRows, StatsUtils.safeMult(ndvProduct, sizeOfGroupingSet));
 
               if (isDebugEnabled) {
@@ -826,9 +821,8 @@ public class StatsRulesProcFactory {
             // for those newly added columns
             if (!colExprMap.containsKey(ci.getInternalName())) {
               String colName = ci.getInternalName();
-              String tabAlias = ci.getTabAlias();
               String colType = ci.getTypeName();
-              ColStatistics cs = new ColStatistics(tabAlias, colName, colType);
+              ColStatistics cs = new ColStatistics(colName, colType);
               cs.setCountDistint(stats.getNumRows());
               cs.setNumNulls(0);
               cs.setAvgColLen(StatsUtils.getAvgColLenOfFixedLengthTypes(colType));
@@ -1053,54 +1047,37 @@ public class StatsRulesProcFactory {
           // statistics object that is combination of statistics from all
           // relations involved in JOIN
           Statistics stats = new Statistics();
-          Map<String, Long> rowCountParents = new HashMap<String, Long>();
           List<Long> distinctVals = Lists.newArrayList();
           int numParent = parents.size();
-          Map<String, ColStatistics> joinedColStats = Maps.newHashMap();
+          Map<Integer, Long> rowCountParents = Maps.newHashMap();
+          Map<Integer, Statistics> joinStats = Maps.newHashMap();
           Map<Integer, List<String>> joinKeys = Maps.newHashMap();
           List<Long> rowCounts = Lists.newArrayList();
 
           // detect if there are multiple attributes in join key
           ReduceSinkOperator rsOp = (ReduceSinkOperator) jop.getParentOperators().get(0);
-          List<String> keyExprs = rsOp.getConf().getOutputKeyColumnNames();
+          List<String> keyExprs = StatsUtils.getQualifedReducerKeyNames(rsOp.getConf()
+              .getOutputKeyColumnNames());
           numAttr = keyExprs.size();
 
           // infer PK-FK relationship in single attribute join case
           pkfkInferred = false;
           inferPKFKRelationship();
-
           // get the join keys from parent ReduceSink operators
           for (int pos = 0; pos < parents.size(); pos++) {
             ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
-
             Statistics parentStats = parent.getStatistics();
-            keyExprs = parent.getConf().getOutputKeyColumnNames();
+            keyExprs = StatsUtils.getQualifedReducerKeyNames(parent.getConf()
+                .getOutputKeyColumnNames());
 
-            // Parent RS may have column statistics from multiple parents.
-            // Populate table alias to row count map, this will be used later to
-            // scale down/up column statistics based on new row count
-            // NOTE: JOIN with UNION as parent of RS will not have table alias
-            // propagated properly. UNION operator does not propagate the table
-            // alias of subqueries properly to expression nodes. Hence union20.q
-            // will have wrong number of rows.
-            Set<String> tableAliases = StatsUtils.getAllTableAlias(parent.getColumnExprMap());
-            for (String tabAlias : tableAliases) {
-              rowCountParents.put(tabAlias, parentStats.getNumRows());
-            }
+            rowCountParents.put(pos, parentStats.getNumRows());
             rowCounts.add(parentStats.getNumRows());
 
-            // compute fully qualified join key column names. this name will be
-            // used to quickly look-up for column statistics of join key.
-            // TODO: expressions in join condition will be ignored. assign
             // internal name for expressions and estimate column statistics for expression.
-            List<String> fqCols = StatsUtils.getFullyQualifedReducerKeyNames(keyExprs,
-                parent.getColumnExprMap());
-            joinKeys.put(pos, fqCols);
+            joinKeys.put(pos, keyExprs);
 
             // get column statistics for all output columns
-            for (ColStatistics cs : parentStats.getColumnStats()) {
-              joinedColStats.put(cs.getFullyQualifiedColName(), cs);
-            }
+            joinStats.put(pos, parentStats);
 
             // since new statistics is derived from all relations involved in
             // JOIN, we need to update the state information accordingly
@@ -1116,12 +1093,11 @@ public class StatsRulesProcFactory {
             for (int idx = 0; idx < numAttr; idx++) {
               for (Integer i : joinKeys.keySet()) {
                 String col = joinKeys.get(i).get(idx);
-                ColStatistics cs = joinedColStats.get(col);
+                ColStatistics cs = joinStats.get(i).getColumnStatisticsFromColName(col);
                 if (cs != null) {
                   perAttrDVs.add(cs.getCountDistint());
                 }
               }
-
               distinctVals.add(getDenominator(perAttrDVs));
               perAttrDVs.clear();
             }
@@ -1136,9 +1112,10 @@ public class StatsRulesProcFactory {
               }
             }
           } else {
-            for (List<String> jkeys : joinKeys.values()) {
-              for (String jk : jkeys) {
-                ColStatistics cs = joinedColStats.get(jk);
+            if (numAttr == 1) {
+              for (Integer i : joinKeys.keySet()) {
+                String col = joinKeys.get(i).get(0);
+                ColStatistics cs = joinStats.get(i).getColumnStatisticsFromColName(col);
                 if (cs != null) {
                   distinctVals.add(cs.getCountDistint());
                 }
@@ -1148,28 +1125,23 @@ public class StatsRulesProcFactory {
           }
 
           // Update NDV of joined columns to be min(V(R,y), V(S,y))
-          updateJoinColumnsNDV(joinKeys, joinedColStats, numAttr);
+          updateJoinColumnsNDV(joinKeys, joinStats, numAttr);
 
-          // column statistics from different sources are put together and rename
-          // fully qualified column names based on output schema of join operator
+          // column statistics from different sources are put together and
+          // rename based on output schema of join operator
           Map<String, ExprNodeDesc> colExprMap = jop.getColumnExprMap();
           RowSchema rs = jop.getSchema();
           List<ColStatistics> outColStats = Lists.newArrayList();
-          Map<String, String> outInTabAlias = new HashMap<String, String>();
           for (ColumnInfo ci : rs.getSignature()) {
             String key = ci.getInternalName();
             ExprNodeDesc end = colExprMap.get(key);
             if (end instanceof ExprNodeColumnDesc) {
               String colName = ((ExprNodeColumnDesc) end).getColumn();
-              String tabAlias = ((ExprNodeColumnDesc) end).getTabAlias();
-              String fqColName = StatsUtils.getFullyQualifiedColumnName(tabAlias, colName);
-              ColStatistics cs = joinedColStats.get(fqColName);
+              int pos = jop.getConf().getReversedExprs().get(key);
+              ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(colName);
               String outColName = key;
-              String outTabAlias = ci.getTabAlias();
-              outInTabAlias.put(outTabAlias, tabAlias);
               if (cs != null) {
                 cs.setColumnName(outColName);
-                cs.setTableAlias(outTabAlias);
               }
               outColStats.add(cs);
             }
@@ -1178,7 +1150,7 @@ public class StatsRulesProcFactory {
           // update join statistics
           stats.setColumnStats(outColStats);
           long newRowCount = pkfkInferred ? newNumRows : computeNewRowCount(rowCounts, denom);
-          updateStatsForJoinType(stats, newRowCount, jop, rowCountParents,outInTabAlias);
+          updateStatsForJoinType(stats, newRowCount, jop, rowCountParents);
           jop.setStatistics(stats);
 
           if (isDebugEnabled) {
@@ -1364,13 +1336,11 @@ public class StatsRulesProcFactory {
         Operator<? extends OperatorDesc> op = ops.get(i);
         if (op != null && op instanceof ReduceSinkOperator) {
           ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
-          List<String> keys = rsOp.getConf().getOutputKeyColumnNames();
-          List<String> fqCols = StatsUtils.getFullyQualifedReducerKeyNames(keys,
-              rsOp.getColumnExprMap());
-          if (fqCols.size() == 1) {
-            String joinCol = fqCols.get(0);
+          List<String> keys = StatsUtils.getQualifedReducerKeyNames(rsOp.getConf().getOutputKeyColumnNames());
+          if (keys.size() == 1) {
+            String joinCol = keys.get(0);
             if (rsOp.getStatistics() != null) {
-              ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromFQColName(joinCol);
+              ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromColName(joinCol);
               if (cs != null && !cs.isPrimaryKey()) {
                 if (StatsUtils.inferForeignKey(csPK, cs)) {
                   result.add(i);
@@ -1395,13 +1365,11 @@ public class StatsRulesProcFactory {
           Operator<? extends OperatorDesc> op = ops.get(i);
           if (op instanceof ReduceSinkOperator) {
             ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
-            List<String> keys = rsOp.getConf().getOutputKeyColumnNames();
-            List<String> fqCols = StatsUtils.getFullyQualifedReducerKeyNames(keys,
-                rsOp.getColumnExprMap());
-            if (fqCols.size() == 1) {
-              String joinCol = fqCols.get(0);
+            List<String> keys = StatsUtils.getQualifedReducerKeyNames(rsOp.getConf().getOutputKeyColumnNames());
+            if (keys.size() == 1) {
+              String joinCol = keys.get(0);
               if (rsOp.getStatistics() != null) {
-                ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromFQColName(joinCol);
+                ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromColName(joinCol);
                 if (cs != null && cs.isPrimaryKey()) {
                   result.add(i);
                 }
@@ -1429,12 +1397,16 @@ public class StatsRulesProcFactory {
 
     private void updateStatsForJoinType(Statistics stats, long newNumRows,
         CommonJoinOperator<? extends JoinDesc> jop,
-        Map<String, Long> rowCountParents,
-        Map<String, String> outInTabAlias) {
+        Map<Integer, Long> rowCountParents) {
 
       if (newNumRows < 0) {
         LOG.info("STATS-" + jop.toString() + ": Overflow in number of rows."
           + newNumRows + " rows will be set to Long.MAX_VALUE");
+      }
+      if (newNumRows == 0) {
+        LOG.info("STATS-" + jop.toString() + ": Equals 0 in number of rows."
+            + newNumRows + " rows will be set to 1");
+        newNumRows = 1;
       }
       newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
       stats.setNumRows(newNumRows);
@@ -1447,7 +1419,8 @@ public class StatsRulesProcFactory {
       // and stats for columns from 2nd parent should be scaled down by 200x
       List<ColStatistics> colStats = stats.getColumnStats();
       for (ColStatistics cs : colStats) {
-        long oldRowCount = rowCountParents.get(outInTabAlias.get(cs.getTableAlias()));
+        int pos = jop.getConf().getReversedExprs().get(cs.getColumnName());
+        long oldRowCount = rowCountParents.get(pos);
         double ratio = (double) newNumRows / (double) oldRowCount;
         long oldDV = cs.getCountDistint();
         long newDV = oldDV;
@@ -1499,15 +1472,16 @@ public class StatsRulesProcFactory {
     }
 
     private void updateJoinColumnsNDV(Map<Integer, List<String>> joinKeys,
-        Map<String, ColStatistics> joinedColStats, int numAttr) {
+        Map<Integer, Statistics> joinStats, int numAttr) {
       int joinColIdx = 0;
       while (numAttr > 0) {
         long minNDV = Long.MAX_VALUE;
 
         // find min NDV for joining columns
         for (Map.Entry<Integer, List<String>> entry : joinKeys.entrySet()) {
+          int pos = entry.getKey();
           String key = entry.getValue().get(joinColIdx);
-          ColStatistics cs = joinedColStats.get(key);
+          ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(key);
           if (cs != null && cs.getCountDistint() < minNDV) {
             minNDV = cs.getCountDistint();
           }
@@ -1516,8 +1490,9 @@ public class StatsRulesProcFactory {
         // set min NDV value to both columns involved in join
         if (minNDV != Long.MAX_VALUE) {
           for (Map.Entry<Integer, List<String>> entry : joinKeys.entrySet()) {
+            int pos = entry.getKey();
             String key = entry.getValue().get(joinColIdx);
-            ColStatistics cs = joinedColStats.get(key);
+            ColStatistics cs = joinStats.get(pos).getColumnStatisticsFromColName(key);
             if (cs != null) {
               cs.setCountDistint(minNDV);
             }
@@ -1810,9 +1785,14 @@ public class StatsRulesProcFactory {
     if (newNumRows < 0) {
       LOG.info("STATS-" + op.toString() + ": Overflow in number of rows."
           + newNumRows + " rows will be set to Long.MAX_VALUE");
+      newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
+    }
+    if (newNumRows == 0) {
+      LOG.info("STATS-" + op.toString() + ": Equals 0 in number of rows."
+          + newNumRows + " rows will be set to 1");
+      newNumRows = 1;
     }
 
-    newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
     long oldRowCount = stats.getNumRows();
     double ratio = (double) newNumRows / (double) oldRowCount;
     stats.setNumRows(newNumRows);
