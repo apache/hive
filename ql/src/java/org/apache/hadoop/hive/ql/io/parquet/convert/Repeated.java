@@ -125,8 +125,8 @@ public interface Repeated extends ConverterParent {
 
     @Override
     public void parentEnd() {
-      parent.set(index, HiveGroupConverter.wrapList(new ArrayWritable(
-          Writable.class, list.toArray(new Writable[list.size()]))));
+      parent.set(index, new ArrayWritable(
+          Writable.class, list.toArray(new Writable[list.size()])));
     }
 
     @Override
@@ -185,8 +185,8 @@ public interface Repeated extends ConverterParent {
 
     @Override
     public void parentEnd() {
-      parent.set(index, wrapList(new ArrayWritable(
-          Writable.class, list.toArray(new Writable[list.size()]))));
+      parent.set(index, new ArrayWritable(
+          Writable.class, list.toArray(new Writable[list.size()])));
     }
   }
 }

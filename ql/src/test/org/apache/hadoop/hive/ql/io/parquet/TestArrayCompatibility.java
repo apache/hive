@@ -62,8 +62,8 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
-        new IntWritable(34), new IntWritable(35), new IntWritable(36)));
+    ArrayWritable expected = list(
+        new IntWritable(34), new IntWritable(35), new IntWritable(36));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -109,9 +109,9 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
+    ArrayWritable expected = list(
         record(new FloatWritable(1.0f), new FloatWritable(1.0f)),
-        record(new FloatWritable(2.0f), new FloatWritable(2.0f))));
+        record(new FloatWritable(2.0f), new FloatWritable(2.0f)));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -148,8 +148,8 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
-        new IntWritable(34), new IntWritable(35), new IntWritable(36)));
+    ArrayWritable expected = list(
+        new IntWritable(34), new IntWritable(35), new IntWritable(36));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -198,9 +198,9 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
+    ArrayWritable expected = list(
         record(new LongWritable(1234L)),
-        record(new LongWritable(2345L))));
+        record(new LongWritable(2345L)));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -237,8 +237,8 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
-        new IntWritable(34), new IntWritable(35), new IntWritable(36)));
+    ArrayWritable expected = list(
+        new IntWritable(34), new IntWritable(35), new IntWritable(36));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -287,9 +287,9 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
+    ArrayWritable expected = list(
         record(new LongWritable(1234L)),
-        record(new LongWritable(2345L))));
+        record(new LongWritable(2345L)));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -339,9 +339,9 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
+    ArrayWritable expected = list(
         new LongWritable(1234L),
-        new LongWritable(2345L)));
+        new LongWritable(2345L));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -397,9 +397,9 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
+    ArrayWritable expected = list(
         record(new DoubleWritable(0.0), new DoubleWritable(0.0)),
-        record(new DoubleWritable(0.0), new DoubleWritable(180.0))));
+        record(new DoubleWritable(0.0), new DoubleWritable(180.0)));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -473,10 +473,10 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
+    ArrayWritable expected = list(
         record(new DoubleWritable(0.0), new DoubleWritable(0.0)),
         null,
-        record(new DoubleWritable(0.0), new DoubleWritable(180.0))));
+        record(new DoubleWritable(0.0), new DoubleWritable(180.0)));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -546,9 +546,9 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
+    ArrayWritable expected = list(
         record(new DoubleWritable(0.0), new DoubleWritable(180.0)),
-        record(new DoubleWritable(0.0), new DoubleWritable(0.0))));
+        record(new DoubleWritable(0.0), new DoubleWritable(0.0)));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
@@ -619,9 +619,9 @@ public class TestArrayCompatibility extends AbstractTestParquetDirect {
           }
         });
 
-    ArrayWritable expected = record(list(
+    ArrayWritable expected = list(
         record(new DoubleWritable(0.0), new DoubleWritable(180.0)),
-        record(new DoubleWritable(0.0), new DoubleWritable(0.0))));
+        record(new DoubleWritable(0.0), new DoubleWritable(0.0)));
 
     List<ArrayWritable> records = read(test);
     Assert.assertEquals("Should have only one record", 1, records.size());
