@@ -369,7 +369,7 @@ public class CliDriver {
         } else {
           command += oneCmd;
         }
-        if (StringUtils.isBlank(command)) {
+	if (StringUtils.isBlank(command) || command.startsWith("--")) {
           continue;
         }
 
