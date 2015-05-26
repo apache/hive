@@ -43,27 +43,26 @@ import com.google.common.base.Preconditions;
 public class LlapRegistryService extends AbstractService {
 
   private static final Logger LOG = Logger.getLogger(LlapRegistryService.class);
-  
-  private ServiceRegistry registry = null;
 
-  public LlapRegistryService() {
+  private ServiceRegistry registry = null;
+  private final boolean isDaemon;
+
+  public LlapRegistryService(boolean isDaemon) {
     super("LlapRegistryService");
+    this.isDaemon = isDaemon;
   }
 
   @Override
   public void serviceInit(Configuration conf) {
     String hosts = conf.getTrimmed(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS);
     if (hosts.startsWith("@")) {
-      registry = initRegistry(hosts.substring(1), conf);
+      registry = new LlapYarnRegistryImpl(hosts.substring(1), conf, isDaemon);
     } else {
       registry = new LlapFixedRegistryImpl(hosts, conf);
     }
     LOG.info("Using LLAP registry type " + registry);
   }
 
-  private ServiceRegistry initRegistry(String instanceName, Configuration conf) {
-    return new LlapYarnRegistryImpl(instanceName, conf);
-  }
 
   @Override
   public void serviceStart() throws Exception {
