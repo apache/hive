@@ -77,6 +77,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -1061,7 +1062,6 @@ public class StatsRulesProcFactory {
           numAttr = keyExprs.size();
 
           // infer PK-FK relationship in single attribute join case
-          pkfkInferred = false;
           inferPKFKRelationship();
           // get the join keys from parent ReduceSink operators
           for (int pos = 0; pos < parents.size(); pos++) {
@@ -1197,53 +1197,42 @@ public class StatsRulesProcFactory {
 
     private void inferPKFKRelationship() {
       if (numAttr == 1) {
-        List<Integer> parentsWithPK = getPrimaryKeyCandidates(parents);
+        // If numAttr is 1, this means we join on one single key column.
+        Map<Integer, ColStatistics> parentsWithPK = getPrimaryKeyCandidates(parents);
 
-        // in case of fact to many dimensional tables join, the join key in fact table will be
-        // mostly foreign key which will have corresponding primary key in dimension table.
-        // The selectivity of fact table in that case will be product of all selectivities of
-        // dimension tables (assumes conjunctivity)
-        for (Integer id : parentsWithPK) {
-          ColStatistics csPK = null;
-          Operator<? extends OperatorDesc> parent = parents.get(id);
-          for (ColStatistics cs : parent.getStatistics().getColumnStats()) {
-            if (cs.isPrimaryKey()) {
-              csPK = cs;
-              break;
+        // We only allow one single PK.
+        if (parentsWithPK.size() != 1) {
+          LOG.debug("STATS-" + jop.toString() + ": detects multiple PK parents.");
+          return;
+        }
+        Integer pkPos = parentsWithPK.keySet().iterator().next();
+        ColStatistics csPK = parentsWithPK.values().iterator().next();
+
+        // infer foreign key candidates positions
+        Map<Integer, ColStatistics> csFKs = getForeignKeyCandidates(parents, csPK);
+
+        // we allow multiple foreign keys (snowflake schema)
+        // csfKs.size() + 1 == parents.size() means we have a single PK and all
+        // the rest ops are FKs.
+        if (csFKs.size() + 1 == parents.size()) {
+          getSelectivity(parents, pkPos, csPK, csFKs);
+
+          // some debug information
+          if (isDebugEnabled) {
+            List<String> parentIds = Lists.newArrayList();
+
+            // print primary key containing parents
+            for (Integer i : parentsWithPK.keySet()) {
+              parentIds.add(parents.get(i).toString());
             }
-          }
+            LOG.debug("STATS-" + jop.toString() + ": PK parent id(s) - " + parentIds);
+            parentIds.clear();
 
-          // infer foreign key candidates positions
-          List<Integer> parentsWithFK = getForeignKeyCandidates(parents, csPK);
-          if (parentsWithFK.size() == 1 &&
-              parentsWithFK.size() + parentsWithPK.size() == parents.size()) {
-            Operator<? extends OperatorDesc> parentWithFK = parents.get(parentsWithFK.get(0));
-            List<Float> parentsSel = getSelectivity(parents, parentsWithPK);
-            Float prodSelectivity = 1.0f;
-            for (Float selectivity : parentsSel) {
-              prodSelectivity *= selectivity;
+            // print foreign key containing parents
+            for (Integer i : csFKs.keySet()) {
+              parentIds.add(parents.get(i).toString());
             }
-            newNumRows = (long) Math.ceil(
-                parentWithFK.getStatistics().getNumRows() * prodSelectivity);
-            pkfkInferred = true;
-
-            // some debug information
-            if (isDebugEnabled) {
-              List<String> parentIds = Lists.newArrayList();
-
-              // print primary key containing parents
-              for (Integer i : parentsWithPK) {
-                parentIds.add(parents.get(i).toString());
-              }
-              LOG.debug("STATS-" + jop.toString() + ": PK parent id(s) - " + parentIds);
-              parentIds.clear();
-
-              // print foreign key containing parents
-              for (Integer i : parentsWithFK) {
-                parentIds.add(parents.get(i).toString());
-              }
-              LOG.debug("STATS-" + jop.toString() + ": FK parent id(s) - " + parentIds);
-            }
+            LOG.debug("STATS-" + jop.toString() + ": FK parent id(s) - " + parentIds);
           }
         }
       }
@@ -1251,19 +1240,63 @@ public class StatsRulesProcFactory {
 
     /**
      * Get selectivity of reduce sink operators.
-     * @param ops - reduce sink operators
-     * @param opsWithPK - reduce sink operators with primary keys
-     * @return - list of selectivity for primary key containing operators
+     * @param csPK - ColStatistics for a single primary key
+     * @param csFKs - ColStatistics for multiple foreign keys
      */
-    private List<Float> getSelectivity(List<Operator<? extends OperatorDesc>> ops,
-        List<Integer> opsWithPK) {
-      List<Float> result = Lists.newArrayList();
-      for (Integer idx : opsWithPK) {
-        Operator<? extends OperatorDesc> op = ops.get(idx);
-        float selectivity = getSelectivitySimpleTree(op);
-        result.add(selectivity);
+    private void getSelectivity(List<Operator<? extends OperatorDesc>> ops, Integer pkPos, ColStatistics csPK,
+        Map<Integer, ColStatistics> csFKs) {
+      this.pkfkInferred = true;
+      double pkfkSelectivity = Double.MAX_VALUE;
+      int fkInd = -1;
+      // 1. We iterate through all the operators that have candidate FKs and
+      // choose the FK that has the minimum selectivity. We assume that PK and this FK
+      // have the PK-FK relationship. This is heuristic and can be
+      // improved later.
+      for (Entry<Integer, ColStatistics> entry : csFKs.entrySet()) {
+        int pos = entry.getKey();
+        Operator<? extends OperatorDesc> opWithPK = ops.get(pkPos);
+        double selectivity = getSelectivitySimpleTree(opWithPK);
+        double selectivityAdjustment = StatsUtils.getScaledSelectivity(csPK, entry.getValue());
+        selectivity = selectivityAdjustment * selectivity > 1 ? selectivity : selectivityAdjustment
+            * selectivity;
+        if (selectivity < pkfkSelectivity) {
+          pkfkSelectivity = selectivity;
+          fkInd = pos;
+        }
       }
-      return result;
+      long newrows = 1;
+      List<Long> rowCounts = Lists.newArrayList();
+      List<Long> distinctVals = Lists.newArrayList();
+      // 2. We then iterate through all the operators that have candidate FKs again.
+      // We assume the PK is first joining with the FK that we just selected.
+      // And we apply the PK-FK relationship when we compute the newrows and ndv.
+      // After that, we join the result with all the other FKs.
+      // We do not assume the PK-FK relationship anymore and just compute the
+      // row count using the classic formula.
+      for (Entry<Integer, ColStatistics> entry : csFKs.entrySet()) {
+        int pos = entry.getKey();
+        ColStatistics csFK = entry.getValue();
+        ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
+        Statistics parentStats = parent.getStatistics();
+        if (fkInd == pos) {
+          // 2.1 This is the new number of rows after PK is joining with FK
+          newrows = (long) Math.ceil(parentStats.getNumRows() * pkfkSelectivity);
+          rowCounts.add(newrows);
+          // 2.1 The ndv is the minimum of the PK and the FK.
+          distinctVals.add(Math.min(csFK.getCountDistint(), csPK.getCountDistint()));
+        } else {
+          // 2.2 All the other FKs.
+          rowCounts.add(parentStats.getNumRows());
+          distinctVals.add(csFK.getCountDistint());
+        }
+      }
+      if (csFKs.size() == 1) {
+        // there is only one FK
+        this.newNumRows = newrows;
+      } else {
+        // there is more than one FK
+        this.newNumRows = this.computeNewRowCount(rowCounts, getDenominator(distinctVals));
+      }
     }
 
     private float getSelectivitySimpleTree(Operator<? extends OperatorDesc> op) {
@@ -1323,11 +1356,11 @@ public class StatsRulesProcFactory {
      * primary key range (inferred as foreign keys).
      * @param ops - operators
      * @param csPK - column statistics of primary key
-     * @return - list of foreign key containing parent ids
+     * @return - a map which contains position ids and the corresponding column statistics
      */
-    private List<Integer> getForeignKeyCandidates(List<Operator<? extends OperatorDesc>> ops,
+    private Map<Integer, ColStatistics> getForeignKeyCandidates(List<Operator<? extends OperatorDesc>> ops,
         ColStatistics csPK) {
-      List<Integer> result = Lists.newArrayList();
+      Map<Integer, ColStatistics> result = new HashMap<Integer, ColStatistics>();
       if (csPK == null || ops == null) {
         return result;
       }
@@ -1343,7 +1376,7 @@ public class StatsRulesProcFactory {
               ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromColName(joinCol);
               if (cs != null && !cs.isPrimaryKey()) {
                 if (StatsUtils.inferForeignKey(csPK, cs)) {
-                  result.add(i);
+                  result.put(i,cs);
                 }
               }
             }
@@ -1358,8 +1391,8 @@ public class StatsRulesProcFactory {
      * @param ops - operators
      * @return - list of primary key containing parent ids
      */
-    private List<Integer> getPrimaryKeyCandidates(List<Operator<? extends OperatorDesc>> ops) {
-      List<Integer> result = Lists.newArrayList();
+    private Map<Integer, ColStatistics> getPrimaryKeyCandidates(List<Operator<? extends OperatorDesc>> ops) {
+      Map<Integer, ColStatistics> result = new HashMap<Integer, ColStatistics>();
       if (ops != null && !ops.isEmpty()) {
         for (int i = 0; i < ops.size(); i++) {
           Operator<? extends OperatorDesc> op = ops.get(i);
@@ -1371,7 +1404,7 @@ public class StatsRulesProcFactory {
               if (rsOp.getStatistics() != null) {
                 ColStatistics cs = rsOp.getStatistics().getColumnStatisticsFromColName(joinCol);
                 if (cs != null && cs.isPrimaryKey()) {
-                  result.add(i);
+                  result.put(i, cs);
                 }
               }
             }

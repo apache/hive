@@ -29,11 +29,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: '3c01bdbb26f358bab27f267924aa2c9a03fcfdb8' (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select
