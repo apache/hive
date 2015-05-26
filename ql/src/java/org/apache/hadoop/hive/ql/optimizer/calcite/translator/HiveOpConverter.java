@@ -451,7 +451,11 @@ public class HiveOpConverter {
     if (sortRel.fetch != null) {
       int limit = RexLiteral.intValue(sortRel.fetch);
       LimitDesc limitDesc = new LimitDesc(limit);
-      // TODO: Set 'last limit' global property
+      // Because we are visiting the operators recursively, the last limit op that
+      // calls the following function will set the global property.
+      if (this.semanticAnalyzer != null && semanticAnalyzer.getQB() != null
+          && semanticAnalyzer.getQB().getParseInfo() != null)
+        this.semanticAnalyzer.getQB().getParseInfo().setOuterQueryLimit(limit);
       ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOp);
       resultOp = OperatorFactory.getAndMakeChild(limitDesc,
           new RowSchema(cinfoLst), resultOp);
