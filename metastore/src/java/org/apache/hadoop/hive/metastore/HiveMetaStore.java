@@ -1536,7 +1536,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
 
-        if(!ifPurge) {
+        // tblPath will be null when tbl is a view. We skip the following if block in that case.
+        if(tblPath != null && !ifPurge) {
           String trashInterval = hiveConf.get("fs.trash.interval");
           boolean trashEnabled = trashInterval != null && trashInterval.length() > 0
             && Float.parseFloat(trashInterval) > 0;
