@@ -17,7 +17,7 @@ THISSERVICE=cli
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 updateCli() {
-  if [ $USE_DEPRECATED_CLI == "true" ]; then
+  if [ "$USE_DEPRECATED_CLI" == "true" ]; then
     CLASS=org.apache.hadoop.hive.cli.CliDriver
     JAR=hive-cli-*.jar
   else
