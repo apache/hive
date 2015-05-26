@@ -300,7 +300,10 @@ public class StatsUtils {
   public static void inferAndSetPrimaryKey(long numRows, List<ColStatistics> colStats) {
     if (colStats != null) {
       for (ColStatistics cs : colStats) {
-        if (cs != null && cs.getRange() != null && cs.getRange().minValue != null &&
+        if (cs != null && cs.getCountDistint() >= numRows) {
+          cs.setPrimaryKey(true);
+        }
+        else if (cs != null && cs.getRange() != null && cs.getRange().minValue != null &&
             cs.getRange().maxValue != null) {
           if (numRows ==
               ((cs.getRange().maxValue.longValue() - cs.getRange().minValue.longValue()) + 1)) {
@@ -328,6 +331,36 @@ public class StatsUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * Scale selectivity based on key range ratio.
+   * @param csPK - column statistics of primary key
+   * @param csFK - column statistics of potential foreign key
+   * @return
+   */
+  public static float getScaledSelectivity(ColStatistics csPK, ColStatistics csFK) {
+    float scaledSelectivity = 1.0f;
+    if (csPK != null && csFK != null) {
+      if (csPK.isPrimaryKey()) {
+        // Use Max-Min Range as NDV gets scaled by selectivity.
+        if (csPK.getRange() != null && csFK.getRange() != null) {
+          long pkRangeDelta = getRangeDelta(csPK.getRange());
+          long fkRangeDelta = getRangeDelta(csFK.getRange());
+          if (fkRangeDelta > 0 && pkRangeDelta > 0 && fkRangeDelta < pkRangeDelta) {
+            scaledSelectivity = (float) pkRangeDelta / (float) fkRangeDelta;
+          }
+        }
+      }
+    }
+    return scaledSelectivity;
+  }
+
+  private static long getRangeDelta(ColStatistics.Range range) {
+    if (range.minValue != null && range.maxValue != null) {
+      return (range.maxValue.longValue() - range.minValue.longValue());
+    }
+    return 0;
   }
 
   private static boolean isWithin(ColStatistics.Range range1, ColStatistics.Range range2) {

@@ -104,30 +104,40 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
+                      Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
                         keys: null (type: void)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: void)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: void)
+                          Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
+                      Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
                         keys: null (type: void)
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: void)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: void)
+                          Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
