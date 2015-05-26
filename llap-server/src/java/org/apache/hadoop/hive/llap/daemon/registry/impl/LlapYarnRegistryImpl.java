@@ -54,8 +54,7 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
   private static final Logger LOG = Logger.getLogger(LlapYarnRegistryImpl.class);
 
-  private RegistryOperationsService client;
-  private final String instanceName;
+  private final RegistryOperationsService client;
   private final Configuration conf;
   private final ServiceRecordMarshal encoder;
   private final String path;
@@ -72,6 +71,7 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
   final ScheduledExecutorService refresher = Executors.newScheduledThreadPool(1,
       new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapYarnRegistryRefresher").build());
   final long refreshDelay;
+  private final boolean isDaemon;
 
   static {
     String localhost = "localhost";
@@ -83,11 +83,10 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     hostname = localhost;
   }
 
-  public LlapYarnRegistryImpl(String instanceName, Configuration conf) {
+  public LlapYarnRegistryImpl(String instanceName, Configuration conf, boolean isDaemon) {
 
     LOG.info("Llap Registry is enabled with registryid: " + instanceName);
     this.conf = new Configuration(conf);
-    this.instanceName = instanceName;
     conf.addResource(YarnConfiguration.YARN_SITE_CONFIGURATION_FILE);
     // registry reference
     client = (RegistryOperationsService) RegistryOperationsFactory.createInstance(conf);
@@ -97,6 +96,7 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     refreshDelay =
         conf.getInt(LlapConfiguration.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL,
             LlapConfiguration.LLAP_DAEMON_SERVICE_REFRESH_INTERVAL_DEFAULT);
+    this.isDaemon = isDaemon;
     Preconditions.checkArgument(refreshDelay > 0,
         "Refresh delay for registry has to be positive = %d", refreshDelay);
   }
@@ -278,7 +278,7 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
         if (instances != null) {
           // deep-copy before modifying
-          Set<String> oldKeys = new HashSet(instances.keySet());
+          Set<String> oldKeys = new HashSet<>(instances.keySet());
           if (oldKeys.removeAll(latestKeys)) {
             // This is all the records which have not checked in, and are effectively dead.
             for (String k : oldKeys) {
@@ -335,19 +335,19 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
 
   @Override
   public void start() {
-    if (client != null) {
-      client.start();
-      refresher.scheduleWithFixedDelay(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            instances.refresh();
-          } catch (IOException ioe) {
-            LOG.warn("Could not refresh hosts during scheduled refresh", ioe);
-          }
+    if (client == null) return;
+    client.start();
+    if (isDaemon) return;
+    refresher.scheduleWithFixedDelay(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          instances.refresh();
+        } catch (IOException ioe) {
+          LOG.warn("Could not refresh hosts during scheduled refresh", ioe);
         }
-      }, 0, refreshDelay, TimeUnit.SECONDS);
-    }
+      }
+    }, 0, refreshDelay, TimeUnit.SECONDS);
   }
 
   @Override

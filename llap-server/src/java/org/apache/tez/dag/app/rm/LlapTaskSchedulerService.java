@@ -132,7 +132,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   // Per Executor Thread
   private final Resource resourcePerExecutor;
 
-  private final LlapRegistryService registry = new LlapRegistryService();
+  private final LlapRegistryService registry = new LlapRegistryService(false);
 
 
   private volatile ListenableFuture<Void> nodeEnablerFuture;

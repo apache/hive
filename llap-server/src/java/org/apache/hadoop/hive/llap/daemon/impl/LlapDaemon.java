@@ -152,7 +152,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
         executorMemoryBytes,
         metrics);
 
-    this.registry = new LlapRegistryService();
+    this.registry = new LlapRegistryService(true);
   }
 
   private void printAsciiArt() {
