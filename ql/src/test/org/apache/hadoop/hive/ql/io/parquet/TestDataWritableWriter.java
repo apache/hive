@@ -311,11 +311,13 @@ public class TestDataWritableWriter {
         + "}\n";
 
     ArrayWritable hiveRecord = createGroup(
-      createArray(
-          createInt(1),
-          createNull(),
-          createInt(2)
-      )
+        createGroup(
+            createArray(
+                createInt(1),
+                createNull(),
+                createInt(2)
+            )
+        )
     );
 
     // Write record to Parquet format
@@ -361,16 +363,18 @@ public class TestDataWritableWriter {
     ArrayWritable hiveRecord = createGroup(
         createGroup(
             createArray(
-                createString("key1"),
-                createInt(1)
-            ),
-            createArray(
-                createString("key2"),
-                createInt(2)
-            ),
-            createArray(
-                createString("key3"),
-                createNull()
+                createArray(
+                    createString("key1"),
+                    createInt(1)
+                ),
+                createArray(
+                    createString("key2"),
+                    createInt(2)
+                ),
+                createArray(
+                    createString("key3"),
+                    createNull()
+                )
             )
         )
     );
@@ -428,10 +432,14 @@ public class TestDataWritableWriter {
         + "}\n";
 
     ArrayWritable hiveRecord = createGroup(
-        createArray(
+        createGroup(
             createArray(
-                createInt(1),
-                createInt(2)
+                createGroup(
+                    createArray(
+                        createInt(1),
+                        createInt(2)
+                    )
+                )
             )
         )
     );

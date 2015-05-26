@@ -71,8 +71,10 @@ public class TestAbstractParquetMapInspector extends TestCase {
     final Writable[] entry1 = new Writable[]{new IntWritable(0), new IntWritable(1)};
     final Writable[] entry2 = new Writable[]{new IntWritable(2), new IntWritable(3)};
 
-    final ArrayWritable map = new ArrayWritable(ArrayWritable.class, new Writable[]{
+    final ArrayWritable internalMap = new ArrayWritable(ArrayWritable.class, new Writable[]{
       new ArrayWritable(Writable.class, entry1), new ArrayWritable(Writable.class, entry2)});
+
+    final ArrayWritable map = new ArrayWritable(ArrayWritable.class, new Writable[]{internalMap});
 
     final Map<Writable, Writable> expected = new HashMap<Writable, Writable>();
     expected.put(new IntWritable(0), new IntWritable(1));
