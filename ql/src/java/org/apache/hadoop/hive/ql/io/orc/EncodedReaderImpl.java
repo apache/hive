@@ -31,10 +31,12 @@ import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.counters.LowLevelCacheCounters;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.CacheListHelper;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.InStream.TrackedCacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
@@ -62,17 +64,18 @@ import org.apache.hive.common.util.FixedSizedObjectPool.PoolObjectHelper;
  * 3) Additionally, we keep an extra +1 refcount "for the fetching thread". That way, if we send
  *    the block to processor, and the latter decrefs it, the block won't be evicted when we want
  *    to reuse it for some other RG, forcing us to do an extra disk read or cache lookup.
- * 4) As we read (we always read RGs in order, and assume they are stored in physical order in the
- *    file, plus that RGs are not shared between streams, AND that we read each stream from the
+ * 4) As we read (we always read RGs in order, assume they are stored in physical order in the
+ *    file, plus that CBs are not shared between streams, AND that we read each stream from the
  *    beginning), we note which blocks cannot possibly be reused anymore (next RG starts in the
  *    next CB). We decref for the refcount from (3) in such case.
  * 5) Given that RG end boundary in ORC is an estimate, so we can request data from cache and then
  *    not use it, at the end we go thru all the blocks, and release those not released by (4).
  * For dictionary case:
- * 1) We have a separate refcount on the ColumnBuffer object we send to the processor. In the above
- *    case, it's always 1, so when processor is done it goes directly to decrefing cache buffers.
+ * 1) We have a separate refcount on the ColumnBuffer object we send to the processor (in the
+ *    non-dictionary case, it's always 1, so when processor is done it goes directly to decrefing
+ *    cache buffers).
  * 2) In the dictionary case, it's increased per RG, and processors don't touch cache buffers if
- *    they do not happen to decref this counter to 0.
+ *    they do not happen to decref this refcount to 0.
  * 3) This is done because dictionary can have many buffers; decrefing all of them for all RGs
  *    is more expensive; plus, decrefing in cache may be more expensive due to cache policy/etc.
  */
@@ -123,33 +126,37 @@ public class EncodedReaderImpl implements EncodedReader {
         }
       });
   private final long fileId;
-  private final FSDataInputStream file;
+  private FSDataInputStream file;
   private final CompressionCodec codec;
   private final int bufferSize;
   private final List<OrcProto.Type> types;
-  private final ZeroCopyReaderShim zcr;
+  private ZeroCopyReaderShim zcr;
   private final long rowIndexStride;
   private final LowLevelCache cache;
-  private final ByteBufferAllocatorPool pool;
+  private ByteBufferAllocatorPool pool;
   // For now, one consumer for all calls.
   private final Consumer<OrcEncodedColumnBatch> consumer;
-
+  private final LowLevelCacheCounters qfCounters;
+  private final FileSystem fs;
+  private final Path path;
+  private final boolean useZeroCopy;
 
   public EncodedReaderImpl(FileSystem fileSystem, Path path, long fileId, boolean useZeroCopy,
       List<OrcProto.Type> types, CompressionCodec codec, int bufferSize, long strideRate,
-      LowLevelCache cache, Consumer<OrcEncodedColumnBatch> consumer)
-          throws IOException {
+      LowLevelCache cache, LowLevelCacheCounters qfCounters,
+      Consumer<OrcEncodedColumnBatch> consumer) throws IOException {
     this.fileId = fileId;
-    this.file = fileSystem.open(path);
+    this.fs = fileSystem;
+    this.path = path;
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
-    this.pool = useZeroCopy ? new ByteBufferAllocatorPool() : null;
-    this.zcr = useZeroCopy ? RecordReaderUtils.createZeroCopyShim(file, codec, pool) : null;
     this.rowIndexStride = strideRate;
     this.cache = cache;
+    this.qfCounters = qfCounters;
     this.consumer = consumer;
-    if (zcr != null && !cache.getAllocator().isDirectAlloc()) {
+    this.useZeroCopy = useZeroCopy;
+    if (useZeroCopy && !cache.getAllocator().isDirectAlloc()) {
       throw new UnsupportedOperationException("Cannot use zero-copy reader with non-direct cache "
           + "buffers; either disable zero-copy or enable direct cache allocation");
     }
@@ -271,7 +278,6 @@ public class EncodedReaderImpl implements EncodedReader {
     ColumnReadContext[] colCtxs = new ColumnReadContext[colRgs.length];
     boolean[] includedRgs = null;
     boolean isCompressed = (codec != null);
-    DiskRangeListMutateHelper toRead = null;
     DiskRangeListCreateHelper listToRead = new DiskRangeListCreateHelper();
     boolean hasIndexOnlyCols = false;
     for (OrcProto.Stream stream : streamList) {
@@ -335,27 +341,35 @@ public class EncodedReaderImpl implements EncodedReader {
     }
 
     // 2. Now, read all of the ranges from cache or disk.
-    toRead = new DiskRangeListMutateHelper(listToRead.get());
+    CacheListHelper toRead = new CacheListHelper(listToRead.get());
     if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
         && LOG.isInfoEnabled()) {
       LOG.info("Resulting disk ranges to read (file " + fileId + "): "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
-    cache.getFileData(fileId, toRead.next, stripeOffset, InStream.CC_FACTORY);
+    cache.getFileData(fileId, toRead.next, stripeOffset, InStream.CC_FACTORY, qfCounters);
     if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
         && LOG.isInfoEnabled()) {
       LOG.info("Disk ranges after cache (file " + fileId + ", base offset " + stripeOffset
           + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
 
-    // Force direct buffers if we will be decompressing to direct cache.
-    RecordReaderUtils.readDiskRanges(
-        file, zcr, stripeOffset, toRead.next, cache.getAllocator().isDirectAlloc());
-
-    if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
-        && LOG.isInfoEnabled()) {
-      LOG.info("Disk ranges after disk read (file " + fileId + ", base offset " + stripeOffset
-            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+    if (!toRead.didGetAllData) {
+      long startTime = qfCounters.startTimeCounter();
+      if (this.file == null) {
+        this.file = fs.open(path);
+        this.pool = useZeroCopy ? new ByteBufferAllocatorPool() : null;
+        this.zcr = useZeroCopy ? RecordReaderUtils.createZeroCopyShim(file, codec, pool) : null;
+      }
+      // Force direct buffers if we will be decompressing to direct cache.
+      RecordReaderUtils.readDiskRanges(
+          file, zcr, stripeOffset, toRead.next, cache.getAllocator().isDirectAlloc());
+      qfCounters.recordHdfsTime(startTime);
+      if ((DebugUtils.isTraceOrcEnabled() || DebugUtils.isTraceRangesEnabled())
+          && LOG.isInfoEnabled()) {
+        LOG.info("Disk ranges after disk read (file " + fileId + ", base offset " + stripeOffset
+              + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+      }
     }
 
     // 3. For uncompressed case, we need some special processing before read.
@@ -366,7 +380,7 @@ public class EncodedReaderImpl implements EncodedReader {
         for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
           StreamContext sctx = ctx.streams[streamIx];
           DiskRangeList newIter = InStream.preReadUncompressedStream(fileId, stripeOffset,
-              iter, sctx.offset, sctx.offset + sctx.length, zcr, cache);
+              iter, sctx.offset, sctx.offset + sctx.length, zcr, cache, qfCounters);
           if (newIter != null) {
             iter = newIter;
           }
@@ -421,7 +435,7 @@ public class EncodedReaderImpl implements EncodedReader {
               long unlockUntilCOffset = sctx.offset + sctx.length;
               DiskRangeList lastCached = InStream.readEncodedStream(fileId, stripeOffset, iter,
                   sctx.offset, sctx.offset + sctx.length, zcr, codec, bufferSize, cache,
-                  sctx.stripeLevelStream, unlockUntilCOffset, sctx.offset);
+                  sctx.stripeLevelStream, unlockUntilCOffset, sctx.offset, qfCounters);
               if (lastCached != null) {
                 iter = lastCached;
               }
@@ -444,7 +458,7 @@ public class EncodedReaderImpl implements EncodedReader {
             boolean isStartOfStream = sctx.bufferIter == null;
             DiskRangeList lastCached = InStream.readEncodedStream(fileId, stripeOffset,
                 (isStartOfStream ? iter : sctx.bufferIter), cOffset, endCOffset, zcr, codec,
-                bufferSize, cache, cb, unlockUntilCOffset, sctx.offset);
+                bufferSize, cache, cb, unlockUntilCOffset, sctx.offset, qfCounters);
             if (lastCached != null) {
               sctx.bufferIter = iter = lastCached; // Reset iter just to ensure it's valid
             }
@@ -519,11 +533,13 @@ public class EncodedReaderImpl implements EncodedReader {
 
   @Override
   public void close() throws IOException {
-    try {
-      file.close();
-    } catch (IOException ex) {
-      // Tez might have closed our filesystem. Log and ignore error.
-      LOG.info("Failed to close file; ignoring: " + ex.getMessage());
+    if (file != null) {
+      try {
+        file.close();
+      } catch (IOException ex) {
+        // Tez might have closed our filesystem. Log and ignore error.
+        LOG.info("Failed to close file; ignoring: " + ex.getMessage());
+      }
     }
     if (pool != null) {
       pool.clear();

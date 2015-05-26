@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.counters.LowLevelCacheCounters;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
@@ -716,10 +717,11 @@ public class ReaderImpl implements Reader {
 
   @Override
   public EncodedReader encodedReader(long fileId, LowLevelCache lowLevelCache,
-      Consumer<OrcEncodedColumnBatch> consumer) throws IOException {
+      LowLevelCacheCounters qfCounters, Consumer<OrcEncodedColumnBatch> consumer)
+          throws IOException {
     boolean useZeroCopy = (conf != null) && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
     return new EncodedReaderImpl(fileSystem, path, fileId, useZeroCopy, types,
-        codec, bufferSize, rowIndexStride, lowLevelCache, consumer);
+        codec, bufferSize, rowIndexStride, lowLevelCache, qfCounters, consumer);
   }
 
   @Override

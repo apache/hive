@@ -4526,6 +4526,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param database
    *          Database.
    */
+  public static final String DATABASE_PATH_SUFFIX = ".db";
   private void makeLocationQualified(Database database) throws HiveException {
     if (database.isSetLocationUri()) {
       database.setLocationUri(Utilities.getQualifiedPath(conf, new Path(database.getLocationUri())));
@@ -4534,7 +4535,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // Location is not set we utilize METASTOREWAREHOUSE together with database name
       database.setLocationUri(
           Utilities.getQualifiedPath(conf, new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE),
-              database.getName().toLowerCase() + ".db")));
+              database.getName().toLowerCase() + DATABASE_PATH_SUFFIX)));
     }
   }
 

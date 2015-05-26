@@ -36,7 +36,7 @@ public class DebugUtils {
   }
 
   public static boolean isTraceRangesEnabled() {
-    return true; // TODO: temporary, should be hardcoded false
+    return false;
   }
 
   public static boolean isTraceLockingEnabled() {

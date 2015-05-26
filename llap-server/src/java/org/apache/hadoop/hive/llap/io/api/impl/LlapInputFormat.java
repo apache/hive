@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters.Counter;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -111,13 +112,14 @@ public class LlapInputFormat
     private boolean isDone = false, isClosed = false;
     private ConsumerFeedback<ColumnVectorBatch> feedback;
     private final QueryFragmentCounters counters;
+    private long firstReturnTime;
 
     public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols) {
       this.split = split;
       this.columnIds = includedCols;
       this.sarg = SearchArgumentFactory.createFromConf(job);
       this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
-      this.counters = new QueryFragmentCounters();
+      this.counters = new QueryFragmentCounters(job);
       try {
         rbCtx = new VectorizedRowBatchCtx();
         rbCtx.init(job, split);
@@ -150,7 +152,13 @@ public class LlapInputFormat
         feedback.stop();
         throw new IOException(e);
       }
-      if (cvb == null) return false;
+      if (cvb == null) {
+        if (isFirst) {
+          firstReturnTime = counters.startTimeCounter();
+        }
+        counters.incrTimeCounter(Counter.CONSUMER_TIME_US, firstReturnTime);
+        return false;
+      }
       if (columnIds.size() != cvb.cols.length) {
         throw new RuntimeException("Unexpected number of columns, VRB has " + columnIds.size()
             + " included, but the reader returned " + cvb.cols.length);
@@ -162,6 +170,9 @@ public class LlapInputFormat
       }
       value.selectedInUse = false;
       value.size = cvb.size;
+      if (isFirst) {
+        firstReturnTime = counters.startTimeCounter();
+      }
       return true;
     }
 
@@ -191,7 +202,8 @@ public class LlapInputFormat
     }
 
     ColumnVectorBatch nextCvb() throws InterruptedException, IOException {
-      if (lastCvb != null) {
+      boolean isFirst = (lastCvb == null);
+      if (!isFirst) {
         feedback.returnData(lastCvb);
       }
       synchronized (pendingData) {
@@ -244,7 +256,7 @@ public class LlapInputFormat
         LlapIoImpl.LOG.info("close called; closed " + isClosed + ", done " + isDone
             + ", err " + pendingError + ", pending " + pendingData.size());
       }
-      LlapIoImpl.LOG.info("QueryFragmentCounters: " + counters);
+      LlapIoImpl.LOG.info(counters); // This is where counters are logged!
       feedback.stop();
       rethrowErrorIfAny();
     }
@@ -263,7 +275,6 @@ public class LlapInputFormat
         LlapIoImpl.LOG.info("setDone called; closed " + isClosed
           + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
       }
-      LlapIoImpl.LOG.info("DONE: QueryFragmentCounters: " + counters);
       synchronized (pendingData) {
         isDone = true;
         pendingData.notifyAll();
@@ -291,7 +302,6 @@ public class LlapInputFormat
       LlapIoImpl.LOG.info("setError called; closed " + isClosed
         + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
       assert t != null;
-      LlapIoImpl.LOG.info("ERROR: QueryFragmentCounters: " + counters);
       synchronized (pendingData) {
         pendingError = t;
         pendingData.notifyAll();

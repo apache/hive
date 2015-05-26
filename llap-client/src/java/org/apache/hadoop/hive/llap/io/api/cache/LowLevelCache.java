@@ -22,12 +22,23 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
 import  org.apache.hadoop.hive.llap.cache.Allocator;
+import org.apache.hadoop.hive.llap.counters.LowLevelCacheCounters;
 
 public interface LowLevelCache {
   public enum Priority {
     NORMAL,
     HIGH
+  }
+
+  public class CacheListHelper extends DiskRangeListMutateHelper {
+    public CacheListHelper(DiskRangeList head) {
+      super(head);
+    }
+
+    /** Workaround for Java's limitations, used to return stuff from getFileData. */
+    public boolean didGetAllData;
   }
 
   /**
@@ -49,6 +60,9 @@ public interface LowLevelCache {
    *    Some sort of InvalidCacheChunk could be placed to avoid them. TODO
    * @param base base offset for the ranges (stripe/stream offset in case of ORC).
    */
+  DiskRangeList getFileData(long fileId, DiskRangeList range, long baseOffset,
+      CacheChunkFactory factory, LowLevelCacheCounters qfCounters);
+
   DiskRangeList getFileData(
       long fileId, DiskRangeList range, long baseOffset, CacheChunkFactory factory);
 
@@ -57,8 +71,11 @@ public interface LowLevelCache {
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(
-      long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks, long base, Priority priority);
+  long[] putFileData(long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks,
+      long base, Priority priority, LowLevelCacheCounters qfCounters);
+
+  long[] putFileData(long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks,
+      long base, Priority priority);
 
   Allocator getAllocator();
 
