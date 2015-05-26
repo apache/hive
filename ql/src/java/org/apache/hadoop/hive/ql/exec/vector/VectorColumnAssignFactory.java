@@ -48,7 +48,6 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.DateUtils;
 
 /**
@@ -248,10 +247,11 @@ public class VectorColumnAssignFactory {
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
-            }
-            else {
+            } else if (val instanceof BooleanWritable) {
               BooleanWritable bw = (BooleanWritable) val;
               assignLong(bw.get() ? 1:0, destIndex);
+            } else {
+              assignLong((boolean)val ? 1:0, destIndex);
             }
           }
         }.init(outputBatch, (LongColumnVector) destCol);
@@ -262,10 +262,11 @@ public class VectorColumnAssignFactory {
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
-            }
-            else {
+            } else if (val instanceof ByteWritable) {
               ByteWritable bw = (ByteWritable) val;
               assignLong(bw.get(), destIndex);
+            } else {
+              assignLong((byte)val, destIndex);
             }
           }
         }.init(outputBatch, (LongColumnVector) destCol);
@@ -276,10 +277,11 @@ public class VectorColumnAssignFactory {
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
-            }
-            else {
+            } else if (val instanceof ShortWritable) {
               ShortWritable bw = (ShortWritable) val;
               assignLong(bw.get(), destIndex);
+            } else {
+              assignLong((short)val, destIndex);
             }
           }
         }.init(outputBatch, (LongColumnVector) destCol);
@@ -290,10 +292,11 @@ public class VectorColumnAssignFactory {
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
-            }
-            else {
+            } else if (val instanceof IntWritable) {
               IntWritable bw = (IntWritable) val;
               assignLong(bw.get(), destIndex);
+            } else {
+              assignLong((int)val, destIndex);
             }
           }
         }.init(outputBatch, (LongColumnVector) destCol);
@@ -304,10 +307,11 @@ public class VectorColumnAssignFactory {
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
-            }
-            else {
+            } else if (val instanceof LongWritable) {
               LongWritable bw = (LongWritable) val;
               assignLong(bw.get(), destIndex);
+            } else {
+              assignLong((long)val, destIndex);
             }
           }
         }.init(outputBatch, (LongColumnVector) destCol);
@@ -383,10 +387,11 @@ public class VectorColumnAssignFactory {
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
-            }
-            else {
+            } else if (val instanceof DoubleWritable) {
               DoubleWritable bw = (DoubleWritable) val;
               assignDouble(bw.get(), destIndex);
+            } else {
+              assignDouble((double)val, destIndex);
             }
           }
         }.init(outputBatch, (DoubleColumnVector) destCol);
@@ -397,10 +402,11 @@ public class VectorColumnAssignFactory {
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
-            }
-            else {
+            } else if (val instanceof FloatWritable) {
               FloatWritable bw = (FloatWritable) val;
               assignDouble(bw.get(), destIndex);
+            } else {
+              assignDouble((float)val, destIndex);
             }
           }
         }.init(outputBatch, (DoubleColumnVector) destCol);
@@ -543,45 +549,45 @@ public class VectorColumnAssignFactory {
   }
 
   public static VectorColumnAssign[] buildAssigners(VectorizedRowBatch outputBatch,
-      Writable[] writables) throws HiveException {
+      Object[] values) throws HiveException {
     VectorColumnAssign[] vcas = new VectorColumnAssign[outputBatch.numCols];
-    for (int i = 0; i < writables.length; ++i) {
-      if (writables[i] == null) {
+    for (int i = 0; i < values.length; ++i) {
+      if (values[i] == null) {
         assert(outputBatch.cols[i] == null);
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.VOID);
-      } else if (writables[i] instanceof ByteWritable) {
+      } else if (values[i] instanceof ByteWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BYTE);
-      } else if (writables[i] instanceof ShortWritable) {
+      } else if (values[i] instanceof ShortWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.SHORT);
-      } else if (writables[i] instanceof IntWritable) {
+      } else if (values[i] instanceof IntWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.INT);
-      } else if (writables[i] instanceof LongWritable) {
+      } else if (values[i] instanceof LongWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.LONG);
-      } else if (writables[i] instanceof FloatWritable) {
+      } else if (values[i] instanceof FloatWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.FLOAT);
-      } else if (writables[i] instanceof DoubleWritable) {
+      } else if (values[i] instanceof DoubleWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.DOUBLE);
-      } else if (writables[i] instanceof Text) {
+      } else if (values[i] instanceof Text) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.STRING);
-      } else if (writables[i] instanceof BytesWritable) {
+      } else if (values[i] instanceof BytesWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BINARY);
-      } else if (writables[i] instanceof TimestampWritable) {
+      } else if (values[i] instanceof TimestampWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.TIMESTAMP);
-      } else if (writables[i] instanceof HiveIntervalYearMonthWritable) {
+      } else if (values[i] instanceof HiveIntervalYearMonthWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.INTERVAL_YEAR_MONTH);
-      } else if (writables[i] instanceof HiveIntervalDayTimeWritable) {
+      } else if (values[i] instanceof HiveIntervalDayTimeWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.INTERVAL_DAY_TIME);
-      } else if (writables[i] instanceof BooleanWritable) {
+      } else if (values[i] instanceof BooleanWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BOOLEAN);
-      } else if (writables[i] instanceof HiveDecimalWritable) {
+      } else if (values[i] instanceof HiveDecimalWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.DECIMAL);
-      } else if (writables[i] instanceof HiveCharWritable) {
+      } else if (values[i] instanceof HiveCharWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.CHAR);
-      } else if (writables[i] instanceof HiveVarcharWritable) {
+      } else if (values[i] instanceof HiveVarcharWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.VARCHAR);
       } else {
         throw new HiveException("Unimplemented vector assigner for writable type " +
-           writables[i].getClass());
+           values[i].getClass());
       }
     }
     return vcas;

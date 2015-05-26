@@ -32,7 +32,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -109,45 +109,45 @@ public abstract class AbstractTestParquetDirect {
     return path;
   }
 
-  public static ArrayWritable record(Writable... fields) {
-    return new ArrayWritable(Writable.class, fields);
+  public static ObjectArrayWritable record(Object... fields) {
+    return new ObjectArrayWritable(fields);
   }
 
-  public static ArrayWritable list(Writable... elements) {
+  public static ObjectArrayWritable list(Object... elements) {
     // the ObjectInspector for array<?> and map<?, ?> expects an extra layer
-    return new ArrayWritable(ArrayWritable.class, new ArrayWritable[] {
-        new ArrayWritable(Writable.class, elements)
+    return new ObjectArrayWritable(new Object[] {
+        new ObjectArrayWritable(elements)
     });
   }
 
-  public static String toString(ArrayWritable arrayWritable) {
-    Writable[] writables = arrayWritable.get();
-    String[] strings = new String[writables.length];
-    for (int i = 0; i < writables.length; i += 1) {
-      if (writables[i] instanceof ArrayWritable) {
-        strings[i] = toString((ArrayWritable) writables[i]);
+  public static String toString(ObjectArrayWritable arrayWritable) {
+    Object[] elements = arrayWritable.get();
+    String[] strings = new String[elements.length];
+    for (int i = 0; i < elements.length; i += 1) {
+      if (elements[i] instanceof ObjectArrayWritable) {
+        strings[i] = toString((ObjectArrayWritable) elements[i]);
       } else {
-        strings[i] = String.valueOf(writables[i]);
+        strings[i] = String.valueOf(elements[i]);
       }
     }
     return Arrays.toString(strings);
   }
 
-  public static void assertEquals(String message, ArrayWritable expected,
-                                  ArrayWritable actual) {
+  public static void assertEquals(String message, ObjectArrayWritable expected,
+                                  ObjectArrayWritable actual) {
     Assert.assertEquals(message, toString(expected), toString(actual));
   }
 
-  public static List<ArrayWritable> read(Path parquetFile) throws IOException {
-    List<ArrayWritable> records = new ArrayList<ArrayWritable>();
+  public static List<ObjectArrayWritable> read(Path parquetFile) throws IOException {
+    List<ObjectArrayWritable> records = new ArrayList<ObjectArrayWritable>();
 
-    RecordReader<NullWritable, ArrayWritable> reader = new MapredParquetInputFormat().
+    RecordReader<NullWritable, ObjectArrayWritable> reader = new MapredParquetInputFormat().
         getRecordReader(new FileSplit(
                 parquetFile, 0, fileLength(parquetFile), (String[]) null),
             new JobConf(), null);
 
     NullWritable alwaysNull = reader.createKey();
-    ArrayWritable record = reader.createValue();
+    ObjectArrayWritable record = reader.createValue();
     while (reader.next(alwaysNull, record)) {
       records.add(record);
       record = reader.createValue(); // a new value so the last isn't clobbered

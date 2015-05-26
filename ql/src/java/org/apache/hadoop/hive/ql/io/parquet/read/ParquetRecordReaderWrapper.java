@@ -33,9 +33,8 @@ import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -60,15 +59,15 @@ import parquet.schema.MessageTypeParser;
 
 import com.google.common.base.Strings;
 
-public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, ArrayWritable> {
+public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, ObjectArrayWritable> {
   public static final Log LOG = LogFactory.getLog(ParquetRecordReaderWrapper.class);
 
   private final long splitLen; // for getPos()
 
-  private org.apache.hadoop.mapreduce.RecordReader<Void, ArrayWritable> realReader;
+  private org.apache.hadoop.mapreduce.RecordReader<Void, ObjectArrayWritable> realReader;
   // expect readReader return same Key & Value objects (common case)
   // this avoids extra serialization & deserialization of these objects
-  private ArrayWritable valueObj = null;
+  private ObjectArrayWritable valueObj = null;
   private boolean firstRecord = false;
   private boolean eof = false;
   private int schemaSize;
@@ -78,7 +77,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
   private List<BlockMetaData> filtedBlocks;
 
   public ParquetRecordReaderWrapper(
-      final ParquetInputFormat<ArrayWritable> newInputFormat,
+      final ParquetInputFormat<ObjectArrayWritable> newInputFormat,
       final InputSplit oldSplit,
       final JobConf oldJobConf,
       final Reporter reporter)
@@ -87,7 +86,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
   }
 
   public ParquetRecordReaderWrapper(
-      final ParquetInputFormat<ArrayWritable> newInputFormat,
+      final ParquetInputFormat<ObjectArrayWritable> newInputFormat,
       final InputSplit oldSplit,
       final JobConf oldJobConf,
       final Reporter reporter,
@@ -134,7 +133,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
       eof = true;
     }
     if (valueObj == null) { // Should initialize the value for createValue
-      valueObj = new ArrayWritable(Writable.class, new Writable[schemaSize]);
+      valueObj = new ObjectArrayWritable(new Object[schemaSize]);
     }
   }
 
@@ -174,7 +173,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
   }
 
   @Override
-  public ArrayWritable createValue() {
+  public ObjectArrayWritable createValue() {
     return valueObj;
   }
 
@@ -197,7 +196,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
   }
 
   @Override
-  public boolean next(final NullWritable key, final ArrayWritable value) throws IOException {
+  public boolean next(final NullWritable key, final ObjectArrayWritable value) throws IOException {
     if (eof) {
       return false;
     }
@@ -209,10 +208,10 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
         return false;
       }
 
-      final ArrayWritable tmpCurValue = realReader.getCurrentValue();
+      final ObjectArrayWritable tmpCurValue = realReader.getCurrentValue();
       if (value != tmpCurValue) {
-        final Writable[] arrValue = value.get();
-        final Writable[] arrCurrent = tmpCurValue.get();
+        final Object[] arrValue = value.get();
+        final Object[] arrCurrent = tmpCurValue.get();
         if (value != null && arrValue.length == arrCurrent.length) {
           System.arraycopy(arrCurrent, 0, arrValue, 0, arrCurrent.length);
         } else {

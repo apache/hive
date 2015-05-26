@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import parquet.io.api.Converter;
 import parquet.schema.GroupType;
 import parquet.schema.Type;
@@ -34,7 +34,7 @@ public class HiveCollectionConverter extends HiveGroupConverter {
   private final ConverterParent parent;
   private final int index;
   private final Converter innerConverter;
-  private final List<Writable> list = new ArrayList<Writable>();
+  private final List<Object> list = new ArrayList<Object>();
 
   public static HiveGroupConverter forMap(GroupType mapType,
                                           ConverterParent parent,
@@ -83,12 +83,11 @@ public class HiveCollectionConverter extends HiveGroupConverter {
 
   @Override
   public void end() {
-    parent.set(index, wrapList(new ArrayWritable(
-        Writable.class, list.toArray(new Writable[list.size()]))));
+    parent.set(index, new ObjectArrayWritable(list.toArray()));
   }
 
   @Override
-  public void set(int index, Writable value) {
+  public void set(int index, Object value) {
     list.add(value);
   }
 
@@ -96,7 +95,7 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     private final HiveGroupConverter parent;
     private final Converter keyConverter;
     private final Converter valueConverter;
-    private Writable[] keyValue = null;
+    private Object[] keyValue = new Object[2];
 
     public KeyValueConverter(GroupType keyValueType, HiveGroupConverter parent) {
       setMetadata(parent.getMetadata());
@@ -108,7 +107,7 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     }
 
     @Override
-    public void set(int fieldIndex, Writable value) {
+    public void set(int fieldIndex, Object value) {
       keyValue[fieldIndex] = value;
     }
 
@@ -127,19 +126,19 @@ public class HiveCollectionConverter extends HiveGroupConverter {
 
     @Override
     public void start() {
-      this.keyValue = new Writable[2];
+      Arrays.fill(keyValue, null);
     }
 
     @Override
     public void end() {
-      parent.set(0, new ArrayWritable(Writable.class, keyValue));
+      parent.set(0, new ObjectArrayWritable(keyValue));
     }
   }
 
   private static class ElementConverter extends HiveGroupConverter {
     private final HiveGroupConverter parent;
     private final Converter elementConverter;
-    private Writable element = null;
+    private Object element = null;
 
     public ElementConverter(GroupType repeatedType, HiveGroupConverter parent) {
       setMetadata(parent.getMetadata());
@@ -149,7 +148,7 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     }
 
     @Override
-    public void set(int index, Writable value) {
+    public void set(int index, Object value) {
       this.element = value;
     }
 

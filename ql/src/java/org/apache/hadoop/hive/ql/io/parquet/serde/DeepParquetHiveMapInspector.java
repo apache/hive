@@ -15,10 +15,9 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.Writable;
 
 /**
  * The DeepParquetHiveMapInspector will inspect an ArrayWritable, considering it as a Hive map.<br />
@@ -39,18 +38,18 @@ public class DeepParquetHiveMapInspector extends AbstractParquetMapInspector {
       return null;
     }
 
-    if (data instanceof ArrayWritable) {
-      final Writable[] mapContainer = ((ArrayWritable) data).get();
+    if (data instanceof ObjectArrayWritable) {
+      final Object[] mapContainer = ((ObjectArrayWritable) data).get();
 
       if (mapContainer == null || mapContainer.length == 0) {
         return null;
       }
 
-      final Writable[] mapArray = ((ArrayWritable) mapContainer[0]).get();
+      final Object[] mapArray = ((ObjectArrayWritable) mapContainer[0]).get();
 
-      for (final Writable obj : mapArray) {
-        final ArrayWritable mapObj = (ArrayWritable) obj;
-        final Writable[] arr = mapObj.get();
+      for (final Object obj : mapArray) {
+        final ObjectArrayWritable mapObj = (ObjectArrayWritable) obj;
+        final Object[] arr = mapObj.get();
         if (key.equals(arr[0]) || key.equals(((PrimitiveObjectInspector) keyInspector).getPrimitiveJavaObject(arr[0]))
                 || key.equals(((PrimitiveObjectInspector) keyInspector).getPrimitiveWritableObject(arr[0]))) {
           return arr[1];

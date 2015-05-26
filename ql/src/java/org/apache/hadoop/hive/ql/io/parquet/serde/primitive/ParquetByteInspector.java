@@ -52,9 +52,10 @@ public class ParquetByteInspector extends AbstractPrimitiveJavaObjectInspector i
 
   @Override
   public byte get(Object o) {
-    // Accept int writables and convert them.
     if (o instanceof IntWritable) {
       return (byte) ((IntWritable) o).get();
+    } else if (o instanceof Integer) {
+      return ((Integer) o).byteValue();
     }
 
     return ((ByteWritable) o).get();

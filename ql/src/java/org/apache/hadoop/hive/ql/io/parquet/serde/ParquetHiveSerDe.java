@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -33,7 +34,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import parquet.hadoop.ParquetOutputFormat;
@@ -118,7 +118,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     }
     // Create row related objects
     rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
-    this.objInspector = new ArrayWritableObjectInspector((StructTypeInfo) rowTypeInfo);
+    this.objInspector = new ObjectArrayWritableObjectInspector((StructTypeInfo) rowTypeInfo);
 
     // Stats part
     serializedSize = 0;
@@ -130,8 +130,8 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   public Object deserialize(final Writable blob) throws SerDeException {
     status = LAST_OPERATION.DESERIALIZE;
     deserializedSize = 0;
-    if (blob instanceof ArrayWritable) {
-      deserializedSize = ((ArrayWritable) blob).get().length;
+    if (blob instanceof ObjectArrayWritable) {
+      deserializedSize = ((ObjectArrayWritable) blob).get().length;
       return blob;
     } else {
       return null;

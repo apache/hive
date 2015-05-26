@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ObjectArrayWritableObjectInspector;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
@@ -119,12 +119,12 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
     Assert.assertEquals("row group is not filtered correctly", 0, recordReader.getFiltedBlocks().size());
   }
 
-  private ArrayWritableObjectInspector getObjectInspector(final String columnNames, final String columnTypes) {
+  private ObjectArrayWritableObjectInspector getObjectInspector(final String columnNames, final String columnTypes) {
     List<TypeInfo> columnTypeList = createHiveTypeInfoFrom(columnTypes);
     List<String> columnNameList = createHiveColumnsFrom(columnNames);
     StructTypeInfo rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNameList, columnTypeList);
 
-    return new ArrayWritableObjectInspector(rowTypeInfo);
+    return new ObjectArrayWritableObjectInspector(rowTypeInfo);
   }
 
   private List<String> createHiveColumnsFrom(final String columnNamesStr) {

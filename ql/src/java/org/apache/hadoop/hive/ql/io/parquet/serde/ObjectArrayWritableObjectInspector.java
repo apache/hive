@@ -20,8 +20,8 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.serde.primitive.ParquetPrimitiveInspectorFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.io.ArrayWritable;
 
 /**
  *
@@ -41,7 +40,7 @@ import org.apache.hadoop.io.ArrayWritable;
  * It can also inspect a List if Hive decides to inspect the result of an inspection.
  *
  */
-public class ArrayWritableObjectInspector extends SettableStructObjectInspector {
+public class ObjectArrayWritableObjectInspector extends SettableStructObjectInspector {
 
   private final TypeInfo typeInfo;
   private final List<TypeInfo> fieldInfos;
@@ -49,7 +48,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
   private final List<StructField> fields;
   private final HashMap<String, StructFieldImpl> fieldsByName;
 
-  public ArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
+  public ObjectArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
 
     typeInfo = rowTypeInfo;
     fieldNames = rowTypeInfo.getAllStructFieldNames();
@@ -69,21 +68,21 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
 
   private ObjectInspector getObjectInspector(final TypeInfo typeInfo) {
     if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+      return PrimitiveObjectInspectorFactory.javaDoubleObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.booleanTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+      return PrimitiveObjectInspectorFactory.javaBooleanObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.floatTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.writableFloatObjectInspector;
+      return PrimitiveObjectInspectorFactory.javaFloatObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.intTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+      return PrimitiveObjectInspectorFactory.javaIntObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.longTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+      return PrimitiveObjectInspectorFactory.javaLongObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetStringInspector;
     }  else if (typeInfo instanceof DecimalTypeInfo) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
-      return new ArrayWritableObjectInspector((StructTypeInfo) typeInfo);
+      return new ObjectArrayWritableObjectInspector((StructTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.LIST)) {
       final TypeInfo subTypeInfo = ((ListTypeInfo) typeInfo).getListElementTypeInfo();
       return new ParquetHiveArrayInspector(getObjectInspector(subTypeInfo));
@@ -137,8 +136,8 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return null;
     }
 
-    if (data instanceof ArrayWritable) {
-      final ArrayWritable arr = (ArrayWritable) data;
+    if (data instanceof ObjectArrayWritable) {
+      final ObjectArrayWritable arr = (ObjectArrayWritable) data;
       return arr.get()[((StructFieldImpl) fieldRef).getIndex()];
     }
 
@@ -163,10 +162,10 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return null;
     }
 
-    if (data instanceof ArrayWritable) {
-      final ArrayWritable arr = (ArrayWritable) data;
-      final Object[] arrWritable = arr.get();
-      return new ArrayList<Object>(Arrays.asList(arrWritable));
+    if (data instanceof ObjectArrayWritable) {
+      final ObjectArrayWritable arr = (ObjectArrayWritable) data;
+      final Object[] arrObjects = arr.get();
+      return Arrays.asList(arrObjects);
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
@@ -196,7 +195,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final ArrayWritableObjectInspector other = (ArrayWritableObjectInspector) obj;
+    final ObjectArrayWritableObjectInspector other = (ObjectArrayWritableObjectInspector) obj;
     if (this.typeInfo != other.typeInfo && (this.typeInfo == null || !this.typeInfo.equals(other.typeInfo))) {
       return false;
     }
