@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.counters.LowLevelCacheCounters;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
@@ -701,6 +702,7 @@ public abstract class InStream extends InputStream {
    * @param unlockUntilCOffset The offset until which the buffers can be unlocked in cache, as
    *                           they will not be used in future calls (see the class comment in
    *                           EncodedReaderImpl about refcounts).
+   * @param qfCounters
    * @return Last buffer cached during decomrpession. Cache buffers are never removed from
    *         the master list, so they are safe to keep as iterators for various streams.
    */
@@ -709,7 +711,7 @@ public abstract class InStream extends InputStream {
   public static DiskRangeList readEncodedStream(long fileId, long baseOffset, DiskRangeList start,
       long cOffset, long endCOffset, ZeroCopyReaderShim zcr, CompressionCodec codec,
       int bufferSize, LowLevelCache cache, StreamBuffer streamBuffer, long unlockUntilCOffset,
-      long streamOffset) throws IOException {
+      long streamOffset, LowLevelCacheCounters qfCounters) throws IOException {
     if (streamBuffer.cacheBuffers == null) {
       streamBuffer.cacheBuffers = new ArrayList<LlapMemoryBuffer>();
     } else {
@@ -784,7 +786,7 @@ public abstract class InStream extends InputStream {
 
     // 6. Finally, put uncompressed data to cache.
     long[] collisionMask = cache.putFileData(
-        fileId, cacheKeys, targetBuffers, baseOffset, Priority.NORMAL);
+        fileId, cacheKeys, targetBuffers, baseOffset, Priority.NORMAL, qfCounters);
     processCacheCollisions(
         cache, collisionMask, toDecompress, targetBuffers, streamBuffer.cacheBuffers);
 
@@ -892,10 +894,12 @@ public abstract class InStream extends InputStream {
    * to handle just for this case.
    * We could avoid copy in non-zcr case and manage the buffer that was not allocated by our
    * allocator. Uncompressed case is not mainline though so let's not complicate it.
+   * @param qfCounters
    */
   public static DiskRangeList preReadUncompressedStream(long fileId,
       long baseOffset, DiskRangeList start, long streamOffset, long streamEnd,
-      ZeroCopyReaderShim zcr, LowLevelCache cache) throws IOException {
+      ZeroCopyReaderShim zcr, LowLevelCache cache, LowLevelCacheCounters qfCounters)
+          throws IOException {
     if (streamOffset == streamEnd) return null;
     List<UncompressedCacheChunk> toCache = null;
     List<ByteBuffer> toRelease = null;
@@ -1038,7 +1042,7 @@ public abstract class InStream extends InputStream {
 
     // 6. Finally, put uncompressed data to cache.
     long[] collisionMask = cache.putFileData(
-        fileId, cacheKeys, targetBuffers, baseOffset, Priority.NORMAL);
+        fileId, cacheKeys, targetBuffers, baseOffset, Priority.NORMAL, qfCounters);
     processCacheCollisions(cache, collisionMask, toCache, targetBuffers, null);
 
     return lastUncompressed;

@@ -48,7 +48,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
   private boolean hasBase;
   private final List<Long> deltas = new ArrayList<Long>();
   private OrcFile.WriterVersion writerVersion;
-  private transient Long fileId;
+  private Long fileId;
   private long projColsUncompressedSize;
 
   static final int HAS_FILEID_FLAG = 8;

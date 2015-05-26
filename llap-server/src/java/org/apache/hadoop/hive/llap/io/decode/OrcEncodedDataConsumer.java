@@ -70,6 +70,7 @@ public class OrcEncodedDataConsumer
   @Override
   protected void decodeBatch(OrcEncodedColumnBatch batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) {
+    long startTime = counters.startTimeCounter();
     int currentStripeIndex = batch.batchKey.stripeIx;
 
     boolean sameStripe = currentStripeIndex == previousStripeIndex;
@@ -116,6 +117,7 @@ public class OrcEncodedDataConsumer
         downstreamConsumer.consumeData(cvb);
         counters.incrCounter(QueryFragmentCounters.Counter.ROWS_EMITTED, batchSize);
       }
+      counters.incrTimeCounter(QueryFragmentCounters.Counter.DECODE_TIME_US, startTime);
       counters.incrCounter(QueryFragmentCounters.Counter.NUM_VECTOR_BATCHES, maxBatchesRG);
       counters.incrCounter(QueryFragmentCounters.Counter.NUM_DECODED_BATCHES);
     } catch (IOException e) {
