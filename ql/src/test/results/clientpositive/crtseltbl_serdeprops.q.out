@@ -1,0 +1,35 @@
+PREHOOK: query: CREATE TABLE separator_test 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES ("separatorChar" = "|","quoteChar"="\"","escapeChar"="
+") 
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+AS
+SELECT * FROM src where key = 100 limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@separator_test
+POSTHOOK: query: CREATE TABLE separator_test 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES ("separatorChar" = "|","quoteChar"="\"","escapeChar"="
+") 
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+AS
+SELECT * FROM src where key = 100 limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@separator_test
+"100"|"val_100"
+PREHOOK: query: drop table separator_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@separator_test
+PREHOOK: Output: default@separator_test
+POSTHOOK: query: drop table separator_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@separator_test
+POSTHOOK: Output: default@separator_test
