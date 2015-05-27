@@ -134,6 +134,10 @@ public class TestJdbcMetadataApiAuth {
     }
   }
 
+  /**
+   * Call the HS2 metadata api's with authorizer allowing those calls
+   * @throws Exception
+   */
   @Test
   public void testMetaApiAllowed() throws Exception {
     TestAuthValidator.allowActions = true;
@@ -165,6 +169,11 @@ public class TestJdbcMetadataApiAuth {
     assertTrue(res.next());
 
   }
+
+  /**
+   * Call the HS2 metadata api's with authorizer disallowing those calls
+   * @throws Exception
+   */
 
   @Test
   public void testMetaApiDisAllowed() throws Exception {
