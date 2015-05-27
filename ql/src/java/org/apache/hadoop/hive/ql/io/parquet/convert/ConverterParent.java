@@ -13,10 +13,12 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
+import org.apache.hadoop.io.Writable;
+
 import java.util.Map;
 
 interface ConverterParent {
-  void set(int index, Object value);
+  void set(int index, Writable value);
 
   Map<String, String> getMetadata();
 }

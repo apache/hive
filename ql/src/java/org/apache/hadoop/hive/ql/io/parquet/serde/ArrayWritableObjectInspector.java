@@ -20,8 +20,8 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.serde.primitive.ParquetPrimitiveInspectorFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.io.ArrayWritable;
 
 /**
  *
@@ -40,7 +41,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
  * It can also inspect a List if Hive decides to inspect the result of an inspection.
  *
  */
-public class ObjectArrayWritableObjectInspector extends SettableStructObjectInspector {
+public class ArrayWritableObjectInspector extends SettableStructObjectInspector {
 
   private final TypeInfo typeInfo;
   private final List<TypeInfo> fieldInfos;
@@ -48,7 +49,7 @@ public class ObjectArrayWritableObjectInspector extends SettableStructObjectInsp
   private final List<StructField> fields;
   private final HashMap<String, StructFieldImpl> fieldsByName;
 
-  public ObjectArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
+  public ArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
 
     typeInfo = rowTypeInfo;
     fieldNames = rowTypeInfo.getAllStructFieldNames();
@@ -68,21 +69,21 @@ public class ObjectArrayWritableObjectInspector extends SettableStructObjectInsp
 
   private ObjectInspector getObjectInspector(final TypeInfo typeInfo) {
     if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.javaDoubleObjectInspector;
+      return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.booleanTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.javaBooleanObjectInspector;
+      return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.floatTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.javaFloatObjectInspector;
+      return PrimitiveObjectInspectorFactory.writableFloatObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.intTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.javaIntObjectInspector;
+      return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.longTypeInfo)) {
-      return PrimitiveObjectInspectorFactory.javaLongObjectInspector;
+      return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetStringInspector;
     }  else if (typeInfo instanceof DecimalTypeInfo) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
-      return new ObjectArrayWritableObjectInspector((StructTypeInfo) typeInfo);
+      return new ArrayWritableObjectInspector((StructTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.LIST)) {
       final TypeInfo subTypeInfo = ((ListTypeInfo) typeInfo).getListElementTypeInfo();
       return new ParquetHiveArrayInspector(getObjectInspector(subTypeInfo));
@@ -136,8 +137,8 @@ public class ObjectArrayWritableObjectInspector extends SettableStructObjectInsp
       return null;
     }
 
-    if (data instanceof ObjectArrayWritable) {
-      final ObjectArrayWritable arr = (ObjectArrayWritable) data;
+    if (data instanceof ArrayWritable) {
+      final ArrayWritable arr = (ArrayWritable) data;
       return arr.get()[((StructFieldImpl) fieldRef).getIndex()];
     }
 
@@ -162,10 +163,10 @@ public class ObjectArrayWritableObjectInspector extends SettableStructObjectInsp
       return null;
     }
 
-    if (data instanceof ObjectArrayWritable) {
-      final ObjectArrayWritable arr = (ObjectArrayWritable) data;
-      final Object[] arrObjects = arr.get();
-      return Arrays.asList(arrObjects);
+    if (data instanceof ArrayWritable) {
+      final ArrayWritable arr = (ArrayWritable) data;
+      final Object[] arrWritable = arr.get();
+      return new ArrayList<Object>(Arrays.asList(arrWritable));
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
@@ -195,7 +196,7 @@ public class ObjectArrayWritableObjectInspector extends SettableStructObjectInsp
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final ObjectArrayWritableObjectInspector other = (ObjectArrayWritableObjectInspector) obj;
+    final ArrayWritableObjectInspector other = (ArrayWritableObjectInspector) obj;
     if (this.typeInfo != other.typeInfo && (this.typeInfo == null || !this.typeInfo.equals(other.typeInfo))) {
       return false;
     }

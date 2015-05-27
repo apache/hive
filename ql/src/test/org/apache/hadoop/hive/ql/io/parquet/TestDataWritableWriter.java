@@ -14,18 +14,25 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ObjectArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriter;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
-import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,38 +114,38 @@ public class TestDataWritableWriter {
 
   private Writable createNull() { return null; }
 
-  private byte createTinyInt(byte value) { return value; }
+  private ByteWritable createTinyInt(byte value) { return new ByteWritable(value); }
 
-  private short createSmallInt(short value) { return value; }
+  private ShortWritable createSmallInt(short value) { return new ShortWritable(value); }
 
-  private long createBigInt(long value) { return value; }
+  private LongWritable createBigInt(long value) { return new LongWritable(value); }
 
-  private int createInt(int value) {
-    return value;
+  private IntWritable createInt(int value) {
+    return new IntWritable(value);
   }
 
-  private float createFloat(float value) {
-    return value;
+  private FloatWritable createFloat(float value) {
+    return new FloatWritable(value);
   }
 
-  private double createDouble(double value) {
-    return value;
+  private DoubleWritable createDouble(double value) {
+    return new DoubleWritable(value);
   }
 
-  private boolean createBoolean(boolean value) {
-    return value;
+  private BooleanWritable createBoolean(boolean value) {
+    return new BooleanWritable(value);
   }
 
   private BytesWritable createString(String value) throws UnsupportedEncodingException {
     return new BytesWritable(value.getBytes("UTF-8"));
   }
 
-  private ObjectArrayWritable createGroup(Object...values) {
-    return new ObjectArrayWritable(values);
+  private ArrayWritable createGroup(Writable...values) {
+    return new ArrayWritable(Writable.class, values);
   }
 
-  private ObjectArrayWritable createArray(Object...values) {
-    return new ObjectArrayWritable(createGroup(values).get());
+  private ArrayWritable createArray(Writable...values) {
+    return new ArrayWritable(Writable.class, createGroup(values).get());
   }
 
   private List<String> createHiveColumnsFrom(final String columnNamesStr) {
@@ -164,15 +171,15 @@ public class TestDataWritableWriter {
     return columnTypes;
   }
 
-  private ObjectArrayWritableObjectInspector getObjectInspector(final String columnNames, final String columnTypes) {
+  private ArrayWritableObjectInspector getObjectInspector(final String columnNames, final String columnTypes) {
     List<TypeInfo> columnTypeList = createHiveTypeInfoFrom(columnTypes);
     List<String> columnNameList = createHiveColumnsFrom(columnNames);
     StructTypeInfo rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNameList, columnTypeList);
 
-    return new ObjectArrayWritableObjectInspector(rowTypeInfo);
+    return new ArrayWritableObjectInspector(rowTypeInfo);
   }
 
-  private ParquetHiveRecord getParquetWritable(String columnNames, String columnTypes, ObjectArrayWritable record) throws SerDeException {
+  private ParquetHiveRecord getParquetWritable(String columnNames, String columnTypes, ArrayWritable record) throws SerDeException {
     Properties recordProperties = new Properties();
     recordProperties.setProperty("columns", columnNames);
     recordProperties.setProperty("columns.types", columnTypes);
@@ -205,7 +212,7 @@ public class TestDataWritableWriter {
         + "  optional int64 bigint;\n"
         + "}\n";
 
-    ObjectArrayWritable hiveRecord = createGroup(
+    ArrayWritable hiveRecord = createGroup(
         createInt(1),
         createDouble(1.0),
         createBoolean(true),
@@ -261,7 +268,7 @@ public class TestDataWritableWriter {
         + "  }\n"
         + "}\n";
 
-    ObjectArrayWritable hiveRecord = createGroup(
+    ArrayWritable hiveRecord = createGroup(
         createGroup(
             createInt(1),
             createDouble(1.0),
@@ -303,7 +310,7 @@ public class TestDataWritableWriter {
         + "  }\n"
         + "}\n";
 
-    ObjectArrayWritable hiveRecord = createGroup(
+    ArrayWritable hiveRecord = createGroup(
         createGroup(
             createArray(
                 createInt(1),
@@ -353,7 +360,7 @@ public class TestDataWritableWriter {
         + "  }\n"
         + "}\n";
 
-    ObjectArrayWritable hiveRecord = createGroup(
+    ArrayWritable hiveRecord = createGroup(
         createGroup(
             createArray(
                 createArray(
@@ -424,7 +431,7 @@ public class TestDataWritableWriter {
         + "  }\n"
         + "}\n";
 
-    ObjectArrayWritable hiveRecord = createGroup(
+    ArrayWritable hiveRecord = createGroup(
         createGroup(
             createArray(
                 createGroup(
@@ -474,7 +481,7 @@ public class TestDataWritableWriter {
     String columnNames = "structCol";
     String columnTypes = "int";
 
-    ObjectArrayWritable hiveRecord = createGroup(
+    ArrayWritable hiveRecord = createGroup(
         createInt(1)
     );
 
@@ -497,7 +504,7 @@ public class TestDataWritableWriter {
     String columnNames = "arrayCol";
     String columnTypes = "int";
 
-    ObjectArrayWritable hiveRecord = createGroup(
+    ArrayWritable hiveRecord = createGroup(
         createInt(1)
     );
 
@@ -522,7 +529,7 @@ public class TestDataWritableWriter {
     String columnNames = "mapCol";
     String columnTypes = "int";
 
-    ObjectArrayWritable hiveRecord = createGroup(
+    ArrayWritable hiveRecord = createGroup(
         createInt(1)
     );
 

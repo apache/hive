@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.util.StringUtils;
 
 import parquet.hadoop.api.InitContext;
@@ -48,7 +48,7 @@ import parquet.schema.PrimitiveType.PrimitiveTypeName;
  * Manages the translation between Hive and Parquet
  *
  */
-public class DataWritableReadSupport extends ReadSupport<ObjectArrayWritable> {
+public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
   public static final String HIVE_TABLE_AS_PARQUET_SCHEMA = "HIVE_TABLE_SCHEMA";
   public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";
@@ -245,7 +245,7 @@ public class DataWritableReadSupport extends ReadSupport<ObjectArrayWritable> {
    * @return Record Materialize for Hive
    */
   @Override
-  public RecordMaterializer<ObjectArrayWritable> prepareForRead(final Configuration configuration,
+  public RecordMaterializer<ArrayWritable> prepareForRead(final Configuration configuration,
       final Map<String, String> keyValueMetaData, final MessageType fileSchema,
           final parquet.hadoop.api.ReadSupport.ReadContext readContext) {
     final Map<String, String> metadata = readContext.getReadSupportMetadata();

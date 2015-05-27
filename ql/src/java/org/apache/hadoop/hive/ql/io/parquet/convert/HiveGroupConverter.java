@@ -81,6 +81,6 @@ public abstract class HiveGroupConverter extends GroupConverter implements Conve
     return new ArrayWritable(Writable.class, new Writable[] {list});
   }
 
-  public abstract void set(int index, Object value);
+  public abstract void set(int index, Writable value);
 
 }

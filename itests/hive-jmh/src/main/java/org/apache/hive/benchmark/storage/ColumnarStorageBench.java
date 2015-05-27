@@ -24,12 +24,12 @@ import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ObjectArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -40,6 +40,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 
 import org.apache.hadoop.mapred.FileSplit;
@@ -169,16 +172,20 @@ public class ColumnarStorageBench {
     return fs.getFileStatus(path).getLen();
   }
 
-  private Object createPrimitiveObject(final PrimitiveTypeInfo typeInfo) {
+  private ArrayWritable record(Writable... fields) {
+    return new ArrayWritable(Writable.class, fields);
+  }
+
+  private Writable getPrimitiveWritable(final PrimitiveTypeInfo typeInfo) {
     Random rand = new Random();
 
     switch (typeInfo.getPrimitiveCategory()) {
       case INT:
-        return rand.nextInt();
+        return new IntWritable(rand.nextInt());
       case DOUBLE:
-        return rand.nextDouble();
+        return new DoubleWritable(rand.nextDouble());
       case BOOLEAN:
-        return rand.nextBoolean();
+        return new BooleanWritable(rand.nextBoolean());
       case CHAR:
       case VARCHAR:
       case STRING:
@@ -190,52 +197,36 @@ public class ColumnarStorageBench {
     }
   }
 
-  private Object crreateObjectFromType(final TypeInfo typeInfo) {
-    switch (typeInfo.getCategory()) {
-      case PRIMITIVE:
-        return createPrimitiveObject((PrimitiveTypeInfo) typeInfo);
-      case LIST:
-        return createListObject((ListTypeInfo) typeInfo);
-      case MAP:
-        return createMapObject((MapTypeInfo) typeInfo);
-      case STRUCT:
-        return createStructObject(((StructTypeInfo) typeInfo).getAllStructFieldTypeInfos());
-      default:
-        throw new IllegalStateException("Invalid column type: " + typeInfo);
-    }
-  }
-
-  private ObjectArrayWritable createListObject(final ListTypeInfo typeInfo) {
-    List<Object> list = new ArrayList<Object>();
-    list.add(crreateObjectFromType(typeInfo.getListElementTypeInfo()));
-
-    return new ObjectArrayWritable(list.toArray());
-  }
-
-  private ObjectArrayWritable createMapObject(final MapTypeInfo typeInfo) {
-    Object[] keyValue  = new Object[2];
-    keyValue[0] = crreateObjectFromType(typeInfo.getMapKeyTypeInfo());
-    keyValue[1] = crreateObjectFromType(typeInfo.getMapValueTypeInfo());
-
-    ObjectArrayWritable map = new ObjectArrayWritable(keyValue);
-
-    List<ObjectArrayWritable> list = new ArrayList<ObjectArrayWritable>();
-    list.add(map);
-
-    return new ObjectArrayWritable(list.toArray());
-  }
-
-
-
-  private ObjectArrayWritable createStructObject(final List<TypeInfo> columnTypes) {
-    Object[] fields = new Object[columnTypes.size()];
+  private ArrayWritable createRecord(final List<TypeInfo> columnTypes) {
+    Writable[] fields = new Writable[columnTypes.size()];
 
     int pos=0;
     for (TypeInfo type : columnTypes) {
-      fields[pos++] = crreateObjectFromType(type);
+      switch (type.getCategory()) {
+        case PRIMITIVE:
+          fields[pos++] = getPrimitiveWritable((PrimitiveTypeInfo)type);
+        break;
+        case LIST: {
+          List<TypeInfo> elementType = new ArrayList<TypeInfo>();
+          elementType.add(((ListTypeInfo) type).getListElementTypeInfo());
+          fields[pos++] = record(createRecord(elementType));
+        } break;
+        case MAP: {
+          List<TypeInfo> keyValueType = new ArrayList<TypeInfo>();
+          keyValueType.add(((MapTypeInfo) type).getMapKeyTypeInfo());
+          keyValueType.add(((MapTypeInfo) type).getMapValueTypeInfo());
+          fields[pos++] = record(record(createRecord(keyValueType)));
+        } break;
+        case STRUCT: {
+          List<TypeInfo> elementType = ((StructTypeInfo) type).getAllStructFieldTypeInfos();
+          fields[pos++] = createRecord(elementType);
+        } break;
+        default:
+          throw new IllegalStateException("Invalid column type: " + type);
+      }
     }
 
-    return new ObjectArrayWritable(fields);
+    return record(fields);
   }
 
   private ObjectInspector getArrayWritableObjectInspector(final String columnTypes) {
@@ -243,11 +234,11 @@ public class ColumnarStorageBench {
     List<String> columnNameList = Arrays.asList(getColumnNames(columnTypes).split(","));
     StructTypeInfo rowTypeInfo = (StructTypeInfo)TypeInfoFactory.getStructTypeInfo(columnNameList, columnTypeList);
 
-    return new ObjectArrayWritableObjectInspector(rowTypeInfo);
+    return new ArrayWritableObjectInspector(rowTypeInfo);
   }
 
   private Object createRandomRow(final String columnTypes) throws SerDeException {
-    Writable recordWritable = createStructObject(TypeInfoUtils.getTypeInfosFromTypeString(columnTypes));
+    Writable recordWritable = createRecord(TypeInfoUtils.getTypeInfosFromTypeString(columnTypes));
     Writable simpleWritable = lazySimpleSerDe.serialize(recordWritable, getArrayWritableObjectInspector(columnTypes));
     return lazySimpleSerDe.deserialize(simpleWritable);
   }

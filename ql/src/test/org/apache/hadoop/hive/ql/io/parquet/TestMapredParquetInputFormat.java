@@ -15,7 +15,7 @@ package org.apache.hadoop.hive.ql.io.parquet;
 
 import static org.mockito.Mockito.mock;
 
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
+import org.apache.hadoop.io.ArrayWritable;
 import org.junit.Test;
 
 import parquet.hadoop.ParquetInputFormat;
@@ -30,7 +30,7 @@ public class TestMapredParquetInputFormat {
   @Test
   public void testConstructorWithParquetInputFormat() {
     new MapredParquetInputFormat(
-        (ParquetInputFormat<ObjectArrayWritable>) mock(ParquetInputFormat.class)
+        (ParquetInputFormat<ArrayWritable>) mock(ParquetInputFormat.class)
         );
   }
 

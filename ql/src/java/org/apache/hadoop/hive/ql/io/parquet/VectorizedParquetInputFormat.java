@@ -23,8 +23,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
@@ -51,12 +52,12 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
 
     private final ParquetRecordReaderWrapper internalReader;
       private VectorizedRowBatchCtx rbCtx;
-      private ObjectArrayWritable internalValues;
+      private ArrayWritable internalValues;
       private NullWritable internalKey;
       private VectorColumnAssign[] assigners;
 
     public VectorizedParquetRecordReader(
-        ParquetInputFormat<ObjectArrayWritable> realInput,
+        ParquetInputFormat<ArrayWritable> realInput,
         FileSplit split,
         JobConf conf, Reporter reporter) throws IOException, InterruptedException {
       internalReader = new ParquetRecordReaderWrapper(
@@ -119,17 +120,17 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
             outputBatch.endOfFile = true;
             break;
           }
-          Object[] values = internalValues.get();
+          Writable[] writables = internalValues.get();
 
           if (null == assigners) {
             // Normally we'd build the assigners from the rbCtx.rowOI, but with Parquet
             // we have a discrepancy between the metadata type (Eg. tinyint -> BYTE) and
             // the writable value (IntWritable). see Parquet's ETypeConverter class.
-            assigners = VectorColumnAssignFactory.buildAssigners(outputBatch, values);
+            assigners = VectorColumnAssignFactory.buildAssigners(outputBatch, writables);
           }
 
-          for(int i = 0; i < values.length; ++i) {
-            assigners[i].assignObjectValue(values[i], outputBatch.size);
+          for(int i = 0; i < writables.length; ++i) {
+            assigners[i].assignObjectValue(writables[i], outputBatch.size);
           }
           ++outputBatch.size;
          }
@@ -140,9 +141,9 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
     }
   }
 
-  private final ParquetInputFormat<ObjectArrayWritable> realInput;
+  private final ParquetInputFormat<ArrayWritable> realInput;
 
-  public VectorizedParquetInputFormat(ParquetInputFormat<ObjectArrayWritable> realInput) {
+  public VectorizedParquetInputFormat(ParquetInputFormat<ArrayWritable> realInput) {
     this.realInput = realInput;
   }
 

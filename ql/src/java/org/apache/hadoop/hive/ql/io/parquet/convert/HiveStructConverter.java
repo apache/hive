@@ -14,11 +14,11 @@
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.Writable;
 import parquet.io.api.Converter;
 import parquet.schema.GroupType;
 import parquet.schema.Type;
@@ -34,7 +34,7 @@ public class HiveStructConverter extends HiveGroupConverter {
   private final Converter[] converters;
   private final ConverterParent parent;
   private final int index;
-  private Object[] elements;
+  private Writable[] writables;
   private final List<Repeated> repeatedConverters;
   private boolean reuseWritableArray = false;
 
@@ -42,7 +42,7 @@ public class HiveStructConverter extends HiveGroupConverter {
     this(requestedSchema, null, 0, tableSchema);
     setMetadata(metadata);
     this.reuseWritableArray = true;
-    this.elements = new Object[tableSchema.getFieldCount()];
+    this.writables = new Writable[tableSchema.getFieldCount()];
   }
 
   public HiveStructConverter(final GroupType groupType, final ConverterParent parent,
@@ -95,13 +95,13 @@ public class HiveStructConverter extends HiveGroupConverter {
     return converter;
   }
 
-  public final ObjectArrayWritable getCurrentArray() {
-    return new ObjectArrayWritable(elements);
+  public final ArrayWritable getCurrentArray() {
+    return new ArrayWritable(Writable.class, writables);
   }
 
   @Override
-  public void set(int fieldIndex, Object value) {
-    elements[fieldIndex] = value;
+  public void set(int fieldIndex, Writable value) {
+    writables[fieldIndex] = value;
   }
 
   @Override
@@ -113,9 +113,11 @@ public class HiveStructConverter extends HiveGroupConverter {
   public void start() {
     if (reuseWritableArray) {
       // reset the array to null values
-      Arrays.fill(elements, null);
+      for (int i = 0; i < writables.length; i += 1) {
+        writables[i] = null;
+      }
     } else {
-      this.elements = new Object[totalFieldCount];
+      this.writables = new Writable[totalFieldCount];
     }
     for (Repeated repeated : repeatedConverters) {
       repeated.parentStart();

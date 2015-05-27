@@ -19,10 +19,12 @@
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.Writable;
 import parquet.column.Dictionary;
 import parquet.io.api.Binary;
 import parquet.io.api.Converter;
@@ -61,7 +63,7 @@ public interface Repeated extends ConverterParent {
     private final PrimitiveConverter wrapped;
     private final ConverterParent parent;
     private final int index;
-    private final List<Object> list = new ArrayList<Object>();
+    private final List<Writable> list = new ArrayList<Writable>();
 
     public RepeatedPrimitiveConverter(PrimitiveType primitiveType, ConverterParent parent, int index) {
       setMetadata(parent.getMetadata());
@@ -123,11 +125,12 @@ public interface Repeated extends ConverterParent {
 
     @Override
     public void parentEnd() {
-      parent.set(index, new ObjectArrayWritable(list.toArray()));
+      parent.set(index, HiveGroupConverter.wrapList(new ArrayWritable(
+          Writable.class, list.toArray(new Writable[list.size()]))));
     }
 
     @Override
-    public void set(int index, Object value) {
+    public void set(int index, Writable value) {
       list.add(value);
     }
   }
@@ -138,21 +141,24 @@ public interface Repeated extends ConverterParent {
    */
   class RepeatedGroupConverter extends HiveGroupConverter
       implements Repeated {
+    private final GroupType groupType;
     private final HiveGroupConverter wrapped;
     private final ConverterParent parent;
     private final int index;
-    private final List<Object> list = new ArrayList<Object>();
+    private final List<Writable> list = new ArrayList<Writable>();
+    private final Map<String, String> metadata = new HashMap<String, String>();
 
 
     public RepeatedGroupConverter(GroupType groupType, ConverterParent parent, int index) {
       setMetadata(parent.getMetadata());
+      this.groupType = groupType;
       this.parent = parent;
       this.index = index;
       this.wrapped = HiveGroupConverter.getConverterFromDescription(groupType, 0, this);
     }
 
     @Override
-    public void set(int fieldIndex, Object value) {
+    public void set(int fieldIndex, Writable value) {
       list.add(value);
     }
 
@@ -179,7 +185,8 @@ public interface Repeated extends ConverterParent {
 
     @Override
     public void parentEnd() {
-      parent.set(index, new ObjectArrayWritable(list.toArray()));
+      parent.set(index, wrapList(new ArrayWritable(
+          Writable.class, list.toArray(new Writable[list.size()]))));
     }
   }
 }

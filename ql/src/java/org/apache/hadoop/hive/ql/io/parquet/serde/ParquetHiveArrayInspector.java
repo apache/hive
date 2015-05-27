@@ -16,11 +16,10 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector;
-
-import java.util.Arrays;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.Writable;
 
 /**
  * The ParquetHiveArrayInspector will inspect an ArrayWritable, considering it as an Hive array.<br />
@@ -56,21 +55,21 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       return null;
     }
 
-    if (data instanceof ObjectArrayWritable) {
-      final Object[] listContainer = ((ObjectArrayWritable) data).get();
+    if (data instanceof ArrayWritable) {
+      final Writable[] listContainer = ((ArrayWritable) data).get();
 
       if (listContainer == null || listContainer.length == 0) {
         return null;
       }
 
-      final Object subObj = listContainer[0];
+      final Writable subObj = listContainer[0];
 
       if (subObj == null) {
         return null;
       }
 
-      if (index >= 0 && index < ((ObjectArrayWritable) subObj).get().length) {
-        return ((ObjectArrayWritable) subObj).get()[index];
+      if (index >= 0 && index < ((ArrayWritable) subObj).get().length) {
+        return ((ArrayWritable) subObj).get()[index];
       } else {
         return null;
       }
@@ -85,20 +84,20 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       return -1;
     }
 
-    if (data instanceof ObjectArrayWritable) {
-      final Object[] listContainer = ((ObjectArrayWritable) data).get();
+    if (data instanceof ArrayWritable) {
+      final Writable[] listContainer = ((ArrayWritable) data).get();
 
       if (listContainer == null || listContainer.length == 0) {
         return -1;
       }
 
-      final Object subObj = listContainer[0];
+      final Writable subObj = listContainer[0];
 
       if (subObj == null) {
         return 0;
       }
 
-      return ((ObjectArrayWritable) subObj).get().length;
+      return ((ArrayWritable) subObj).get().length;
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
@@ -110,23 +109,23 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       return null;
     }
 
-    if (data instanceof ObjectArrayWritable) {
-      final Object[] listContainer = ((ObjectArrayWritable) data).get();
+    if (data instanceof ArrayWritable) {
+      final Writable[] listContainer = ((ArrayWritable) data).get();
 
       if (listContainer == null || listContainer.length == 0) {
         return null;
       }
 
-      final Object subObj = listContainer[0];
+      final Writable subObj = listContainer[0];
 
       if (subObj == null) {
         return null;
       }
 
-      final Object[] array = ((ObjectArrayWritable) subObj).get();
-      final List<Object> list = new ArrayList<Object>();
+      final Writable[] array = ((ArrayWritable) subObj).get();
+      final List<Writable> list = new ArrayList<Writable>();
 
-      for (final Object obj : array) {
+      for (final Writable obj : array) {
         list.add(obj);
       }
 
