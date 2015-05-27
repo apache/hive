@@ -125,7 +125,7 @@ public abstract class MetadataOperation extends Operation {
     ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
     ctxBuilder.setCommandString(cmdString);
     try {
-      ss.getAuthorizerV2().checkPrivileges(HiveOperationType.GET_SCHEMAS, inpObjs, null,
+      ss.getAuthorizerV2().checkPrivileges(opType, inpObjs, null,
           ctxBuilder.build());
     } catch (HiveAuthzPluginException | HiveAccessControlException e) {
       throw new HiveSQLException(e.getMessage(), e);
