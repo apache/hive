@@ -22,3 +22,20 @@ select ts, f, sum(f) over (partition by ts order by f rows between unbounded pre
 select ts, f, sum(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100;
 select ts, f, sum(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100;
 
+-- count
+select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100;
+select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100;
+select ts, f, count(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100;
+select ts, f, count(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100;
+
+-- max
+select ts, f, max(f) over (partition by ts order by t rows between 2 preceding and 1 preceding) from over10k limit 100;
+select ts, f, max(f) over (partition by ts order by t rows between unbounded preceding and 1 preceding) from over10k limit 100;
+select ts, f, max(f) over (partition by ts order by t rows between 1 following and 2 following) from over10k limit 100;
+select ts, f, max(f) over (partition by ts order by t rows between unbounded preceding and 1 following) from over10k limit 100;
+
+-- min
+select ts, f, min(f) over (partition by ts order by t rows between 2 preceding and 1 preceding) from over10k limit 100;
+select ts, f, min(f) over (partition by ts order by t rows between unbounded preceding and 1 preceding) from over10k limit 100;
+select ts, f, min(f) over (partition by ts order by t rows between 1 following and 2 following) from over10k limit 100;
+select ts, f, min(f) over (partition by ts order by t rows between unbounded preceding and 1 following) from over10k limit 100;
