@@ -58,10 +58,8 @@ public class TestDeepParquetHiveMapInspector extends TestCase {
     final Writable[] entry1 = new Writable[]{new IntWritable(0), new IntWritable(1)};
     final Writable[] entry2 = new Writable[]{new IntWritable(2), new IntWritable(3)};
 
-    final ArrayWritable internalMap = new ArrayWritable(ArrayWritable.class, new Writable[]{
+    final ArrayWritable map = new ArrayWritable(ArrayWritable.class, new Writable[]{
       new ArrayWritable(Writable.class, entry1), new ArrayWritable(Writable.class, entry2)});
-
-    final ArrayWritable map = new ArrayWritable(ArrayWritable.class, new Writable[]{internalMap});
 
     assertEquals("Wrong result of inspection", new IntWritable(1), inspector.getMapValueElement(map, new IntWritable(0)));
     assertEquals("Wrong result of inspection", new IntWritable(3), inspector.getMapValueElement(map, new IntWritable(2)));

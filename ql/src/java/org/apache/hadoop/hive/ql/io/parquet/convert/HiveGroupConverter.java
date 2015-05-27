@@ -13,7 +13,6 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
-import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import parquet.io.api.Converter;
 import parquet.io.api.GroupConverter;
@@ -70,15 +69,6 @@ public abstract class HiveGroupConverter extends GroupConverter implements Conve
     }
 
     return getConverterFromDescription(type.asGroupType(), index, parent);
-  }
-
-  /**
-   * The original list and map conversion didn't remove the synthetic layer and
-   * the ObjectInspector had to remove it. This is a temporary fix that adds an
-   * extra layer for the ObjectInspector to remove.
-   */
-  static ArrayWritable wrapList(ArrayWritable list) {
-    return new ArrayWritable(Writable.class, new Writable[] {list});
   }
 
   public abstract void set(int index, Writable value);

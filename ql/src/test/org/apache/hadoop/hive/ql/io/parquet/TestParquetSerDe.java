@@ -55,7 +55,6 @@ public class TestParquetSerDe extends TestCase {
       arr[4] = new DoubleWritable((double) 5.3);
       arr[5] = new BytesWritable("hive and hadoop and parquet. Big family.".getBytes("UTF-8"));
       arr[6] = new BytesWritable("parquetSerde binary".getBytes("UTF-8"));
-      final Writable[] mapContainer = new Writable[1];
       final Writable[] map = new Writable[3];
       for (int i = 0; i < 3; ++i) {
         final Writable[] pair = new Writable[2];
@@ -63,16 +62,13 @@ public class TestParquetSerDe extends TestCase {
         pair[1] = new IntWritable(i);
         map[i] = new ArrayWritable(Writable.class, pair);
       }
-      mapContainer[0] = new ArrayWritable(Writable.class, map);
-      arr[7] = new ArrayWritable(Writable.class, mapContainer);
+      arr[7] = new ArrayWritable(Writable.class, map);
 
-      final Writable[] arrayContainer = new Writable[1];
       final Writable[] array = new Writable[5];
       for (int i = 0; i < 5; ++i) {
         array[i] = new BytesWritable(("elem_" + i).getBytes("UTF-8"));
       }
-      arrayContainer[0] = new ArrayWritable(Writable.class, array);
-      arr[8] = new ArrayWritable(Writable.class, arrayContainer);
+      arr[8] = new ArrayWritable(Writable.class, array);
 
       final ArrayWritable arrWritable = new ArrayWritable(Writable.class, arr);
       // Test
