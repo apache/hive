@@ -282,9 +282,12 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
     boolean scheduled = false;
     try {
+
+      boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
+      // It's safe to register outside of the lock since the stateChangeTracker ensures that updates
+      // and registrations are mutually exclusive.
+      boolean stateChanged = !taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
       synchronized (lock) {
-        boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
-        boolean stateChanged  = !taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
         ListenableFuture<TaskRunner2Result> future = executorService.submit(taskWrapper.getTaskRunnerCallable());
         taskWrapper.setIsInWaitQueue(false);
         FutureCallback<TaskRunner2Result> wrappedCallback = new InternalCompletionListener(taskWrapper);
@@ -299,7 +302,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
         // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
         // to the tasks are not ready yet, the task is eligible for pre-emptable.
         if (enablePreemption) {
-          if (!canFinish && !stateChanged) {
+          if ((!canFinish && !stateChanged) || (canFinish && stateChanged)) {
             if (isInfoEnabled) {
               LOG.info("{} is not finishable. Adding it to pre-emption queue", taskWrapper.getRequestId());
             }
@@ -538,6 +541,8 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
      * @param currentFinishableState
      * @return true if the current state is the same as the currentFinishableState. false if the state has already changed.
      */
+    // Synchronized to avoid register / unregister clobbering each other.
+    // Don't invoke from within a scheduler lock
     public synchronized boolean maybeRegisterForFinishedStateNotifications(
         boolean currentFinishableState) {
       if (!registeredForNotifications) {
@@ -549,6 +554,8 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       }
     }
 
+    // Synchronized to avoid register / unregister clobbering each other.
+    // Don't invoke from within a scheduler lock
     public synchronized void maybeUnregisterForFinishedStateNotifications() {
       if (registeredForNotifications) {
         registeredForNotifications = false;
@@ -590,6 +597,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
           '}';
     }
 
+    // No task lock. But acquires lock on the scheduler
     @Override
     public void finishableStateUpdated(boolean finishableState) {
       // This method should not by synchronized. Can lead to deadlocks since it calls a sync method.
