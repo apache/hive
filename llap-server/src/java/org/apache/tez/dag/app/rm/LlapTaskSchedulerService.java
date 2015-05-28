@@ -26,9 +26,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -39,6 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -96,6 +99,8 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
 
   // Tracks running and queued tasks. Cleared after a task completes.
   private final ConcurrentMap<Object, TaskInfo> knownTasks = new ConcurrentHashMap<>();
+  private final TreeMap<Integer, TreeSet<TaskInfo>> runningTasks = new TreeMap<>();
+  private static final TaskStartComparator TASK_INFO_COMPARATOR = new TaskStartComparator();
 
   // Queue for disabled nodes. Nodes make it out of this queue when their expiration timeout is hit.
   @VisibleForTesting
@@ -119,6 +124,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   private final SchedulerCallable schedulerCallable = new SchedulerCallable();
 
   private final AtomicBoolean isStopped = new AtomicBoolean(false);
+  private final AtomicInteger pendingPreemptions = new AtomicInteger(0);
 
   private final NodeBlacklistConf nodeBlacklistConf;
 
@@ -133,7 +139,6 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   private final Resource resourcePerExecutor;
 
   private final LlapRegistryService registry = new LlapRegistryService(false);
-
 
   private volatile ListenableFuture<Void> nodeEnablerFuture;
   private volatile ListenableFuture<Void> schedulerFuture;
@@ -385,6 +390,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     trySchedulingPendingTasks();
   }
 
+
   // This may be invoked before a container is ever assigned to a task. allocateTask... app decides
   // the task is no longer required, and asks for a de-allocation.
   @Override
@@ -392,7 +398,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     writeLock.lock(); // Updating several local structures
     TaskInfo taskInfo;
     try {
-      taskInfo = knownTasks.remove(task);
+      taskInfo = unregisterTask(task);
       if (taskInfo == null) {
         LOG.error("Could not determine ContainerId for task: "
             + task
@@ -418,12 +424,12 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
 
       NodeInfo nodeInfo = instanceToNodeMap.get(assignedInstance);
       assert nodeInfo != null;
-      if (taskSucceeded) {
-        // The node may have been blacklisted at this point - which means it may not be in the
-        // activeNodeList.
 
-        nodeInfo.registerTaskSuccess();
-
+      // Re-enable the node if preempted
+      if (taskInfo.preempted) {
+        LOG.info("Processing deallocateTask for {} which was preempted, EndReason={}", task, endReason);
+        pendingPreemptions.decrementAndGet();
+        nodeInfo.registerUnsuccessfulTaskEnd(true);
         if (nodeInfo.isDisabled()) {
           // Re-enable the node. If a task succeeded, a slot may have become available.
           // Also reset commFailures since a task was able to communicate back and indicate success.
@@ -435,20 +441,40 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
         }
         // In case of success, trigger a scheduling run for pending tasks.
         trySchedulingPendingTasks();
+      } else {
+        if (taskSucceeded) {
+          // The node may have been blacklisted at this point - which means it may not be in the
+          // activeNodeList.
 
-      } else if (!taskSucceeded) {
-        nodeInfo.registerUnsuccessfulTaskEnd();
-        if (endReason != null && EnumSet
-            .of(TaskAttemptEndReason.SERVICE_BUSY, TaskAttemptEndReason.COMMUNICATION_ERROR)
-            .contains(endReason)) {
-          if (endReason == TaskAttemptEndReason.COMMUNICATION_ERROR) {
-            dagStats.registerCommFailure(taskInfo.assignedInstance.getHost());
-          } else if (endReason == TaskAttemptEndReason.SERVICE_BUSY) {
-            dagStats.registerTaskRejected(taskInfo.assignedInstance.getHost());
+          nodeInfo.registerTaskSuccess();
+
+          if (nodeInfo.isDisabled()) {
+            // Re-enable the node. If a task succeeded, a slot may have become available.
+            // Also reset commFailures since a task was able to communicate back and indicate success.
+            nodeInfo.enableNode();
+            // Re-insert into the queue to force the poll thread to remove the element.
+            if (disabledNodesQueue.remove(nodeInfo)) {
+              disabledNodesQueue.add(nodeInfo);
+            }
           }
+          // In case of success, trigger a scheduling run for pending tasks.
+          trySchedulingPendingTasks();
+
+        } else if (!taskSucceeded) {
+          nodeInfo.registerUnsuccessfulTaskEnd(false);
+          if (endReason != null && EnumSet
+              .of(TaskAttemptEndReason.SERVICE_BUSY, TaskAttemptEndReason.COMMUNICATION_ERROR)
+              .contains(endReason)) {
+            if (endReason == TaskAttemptEndReason.COMMUNICATION_ERROR) {
+              dagStats.registerCommFailure(taskInfo.assignedInstance.getHost());
+            } else if (endReason == TaskAttemptEndReason.SERVICE_BUSY) {
+              dagStats.registerTaskRejected(taskInfo.assignedInstance.getHost());
+            }
+          }
+          boolean commFailure =
+              endReason != null && endReason == TaskAttemptEndReason.COMMUNICATION_ERROR;
+          disableInstance(assignedInstance, commFailure);
         }
-        boolean commFailure = endReason != null && endReason == TaskAttemptEndReason.COMMUNICATION_ERROR;
-        disableInstance(assignedInstance, commFailure);
       }
     } finally {
       writeLock.unlock();
@@ -461,7 +487,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   public Object deallocateContainer(ContainerId containerId) {
     LOG.info("DEBUG: Ignoring deallocateContainer for containerId: " + containerId);
     // Containers are not being tracked for re-use.
-    // This is safe to ignore since a deallocate task should have come in earlier.
+    // This is safe to ignore since a deallocate task will come in.
     return null;
   }
 
@@ -635,6 +661,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     }
   }
 
+  /* Remove a task from the pending list */
   private void removePendingTask(TaskInfo taskInfo) {
     writeLock.lock();
     try {
@@ -644,6 +671,48 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
         LOG.warn("Could not find task: " + taskInfo.task + " in pending list, at priority: "
             + priority);
       }
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  /* Register a running task into the runningTasks structure */
+  private void registerRunningTask(TaskInfo taskInfo) {
+    writeLock.lock();
+    try {
+      int priority = taskInfo.priority.getPriority();
+      TreeSet<TaskInfo> tasksAtpriority = runningTasks.get(priority);
+      if (tasksAtpriority == null) {
+        tasksAtpriority = new TreeSet<>(TASK_INFO_COMPARATOR);
+        runningTasks.put(priority, tasksAtpriority);
+      }
+      tasksAtpriority.add(taskInfo);
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  /* Unregister a task from the known and running structures */
+  private TaskInfo unregisterTask(Object task) {
+    writeLock.lock();
+    try {
+      TaskInfo taskInfo = knownTasks.remove(task);
+      if (taskInfo != null) {
+        if (taskInfo.assigned) {
+          // Remove from the running list.
+          int priority = taskInfo.priority.getPriority();
+          Set<TaskInfo> tasksAtPriority = runningTasks.get(priority);
+          Preconditions.checkState(tasksAtPriority != null,
+              "runningTasks should contain an entry if the task was in running state. Caused by task: {}", task);
+          tasksAtPriority.remove(taskInfo);
+          if (tasksAtPriority.isEmpty()) {
+            runningTasks.remove(priority);
+          }
+        }
+      } else {
+        LOG.warn("Could not find TaskInfo for task: {}. Not removing it from the running set", task);
+      }
+      return taskInfo;
     } finally {
       writeLock.unlock();
     }
@@ -674,6 +743,13 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
           if (scheduled) {
             taskIter.remove();
           } else {
+            // Try pre-empting a task so that a higher priority task can take it's place.
+            // Preempt only if there's not pending preemptions to avoid preempting twice for a task.
+            LOG.info("Attempting to preempt for {}, pendingPreemptions={}", taskInfo.task, pendingPreemptions.get());
+            if (pendingPreemptions.get() == 0) {
+              preemptTasks(entry.getKey().getPriority(), 1);
+            }
+
             scheduledAllAtPriority = false;
             // Don't try assigning tasks at the next priority.
             break;
@@ -705,10 +781,11 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
               nsPair.getServiceInstance().getRpcPort());
       writeLock.lock(); // While updating local structures
       try {
+        LOG.info("Assigned task {} to container {}", taskInfo, container.getId());
         dagStats.registerTaskAllocated(taskInfo.requestedHosts, taskInfo.requestedRacks,
             nsPair.getServiceInstance().getHost());
-        taskInfo.setAssignmentInfo(nsPair.getServiceInstance(), container.getId());
-        knownTasks.putIfAbsent(taskInfo.task, taskInfo);
+        taskInfo.setAssignmentInfo(nsPair.getServiceInstance(), container.getId(), clock.getTime());
+        registerRunningTask(taskInfo);
         nsPair.getNodeInfo().registerTaskScheduled();
       } finally {
         writeLock.unlock();
@@ -717,6 +794,59 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       appClientDelegate.taskAllocated(taskInfo.task, taskInfo.clientCookie, container);
       return true;
     }
+  }
+
+  // Removes tasks from the runningList and sends out a preempt request to the system.
+  // Subsequent tasks will be scheduled again once the de-allocate request for the preempted
+  // task is processed.
+  private void preemptTasks(int forPriority, int numTasksToPreempt) {
+    writeLock.lock();
+    List<TaskInfo> preemptedTaskList = null;
+    try {
+      NavigableMap<Integer, TreeSet<TaskInfo>> orderedMap = runningTasks.descendingMap();
+      Iterator<Entry<Integer, TreeSet<TaskInfo>>> iterator = orderedMap.entrySet().iterator();
+      int preemptedCount = 0;
+      while (iterator.hasNext() && preemptedCount < numTasksToPreempt) {
+        Entry<Integer, TreeSet<TaskInfo>> entryAtPriority = iterator.next();
+        if (entryAtPriority.getKey() > forPriority) {
+          Iterator<TaskInfo> taskInfoIterator = entryAtPriority.getValue().iterator();
+          while (taskInfoIterator.hasNext() && preemptedCount < numTasksToPreempt) {
+            TaskInfo taskInfo = taskInfoIterator.next();
+            preemptedCount++;
+            LOG.info("preempting {} for task at priority {}", taskInfo, forPriority);
+            taskInfo.setPreemptedInfo(clock.getTime());
+            if (preemptedTaskList == null) {
+              preemptedTaskList = new LinkedList<>();
+            }
+            dagStats.registerTaskPreempted(taskInfo.assignedInstance.getHost());
+            preemptedTaskList.add(taskInfo);
+            pendingPreemptions.incrementAndGet();
+            // Remove from the runningTaskList
+            taskInfoIterator.remove();
+          }
+
+          // Remove entire priority level if it's been emptied.
+          if (entryAtPriority.getValue().isEmpty()) {
+            iterator.remove();
+          }
+        } else {
+          // No tasks qualify as preemptable
+          LOG.info("DBG: No tasks qualify as killable to schedule tasks at priority {}", forPriority);
+          break;
+        }
+      }
+    } finally {
+      writeLock.unlock();
+    }
+    // Send out the preempted request outside of the lock.
+    if (preemptedTaskList != null) {
+      for (TaskInfo taskInfo : preemptedTaskList) {
+        LOG.info("DBG: Preempting task {}", taskInfo);
+        appClientDelegate.preemptContainer(taskInfo.containerId);
+      }
+    }
+    // The schedule loop will be triggered again when the deallocateTask request comes in for the
+    // preempted task.
   }
 
   private class NodeEnablerCallable implements Callable<Void> {
@@ -832,6 +962,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     // Indicates whether a node is disabled - for whatever reason - commFailure, busy, etc.
     private boolean disabled = false;
 
+    private int numPreemptedTasks = 0;
     private int numScheduledTasks = 0;
     private final int numSchedulableTasks;
 
@@ -917,8 +1048,11 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       numScheduledTasks--;
     }
 
-    void registerUnsuccessfulTaskEnd() {
+    void registerUnsuccessfulTaskEnd(boolean wasPreempted) {
       numScheduledTasks--;
+      if (wasPreempted) {
+        numPreemptedTasks++;
+      }
     }
 
     public boolean isDisabled() {
@@ -980,12 +1114,14 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     int numRejectedTasks = 0;
     int numCommFailures = 0;
     int numDelayedAllocations = 0;
+    int numPreemptedTasks = 0;
     Map<String, AtomicInteger> localityBasedNumAllocationsPerHost = new HashMap<>();
     Map<String, AtomicInteger> numAllocationsPerHost = new HashMap<>();
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
+      sb.append("NumPreemptedTasks=").append(numPreemptedTasks).append(", ");
       sb.append("NumRequestedAllocations=").append(numRequestedAllocations).append(", ");
       sb.append("NumRequestsWithlocation=").append(numRequestsWithLocation).append(", ");
       sb.append("NumLocalAllocations=").append(numLocalAllocations).append(",");
@@ -1027,6 +1163,10 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       _registerAllocationInHostMap(allocatedHost, numAllocationsPerHost);
     }
 
+    void registerTaskPreempted(String host) {
+      numPreemptedTasks++;
+    }
+
     void registerCommFailure(String host) {
       numCommFailures++;
     }
@@ -1050,6 +1190,10 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   }
 
   private static class TaskInfo {
+    // IDs used to ensure two TaskInfos are different without using the underlying task instance.
+    // Required for insertion into a TreeMap
+    static final AtomicLong ID_GEN = new AtomicLong(0);
+    final long uniqueId;
     final Object task;
     final Object clientCookie;
     final Priority priority;
@@ -1057,11 +1201,17 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     final String[] requestedHosts;
     final String[] requestedRacks;
     final long requestTime;
+    long startTime;
+    long preemptTime;
     ContainerId containerId;
     ServiceInstance assignedInstance;
     private boolean assigned = false;
+    private boolean preempted = false;
+
     private int numAssignAttempts = 0;
 
+    // TaskInfo instances for two different tasks will not be the same. Only a single instance should
+    // ever be created for a taskAttempt
     public TaskInfo(Object task, Object clientCookie, Priority priority, Resource capability,
         String[] hosts, String[] racks, long requestTime) {
       this.task = task;
@@ -1071,12 +1221,20 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
       this.requestedHosts = hosts;
       this.requestedRacks = racks;
       this.requestTime = requestTime;
+      this.uniqueId = ID_GEN.getAndIncrement();
     }
 
-    void setAssignmentInfo(ServiceInstance instance, ContainerId containerId) {
+    void setAssignmentInfo(ServiceInstance instance, ContainerId containerId, long startTime) {
       this.assignedInstance = instance;
-      this.containerId = containerId;
+        this.containerId = containerId;
+      this.startTime = startTime;
       assigned = true;
+    }
+
+    void setPreemptedInfo(long preemptTime) {
+      this.preempted = true;
+      this.assigned = false;
+      this.preemptTime = preemptTime;
     }
 
     void triedAssigningTask() {
@@ -1085,6 +1243,66 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
 
     int getNumPreviousAssignAttempts() {
       return numAssignAttempts;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      TaskInfo taskInfo = (TaskInfo) o;
+
+      if (uniqueId != taskInfo.uniqueId) {
+        return false;
+      }
+      return task.equals(taskInfo.task);
+
+    }
+
+    @Override
+    public int hashCode() {
+      int result = (int) (uniqueId ^ (uniqueId >>> 32));
+      result = 31 * result + task.hashCode();
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "TaskInfo{" +
+          "task=" + task +
+          ", priority=" + priority +
+          ", startTime=" + startTime +
+          ", containerId=" + containerId +
+          ", assignedInstance=" + assignedInstance +
+          ", uniqueId=" + uniqueId +
+          '}';
+    }
+  }
+
+  // Newer tasks first.
+  private static class TaskStartComparator implements Comparator<TaskInfo> {
+
+    @Override
+    public int compare(TaskInfo o1, TaskInfo o2) {
+      if (o1.startTime > o2.startTime) {
+        return -1;
+      } else if (o1.startTime < o2.startTime) {
+        return 1;
+      } else {
+        // Comparing on time is not sufficient since two may be created at the same time,
+        // in which case inserting into a TreeSet/Map would break
+        if (o1.uniqueId > o2.uniqueId) {
+          return -1;
+        } else if (o1.uniqueId < o2.uniqueId) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
     }
   }
 

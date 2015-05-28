@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceSta
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.net.NetUtils;
@@ -84,21 +86,10 @@ public class TaskCommunicator extends AbstractService {
     executor.shutdownNow();
   }
 
-  public void submitWork(SubmitWorkRequestProto request, String host, int port,
+  public void sendSubmitWork(SubmitWorkRequestProto request, String host, int port,
                          final ExecuteRequestCallback<SubmitWorkResponseProto> callback) {
     ListenableFuture<SubmitWorkResponseProto> future = executor.submit(new SubmitWorkCallable(host, port, request));
-    Futures.addCallback(future, new FutureCallback<SubmitWorkResponseProto>() {
-      @Override
-      public void onSuccess(SubmitWorkResponseProto result) {
-        callback.setResponse(result);
-      }
-
-      @Override
-      public void onFailure(Throwable t) {
-        callback.indicateError(t);
-      }
-    });
-
+    Futures.addCallback(future, new ResponseCallback(callback));
   }
 
   public void sendSourceStateUpdate(final SourceStateUpdatedRequestProto request, final String host,
@@ -106,17 +97,7 @@ public class TaskCommunicator extends AbstractService {
                                     final ExecuteRequestCallback<SourceStateUpdatedResponseProto> callback) {
     ListenableFuture<SourceStateUpdatedResponseProto> future =
         executor.submit(new SendSourceStateUpdateCallable(host, port, request));
-    Futures.addCallback(future, new FutureCallback<SourceStateUpdatedResponseProto>() {
-      @Override
-      public void onSuccess(SourceStateUpdatedResponseProto result) {
-        callback.setResponse(result);
-      }
-
-      @Override
-      public void onFailure(Throwable t) {
-        callback.indicateError(t);
-      }
-    });
+    Futures.addCallback(future, new ResponseCallback(callback));
   }
 
   public void sendQueryComplete(final QueryCompleteRequestProto request, final String host,
@@ -124,17 +105,34 @@ public class TaskCommunicator extends AbstractService {
                                 final ExecuteRequestCallback<QueryCompleteResponseProto> callback) {
     ListenableFuture<QueryCompleteResponseProto> future =
         executor.submit(new SendQueryCompleteCallable(host, port, request));
-    Futures.addCallback(future, new FutureCallback<QueryCompleteResponseProto>() {
-      @Override
-      public void onSuccess(QueryCompleteResponseProto result) {
-        callback.setResponse(result);
-      }
+    Futures.addCallback(future, new ResponseCallback(callback));
+  }
 
-      @Override
-      public void onFailure(Throwable t) {
-        callback.indicateError(t);
-      }
-    });
+  public void sendTerminateFragment(final TerminateFragmentRequestProto request, final String host,
+                                    final int port,
+                                    final ExecuteRequestCallback<TerminateFragmentResponseProto> callback) {
+    ListenableFuture<TerminateFragmentResponseProto> future =
+        executor.submit(new SendTerminateFragmentCallable(host, port, request));
+    Futures.addCallback(future, new ResponseCallback(callback));
+  }
+
+  private static class ResponseCallback<TYPE extends Message> implements FutureCallback<TYPE> {
+
+    private final ExecuteRequestCallback<TYPE> callback;
+
+    public ResponseCallback(ExecuteRequestCallback<TYPE> callback) {
+      this.callback = callback;
+    }
+
+    @Override
+    public void onSuccess(TYPE result) {
+      callback.setResponse(result);
+    }
+
+    @Override
+    public void onFailure(Throwable t) {
+      callback.indicateError(t);
+    }
   }
 
   private static abstract class CallableRequest<REQUEST extends Message, RESPONSE extends Message>
@@ -192,6 +190,20 @@ public class TaskCommunicator extends AbstractService {
     @Override
     public QueryCompleteResponseProto call() throws Exception {
       return getProxy(hostname, port).queryComplete(null, request);
+    }
+  }
+
+  private class SendTerminateFragmentCallable
+      extends CallableRequest<TerminateFragmentRequestProto, TerminateFragmentResponseProto> {
+
+    protected SendTerminateFragmentCallable(String hostname, int port,
+                                            TerminateFragmentRequestProto terminateFragmentRequestProto) {
+      super(hostname, port, terminateFragmentRequestProto);
+    }
+
+    @Override
+    public TerminateFragmentResponseProto call() throws Exception {
+      return getProxy(hostname, port).terminateFragment(null, request);
     }
   }
 

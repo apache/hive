@@ -98,6 +98,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private boolean shouldRunTask = true;
   final Stopwatch runtimeWatch = new Stopwatch();
   final Stopwatch killtimerWatch = new Stopwatch();
+  private final AtomicBoolean isStarted = new AtomicBoolean(false);
   private final AtomicBoolean isCompleted = new AtomicBoolean(false);
   private final AtomicBoolean killInvoked = new AtomicBoolean(false);
 
@@ -127,13 +128,15 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         request.getUser(), jobToken);
     }
     this.metrics = metrics;
-    this.requestId = getTaskAttemptId(request);
+    this.requestId = getRequestId(request);
     this.killedTaskHandler = killedTaskHandler;
     this.fragmentCompletionHanler = fragmentCompleteHandler;
   }
 
   @Override
   protected TaskRunner2Result callInternal() throws Exception {
+    isStarted.set(true);
+
     this.startTime = System.currentTimeMillis();
     this.threadName = Thread.currentThread().getName();
     if (LOG.isDebugEnabled()) {
@@ -143,12 +146,19 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     // Unregister from the AMReporter, since the task is now running.
     this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort());
 
+    synchronized (this) {
+      if (!shouldRunTask) {
+        LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
+        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
+      }
+    }
+
     // TODO This executor seems unnecessary. Here and TezChild
     ExecutorService executorReal = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder()
             .setDaemon(true)
             .setNameFormat(
-                "TezTaskRunner_" + request.getFragmentSpec().getTaskAttemptIdString())
+                "TezTaskRunner_" + request.getFragmentSpec().getFragmentIdentifierString())
             .build());
     executor = MoreExecutors.listeningDecorator(executorReal);
 
@@ -244,6 +254,16 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
                   taskSpec.getTaskAttemptID());
             }
             shouldRunTask = false;
+          } else {
+            // If the task hasn't started, and it is killed - report back to the AM that the task has been killed.
+            LOG.info("DBG: Reporting taskKilled for non-started fragment {}", getRequestId());
+            reportTaskKilled();
+          }
+          if (!isStarted.get()) {
+            // If the task hasn't started - inform about fragment completion immediately. It's possible for
+            // the callable to never run.
+            fragmentCompletionHanler.fragmentComplete(fragmentInfo);
+            this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort());
           }
         }
       } else {
@@ -360,7 +380,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           metrics.incrExecutorTotalSuccess();
           break;
         case CONTAINER_STOP_REQUESTED:
-          LOG.warn("Unexpected CONTAINER_STOP_REQUEST for {}", requestId);
+          LOG.info("Received container stop request (AM preemption) for {}", requestId);
           break;
         case KILL_REQUESTED:
           LOG.info("Killed task {}", requestId);
@@ -439,8 +459,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     return sb.toString();
   }
 
-  private String getTaskAttemptId(SubmitWorkRequestProto request) {
-    return request.getFragmentSpec().getTaskAttemptIdString();
+  private static String getRequestId(SubmitWorkRequestProto request) {
+    return request.getFragmentSpec().getFragmentIdentifierString();
   }
 
   public long getFirstAttemptStartTime() {

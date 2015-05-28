@@ -43,7 +43,7 @@ public class Converters {
 
   public static TaskSpec getTaskSpecfromProto(FragmentSpecProto FragmentSpecProto) {
     TezTaskAttemptID taskAttemptID =
-        TezTaskAttemptID.fromString(FragmentSpecProto.getTaskAttemptIdString());
+        TezTaskAttemptID.fromString(FragmentSpecProto.getFragmentIdentifierString());
 
     ProcessorDescriptor processorDescriptor = null;
     if (FragmentSpecProto.hasProcessorDescriptor()) {
@@ -83,7 +83,7 @@ public class Converters {
 
   public static FragmentSpecProto convertTaskSpecToProto(TaskSpec taskSpec) {
     FragmentSpecProto.Builder builder = FragmentSpecProto.newBuilder();
-    builder.setTaskAttemptIdString(taskSpec.getTaskAttemptID().toString());
+    builder.setFragmentIdentifierString(taskSpec.getTaskAttemptID().toString());
     builder.setDagName(taskSpec.getDAGName());
     builder.setVertexName(taskSpec.getVertexName());
     builder.setVertexParallelism(taskSpec.getVertexParallelism());
