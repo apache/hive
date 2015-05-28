@@ -331,6 +331,20 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("default", dbObj.getDbname().toLowerCase());
   }
 
+  @Test
+  public void testDescDatabase() throws HiveAuthzPluginException,
+      HiveAccessControlException, CommandNeedRetryException {
+    reset(mockedAuthorizer);
+    int status = driver.compile("describe database " + dbName);
+    assertEquals(0, status);
+
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size());
+    HivePrivilegeObject dbObj = inputs.get(0);
+    assertEquals(dbName.toLowerCase(), dbObj.getDbname().toLowerCase());
+  }
+
 
   private void checkSingleTableInput(List<HivePrivilegeObject> inputs) {
     assertEquals("number of inputs", 1, inputs.size());
