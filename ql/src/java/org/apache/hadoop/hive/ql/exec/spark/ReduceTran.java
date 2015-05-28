@@ -22,12 +22,20 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class ReduceTran implements SparkTran<HiveKey, Iterable<BytesWritable>, HiveKey, BytesWritable> {
+public class ReduceTran extends CacheTran<HiveKey, Iterable<BytesWritable>, HiveKey, BytesWritable> {
   private HiveReduceFunction reduceFunc;
   private String name = "Reduce";
 
+  public ReduceTran() {
+    this(false);
+  }
+
+  public ReduceTran(boolean caching) {
+    super(caching);
+  }
+
   @Override
-  public JavaPairRDD<HiveKey, BytesWritable> transform(
+  public JavaPairRDD<HiveKey, BytesWritable> doTransform(
       JavaPairRDD<HiveKey, Iterable<BytesWritable>> input) {
     return input.mapPartitionsToPair(reduceFunc);
   }
@@ -39,11 +47,6 @@ public class ReduceTran implements SparkTran<HiveKey, Iterable<BytesWritable>, H
   @Override
   public String getName() {
     return name;
-  }
-
-  @Override
-  public Boolean isCacheEnable() {
-    return null;
   }
 
   @Override

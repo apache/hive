@@ -88,6 +88,9 @@ public class SparkPlan {
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
+    if (LOG.isDebugEnabled()) {
+      LOG.info("print generated spark rdd graph:\n" + SparkUtilities.rddGraphToString(finalRDD));
+    }
     return finalRDD;
   }
 
