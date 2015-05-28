@@ -101,6 +101,7 @@ public class AMReporter extends AbstractService {
     this.heartbeatInterval =
         conf.getLong(LlapConfiguration.LLAP_DAEMON_LIVENESS_HEARTBEAT_INTERVAL_MS,
             LlapConfiguration.LLAP_DAEMON_LIVENESS_HEARTBEAT_INTERVAL_MS_DEFAULT);
+    LOG.info("AMReporter running with NodeId: {}", nodeId);
   }
 
   @Override
@@ -164,7 +165,7 @@ public class AMReporter extends AbstractService {
     synchronized (knownAppMasters) {
       amNodeInfo = knownAppMasters.get(amNodeId);
       if (amNodeInfo == null) {
-        LOG.error(("Ignoring unexpected unregisterRequest for am at: " + amLocation + ":" + port));
+        LOG.info(("Ignoring duplocate unregisterRequest for am at: " + amLocation + ":" + port));
       }
       amNodeInfo.decrementAndGetTaskCount();
       // Not removing this here. Will be removed when taken off the queue and discovered to have 0

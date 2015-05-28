@@ -30,4 +30,10 @@ public interface Scheduler<T> {
    * @throws RejectedExecutionException
    */
   void schedule(T t) throws RejectedExecutionException;
+
+  /**
+   * Attempt to kill the fragment with the specified fragmentId
+   * @param fragmentId
+   */
+  void killFragment(String fragmentId);
 }

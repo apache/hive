@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceSta
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.SourceStateTracker;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -52,6 +54,7 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.common.TezTaskUmbilicalProtocol;
 import org.apache.tez.common.security.JobTokenSecretManager;
+import org.apache.tez.dag.api.ContainerEndReason;
 import org.apache.tez.dag.api.TaskAttemptEndReason;
 import org.apache.tez.dag.api.TaskCommunicatorContext;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -172,8 +175,15 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   }
 
   @Override
-  public void registerContainerEnd(ContainerId containerId) {
-    super.registerContainerEnd(containerId);
+  public void registerContainerEnd(ContainerId containerId, ContainerEndReason endReason) {
+    super.registerContainerEnd(containerId, endReason);
+    if (endReason == ContainerEndReason.INTERNAL_PREEMPTION) {
+      LOG.info("Processing containerEnd for container {} caused by internal preemption", containerId);
+      TezTaskAttemptID taskAttemptId = entityTracker.getTaskAttemptIdForContainer(containerId);
+      if (taskAttemptId != null) {
+        sendTaskTerminated(taskAttemptId, true);
+      }
+    }
     entityTracker.unregisterContainer(containerId);
   }
 
@@ -224,7 +234,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     // sending out status/DONE/KILLED/FAILED messages before TAImpl knows how to handle them.
     getTaskCommunicatorContext()
         .taskStartedRemotely(taskSpec.getTaskAttemptID(), containerId);
-    communicator.submitWork(requestProto, host, port,
+    communicator.sendSubmitWork(requestProto, host, port,
         new TaskCommunicator.ExecuteRequestCallback<SubmitWorkResponseProto>() {
           @Override
           public void setResponse(SubmitWorkResponseProto response) {
@@ -238,7 +248,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
               t = se.getCause();
             }
             if (t instanceof RemoteException) {
-              RemoteException re = (RemoteException)t;
+              RemoteException re = (RemoteException) t;
               String message = re.toString();
               // RejectedExecutions from the remote service treated as KILLED
               if (message.contains(RejectedExecutionException.class.getName())) {
@@ -249,7 +259,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                     TaskAttemptEndReason.SERVICE_BUSY, "Service Busy");
               } else {
                 // All others from the remote service cause the task to FAIL.
-                LOG.info("Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " + containerId, t);
+                LOG.info(
+                    "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
+                        containerId, t);
                 getTaskCommunicatorContext()
                     .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
                         t.toString());
@@ -264,7 +276,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                     TaskAttemptEndReason.COMMUNICATION_ERROR, "Communication Error");
               } else {
                 // Anything else is a FAIL.
-                LOG.info("Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " + containerId, t);
+                LOG.info(
+                    "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
+                        containerId, t);
                 getTaskCommunicatorContext()
                     .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
                         t.getMessage());
@@ -275,12 +289,48 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   }
 
   @Override
-  public void unregisterRunningTaskAttempt(TezTaskAttemptID taskAttemptID) {
-    super.unregisterRunningTaskAttempt(taskAttemptID);
-    entityTracker.unregisterTaskAttempt(taskAttemptID);
+  public void unregisterRunningTaskAttempt(final TezTaskAttemptID taskAttemptId,
+                                           TaskAttemptEndReason endReason) {
+    super.unregisterRunningTaskAttempt(taskAttemptId, endReason);
+
+    if (endReason == TaskAttemptEndReason.INTERNAL_PREEMPTION) {
+      LOG.info("Processing taskEnd for task {} caused by internal preemption", taskAttemptId);
+      sendTaskTerminated(taskAttemptId, false);
+    }
+    entityTracker.unregisterTaskAttempt(taskAttemptId);
     // This will also be invoked for tasks which have been KILLED / rejected by the daemon.
     // Informing the daemon becomes necessary once the LlapScheduler supports preemption
     // and/or starts attempting to kill tasks which may be running on a node.
+  }
+
+  private void sendTaskTerminated(final TezTaskAttemptID taskAttemptId,
+                                  boolean invokedByContainerEnd) {
+    LOG.info(
+        "DBG: Attempting to send terminateRequest for fragment {} due to internal preemption invoked by {}",
+        taskAttemptId.toString(), invokedByContainerEnd ? "containerEnd" : "taskEnd");
+    LlapNodeId nodeId = entityTracker.getNodeIfForTaskAttempt(taskAttemptId);
+    // NodeId can be null if the task gets unregistered due to failure / being killed by the daemon itself
+    if (nodeId != null) {
+      TerminateFragmentRequestProto request =
+          TerminateFragmentRequestProto.newBuilder().setDagName(currentDagName)
+              .setFragmentIdentifierString(taskAttemptId.toString()).build();
+      communicator.sendTerminateFragment(request, nodeId.getHostname(), nodeId.getPort(),
+          new TaskCommunicator.ExecuteRequestCallback<TerminateFragmentResponseProto>() {
+            @Override
+            public void setResponse(TerminateFragmentResponseProto response) {
+            }
+
+            @Override
+            public void indicateError(Throwable t) {
+              LOG.warn("Failed to send terminate fragment request for {}",
+                  taskAttemptId.toString());
+            }
+          });
+    } else {
+      LOG.info(
+          "Not sending terminate request for fragment {} since it's node is not known. Already unregistered",
+          taskAttemptId.toString());
+    }
   }
 
   @Override
@@ -410,7 +460,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     public void taskKilled(TezTaskAttemptID taskAttemptId) {
       // TODO Unregister the task for state updates, which could in turn unregister the node.
       getTaskCommunicatorContext().taskKilled(taskAttemptId,
-          TaskAttemptEndReason.INTERRUPTED_BY_SYSTEM, "Attempt preempted");
+          TaskAttemptEndReason.EXTERNAL_PREEMPTION, "Attempt preempted");
       entityTracker.unregisterTaskAttempt(taskAttemptId);
     }
 
@@ -478,6 +528,42 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     void registerContainer(ContainerId containerId, String hostname, int port) {
       containerToNodeMap.putIfAbsent(containerId, LlapNodeId.getInstance(hostname, port));
+    }
+
+    LlapNodeId getNodeIdForContainer(ContainerId containerId) {
+      return containerToNodeMap.get(containerId);
+    }
+
+    LlapNodeId getNodeIfForTaskAttempt(TezTaskAttemptID taskAttemptId) {
+      return attemptToNodeMap.get(taskAttemptId);
+    }
+
+    ContainerId getContainerIdForAttempt(TezTaskAttemptID taskAttemptId) {
+      LlapNodeId llapNodeId = getNodeIfForTaskAttempt(taskAttemptId);
+      if (llapNodeId != null) {
+        BiMap<TezTaskAttemptID, ContainerId> bMap = nodeMap.get(llapNodeId).inverse();
+        if (bMap != null) {
+          return bMap.get(taskAttemptId);
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+
+    TezTaskAttemptID getTaskAttemptIdForContainer(ContainerId containerId) {
+      LlapNodeId llapNodeId = getNodeIdForContainer(containerId);
+      if (llapNodeId != null) {
+        BiMap<ContainerId, TezTaskAttemptID> bMap = nodeMap.get(llapNodeId);
+        if (bMap != null) {
+          return bMap.get(containerId);
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
     }
 
     void unregisterContainer(ContainerId containerId) {

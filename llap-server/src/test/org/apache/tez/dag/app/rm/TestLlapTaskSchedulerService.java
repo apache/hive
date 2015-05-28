@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.SystemClock;
@@ -48,6 +49,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 public class TestLlapTaskSchedulerService {
+
+  // TODO Fix the races and the broken scheduler control in the tests
 
   private static final String HOST1 = "host1";
   private static final String HOST2 = "host2";
@@ -92,6 +95,63 @@ public class TestLlapTaskSchedulerService {
     } finally {
       tsWrapper.shutdown();
     }
+  }
+
+  // TODO Add a test to ensure the correct task is being preempted, and the completion for the specific
+  // task triggers the next task to be scheduled.
+
+  @Test(timeout=5000)
+  public void testPreemption() throws InterruptedException {
+
+    Priority priority1 = Priority.newInstance(1);
+    Priority priority2 = Priority.newInstance(2);
+    String [] hosts = new String[] {HOST1};
+    TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper(2000, hosts, 1, 1);
+    try {
+
+      Object task1 = new String("task1");
+      Object clientCookie1 = new String("cookie1");
+      Object task2 = new String("task2");
+      Object clientCookie2 = new String("cookie1");
+      Object task3 = new String("task3");
+      Object clientCookie3 = new String("cookie1");
+      Object task4 = new String("task4");
+      Object clientCookie4 = new String("cookie1");
+
+      tsWrapper.controlScheduler(true);
+      int schedulerRunNumber = tsWrapper.getSchedulerRunNumber();
+      tsWrapper.allocateTask(task1, hosts, priority2, clientCookie1);
+      tsWrapper.allocateTask(task2, hosts, priority2, clientCookie2);
+      tsWrapper.allocateTask(task3, hosts, priority2, clientCookie3);
+      tsWrapper.signalScheduler();
+      tsWrapper.controlScheduler(false);
+      tsWrapper.awaitSchedulerRunNumber(schedulerRunNumber + 1);
+      verify(tsWrapper.mockAppCallback, times(2)).taskAllocated(any(Object.class),
+          any(Object.class), any(Container.class));
+      assertEquals(2, tsWrapper.ts.dagStats.numLocalAllocations);
+      assertEquals(0, tsWrapper.ts.dagStats.numAllocationsNoLocalityRequest);
+
+      reset(tsWrapper.mockAppCallback);
+
+      tsWrapper.controlScheduler(true);
+      schedulerRunNumber = tsWrapper.getSchedulerRunNumber();
+      tsWrapper.allocateTask(task4, hosts, priority1, clientCookie4);
+      tsWrapper.controlScheduler(false);
+      tsWrapper.awaitSchedulerRunNumber(schedulerRunNumber + 1);
+      verify(tsWrapper.mockAppCallback).preemptContainer(any(ContainerId.class));
+
+      schedulerRunNumber = tsWrapper.getSchedulerRunNumber();
+      tsWrapper.deallocateTask(task2, false, TaskAttemptEndReason.INTERNAL_PREEMPTION);
+      tsWrapper.signalScheduler();
+      Thread.sleep(2000l);
+
+      verify(tsWrapper.mockAppCallback, times(1)).taskAllocated(eq(task4),
+          eq(clientCookie4), any(Container.class));
+
+    } finally {
+      tsWrapper.shutdown();
+    }
+
   }
 
   @Test(timeout=5000)
@@ -225,9 +285,15 @@ public class TestLlapTaskSchedulerService {
     }
 
     TestTaskSchedulerServiceWrapper(long disableTimeoutMillis) {
+      this(2000l, new String[]{HOST1, HOST2, HOST3}, 4,
+          LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE_DEFAULT);
+    }
+
+    TestTaskSchedulerServiceWrapper(long disableTimeoutMillis, String[] hosts, int numExecutors, int waitQueueSize) {
       conf = new Configuration();
-      conf.setStrings(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS, HOST1, HOST2, HOST3);
-      conf.setInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS, 4);
+      conf.setStrings(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS, hosts);
+      conf.setInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS, numExecutors);
+      conf.setInt(LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE, waitQueueSize);
       conf.setLong(LlapConfiguration.LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MILLIS,
           disableTimeoutMillis);
       conf.setBoolean(LlapTaskSchedulerServiceForTest.LLAP_TASK_SCHEDULER_IN_TEST, true);
@@ -268,6 +334,10 @@ public class TestLlapTaskSchedulerService {
 
     void allocateTask(Object task, String[] hosts, Priority priority, Object clientCookie) {
       ts.allocateTask(task, resource, hosts, null, priority, null, clientCookie);
+    }
+
+    void deallocateTask(Object task, boolean succeeded, TaskAttemptEndReason endReason) {
+      ts.deallocateTask(task, succeeded, endReason);
     }
 
     void rejectExecution(Object task) {

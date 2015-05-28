@@ -17,11 +17,10 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -29,6 +28,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -74,6 +74,8 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   private static final String TASK_EXECUTOR_THREAD_NAME_FORMAT = "Task-Executor-%d";
   private static final String WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT = "Wait-Queue-Scheduler-%d";
 
+  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+
   // Thread pool for actual execution of work.
   private final ListeningExecutorService executorService;
   private final EvictingPriorityBlockingQueue<TaskWrapper> waitQueue;
@@ -87,7 +89,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   private final AtomicInteger numSlotsAvailable;
 
   // Tracks known tasks.
-  private final Set<TaskWrapper> knownTasks = Collections.newSetFromMap(new ConcurrentHashMap<TaskWrapper, Boolean>());
+  private final ConcurrentMap<String, TaskWrapper> knownTasks = new ConcurrentHashMap<>();
 
   private final Object lock = new Object();
 
@@ -131,27 +133,32 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
     @Override
     public void run() {
+
       try {
 
-        synchronized (lock) {
-          while (waitQueue.isEmpty()) {
-            lock.wait();
-          }
-        }
 
-        // Since schedule() can be called from multiple threads, we peek the wait queue,
-        // try scheduling the task and then remove the task if scheduling is successful.
-        // This will make sure the task's place in the wait queue is held until it gets scheduled.
-        while (true) {
+        while (!isShutdown.get()) {
           synchronized (lock) {
+            // Since schedule() can be called from multiple threads, we peek the wait queue,
+            // try scheduling the task and then remove the task if scheduling is successful.
+            // This will make sure the task's place in the wait queue is held until it gets scheduled.
             task = waitQueue.peek();
             if (task == null) {
-              break;
+              if (!isShutdown.get()) {
+                lock.wait();
+              }
+              continue;
             }
 
-          // if the task cannot finish and if no slots are available then don't schedule it.
+            // if the task cannot finish and if no slots are available then don't schedule it.
             boolean shouldWait = false;
             if (task.getTaskRunnerCallable().canFinish()) {
+              if (isDebugEnabled) {
+                LOG.debug(
+                    "Attempting to schedule task {}, canFinish={}. Current state: preemptionQueueSize={}, numSlotsAvailable={}",
+                    task.getRequestId(), task.getTaskRunnerCallable().canFinish(),
+                    preemptionQueue.size(), numSlotsAvailable.get());
+              }
               if (numSlotsAvailable.get() == 0 && preemptionQueue.isEmpty()) {
                 shouldWait = true;
               }
@@ -161,7 +168,9 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
               }
             }
             if (shouldWait) {
-              lock.wait();
+              if (!isShutdown.get()) {
+                lock.wait();
+              }
               // Another task at a higher priority may have come in during the wait. Lookup the
               // queue again to pick up the task at the highest priority.
               continue;
@@ -179,15 +188,20 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
           synchronized (lock) {
             while (waitQueue.isEmpty()) {
-              lock.wait();
+              if (!isShutdown.get()) {
+                lock.wait();
+              }
             }
           }
         }
 
       } catch (InterruptedException e) {
-        // Executor service will create new thread if the current thread gets interrupted. We don't
-        // need to do anything with the exception.
-        LOG.info(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT + " thread has been interrupted.");
+        if (isShutdown.get()) {
+          LOG.info(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT + " thread has been interrupted after shutdown.");
+        } else {
+          LOG.warn(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT + " interrupted without shutdown", e);
+          throw new RuntimeException(e);
+        }
       }
     }
   }
@@ -207,24 +221,23 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
   @Override
   public void schedule(TaskRunnerCallable task) throws RejectedExecutionException {
-    TaskWrapper taskWrapper = new TaskWrapper(task);
-    knownTasks.add(taskWrapper);
+    TaskWrapper taskWrapper = new TaskWrapper(task, this);
+    knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
     TaskWrapper evictedTask;
     try {
       // Don't need a lock. Not subscribed for notifications yet, and marked as inWaitQueue
       evictedTask = waitQueue.offer(taskWrapper);
     } catch (RejectedExecutionException e) {
-      knownTasks.remove(taskWrapper);
+      knownTasks.remove(taskWrapper.getRequestId());
       throw e;
     }
-    if (evictedTask == null) {
-      if (isInfoEnabled) {
-        LOG.info(task.getRequestId() + " added to wait queue.");
-      }
-      if (isDebugEnabled) {
-        LOG.debug("Wait Queue: {}", waitQueue);
-      }
-    } else {
+    if (isInfoEnabled) {
+      LOG.info("{} added to wait queue. Current wait queue size={}", task.getRequestId(), waitQueue.size());
+    }
+    if (isDebugEnabled) {
+      LOG.debug("Wait Queue: {}", waitQueue);
+    }
+    if (evictedTask != null) {
       evictedTask.maybeUnregisterForFinishedStateNotifications();
       evictedTask.getTaskRunnerCallable().killTask();
       if (isInfoEnabled) {
@@ -237,13 +250,41 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     }
   }
 
+  @Override
+  public void killFragment(String fragmentId) {
+    synchronized (lock) {
+      TaskWrapper taskWrapper = knownTasks.remove(fragmentId);
+      // Can be null since the task may have completed meanwhile.
+      if (taskWrapper != null) {
+        if (taskWrapper.inWaitQueue) {
+          if (isDebugEnabled) {
+            LOG.debug("Removing {} from waitQueue", fragmentId);
+          }
+          taskWrapper.setIsInWaitQueue(false);
+          waitQueue.remove(taskWrapper);
+        }
+        if (taskWrapper.inPreemptionQueue) {
+          if (isDebugEnabled) {
+            LOG.debug("Removing {} from preemptionQueue", fragmentId);
+          }
+          taskWrapper.setIsInPreemptableQueue(false);
+          preemptionQueue.remove(taskWrapper);
+        }
+        taskWrapper.getTaskRunnerCallable().killTask();
+      } else {
+        LOG.info("Ignoring killFragment request for {} since it isn't known", fragmentId);
+      }
+      lock.notify();
+    }
+  }
+
   private boolean trySchedule(final TaskWrapper taskWrapper) {
 
     boolean scheduled = false;
     try {
       synchronized (lock) {
         boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
-        boolean stateChanged = taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
+        boolean stateChanged  = !taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
         ListenableFuture<TaskRunner2Result> future = executorService.submit(taskWrapper.getTaskRunnerCallable());
         taskWrapper.setIsInWaitQueue(false);
         FutureCallback<TaskRunner2Result> wrappedCallback = new InternalCompletionListener(taskWrapper);
@@ -357,7 +398,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
     @Override
     public void onSuccess(TaskRunner2Result result) {
-      knownTasks.remove(taskWrapper);
+      knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
       taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
@@ -366,7 +407,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
     @Override
     public void onFailure(Throwable t) {
-      knownTasks.remove(taskWrapper);
+      knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
       taskWrapper.getTaskRunnerCallable().getCallback().onFailure(t);
@@ -387,6 +428,9 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       }
 
       numSlotsAvailable.incrementAndGet();
+      LOG.info("Task {} complete. WaitQueueSize={}, numSlotsAvailable={}, preemptionQueueSize={}",
+          taskWrapper.getRequestId(), waitQueue.size(), numSlotsAvailable.get(),
+          preemptionQueue.size());
       synchronized (lock) {
         if (!waitQueue.isEmpty()) {
           lock.notify();
@@ -398,21 +442,23 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
   // TODO: llap daemon should call this to gracefully shutdown the task executor service
   public void shutDown(boolean awaitTermination) {
-    if (awaitTermination) {
-      if (isDebugEnabled) {
-        LOG.debug("awaitTermination: " + awaitTermination + " shutting down task executor" +
-            " service gracefully");
+    if (!isShutdown.getAndSet(true)) {
+      if (awaitTermination) {
+        if (isDebugEnabled) {
+          LOG.debug("awaitTermination: " + awaitTermination + " shutting down task executor" +
+              " service gracefully");
+        }
+        shutdownExecutor(waitQueueExecutorService);
+        shutdownExecutor(executorService);
+        shutdownExecutor(executionCompletionExecutorService);
+      } else {
+        if (isDebugEnabled) {
+          LOG.debug("awaitTermination: " + awaitTermination + " shutting down task executor" +
+              " service immediately");
+        }
+        executorService.shutdownNow();
+        waitQueueExecutorService.shutdownNow();
       }
-      shutdownExecutor(waitQueueExecutorService);
-      shutdownExecutor(executorService);
-      shutdownExecutor(executionCompletionExecutorService);
-    } else {
-      if (isDebugEnabled) {
-        LOG.debug("awaitTermination: " + awaitTermination + " shutting down task executor" +
-            " service immediately");
-      }
-      executorService.shutdownNow();
-      waitQueueExecutorService.shutdownNow();
     }
   }
 
@@ -474,14 +520,16 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   }
 
 
-  private class TaskWrapper implements FinishableStateUpdateHandler {
+  public static class TaskWrapper implements FinishableStateUpdateHandler {
     private final TaskRunnerCallable taskRunnerCallable;
     private boolean inWaitQueue = true;
     private boolean inPreemptionQueue = false;
     private boolean registeredForNotifications = false;
+    private final TaskExecutorService taskExecutorService;
 
-    public TaskWrapper(TaskRunnerCallable taskRunnerCallable) {
+    public TaskWrapper(TaskRunnerCallable taskRunnerCallable, TaskExecutorService taskExecutorService) {
       this.taskRunnerCallable = taskRunnerCallable;
+      this.taskExecutorService = taskExecutorService;
     }
 
     // Methods are synchronized primarily for visibility.
@@ -548,7 +596,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
       // Meanwhile the scheduler could try updating states via a synchronized method.
       LOG.info("DEBUG: Received finishable state update for {}, state={}",
           taskRunnerCallable.getRequestId(), finishableState);
-      TaskExecutorService.this.finishableStateUpdated(this, finishableState);
+      taskExecutorService.finishableStateUpdated(this, finishableState);
     }
   }
 }

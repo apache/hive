@@ -27,6 +27,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
+import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService.TaskWrapper;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
@@ -101,7 +102,7 @@ public class TestTaskExecutorService {
                 .setVertexParallelism(parallelism)
                 .setProcessorDescriptor(
                     EntityDescriptorProto.newBuilder().setClassName("MockProcessor").build())
-                .setTaskAttemptIdString(taId.toString()).build()).setAmHost("localhost")
+                .setFragmentIdentifierString(taId.toString()).build()).setAmHost("localhost")
         .setAmPort(12345).setAppAttemptNumber(0).setApplicationIdString("MockApp_1")
         .setContainerIdString("MockContainer_1").setUser("MockUser")
         .setTokenIdentifier("MockToken_1")
@@ -115,12 +116,12 @@ public class TestTaskExecutorService {
   
   @Test
   public void testWaitQueueComparator() throws InterruptedException {
-    MockRequest r1 = new MockRequest(createRequest(1, 2, 100), false, 100000);
-    MockRequest r2 = new MockRequest(createRequest(2, 4, 200), false, 100000);
-    MockRequest r3 = new MockRequest(createRequest(3, 6, 300), false, 1000000);
-    MockRequest r4 = new MockRequest(createRequest(4, 8, 400), false, 1000000);
-    MockRequest r5 = new MockRequest(createRequest(5, 10, 500), false, 1000000);
-    EvictingPriorityBlockingQueue queue = new EvictingPriorityBlockingQueue(
+    TaskWrapper r1 = createTaskWrapper(createRequest(1, 2, 100), false, 100000);
+    TaskWrapper r2 = createTaskWrapper(createRequest(2, 4, 200), false, 100000);
+    TaskWrapper r3 = createTaskWrapper(createRequest(3, 6, 300), false, 1000000);
+    TaskWrapper r4 = createTaskWrapper(createRequest(4, 8, 400), false, 1000000);
+    TaskWrapper r5 = createTaskWrapper(createRequest(5, 10, 500), false, 1000000);
+    EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new TaskExecutorService.WaitQueueComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
@@ -137,11 +138,11 @@ public class TestTaskExecutorService {
     assertEquals(r3, queue.take());
     assertEquals(r4, queue.take());
 
-    r1 = new MockRequest(createRequest(1, 2, 100), true, 100000);
-    r2 = new MockRequest(createRequest(2, 4, 200), true, 100000);
-    r3 = new MockRequest(createRequest(3, 6, 300), true, 1000000);
-    r4 = new MockRequest(createRequest(4, 8, 400), true, 1000000);
-    r5 = new MockRequest(createRequest(5, 10, 500), true, 1000000);
+    r1 = createTaskWrapper(createRequest(1, 2, 100), true, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 200), true, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 400), true, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new TaskExecutorService.WaitQueueComparator(), 4);
     assertNull(queue.offer(r1));
@@ -159,11 +160,11 @@ public class TestTaskExecutorService {
     assertEquals(r3, queue.take());
     assertEquals(r4, queue.take());
 
-    r1 = new MockRequest(createRequest(1, 1, 100), true, 100000);
-    r2 = new MockRequest(createRequest(2, 1, 200), false, 100000);
-    r3 = new MockRequest(createRequest(3, 1, 300), true, 1000000);
-    r4 = new MockRequest(createRequest(4, 1, 400), false, 1000000);
-    r5 = new MockRequest(createRequest(5, 10, 500), true, 1000000);
+    r1 = createTaskWrapper(createRequest(1, 1, 100), true, 100000);
+    r2 = createTaskWrapper(createRequest(2, 1, 200), false, 100000);
+    r3 = createTaskWrapper(createRequest(3, 1, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 1, 400), false, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new TaskExecutorService.WaitQueueComparator(), 4);
     assertNull(queue.offer(r1));
@@ -181,11 +182,11 @@ public class TestTaskExecutorService {
     assertEquals(r5, queue.take());
     assertEquals(r2, queue.take());
 
-    r1 = new MockRequest(createRequest(1, 2, 100), true, 100000);
-    r2 = new MockRequest(createRequest(2, 4, 200), false, 100000);
-    r3 = new MockRequest(createRequest(3, 6, 300), true, 1000000);
-    r4 = new MockRequest(createRequest(4, 8, 400), false, 1000000);
-    r5 = new MockRequest(createRequest(5, 10, 500), true, 1000000);
+    r1 = createTaskWrapper(createRequest(1, 2, 100), true, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 200), false, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 400), false, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new TaskExecutorService.WaitQueueComparator(), 4);
     assertNull(queue.offer(r1));
@@ -203,11 +204,11 @@ public class TestTaskExecutorService {
     assertEquals(r5, queue.take());
     assertEquals(r2, queue.take());
 
-    r1 = new MockRequest(createRequest(1, 2, 100), true, 100000);
-    r2 = new MockRequest(createRequest(2, 4, 200), false, 100000);
-    r3 = new MockRequest(createRequest(3, 6, 300), false, 1000000);
-    r4 = new MockRequest(createRequest(4, 8, 400), false, 1000000);
-    r5 = new MockRequest(createRequest(5, 10, 500), true, 1000000);
+    r1 = createTaskWrapper(createRequest(1, 2, 100), true, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 200), false, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 300), false, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 400), false, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new TaskExecutorService.WaitQueueComparator(), 4);
     assertNull(queue.offer(r1));
@@ -225,11 +226,11 @@ public class TestTaskExecutorService {
     assertEquals(r2, queue.take());
     assertEquals(r3, queue.take());
 
-    r1 = new MockRequest(createRequest(1, 2, 100), false, 100000);
-    r2 = new MockRequest(createRequest(2, 4, 200), true, 100000);
-    r3 = new MockRequest(createRequest(3, 6, 300), true, 1000000);
-    r4 = new MockRequest(createRequest(4, 8, 400), true, 1000000);
-    r5 = new MockRequest(createRequest(5, 10, 500), true, 1000000);
+    r1 = createTaskWrapper(createRequest(1, 2, 100), false, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 200), true, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 400), true, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new TaskExecutorService.WaitQueueComparator(), 4);
     assertNull(queue.offer(r1));
@@ -250,12 +251,13 @@ public class TestTaskExecutorService {
 
   @Test
   public void testPreemptionQueueComparator() throws InterruptedException {
-    MockRequest r1 = new MockRequest(createRequest(1, 2, 100), false, 100000);
-    MockRequest r2 = new MockRequest(createRequest(2, 4, 200), false, 100000);
-    MockRequest r3 = new MockRequest(createRequest(3, 6, 300), false, 1000000);
-    MockRequest r4 = new MockRequest(createRequest(4, 8, 400), false, 1000000);
-    BlockingQueue queue = new PriorityBlockingQueue(4,
+    TaskWrapper r1 = createTaskWrapper(createRequest(1, 2, 100), false, 100000);
+    TaskWrapper r2 = createTaskWrapper(createRequest(2, 4, 200), false, 100000);
+    TaskWrapper r3 = createTaskWrapper(createRequest(3, 6, 300), false, 1000000);
+    TaskWrapper r4 = createTaskWrapper(createRequest(4, 8, 400), false, 1000000);
+    BlockingQueue<TaskWrapper> queue = new PriorityBlockingQueue<>(4,
         new TaskExecutorService.PreemptionQueueComparator());
+
     queue.offer(r1);
     assertEquals(r1, queue.peek());
     queue.offer(r2);
@@ -267,5 +269,11 @@ public class TestTaskExecutorService {
     assertEquals(r2, queue.take());
     assertEquals(r3, queue.take());
     assertEquals(r4, queue.take());
+  }
+
+  private TaskWrapper createTaskWrapper(SubmitWorkRequestProto request, boolean canFinish, int workTime) {
+    MockRequest mockRequest = new MockRequest(request, canFinish, workTime);
+    TaskWrapper taskWrapper = new TaskWrapper(mockRequest, null);
+    return taskWrapper;
   }
 }

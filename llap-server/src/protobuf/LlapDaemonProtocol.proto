@@ -48,7 +48,7 @@ message GroupInputSpecProto {
 
 
 message FragmentSpecProto {
-  optional string task_attempt_id_string = 1;
+  optional string fragment_identifier_string = 1;
   optional string dag_name = 2;
   optional string vertex_name = 3;
   optional EntityDescriptorProto processor_descriptor = 4;
@@ -111,10 +111,7 @@ message QueryCompleteResponseProto {
 message TerminateFragmentRequestProto {
   optional string query_id = 1;
   optional string dag_name = 2;
-  optional int32 dag_attempt_number = 3;
-  optional string vertex_name = 4;
-  optional int32 fragment_number = 5;
-  optional int32 attempt_number = 6;
+  optional string fragment_identifier_string = 7;
 }
 
 message TerminateFragmentResponseProto {

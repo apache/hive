@@ -45,7 +45,6 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
-import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
@@ -55,11 +54,16 @@ import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
 
 import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO Convert this to a CompositeService
 public class ContainerRunnerImpl extends AbstractService implements ContainerRunner, FragmentCompletionHandler {
 
-  private static final Logger LOG = Logger.getLogger(ContainerRunnerImpl.class);
+  // TODO Setup a set of threads to process incoming requests.
+  // Make sure requests for a single dag/query are handled by the same thread
+
+  private static final Logger LOG = LoggerFactory.getLogger(ContainerRunnerImpl.class);
   public static final String THREAD_NAME_FORMAT_PREFIX = "ContainerExecutor ";
 
   private volatile AMReporter amReporter;
@@ -143,12 +147,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     LOG.info("Queueing container for execution: " + stringifySubmitRequest(request));
     // This is the start of container-annotated logging.
     // TODO Reduce the length of this string. Way too verbose at the moment.
-    String ndcContextString =
-        request.getContainerIdString() + "_" +
-            request.getFragmentSpec().getDagName() + "_" +
-            request.getFragmentSpec().getVertexName() +
-            "_" + request.getFragmentSpec().getFragmentNumber() + "_" +
-            request.getFragmentSpec().getAttemptNumber();
+    String ndcContextString = request.getFragmentSpec().getFragmentIdentifierString();
     NDC.push(ndcContextString);
     try {
       Map<String, String> env = new HashMap<>();
@@ -158,7 +157,7 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
       FragmentSpecProto fragmentSpec = request.getFragmentSpec();
       TezTaskAttemptID taskAttemptId = TezTaskAttemptID.fromString(
-          fragmentSpec.getTaskAttemptIdString());
+          fragmentSpec.getFragmentIdentifierString());
       int dagIdentifier = taskAttemptId.getTaskID().getVertexID().getDAGId().getId();
 
       QueryFragmentInfo fragmentInfo = queryTracker
@@ -222,7 +221,8 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
   @Override
   public void terminateFragment(TerminateFragmentRequestProto request) {
-    // TODO Implement when this gets used.
+    LOG.info("DBG: Received terminateFragment request for {}", request.getFragmentIdentifierString());
+    executorService.killFragment(request.getFragmentIdentifierString());
   }
 
   private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {
@@ -235,15 +235,15 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
   public static String stringifySubmitRequest(SubmitWorkRequestProto request) {
     StringBuilder sb = new StringBuilder();
+    FragmentSpecProto fragmentSpec = request.getFragmentSpec();
     sb.append("am_details=").append(request.getAmHost()).append(":").append(request.getAmPort());
+    sb.append(", taskInfo=").append(fragmentSpec.getFragmentIdentifierString());
     sb.append(", user=").append(request.getUser());
     sb.append(", appIdString=").append(request.getApplicationIdString());
     sb.append(", appAttemptNum=").append(request.getAppAttemptNumber());
     sb.append(", containerIdString=").append(request.getContainerIdString());
-    FragmentSpecProto fragmentSpec = request.getFragmentSpec();
     sb.append(", dagName=").append(fragmentSpec.getDagName());
     sb.append(", vertexName=").append(fragmentSpec.getVertexName());
-    sb.append(", taskInfo=").append(fragmentSpec.getTaskAttemptIdString());
     sb.append(", processor=").append(fragmentSpec.getProcessorDescriptor().getClassName());
     sb.append(", numInputs=").append(fragmentSpec.getInputSpecsCount());
     sb.append(", numOutputs=").append(fragmentSpec.getOutputSpecsCount());

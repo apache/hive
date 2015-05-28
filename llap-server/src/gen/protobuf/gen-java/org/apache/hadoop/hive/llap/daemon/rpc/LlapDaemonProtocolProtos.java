@@ -3124,20 +3124,20 @@ public final class LlapDaemonProtocolProtos {
   public interface FragmentSpecProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional string task_attempt_id_string = 1;
+    // optional string fragment_identifier_string = 1;
     /**
-     * <code>optional string task_attempt_id_string = 1;</code>
+     * <code>optional string fragment_identifier_string = 1;</code>
      */
-    boolean hasTaskAttemptIdString();
+    boolean hasFragmentIdentifierString();
     /**
-     * <code>optional string task_attempt_id_string = 1;</code>
+     * <code>optional string fragment_identifier_string = 1;</code>
      */
-    java.lang.String getTaskAttemptIdString();
+    java.lang.String getFragmentIdentifierString();
     /**
-     * <code>optional string task_attempt_id_string = 1;</code>
+     * <code>optional string fragment_identifier_string = 1;</code>
      */
     com.google.protobuf.ByteString
-        getTaskAttemptIdStringBytes();
+        getFragmentIdentifierStringBytes();
 
     // optional string dag_name = 2;
     /**
@@ -3341,7 +3341,7 @@ public final class LlapDaemonProtocolProtos {
             }
             case 10: {
               bitField0_ |= 0x00000001;
-              taskAttemptIdString_ = input.readBytes();
+              fragmentIdentifierString_ = input.readBytes();
               break;
             }
             case 18: {
@@ -3455,20 +3455,20 @@ public final class LlapDaemonProtocolProtos {
     }
 
     private int bitField0_;
-    // optional string task_attempt_id_string = 1;
-    public static final int TASK_ATTEMPT_ID_STRING_FIELD_NUMBER = 1;
-    private java.lang.Object taskAttemptIdString_;
+    // optional string fragment_identifier_string = 1;
+    public static final int FRAGMENT_IDENTIFIER_STRING_FIELD_NUMBER = 1;
+    private java.lang.Object fragmentIdentifierString_;
     /**
-     * <code>optional string task_attempt_id_string = 1;</code>
+     * <code>optional string fragment_identifier_string = 1;</code>
      */
-    public boolean hasTaskAttemptIdString() {
+    public boolean hasFragmentIdentifierString() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional string task_attempt_id_string = 1;</code>
+     * <code>optional string fragment_identifier_string = 1;</code>
      */
-    public java.lang.String getTaskAttemptIdString() {
-      java.lang.Object ref = taskAttemptIdString_;
+    public java.lang.String getFragmentIdentifierString() {
+      java.lang.Object ref = fragmentIdentifierString_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -3476,22 +3476,22 @@ public final class LlapDaemonProtocolProtos {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          taskAttemptIdString_ = s;
+          fragmentIdentifierString_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string task_attempt_id_string = 1;</code>
+     * <code>optional string fragment_identifier_string = 1;</code>
      */
     public com.google.protobuf.ByteString
-        getTaskAttemptIdStringBytes() {
-      java.lang.Object ref = taskAttemptIdString_;
+        getFragmentIdentifierStringBytes() {
+      java.lang.Object ref = fragmentIdentifierString_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        taskAttemptIdString_ = b;
+        fragmentIdentifierString_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -3763,7 +3763,7 @@ public final class LlapDaemonProtocolProtos {
     }
 
     private void initFields() {
-      taskAttemptIdString_ = "";
+      fragmentIdentifierString_ = "";
       dagName_ = "";
       vertexName_ = "";
       processorDescriptor_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto.getDefaultInstance();
@@ -3787,7 +3787,7 @@ public final class LlapDaemonProtocolProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getTaskAttemptIdStringBytes());
+        output.writeBytes(1, getFragmentIdentifierStringBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, getDagNameBytes());
@@ -3827,7 +3827,7 @@ public final class LlapDaemonProtocolProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getTaskAttemptIdStringBytes());
+          .computeBytesSize(1, getFragmentIdentifierStringBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
@@ -3888,10 +3888,10 @@ public final class LlapDaemonProtocolProtos {
       org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto other = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto) obj;
 
       boolean result = true;
-      result = result && (hasTaskAttemptIdString() == other.hasTaskAttemptIdString());
-      if (hasTaskAttemptIdString()) {
-        result = result && getTaskAttemptIdString()
-            .equals(other.getTaskAttemptIdString());
+      result = result && (hasFragmentIdentifierString() == other.hasFragmentIdentifierString());
+      if (hasFragmentIdentifierString()) {
+        result = result && getFragmentIdentifierString()
+            .equals(other.getFragmentIdentifierString());
       }
       result = result && (hasDagName() == other.hasDagName());
       if (hasDagName()) {
@@ -3942,9 +3942,9 @@ public final class LlapDaemonProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasTaskAttemptIdString()) {
-        hash = (37 * hash) + TASK_ATTEMPT_ID_STRING_FIELD_NUMBER;
-        hash = (53 * hash) + getTaskAttemptIdString().hashCode();
+      if (hasFragmentIdentifierString()) {
+        hash = (37 * hash) + FRAGMENT_IDENTIFIER_STRING_FIELD_NUMBER;
+        hash = (53 * hash) + getFragmentIdentifierString().hashCode();
       }
       if (hasDagName()) {
         hash = (37 * hash) + DAG_NAME_FIELD_NUMBER;
@@ -4095,7 +4095,7 @@ public final class LlapDaemonProtocolProtos {
 
       public Builder clear() {
         super.clear();
-        taskAttemptIdString_ = "";
+        fragmentIdentifierString_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
         dagName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -4162,7 +4162,7 @@ public final class LlapDaemonProtocolProtos {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.taskAttemptIdString_ = taskAttemptIdString_;
+        result.fragmentIdentifierString_ = fragmentIdentifierString_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
@@ -4234,9 +4234,9 @@ public final class LlapDaemonProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto other) {
         if (other == org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto.getDefaultInstance()) return this;
-        if (other.hasTaskAttemptIdString()) {
+        if (other.hasFragmentIdentifierString()) {
           bitField0_ |= 0x00000001;
-          taskAttemptIdString_ = other.taskAttemptIdString_;
+          fragmentIdentifierString_ = other.fragmentIdentifierString_;
           onChanged();
         }
         if (other.hasDagName()) {
@@ -4366,76 +4366,76 @@ public final class LlapDaemonProtocolProtos {
       }
       private int bitField0_;
 
-      // optional string task_attempt_id_string = 1;
-      private java.lang.Object taskAttemptIdString_ = "";
+      // optional string fragment_identifier_string = 1;
+      private java.lang.Object fragmentIdentifierString_ = "";
       /**
-       * <code>optional string task_attempt_id_string = 1;</code>
+       * <code>optional string fragment_identifier_string = 1;</code>
        */
-      public boolean hasTaskAttemptIdString() {
+      public boolean hasFragmentIdentifierString() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional string task_attempt_id_string = 1;</code>
+       * <code>optional string fragment_identifier_string = 1;</code>
        */
-      public java.lang.String getTaskAttemptIdString() {
-        java.lang.Object ref = taskAttemptIdString_;
+      public java.lang.String getFragmentIdentifierString() {
+        java.lang.Object ref = fragmentIdentifierString_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          taskAttemptIdString_ = s;
+          fragmentIdentifierString_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string task_attempt_id_string = 1;</code>
+       * <code>optional string fragment_identifier_string = 1;</code>
        */
       public com.google.protobuf.ByteString
-          getTaskAttemptIdStringBytes() {
-        java.lang.Object ref = taskAttemptIdString_;
+          getFragmentIdentifierStringBytes() {
+        java.lang.Object ref = fragmentIdentifierString_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          taskAttemptIdString_ = b;
+          fragmentIdentifierString_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string task_attempt_id_string = 1;</code>
+       * <code>optional string fragment_identifier_string = 1;</code>
        */
-      public Builder setTaskAttemptIdString(
+      public Builder setFragmentIdentifierString(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-        taskAttemptIdString_ = value;
+        fragmentIdentifierString_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string task_attempt_id_string = 1;</code>
+       * <code>optional string fragment_identifier_string = 1;</code>
        */
-      public Builder clearTaskAttemptIdString() {
+      public Builder clearFragmentIdentifierString() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        taskAttemptIdString_ = getDefaultInstance().getTaskAttemptIdString();
+        fragmentIdentifierString_ = getDefaultInstance().getFragmentIdentifierString();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string task_attempt_id_string = 1;</code>
+       * <code>optional string fragment_identifier_string = 1;</code>
        */
-      public Builder setTaskAttemptIdStringBytes(
+      public Builder setFragmentIdentifierStringBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-        taskAttemptIdString_ = value;
+        fragmentIdentifierString_ = value;
         onChanged();
         return this;
       }
@@ -10847,50 +10847,20 @@ public final class LlapDaemonProtocolProtos {
     com.google.protobuf.ByteString
         getDagNameBytes();
 
-    // optional int32 dag_attempt_number = 3;
+    // optional string fragment_identifier_string = 7;
     /**
-     * <code>optional int32 dag_attempt_number = 3;</code>
+     * <code>optional string fragment_identifier_string = 7;</code>
      */
-    boolean hasDagAttemptNumber();
+    boolean hasFragmentIdentifierString();
     /**
-     * <code>optional int32 dag_attempt_number = 3;</code>
+     * <code>optional string fragment_identifier_string = 7;</code>
      */
-    int getDagAttemptNumber();
-
-    // optional string vertex_name = 4;
+    java.lang.String getFragmentIdentifierString();
     /**
-     * <code>optional string vertex_name = 4;</code>
-     */
-    boolean hasVertexName();
-    /**
-     * <code>optional string vertex_name = 4;</code>
-     */
-    java.lang.String getVertexName();
-    /**
-     * <code>optional string vertex_name = 4;</code>
+     * <code>optional string fragment_identifier_string = 7;</code>
      */
     com.google.protobuf.ByteString
-        getVertexNameBytes();
-
-    // optional int32 fragment_number = 5;
-    /**
-     * <code>optional int32 fragment_number = 5;</code>
-     */
-    boolean hasFragmentNumber();
-    /**
-     * <code>optional int32 fragment_number = 5;</code>
-     */
-    int getFragmentNumber();
-
-    // optional int32 attempt_number = 6;
-    /**
-     * <code>optional int32 attempt_number = 6;</code>
-     */
-    boolean hasAttemptNumber();
-    /**
-     * <code>optional int32 attempt_number = 6;</code>
-     */
-    int getAttemptNumber();
+        getFragmentIdentifierStringBytes();
   }
   /**
    * Protobuf type {@code TerminateFragmentRequestProto}
@@ -10953,24 +10923,9 @@ public final class LlapDaemonProtocolProtos {
               dagName_ = input.readBytes();
               break;
             }
-            case 24: {
+            case 58: {
               bitField0_ |= 0x00000004;
-              dagAttemptNumber_ = input.readInt32();
-              break;
-            }
-            case 34: {
-              bitField0_ |= 0x00000008;
-              vertexName_ = input.readBytes();
-              break;
-            }
-            case 40: {
-              bitField0_ |= 0x00000010;
-              fragmentNumber_ = input.readInt32();
-              break;
-            }
-            case 48: {
-              bitField0_ |= 0x00000020;
-              attemptNumber_ = input.readInt32();
+              fragmentIdentifierString_ = input.readBytes();
               break;
             }
           }
@@ -11099,36 +11054,20 @@ public final class LlapDaemonProtocolProtos {
       }
     }
 
-    // optional int32 dag_attempt_number = 3;
-    public static final int DAG_ATTEMPT_NUMBER_FIELD_NUMBER = 3;
-    private int dagAttemptNumber_;
+    // optional string fragment_identifier_string = 7;
+    public static final int FRAGMENT_IDENTIFIER_STRING_FIELD_NUMBER = 7;
+    private java.lang.Object fragmentIdentifierString_;
     /**
-     * <code>optional int32 dag_attempt_number = 3;</code>
+     * <code>optional string fragment_identifier_string = 7;</code>
      */
-    public boolean hasDagAttemptNumber() {
+    public boolean hasFragmentIdentifierString() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional int32 dag_attempt_number = 3;</code>
+     * <code>optional string fragment_identifier_string = 7;</code>
      */
-    public int getDagAttemptNumber() {
-      return dagAttemptNumber_;
-    }
-
-    // optional string vertex_name = 4;
-    public static final int VERTEX_NAME_FIELD_NUMBER = 4;
-    private java.lang.Object vertexName_;
-    /**
-     * <code>optional string vertex_name = 4;</code>
-     */
-    public boolean hasVertexName() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional string vertex_name = 4;</code>
-     */
-    public java.lang.String getVertexName() {
-      java.lang.Object ref = vertexName_;
+    public java.lang.String getFragmentIdentifierString() {
+      java.lang.Object ref = fragmentIdentifierString_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -11136,67 +11075,32 @@ public final class LlapDaemonProtocolProtos {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          vertexName_ = s;
+          fragmentIdentifierString_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string vertex_name = 4;</code>
+     * <code>optional string fragment_identifier_string = 7;</code>
      */
     public com.google.protobuf.ByteString
-        getVertexNameBytes() {
-      java.lang.Object ref = vertexName_;
+        getFragmentIdentifierStringBytes() {
+      java.lang.Object ref = fragmentIdentifierString_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        vertexName_ = b;
+        fragmentIdentifierString_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
 
-    // optional int32 fragment_number = 5;
-    public static final int FRAGMENT_NUMBER_FIELD_NUMBER = 5;
-    private int fragmentNumber_;
-    /**
-     * <code>optional int32 fragment_number = 5;</code>
-     */
-    public boolean hasFragmentNumber() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
-    }
-    /**
-     * <code>optional int32 fragment_number = 5;</code>
-     */
-    public int getFragmentNumber() {
-      return fragmentNumber_;
-    }
-
-    // optional int32 attempt_number = 6;
-    public static final int ATTEMPT_NUMBER_FIELD_NUMBER = 6;
-    private int attemptNumber_;
-    /**
-     * <code>optional int32 attempt_number = 6;</code>
-     */
-    public boolean hasAttemptNumber() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
-    }
-    /**
-     * <code>optional int32 attempt_number = 6;</code>
-     */
-    public int getAttemptNumber() {
-      return attemptNumber_;
-    }
-
     private void initFields() {
       queryId_ = "";
       dagName_ = "";
-      dagAttemptNumber_ = 0;
-      vertexName_ = "";
-      fragmentNumber_ = 0;
-      attemptNumber_ = 0;
+      fragmentIdentifierString_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -11217,16 +11121,7 @@ public final class LlapDaemonProtocolProtos {
         output.writeBytes(2, getDagNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(3, dagAttemptNumber_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getVertexNameBytes());
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeInt32(5, fragmentNumber_);
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeInt32(6, attemptNumber_);
+        output.writeBytes(7, getFragmentIdentifierStringBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -11247,19 +11142,7 @@ public final class LlapDaemonProtocolProtos {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, dagAttemptNumber_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getVertexNameBytes());
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(5, fragmentNumber_);
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(6, attemptNumber_);
+          .computeBytesSize(7, getFragmentIdentifierStringBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -11294,25 +11177,10 @@ public final class LlapDaemonProtocolProtos {
         result = result && getDagName()
             .equals(other.getDagName());
       }
-      result = result && (hasDagAttemptNumber() == other.hasDagAttemptNumber());
-      if (hasDagAttemptNumber()) {
-        result = result && (getDagAttemptNumber()
-            == other.getDagAttemptNumber());
-      }
-      result = result && (hasVertexName() == other.hasVertexName());
-      if (hasVertexName()) {
-        result = result && getVertexName()
-            .equals(other.getVertexName());
-      }
-      result = result && (hasFragmentNumber() == other.hasFragmentNumber());
-      if (hasFragmentNumber()) {
-        result = result && (getFragmentNumber()
-            == other.getFragmentNumber());
-      }
-      result = result && (hasAttemptNumber() == other.hasAttemptNumber());
-      if (hasAttemptNumber()) {
-        result = result && (getAttemptNumber()
-            == other.getAttemptNumber());
+      result = result && (hasFragmentIdentifierString() == other.hasFragmentIdentifierString());
+      if (hasFragmentIdentifierString()) {
+        result = result && getFragmentIdentifierString()
+            .equals(other.getFragmentIdentifierString());
       }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
@@ -11335,21 +11203,9 @@ public final class LlapDaemonProtocolProtos {
         hash = (37 * hash) + DAG_NAME_FIELD_NUMBER;
         hash = (53 * hash) + getDagName().hashCode();
       }
-      if (hasDagAttemptNumber()) {
-        hash = (37 * hash) + DAG_ATTEMPT_NUMBER_FIELD_NUMBER;
-        hash = (53 * hash) + getDagAttemptNumber();
-      }
-      if (hasVertexName()) {
-        hash = (37 * hash) + VERTEX_NAME_FIELD_NUMBER;
-        hash = (53 * hash) + getVertexName().hashCode();
-      }
-      if (hasFragmentNumber()) {
-        hash = (37 * hash) + FRAGMENT_NUMBER_FIELD_NUMBER;
-        hash = (53 * hash) + getFragmentNumber();
-      }
-      if (hasAttemptNumber()) {
-        hash = (37 * hash) + ATTEMPT_NUMBER_FIELD_NUMBER;
-        hash = (53 * hash) + getAttemptNumber();
+      if (hasFragmentIdentifierString()) {
+        hash = (37 * hash) + FRAGMENT_IDENTIFIER_STRING_FIELD_NUMBER;
+        hash = (53 * hash) + getFragmentIdentifierString().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -11464,14 +11320,8 @@ public final class LlapDaemonProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         dagName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        dagAttemptNumber_ = 0;
+        fragmentIdentifierString_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
-        vertexName_ = "";
-        bitField0_ = (bitField0_ & ~0x00000008);
-        fragmentNumber_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000010);
-        attemptNumber_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -11511,19 +11361,7 @@ public final class LlapDaemonProtocolProtos {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.dagAttemptNumber_ = dagAttemptNumber_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.vertexName_ = vertexName_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
-        }
-        result.fragmentNumber_ = fragmentNumber_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
-          to_bitField0_ |= 0x00000020;
-        }
-        result.attemptNumber_ = attemptNumber_;
+        result.fragmentIdentifierString_ = fragmentIdentifierString_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -11550,19 +11388,10 @@ public final class LlapDaemonProtocolProtos {
           dagName_ = other.dagName_;
           onChanged();
         }
-        if (other.hasDagAttemptNumber()) {
-          setDagAttemptNumber(other.getDagAttemptNumber());
-        }
-        if (other.hasVertexName()) {
-          bitField0_ |= 0x00000008;
-          vertexName_ = other.vertexName_;
+        if (other.hasFragmentIdentifierString()) {
+          bitField0_ |= 0x00000004;
+          fragmentIdentifierString_ = other.fragmentIdentifierString_;
           onChanged();
-        }
-        if (other.hasFragmentNumber()) {
-          setFragmentNumber(other.getFragmentNumber());
-        }
-        if (other.hasAttemptNumber()) {
-          setAttemptNumber(other.getAttemptNumber());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -11739,175 +11568,76 @@ public final class LlapDaemonProtocolProtos {
         return this;
       }
 
-      // optional int32 dag_attempt_number = 3;
-      private int dagAttemptNumber_ ;
+      // optional string fragment_identifier_string = 7;
+      private java.lang.Object fragmentIdentifierString_ = "";
       /**
-       * <code>optional int32 dag_attempt_number = 3;</code>
+       * <code>optional string fragment_identifier_string = 7;</code>
        */
-      public boolean hasDagAttemptNumber() {
+      public boolean hasFragmentIdentifierString() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int32 dag_attempt_number = 3;</code>
+       * <code>optional string fragment_identifier_string = 7;</code>
        */
-      public int getDagAttemptNumber() {
-        return dagAttemptNumber_;
-      }
-      /**
-       * <code>optional int32 dag_attempt_number = 3;</code>
-       */
-      public Builder setDagAttemptNumber(int value) {
-        bitField0_ |= 0x00000004;
-        dagAttemptNumber_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 dag_attempt_number = 3;</code>
-       */
-      public Builder clearDagAttemptNumber() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        dagAttemptNumber_ = 0;
-        onChanged();
-        return this;
-      }
-
-      // optional string vertex_name = 4;
-      private java.lang.Object vertexName_ = "";
-      /**
-       * <code>optional string vertex_name = 4;</code>
-       */
-      public boolean hasVertexName() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>optional string vertex_name = 4;</code>
-       */
-      public java.lang.String getVertexName() {
-        java.lang.Object ref = vertexName_;
+      public java.lang.String getFragmentIdentifierString() {
+        java.lang.Object ref = fragmentIdentifierString_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          vertexName_ = s;
+          fragmentIdentifierString_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string vertex_name = 4;</code>
+       * <code>optional string fragment_identifier_string = 7;</code>
        */
       public com.google.protobuf.ByteString
-          getVertexNameBytes() {
-        java.lang.Object ref = vertexName_;
+          getFragmentIdentifierStringBytes() {
+        java.lang.Object ref = fragmentIdentifierString_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          vertexName_ = b;
+          fragmentIdentifierString_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string vertex_name = 4;</code>
+       * <code>optional string fragment_identifier_string = 7;</code>
        */
-      public Builder setVertexName(
+      public Builder setFragmentIdentifierString(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
-        vertexName_ = value;
+  bitField0_ |= 0x00000004;
+        fragmentIdentifierString_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string vertex_name = 4;</code>
+       * <code>optional string fragment_identifier_string = 7;</code>
        */
-      public Builder clearVertexName() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        vertexName_ = getDefaultInstance().getVertexName();
+      public Builder clearFragmentIdentifierString() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        fragmentIdentifierString_ = getDefaultInstance().getFragmentIdentifierString();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string vertex_name = 4;</code>
+       * <code>optional string fragment_identifier_string = 7;</code>
        */
-      public Builder setVertexNameBytes(
+      public Builder setFragmentIdentifierStringBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
-        vertexName_ = value;
-        onChanged();
-        return this;
-      }
-
-      // optional int32 fragment_number = 5;
-      private int fragmentNumber_ ;
-      /**
-       * <code>optional int32 fragment_number = 5;</code>
-       */
-      public boolean hasFragmentNumber() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
-      }
-      /**
-       * <code>optional int32 fragment_number = 5;</code>
-       */
-      public int getFragmentNumber() {
-        return fragmentNumber_;
-      }
-      /**
-       * <code>optional int32 fragment_number = 5;</code>
-       */
-      public Builder setFragmentNumber(int value) {
-        bitField0_ |= 0x00000010;
-        fragmentNumber_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 fragment_number = 5;</code>
-       */
-      public Builder clearFragmentNumber() {
-        bitField0_ = (bitField0_ & ~0x00000010);
-        fragmentNumber_ = 0;
-        onChanged();
-        return this;
-      }
-
-      // optional int32 attempt_number = 6;
-      private int attemptNumber_ ;
-      /**
-       * <code>optional int32 attempt_number = 6;</code>
-       */
-      public boolean hasAttemptNumber() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
-      }
-      /**
-       * <code>optional int32 attempt_number = 6;</code>
-       */
-      public int getAttemptNumber() {
-        return attemptNumber_;
-      }
-      /**
-       * <code>optional int32 attempt_number = 6;</code>
-       */
-      public Builder setAttemptNumber(int value) {
-        bitField0_ |= 0x00000020;
-        attemptNumber_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 attempt_number = 6;</code>
-       */
-      public Builder clearAttemptNumber() {
-        bitField0_ = (bitField0_ & ~0x00000020);
-        attemptNumber_ = 0;
+  bitField0_ |= 0x00000004;
+        fragmentIdentifierString_ = value;
         onChanged();
         return this;
       }
@@ -12796,52 +12526,51 @@ public final class LlapDaemonProtocolProtos {
       "roupInputSpecProto\022\022\n\ngroup_name\030\001 \001(\t\022\026" +
       "\n\016group_vertices\030\002 \003(\t\0227\n\027merged_input_d",
       "escriptor\030\003 \001(\0132\026.EntityDescriptorProto\"" +
-      "\327\002\n\021FragmentSpecProto\022\036\n\026task_attempt_id" +
-      "_string\030\001 \001(\t\022\020\n\010dag_name\030\002 \001(\t\022\023\n\013verte" +
-      "x_name\030\003 \001(\t\0224\n\024processor_descriptor\030\004 \001" +
-      "(\0132\026.EntityDescriptorProto\022!\n\013input_spec" +
-      "s\030\005 \003(\0132\014.IOSpecProto\022\"\n\014output_specs\030\006 " +
-      "\003(\0132\014.IOSpecProto\0221\n\023grouped_input_specs" +
-      "\030\007 \003(\0132\024.GroupInputSpecProto\022\032\n\022vertex_p" +
-      "arallelism\030\010 \001(\005\022\027\n\017fragment_number\030\t \001(" +
-      "\005\022\026\n\016attempt_number\030\n \001(\005\"\344\001\n\023FragmentRu",
-      "ntimeInfo\022#\n\033num_self_and_upstream_tasks" +
-      "\030\001 \001(\005\022-\n%num_self_and_upstream_complete" +
-      "d_tasks\030\002 \001(\005\022\033\n\023within_dag_priority\030\003 \001" +
-      "(\005\022\026\n\016dag_start_time\030\004 \001(\003\022 \n\030first_atte" +
-      "mpt_start_time\030\005 \001(\003\022\"\n\032current_attempt_" +
-      "start_time\030\006 \001(\003\"\266\002\n\026SubmitWorkRequestPr" +
-      "oto\022\033\n\023container_id_string\030\001 \001(\t\022\017\n\007am_h" +
-      "ost\030\002 \001(\t\022\017\n\007am_port\030\003 \001(\005\022\030\n\020token_iden" +
-      "tifier\030\004 \001(\t\022\032\n\022credentials_binary\030\005 \001(\014" +
-      "\022\014\n\004user\030\006 \001(\t\022\035\n\025application_id_string\030",
-      "\007 \001(\t\022\032\n\022app_attempt_number\030\010 \001(\005\022)\n\rfra" +
-      "gment_spec\030\t \001(\0132\022.FragmentSpecProto\0223\n\025" +
-      "fragment_runtime_info\030\n \001(\0132\024.FragmentRu" +
-      "ntimeInfo\"\031\n\027SubmitWorkResponseProto\"f\n\036" +
-      "SourceStateUpdatedRequestProto\022\020\n\010dag_na" +
-      "me\030\001 \001(\t\022\020\n\010src_name\030\002 \001(\t\022 \n\005state\030\003 \001(" +
-      "\0162\021.SourceStateProto\"!\n\037SourceStateUpdat" +
-      "edResponseProto\"X\n\031QueryCompleteRequestP" +
-      "roto\022\020\n\010query_id\030\001 \001(\t\022\020\n\010dag_name\030\002 \001(\t" +
-      "\022\027\n\014delete_delay\030\003 \001(\003:\0010\"\034\n\032QueryComple",
-      "teResponseProto\"\245\001\n\035TerminateFragmentReq" +
-      "uestProto\022\020\n\010query_id\030\001 \001(\t\022\020\n\010dag_name\030" +
-      "\002 \001(\t\022\032\n\022dag_attempt_number\030\003 \001(\005\022\023\n\013ver" +
-      "tex_name\030\004 \001(\t\022\027\n\017fragment_number\030\005 \001(\005\022" +
-      "\026\n\016attempt_number\030\006 \001(\005\" \n\036TerminateFrag" +
-      "mentResponseProto*2\n\020SourceStateProto\022\017\n" +
-      "\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNING\020\0022\316\002\n\022LlapDa" +
-      "emonProtocol\022?\n\nsubmitWork\022\027.SubmitWorkR" +
-      "equestProto\032\030.SubmitWorkResponseProto\022W\n" +
-      "\022sourceStateUpdated\022\037.SourceStateUpdated",
-      "RequestProto\032 .SourceStateUpdatedRespons" +
-      "eProto\022H\n\rqueryComplete\022\032.QueryCompleteR" +
-      "equestProto\032\033.QueryCompleteResponseProto" +
-      "\022T\n\021terminateFragment\022\036.TerminateFragmen" +
-      "tRequestProto\032\037.TerminateFragmentRespons" +
-      "eProtoBH\n&org.apache.hadoop.hive.llap.da" +
-      "emon.rpcB\030LlapDaemonProtocolProtos\210\001\001\240\001\001"
+      "\333\002\n\021FragmentSpecProto\022\"\n\032fragment_identi" +
+      "fier_string\030\001 \001(\t\022\020\n\010dag_name\030\002 \001(\t\022\023\n\013v" +
+      "ertex_name\030\003 \001(\t\0224\n\024processor_descriptor" +
+      "\030\004 \001(\0132\026.EntityDescriptorProto\022!\n\013input_" +
+      "specs\030\005 \003(\0132\014.IOSpecProto\022\"\n\014output_spec" +
+      "s\030\006 \003(\0132\014.IOSpecProto\0221\n\023grouped_input_s" +
+      "pecs\030\007 \003(\0132\024.GroupInputSpecProto\022\032\n\022vert" +
+      "ex_parallelism\030\010 \001(\005\022\027\n\017fragment_number\030" +
+      "\t \001(\005\022\026\n\016attempt_number\030\n \001(\005\"\344\001\n\023Fragme",
+      "ntRuntimeInfo\022#\n\033num_self_and_upstream_t" +
+      "asks\030\001 \001(\005\022-\n%num_self_and_upstream_comp" +
+      "leted_tasks\030\002 \001(\005\022\033\n\023within_dag_priority" +
+      "\030\003 \001(\005\022\026\n\016dag_start_time\030\004 \001(\003\022 \n\030first_" +
+      "attempt_start_time\030\005 \001(\003\022\"\n\032current_atte" +
+      "mpt_start_time\030\006 \001(\003\"\266\002\n\026SubmitWorkReque" +
+      "stProto\022\033\n\023container_id_string\030\001 \001(\t\022\017\n\007" +
+      "am_host\030\002 \001(\t\022\017\n\007am_port\030\003 \001(\005\022\030\n\020token_" +
+      "identifier\030\004 \001(\t\022\032\n\022credentials_binary\030\005" +
+      " \001(\014\022\014\n\004user\030\006 \001(\t\022\035\n\025application_id_str",
+      "ing\030\007 \001(\t\022\032\n\022app_attempt_number\030\010 \001(\005\022)\n" +
+      "\rfragment_spec\030\t \001(\0132\022.FragmentSpecProto" +
+      "\0223\n\025fragment_runtime_info\030\n \001(\0132\024.Fragme" +
+      "ntRuntimeInfo\"\031\n\027SubmitWorkResponseProto" +
+      "\"f\n\036SourceStateUpdatedRequestProto\022\020\n\010da" +
+      "g_name\030\001 \001(\t\022\020\n\010src_name\030\002 \001(\t\022 \n\005state\030" +
+      "\003 \001(\0162\021.SourceStateProto\"!\n\037SourceStateU" +
+      "pdatedResponseProto\"X\n\031QueryCompleteRequ" +
+      "estProto\022\020\n\010query_id\030\001 \001(\t\022\020\n\010dag_name\030\002" +
+      " \001(\t\022\027\n\014delete_delay\030\003 \001(\003:\0010\"\034\n\032QueryCo",
+      "mpleteResponseProto\"g\n\035TerminateFragment" +
+      "RequestProto\022\020\n\010query_id\030\001 \001(\t\022\020\n\010dag_na" +
+      "me\030\002 \001(\t\022\"\n\032fragment_identifier_string\030\007" +
+      " \001(\t\" \n\036TerminateFragmentResponseProto*2" +
+      "\n\020SourceStateProto\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS" +
+      "_RUNNING\020\0022\316\002\n\022LlapDaemonProtocol\022?\n\nsub" +
+      "mitWork\022\027.SubmitWorkRequestProto\032\030.Submi" +
+      "tWorkResponseProto\022W\n\022sourceStateUpdated" +
+      "\022\037.SourceStateUpdatedRequestProto\032 .Sour" +
+      "ceStateUpdatedResponseProto\022H\n\rqueryComp",
+      "lete\022\032.QueryCompleteRequestProto\032\033.Query" +
+      "CompleteResponseProto\022T\n\021terminateFragme" +
+      "nt\022\036.TerminateFragmentRequestProto\032\037.Ter" +
+      "minateFragmentResponseProtoBH\n&org.apach" +
+      "e.hadoop.hive.llap.daemon.rpcB\030LlapDaemo" +
+      "nProtocolProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -12877,7 +12606,7 @@ public final class LlapDaemonProtocolProtos {
           internal_static_FragmentSpecProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_FragmentSpecProto_descriptor,
-              new java.lang.String[] { "TaskAttemptIdString", "DagName", "VertexName", "ProcessorDescriptor", "InputSpecs", "OutputSpecs", "GroupedInputSpecs", "VertexParallelism", "FragmentNumber", "AttemptNumber", });
+              new java.lang.String[] { "FragmentIdentifierString", "DagName", "VertexName", "ProcessorDescriptor", "InputSpecs", "OutputSpecs", "GroupedInputSpecs", "VertexParallelism", "FragmentNumber", "AttemptNumber", });
           internal_static_FragmentRuntimeInfo_descriptor =
             getDescriptor().getMessageTypes().get(5);
           internal_static_FragmentRuntimeInfo_fieldAccessorTable = new
@@ -12925,7 +12654,7 @@ public final class LlapDaemonProtocolProtos {
           internal_static_TerminateFragmentRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TerminateFragmentRequestProto_descriptor,
-              new java.lang.String[] { "QueryId", "DagName", "DagAttemptNumber", "VertexName", "FragmentNumber", "AttemptNumber", });
+              new java.lang.String[] { "QueryId", "DagName", "FragmentIdentifierString", });
           internal_static_TerminateFragmentResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(13);
           internal_static_TerminateFragmentResponseProto_fieldAccessorTable = new
