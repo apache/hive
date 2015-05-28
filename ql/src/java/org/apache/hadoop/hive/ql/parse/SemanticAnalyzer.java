@@ -3864,7 +3864,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     selectStar = selectStar && exprList.getChildCount() == posn + 1;
 
-    handleInsertStatementSpec(col_list, dest, out_rwsch, inputRR, qb, selExprList);
+    out_rwsch = handleInsertStatementSpec(col_list, dest, out_rwsch, inputRR, qb, selExprList);
 
     ArrayList<String> columnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
@@ -3909,14 +3909,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @see #handleInsertStatementSpecPhase1(ASTNode, QBParseInfo, org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx)
    * @throws SemanticException
    */
-  private void handleInsertStatementSpec(List<ExprNodeDesc> col_list, String dest,
+  private RowResolver handleInsertStatementSpec(List<ExprNodeDesc> col_list, String dest,
                                          RowResolver outputRR, RowResolver inputRR, QB qb,
                                          ASTNode selExprList) throws SemanticException {
     //(z,x)
     List<String> targetTableSchema = qb.getParseInfo().getDestSchemaForClause(dest);//specified in the query
     if(targetTableSchema == null) {
       //no insert schema was specified
-      return;
+      return outputRR;
     }
     if(targetTableSchema.size() != col_list.size()) {
       Table target = qb.getMetaData().getDestTableForAlias(dest);
@@ -3959,6 +3959,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+    RowResolver newOutputRR = new RowResolver();
     //now make the select produce <regular columns>,<dynamic partition columns> with
     //where missing columns are NULL-filled
     for(String f : targetTableColNames) {
@@ -3967,7 +3968,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new_col_list.add(targetCol2Projection.get(f));
         ColumnInfo ci = targetCol2ColumnInfo.get(f);//todo: is this OK?
         ci.setInternalName(getColumnInternalName(colListPos));
-        newSchema.add(ci);
+        newOutputRR.put(ci.getTabAlias(), ci.getInternalName(), ci);
       }
       else {
         //add new 'synthetic' columns for projections not provided by Select
@@ -3979,14 +3980,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         final String tableAlias = null;//this column doesn't come from any table
         ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(colListPos),
           exp.getWritableObjectInspector(), tableAlias, false);
-        newSchema.add(colInfo);
-        outputRR.addMappingOnly(colInfo.getTabAlias(), colInfo.getInternalName(), colInfo);
+        newOutputRR.put(colInfo.getTabAlias(), colInfo.getInternalName(), colInfo);
       }
       colListPos++;
     }
     col_list.clear();
     col_list.addAll(new_col_list);
-    outputRR.setRowSchema(new RowSchema(newSchema));
+    return newOutputRR;
   }
   String recommendName(ExprNodeDesc exp, String colAlias) {
     if (!colAlias.startsWith(autogenColAliasPrfxLbl)) {

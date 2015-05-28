@@ -96,3 +96,40 @@ POSTHOOK: Input: default@student_acid
 1	NULL
 2	20
 22	NULL
+PREHOOK: query: drop table if exists acid_partitioned
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists acid_partitioned
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table acid_partitioned (a int, c string)
+  partitioned by (p int)
+  clustered by (a) into 1 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_partitioned
+POSTHOOK: query: create table acid_partitioned (a int, c string)
+  partitioned by (p int)
+  clustered by (a) into 1 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_partitioned
+PREHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@acid_partitioned
+POSTHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@acid_partitioned@p=2
+POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).c SIMPLE []
+PREHOOK: query: select * from acid_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_partitioned
+PREHOOK: Input: default@acid_partitioned@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_partitioned
+POSTHOOK: Input: default@acid_partitioned@p=2
+#### A masked pattern was here ####
+1	NULL	2
