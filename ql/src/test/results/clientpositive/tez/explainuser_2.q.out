@@ -631,8 +631,8 @@ Stage-0
                |           Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           Merge Join Operator [MERGEJOIN_85]
                |           |  condition map:[{"":"Inner Join 0 to 1"}]
-               |           |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-               |           |  outputColumnNames:["_col1","_col2"]
+               |           |  keys:{"1":"_col2 (type: string)","0":"_col0 (type: string)"}
+               |           |  outputColumnNames:["_col2","_col3"]
                |           |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           |<-Map 1 [SIMPLE_EDGE]
                |           |  Reduce Output Operator [RS_22]
@@ -651,15 +651,15 @@ Stage-0
                |           |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                |           |<-Reducer 8 [SIMPLE_EDGE]
                |              Reduce Output Operator [RS_24]
-               |                 key expressions:_col1 (type: string)
-               |                 Map-reduce partition columns:_col1 (type: string)
+               |                 key expressions:_col2 (type: string)
+               |                 Map-reduce partition columns:_col2 (type: string)
                |                 sort order:+
                |                 Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
-               |                 value expressions:_col0 (type: string)
+               |                 value expressions:_col1 (type: string)
                |                 Merge Join Operator [MERGEJOIN_84]
                |                 |  condition map:[{"":"Inner Join 0 to 1"}]
-               |                 |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-               |                 |  outputColumnNames:["_col0","_col1"]
+               |                 |  keys:{"1":"_col1 (type: string)","0":"_col1 (type: string)"}
+               |                 |  outputColumnNames:["_col1","_col2"]
                |                 |  Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                |                 |<-Map 10 [SIMPLE_EDGE]
                |                 |  Reduce Output Operator [RS_18]
@@ -679,12 +679,12 @@ Stage-0
                |                 |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                |                 |<-Reducer 7 [SIMPLE_EDGE]
                |                    Reduce Output Operator [RS_16]
-               |                       key expressions:_col0 (type: string)
-               |                       Map-reduce partition columns:_col0 (type: string)
+               |                       key expressions:_col1 (type: string)
+               |                       Map-reduce partition columns:_col1 (type: string)
                |                       sort order:+
                |                       Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                |                       Select Operator [SEL_12]
-               |                          outputColumnNames:["_col0"]
+               |                          outputColumnNames:["_col1"]
                |                          Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                |                          Group By Operator [GBY_11]
                |                          |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -744,8 +744,8 @@ Stage-0
                            Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                            Merge Join Operator [MERGEJOIN_87]
                            |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-                           |  outputColumnNames:["_col1","_col2"]
+                           |  keys:{"1":"_col2 (type: string)","0":"_col0 (type: string)"}
+                           |  outputColumnNames:["_col2","_col3"]
                            |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                            |<-Map 11 [SIMPLE_EDGE]
                            |  Reduce Output Operator [RS_49]
@@ -764,15 +764,15 @@ Stage-0
                            |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                            |<-Reducer 16 [SIMPLE_EDGE]
                               Reduce Output Operator [RS_51]
-                                 key expressions:_col1 (type: string)
-                                 Map-reduce partition columns:_col1 (type: string)
+                                 key expressions:_col2 (type: string)
+                                 Map-reduce partition columns:_col2 (type: string)
                                  sort order:+
                                  Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
-                                 value expressions:_col0 (type: string)
+                                 value expressions:_col1 (type: string)
                                  Merge Join Operator [MERGEJOIN_86]
                                  |  condition map:[{"":"Inner Join 0 to 1"}]
-                                 |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-                                 |  outputColumnNames:["_col0","_col1"]
+                                 |  keys:{"1":"_col1 (type: string)","0":"_col1 (type: string)"}
+                                 |  outputColumnNames:["_col1","_col2"]
                                  |  Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                                  |<-Map 18 [SIMPLE_EDGE]
                                  |  Reduce Output Operator [RS_45]
@@ -792,12 +792,12 @@ Stage-0
                                  |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                                  |<-Reducer 15 [SIMPLE_EDGE]
                                     Reduce Output Operator [RS_43]
-                                       key expressions:_col0 (type: string)
-                                       Map-reduce partition columns:_col0 (type: string)
+                                       key expressions:_col1 (type: string)
+                                       Map-reduce partition columns:_col1 (type: string)
                                        sort order:+
                                        Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                                        Select Operator [SEL_39]
-                                          outputColumnNames:["_col0"]
+                                          outputColumnNames:["_col1"]
                                           Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                                           Group By Operator [GBY_38]
                                           |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -924,8 +924,8 @@ Stage-0
                |           Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           Merge Join Operator [MERGEJOIN_170]
                |           |  condition map:[{"":"Inner Join 0 to 1"}]
-               |           |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-               |           |  outputColumnNames:["_col1","_col3"]
+               |           |  keys:{"1":"_col2 (type: string)","0":"_col0 (type: string)"}
+               |           |  outputColumnNames:["_col1","_col4"]
                |           |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           |<-Map 24 [SIMPLE_EDGE]
                |           |  Reduce Output Operator [RS_110]
@@ -945,14 +945,14 @@ Stage-0
                |           |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                |           |<-Reducer 33 [SIMPLE_EDGE]
                |              Reduce Output Operator [RS_112]
-               |                 key expressions:_col1 (type: string)
-               |                 Map-reduce partition columns:_col1 (type: string)
+               |                 key expressions:_col2 (type: string)
+               |                 Map-reduce partition columns:_col2 (type: string)
                |                 sort order:+
                |                 Statistics:Num rows: 242 Data size: 2565 Basic stats: COMPLETE Column stats: NONE
                |                 Merge Join Operator [MERGEJOIN_169]
                |                 |  condition map:[{"":"Inner Join 0 to 1"}]
-               |                 |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-               |                 |  outputColumnNames:["_col1"]
+               |                 |  keys:{"1":"_col1 (type: string)","0":"_col1 (type: string)"}
+               |                 |  outputColumnNames:["_col2"]
                |                 |  Statistics:Num rows: 242 Data size: 2565 Basic stats: COMPLETE Column stats: NONE
                |                 |<-Map 37 [SIMPLE_EDGE]
                |                 |  Reduce Output Operator [RS_106]
@@ -972,12 +972,12 @@ Stage-0
                |                 |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                |                 |<-Reducer 32 [SIMPLE_EDGE]
                |                    Reduce Output Operator [RS_104]
-               |                       key expressions:_col0 (type: string)
-               |                       Map-reduce partition columns:_col0 (type: string)
+               |                       key expressions:_col1 (type: string)
+               |                       Map-reduce partition columns:_col1 (type: string)
                |                       sort order:+
                |                       Statistics:Num rows: 220 Data size: 2332 Basic stats: COMPLETE Column stats: NONE
                |                       Select Operator [SEL_100]
-               |                          outputColumnNames:["_col0"]
+               |                          outputColumnNames:["_col1"]
                |                          Statistics:Num rows: 220 Data size: 2332 Basic stats: COMPLETE Column stats: NONE
                |                          Group By Operator [GBY_99]
                |                          |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -1120,8 +1120,8 @@ Stage-0
                            |           Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                            |           Merge Join Operator [MERGEJOIN_168]
                            |           |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |           |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-                           |           |  outputColumnNames:["_col1","_col3"]
+                           |           |  keys:{"1":"_col2 (type: string)","0":"_col0 (type: string)"}
+                           |           |  outputColumnNames:["_col1","_col4"]
                            |           |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                            |           |<-Map 13 [SIMPLE_EDGE]
                            |           |  Reduce Output Operator [RS_58]
@@ -1141,14 +1141,14 @@ Stage-0
                            |           |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                            |           |<-Reducer 20 [SIMPLE_EDGE]
                            |              Reduce Output Operator [RS_60]
-                           |                 key expressions:_col1 (type: string)
-                           |                 Map-reduce partition columns:_col1 (type: string)
+                           |                 key expressions:_col2 (type: string)
+                           |                 Map-reduce partition columns:_col2 (type: string)
                            |                 sort order:+
                            |                 Statistics:Num rows: 209 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                            |                 Merge Join Operator [MERGEJOIN_167]
                            |                 |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |                 |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-                           |                 |  outputColumnNames:["_col1"]
+                           |                 |  keys:{"1":"_col1 (type: string)","0":"_col1 (type: string)"}
+                           |                 |  outputColumnNames:["_col2"]
                            |                 |  Statistics:Num rows: 209 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                            |                 |<-Map 23 [SIMPLE_EDGE]
                            |                 |  Reduce Output Operator [RS_54]
@@ -1168,12 +1168,12 @@ Stage-0
                            |                 |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                            |                 |<-Reducer 19 [SIMPLE_EDGE]
                            |                    Reduce Output Operator [RS_52]
-                           |                       key expressions:_col0 (type: string)
-                           |                       Map-reduce partition columns:_col0 (type: string)
+                           |                       key expressions:_col1 (type: string)
+                           |                       Map-reduce partition columns:_col1 (type: string)
                            |                       sort order:+
                            |                       Statistics:Num rows: 190 Data size: 2008 Basic stats: COMPLETE Column stats: NONE
                            |                       Select Operator [SEL_48]
-                           |                          outputColumnNames:["_col0"]
+                           |                          outputColumnNames:["_col1"]
                            |                          Statistics:Num rows: 190 Data size: 2008 Basic stats: COMPLETE Column stats: NONE
                            |                          Group By Operator [GBY_47]
                            |                          |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -1267,8 +1267,8 @@ Stage-0
                                        Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                                        Merge Join Operator [MERGEJOIN_166]
                                        |  condition map:[{"":"Inner Join 0 to 1"}]
-                                       |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-                                       |  outputColumnNames:["_col1","_col3"]
+                                       |  keys:{"1":"_col2 (type: string)","0":"_col0 (type: string)"}
+                                       |  outputColumnNames:["_col1","_col4"]
                                        |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                                        |<-Map 1 [SIMPLE_EDGE]
                                        |  Reduce Output Operator [RS_22]
@@ -1288,14 +1288,14 @@ Stage-0
                                        |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                                        |<-Reducer 10 [SIMPLE_EDGE]
                                           Reduce Output Operator [RS_24]
-                                             key expressions:_col1 (type: string)
-                                             Map-reduce partition columns:_col1 (type: string)
+                                             key expressions:_col2 (type: string)
+                                             Map-reduce partition columns:_col2 (type: string)
                                              sort order:+
                                              Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                                              Merge Join Operator [MERGEJOIN_165]
                                              |  condition map:[{"":"Inner Join 0 to 1"}]
-                                             |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-                                             |  outputColumnNames:["_col1"]
+                                             |  keys:{"1":"_col1 (type: string)","0":"_col1 (type: string)"}
+                                             |  outputColumnNames:["_col2"]
                                              |  Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                                              |<-Map 12 [SIMPLE_EDGE]
                                              |  Reduce Output Operator [RS_18]
@@ -1315,12 +1315,12 @@ Stage-0
                                              |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                                              |<-Reducer 9 [SIMPLE_EDGE]
                                                 Reduce Output Operator [RS_16]
-                                                   key expressions:_col0 (type: string)
-                                                   Map-reduce partition columns:_col0 (type: string)
+                                                   key expressions:_col1 (type: string)
+                                                   Map-reduce partition columns:_col1 (type: string)
                                                    sort order:+
                                                    Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                                                    Select Operator [SEL_12]
-                                                      outputColumnNames:["_col0"]
+                                                      outputColumnNames:["_col1"]
                                                       Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                                                       Group By Operator [GBY_11]
                                                       |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -1766,20 +1766,20 @@ Stage-0
                |           Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           Map Join Operator [MAPJOIN_85]
                |           |  condition map:[{"":"Inner Join 0 to 1"}]
-               |           |  keys:{"Map 1":"_col0 (type: string)","Reducer 6":"_col1 (type: string)"}
-               |           |  outputColumnNames:["_col1","_col2"]
+               |           |  keys:{"Map 1":"_col0 (type: string)","Reducer 6":"_col2 (type: string)"}
+               |           |  outputColumnNames:["_col2","_col3"]
                |           |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           |<-Reducer 6 [BROADCAST_EDGE]
                |           |  Reduce Output Operator [RS_24]
-               |           |     key expressions:_col1 (type: string)
-               |           |     Map-reduce partition columns:_col1 (type: string)
+               |           |     key expressions:_col2 (type: string)
+               |           |     Map-reduce partition columns:_col2 (type: string)
                |           |     sort order:+
                |           |     Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
-               |           |     value expressions:_col0 (type: string)
+               |           |     value expressions:_col1 (type: string)
                |           |     Map Join Operator [MAPJOIN_84]
                |           |     |  condition map:[{"":"Inner Join 0 to 1"}]
-               |           |     |  keys:{"Reducer 6":"_col0 (type: string)","Map 8":"_col1 (type: string)"}
-               |           |     |  outputColumnNames:["_col0","_col1"]
+               |           |     |  keys:{"Reducer 6":"_col1 (type: string)","Map 8":"_col1 (type: string)"}
+               |           |     |  outputColumnNames:["_col1","_col2"]
                |           |     |  Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                |           |     |<-Map 8 [BROADCAST_EDGE]
                |           |     |  Reduce Output Operator [RS_18]
@@ -1798,7 +1798,7 @@ Stage-0
                |           |     |              alias:x
                |           |     |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                |           |     |<-Select Operator [SEL_12]
-               |           |           outputColumnNames:["_col0"]
+               |           |           outputColumnNames:["_col1"]
                |           |           Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                |           |           Group By Operator [GBY_11]
                |           |           |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -1867,20 +1867,20 @@ Stage-0
                            Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                            Map Join Operator [MAPJOIN_87]
                            |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |  keys:{"Reducer 12":"_col1 (type: string)","Map 9":"_col0 (type: string)"}
-                           |  outputColumnNames:["_col1","_col2"]
+                           |  keys:{"Reducer 12":"_col2 (type: string)","Map 9":"_col0 (type: string)"}
+                           |  outputColumnNames:["_col2","_col3"]
                            |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                            |<-Reducer 12 [BROADCAST_EDGE]
                            |  Reduce Output Operator [RS_51]
-                           |     key expressions:_col1 (type: string)
-                           |     Map-reduce partition columns:_col1 (type: string)
+                           |     key expressions:_col2 (type: string)
+                           |     Map-reduce partition columns:_col2 (type: string)
                            |     sort order:+
                            |     Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
-                           |     value expressions:_col0 (type: string)
+                           |     value expressions:_col1 (type: string)
                            |     Map Join Operator [MAPJOIN_86]
                            |     |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |     |  keys:{"Map 14":"_col1 (type: string)","Reducer 12":"_col0 (type: string)"}
-                           |     |  outputColumnNames:["_col0","_col1"]
+                           |     |  keys:{"Map 14":"_col1 (type: string)","Reducer 12":"_col1 (type: string)"}
+                           |     |  outputColumnNames:["_col1","_col2"]
                            |     |  Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                            |     |<-Map 14 [BROADCAST_EDGE]
                            |     |  Reduce Output Operator [RS_45]
@@ -1899,7 +1899,7 @@ Stage-0
                            |     |              alias:x
                            |     |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                            |     |<-Select Operator [SEL_39]
-                           |           outputColumnNames:["_col0"]
+                           |           outputColumnNames:["_col1"]
                            |           Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                            |           Group By Operator [GBY_38]
                            |           |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -2032,19 +2032,19 @@ Stage-0
                |           Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           Map Join Operator [MAPJOIN_170]
                |           |  condition map:[{"":"Inner Join 0 to 1"}]
-               |           |  keys:{"Map 20":"_col0 (type: string)","Reducer 27":"_col1 (type: string)"}
-               |           |  outputColumnNames:["_col1","_col3"]
+               |           |  keys:{"Map 20":"_col0 (type: string)","Reducer 27":"_col2 (type: string)"}
+               |           |  outputColumnNames:["_col1","_col4"]
                |           |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           |<-Reducer 27 [BROADCAST_EDGE]
                |           |  Reduce Output Operator [RS_112]
-               |           |     key expressions:_col1 (type: string)
-               |           |     Map-reduce partition columns:_col1 (type: string)
+               |           |     key expressions:_col2 (type: string)
+               |           |     Map-reduce partition columns:_col2 (type: string)
                |           |     sort order:+
                |           |     Statistics:Num rows: 242 Data size: 2565 Basic stats: COMPLETE Column stats: NONE
                |           |     Map Join Operator [MAPJOIN_169]
                |           |     |  condition map:[{"":"Inner Join 0 to 1"}]
-               |           |     |  keys:{"Map 31":"_col1 (type: string)","Reducer 27":"_col0 (type: string)"}
-               |           |     |  outputColumnNames:["_col1"]
+               |           |     |  keys:{"Map 31":"_col1 (type: string)","Reducer 27":"_col1 (type: string)"}
+               |           |     |  outputColumnNames:["_col2"]
                |           |     |  Statistics:Num rows: 242 Data size: 2565 Basic stats: COMPLETE Column stats: NONE
                |           |     |<-Map 31 [BROADCAST_EDGE]
                |           |     |  Reduce Output Operator [RS_106]
@@ -2063,7 +2063,7 @@ Stage-0
                |           |     |              alias:x
                |           |     |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                |           |     |<-Select Operator [SEL_100]
-               |           |           outputColumnNames:["_col0"]
+               |           |           outputColumnNames:["_col1"]
                |           |           Statistics:Num rows: 220 Data size: 2332 Basic stats: COMPLETE Column stats: NONE
                |           |           Group By Operator [GBY_99]
                |           |           |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -2215,19 +2215,19 @@ Stage-0
                            |           Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                            |           Map Join Operator [MAPJOIN_168]
                            |           |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |           |  keys:{"Map 11":"_col0 (type: string)","Reducer 16":"_col1 (type: string)"}
-                           |           |  outputColumnNames:["_col1","_col3"]
+                           |           |  keys:{"Map 11":"_col0 (type: string)","Reducer 16":"_col2 (type: string)"}
+                           |           |  outputColumnNames:["_col1","_col4"]
                            |           |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                            |           |<-Reducer 16 [BROADCAST_EDGE]
                            |           |  Reduce Output Operator [RS_60]
-                           |           |     key expressions:_col1 (type: string)
-                           |           |     Map-reduce partition columns:_col1 (type: string)
+                           |           |     key expressions:_col2 (type: string)
+                           |           |     Map-reduce partition columns:_col2 (type: string)
                            |           |     sort order:+
                            |           |     Statistics:Num rows: 209 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                            |           |     Map Join Operator [MAPJOIN_167]
                            |           |     |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |           |     |  keys:{"Map 19":"_col1 (type: string)","Reducer 16":"_col0 (type: string)"}
-                           |           |     |  outputColumnNames:["_col1"]
+                           |           |     |  keys:{"Map 19":"_col1 (type: string)","Reducer 16":"_col1 (type: string)"}
+                           |           |     |  outputColumnNames:["_col2"]
                            |           |     |  Statistics:Num rows: 209 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                            |           |     |<-Map 19 [BROADCAST_EDGE]
                            |           |     |  Reduce Output Operator [RS_54]
@@ -2246,7 +2246,7 @@ Stage-0
                            |           |     |              alias:x
                            |           |     |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                            |           |     |<-Select Operator [SEL_48]
-                           |           |           outputColumnNames:["_col0"]
+                           |           |           outputColumnNames:["_col1"]
                            |           |           Statistics:Num rows: 190 Data size: 2008 Basic stats: COMPLETE Column stats: NONE
                            |           |           Group By Operator [GBY_47]
                            |           |           |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -2349,19 +2349,19 @@ Stage-0
                                        Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                                        Map Join Operator [MAPJOIN_166]
                                        |  condition map:[{"":"Inner Join 0 to 1"}]
-                                       |  keys:{"Map 1":"_col0 (type: string)","Reducer 8":"_col1 (type: string)"}
-                                       |  outputColumnNames:["_col1","_col3"]
+                                       |  keys:{"Map 1":"_col0 (type: string)","Reducer 8":"_col2 (type: string)"}
+                                       |  outputColumnNames:["_col1","_col4"]
                                        |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                                        |<-Reducer 8 [BROADCAST_EDGE]
                                        |  Reduce Output Operator [RS_24]
-                                       |     key expressions:_col1 (type: string)
-                                       |     Map-reduce partition columns:_col1 (type: string)
+                                       |     key expressions:_col2 (type: string)
+                                       |     Map-reduce partition columns:_col2 (type: string)
                                        |     sort order:+
                                        |     Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                                        |     Map Join Operator [MAPJOIN_165]
                                        |     |  condition map:[{"":"Inner Join 0 to 1"}]
-                                       |     |  keys:{"Map 10":"_col1 (type: string)","Reducer 8":"_col0 (type: string)"}
-                                       |     |  outputColumnNames:["_col1"]
+                                       |     |  keys:{"Map 10":"_col1 (type: string)","Reducer 8":"_col1 (type: string)"}
+                                       |     |  outputColumnNames:["_col2"]
                                        |     |  Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                                        |     |<-Map 10 [BROADCAST_EDGE]
                                        |     |  Reduce Output Operator [RS_18]
@@ -2380,7 +2380,7 @@ Stage-0
                                        |     |              alias:x
                                        |     |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                                        |     |<-Select Operator [SEL_12]
-                                       |           outputColumnNames:["_col0"]
+                                       |           outputColumnNames:["_col1"]
                                        |           Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                                        |           Group By Operator [GBY_11]
                                        |           |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -3468,8 +3468,8 @@ Stage-0
                |           |           Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           |           Merge Join Operator [MERGEJOIN_164]
                |           |           |  condition map:[{"":"Inner Join 0 to 1"}]
-               |           |           |  keys:{"1":"_col0 (type: string)","0":"_col1 (type: string)"}
-               |           |           |  outputColumnNames:["_col1","_col4"]
+               |           |           |  keys:{"1":"_col0 (type: string)","0":"_col2 (type: string)"}
+               |           |           |  outputColumnNames:["_col2","_col5"]
                |           |           |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |           |           |<-Map 22 [SIMPLE_EDGE]
                |           |           |  Reduce Output Operator [RS_59]
@@ -3489,14 +3489,14 @@ Stage-0
                |           |           |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                |           |           |<-Reducer 17 [SIMPLE_EDGE]
                |           |              Reduce Output Operator [RS_57]
-               |           |                 key expressions:_col1 (type: string)
-               |           |                 Map-reduce partition columns:_col1 (type: string)
+               |           |                 key expressions:_col2 (type: string)
+               |           |                 Map-reduce partition columns:_col2 (type: string)
                |           |                 sort order:+
                |           |                 Statistics:Num rows: 209 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                |           |                 Merge Join Operator [MERGEJOIN_163]
                |           |                 |  condition map:[{"":"Inner Join 0 to 1"}]
-               |           |                 |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-               |           |                 |  outputColumnNames:["_col1"]
+               |           |                 |  keys:{"1":"_col1 (type: string)","0":"_col1 (type: string)"}
+               |           |                 |  outputColumnNames:["_col2"]
                |           |                 |  Statistics:Num rows: 209 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                |           |                 |<-Map 21 [SIMPLE_EDGE]
                |           |                 |  Reduce Output Operator [RS_54]
@@ -3516,12 +3516,12 @@ Stage-0
                |           |                 |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                |           |                 |<-Reducer 16 [SIMPLE_EDGE]
                |           |                    Reduce Output Operator [RS_52]
-               |           |                       key expressions:_col0 (type: string)
-               |           |                       Map-reduce partition columns:_col0 (type: string)
+               |           |                       key expressions:_col1 (type: string)
+               |           |                       Map-reduce partition columns:_col1 (type: string)
                |           |                       sort order:+
                |           |                       Statistics:Num rows: 190 Data size: 2008 Basic stats: COMPLETE Column stats: NONE
                |           |                       Select Operator [SEL_46]
-               |           |                          outputColumnNames:["_col0"]
+               |           |                          outputColumnNames:["_col1"]
                |           |                          Statistics:Num rows: 190 Data size: 2008 Basic stats: COMPLETE Column stats: NONE
                |           |                          Group By Operator [GBY_45]
                |           |                          |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -3615,8 +3615,8 @@ Stage-0
                |                       Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |                       Merge Join Operator [MERGEJOIN_162]
                |                       |  condition map:[{"":"Inner Join 0 to 1"}]
-               |                       |  keys:{"1":"_col1 (type: string)","0":"_col0 (type: string)"}
-               |                       |  outputColumnNames:["_col1","_col3"]
+               |                       |  keys:{"1":"_col2 (type: string)","0":"_col0 (type: string)"}
+               |                       |  outputColumnNames:["_col1","_col4"]
                |                       |  Statistics:Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                |                       |<-Map 1 [SIMPLE_EDGE]
                |                       |  Reduce Output Operator [RS_22]
@@ -3636,14 +3636,14 @@ Stage-0
                |                       |              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                |                       |<-Reducer 9 [SIMPLE_EDGE]
                |                          Reduce Output Operator [RS_24]
-               |                             key expressions:_col1 (type: string)
-               |                             Map-reduce partition columns:_col1 (type: string)
+               |                             key expressions:_col2 (type: string)
+               |                             Map-reduce partition columns:_col2 (type: string)
                |                             sort order:+
                |                             Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                |                             Map Join Operator [MAPJOIN_161]
                |                             |  condition map:[{"":"Inner Join 0 to 1"}]
-               |                             |  keys:{"Map 11":"_col1 (type: string)","Reducer 9":"_col0 (type: string)"}
-               |                             |  outputColumnNames:["_col1"]
+               |                             |  keys:{"Map 11":"_col1 (type: string)","Reducer 9":"_col1 (type: string)"}
+               |                             |  outputColumnNames:["_col2"]
                |                             |  Statistics:Num rows: 144 Data size: 1509 Basic stats: COMPLETE Column stats: NONE
                |                             |<-Map 11 [BROADCAST_EDGE]
                |                             |  Reduce Output Operator [RS_18]
@@ -3662,7 +3662,7 @@ Stage-0
                |                             |              alias:x
                |                             |              Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                |                             |<-Select Operator [SEL_12]
-               |                                   outputColumnNames:["_col0"]
+               |                                   outputColumnNames:["_col1"]
                |                                   Statistics:Num rows: 131 Data size: 1372 Basic stats: COMPLETE Column stats: NONE
                |                                   Group By Operator [GBY_11]
                |                                   |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
@@ -3722,8 +3722,8 @@ Stage-0
                            Statistics:Num rows: 242 Data size: 2565 Basic stats: COMPLETE Column stats: NONE
                            Map Join Operator [MAPJOIN_166]
                            |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |  keys:{"Map 34":"_col1 (type: string)","Reducer 29":"_col0 (type: string)"}
-                           |  outputColumnNames:["_col1","_col4"]
+                           |  keys:{"Map 34":"_col1 (type: string)","Reducer 29":"_col1 (type: string)"}
+                           |  outputColumnNames:["_col2","_col5"]
                            |  Statistics:Num rows: 242 Data size: 2565 Basic stats: COMPLETE Column stats: NONE
                            |<-Map 34 [BROADCAST_EDGE]
                            |  Reduce Output Operator [RS_111]
@@ -3763,7 +3763,7 @@ Stage-0
                            |                 alias:x
                            |                 Statistics:Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                            |<-Select Operator [SEL_97]
-                                 outputColumnNames:["_col0"]
+                                 outputColumnNames:["_col1"]
                                  Statistics:Num rows: 220 Data size: 2332 Basic stats: COMPLETE Column stats: NONE
                                  Group By Operator [GBY_96]
                                  |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
