@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -400,7 +401,7 @@ public class StatsUtils {
             partCS.setAvgColLen(StatsUtils.getAvgColLenOfVariableLengthTypes(conf,
                 ci.getObjectInspector(), partCS.getColumnType()));
             partCS.setRange(getRangePartitionColumn(partList.getPartitions(), ci.getInternalName(),
-                ci.getType().getTypeName()));
+                ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULTPARTITIONNAME)));
             colStats.add(partCS);
           }
         }
@@ -416,9 +417,10 @@ public class StatsUtils {
     return distinctVals.size();
   }
 
-  public static Range getRangePartitionColumn(Set<Partition> partitions, String partColName,
-      String colType) {
+  private static Range getRangePartitionColumn(Set<Partition> partitions, String partColName,
+      String colType, String defaultPartName) {
     Range range = null;
+    String partVal;
     if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
         || colType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
         || colType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
@@ -426,9 +428,15 @@ public class StatsUtils {
       long min = Long.MAX_VALUE;
       long max = Long.MIN_VALUE;
       for (Partition partition : partitions) {
-        long value = Long.parseLong(partition.getSpec().get(partColName));
-        min = Math.min(min, value);
-        max = Math.max(max, value);
+        partVal = partition.getSpec().get(partColName);
+        if (partVal.equals(defaultPartName)) {
+          // partition column value is null.
+          continue;
+        } else {
+          long value = Long.parseLong(partVal);
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
       }
       range = new Range(min, max);
     } else if (colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)
@@ -436,18 +444,30 @@ public class StatsUtils {
       double min = Double.MAX_VALUE;
       double max = Double.MIN_VALUE;
       for (Partition partition : partitions) {
-        double value = Double.parseDouble(partition.getSpec().get(partColName));
-        min = Math.min(min, value);
-        max = Math.max(max, value);
+        partVal = partition.getSpec().get(partColName);
+        if (partVal.equals(defaultPartName)) {
+          // partition column value is null.
+          continue;
+        } else {
+          double value = Double.parseDouble(partVal);
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
       }
       range = new Range(min, max);
     } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       double min = Double.MAX_VALUE;
       double max = Double.MIN_VALUE;
       for (Partition partition : partitions) {
-        double value = new BigDecimal(partition.getSpec().get(partColName)).doubleValue();
-        min = Math.min(min, value);
-        max = Math.max(max, value);
+        partVal = partition.getSpec().get(partColName);
+        if (partVal.equals(defaultPartName)) {
+          // partition column value is null.
+          continue;
+        } else {
+          double value = new BigDecimal(partVal).doubleValue();
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
       }
       range = new Range(min, max);
     } else {
