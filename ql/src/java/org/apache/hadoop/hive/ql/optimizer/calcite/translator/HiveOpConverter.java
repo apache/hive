@@ -27,14 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SemiJoin;
-import org.apache.calcite.rel.core.SortExchange;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -453,7 +451,11 @@ public class HiveOpConverter {
     if (sortRel.fetch != null) {
       int limit = RexLiteral.intValue(sortRel.fetch);
       LimitDesc limitDesc = new LimitDesc(limit);
-      // TODO: Set 'last limit' global property
+      // Because we are visiting the operators recursively, the last limit op that
+      // calls the following function will set the global property.
+      if (this.semanticAnalyzer != null && semanticAnalyzer.getQB() != null
+          && semanticAnalyzer.getQB().getParseInfo() != null)
+        this.semanticAnalyzer.getQB().getParseInfo().setOuterQueryLimit(limit);
       ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOp);
       resultOp = OperatorFactory.getAndMakeChild(limitDesc,
           new RowSchema(cinfoLst), resultOp);
@@ -711,7 +713,7 @@ public class HiveOpConverter {
         continue;
       }
       int vindex = exprBack == null ? -1 : ExprNodeDescUtils.indexOf(exprBack, reduceValuesBack);
-      if (kindex >= 0) {
+      if (vindex >= 0) {
         index[i] = -vindex - 1;
         continue;
       }

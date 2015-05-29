@@ -107,24 +107,30 @@ STAGE PLANS:
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
                   expressions: 4 (type: int)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Reducer 2 
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
                   expressions: 1 (type: int)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Reducer 4 
             Reduce Operator Tree:
               Select Operator
@@ -142,24 +148,30 @@ STAGE PLANS:
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
                   expressions: 2 (type: int)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Reducer 8 
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
                   expressions: 3 (type: int)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Union 3 
             Vertex: Union 3
 

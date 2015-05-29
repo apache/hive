@@ -155,9 +155,6 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
         }
       }
 
-      // We rebuild in-place the selected array with rows destine to be forwarded.
-      int numSel = 0;
-
       /*
        * Multi-Key specific declarations.
        */
@@ -210,7 +207,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
-        numSel = finishLeftSemiRepeated(batch, joinResult, hashSetResults[0]);
+        finishLeftSemiRepeated(batch, joinResult, hashSetResults[0]);
       } else {
 
         /*
@@ -291,6 +288,10 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
             saveKeyOutput = currentKeyOutput;
             currentKeyOutput = temp;
 
+            /*
+             * Multi-key specific lookup key.
+             */
+
             byte[] keyBytes = saveKeyOutput.getData();
             int keyLength = saveKeyOutput.getLength();
             saveJoinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[hashSetResultCount]);
@@ -360,14 +361,10 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashSetResults, 0, hashSetResultCount)));
         }
 
-        numSel = finishLeftSemi(batch,
-            allMatchs, allMatchCount,
-            spills, spillHashMapResultIndices, spillCount,
+        finishLeftSemi(batch,
+            allMatchCount, spillCount,
             (VectorMapJoinHashTableResult[]) hashSetResults);
       }
-
-      batch.selectedInUse = true;
-      batch.size =  numSel;
 
       if (batch.size > 0) {
         // Forward any remaining selected rows.

@@ -766,7 +766,7 @@ public class HcatDelegator extends LauncherDelegator {
     Object o = res.getEntity();
     final Map fields = (o != null && (o instanceof Map)) ? (Map) o : null;
     if (fields == null)
-      throw new SimpleWebException(HttpStatus.INTERNAL_SERVER_ERROR_500, "Internal error, unable to find column "
+      throw new SimpleWebException(HttpStatus.NOT_FOUND_404, "Internal error, unable to find column "
         + column);
 
 
@@ -781,7 +781,7 @@ public class HcatDelegator extends LauncherDelegator {
       }
     }
     if (found == null)
-      throw new SimpleWebException(HttpStatus.INTERNAL_SERVER_ERROR_500, "unable to find column " + column,
+      throw new SimpleWebException(HttpStatus.NOT_FOUND_404, "unable to find column " + column,
         new HashMap<String, Object>() {
           {
             put("description", fields);

@@ -142,31 +142,31 @@ FROM alltypesorc_string;
 
 -- SUM of timestamps are not vectorized reduce-side because they produce a double instead of a long (HIVE-8211)...
 EXPLAIN SELECT
-  sum(ctimestamp1)
+  round(sum(ctimestamp1), 3)
 FROM alltypesorc_string;
 
 SELECT
- sum(ctimestamp1)
+ round(sum(ctimestamp1), 3)
 FROM alltypesorc_string;
 
 EXPLAIN SELECT
-  avg(ctimestamp1),
-  variance(ctimestamp1),
-  var_pop(ctimestamp1),
-  var_samp(ctimestamp1),
-  std(ctimestamp1),
-  stddev(ctimestamp1),
-  stddev_pop(ctimestamp1),
-  stddev_samp(ctimestamp1)
+  round(avg(ctimestamp1), 0),
+  variance(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
+  var_pop(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
+  var_samp(ctimestamp1) between 9.20684592523616E19 and 9.20684592523617E19,
+  round(std(ctimestamp1), 3),
+  round(stddev(ctimestamp1), 3),
+  round(stddev_pop(ctimestamp1), 3),
+  round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string;
 
 SELECT
-  avg(ctimestamp1),
-  variance(ctimestamp1),
-  var_pop(ctimestamp1),
-  var_samp(ctimestamp1),
-  std(ctimestamp1),
-  stddev(ctimestamp1),
-  stddev_pop(ctimestamp1),
-  stddev_samp(ctimestamp1)
+  round(avg(ctimestamp1), 0),
+  variance(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
+  var_pop(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
+  var_samp(ctimestamp1) between 9.20684592523616E19 and 9.20684592523617E19,
+  round(std(ctimestamp1), 3),
+  round(stddev(ctimestamp1), 3),
+  round(stddev_pop(ctimestamp1), 3),
+  round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string;

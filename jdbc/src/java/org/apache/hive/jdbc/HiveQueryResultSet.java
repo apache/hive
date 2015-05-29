@@ -38,6 +38,8 @@ import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TCLIServiceConstants;
+import org.apache.hive.service.cli.thrift.TCloseOperationReq;
+import org.apache.hive.service.cli.thrift.TCloseOperationResp;
 import org.apache.hive.service.cli.thrift.TColumnDesc;
 import org.apache.hive.service.cli.thrift.TFetchOrientation;
 import org.apache.hive.service.cli.thrift.TFetchResultsReq;
@@ -316,12 +318,30 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     if (this.statement != null && (this.statement instanceof HiveStatement)) {
       HiveStatement s = (HiveStatement) this.statement;
       s.closeClientOperation();
+    } else {
+      // for those stmtHandle passed from HiveDatabaseMetaData instead of Statement
+      closeOperationHandle(stmtHandle);
     }
+
     // Need reset during re-open when needed
     client = null;
     stmtHandle = null;
     sessHandle = null;
     isClosed = true;
+  }
+
+  private void closeOperationHandle(TOperationHandle stmtHandle) throws SQLException {
+    try {
+      if (stmtHandle != null) {
+        TCloseOperationReq closeReq = new TCloseOperationReq(stmtHandle);
+        TCloseOperationResp closeResp = client.CloseOperation(closeReq);
+        Utils.verifySuccessWithInfo(closeResp.getStatus());
+      }
+    } catch (SQLException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new SQLException(e.toString(), "08S01", e);
+    }
   }
 
   /**
@@ -467,5 +487,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   @Override
   public int getRow() throws SQLException {
     return rowsFetched;
+  }
+
+  @Override
+  public boolean isClosed() {
+    return isClosed;
   }
 }

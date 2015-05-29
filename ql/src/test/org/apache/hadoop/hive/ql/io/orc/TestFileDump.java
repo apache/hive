@@ -316,7 +316,7 @@ public class TestFileDump {
         .compress(CompressionKind.ZLIB)
         .bufferSize(10000)
         .rowIndexStride(1000)
-        .bloomFilterColumns("s");
+        .bloomFilterColumns("S");
     Writer writer = OrcFile.createWriter(testFilePath, options);
     Random r1 = new Random(1);
     String[] words = new String[]{"It", "was", "the", "best", "of", "times,",

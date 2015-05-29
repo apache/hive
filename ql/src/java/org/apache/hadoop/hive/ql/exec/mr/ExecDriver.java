@@ -462,10 +462,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           if (returnVal != 0) {
             rj.killJob();
           }
-          HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
       } catch (Exception e) {
+	LOG.warn(e);
+      } finally {
+	HadoopJobExecHelper.runningJobs.remove(rj);
       }
     }
 

@@ -330,7 +330,9 @@ public abstract class TaskCompiler {
         colName, colType, isTblLevel);
     cStatsWork = new ColumnStatsWork(fetch, cStatsDesc);
     cStatsTask = (ColumnStatsTask) TaskFactory.get(cStatsWork, conf);
-    rootTasks.add(cStatsTask);
+    // This is a column stats task. According to the semantic, there should be
+    // only one MR task in the rootTask.
+    rootTasks.get(0).addDependentTask(cStatsTask);
   }
 
 

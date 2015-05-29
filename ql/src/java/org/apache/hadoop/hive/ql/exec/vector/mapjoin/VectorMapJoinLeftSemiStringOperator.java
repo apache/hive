@@ -142,9 +142,6 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
         }
       }
 
-      // We rebuild in-place the selected array with rows destine to be forwarded.
-      int numSel = 0;
-
       /*
        * Single-Column String specific declarations.
        */
@@ -187,7 +184,7 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
-        numSel = finishLeftSemiRepeated(batch, joinResult, hashSetResults[0]);
+        finishLeftSemiRepeated(batch, joinResult, hashSetResults[0]);
       } else {
 
         /*
@@ -263,6 +260,10 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
 
             saveKeyBatchIndex = batchIndex;
 
+            /*
+             * Single-Column String specific lookup key.
+             */
+
             byte[] keyBytes = vector[batchIndex];
             int keyStart = start[batchIndex];
             int keyLength = length[batchIndex];
@@ -333,14 +334,10 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashSetResults, 0, hashSetResultCount)));
         }
 
-        numSel = finishLeftSemi(batch,
-            allMatchs, allMatchCount,
-            spills, spillHashMapResultIndices, spillCount,
+        finishLeftSemi(batch,
+            allMatchCount, spillCount,
             (VectorMapJoinHashTableResult[]) hashSetResults);
       }
-
-      batch.selectedInUse = true;
-      batch.size =  numSel;
 
       if (batch.size > 0) {
         // Forward any remaining selected rows.

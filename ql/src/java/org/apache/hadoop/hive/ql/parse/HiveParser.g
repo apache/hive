@@ -650,6 +650,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
     this.hiveConf = hiveConf;
   }
   protected boolean useSQL11ReservedKeywordsForIdentifier() {
+    if(hiveConf==null){
+      return false;
+    }
     return !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SUPPORT_SQL11_RESERVED_KEYWORDS);
   }
 }

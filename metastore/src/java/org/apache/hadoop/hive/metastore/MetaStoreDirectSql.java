@@ -1129,10 +1129,12 @@ class MetaStoreDirectSql {
             colStatsAggrFromDB =
                 columnStatisticsObjForPartitions(dbName, tableName, partNames, colNamesForDB,
                     partsFound, useDensityFunctionForNDVEstimation);
-            ColumnStatisticsObj colStatsAggr = colStatsAggrFromDB.get(0);
-            colStatsList.add(colStatsAggr);
-            // Update the cache to add this new aggregate node
-            aggrStatsCache.add(dbName, tableName, colName, partsFound, colStatsAggr, bloomFilter);
+            if (!colStatsAggrFromDB.isEmpty()) {
+              ColumnStatisticsObj colStatsAggr = colStatsAggrFromDB.get(0);
+              colStatsList.add(colStatsAggr);
+              // Update the cache to add this new aggregate node
+              aggrStatsCache.add(dbName, tableName, colName, partsFound, colStatsAggr, bloomFilter);
+            }
           }
         }
       }

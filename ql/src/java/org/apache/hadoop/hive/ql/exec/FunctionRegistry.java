@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
+import org.apache.hadoop.hive.ql.udf.UDFCrc32;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFE;
@@ -80,12 +81,12 @@ import org.apache.hadoop.hive.ql.udf.UDFPI;
 import org.apache.hadoop.hive.ql.udf.UDFParseUrl;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
 import org.apache.hadoop.hive.ql.udf.UDFRand;
-import org.apache.hadoop.hive.ql.udf.UDFRegExp;
 import org.apache.hadoop.hive.ql.udf.UDFRegExpExtract;
 import org.apache.hadoop.hive.ql.udf.UDFRegExpReplace;
 import org.apache.hadoop.hive.ql.udf.UDFRepeat;
 import org.apache.hadoop.hive.ql.udf.UDFReverse;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
+import org.apache.hadoop.hive.ql.udf.UDFSha1;
 import org.apache.hadoop.hive.ql.udf.UDFSign;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFSpace;
@@ -218,6 +219,7 @@ public final class FunctionRegistry {
     system.registerUDF("tan", UDFTan.class, false);
     system.registerUDF("e", UDFE.class, false);
     system.registerGenericUDF("factorial", GenericUDFFactorial.class);
+    system.registerUDF("crc32", UDFCrc32.class, false);
 
     system.registerUDF("conv", UDFConv.class, false);
     system.registerUDF("bin", UDFBin.class, false);
@@ -225,7 +227,10 @@ public final class FunctionRegistry {
     system.registerUDF("unhex", UDFUnhex.class, false);
     system.registerUDF("base64", UDFBase64.class, false);
     system.registerUDF("unbase64", UDFUnbase64.class, false);
+    system.registerGenericUDF("sha2", GenericUDFSha2.class);
     system.registerUDF("md5", UDFMd5.class, false);
+    system.registerUDF("sha1", UDFSha1.class, false);
+    system.registerUDF("sha", UDFSha1.class, false);
 
     system.registerGenericUDF("encode", GenericUDFEncode.class);
     system.registerGenericUDF("decode", GenericUDFDecode.class);
@@ -244,8 +249,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("initcap", GenericUDFInitCap.class);
 
     system.registerUDF("like", UDFLike.class, true);
-    system.registerUDF("rlike", UDFRegExp.class, true);
-    system.registerUDF("regexp", UDFRegExp.class, true);
+    system.registerGenericUDF("rlike", GenericUDFRegExp.class);
+    system.registerGenericUDF("regexp", GenericUDFRegExp.class);
     system.registerUDF("regexp_replace", UDFRegExpReplace.class, false);
     system.registerUDF("regexp_extract", UDFRegExpExtract.class, false);
     system.registerUDF("parse_url", UDFParseUrl.class, false);

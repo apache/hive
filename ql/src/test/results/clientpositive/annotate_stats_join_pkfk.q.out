@@ -379,14 +379,14 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col1
-          Statistics: Num rows: 111 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 136 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 111 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 136 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 111 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 136 Data size: 544 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -448,14 +448,14 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col2
-          Statistics: Num rows: 107 Data size: 428 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 131 Data size: 524 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: _col2 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 107 Data size: 428 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 131 Data size: 524 Basic stats: COMPLETE Column stats: PARTIAL
             File Output Operator
               compressed: false
-              Statistics: Num rows: 107 Data size: 428 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 131 Data size: 524 Basic stats: COMPLETE Column stats: PARTIAL
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -517,14 +517,14 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col1
-          Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 393 Data size: 1572 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 393 Data size: 1572 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 393 Data size: 1572 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -672,14 +672,14 @@ STAGE PLANS:
             1 _col0 (type: int)
             2 _col0 (type: int)
           outputColumnNames: _col1
-          Statistics: Num rows: 964 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 821 Data size: 3284 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 964 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 821 Data size: 3284 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 964 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 821 Data size: 3284 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -758,14 +758,14 @@ STAGE PLANS:
             1 _col0 (type: int)
             2 _col0 (type: int)
           outputColumnNames: _col1
-          Statistics: Num rows: 38 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 213 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 38 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 213 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 38 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 213 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -844,14 +844,14 @@ STAGE PLANS:
             1 _col0 (type: int)
             2 _col0 (type: int)
           outputColumnNames: _col1
-          Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 508 Data size: 2032 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 508 Data size: 2032 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 322 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 508 Data size: 2032 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -930,14 +930,14 @@ STAGE PLANS:
             1 _col0 (type: int)
             2 _col0 (type: int)
           outputColumnNames: _col2
-          Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 273 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col2 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 273 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 321 Data size: 1284 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 273 Data size: 1092 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -119,7 +119,6 @@ import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
 import org.apache.hadoop.hive.ql.udf.UDFRand;
-import org.apache.hadoop.hive.ql.udf.UDFRegExp;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
 import org.apache.hadoop.hive.ql.udf.UDFSign;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
@@ -227,7 +226,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFDateDiff.class);
 
     supportedGenericUDFs.add(UDFLike.class);
-    supportedGenericUDFs.add(UDFRegExp.class);
+    supportedGenericUDFs.add(GenericUDFRegExp.class);
     supportedGenericUDFs.add(UDFSubstr.class);
     supportedGenericUDFs.add(GenericUDFLTrim.class);
     supportedGenericUDFs.add(GenericUDFRTrim.class);
@@ -1069,11 +1068,21 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean validateMapJoinDesc(MapJoinDesc desc) {
     byte posBigTable = (byte) desc.getPosBigTable();
     List<ExprNodeDesc> filterExprs = desc.getFilters().get(posBigTable);
+    if (!validateExprNodeDesc(filterExprs, VectorExpressionDescriptor.Mode.FILTER)) {
+      LOG.info("Cannot vectorize map work filter expression");
+      return false;
+    }
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);
+    if (!validateExprNodeDesc(keyExprs)) {
+      LOG.info("Cannot vectorize map work key expression");
+      return false;
+    }
     List<ExprNodeDesc> valueExprs = desc.getExprs().get(posBigTable);
-    return validateExprNodeDesc(filterExprs, VectorExpressionDescriptor.Mode.FILTER) &&
-        validateExprNodeDesc(keyExprs) &&
-        validateExprNodeDesc(valueExprs);
+    if (!validateExprNodeDesc(valueExprs)) {
+      LOG.info("Cannot vectorize map work value expression");
+      return false;
+    }
+    return true;
   }
 
   private boolean validateReduceSinkOperator(ReduceSinkOperator op) {
@@ -1089,6 +1098,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     for (ExprNodeDesc desc : descList) {
       boolean ret = validateExprNodeDesc(desc);
       if (!ret) {
+        LOG.info("Cannot vectorize select expression: " + desc.toString());
         return false;
       }
     }
@@ -1108,12 +1118,18 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Grouping sets not supported in vector mode");
       return false;
     }
+    if (desc.pruneGroupingSetId()) {
+      LOG.info("Pruning grouping set id not supported in vector mode");
+      return false;
+    }
     boolean ret = validateExprNodeDesc(desc.getKeys());
     if (!ret) {
+      LOG.info("Cannot vectorize groupby key expression");
       return false;
     }
     ret = validateAggregationDesc(desc.getAggregators(), isReduce);
     if (!ret) {
+      LOG.info("Cannot vectorize groupby aggregate expression");
       return false;
     }
     if (isReduce) {
@@ -1179,7 +1195,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private boolean validateExprNodeDescRecursive(ExprNodeDesc desc) {
+  private boolean validateExprNodeDescRecursive(ExprNodeDesc desc, VectorExpressionDescriptor.Mode mode) {
     if (desc instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
       // Currently, we do not support vectorized virtual columns (see HIVE-5570).
@@ -1189,7 +1205,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
     String typeName = desc.getTypeInfo().getTypeName();
-    boolean ret = validateDataType(typeName);
+    boolean ret = validateDataType(typeName, mode);
     if (!ret) {
       LOG.info("Cannot vectorize " + desc.toString() + " of type " + typeName);
       return false;
@@ -1204,7 +1220,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
     if (desc.getChildren() != null) {
       for (ExprNodeDesc d: desc.getChildren()) {
-        boolean r = validateExprNodeDescRecursive(d);
+        // Don't restrict child expressions for projection.  Always use looser FILTER mode.
+        boolean r = validateExprNodeDescRecursive(d, VectorExpressionDescriptor.Mode.FILTER);
         if (!r) {
           return false;
         }
@@ -1218,7 +1235,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   boolean validateExprNodeDesc(ExprNodeDesc desc, VectorExpressionDescriptor.Mode mode) {
-    if (!validateExprNodeDescRecursive(desc)) {
+    if (!validateExprNodeDescRecursive(desc, mode)) {
       return false;
     }
     try {
@@ -1249,10 +1266,13 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateAggregationDesc(AggregationDesc aggDesc, boolean isReduce) {
-    if (!supportedAggregationUdfs.contains(aggDesc.getGenericUDAFName().toLowerCase())) {
+    String udfName = aggDesc.getGenericUDAFName().toLowerCase();
+    if (!supportedAggregationUdfs.contains(udfName)) {
+      LOG.info("Cannot vectorize groupby aggregate expression: UDF " + udfName + " not supported");
       return false;
     }
     if (aggDesc.getParameters() != null && !validateExprNodeDesc(aggDesc.getParameters())) {
+      LOG.info("Cannot vectorize groupby aggregate expression: UDF parameters not supported");
       return false;
     }
     // See if we can vectorize the aggregation.
@@ -1298,8 +1318,13 @@ public class Vectorizer implements PhysicalPlanResolver {
     return false;
   }
 
-  private boolean validateDataType(String type) {
-    return supportedDataTypesPattern.matcher(type.toLowerCase()).matches();
+  private boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {
+    type = type.toLowerCase();
+    boolean result = supportedDataTypesPattern.matcher(type).matches();
+    if (result && mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+      return false;
+    }
+    return result;
   }
 
   private VectorizationContext getVectorizationContext(RowSchema rowSchema, String contextName,
@@ -1538,6 +1563,16 @@ public class Vectorizer implements PhysicalPlanResolver {
     return vectorOp;
   }
 
+  private boolean onExpressionHasNullSafes(MapJoinDesc desc) {
+    boolean[] nullSafes = desc.getNullSafes();
+    for (boolean nullSafe : nullSafes) {
+      if (nullSafe) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private boolean canSpecializeMapJoin(Operator<? extends OperatorDesc> op, MapJoinDesc desc,
       boolean isTez) {
 
@@ -1548,7 +1583,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_ENABLED)) {
 
       // Currently, only under Tez and non-N-way joins.
-      if (isTez && desc.getConds().length == 1) {
+      if (isTez && desc.getConds().length == 1 && !onExpressionHasNullSafes(desc)) {
 
         // Ok, all basic restrictions satisfied so far...
         specialize = true;

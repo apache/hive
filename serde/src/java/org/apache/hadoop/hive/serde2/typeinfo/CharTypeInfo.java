@@ -40,7 +40,10 @@ public class CharTypeInfo  extends BaseCharTypeInfo {
 
   @Override
   public boolean equals(Object other) {
-    if (other == null || !(other instanceof CharTypeInfo)) {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || getClass() != other.getClass()) {
       return false;
     }
 

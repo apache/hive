@@ -1286,6 +1286,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       } else {
         fullPath = path.getFileSystem(conf).makeQualified(path);
       }
+      if(!"hdfs".equalsIgnoreCase(path.toUri().getScheme())) {
+        return false;
+      }
       return (hdfsAdmin.getEncryptionZoneForPath(fullPath) != null);
     }
 

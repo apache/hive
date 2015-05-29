@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -92,7 +90,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
@@ -130,8 +127,8 @@ public class VectorizationContext {
   private static final Log LOG = LogFactory.getLog(
       VectorizationContext.class.getName());
 
-  private String contextName;
-  private int level;
+  private final String contextName;
+  private final int level;
 
   VectorExpressionDescriptor vMap;
 
@@ -360,7 +357,7 @@ public class VectorizationContext {
     }
 
     public int[] currentScratchColumns() {
-      TreeSet<Integer> treeSet = new TreeSet();
+      TreeSet<Integer> treeSet = new TreeSet<Integer>();
       for (Integer col : usedOutputColumns) {
         treeSet.add(initialOutputCol + col);
       }
@@ -441,8 +438,6 @@ public class VectorizationContext {
         ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
             childExpressions, mode, exprDesc.getTypeInfo());
       }
-    } else if (exprDesc instanceof ExprNodeNullDesc) {
-      ve = getConstantVectorExpression(null, exprDesc.getTypeInfo(), mode);
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
       ve = getConstantVectorExpression(((ExprNodeConstantDesc) exprDesc).getValue(), exprDesc.getTypeInfo(),
           mode);
@@ -691,6 +686,10 @@ public class VectorizationContext {
         break;
       case DECIMAL:
         genericUdf = new GenericUDFToDecimal();
+        break;
+      case VOID:
+      case UNKNOWN:
+        // fall-through to throw exception, its not expected for execution to reach here.
         break;
     }
     if (genericUdf == null) {
@@ -1346,8 +1345,11 @@ public class VectorizationContext {
   }
 
   private HiveDecimal castConstantToDecimal(Object scalar, TypeInfo type) throws HiveException {
+
+    if (null == scalar) {
+      return null;
+    }
     PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
-    int scale = HiveDecimalUtils.getScaleForType(ptinfo);
     String typename = type.getTypeName();
     HiveDecimal rawDecimal;
     switch (ptinfo.getPrimitiveCategory()) {
@@ -1385,6 +1387,9 @@ public class VectorizationContext {
   }
 
   private String castConstantToString(Object scalar, TypeInfo type) throws HiveException {
+    if (null == scalar) {
+      return null;
+    }
     PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
     String typename = type.getTypeName();
     switch (ptinfo.getPrimitiveCategory()) {
@@ -1404,6 +1409,9 @@ public class VectorizationContext {
   }
 
   private Double castConstantToDouble(Object scalar, TypeInfo type) throws HiveException {
+    if (null == scalar) {
+      return null;
+    }
     PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
     String typename = type.getTypeName();
     switch (ptinfo.getPrimitiveCategory()) {
@@ -1423,6 +1431,9 @@ public class VectorizationContext {
   }
 
   private Long castConstantToLong(Object scalar, TypeInfo type) throws HiveException {
+    if (null == scalar) {
+      return null;
+    }
     PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
     String typename = type.getTypeName();
     switch (ptinfo.getPrimitiveCategory()) {
@@ -1450,8 +1461,6 @@ public class VectorizationContext {
       Object constantValue = ((ExprNodeConstantDesc) child).getValue();
       HiveDecimal decimalValue = castConstantToDecimal(constantValue, child.getTypeInfo());
       return getConstantVectorExpression(decimalValue, returnType, Mode.PROJECTION);
-    } else if (child instanceof ExprNodeNullDesc) {
-      return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDecimal.class, childExpr, Mode.PROJECTION, returnType);
@@ -1477,8 +1486,6 @@ public class VectorizationContext {
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         String strValue = castConstantToString(constantValue, child.getTypeInfo());
         return getConstantVectorExpression(strValue, returnType, Mode.PROJECTION);
-    } else if (child instanceof ExprNodeNullDesc) {
-      return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
@@ -1564,8 +1571,6 @@ public class VectorizationContext {
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         Double doubleValue = castConstantToDouble(constantValue, child.getTypeInfo());
         return getConstantVectorExpression(doubleValue, returnType, Mode.PROJECTION);
-    } else if (child instanceof ExprNodeNullDesc) {
-      return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDouble.class, childExpr, Mode.PROJECTION, returnType);
@@ -1587,11 +1592,12 @@ public class VectorizationContext {
     ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
     if (child instanceof ExprNodeConstantDesc) {
+      if (null == ((ExprNodeConstantDesc)child).getValue()) {
+        return getConstantVectorExpression(null, TypeInfoFactory.booleanTypeInfo, Mode.PROJECTION);
+      }
       // Don't do constant folding here.  Wait until the optimizer is changed to do it.
       // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
       return null;
-    } else if (child instanceof ExprNodeNullDesc) {
-      return getConstantVectorExpression(null, TypeInfoFactory.booleanTypeInfo, Mode.PROJECTION);
     }
     // Long and double are handled using descriptors, string needs to be specially handled.
     if (isStringFamily(inputType)) {
@@ -1620,8 +1626,6 @@ public class VectorizationContext {
         Object constantValue = ((ExprNodeConstantDesc) child).getValue();
         Long longValue = castConstantToLong(constantValue, child.getTypeInfo());
         return getConstantVectorExpression(longValue, TypeInfoFactory.longTypeInfo, Mode.PROJECTION);
-    } else if (child instanceof ExprNodeNullDesc) {
-      return getConstantVectorExpression(null, TypeInfoFactory.longTypeInfo, Mode.PROJECTION);
     }
     // Float family, timestamp are handled via descriptor based lookup, int family needs
     // special handling.
@@ -1771,11 +1775,16 @@ public class VectorizationContext {
         variableArgPositions.add(i);
         argDescs[i].setVariable(getInputColumnIndex(((ExprNodeColumnDesc) child).getColumn()));
       } else if (child instanceof ExprNodeConstantDesc) {
-
+         if (((ExprNodeConstantDesc) child).getValue() == null) {
+           // cannot handle constant null at the moment
+           throw new HiveException("Unable to vectorize custom UDF. Custom udf containing "
+               + "constant null argument cannot be currently vectorized.");
+         }
         // this is a constant
         argDescs[i].setConstant((ExprNodeConstantDesc) child);
       } else {
-        throw new HiveException("Unable to vectorize Custom UDF");
+        throw new HiveException("Unable to vectorize custom UDF. Encountered unsupported expr desc : "
+            + child);
       }
     }
 

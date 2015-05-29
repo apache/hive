@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.Map;
 
@@ -82,6 +83,15 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     // TODO remove this after memory manager is in
     long noConditionalTaskThreshold = HiveConf.getLongVar(
         hconf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+    long processMaxMemory = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
+    if (noConditionalTaskThreshold > processMaxMemory) {
+      float hashtableMemoryUsage = HiveConf.getFloatVar(
+          hconf, HiveConf.ConfVars.HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE);
+      LOG.warn("noConditionalTaskThreshold value of " + noConditionalTaskThreshold +
+          " is greater than the max memory size of " + processMaxMemory);
+      // Don't want to attempt to grab more memory than we have available .. percentage is a bit arbitrary
+      noConditionalTaskThreshold = (long) (processMaxMemory * hashtableMemoryUsage);
+    }
 
     // Only applicable to n-way Hybrid Grace Hash Join
     HybridHashTableConf nwayConf = null;

@@ -68,7 +68,7 @@ public class VectorMapJoinFastLongHashMap
     optimizedHashMapResult.forget();
 
     long hashCode = VectorMapJoinFastLongHashUtil.hashKey(key);
-    // LOG.info("VectorMapJoinFastLongHashMap lookup " + key + " hashCode " + hashCode);
+    // LOG.debug("VectorMapJoinFastLongHashMap lookup " + key + " hashCode " + hashCode);
     long valueRef = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
     if (valueRef == -1) {

@@ -209,13 +209,13 @@ public class ColumnarStorageBench {
         case LIST: {
           List<TypeInfo> elementType = new ArrayList<TypeInfo>();
           elementType.add(((ListTypeInfo) type).getListElementTypeInfo());
-          fields[pos++] = record(createRecord(elementType));
+          fields[pos++] = createRecord(elementType);
         } break;
         case MAP: {
           List<TypeInfo> keyValueType = new ArrayList<TypeInfo>();
           keyValueType.add(((MapTypeInfo) type).getMapKeyTypeInfo());
           keyValueType.add(((MapTypeInfo) type).getMapValueTypeInfo());
-          fields[pos++] = record(record(createRecord(keyValueType)));
+          fields[pos++] = record(createRecord(keyValueType));
         } break;
         case STRUCT: {
           List<TypeInfo> elementType = ((StructTypeInfo) type).getAllStructFieldTypeInfos();

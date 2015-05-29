@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.thrift.TCLIService;
@@ -51,6 +53,7 @@ import org.apache.hive.service.cli.thrift.TFetchOrientation;
  *
  */
 public class HiveStatement implements java.sql.Statement {
+  public static final Log LOG = LogFactory.getLog(HiveStatement.class.getName());
   private final HiveConnection connection;
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle = null;
@@ -736,7 +739,10 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setQueryTimeout(int seconds) throws SQLException {
-    throw new SQLException("Method not supported");
+    // 0 is supported which means "no limit"
+    if (seconds != 0) {
+      throw new SQLException("Query timeout seconds must be 0");
+    }
   }
 
   /*

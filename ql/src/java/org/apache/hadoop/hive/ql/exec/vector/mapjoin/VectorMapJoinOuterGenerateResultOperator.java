@@ -70,15 +70,34 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
   // generation.
   protected transient VectorMapJoinHashMapResult hashMapResults[];
 
-  // Pre-allocated member for storing any matching row indexes during a processOp call.
-  protected transient int[] matchs;
+  // Pre-allocated member for remembering the big table's selected array at the beginning of
+  // the process method before applying any filter.  For outer join we need to remember which
+  // rows did not match since they will appear the in outer join result with NULLs for the
+  // small table.
+  protected transient int[] inputSelected;
 
-  // Pre-allocated member for storing the mapping to the row batchIndex of the first of a series of
-  // equal keys that was looked up during a processOp call.
-  protected transient int[] matchHashMapResultIndices;
+  // Pre-allocated member for storing the (physical) batch index of matching row (single- or
+  // multi-small-table-valued) indexes during a process call.
+  protected transient int[] allMatchs;
 
-  // All matching and non-matching big table rows.
-  protected transient int[] nonSpills;
+  /*
+   *  Pre-allocated members for storing information equal key series for small-table matches.
+   *
+   *  ~HashMapResultIndices
+   *                Index into the hashMapResults array for the match.
+   *  ~AllMatchIndices
+   *                (Logical) indices into allMatchs to the first row of a match of a
+   *                possible series of duplicate keys.
+   *  ~IsSingleValue
+   *                Whether there is 1 or multiple small table values.
+   *  ~DuplicateCounts
+   *                The duplicate count for each matched key.
+   *
+   */
+  protected transient int[] equalKeySeriesHashMapResultIndices;
+  protected transient int[] equalKeySeriesAllMatchIndices;
+  protected transient boolean[] equalKeySeriesIsSingleValue;
+  protected transient int[] equalKeySeriesDuplicateCounts;
 
   // Pre-allocated member for storing the (physical) batch index of rows that need to be spilled.
   protected transient int[] spills;
@@ -86,8 +105,11 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
   // Pre-allocated member for storing index into the hashSetResults for each spilled row.
   protected transient int[] spillHashMapResultIndices;
 
-  // Pre-allocated member for storing any non-matching row indexes during a processOp call.
-  protected transient int[] scratch1;
+  // Pre-allocated member for storing any non-spills, non-matches, or merged row indexes during a
+  // process method call.
+  protected transient int[] nonSpills;
+  protected transient int[] noMatchs;
+  protected transient int[] merged;
 
   public VectorMapJoinOuterGenerateResultOperator() {
     super();
@@ -111,12 +133,23 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
     for (int i = 0; i < hashMapResults.length; i++) {
       hashMapResults[i] = baseHashMap.createHashMapResult();
     }
-    matchs = new int[batch.DEFAULT_SIZE];
-    matchHashMapResultIndices = new int[batch.DEFAULT_SIZE];
-    nonSpills = new int[batch.DEFAULT_SIZE];
+
+    inputSelected = new int[batch.DEFAULT_SIZE];
+
+    allMatchs = new int[batch.DEFAULT_SIZE];
+
+    equalKeySeriesHashMapResultIndices = new int[batch.DEFAULT_SIZE];
+    equalKeySeriesAllMatchIndices = new int[batch.DEFAULT_SIZE];
+    equalKeySeriesIsSingleValue = new boolean[batch.DEFAULT_SIZE];
+    equalKeySeriesDuplicateCounts = new int[batch.DEFAULT_SIZE];
+
     spills = new int[batch.DEFAULT_SIZE];
     spillHashMapResultIndices = new int[batch.DEFAULT_SIZE];
-    scratch1 = new int[batch.DEFAULT_SIZE];
+
+    nonSpills = new int[batch.DEFAULT_SIZE];
+    noMatchs = new int[batch.DEFAULT_SIZE];
+    merged = new int[batch.DEFAULT_SIZE];
+
   }
 
   //-----------------------------------------------------------------------------------------------
@@ -145,260 +178,372 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
   }
 
   /**
-   * Generate the outer join output results for one vectorized row batch.
+   * Apply the value expression to rows in the (original) input selected array.
    *
-   * Any filter expressions will apply now since hash map lookup for outer join is complete.
+   * @param batch
+   *          The vectorized row batch.
+   * @param inputSelectedInUse
+   *          Whether the (original) input batch is selectedInUse.
+   * @param inputLogicalSize
+   *          The (original) input batch size.
+   */
+  private void doValueExprOnInputSelected(VectorizedRowBatch batch,
+      boolean inputSelectedInUse, int inputLogicalSize) {
+
+    int saveBatchSize = batch.size;
+    int[] saveSelected = batch.selected;
+    boolean saveSelectedInUse = batch.selectedInUse;
+
+    batch.size = inputLogicalSize;
+    batch.selected = inputSelected;
+    batch.selectedInUse = inputSelectedInUse;
+
+    if (bigTableValueExpressions != null) {
+      for(VectorExpression ve: bigTableValueExpressions) {
+        ve.evaluate(batch);
+      }
+    }
+
+    batch.size = saveBatchSize;
+    batch.selected = saveSelected;
+    batch.selectedInUse = saveSelectedInUse;
+  }
+
+  /**
+   * Apply the value expression to rows specified by a selected array.
+   *
+   * @param batch
+   *          The vectorized row batch.
+   * @param selected
+   *          The (physical) batch indices to apply the expression to.
+   * @param size
+   *          The size of selected.
+   */
+  private void doValueExpr(VectorizedRowBatch batch,
+      int[] selected, int size) {
+
+    int saveBatchSize = batch.size;
+    int[] saveSelected = batch.selected;
+    boolean saveSelectedInUse = batch.selectedInUse;
+
+    batch.size = size;
+    batch.selected = selected;
+    batch.selectedInUse = true;
+
+    if (bigTableValueExpressions != null) {
+      for(VectorExpression ve: bigTableValueExpressions) {
+        ve.evaluate(batch);
+      }
+    }
+
+    batch.size = saveBatchSize;
+    batch.selected = saveSelected;
+    batch.selectedInUse = saveSelectedInUse;
+  }
+
+  /**
+   * Remove (subtract) members from the input selected array and produce the results into
+   * a difference array.
+   *
+   * @param inputSelectedInUse
+   *          Whether the (original) input batch is selectedInUse.
+   * @param inputLogicalSize
+   *          The (original) input batch size.
+   * @param remove
+   *          The indices to remove.  They must all be present in input selected array.
+   * @param removeSize
+   *          The size of remove.
+   * @param difference
+   *          The resulting difference -- the input selected array indices not in the
+   *          remove array.
+   * @return
+   *          The resulting size of the difference array.
+   * @throws HiveException 
+   */
+  private int subtractFromInputSelected(boolean inputSelectedInUse, int inputLogicalSize,
+      int[] remove, int removeSize, int[] difference) throws HiveException {
+
+    // if (!verifyMonotonicallyIncreasing(remove, removeSize)) {
+    //   throw new HiveException("remove is not in sort order and unique");
+    // }
+
+   int differenceCount = 0;
+
+   // Determine which rows are left.
+   int removeIndex = 0;
+   if (inputSelectedInUse) {
+     for (int i = 0; i < inputLogicalSize; i++) {
+       int candidateIndex = inputSelected[i];
+       if (removeIndex < removeSize && candidateIndex == remove[removeIndex]) {
+         removeIndex++;
+       } else {
+         difference[differenceCount++] = candidateIndex;
+       }
+     }
+   } else {
+     for (int candidateIndex = 0; candidateIndex < inputLogicalSize; candidateIndex++) {
+       if (removeIndex < removeSize && candidateIndex == remove[removeIndex]) {
+         removeIndex++;
+       } else {
+         difference[differenceCount++] = candidateIndex;
+       }
+     }
+   }
+
+   if (removeIndex != removeSize) {
+     throw new HiveException("Not all batch indices removed");
+   }
+
+   // if (!verifyMonotonicallyIncreasing(difference, differenceCount)) {
+   //   throw new HiveException("difference is not in sort order and unique");
+   // }
+
+   return differenceCount;
+ }
+
+  /**
+   * Remove (subtract) members from an array and produce the results into
+   * a difference array.
+
+   * @param all
+   *          The selected array containing all members.
+   * @param allSize
+   *          The size of all.
+   * @param remove
+   *          The indices to remove.  They must all be present in input selected array.
+   * @param removeSize
+   *          The size of remove.
+   * @param difference
+   *          The resulting difference -- the all array indices not in the
+   *          remove array.
+   * @return
+   *          The resulting size of the difference array.
+   * @throws HiveException 
+   */
+  private int subtract(int[] all, int allSize,
+      int[] remove, int removeSize, int[] difference) throws HiveException {
+
+    // if (!verifyMonotonicallyIncreasing(remove, removeSize)) {
+    //   throw new HiveException("remove is not in sort order and unique");
+    // }
+
+    int differenceCount = 0;
+
+    // Determine which rows are left.
+    int removeIndex = 0;
+    for (int i = 0; i < allSize; i++) {
+      int candidateIndex = all[i];
+      if (removeIndex < removeSize && candidateIndex == remove[removeIndex]) {
+        removeIndex++;
+      } else {
+        difference[differenceCount++] = candidateIndex;
+      }
+    }
+
+    if (removeIndex != removeSize) {
+      throw new HiveException("Not all batch indices removed");
+    }
+
+    return differenceCount;
+  }
+
+  /**
+   * Sort merge two select arrays so the resulting array is ordered by (batch) index.
+   *
+   * @param selected1
+   * @param selected1Count
+   * @param selected2
+   * @param selected2Count
+   * @param sortMerged
+   *          The resulting sort merge of selected1 and selected2.
+   * @return
+   *          The resulting size of the sortMerged array.
+   * @throws HiveException 
+   */
+  private int sortMerge(int[] selected1, int selected1Count,
+          int[] selected2, int selected2Count, int[] sortMerged) throws HiveException {
+
+    // if (!verifyMonotonicallyIncreasing(selected1, selected1Count)) {
+    //   throw new HiveException("selected1 is not in sort order and unique");
+    // }
+
+    // if (!verifyMonotonicallyIncreasing(selected2, selected2Count)) {
+    //   throw new HiveException("selected1 is not in sort order and unique");
+    // }
+
+
+    int sortMergeCount = 0;
+
+    int selected1Index = 0;
+    int selected2Index = 0;
+    for (int i = 0; i < selected1Count + selected2Count; i++) {
+      if (selected1Index < selected1Count && selected2Index < selected2Count) {
+        if (selected1[selected1Index] < selected2[selected2Index]) {
+          sortMerged[sortMergeCount++] = selected1[selected1Index++];
+        } else {
+          sortMerged[sortMergeCount++] = selected2[selected2Index++];
+        }
+      } else if (selected1Index < selected1Count) {
+        sortMerged[sortMergeCount++] = selected1[selected1Index++];
+      } else {
+        sortMerged[sortMergeCount++] = selected2[selected2Index++];
+      }
+    }
+
+    // if (!verifyMonotonicallyIncreasing(sortMerged, sortMergeCount)) {
+    //   throw new HiveException("sortMerged is not in sort order and unique");
+    // }
+
+    return sortMergeCount;
+  }
+
+  /**
+   * Generate the outer join output results for one vectorized row batch.
    *
    * @param batch
    *          The big table batch with any matching and any non matching rows both as
    *          selected in use.
-   * @param matchs
-   *          A subset of the rows of the batch that are matches.
-   * @param matchHashMapResultIndices
-   *          For each entry in matches, the index into the hashMapResult.
-   * @param matchSize
-   *          Number of matches in matchs.
-   * @param nonSpills
-   *          The rows of the batch that are both matches and non-matches.
-   * @param nonspillCount
-   *          Number of rows in nonSpills.
-   * @param spills
-   *          A subset of the rows of the batch that are spills.
-   * @param spillHashMapResultIndices
-   *          For each entry in spills, the index into the hashMapResult.
+   * @param allMatchCount
+   *          Number of matches in allMatchs.
+   * @param equalKeySeriesCount
+   *          Number of single value matches.
+   * @param atLeastOneNonMatch
+   *          Whether at least one row was a non-match.
+   * @param inputSelectedInUse
+   *          A copy of the batch's selectedInUse flag on input to the process method.
+   * @param inputLogicalSize
+   *          The batch's size on input to the process method.
    * @param spillCount
    *          Number of spills in spills.
-   * @param hashMapResults
-   *          The array of all hash map results for the batch.
    * @param hashMapResultCount
    *          Number of entries in hashMapResults.
-   * @param scratch1
-   *          Pre-allocated storage to internal use.
    */
-  public int finishOuter(VectorizedRowBatch batch,
-      int[] matchs, int[] matchHashMapResultIndices, int matchCount,
-      int[] nonSpills, int nonSpillCount,
-      int[] spills, int[] spillHashMapResultIndices, int spillCount,
-      VectorMapJoinHashMapResult[] hashMapResults, int hashMapResultCount,
-      int[] scratch1) throws IOException, HiveException {
+  public void finishOuter(VectorizedRowBatch batch,
+      int allMatchCount, int equalKeySeriesCount, boolean atLeastOneNonMatch,
+      boolean inputSelectedInUse, int inputLogicalSize,
+      int spillCount, int hashMapResultCount) throws IOException, HiveException {
 
-     int numSel = 0;
-
-    // At this point we have determined the matching rows only for the ON equality condition(s).
-    // Implicitly, non-matching rows are those in the selected array minus matchs.
-
-    // Next, for outer join, apply any ON predicates to filter down the matches.
-    if (matchCount > 0 && bigTableFilterExpressions.length > 0) {
-
-      System.arraycopy(matchs, 0, batch.selected, 0, matchCount);
-      batch.size = matchCount;
-
-      // Non matches will be removed from the selected array.
-      for (VectorExpression ve : bigTableFilterExpressions) {
-        ve.evaluate(batch);
-      }
-
-      // LOG.info("finishOuter" +
-      //     " filtered batch.selected " + Arrays.toString(Arrays.copyOfRange(batch.selected, 0, batch.size)));
-
-      // Fixup the matchHashMapResultIndices array.
-      if (batch.size < matchCount) {
-        int numMatch = 0;
-        int[] selected = batch.selected;
-        for (int i = 0; i < batch.size; i++) {
-          if (selected[i] == matchs[numMatch]) {
-            matchHashMapResultIndices[numMatch] = matchHashMapResultIndices[i];
-            numMatch++;
-            if (numMatch == matchCount) {
-              break;
-            }
-          }
-        }
-        System.arraycopy(batch.selected, 0, matchs, 0, matchCount);
-      }
-    }
-    // LOG.info("finishOuter" +
-    //     " matchs[" + matchCount + "] " + intArrayToRangesString(matchs, matchCount) +
-    //     " matchHashMapResultIndices " + Arrays.toString(Arrays.copyOfRange(matchHashMapResultIndices, 0, matchCount)));
-
-    // Big table value expressions apply to ALL matching and non-matching rows.
-    if (bigTableValueExpressions != null) {
-
-      System.arraycopy(nonSpills, 0, batch.selected, 0, nonSpillCount);
-      batch.size = nonSpillCount;
-
-      for (VectorExpression ve: bigTableValueExpressions) {
-        ve.evaluate(batch);
-      }
-    }
-
-    // Determine which rows are non matches by determining the delta between selected and
-    // matchs.
-    int[] noMatchs = scratch1;
-    int noMatchCount = 0;
-    if (matchCount < nonSpillCount) {
-      // Determine which rows are non matches.
-      int matchIndex = 0;
-      for (int i = 0; i < nonSpillCount; i++) {
-        int candidateIndex = nonSpills[i];
-        if (matchIndex < matchCount && candidateIndex == matchs[matchIndex]) {
-          matchIndex++;
-        } else {
-          noMatchs[noMatchCount++] = candidateIndex;
-        }
-      }
-    }
-    // LOG.info("finishOuter" +
-    //     " noMatchs[" + noMatchCount + "] " + intArrayToRangesString(noMatchs, noMatchCount));
-
-
-    // When we generate results into the overflow batch, we may still end up with fewer rows
-    // in the big table batch.  So, nulSel and the batch's selected array will be rebuilt with
-    // just the big table rows that need to be forwarded, minus any rows processed with the
-    // overflow batch.
-    if (matchCount > 0) {
-      numSel = generateOuterHashMapMatchResults(batch,
-          matchs, matchHashMapResultIndices, matchCount,
-          hashMapResults, numSel);
-    }
-
-    if (noMatchCount > 0) {
-      numSel = generateOuterHashMapNoMatchResults(batch, noMatchs, noMatchCount, numSel);
-    }
-
+    // Get rid of spills before we start modifying the batch.
     if (spillCount > 0) {
       spillHashMapBatch(batch, (VectorMapJoinHashTableResult[]) hashMapResults,
           spills, spillHashMapResultIndices, spillCount);
     }
 
-    return numSel;
-  }
+    int noMatchCount = 0;
+    if (spillCount > 0) {
 
-   /**
-    * Generate the matching outer join output results for one row of a vectorized row batch into
-    * the overflow batch.
-    *
-    * @param batch
-    *          The big table batch.
-    * @param batchIndex
-    *          Index of the big table row.
-    * @param hashMapResult
-    *          The hash map result with the small table values.
-    */
-   private void copyOuterHashMapResultToOverflow(VectorizedRowBatch batch, int batchIndex,
-               VectorMapJoinHashMapResult hashMapResult) throws HiveException, IOException {
+      // Subtract the spills to get all match and non-match rows.
+      int nonSpillCount = subtractFromInputSelected(
+              inputSelectedInUse, inputLogicalSize, spills, spillCount, nonSpills);
 
-     // if (hashMapResult.isCappedCountAvailable()) {
-     //   LOG.info("copyOuterHashMapResultToOverflow cappedCount " + hashMapResult.cappedCount());
-     // }
-     ByteSegmentRef byteSegmentRef = hashMapResult.first();
-     while (byteSegmentRef != null) {
-
-       // Copy the BigTable values into the overflow batch. Since the overflow batch may
-       // not get flushed here, we must copy by value.
-       if (bigTableRetainedVectorCopy != null) {
-         bigTableRetainedVectorCopy.copyByValue(batch, batchIndex,
-                                                overflowBatch, overflowBatch.size);
-       }
-
-       // Reference the keys we just copied above.
-       if (bigTableVectorCopyOuterKeys != null) {
-         bigTableVectorCopyOuterKeys.copyByReference(overflowBatch, overflowBatch.size,
-                                                     overflowBatch, overflowBatch.size);
-       }
-
-       if (smallTableVectorDeserializeRow != null) {
-
-         byte[] bytes = byteSegmentRef.getBytes();
-         int offset = (int) byteSegmentRef.getOffset();
-         int length = byteSegmentRef.getLength();
-         smallTableVectorDeserializeRow.setBytes(bytes, offset, length);
-
-         smallTableVectorDeserializeRow.deserializeByValue(overflowBatch, overflowBatch.size);
-       }
-
-       ++overflowBatch.size;
-       if (overflowBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
-         forwardOverflow();
-       }
-
-       byteSegmentRef = hashMapResult.next();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("finishOuter spillCount > 0" +
+            " nonSpills " + intArrayToRangesString(nonSpills, nonSpillCount));
       }
-     // LOG.info("copyOuterHashMapResultToOverflow overflowBatch.size " + overflowBatch.size);
+  
+      // Big table value expressions apply to ALL matching and non-matching rows.
+      if (bigTableValueExpressions != null) {
+  
+        doValueExpr(batch, nonSpills, nonSpillCount);
+  
+      }
+  
+      if (atLeastOneNonMatch) {
+        noMatchCount = subtract(nonSpills, nonSpillCount, allMatchs, allMatchCount,
+                noMatchs);
 
-   }
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("finishOuter spillCount > 0" +
+              " noMatchs " + intArrayToRangesString(noMatchs, noMatchCount));
+        }
 
-   /**
-    * Generate the matching outer join output results for one vectorized row batch.
-    *
-    * For each matching row specified by parameter, get the one or more small table values and
-    * form join results.
-    *
-    * (Note: Since all matching and non-matching rows are selected and output for outer joins,
-    * we cannot use selected as the matching rows).
-    *
-    * @param batch
-    *          The big table batch with any matching and any non matching rows both as
-    *          selected in use.
-    * @param matchs
-    *          A subset of the rows of the batch that are matches.
-    * @param matchHashMapResultIndices
-    *          For each entry in matches, the index into the hashMapResult.
-    * @param matchSize
-    *          Number of matches in matchs.
-    * @param hashMapResults
-    *          The array of all hash map results for the batch.
-    * @param numSel
-    *          The current count of rows in the rebuilding of the selected array.
-    *
-    * @return
-    *          The new count of selected rows.
-    */
-   protected int generateOuterHashMapMatchResults(VectorizedRowBatch batch,
-       int[] matchs, int[] matchHashMapResultIndices, int matchSize,
-       VectorMapJoinHashMapResult[] hashMapResults, int numSel)
-               throws IOException, HiveException {
+      }
+    } else {
 
-     int[] selected = batch.selected;
+      // Run value expressions over original (whole) input batch.
+      doValueExprOnInputSelected(batch, inputSelectedInUse, inputLogicalSize);
 
-     // Generate result within big table batch when single small table value.  Otherwise, copy
-     // to overflow batch.
+      if (atLeastOneNonMatch) {
+        noMatchCount = subtractFromInputSelected(
+            inputSelectedInUse, inputLogicalSize, allMatchs, allMatchCount, noMatchs);
 
-     for (int i = 0; i < matchSize; i++) {
-       int batchIndex = matchs[i];
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("finishOuter spillCount == 0" +
+              " noMatchs " + intArrayToRangesString(noMatchs, noMatchCount));
+        }
+      }
+    }
 
-       int hashMapResultIndex = matchHashMapResultIndices[i];
-       VectorMapJoinHashMapResult hashMapResult = hashMapResults[hashMapResultIndex];
+    // When we generate results into the overflow batch, we may still end up with fewer rows
+    // in the big table batch.  So, nulSel and the batch's selected array will be rebuilt with
+    // just the big table rows that need to be forwarded, minus any rows processed with the
+    // overflow batch.
+    if (allMatchCount > 0) {
 
-       if (!hashMapResult.isSingleRow()) {
+      int numSel = 0;
+      for (int i = 0; i < equalKeySeriesCount; i++) {
+        int hashMapResultIndex = equalKeySeriesHashMapResultIndices[i];
+        VectorMapJoinHashMapResult hashMapResult = hashMapResults[hashMapResultIndex];
+        int allMatchesIndex = equalKeySeriesAllMatchIndices[i];
+        boolean isSingleValue = equalKeySeriesIsSingleValue[i];
+        int duplicateCount = equalKeySeriesDuplicateCounts[i];
 
-         // Multiple small table rows require use of the overflow batch.
-         copyOuterHashMapResultToOverflow(batch, batchIndex, hashMapResult);
-       } else {
+        if (isSingleValue) {
+          numSel = generateHashMapResultSingleValue(
+                      batch, hashMapResult, allMatchs, allMatchesIndex, duplicateCount, numSel);
+        } else {
+          generateHashMapResultMultiValue(
+              batch, hashMapResult, allMatchs, allMatchesIndex, duplicateCount);
+        }
+      }
 
-         // Generate join result in big table batch.
-         ByteSegmentRef byteSegmentRef = hashMapResult.first();
+      // The number of single value rows that were generated in the big table batch.
+      batch.size = numSel;
+      batch.selectedInUse = true;
 
-         if (bigTableVectorCopyOuterKeys != null) {
-           bigTableVectorCopyOuterKeys.copyByReference(batch, batchIndex, batch, batchIndex);
-         }
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("finishOuter allMatchCount > 0" +
+            " batch.selected " + intArrayToRangesString(batch.selected, batch.size));
+      }
 
-         if (smallTableVectorDeserializeRow != null) {
+    } else {
+      batch.size = 0;
+    }
 
-           byte[] bytes = byteSegmentRef.getBytes();
-           int offset = (int) byteSegmentRef.getOffset();
-           int length = byteSegmentRef.getLength();
-           smallTableVectorDeserializeRow.setBytes(bytes, offset, length);
+    if (noMatchCount > 0) {
+      if (batch.size > 0) {
 
-           smallTableVectorDeserializeRow.deserializeByValue(batch, batchIndex);
-         }
+        generateOuterNulls(batch, noMatchs, noMatchCount);
+  
+        // Merge noMatchs and (match) selected.
+        int mergeCount = sortMerge(
+                noMatchs, noMatchCount, batch.selected, batch.size, merged);
+    
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("finishOuter noMatchCount > 0 && batch.size > 0" +
+              " merged " + intArrayToRangesString(merged, mergeCount));
+        }
 
-         // Remember this big table row was used for an output result.
-         selected[numSel++] = batchIndex;
-       }
-     }
-     return numSel;
-   }
+        System.arraycopy(merged, 0, batch.selected, 0, mergeCount);
+        batch.size = mergeCount;
+        batch.selectedInUse = true;
+      } else {
+
+        // We can use the whole batch for output of no matches.
+
+        generateOuterNullsRepeatedAll(batch);
+
+        System.arraycopy(noMatchs, 0, batch.selected, 0, noMatchCount);
+        batch.size = noMatchCount;
+        batch.selectedInUse = true;
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("finishOuter noMatchCount > 0 && batch.size == 0" +
+              " batch.selected " + intArrayToRangesString(batch.selected, batch.size));
+        }
+      }
+    }
+  }
 
    /**
     * Generate the non matching outer join output results for one vectorized row batch.
@@ -412,72 +557,30 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
     *          A subset of the rows of the batch that are non matches.
     * @param noMatchSize
     *          Number of non matches in noMatchs.
-    * @param numSel
-    *          The current count of rows in the rebuilding of the selected array.
-    *
-    * @return
-    *          The new count of selected rows.
     */
-   protected int generateOuterHashMapNoMatchResults(VectorizedRowBatch batch, int[] noMatchs,
-       int noMatchSize, int numSel) throws IOException, HiveException {
-     int[] selected = batch.selected;
+   protected void generateOuterNulls(VectorizedRowBatch batch, int[] noMatchs,
+       int noMatchSize) throws IOException, HiveException {
 
-     // Generate result within big table batch with null small table results, using isRepeated
-     // if possible.
+     // Set null information in the small table results area.
 
-     if (numSel == 0) {
-
-       // There were 0 matching rows -- so we can use the isRepeated optimization for the non
-       // matching rows.
+     for (int i = 0; i < noMatchSize; i++) {
+       int batchIndex = noMatchs[i];
 
        // Mark any scratch small table scratch columns that would normally receive a copy of the
-       // key as null and repeating.
+       // key as null, too.
        for (int column : bigTableOuterKeyOutputVectorColumns) {
          ColumnVector colVector = batch.cols[column];
-         colVector.isRepeating = true;
          colVector.noNulls = false;
-         colVector.isNull[0] = true;
+         colVector.isNull[batchIndex] = true;
        }
 
-       // Small table values are set to null and repeating.
+       // Small table values are set to null.
        for (int column : smallTableOutputVectorColumns) {
          ColumnVector colVector = batch.cols[column];
-         colVector.isRepeating = true;
          colVector.noNulls = false;
-         colVector.isNull[0] = true;
-       }
-
-       // Rebuild the selected array.
-       for (int i = 0; i < noMatchSize; i++) {
-         int batchIndex = noMatchs[i];
-         selected[numSel++] = batchIndex;
-       }
-     } else {
-
-       // Set null information in the small table results area.
-
-       for (int i = 0; i < noMatchSize; i++) {
-         int batchIndex = noMatchs[i];
-
-         // Mark any scratch small table scratch columns that would normally receive a copy of the
-         // key as null, too.
-         for (int column : bigTableOuterKeyOutputVectorColumns) {
-           ColumnVector colVector = batch.cols[column];
-           colVector.noNulls = false;
-           colVector.isNull[batchIndex] = true;
-         }
-
-         // Small table values are set to null.
-         for (int column : smallTableOutputVectorColumns) {
-           ColumnVector colVector = batch.cols[column];
-           colVector.noNulls = false;
-           colVector.isNull[batchIndex] = true;
-         }
-
-         selected[numSel++] = batchIndex;
+         colVector.isNull[batchIndex] = true;
        }
      }
-     return numSel;
    }
 
   /**
@@ -492,65 +595,114 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    *          The hash map lookup result for the repeated key.
    * @param hashMapResults
    *          The array of all hash map results for the batch.
+   * @param someRowsFilteredOut
+   *          Whether some rows of the repeated key batch were knocked out by the filter.
+   * @param inputSelectedInUse
+   *          A copy of the batch's selectedInUse flag on input to the process method.
+   * @param inputLogicalSize
+   *          The batch's size on input to the process method.
    * @param scratch1
    *          Pre-allocated storage to internal use.
+   * @param scratch2
+   *          Pre-allocated storage to internal use.
    */
-  public int finishOuterRepeated(VectorizedRowBatch batch, JoinUtil.JoinResult joinResult,
-      VectorMapJoinHashMapResult hashMapResult, int[] scratch1)
+  public void finishOuterRepeated(VectorizedRowBatch batch, JoinUtil.JoinResult joinResult,
+      VectorMapJoinHashMapResult hashMapResult, boolean someRowsFilteredOut,
+      boolean inputSelectedInUse, int inputLogicalSize)
           throws IOException, HiveException {
 
-    int numSel = 0;
+    // LOG.debug("finishOuterRepeated batch #" + batchCounter + " " + joinResult.name() + " batch.size " + batch.size + " someRowsFilteredOut " + someRowsFilteredOut);
 
-    if (joinResult == JoinUtil.JoinResult.MATCH && bigTableFilterExpressions.length > 0) {
-
-      // Since it is repeated, the evaluation of the filter will knock the whole batch out.
-      // But since we are doing outer join, we want to keep non-matches.
-
-      // First, remember selected;
-      int[] rememberSelected = scratch1;
-      int rememberBatchSize = batch.size;
-      if (batch.selectedInUse) {
-        System.arraycopy(batch.selected, 0, rememberSelected, 0, batch.size);
-      }
-
-      // Filter.
-      for (VectorExpression ve : bigTableFilterExpressions) {
-        ve.evaluate(batch);
-      }
-
-      // Convert a filter out to a non match.
-      if (batch.size == 0) {
-        joinResult = JoinUtil.JoinResult.NOMATCH;
-        if (batch.selectedInUse) {
-          System.arraycopy(rememberSelected, 0, batch.selected, 0, rememberBatchSize);
-          // LOG.info("finishOuterRepeated batch #" + batchCounter + " filter out converted to no matchs " +
-          //     Arrays.toString(Arrays.copyOfRange(batch.selected, 0, rememberBatchSize)));
-        } else {
-          // LOG.info("finishOuterRepeated batch #" + batchCounter + " filter out converted to no matchs batch size " +
-          //     rememberBatchSize);
-        }
-        batch.size = rememberBatchSize;
-      }
-    }
-
-    // LOG.info("finishOuterRepeated batch #" + batchCounter + " " + joinResult.name() + " batch.size " + batch.size);
     switch (joinResult) {
     case MATCH:
-      // Run our value expressions over whole batch.
-      if (bigTableValueExpressions != null) {
-        for(VectorExpression ve: bigTableValueExpressions) {
-          ve.evaluate(batch);
-        }
-      }
 
-      // Use a common method applicable for inner and outer.
-      numSel = generateHashMapResultRepeatedAll(batch, hashMapResult);
+      // Rows we looked up as one repeated key are a match.  But filtered out rows
+      // need to be generated as non-matches, too.
+
+      if (someRowsFilteredOut) {
+
+        // For the filtered out rows that didn't (logically) get looked up in the hash table,
+        // we need to generate no match results for those too...
+
+        // Run value expressions over original (whole) input batch.
+        doValueExprOnInputSelected(batch, inputSelectedInUse, inputLogicalSize);
+
+        // Now calculate which rows were filtered out (they are logically no matches).
+
+        // Determine which rows are non matches by determining the delta between inputSelected and
+        // (current) batch selected.
+
+        int noMatchCount = subtractFromInputSelected(
+                inputSelectedInUse, inputLogicalSize, batch.selected, batch.size, noMatchs);
+
+        generateOuterNulls(batch, noMatchs, noMatchCount);
+
+        // Now generate the matchs.  Single small table values will be put into the big table
+        // batch and come back in matchs.  Any multiple small table value results will go into
+        // the overflow batch.
+        generateHashMapResultRepeatedAll(batch, hashMapResult);
+
+        // Merge noMatchs and (match) selected.
+        int mergeCount = sortMerge(
+                noMatchs, noMatchCount, batch.selected, batch.size, merged);
+
+        System.arraycopy(merged, 0, batch.selected, 0, mergeCount);
+        batch.size = mergeCount;
+        batch.selectedInUse = true;
+      } else {
+
+        // Just run our value expressions over input batch.
+
+        if (bigTableValueExpressions != null) {
+          for(VectorExpression ve: bigTableValueExpressions) {
+            ve.evaluate(batch);
+          }
+        }
+
+        generateHashMapResultRepeatedAll(batch, hashMapResult);
+      }
       break;
+
     case SPILL:
-      // Whole batch is spilled.
+
+      // Rows we looked up as one repeated key need to spill.  But filtered out rows
+      // need to be generated as non-matches, too.
+
       spillBatchRepeated(batch, (VectorMapJoinHashTableResult) hashMapResult);
+
+      // After using selected to generate spills, generate non-matches, if any.
+      if (someRowsFilteredOut) {
+
+        // Determine which rows are non matches by determining the delta between inputSelected and
+        // (current) batch selected.
+
+        int noMatchCount = subtractFromInputSelected(
+                inputSelectedInUse, inputLogicalSize, batch.selected, batch.size, noMatchs);
+
+        System.arraycopy(noMatchs, 0, batch.selected, 0, noMatchCount);
+        batch.size = noMatchCount;
+        batch.selectedInUse = true;
+
+        generateOuterNullsRepeatedAll(batch);
+      } else {
+        batch.size = 0;
+      }
+
       break;
+
     case NOMATCH:
+
+      if (someRowsFilteredOut) {
+
+        // When the repeated no match is due to filtering, we need to restore the
+        // selected information.
+
+        if (inputSelectedInUse) {
+          System.arraycopy(inputSelected, 0, batch.selected, 0, inputLogicalSize);
+        }
+        batch.size = inputLogicalSize;
+      }
+
       // Run our value expressions over whole batch.
       if (bigTableValueExpressions != null) {
         for(VectorExpression ve: bigTableValueExpressions) {
@@ -558,11 +710,9 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
         }
       }
 
-      numSel = generateOuterNullsRepeatedAll(batch);
+      generateOuterNullsRepeatedAll(batch);
       break;
     }
-
-    return numSel;
   }
 
   /**
@@ -573,24 +723,8 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    *
    * @param batch
    *          The big table batch.
-   * @return
-   *          The new count of selected rows.
    */
-  protected int generateOuterNullsRepeatedAll(VectorizedRowBatch batch) throws HiveException {
-
-    int[] selected = batch.selected;
-    boolean selectedInUse = batch.selectedInUse;
-
-    // Generate result within big table batch using is repeated for null small table results.
-
-    if (batch.selectedInUse) {
-      // The selected array is already filled in as we want it.
-    } else {
-      for (int i = 0; i < batch.size; i++) {
-        selected[i] = i;
-      }
-      batch.selectedInUse = true;
-    }
+  protected void generateOuterNullsRepeatedAll(VectorizedRowBatch batch) throws HiveException {
 
     for (int column : smallTableOutputVectorColumns) {
       ColumnVector colVector = batch.cols[column];
@@ -607,12 +741,5 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       colVector.isNull[0] = true;
       colVector.isRepeating = true;
     }
-
-    // for (int i = 0; i < batch.size; i++) {
-    //   int bigTableIndex = selected[i];
-    //   VectorizedBatchUtil.debugDisplayOneRow(batch, bigTableIndex, taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator generate generateOuterNullsRepeatedAll batch");
-    // }
-
-    return batch.size;
   }
 }

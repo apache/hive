@@ -35,6 +35,7 @@ import java.util.HashMap;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -322,6 +323,23 @@ public class QTestGenTask extends Task {
     return queryFileRegex;
   }
 
+  private String createAlternativeFile(File file) throws Exception {
+    String fileParentDir = file.getParent();
+    String fileName = file.getName();
+    int dotIndex = fileName.lastIndexOf('.');
+    String fileNameWithoutExtension = dotIndex == -1 ? fileName : fileName.substring(0, dotIndex);
+    String fileNameExtension = dotIndex == -1 ? "" : fileName.substring(dotIndex);
+
+    // If prefix length is < 3, File.createTempFile() will throw an IllegalArgumentException.
+    // We need to avoid this case.
+    if (fileNameWithoutExtension.length() < 3) {
+      fileNameWithoutExtension = fileNameWithoutExtension + "_tmp";
+    }
+    File alternativeFile = File.createTempFile(fileNameWithoutExtension, fileNameExtension,
+      new File(fileParentDir));
+    return alternativeFile.getCanonicalPath();
+  }
+
   public void execute() throws BuildException {
     if (getTemplatePath().equals("")) {
       throw new BuildException("No templatePath attribute specified");
@@ -454,8 +472,10 @@ public class QTestGenTask extends Task {
       if (logFile != null) {
         File lf = new File(logFile);
         if (lf.exists()) {
+          System.out.println("Log file already exists: " + lf.getCanonicalPath());
           if (!lf.delete()) {
-            throw new Exception("Could not delete log file " + lf.getCanonicalPath());
+            System.out.println("Could not delete log file " + lf.getCanonicalPath());
+            logFile = createAlternativeFile(lf);
           }
         }
 
@@ -473,19 +493,20 @@ public class QTestGenTask extends Task {
       }
 
       File qFileNames = new File(outputDirectory, className + "QFileNames.txt");
-      String qFileNamesFile = qFileNames.getCanonicalPath();
+      String qFileNamesFile = qFileNames.toURI().getPath();
 
       if (qFileNames.exists()) {
+        System.out.println("Query file names containing file already exists: " + qFileNamesFile);
         if (!qFileNames.delete()) {
-          throw new Exception("Could not delete old query file names containing file " +
+          System.out.println("Could not delete query file names containing file " +
+            qFileNames.getCanonicalPath());
+          qFileNamesFile = createAlternativeFile(qFileNames);
+        } else if (!qFileNames.createNewFile()) {
+          System.out.println("Could not create query file names containing file " +
             qFileNamesFile);
+          qFileNamesFile = createAlternativeFile(qFileNames);
         }
       }
-      if (!qFileNames.createNewFile()) {
-        throw new Exception("Could not create query file names containing file " +
-          qFileNamesFile);
-      }
-
       FileWriter fw = new FileWriter(qFileNames.getCanonicalFile());
       BufferedWriter bw = new BufferedWriter(fw);
 

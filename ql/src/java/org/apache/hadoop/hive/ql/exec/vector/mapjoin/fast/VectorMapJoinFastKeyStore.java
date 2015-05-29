@@ -112,7 +112,7 @@ public class VectorMapJoinFastKeyStore {
     }
     keyRefWord |= absoluteKeyOffset;
 
-    // LOG.info("VectorMapJoinFastKeyStore add keyLength " + keyLength + " absoluteKeyOffset " + absoluteKeyOffset + " keyRefWord " + Long.toHexString(keyRefWord));
+    // LOG.debug("VectorMapJoinFastKeyStore add keyLength " + keyLength + " absoluteKeyOffset " + absoluteKeyOffset + " keyRefWord " + Long.toHexString(keyRefWord));
     return keyRefWord;
   }
 
@@ -122,7 +122,7 @@ public class VectorMapJoinFastKeyStore {
         (int) ((keyRefWord & SmallKeyLength.bitMask) >> SmallKeyLength.bitShift);
     boolean isKeyLengthSmall = (storedKeyLengthLength != SmallKeyLength.allBitsOn);
 
-    // LOG.info("VectorMapJoinFastKeyStore equalKey keyLength " + keyLength + " isKeyLengthSmall " + isKeyLengthSmall + " storedKeyLengthLength " + storedKeyLengthLength + " keyRefWord " + Long.toHexString(keyRefWord));
+    // LOG.debug("VectorMapJoinFastKeyStore equalKey keyLength " + keyLength + " isKeyLengthSmall " + isKeyLengthSmall + " storedKeyLengthLength " + storedKeyLengthLength + " keyRefWord " + Long.toHexString(keyRefWord));
 
     if (isKeyLengthSmall && storedKeyLengthLength != keyLength) {
       return false;
@@ -135,7 +135,7 @@ public class VectorMapJoinFastKeyStore {
       // Read big value length we wrote with the value.
       storedKeyLengthLength = writeBuffers.readVInt(readPos);
       if (storedKeyLengthLength != keyLength) {
-        // LOG.info("VectorMapJoinFastKeyStore equalKey no match big length");
+        // LOG.debug("VectorMapJoinFastKeyStore equalKey no match big length");
         return false;
       }
     }
@@ -148,11 +148,11 @@ public class VectorMapJoinFastKeyStore {
 
     for (int i = 0; i < keyLength; i++) {
       if (currentBytes[currentStart + i] != keyBytes[keyStart + i]) {
-        // LOG.info("VectorMapJoinFastKeyStore equalKey no match on bytes");
+        // LOG.debug("VectorMapJoinFastKeyStore equalKey no match on bytes");
         return false;
       }
     }
-    // LOG.info("VectorMapJoinFastKeyStore equalKey match on bytes");
+    // LOG.debug("VectorMapJoinFastKeyStore equalKey match on bytes");
     return true;
   }
 
