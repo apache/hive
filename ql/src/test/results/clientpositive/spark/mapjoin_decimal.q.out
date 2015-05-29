@@ -102,8 +102,8 @@ STAGE PLANS:
                     Statistics: Num rows: 525 Data size: 58800 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
-                        0 dec (type: decimal(4,2))
-                        1 dec (type: decimal(4,0))
+                        0 dec (type: decimal(6,2))
+                        1 dec (type: decimal(6,2))
             Local Work:
               Map Reduce Local Work
 
@@ -123,8 +123,8 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 dec (type: decimal(4,2))
-                        1 dec (type: decimal(4,0))
+                        0 dec (type: decimal(6,2))
+                        1 dec (type: decimal(6,2))
                       outputColumnNames: _col0, _col4
                       input vertices:
                         1 Map 2

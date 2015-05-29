@@ -24,9 +24,9 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.RelFactories.FilterFactory;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 
 public class HiveFilter extends Filter implements HiveRelNode {
 
@@ -48,7 +48,7 @@ public class HiveFilter extends Filter implements HiveRelNode {
 
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner) {
-    return HiveCost.FACTORY.makeZeroCost();
+    return RelMetadataQuery.getNonCumulativeCost(this);
   }
 
   /**

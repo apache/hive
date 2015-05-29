@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -107,52 +108,52 @@ public final class PlanUtils {
     }
   }
 
-  public static TableDesc getDefaultTableDesc(CreateTableDesc localDirectoryDesc,
+  public static TableDesc getDefaultTableDesc(CreateTableDesc directoryDesc,
       String cols, String colTypes ) {
     TableDesc ret = getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode), cols,
         colTypes, false);;
-    if (localDirectoryDesc == null) {
+    if (directoryDesc == null) {
       return ret;
     }
 
     try {
       Properties properties = ret.getProperties();
 
-      if (localDirectoryDesc.getFieldDelim() != null) {
+      if (directoryDesc.getFieldDelim() != null) {
         properties.setProperty(
-            serdeConstants.FIELD_DELIM, localDirectoryDesc.getFieldDelim());
+            serdeConstants.FIELD_DELIM, directoryDesc.getFieldDelim());
         properties.setProperty(
-            serdeConstants.SERIALIZATION_FORMAT, localDirectoryDesc.getFieldDelim());
+            serdeConstants.SERIALIZATION_FORMAT, directoryDesc.getFieldDelim());
       }
-      if (localDirectoryDesc.getLineDelim() != null) {
+      if (directoryDesc.getLineDelim() != null) {
         properties.setProperty(
-            serdeConstants.LINE_DELIM, localDirectoryDesc.getLineDelim());
+            serdeConstants.LINE_DELIM, directoryDesc.getLineDelim());
       }
-      if (localDirectoryDesc.getCollItemDelim() != null) {
+      if (directoryDesc.getCollItemDelim() != null) {
         properties.setProperty(
-            serdeConstants.COLLECTION_DELIM, localDirectoryDesc.getCollItemDelim());
+            serdeConstants.COLLECTION_DELIM, directoryDesc.getCollItemDelim());
       }
-      if (localDirectoryDesc.getMapKeyDelim() != null) {
+      if (directoryDesc.getMapKeyDelim() != null) {
         properties.setProperty(
-            serdeConstants.MAPKEY_DELIM, localDirectoryDesc.getMapKeyDelim());
+            serdeConstants.MAPKEY_DELIM, directoryDesc.getMapKeyDelim());
       }
-      if (localDirectoryDesc.getFieldEscape() !=null) {
+      if (directoryDesc.getFieldEscape() !=null) {
         properties.setProperty(
-            serdeConstants.ESCAPE_CHAR, localDirectoryDesc.getFieldEscape());
+            serdeConstants.ESCAPE_CHAR, directoryDesc.getFieldEscape());
       }
-      if (localDirectoryDesc.getSerName() != null) {
+      if (directoryDesc.getSerName() != null) {
         properties.setProperty(
-            serdeConstants.SERIALIZATION_LIB, localDirectoryDesc.getSerName());
+            serdeConstants.SERIALIZATION_LIB, directoryDesc.getSerName());
       }
-      if (localDirectoryDesc.getOutputFormat() != null){
-        ret.setOutputFileFormatClass(JavaUtils.loadClass(localDirectoryDesc.getOutputFormat()));
+      if (directoryDesc.getOutputFormat() != null){
+        ret.setOutputFileFormatClass(JavaUtils.loadClass(directoryDesc.getOutputFormat()));
       }
-      if (localDirectoryDesc.getNullFormat() != null) {
+      if (directoryDesc.getNullFormat() != null) {
         properties.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT,
-              localDirectoryDesc.getNullFormat());
+              directoryDesc.getNullFormat());
       }
-      if (localDirectoryDesc.getTblProps() != null) {
-        properties.putAll(localDirectoryDesc.getTblProps());
+      if (directoryDesc.getTblProps() != null) {
+        properties.putAll(directoryDesc.getTblProps());
       }
 
     } catch (ClassNotFoundException e) {
@@ -353,6 +354,9 @@ public final class PlanUtils {
 
       if (crtTblDesc.getTblProps() != null) {
         properties.putAll(crtTblDesc.getTblProps());
+      }
+      if (crtTblDesc.getSerdeProps() != null) {
+        properties.putAll(crtTblDesc.getSerdeProps());
       }
 
       // replace the default input & output file format with those found in
@@ -812,7 +816,7 @@ public final class PlanUtils {
                   tableDesc,
                   jobProperties);
             } catch(AbstractMethodError e) {
-                LOG.debug("configureInputJobProperties not found "+
+                LOG.info("configureInputJobProperties not found "+
                     "using configureTableJobProperties",e);
                 storageHandler.configureTableJobProperties(tableDesc, jobProperties);
             }
@@ -823,7 +827,7 @@ public final class PlanUtils {
                   tableDesc,
                   jobProperties);
             } catch(AbstractMethodError e) {
-                LOG.debug("configureOutputJobProperties not found"+
+                LOG.info("configureOutputJobProperties not found"+
                     "using configureTableJobProperties",e);
                 storageHandler.configureTableJobProperties(tableDesc, jobProperties);
             }
@@ -975,6 +979,9 @@ public final class PlanUtils {
     // T's parent would be V1
     for (int pos = 0; pos < aliases.length; pos++) {
       currentAlias = currentAlias == null ? aliases[pos] : currentAlias + ":" + aliases[pos];
+
+      currentAlias = currentAlias.replace(SemanticAnalyzer.SUBQUERY_TAG_1, "")
+          .replace(SemanticAnalyzer.SUBQUERY_TAG_2, "");
       ReadEntity input = viewAliasToInput.get(currentAlias);
       if (input == null) {
         return currentInput;

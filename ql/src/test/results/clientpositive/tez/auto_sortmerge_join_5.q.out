@@ -591,6 +591,7 @@ STAGE PLANS:
                         1 Map 3
                       Position of Big Table: 0
                       Statistics: Num rows: 15 Data size: 1567 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash

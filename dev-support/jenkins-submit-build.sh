@@ -36,6 +36,10 @@ case "$BUILD_PROFILE" in
    test -n "$ENCRYPTION_URL" || fail "ENCRYPTION_URL must be specified"
    url="$ENCRYPTION_URL&ISSUE_NUM=$ISSUE_NUM"
   ;;
+  parquet-mr2)
+   test -n "$PARQUET_URL" || fail "PARQUET_URL must be specified"
+   url="$PARQUET_URL&ISSUE_NUM=$ISSUE_NUM"
+  ;;
   *)
   echo "Unknown profile '$BUILD_PROFILE'"
   exit 1

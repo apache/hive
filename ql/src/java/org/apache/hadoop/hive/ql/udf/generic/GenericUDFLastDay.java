@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
-
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -57,7 +57,7 @@ public class GenericUDFLastDay extends GenericUDF {
 
     checkArgPrimitive(arguments, 0);
 
-    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP, DATE_GROUP);
+    checkArgGroups(arguments, 0, inputTypes, STRING_GROUP, DATE_GROUP, VOID_GROUP);
 
     obtainDateConverter(arguments, 0, inputTypes, converters);
 

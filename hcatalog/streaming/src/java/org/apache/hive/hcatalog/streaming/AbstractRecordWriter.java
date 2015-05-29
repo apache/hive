@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ abstract class AbstractRecordWriter implements RecordWriter {
   final HiveEndPoint endPoint;
   final Table tbl;
 
-  final HiveMetaStoreClient msClient;
+  final IMetaStoreClient msClient;
   RecordUpdater updater = null;
 
   private final int totalBuckets;
@@ -62,7 +63,7 @@ abstract class AbstractRecordWriter implements RecordWriter {
     this.conf = conf!=null ? conf
                 : HiveEndPoint.createHiveConf(DelimitedInputWriter.class, endPoint.metaStoreUri);
     try {
-      msClient = new HiveMetaStoreClient(this.conf);
+      msClient = HCatUtil.getHiveMetastoreClient(this.conf);
       this.tbl = msClient.getTable(endPoint.database, endPoint.table);
       this.partitionPath = getPathForEndPoint(msClient, endPoint);
       this.totalBuckets = tbl.getSd().getNumBuckets();
@@ -79,6 +80,8 @@ abstract class AbstractRecordWriter implements RecordWriter {
     } catch (TException e) {
       throw new StreamingException(e.getMessage(), e);
     } catch (ClassNotFoundException e) {
+      throw new StreamingException(e.getMessage(), e);
+    } catch (IOException e) {
       throw new StreamingException(e.getMessage(), e);
     }
   }
@@ -147,7 +150,7 @@ abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
-  private Path getPathForEndPoint(HiveMetaStoreClient msClient, HiveEndPoint endPoint)
+  private Path getPathForEndPoint(IMetaStoreClient msClient, HiveEndPoint endPoint)
           throws StreamingException {
     try {
       String location;

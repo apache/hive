@@ -1,1 +1,1 @@
-FAILED: SemanticException table is not partitioned but partition spec exists: {ds=2008-04-08, hr=12}
+FAILED: ValidationFailureSemanticException table is not partitioned but partition spec exists: {ds=2008-04-08, hr=12}

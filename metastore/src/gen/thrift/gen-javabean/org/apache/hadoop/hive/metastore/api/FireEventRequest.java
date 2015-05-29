@@ -716,7 +716,7 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
                 struct.partitionVals = new ArrayList<String>(_list516.size);
                 for (int _i517 = 0; _i517 < _list516.size; ++_i517)
                 {
-                  String _elem518; // required
+                  String _elem518; // optional
                   _elem518 = iprot.readString();
                   struct.partitionVals.add(_elem518);
                 }
@@ -846,7 +846,7 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
           struct.partitionVals = new ArrayList<String>(_list521.size);
           for (int _i522 = 0; _i522 < _list521.size; ++_i522)
           {
-            String _elem523; // required
+            String _elem523; // optional
             _elem523 = iprot.readString();
             struct.partitionVals.add(_elem523);
           }

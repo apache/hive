@@ -354,7 +354,7 @@ public class NotificationEventResponse implements org.apache.thrift.TBase<Notifi
                 struct.events = new ArrayList<NotificationEvent>(_list500.size);
                 for (int _i501 = 0; _i501 < _list500.size; ++_i501)
                 {
-                  NotificationEvent _elem502; // required
+                  NotificationEvent _elem502; // optional
                   _elem502 = new NotificationEvent();
                   _elem502.read(iprot);
                   struct.events.add(_elem502);
@@ -425,7 +425,7 @@ public class NotificationEventResponse implements org.apache.thrift.TBase<Notifi
         struct.events = new ArrayList<NotificationEvent>(_list505.size);
         for (int _i506 = 0; _i506 < _list505.size; ++_i506)
         {
-          NotificationEvent _elem507; // required
+          NotificationEvent _elem507; // optional
           _elem507 = new NotificationEvent();
           _elem507.read(iprot);
           struct.events.add(_elem507);

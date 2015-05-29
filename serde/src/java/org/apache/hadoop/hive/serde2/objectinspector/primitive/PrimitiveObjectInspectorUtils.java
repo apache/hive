@@ -1053,65 +1053,69 @@ public final class PrimitiveObjectInspectorUtils {
   }
 
   public static Timestamp getTimestamp(Object o, PrimitiveObjectInspector oi) {
+    return getTimestamp(o, oi, false);
+  }
+
+  public static Timestamp getTimestamp(Object o, PrimitiveObjectInspector inputOI, boolean intToTimestampInSeconds) {
     if (o == null) {
       return null;
     }
 
     Timestamp result = null;
     long longValue = 0;
-    switch (oi.getPrimitiveCategory()) {
+    switch (inputOI.getPrimitiveCategory()) {
     case VOID:
       result = null;
       break;
     case BOOLEAN:
-      longValue = ((BooleanObjectInspector) oi).get(o) ? 1 : 0;
-      result = TimestampWritable.longToTimestamp(longValue); 
+      longValue = ((BooleanObjectInspector) inputOI).get(o) ? 1 : 0;
+      result = TimestampWritable.longToTimestamp(longValue, intToTimestampInSeconds);
       break;
     case BYTE:
-      longValue = ((ByteObjectInspector) oi).get(o);
-      result = TimestampWritable.longToTimestamp(longValue);
+      longValue = ((ByteObjectInspector) inputOI).get(o);
+      result = TimestampWritable.longToTimestamp(longValue, intToTimestampInSeconds);
       break;
     case SHORT:
-      longValue = ((ShortObjectInspector) oi).get(o);
-      result = TimestampWritable.longToTimestamp(longValue);
+      longValue = ((ShortObjectInspector) inputOI).get(o);
+      result = TimestampWritable.longToTimestamp(longValue, intToTimestampInSeconds);
       break;
     case INT:
-      longValue = ((IntObjectInspector) oi).get(o);
-      result = TimestampWritable.longToTimestamp(longValue);
+      longValue = ((IntObjectInspector) inputOI).get(o);
+      result = TimestampWritable.longToTimestamp(longValue, intToTimestampInSeconds);
       break;
     case LONG:
-      longValue = ((LongObjectInspector) oi).get(o);
-      result = TimestampWritable.longToTimestamp(longValue);
+      longValue = ((LongObjectInspector) inputOI).get(o);
+      result = TimestampWritable.longToTimestamp(longValue, intToTimestampInSeconds);
       break;
     case FLOAT:
-      result = TimestampWritable.doubleToTimestamp(((FloatObjectInspector) oi).get(o));
+      result = TimestampWritable.doubleToTimestamp(((FloatObjectInspector) inputOI).get(o));
       break;
     case DOUBLE:
-      result = TimestampWritable.doubleToTimestamp(((DoubleObjectInspector) oi).get(o));
+      result = TimestampWritable.doubleToTimestamp(((DoubleObjectInspector) inputOI).get(o));
       break;
     case DECIMAL:
-      result = TimestampWritable.decimalToTimestamp(((HiveDecimalObjectInspector) oi)
+      result = TimestampWritable.decimalToTimestamp(((HiveDecimalObjectInspector) inputOI)
                                                     .getPrimitiveJavaObject(o));
       break;
     case STRING:
-      StringObjectInspector soi = (StringObjectInspector) oi;
+      StringObjectInspector soi = (StringObjectInspector) inputOI;
       String s = soi.getPrimitiveJavaObject(o);
       result = getTimestampFromString(s);
       break;
     case CHAR:
     case VARCHAR:
-      result = getTimestampFromString(getString(o, oi));
+      result = getTimestampFromString(getString(o, inputOI));
       break;
     case DATE:
       result = new Timestamp(
-          ((DateObjectInspector) oi).getPrimitiveWritableObject(o).get().getTime());
+          ((DateObjectInspector) inputOI).getPrimitiveWritableObject(o).get().getTime());
       break;
     case TIMESTAMP:
-      result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getTimestamp();
+      result = ((TimestampObjectInspector) inputOI).getPrimitiveWritableObject(o).getTimestamp();
       break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
-          + oi.getTypeName());
+          + inputOI.getTypeName());
     }
     return result;
   }

@@ -50,9 +50,9 @@ fi
 
 test -d hive/build/ || mkdir -p hive/build/
 cd hive/build/
-rm -rf ptest2
-svn co http://svn.apache.org/repos/asf/hive/trunk/testutils/ptest2/ ptest2
-cd ptest2
+rm -rf hive
+git clone --depth 1 https://github.com/apache/hive.git
+cd hive/testutils/ptest2
 
 mvn clean package -DskipTests -Drat.numUnapprovedLicenses=1000 -Dmaven.repo.local=$WORKSPACE/.m2
 set +e

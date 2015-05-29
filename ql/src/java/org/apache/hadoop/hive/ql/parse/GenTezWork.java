@@ -274,8 +274,8 @@ public class GenTezWork implements NodeProcessor {
     }
 
     if (!context.currentUnionOperators.isEmpty()) {
-      // if there are union all operators we need to add the work to the set
-      // of union operators.
+      // if there are union all operators, it means that the walking context contains union all operators.
+      // please see more details of context.currentUnionOperator in GenTezWorkWalker
 
       UnionWork unionWork;
       if (context.unionWorkMap.containsKey(operator)) {
@@ -284,22 +284,25 @@ public class GenTezWork implements NodeProcessor {
         // since we've passed this operator before.
         assert operator.getChildOperators().isEmpty();
         unionWork = (UnionWork) context.unionWorkMap.get(operator);
-
+        // finally connect the union work with work
+        connectUnionWorkWithWork(unionWork, work, tezWork, context);
       } else {
-        // first time through. we need to create a union work object and add this
-        // work to it. Subsequent work should reference the union and not the actual
-        // work.
-        unionWork = utils.createUnionWork(context, operator, tezWork);
+        // we've not seen this terminal before. we need to check
+        // rootUnionWorkMap which contains the information of mapping the root
+        // operator of a union work to a union work
+        unionWork = context.rootUnionWorkMap.get(root);
+        if (unionWork == null) {
+          // if unionWork is null, it means it is the first time. we need to
+          // create a union work object and add this work to it. Subsequent 
+          // work should reference the union and not the actual work.
+          unionWork = utils.createUnionWork(context, root, operator, tezWork);
+          // finally connect the union work with work
+          connectUnionWorkWithWork(unionWork, work, tezWork, context);
+        }
       }
-
-      // finally hook everything up
-      LOG.debug("Connecting union work ("+unionWork+") with work ("+work+")");
-      TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.CONTAINS);
-      tezWork.connect(unionWork, work, edgeProp);
-      unionWork.addUnionOperators(context.currentUnionOperators);
       context.currentUnionOperators.clear();
-      context.workWithUnionOperators.add(work);
       work = unionWork;
+
     }
 
     // We're scanning a tree from roots to leaf (this is not technically
@@ -418,5 +421,14 @@ public class GenTezWork implements NodeProcessor {
       Stack<Node> stack) {
     int pos = stack.indexOf(currentMergeJoinOperator);
     return (Operator<? extends OperatorDesc>) stack.get(pos - 1);
+  }
+  
+  private void connectUnionWorkWithWork(UnionWork unionWork, BaseWork work, TezWork tezWork,
+      GenTezProcContext context) {
+    LOG.debug("Connecting union work (" + unionWork + ") with work (" + work + ")");
+    TezEdgeProperty edgeProp = new TezEdgeProperty(EdgeType.CONTAINS);
+    tezWork.connect(unionWork, work, edgeProp);
+    unionWork.addUnionOperators(context.currentUnionOperators);
+    context.workWithUnionOperators.add(work);
   }
 }

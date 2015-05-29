@@ -670,7 +670,7 @@ public class VectorizedRowBatchCtx {
                type.equalsIgnoreCase(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)) {
       return new LongColumnVector(defaultSize);
     } else {
-      throw new Error("Cannot allocate vector column for " + type);
+      throw new RuntimeException("Cannot allocate vector column for " + type);
     }
   }
 }

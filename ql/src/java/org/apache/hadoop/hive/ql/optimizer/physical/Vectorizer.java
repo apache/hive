@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -39,10 +37,26 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyLongOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyMultiKeyOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyStringOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerLongOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerMultiKeyOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerStringOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLeftSemiLongOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLeftSemiMultiKeyOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLeftSemiStringOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterLongOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterMultiKeyOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterStringOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
@@ -68,6 +82,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -78,6 +93,10 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
@@ -100,7 +119,6 @@ import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
 import org.apache.hadoop.hive.ql.udf.UDFRand;
-import org.apache.hadoop.hive.ql.udf.UDFRegExp;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
 import org.apache.hadoop.hive.ql.udf.UDFSign;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
@@ -208,7 +226,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFDateDiff.class);
 
     supportedGenericUDFs.add(UDFLike.class);
-    supportedGenericUDFs.add(UDFRegExp.class);
+    supportedGenericUDFs.add(GenericUDFRegExp.class);
     supportedGenericUDFs.add(UDFSubstr.class);
     supportedGenericUDFs.add(GenericUDFLTrim.class);
     supportedGenericUDFs.add(GenericUDFRTrim.class);
@@ -313,7 +331,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             // We are only vectorizing Reduce under Tez.
             if (HiveConf.getBoolVar(hiveConf,
                         HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCE_ENABLED)) {
-              convertReduceWork((ReduceWork) w);
+              convertReduceWork((ReduceWork) w, true);
             }
           }
         }
@@ -325,7 +343,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           } else if (baseWork instanceof ReduceWork
               && HiveConf.getBoolVar(hiveConf,
                   HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCE_ENABLED)) {
-            convertReduceWork((ReduceWork) baseWork);
+            convertReduceWork((ReduceWork) baseWork, false);
           }
         }
       }
@@ -335,7 +353,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     private void convertMapWork(MapWork mapWork, boolean isTez) throws SemanticException {
       boolean ret = validateMapWork(mapWork, isTez);
       if (ret) {
-        vectorizeMapWork(mapWork);
+        vectorizeMapWork(mapWork, isTez);
       }
     }
 
@@ -348,6 +366,26 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     private boolean validateMapWork(MapWork mapWork, boolean isTez) throws SemanticException {
       LOG.info("Validating MapWork...");
+
+      // Eliminate MR plans with more than one TableScanOperator.
+      LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork = mapWork.getAliasToWork();
+      if ((aliasToWork == null) || (aliasToWork.size() == 0)) {
+        return false;
+      }
+      int tableScanCount = 0;
+      for (Operator<?> op : aliasToWork.values()) {
+        if (op == null) {
+          LOG.warn("Map work has invalid aliases to work with. Fail validation!");
+          return false;
+        }
+        if (op instanceof TableScanOperator) {
+          tableScanCount++;
+        }
+      }
+      if (tableScanCount > 1) {
+        LOG.warn("Map work has more than 1 TableScanOperator aliases to work with. Fail validation!");
+        return false;
+      }
 
       // Validate the input format
       for (String path : mapWork.getPathToPartitionInfo().keySet()) {
@@ -365,6 +403,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       addMapWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
       GraphWalker ogw = new DefaultGraphWalker(disp);
+
       // iterator the mapper operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
       topNodes.addAll(mapWork.getAliasToWork().values());
@@ -380,11 +419,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       return true;
     }
 
-    private void vectorizeMapWork(MapWork mapWork) throws SemanticException {
+    private void vectorizeMapWork(MapWork mapWork, boolean isTez) throws SemanticException {
       LOG.info("Vectorizing MapWork...");
       mapWork.setVectorMode(true);
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      MapWorkVectorizationNodeProcessor vnp = new MapWorkVectorizationNodeProcessor(mapWork);
+      MapWorkVectorizationNodeProcessor vnp = new MapWorkVectorizationNodeProcessor(mapWork, isTez);
       addMapWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
       GraphWalker ogw = new PreOrderWalker(disp);
@@ -405,10 +444,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       return;
     }
 
-    private void convertReduceWork(ReduceWork reduceWork) throws SemanticException {
+    private void convertReduceWork(ReduceWork reduceWork, boolean isTez) throws SemanticException {
       boolean ret = validateReduceWork(reduceWork);
       if (ret) {
-        vectorizeReduceWork(reduceWork);
+        vectorizeReduceWork(reduceWork, isTez);
       }
     }
 
@@ -486,7 +525,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       return true;
     }
 
-    private void vectorizeReduceWork(ReduceWork reduceWork) throws SemanticException {
+    private void vectorizeReduceWork(ReduceWork reduceWork, boolean isTez) throws SemanticException {
       LOG.info("Vectorizing ReduceWork...");
       reduceWork.setVectorMode(true);
 
@@ -495,7 +534,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       // VectorizationContext...  Do we use PreOrderWalker instead of DefaultGraphWalker.
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       ReduceWorkVectorizationNodeProcessor vnp =
-              new ReduceWorkVectorizationNodeProcessor(reduceColumnNames, reduceTypeInfos);
+              new ReduceWorkVectorizationNodeProcessor(reduceColumnNames, reduceTypeInfos, isTez);
       addReduceWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
       GraphWalker ogw = new PreOrderWalker(disp);
@@ -634,11 +673,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     public Operator<? extends OperatorDesc> doVectorize(Operator<? extends OperatorDesc> op,
-            VectorizationContext vContext) throws SemanticException {
+            VectorizationContext vContext, boolean isTez) throws SemanticException {
       Operator<? extends OperatorDesc> vectorOp = op;
       try {
         if (!opsDone.contains(op)) {
-          vectorOp = vectorizeOperator(op, vContext);
+          vectorOp = vectorizeOperator(op, vContext, isTez);
           opsDone.add(op);
           if (vectorOp != op) {
             opToVectorOpMap.put(op, vectorOp);
@@ -661,10 +700,12 @@ public class Vectorizer implements PhysicalPlanResolver {
   class MapWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
 
     private final MapWork mWork;
+    private final boolean isTez;
 
-    public MapWorkVectorizationNodeProcessor(MapWork mWork) {
+    public MapWorkVectorizationNodeProcessor(MapWork mWork, boolean isTez) {
       super();
       this.mWork = mWork;
+      this.isTez = isTez;
     }
 
     @Override
@@ -703,7 +744,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         return null;
       }
 
-      Operator<? extends OperatorDesc> vectorOp = doVectorize(op, vContext);
+      Operator<? extends OperatorDesc> vectorOp = doVectorize(op, vContext, isTez);
 
       if (LOG.isDebugEnabled()) {
         if (vectorOp instanceof VectorizationContextRegion) {
@@ -722,6 +763,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     private final List<String> reduceColumnNames;
     private final List<TypeInfo> reduceTypeInfos;
 
+    private boolean isTez;
+
     private Operator<? extends OperatorDesc> rootVectorOp;
 
     public Operator<? extends OperatorDesc> getRootVectorOp() {
@@ -729,11 +772,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     public ReduceWorkVectorizationNodeProcessor(List<String> reduceColumnNames,
-            List<TypeInfo> reduceTypeInfos) {
+            List<TypeInfo> reduceTypeInfos, boolean isTez) {
       super();
       this.reduceColumnNames =  reduceColumnNames;
       this.reduceTypeInfos = reduceTypeInfos;
       rootVectorOp = null;
+      this.isTez = isTez;
     }
 
     @Override
@@ -784,7 +828,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         return null;
       }
 
-      Operator<? extends OperatorDesc> vectorOp = doVectorize(op, vContext);
+      Operator<? extends OperatorDesc> vectorOp = doVectorize(op, vContext, isTez);
 
       if (LOG.isDebugEnabled()) {
         if (vectorOp instanceof VectorizationContextRegion) {
@@ -1024,11 +1068,21 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean validateMapJoinDesc(MapJoinDesc desc) {
     byte posBigTable = (byte) desc.getPosBigTable();
     List<ExprNodeDesc> filterExprs = desc.getFilters().get(posBigTable);
+    if (!validateExprNodeDesc(filterExprs, VectorExpressionDescriptor.Mode.FILTER)) {
+      LOG.info("Cannot vectorize map work filter expression");
+      return false;
+    }
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);
+    if (!validateExprNodeDesc(keyExprs)) {
+      LOG.info("Cannot vectorize map work key expression");
+      return false;
+    }
     List<ExprNodeDesc> valueExprs = desc.getExprs().get(posBigTable);
-    return validateExprNodeDesc(filterExprs, VectorExpressionDescriptor.Mode.FILTER) &&
-        validateExprNodeDesc(keyExprs) &&
-        validateExprNodeDesc(valueExprs);
+    if (!validateExprNodeDesc(valueExprs)) {
+      LOG.info("Cannot vectorize map work value expression");
+      return false;
+    }
+    return true;
   }
 
   private boolean validateReduceSinkOperator(ReduceSinkOperator op) {
@@ -1044,6 +1098,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     for (ExprNodeDesc desc : descList) {
       boolean ret = validateExprNodeDesc(desc);
       if (!ret) {
+        LOG.info("Cannot vectorize select expression: " + desc.toString());
         return false;
       }
     }
@@ -1063,12 +1118,18 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Grouping sets not supported in vector mode");
       return false;
     }
+    if (desc.pruneGroupingSetId()) {
+      LOG.info("Pruning grouping set id not supported in vector mode");
+      return false;
+    }
     boolean ret = validateExprNodeDesc(desc.getKeys());
     if (!ret) {
+      LOG.info("Cannot vectorize groupby key expression");
       return false;
     }
     ret = validateAggregationDesc(desc.getAggregators(), isReduce);
     if (!ret) {
+      LOG.info("Cannot vectorize groupby aggregate expression");
       return false;
     }
     if (isReduce) {
@@ -1134,7 +1195,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private boolean validateExprNodeDescRecursive(ExprNodeDesc desc) {
+  private boolean validateExprNodeDescRecursive(ExprNodeDesc desc, VectorExpressionDescriptor.Mode mode) {
     if (desc instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
       // Currently, we do not support vectorized virtual columns (see HIVE-5570).
@@ -1144,7 +1205,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
     String typeName = desc.getTypeInfo().getTypeName();
-    boolean ret = validateDataType(typeName);
+    boolean ret = validateDataType(typeName, mode);
     if (!ret) {
       LOG.info("Cannot vectorize " + desc.toString() + " of type " + typeName);
       return false;
@@ -1158,7 +1219,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
     if (desc.getChildren() != null) {
       for (ExprNodeDesc d: desc.getChildren()) {
-        boolean r = validateExprNodeDescRecursive(d);
+        // Don't restrict child expressions for projection.  Always use looser FILTER mode.
+        boolean r = validateExprNodeDescRecursive(d, VectorExpressionDescriptor.Mode.FILTER);
         if (!r) {
           return false;
         }
@@ -1172,7 +1234,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   boolean validateExprNodeDesc(ExprNodeDesc desc, VectorExpressionDescriptor.Mode mode) {
-    if (!validateExprNodeDescRecursive(desc)) {
+    if (!validateExprNodeDescRecursive(desc, mode)) {
       return false;
     }
     try {
@@ -1203,10 +1265,13 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateAggregationDesc(AggregationDesc aggDesc, boolean isReduce) {
-    if (!supportedAggregationUdfs.contains(aggDesc.getGenericUDAFName().toLowerCase())) {
+    String udfName = aggDesc.getGenericUDAFName().toLowerCase();
+    if (!supportedAggregationUdfs.contains(udfName)) {
+      LOG.info("Cannot vectorize groupby aggregate expression: UDF " + udfName + " not supported");
       return false;
     }
     if (aggDesc.getParameters() != null && !validateExprNodeDesc(aggDesc.getParameters())) {
+      LOG.info("Cannot vectorize groupby aggregate expression: UDF parameters not supported");
       return false;
     }
     // See if we can vectorize the aggregation.
@@ -1252,8 +1317,13 @@ public class Vectorizer implements PhysicalPlanResolver {
     return false;
   }
 
-  private boolean validateDataType(String type) {
-    return supportedDataTypesPattern.matcher(type.toLowerCase()).matches();
+  private boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {
+    type = type.toLowerCase();
+    boolean result = supportedDataTypesPattern.matcher(type).matches();
+    if (result && mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+      return false;
+    }
+    return result;
   }
 
   private VectorizationContext getVectorizationContext(RowSchema rowSchema, String contextName,
@@ -1293,12 +1363,306 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
   }
 
+  private boolean isBigTableOnlyResults(MapJoinDesc desc) {
+    Byte[] order = desc.getTagOrder();
+    byte posBigTable = (byte) desc.getPosBigTable();
+    Byte posSingleVectorMapJoinSmallTable = (order[0] == posBigTable ? order[1] : order[0]);
+
+    int[] smallTableIndices;
+    int smallTableIndicesSize;
+    List<ExprNodeDesc> smallTableExprs = desc.getExprs().get(posSingleVectorMapJoinSmallTable);
+    if (desc.getValueIndices() != null && desc.getValueIndices().get(posSingleVectorMapJoinSmallTable) != null) {
+      smallTableIndices = desc.getValueIndices().get(posSingleVectorMapJoinSmallTable);
+      LOG.info("Vectorizer isBigTableOnlyResults smallTableIndices " + Arrays.toString(smallTableIndices));
+      smallTableIndicesSize = smallTableIndices.length;
+    } else {
+      smallTableIndices = null;
+      LOG.info("Vectorizer isBigTableOnlyResults smallTableIndices EMPTY");
+      smallTableIndicesSize = 0;
+    }
+
+    List<Integer> smallTableRetainList = desc.getRetainList().get(posSingleVectorMapJoinSmallTable);
+    LOG.info("Vectorizer isBigTableOnlyResults smallTableRetainList " + smallTableRetainList);
+    int smallTableRetainSize = smallTableRetainList.size();
+
+    if (smallTableIndicesSize > 0) {
+      // Small table indices has priority over retain.
+      for (int i = 0; i < smallTableIndicesSize; i++) {
+        if (smallTableIndices[i] < 0) {
+          // Negative numbers indicate a column to be (deserialize) read from the small table's
+          // LazyBinary value row.
+          LOG.info("Vectorizer isBigTableOnlyResults smallTableIndices[i] < 0 returning false");
+          return false;
+        }
+      }
+    } else if (smallTableRetainSize > 0) {
+      LOG.info("Vectorizer isBigTableOnlyResults smallTableRetainSize > 0 returning false");
+      return false;
+    }
+
+    LOG.info("Vectorizer isBigTableOnlyResults returning true");
+    return true;
+  }
+
+  Operator<? extends OperatorDesc> specializeMapJoinOperator(Operator<? extends OperatorDesc> op,
+        VectorizationContext vContext, MapJoinDesc desc) throws HiveException {
+    Operator<? extends OperatorDesc> vectorOp = null;
+    Class<? extends Operator<?>> opClass = null;
+
+    boolean isOuterJoin = !desc.getNoOuterJoin();
+
+    VectorMapJoinDesc.HashTableImplementationType hashTableImplementationType = HashTableImplementationType.NONE;
+    VectorMapJoinDesc.HashTableKind hashTableKind = HashTableKind.NONE;
+    VectorMapJoinDesc.HashTableKeyType hashTableKeyType = HashTableKeyType.NONE;
+
+    if (HiveConf.getBoolVar(hiveConf,
+              HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED)) {
+      hashTableImplementationType = HashTableImplementationType.FAST;
+    } else {
+      // Restrict to using BytesBytesMultiHashMap via MapJoinBytesTableContainer or
+      // HybridHashTableContainer.
+      hashTableImplementationType = HashTableImplementationType.OPTIMIZED;
+    }
+
+    int joinType = desc.getConds()[0].getType();
+
+    boolean isInnerBigOnly = false;
+    if (joinType == JoinDesc.INNER_JOIN && isBigTableOnlyResults(desc)) {
+      isInnerBigOnly = true;
+    }
+
+    // By default, we can always use the multi-key class.
+    hashTableKeyType = HashTableKeyType.MULTI_KEY;
+
+    if (!HiveConf.getBoolVar(hiveConf,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_MULTIKEY_ONLY_ENABLED)) {
+
+      // Look for single column optimization.
+      byte posBigTable = (byte) desc.getPosBigTable();
+      Map<Byte, List<ExprNodeDesc>> keyExprs = desc.getKeys();
+      List<ExprNodeDesc> bigTableKeyExprs = keyExprs.get(posBigTable);
+      if (bigTableKeyExprs.size() == 1) {
+        String typeName = bigTableKeyExprs.get(0).getTypeString();
+        LOG.info("Vectorizer vectorizeOperator map join typeName " + typeName);
+        if (typeName.equals("boolean")) {
+          hashTableKeyType = HashTableKeyType.BOOLEAN;
+        } else if (typeName.equals("tinyint")) {
+          hashTableKeyType = HashTableKeyType.BYTE;
+        } else if (typeName.equals("smallint")) {
+          hashTableKeyType = HashTableKeyType.SHORT;
+        } else if (typeName.equals("int")) {
+          hashTableKeyType = HashTableKeyType.INT;
+        } else if (typeName.equals("bigint") || typeName.equals("long")) {
+          hashTableKeyType = HashTableKeyType.LONG;
+        } else if (VectorizationContext.isStringFamily(typeName)) {
+          hashTableKeyType = HashTableKeyType.STRING;
+        }
+      }
+    }
+
+    switch (joinType) {
+    case JoinDesc.INNER_JOIN:
+      if (!isInnerBigOnly) {
+        hashTableKind = HashTableKind.HASH_MAP;
+      } else {
+        hashTableKind = HashTableKind.HASH_MULTISET;
+      }
+      break;
+    case JoinDesc.LEFT_OUTER_JOIN:
+    case JoinDesc.RIGHT_OUTER_JOIN:
+      hashTableKind = HashTableKind.HASH_MAP;
+      break;
+    case JoinDesc.LEFT_SEMI_JOIN:
+      hashTableKind = HashTableKind.HASH_SET;
+      break;
+    default:
+      throw new HiveException("Unknown join type " + joinType);
+    }
+
+    LOG.info("Vectorizer vectorizeOperator map join hashTableKind " + hashTableKind.name() + " hashTableKeyType " + hashTableKeyType.name());
+
+    switch (hashTableKeyType) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      switch (joinType) {
+      case JoinDesc.INNER_JOIN:
+        if (!isInnerBigOnly) {
+          opClass = VectorMapJoinInnerLongOperator.class;
+        } else {
+          opClass = VectorMapJoinInnerBigOnlyLongOperator.class;
+        }
+        break;
+      case JoinDesc.LEFT_OUTER_JOIN:
+      case JoinDesc.RIGHT_OUTER_JOIN:
+        opClass = VectorMapJoinOuterLongOperator.class;
+        break;
+      case JoinDesc.LEFT_SEMI_JOIN:
+        opClass = VectorMapJoinLeftSemiLongOperator.class;
+        break;
+      default:
+        throw new HiveException("Unknown join type " + joinType);
+      }
+      break;
+    case STRING:
+      switch (joinType) {
+      case JoinDesc.INNER_JOIN:
+        if (!isInnerBigOnly) {
+          opClass = VectorMapJoinInnerStringOperator.class;
+        } else {
+          opClass = VectorMapJoinInnerBigOnlyStringOperator.class;
+        }
+        break;
+      case JoinDesc.LEFT_OUTER_JOIN:
+      case JoinDesc.RIGHT_OUTER_JOIN:
+        opClass = VectorMapJoinOuterStringOperator.class;
+        break;
+      case JoinDesc.LEFT_SEMI_JOIN:
+        opClass = VectorMapJoinLeftSemiStringOperator.class;
+        break;
+      default:
+        throw new HiveException("Unknown join type " + joinType);
+      }
+      break;
+    case MULTI_KEY:
+      switch (joinType) {
+      case JoinDesc.INNER_JOIN:
+        if (!isInnerBigOnly) {
+          opClass = VectorMapJoinInnerMultiKeyOperator.class;
+        } else {
+          opClass = VectorMapJoinInnerBigOnlyMultiKeyOperator.class;
+        }
+        break;
+      case JoinDesc.LEFT_OUTER_JOIN:
+      case JoinDesc.RIGHT_OUTER_JOIN:
+        opClass = VectorMapJoinOuterMultiKeyOperator.class;
+        break;
+      case JoinDesc.LEFT_SEMI_JOIN:
+        opClass = VectorMapJoinLeftSemiMultiKeyOperator.class;
+        break;
+      default:
+        throw new HiveException("Unknown join type " + joinType);
+      }
+      break;
+    }
+
+    vectorOp = OperatorFactory.getVectorOperator(opClass, op.getConf(), vContext);
+    LOG.info("Vectorizer vectorizeOperator map join class " + vectorOp.getClass().getSimpleName());
+
+    boolean minMaxEnabled = HiveConf.getBoolVar(hiveConf,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_MINMAX_ENABLED);
+
+    VectorMapJoinDesc vectorDesc = desc.getVectorDesc();
+    vectorDesc.setHashTableImplementationType(hashTableImplementationType);
+    vectorDesc.setHashTableKind(hashTableKind);
+    vectorDesc.setHashTableKeyType(hashTableKeyType);
+    vectorDesc.setMinMaxEnabled(minMaxEnabled);
+    return vectorOp;
+  }
+
+  private boolean onExpressionHasNullSafes(MapJoinDesc desc) {
+    boolean[] nullSafes = desc.getNullSafes();
+    for (boolean nullSafe : nullSafes) {
+      if (nullSafe) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean canSpecializeMapJoin(Operator<? extends OperatorDesc> op, MapJoinDesc desc,
+      boolean isTez) {
+
+    boolean specialize = false;
+
+    if (op instanceof MapJoinOperator &&
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_ENABLED)) {
+
+      // Currently, only under Tez and non-N-way joins.
+      if (isTez && desc.getConds().length == 1 && !onExpressionHasNullSafes(desc)) {
+
+        // Ok, all basic restrictions satisfied so far...
+        specialize = true;
+
+        if (!HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED)) {
+
+          // We are using the optimized hash table we have further
+          // restrictions (using optimized and key type).
+
+          if (!HiveConf.getBoolVar(hiveConf,
+              HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE)) {
+            specialize = false;
+          } else {
+            byte posBigTable = (byte) desc.getPosBigTable();
+            Map<Byte, List<ExprNodeDesc>> keyExprs = desc.getKeys();
+            List<ExprNodeDesc> bigTableKeyExprs = keyExprs.get(posBigTable);
+            for (ExprNodeDesc exprNodeDesc : bigTableKeyExprs) {
+              String typeName = exprNodeDesc.getTypeString();
+              if (!MapJoinKey.isSupportedField(typeName)) {
+                specialize = false;
+                break;
+              }
+            }
+          }
+        } else {
+
+          // With the fast hash table implementation, we currently do not support
+          // Hybrid Grace Hash Join.
+
+          if (HiveConf.getBoolVar(hiveConf,
+              HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN)) {
+            specialize = false;
+          }
+        }
+      }
+    }
+    return specialize;
+  }
+
   Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
-      VectorizationContext vContext) throws HiveException {
+      VectorizationContext vContext, boolean isTez) throws HiveException {
     Operator<? extends OperatorDesc> vectorOp = null;
 
     switch (op.getType()) {
       case MAPJOIN:
+        {
+          MapJoinDesc desc = (MapJoinDesc) op.getConf();
+          boolean specialize = canSpecializeMapJoin(op, desc, isTez);
+
+          if (!specialize) {
+
+            Class<? extends Operator<?>> opClass = null;
+            if (op instanceof MapJoinOperator) {
+
+              // *NON-NATIVE* vector map differences for LEFT OUTER JOIN and Filtered...
+
+              List<ExprNodeDesc> bigTableFilters = desc.getFilters().get((byte) desc.getPosBigTable());
+              boolean isOuterAndFiltered = (!desc.isNoOuterJoin() && bigTableFilters.size() > 0);
+              if (!isOuterAndFiltered) {
+                opClass = VectorMapJoinOperator.class;
+              } else {
+                opClass = VectorMapJoinOuterFilteredOperator.class;
+              }
+            } else if (op instanceof SMBMapJoinOperator) {
+              opClass = VectorSMBMapJoinOperator.class;
+            }
+
+            vectorOp = OperatorFactory.getVectorOperator(opClass, op.getConf(), vContext);
+
+          } else {
+
+            // TEMPORARY Until Native Vector Map Join with Hybrid passes tests...
+            // HiveConf.setBoolVar(physicalContext.getConf(),
+            //    HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN, false);
+
+            vectorOp = specializeMapJoinOperator(op, vContext, desc);
+          }
+        }
+        break;
       case GROUPBY:
       case FILTER:
       case SELECT:
@@ -1313,6 +1677,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         vectorOp = op;
         break;
     }
+
+    LOG.info("vectorizeOperator " + (vectorOp == null ? "NULL" : vectorOp.getClass().getName()));
+    LOG.info("vectorizeOperator " + (vectorOp == null || vectorOp.getConf() == null ? "NULL" : vectorOp.getConf().getClass().getName()));
 
     if (vectorOp != op) {
       fixupParentChildOperators(op, vectorOp);

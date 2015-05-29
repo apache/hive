@@ -128,7 +128,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       Path p = new Path(f);
       FileStatus fileStatus = fs.getFileStatus(p);
       paths.append(f);
-      if(fileStatus.isDirectory()) {
+      if(fileStatus.isDir()) {
         paths.append(File.separator).append("*");
       }
       paths.append(File.pathSeparator);

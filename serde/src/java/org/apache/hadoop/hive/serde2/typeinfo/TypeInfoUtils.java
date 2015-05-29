@@ -475,7 +475,10 @@ public final class TypeInfoUtils {
               break;
             }
           }
-          Token name = expect("name");
+          Token name = expect("name",">");
+          if (name.text.equals(">")) {
+            break;
+          }
           fieldNames.add(name.text);
           expect(":");
           fieldTypeInfos.add(parseType());
@@ -776,12 +779,14 @@ public final class TypeInfoUtils {
    * @return
    */
   public static boolean isConversionRequiredForComparison(TypeInfo typeA, TypeInfo typeB) {
-    if (typeA == typeB) {
+    if (typeA.equals(typeB)) {
       return false;
     }
-    if (TypeInfoUtils.doPrimitiveCategoriesMatch(typeA,  typeB)) {
+
+    if (TypeInfoUtils.doPrimitiveCategoriesMatch(typeA, typeB)) {
       return false;
     }
+
     return true;
   }
 

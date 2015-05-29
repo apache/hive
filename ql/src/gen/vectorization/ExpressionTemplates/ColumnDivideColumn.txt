@@ -86,22 +86,26 @@ public class <ClassName> extends VectorExpression {
       outputVector[0] = vector1[0] <OperatorSymbol> denom;
       hasDivBy0 = hasDivBy0 || (denom == 0);
     } else if (inputColVector1.isRepeating) {
+      final <OperandType1> vector1Value = vector1[0];
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           <OperandType2> denom = vector2[i];
-          outputVector[i] = vector1[0] <OperatorSymbol> denom;
+          outputVector[i] = vector1Value <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          <OperandType2> denom = vector2[i];
-          outputVector[i] = vector1[0] <OperatorSymbol> denom;
-          hasDivBy0 = hasDivBy0 || (denom == 0);
+          outputVector[i] = vector1Value <OperatorSymbol> vector2[i];
+        }
+
+        for(int i = 0; i != n; i++) {
+          hasDivBy0 = hasDivBy0 || (vector2[i] == 0);
         }
       }
     } else if (inputColVector2.isRepeating) {
-      if (vector2[0] == 0) {
+      final <OperandType2> vector2Value = vector2[0];
+      if (vector2Value == 0) {
         // Denominator is zero, convert the batch to nulls
         outputColVector.noNulls = false;
         outputColVector.isRepeating = true;
@@ -109,11 +113,11 @@ public class <ClassName> extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector1[i] <OperatorSymbol> vector2[0];
+          outputVector[i] = vector1[i] <OperatorSymbol> vector2Value;
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector1[i] <OperatorSymbol> vector2[0];
+          outputVector[i] = vector1[i] <OperatorSymbol> vector2Value;
         }
       }
     } else {
@@ -126,9 +130,11 @@ public class <ClassName> extends VectorExpression {
         }
       } else {
         for(int i = 0; i != n; i++) {
-          <OperandType2> denom = vector2[i];
-          outputVector[i] = vector1[i] <OperatorSymbol> denom;
-          hasDivBy0 = hasDivBy0 || (denom == 0);
+          outputVector[i] = vector1[i] <OperatorSymbol> vector2[i];
+        }
+
+        for(int i = 0; i != n; i++) {
+          hasDivBy0 = hasDivBy0 || (vector2[i] == 0);
         }
       }
     }

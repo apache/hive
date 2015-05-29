@@ -399,10 +399,12 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     }
     try {
       FileUtils.checkFileAccessWithImpersonation(fs, stat, checkActions, user);
-    } catch (org.apache.hadoop.fs.permission.AccessControlException ace) {
-      // Older hadoop version will throw this @deprecated Exception.
-      throw accessControlException(ace);
     } catch (Exception err) {
+      // fs.permission.AccessControlException removed by HADOOP-11356, but Hive users on older
+      // Hadoop versions may still see this exception .. have to reference by name.
+      if (err.getClass().getName().equals("org.apache.hadoop.fs.permission.AccessControlException")) {
+        throw accessControlException(err);
+      }
       throw new HiveException(err);
     }
   }
@@ -429,8 +431,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     return new AuthorizationException(e);
   }
 
-  private static AccessControlException accessControlException(
-      org.apache.hadoop.fs.permission.AccessControlException e) {
+  private static AccessControlException accessControlException(Exception e) {
     AccessControlException ace = new AccessControlException(e.getMessage());
     ace.initCause(e);
     return ace;

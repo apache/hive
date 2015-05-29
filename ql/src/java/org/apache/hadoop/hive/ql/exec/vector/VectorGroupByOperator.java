@@ -102,7 +102,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   private transient VectorizedRowBatch outputBatch;
   private transient VectorizedRowBatchCtx vrbCtx;
 
-  private transient VectorColumnAssign[] vectorColumnAssign;
+  private transient VectorAssignRowSameBatch vectorAssignRowSameBatch;
 
   private transient int numEntriesHashTable;
 
@@ -776,6 +776,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   @Override
   protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
     Collection<Future<?>> result = super.initializeOp(hconf);
+    assert result.isEmpty();
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -812,11 +813,12 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
           outputFieldNames, objectInspectors);
       if (isVectorOutput) {
-          vrbCtx = new VectorizedRowBatchCtx();
-          vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) outputObjInspector);
-          outputBatch = vrbCtx.createVectorizedRowBatch();
-          vectorColumnAssign = VectorColumnAssignFactory.buildAssigners(
-              outputBatch, outputObjInspector, vOutContext.getProjectionColumnMap(), conf.getOutputColumnNames());
+        vrbCtx = new VectorizedRowBatchCtx();
+        vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) outputObjInspector);
+        outputBatch = vrbCtx.createVectorizedRowBatch();
+        vectorAssignRowSameBatch = new VectorAssignRowSameBatch();
+        vectorAssignRowSameBatch.init((StructObjectInspector) outputObjInspector, vOutContext.getProjectedColumns());
+        vectorAssignRowSameBatch.setOneBatch(outputBatch);
       }
 
     } catch (HiveException he) {
@@ -902,12 +904,12 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     } else {
       // Output keys and aggregates into the output batch.
       for (int i = 0; i < outputKeyLength; ++i) {
-        vectorColumnAssign[fi++].assignObjectValue(keyWrappersBatch.getWritableKeyValue (
-                  kw, i, keyOutputWriters[i]), outputBatch.size);
+        vectorAssignRowSameBatch.assignRowColumn(outputBatch.size, fi++,
+                keyWrappersBatch.getWritableKeyValue (kw, i, keyOutputWriters[i]));
       }
       for (int i = 0; i < aggregators.length; ++i) {
-        vectorColumnAssign[fi++].assignObjectValue(aggregators[i].evaluateOutput(
-                  agg.getAggregationBuffer(i)), outputBatch.size);
+        vectorAssignRowSameBatch.assignRowColumn(outputBatch.size, fi++,
+                aggregators[i].evaluateOutput(agg.getAggregationBuffer(i)));
       }
       ++outputBatch.size;
       if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
@@ -927,8 +929,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       throws HiveException {
     int fi = outputKeyLength;   // Start after group keys.
     for (int i = 0; i < aggregators.length; ++i) {
-      vectorColumnAssign[fi++].assignObjectValue(aggregators[i].evaluateOutput(
-                agg.getAggregationBuffer(i)), outputBatch.size);
+      vectorAssignRowSameBatch.assignRowColumn(outputBatch.size, fi++,
+              aggregators[i].evaluateOutput(agg.getAggregationBuffer(i)));
     }
     ++outputBatch.size;
     if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {

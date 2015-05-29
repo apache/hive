@@ -371,7 +371,7 @@ public class PartitionsStatsResult implements org.apache.thrift.TBase<Partitions
                     _val341 = new ArrayList<ColumnStatisticsObj>(_list342.size);
                     for (int _i343 = 0; _i343 < _list342.size; ++_i343)
                     {
-                      ColumnStatisticsObj _elem344; // required
+                      ColumnStatisticsObj _elem344; // optional
                       _elem344 = new ColumnStatisticsObj();
                       _elem344.read(iprot);
                       _val341.add(_elem344);
@@ -469,7 +469,7 @@ public class PartitionsStatsResult implements org.apache.thrift.TBase<Partitions
             _val352 = new ArrayList<ColumnStatisticsObj>(_list353.size);
             for (int _i354 = 0; _i354 < _list353.size; ++_i354)
             {
-              ColumnStatisticsObj _elem355; // required
+              ColumnStatisticsObj _elem355; // optional
               _elem355 = new ColumnStatisticsObj();
               _elem355.read(iprot);
               _val352.add(_elem355);

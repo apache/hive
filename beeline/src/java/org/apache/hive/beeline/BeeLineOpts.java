@@ -69,6 +69,7 @@ class BeeLineOpts implements Completer {
   private boolean showWarnings = false;
   private boolean showNestedErrs = false;
   private boolean showElapsedTime = true;
+  private boolean entireLineAsCommand = false;
   private String numberFormat = "default";
   private final Terminal terminal = TerminalFactory.get();
   private int maxWidth = DEFAULT_MAX_WIDTH;
@@ -343,6 +344,14 @@ class BeeLineOpts implements Completer {
 
   public String getIsolation() {
     return isolation;
+  }
+
+  public void setEntireLineAsCommand(boolean entireLineAsCommand) {
+    this.entireLineAsCommand = entireLineAsCommand;
+  }
+
+  public boolean getEntireLineAsCommand() {
+    return entireLineAsCommand;
   }
 
   public void setHistoryFile(String historyFile) {

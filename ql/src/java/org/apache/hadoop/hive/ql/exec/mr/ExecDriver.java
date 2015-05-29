@@ -164,6 +164,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     if (StringUtils.isNotBlank(addedArchives)) {
       HiveConf.setVar(job, ConfVars.HIVEADDEDARCHIVES, addedArchives);
     }
+    Utilities.stripHivePasswordDetails(job);
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
 
@@ -461,10 +462,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           if (returnVal != 0) {
             rj.killJob();
           }
-          HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
       } catch (Exception e) {
+	LOG.warn(e);
+      } finally {
+	HadoopJobExecHelper.runningJobs.remove(rj);
       }
     }
 

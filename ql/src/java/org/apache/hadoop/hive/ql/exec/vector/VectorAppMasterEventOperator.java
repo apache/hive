@@ -23,14 +23,14 @@ import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.ObjectWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -40,14 +40,23 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
 
   private static final long serialVersionUID = 1L;
 
+  private VectorizationContext vContext;
+
+  // The above members are initialized by the constructor and must not be
+  // transient.
+  //---------------------------------------------------------------------------
+
+  private transient boolean firstBatch;
+
+  private transient VectorExtractRowDynBatch vectorExtractRowDynBatch;
+
   protected transient Object[] singleRow;
 
-  protected transient VectorExpressionWriter[] valueWriters;
-
-  public VectorAppMasterEventOperator(VectorizationContext context,
+  public VectorAppMasterEventOperator(VectorizationContext vContext,
       OperatorDesc conf) {
     super();
     this.conf = (AppMasterEventDesc) conf;
+    this.vContext = vContext;
   }
 
   public VectorAppMasterEventOperator() {
@@ -55,70 +64,76 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
 
   @Override
   public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+
+    // We need a input object inspector that is for the row we will extract out of the
+    // vectorized row batch, not for example, an original inspector for an ORC table, etc.
+    inputObjInspectors[0] =
+        VectorizedBatchUtil.convertToStandardStructObjectInspector((StructObjectInspector) inputObjInspectors[0]);
+
+    // Call AppMasterEventOperator with new input inspector.
     Collection<Future<?>> result = super.initializeOp(hconf);
-    valueWriters = VectorExpressionWriterFactory.getExpressionWriters(
-        (StructObjectInspector) inputObjInspectors[0]);
-    singleRow = new Object[valueWriters.length];
+    assert result.isEmpty();
+
+    firstBatch = true;
+
     return result;
   }
 
   @Override
   public void process(Object data, int tag) throws HiveException {
 
-    VectorizedRowBatch vrg = (VectorizedRowBatch) data;
+    if (hasReachedMaxSize) {
+      return;
+    }
 
-    Writable [] records = null;
-    Writable recordValue = null;
-    boolean vectorizedSerde = false;
+    VectorizedRowBatch batch = (VectorizedRowBatch) data;
+    if (firstBatch) {
+      vectorExtractRowDynBatch = new VectorExtractRowDynBatch();
+      vectorExtractRowDynBatch.init((StructObjectInspector) inputObjInspectors[0], vContext.getProjectedColumns());
 
+      singleRow = new Object[vectorExtractRowDynBatch.getCount()];
+
+      firstBatch = false;
+    }
+
+    vectorExtractRowDynBatch.setBatchOnEntry(batch);
+
+    ObjectInspector rowInspector = inputObjInspectors[0];
     try {
-      if (serializer instanceof VectorizedSerde) {
-        recordValue = ((VectorizedSerde) serializer).serializeVector(vrg,
-            inputObjInspectors[0]);
-        records = (Writable[]) ((ObjectWritable) recordValue).get();
-        vectorizedSerde = true;
-      }
-    } catch (SerDeException e1) {
-      throw new HiveException(e1);
-    }
-
-    for (int i = 0; i < vrg.size; i++) {
-      Writable row = null;
-      if (vectorizedSerde) {
-        row = records[i];
+      Writable writableRow;
+      if (batch.selectedInUse) {
+        int selected[] = batch.selected;
+        for (int logical = 0 ; logical < batch.size; logical++) {
+          int batchIndex = selected[logical];
+          vectorExtractRowDynBatch.extractRow(batchIndex, singleRow);
+          writableRow = serializer.serialize(singleRow, rowInspector);
+          writableRow.write(buffer);
+          if (buffer.getLength() > MAX_SIZE) {
+            LOG.info("Disabling AM events. Buffer size too large: " + buffer.getLength());
+            hasReachedMaxSize = true;
+            buffer = null;
+            break;
+          }
+        }
       } else {
-        if (vrg.valueWriters == null) {
-          vrg.setValueWriters(this.valueWriters);
-        }
-        try {
-          row = serializer.serialize(getRowObject(vrg, i), inputObjInspectors[0]);
-        } catch (SerDeException ex) {
-          throw new HiveException(ex);
+        for (int batchIndex = 0 ; batchIndex < batch.size; batchIndex++) {
+          vectorExtractRowDynBatch.extractRow(batchIndex, singleRow);
+          writableRow = serializer.serialize(singleRow, rowInspector);
+          writableRow.write(buffer);
+          if (buffer.getLength() > MAX_SIZE) {
+            LOG.info("Disabling AM events. Buffer size too large: " + buffer.getLength());
+            hasReachedMaxSize = true;
+            buffer = null;
+            break;
+          }
         }
       }
-      try {
-        row.write(buffer);
-        if (buffer.getLength() > MAX_SIZE) {
-          LOG.info("Disabling AM events. Buffer size too large: " + buffer.getLength());
-          hasReachedMaxSize = true;
-          buffer = null;
-        }
-      } catch (Exception e) {
-        throw new HiveException(e);
-      }
+    } catch (Exception e) {
+      throw new HiveException(e);
     }
-  }
 
-  private Object[] getRowObject(VectorizedRowBatch vrg, int rowIndex)
-      throws HiveException {
-    int batchIndex = rowIndex;
-    if (vrg.selectedInUse) {
-      batchIndex = vrg.selected[rowIndex];
-    }
-    for (int i = 0; i < vrg.projectionSize; i++) {
-      ColumnVector vectorColumn = vrg.cols[vrg.projectedColumns[i]];
-      singleRow[i] = vrg.valueWriters[i].writeValue(vectorColumn, batchIndex);
-    }
-    return singleRow;
+    forward(data, rowInspector);
+
+    vectorExtractRowDynBatch.forgetBatchOnExit();
   }
 }

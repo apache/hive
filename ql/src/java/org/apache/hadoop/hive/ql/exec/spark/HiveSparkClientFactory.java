@@ -117,6 +117,9 @@ public class HiveSparkClientFactory {
     if (sparkMaster.equals("yarn-cluster")) {
       sparkConf.put("spark.yarn.maxAppAttempts", "1");
     }
+    if (sparkMaster.equals("yarn-cluster")) {
+      sparkConf.put("spark.yarn.maxAppAttempts", "1");
+    }
     for (Map.Entry<String, String> entry : hiveConf) {
       String propertyName = entry.getKey();
       if (propertyName.startsWith("spark")) {

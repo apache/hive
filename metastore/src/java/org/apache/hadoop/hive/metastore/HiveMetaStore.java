@@ -55,6 +55,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -198,6 +199,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
@@ -259,7 +261,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   /**
    * default port on which to start the Hive server
    */
-  private static final int DEFAULT_HIVE_METASTORE_PORT = 9083;
   public static final String ADMIN = "admin";
   public static final String PUBLIC = "public";
 
@@ -1479,6 +1480,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Path tblPath = null;
       List<Path> partPaths = null;
       Table tbl = null;
+      boolean ifPurge = false;
       try {
         ms.openTransaction();
         // drop any partitions
@@ -1489,6 +1491,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
+
+        /**
+         * Trash may be skipped iff:
+         * 1. deleteData == true, obviously.
+         * 2. tbl is external.
+         * 3. Either
+         *  3.1. User has specified PURGE from the commandline, and if not,
+         *  3.2. User has set the table to auto-purge.
+         */
+        ifPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+          || (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
 
         firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
@@ -1522,6 +1535,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
 
+        // tblPath will be null when tbl is a view. We skip the following if block in that case.
+        if(tblPath != null && !ifPurge) {
+          String trashInterval = hiveConf.get("fs.trash.interval");
+          boolean trashEnabled = trashInterval != null && trashInterval.length() > 0
+            && Float.parseFloat(trashInterval) > 0;
+          if (trashEnabled) {
+            HadoopShims.HdfsEncryptionShim shim =
+              ShimLoader.getHadoopShims().createHdfsEncryptionShim(FileSystem.get(hiveConf), hiveConf);
+            if (shim.isPathEncrypted(tblPath)) {
+              throw new MetaException("Unable to drop table because it is in an encryption zone" +
+                " and trash is enabled.  Use PURGE option to skip trash.");
+            }
+          }
+        }
         // Drop the partitions and get a list of locations which need to be deleted
         partPaths = dropPartitionsAndGetLocations(ms, dbname, name, tblPath,
             tbl.getPartitionKeys(), deleteData && !isExternal);
@@ -1537,15 +1564,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal) {
           // Data needs deletion. Check if trash may be skipped.
-          // Trash may be skipped iff:
-          //  1. deleteData == true, obviously.
-          //  2. tbl is external.
-          //  3. Either
-          //    3.1. User has specified PURGE from the commandline, and if not,
-          //    3.2. User has set the table to auto-purge.
-          boolean ifPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
-                            ||
-                             (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge);
           // Delete the data in the table
@@ -2025,8 +2043,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!p1.isSetValues() || !p2.isSetValues()) return p1.isSetValues() == p2.isSetValues();
         if (p1.getValues().size() != p2.getValues().size()) return false;
         for (int i = 0; i < p1.getValues().size(); ++i) {
-          String v1 = p1.getValues().get(i), v2 = p2.getValues().get(i);
-          if ((v1 == null && v2 != null) || !v1.equals(v2)) return false;
+          String v1 = p1.getValues().get(i);
+          String v2 = p2.getValues().get(i);
+          if (v1 == null && v2 == null) {
+            continue;
+          }
+          if (v1 == null || !v1.equals(v2)) {
+            return false;
+          }
         }
         return true;
       }
@@ -5775,18 +5799,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *
    */
   static public class HiveMetastoreCli extends CommonCliOptions {
-    int port = DEFAULT_HIVE_METASTORE_PORT;
+    private int port;
 
     @SuppressWarnings("static-access")
-    public HiveMetastoreCli() {
+    public HiveMetastoreCli(Configuration configuration) {
       super("hivemetastore", true);
+      this.port = HiveConf.getIntVar(configuration, HiveConf.ConfVars.METASTORE_SERVER_PORT);
 
       // -p port
       OPTIONS.addOption(OptionBuilder
           .hasArg()
           .withArgName("port")
           .withDescription("Hive Metastore port number, default:"
-              + DEFAULT_HIVE_METASTORE_PORT)
+              + this.port)
           .create('p'));
 
     }
@@ -5803,20 +5828,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             "This usage has been deprecated, consider using the new command "
                 + "line syntax (run with -h to see usage information)");
 
-        port = new Integer(args[0]);
+        this.port = new Integer(args[0]);
       }
 
       // notice that command line options take precedence over the
       // deprecated (old style) naked args...
+
       if (commandLine.hasOption('p')) {
-        port = Integer.parseInt(commandLine.getOptionValue('p'));
+        this.port = Integer.parseInt(commandLine.getOptionValue('p'));
       } else {
         // legacy handling
         String metastorePort = System.getenv("METASTORE_PORT");
         if (metastorePort != null) {
-          port = Integer.parseInt(metastorePort);
+          this.port = Integer.parseInt(metastorePort);
         }
       }
+    }
+
+    public int getPort() {
+      return this.port;
     }
   }
 
@@ -5825,7 +5855,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void main(String[] args) throws Throwable {
     HiveConf.setLoadMetastoreConfig(true);
-    HiveMetastoreCli cli = new HiveMetastoreCli();
+    HiveConf conf = new HiveConf(HMSHandler.class);
+
+    HiveMetastoreCli cli = new HiveMetastoreCli(conf);
     cli.parse(args);
     final boolean isCliVerbose = cli.isVerbose();
     // NOTE: It is critical to do this prior to initializing log4j, otherwise
@@ -5851,7 +5883,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         System.err.println(msg);
       }
 
-      HiveConf conf = new HiveConf(HMSHandler.class);
 
       // set all properties specified on the command line
       for (Map.Entry<Object, Object> item : hiveconf.entrySet()) {
@@ -5870,11 +5901,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       });
 
+
       Lock startLock = new ReentrantLock();
       Condition startCondition = startLock.newCondition();
       AtomicBoolean startedServing = new AtomicBoolean();
       startMetaStoreThreads(conf, startLock, startCondition, startedServing);
-      startMetaStore(cli.port, ShimLoader.getHadoopThriftAuthBridge(), conf, startLock,
+      startMetaStore(cli.getPort(), ShimLoader.getHadoopThriftAuthBridge(), conf, startLock,
           startCondition, startedServing);
     } catch (Throwable t) {
       // Catch the exception, log it and rethrow it.
@@ -6059,11 +6091,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // Wrap the start of the threads in a catch Throwable loop so that any failures
         // don't doom the rest of the metastore.
         startLock.lock();
-        try {
-          startPauseMonitor(conf);
-        } catch (Throwable t) {
-          LOG.warn("Error starting the JVM pause monitor", t);
-        }
+        ShimLoader.getHadoopShims().startPauseMonitor(conf);
+
         try {
           // Per the javadocs on Condition, do not depend on the condition alone as a start gate
           // since spurious wake ups are possible.
@@ -6081,18 +6110,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     };
 
     t.start();
-  }
-
-  private static void startPauseMonitor(HiveConf conf) throws Exception {
-    try {
-      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
-      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor =
-        new org.apache.hadoop.util.JvmPauseMonitor(conf);
-      pauseMonitor.start();
-    } catch (Throwable t) {
-      LOG.warn("Could not initiate the JvmPauseMonitor thread." +
-               " GCs and Pauses may not be warned upon.", t);
-    }
   }
 
   private static void startCompactorInitiator(HiveConf conf) throws Exception {

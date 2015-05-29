@@ -164,6 +164,8 @@ class InternalUtil {
       MetaStoreUtils.getColumnNamesFromFieldSchema(fields));
     props.setProperty(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
       MetaStoreUtils.getColumnTypesFromFieldSchema(fields));
+    props.setProperty("columns.comments",
+      MetaStoreUtils.getColumnCommentsFromFieldSchema(fields));
 
     // setting these props to match LazySimpleSerde
     props.setProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FORMAT, "\\N");

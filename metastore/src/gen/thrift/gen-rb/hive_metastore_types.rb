@@ -977,6 +977,47 @@ class DecimalColumnStatsData
   ::Thrift::Struct.generate_accessors self
 end
 
+class Date
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DAYSSINCEEPOCH = 1
+
+  FIELDS = {
+    DAYSSINCEEPOCH => {:type => ::Thrift::Types::I64, :name => 'daysSinceEpoch'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field daysSinceEpoch is unset!') unless @daysSinceEpoch
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DateColumnStatsData
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  LOWVALUE = 1
+  HIGHVALUE = 2
+  NUMNULLS = 3
+  NUMDVS = 4
+
+  FIELDS = {
+    LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Date, :optional => true},
+    HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Date, :optional => true},
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numDVs is unset!') unless @numDVs
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class ColumnStatisticsData < ::Thrift::Union
   include ::Thrift::Struct_Union
   class << self
@@ -1003,6 +1044,10 @@ class ColumnStatisticsData < ::Thrift::Union
     def decimalStats(val)
       ColumnStatisticsData.new(:decimalStats, val)
     end
+
+    def dateStats(val)
+      ColumnStatisticsData.new(:dateStats, val)
+    end
   end
 
   BOOLEANSTATS = 1
@@ -1011,6 +1056,7 @@ class ColumnStatisticsData < ::Thrift::Union
   STRINGSTATS = 4
   BINARYSTATS = 5
   DECIMALSTATS = 6
+  DATESTATS = 7
 
   FIELDS = {
     BOOLEANSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'booleanStats', :class => ::BooleanColumnStatsData},
@@ -1018,7 +1064,8 @@ class ColumnStatisticsData < ::Thrift::Union
     DOUBLESTATS => {:type => ::Thrift::Types::STRUCT, :name => 'doubleStats', :class => ::DoubleColumnStatsData},
     STRINGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'stringStats', :class => ::StringColumnStatsData},
     BINARYSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'binaryStats', :class => ::BinaryColumnStatsData},
-    DECIMALSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'decimalStats', :class => ::DecimalColumnStatsData}
+    DECIMALSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'decimalStats', :class => ::DecimalColumnStatsData},
+    DATESTATS => {:type => ::Thrift::Types::STRUCT, :name => 'dateStats', :class => ::DateColumnStatsData}
   }
 
   def struct_fields; FIELDS; end

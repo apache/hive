@@ -618,7 +618,7 @@ public class Type implements org.apache.thrift.TBase<Type, Type._Fields>, java.i
                 struct.fields = new ArrayList<FieldSchema>(_list0.size);
                 for (int _i1 = 0; _i1 < _list0.size; ++_i1)
                 {
-                  FieldSchema _elem2; // required
+                  FieldSchema _elem2; // optional
                   _elem2 = new FieldSchema();
                   _elem2.read(iprot);
                   struct.fields.add(_elem2);
@@ -749,7 +749,7 @@ public class Type implements org.apache.thrift.TBase<Type, Type._Fields>, java.i
           struct.fields = new ArrayList<FieldSchema>(_list5.size);
           for (int _i6 = 0; _i6 < _list5.size; ++_i6)
           {
-            FieldSchema _elem7; // required
+            FieldSchema _elem7; // optional
             _elem7 = new FieldSchema();
             _elem7.read(iprot);
             struct.fields.add(_elem7);

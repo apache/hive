@@ -46,6 +46,7 @@ select count(*) from alter_coltype where ts = 3.0;
 select count(*) from alter_coltype where dt = '100';
 
 desc alter_coltype;
+set hive.typecheck.on.insert=false;
 desc alter_coltype partition (dt='100', ts='6.30');
 desc alter_coltype partition (dt='100', ts=3.0);
 

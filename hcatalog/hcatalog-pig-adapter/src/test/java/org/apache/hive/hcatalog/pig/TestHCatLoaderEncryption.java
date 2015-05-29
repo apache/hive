@@ -194,7 +194,8 @@ public class TestHCatLoaderEncryption {
     SessionState.get().out = System.out;
 
     createTable(BASIC_TABLE, "a int, b string");
-    createTableInSpecifiedPath(ENCRYPTED_TABLE, "a int, b string", encryptedTablePath, driver);
+    createTableInSpecifiedPath(ENCRYPTED_TABLE, "a int, b string",
+      WindowsPathUtil.getHdfsUriString(encryptedTablePath), driver);
 
     associateEncryptionZoneWithPath(encryptedTablePath);
 

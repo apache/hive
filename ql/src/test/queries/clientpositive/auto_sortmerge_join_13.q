@@ -42,6 +42,8 @@ select * from dest2;
 
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=200;
+set hive.mapjoin.hybridgrace.minwbsize=100;
+set hive.mapjoin.hybridgrace.minnumpartitions=2;
 
 -- A SMB join followed by a mutli-insert
 explain 

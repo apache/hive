@@ -1,0 +1,127 @@
+PREHOOK: query: create table tab_date (
+  origin_city_name string,
+  dest_city_name string,
+  fl_date date,
+  arr_delay float,
+  fl_num int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_date
+POSTHOOK: query: create table tab_date (
+  origin_city_name string,
+  dest_city_name string,
+  fl_date date,
+  arr_delay float,
+  fl_num int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_date
+PREHOOK: query: -- insert some data
+load data local inpath '../../data/files/flights_join.txt' overwrite into table tab_date
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tab_date
+POSTHOOK: query: -- insert some data
+load data local inpath '../../data/files/flights_join.txt' overwrite into table tab_date
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tab_date
+PREHOOK: query: select count(*) from tab_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tab_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_date
+#### A masked pattern was here ####
+20
+PREHOOK: query: -- compute statistical summary of data
+select compute_stats(fl_date, 16) from tab_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_date
+#### A masked pattern was here ####
+POSTHOOK: query: -- compute statistical summary of data
+select compute_stats(fl_date, 16) from tab_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_date
+#### A masked pattern was here ####
+{"columntype":"Date","min":"2000-11-20","max":"2010-10-29","countnulls":0,"numdistinctvalues":18}
+PREHOOK: query: explain
+analyze table tab_date compute statistics for columns fl_date
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+analyze table tab_date compute statistics for columns fl_date
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: tab_date
+            Select Operator
+              expressions: fl_date (type: date)
+              outputColumnNames: fl_date
+              Group By Operator
+                aggregations: compute_stats(fl_date, 16)
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  value expressions: _col0 (type: struct<columntype:string,min:date,max:date,countnulls:bigint,bitvector:string,numbitvectors:int>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-1
+    Column Stats Work
+      Column Stats Desc:
+          Columns: fl_date
+          Column Types: date
+          Table: default.tab_date
+
+PREHOOK: query: analyze table tab_date compute statistics for columns fl_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_date
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table tab_date compute statistics for columns fl_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_date
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted tab_date fl_date
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tab_date
+POSTHOOK: query: describe formatted tab_date fl_date
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tab_date
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+fl_date             	date                	2000-11-20          	2010-10-29          	0                   	18                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: -- Update stats manually. Try both yyyy-mm-dd and integer value for high/low value
+alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: -- Update stats manually. Try both yyyy-mm-dd and integer value for high/low value
+alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: describe formatted tab_date fl_date
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tab_date
+POSTHOOK: query: describe formatted tab_date fl_date
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tab_date
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+fl_date             	date                	1970-01-01          	2015-01-01          	0                   	19                  	                    	                    	                    	                    	from deserializer   

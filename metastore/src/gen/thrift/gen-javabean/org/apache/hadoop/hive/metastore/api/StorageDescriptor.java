@@ -216,17 +216,17 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   {
     this();
     this.cols = cols;
-    this.location = org.apache.hive.common.util.HiveStringUtils.intern(location);
-    this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(inputFormat);
-    this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(outputFormat);
+    this.location = location;
+    this.inputFormat = inputFormat;
+    this.outputFormat = outputFormat;
     this.compressed = compressed;
     setCompressedIsSet(true);
     this.numBuckets = numBuckets;
     setNumBucketsIsSet(true);
     this.serdeInfo = serdeInfo;
-    this.bucketCols = org.apache.hive.common.util.HiveStringUtils.intern(bucketCols);
+    this.bucketCols = bucketCols;
     this.sortCols = sortCols;
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = parameters;
   }
 
   /**
@@ -242,13 +242,13 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       this.cols = __this__cols;
     }
     if (other.isSetLocation()) {
-      this.location = org.apache.hive.common.util.HiveStringUtils.intern(other.location);
+      this.location = other.location;
     }
     if (other.isSetInputFormat()) {
-      this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(other.inputFormat);
+      this.inputFormat = other.inputFormat;
     }
     if (other.isSetOutputFormat()) {
-      this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(other.outputFormat);
+      this.outputFormat = other.outputFormat;
     }
     this.compressed = other.compressed;
     this.numBuckets = other.numBuckets;
@@ -276,9 +276,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
         String other_element_key = other_element.getKey();
         String other_element_value = other_element.getValue();
 
-        String __this__parameters_copy_key = org.apache.hive.common.util.HiveStringUtils.intern(other_element_key);
+        String __this__parameters_copy_key = other_element_key;
 
-        String __this__parameters_copy_value = org.apache.hive.common.util.HiveStringUtils.intern(other_element_value);
+        String __this__parameters_copy_value = other_element_value;
 
         __this__parameters.put(__this__parameters_copy_key, __this__parameters_copy_value);
       }
@@ -356,7 +356,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setLocation(String location) {
-    this.location = org.apache.hive.common.util.HiveStringUtils.intern(location);
+    this.location = location;
   }
 
   public void unsetLocation() {
@@ -379,7 +379,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setInputFormat(String inputFormat) {
-    this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(inputFormat);
+    this.inputFormat = inputFormat;
   }
 
   public void unsetInputFormat() {
@@ -402,7 +402,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setOutputFormat(String outputFormat) {
-    this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(outputFormat);
+    this.outputFormat = outputFormat;
   }
 
   public void unsetOutputFormat() {
@@ -507,7 +507,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setBucketCols(List<String> bucketCols) {
-    this.bucketCols = org.apache.hive.common.util.HiveStringUtils.intern(bucketCols);
+    this.bucketCols = bucketCols;
   }
 
   public void unsetBucketCols() {
@@ -579,7 +579,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setParameters(Map<String,String> parameters) {
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = parameters;
   }
 
   public void unsetParameters() {
@@ -1304,7 +1304,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
                 struct.cols = new ArrayList<FieldSchema>(_list156.size);
                 for (int _i157 = 0; _i157 < _list156.size; ++_i157)
                 {
-                  FieldSchema _elem158; // required
+                  FieldSchema _elem158; // optional
                   _elem158 = new FieldSchema();
                   _elem158.read(iprot);
                   struct.cols.add(_elem158);
@@ -1372,7 +1372,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
                 struct.bucketCols = new ArrayList<String>(_list159.size);
                 for (int _i160 = 0; _i160 < _list159.size; ++_i160)
                 {
-                  String _elem161; // required
+                  String _elem161; // optional
                   _elem161 = iprot.readString();
                   struct.bucketCols.add(_elem161);
                 }
@@ -1390,7 +1390,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
                 struct.sortCols = new ArrayList<Order>(_list162.size);
                 for (int _i163 = 0; _i163 < _list162.size; ++_i163)
                 {
-                  Order _elem164; // required
+                  Order _elem164; // optional
                   _elem164 = new Order();
                   _elem164.read(iprot);
                   struct.sortCols.add(_elem164);
@@ -1667,7 +1667,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           struct.cols = new ArrayList<FieldSchema>(_list177.size);
           for (int _i178 = 0; _i178 < _list177.size; ++_i178)
           {
-            FieldSchema _elem179; // required
+            FieldSchema _elem179; // optional
             _elem179 = new FieldSchema();
             _elem179.read(iprot);
             struct.cols.add(_elem179);
@@ -1706,7 +1706,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           struct.bucketCols = new ArrayList<String>(_list180.size);
           for (int _i181 = 0; _i181 < _list180.size; ++_i181)
           {
-            String _elem182; // required
+            String _elem182; // optional
             _elem182 = iprot.readString();
             struct.bucketCols.add(_elem182);
           }
@@ -1719,7 +1719,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           struct.sortCols = new ArrayList<Order>(_list183.size);
           for (int _i184 = 0; _i184 < _list183.size; ++_i184)
           {
-            Order _elem185; // required
+            Order _elem185; // optional
             _elem185 = new Order();
             _elem185.read(iprot);
             struct.sortCols.add(_elem185);

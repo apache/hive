@@ -119,7 +119,7 @@ public class OutputJobInfo implements Serializable {
     Collections.sort(posOfPartCols, new Comparator<Integer>() {
       @Override
       public int compare(Integer earlier, Integer later) {
-        return (earlier > later) ? -1 : ((earlier == later) ? 0 : 1);
+        return later.compareTo(earlier);
       }
     });
     this.posOfPartCols = posOfPartCols;

@@ -495,7 +495,10 @@ public class MatchPath extends TableFunctionEvaluator
         rowResult = symbolFn.match(row, pItr);
       }
 
-      result.nextRow = pItr.getIndex() - 1;
+      result.nextRow = pItr.getIndex();
+      if(pItr.hasNext()) {
+        result.nextRow -= 1;
+      }
       return result;
     }
 

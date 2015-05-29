@@ -69,7 +69,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
   @Override
   public void load(MapJoinTableContainer[] mapJoinTables,
-      MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage)
+      MapJoinTableContainerSerDe[] mapJoinTableSerdes)
       throws HiveException {
 
     // Note: it's possible that a MJ operator is in a ReduceWork, in which case the

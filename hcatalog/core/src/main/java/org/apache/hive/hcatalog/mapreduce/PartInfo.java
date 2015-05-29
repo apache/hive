@@ -18,27 +18,32 @@
  */
 package org.apache.hive.hcatalog.mapreduce;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** The Class used to serialize the partition information read from the metadata server that maps to a partition. */
 public class PartInfo implements Serializable {
 
+  private static Logger LOG = LoggerFactory.getLogger(PartInfo.class);
   /** The serialization version */
   private static final long serialVersionUID = 1L;
 
-  /** The partition schema. */
-  private final HCatSchema partitionSchema;
+  /** The partition data-schema. */
+  private HCatSchema partitionSchema;
 
   /** The information about which input storage handler to use */
-  private final String storageHandlerClassName;
-  private final String inputFormatClassName;
-  private final String outputFormatClassName;
-  private final String serdeClassName;
+  private String storageHandlerClassName;
+  private String inputFormatClassName;
+  private String outputFormatClassName;
+  private String serdeClassName;
 
   /** HCat-specific properties set at the partition */
   private final Properties hcatProperties;
@@ -52,8 +57,11 @@ public class PartInfo implements Serializable {
   /** Job properties associated with this parition */
   Map<String, String> jobProperties;
 
-  /** the table info associated with this partition */
-  HCatTableInfo tableInfo;
+  /**
+   * The table info associated with this partition.
+   * Not serialized per PartInfo instance. Constant, per table.
+   */
+  transient HCatTableInfo tableInfo;
 
   /**
    * Instantiates a new hcat partition info.
@@ -161,5 +169,98 @@ public class PartInfo implements Serializable {
    */
   public HCatTableInfo getTableInfo() {
     return tableInfo;
+  }
+
+  void setTableInfo(HCatTableInfo thatTableInfo) {
+    this.tableInfo = thatTableInfo;
+
+    if (partitionSchema == null) {
+      partitionSchema = tableInfo.getDataColumns();
+    }
+
+    if (storageHandlerClassName == null) {
+      storageHandlerClassName = tableInfo.getStorerInfo().getStorageHandlerClass();
+    }
+
+    if (inputFormatClassName == null) {
+      inputFormatClassName = tableInfo.getStorerInfo().getIfClass();
+    }
+
+    if (outputFormatClassName == null) {
+      outputFormatClassName = tableInfo.getStorerInfo().getOfClass();
+    }
+
+    if (serdeClassName == null) {
+      serdeClassName = tableInfo.getStorerInfo().getSerdeClass();
+    }
+  }
+
+  /**
+   * Serialization method. Suppresses serialization of redundant information that's already
+   * available from TableInfo.
+   */
+  private void writeObject(ObjectOutputStream oos)
+      throws IOException {
+    // Suppress commonality with TableInfo.
+
+    assert tableInfo != null : "TableInfo can't be null at this point.";
+
+    if (partitionSchema != null) {
+      if (partitionSchema.equals(tableInfo.getDataColumns())) {
+        partitionSchema = null;
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Can't suppress data-schema. Partition-schema and table-schema seem to differ! "
+              + " partitionSchema: " + partitionSchema.getFields()
+              + " tableSchema: " + tableInfo.getDataColumns());
+        }
+      }
+    }
+
+    if (storageHandlerClassName != null) {
+      if (storageHandlerClassName.equals(tableInfo.getStorerInfo().getStorageHandlerClass())) {
+        storageHandlerClassName = null;
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Partition's storageHandler (" + storageHandlerClassName + ") " +
+              "differs from table's storageHandler (" + tableInfo.getStorerInfo().getStorageHandlerClass() + ").");
+        }
+      }
+    }
+
+    if (inputFormatClassName != null) {
+      if (inputFormatClassName.equals(tableInfo.getStorerInfo().getIfClass())) {
+        inputFormatClassName = null;
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Partition's InputFormat (" + inputFormatClassName + ") " +
+              "differs from table's InputFormat (" + tableInfo.getStorerInfo().getIfClass() + ").");
+        }
+      }
+    }
+
+    if (outputFormatClassName != null) {
+      if (outputFormatClassName.equals(tableInfo.getStorerInfo().getOfClass())) {
+        outputFormatClassName = null;
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Partition's OutputFormat (" + outputFormatClassName + ") " +
+              "differs from table's OutputFormat (" + tableInfo.getStorerInfo().getOfClass() + ").");
+        }
+      }
+    }
+
+    if (serdeClassName != null) {
+      if (serdeClassName.equals(tableInfo.getStorerInfo().getSerdeClass())) {
+        serdeClassName = null;
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Partition's SerDe (" + serdeClassName + ") " +
+              "differs from table's SerDe (" + tableInfo.getStorerInfo().getSerdeClass() + ").");
+        }
+      }
+    }
+
+    oos.defaultWriteObject();
   }
 }

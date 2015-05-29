@@ -92,7 +92,7 @@ public class TestGenericUDFNextDay extends TestCase {
       assertTrue("UDFArgumentException expected", false);
     } catch (UDFArgumentException e) {
       assertEquals(
-          "next_day only takes STRING_GROUP, DATE_GROUP types as 1st argument, got LONG",
+          "next_day only takes STRING_GROUP, DATE_GROUP, VOID_GROUP types as 1st argument, got LONG",
           e.getMessage());
     }
   }
@@ -108,7 +108,7 @@ public class TestGenericUDFNextDay extends TestCase {
       udf.initialize(arguments);
       assertTrue("UDFArgumentException expected", false);
     } catch (UDFArgumentException e) {
-      assertEquals("next_day only takes STRING_GROUP types as 2nd argument, got INT",
+      assertEquals("next_day only takes STRING_GROUP, VOID_GROUP types as 2nd argument, got INT",
           e.getMessage());
     }
   }

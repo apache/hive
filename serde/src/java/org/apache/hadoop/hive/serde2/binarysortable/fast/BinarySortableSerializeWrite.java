@@ -85,12 +85,21 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
   }
 
   /*
-   * Set the buffer that will receive the serialized data.
+   * Set the buffer that will receive the serialized data.  The output buffer will be reset.
    */
   @Override
   public void set(Output output) {
     this.output = output;
     this.output.reset();
+    index = -1;
+  }
+
+  /*
+   * Set the buffer that will receive the serialized data.  The output buffer will NOT be reset.
+   */
+  @Override
+  public void setAppend(Output output) {
+    this.output = output;
     index = -1;
   }
 
@@ -147,8 +156,7 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     // This field is not a null.
     BinarySortableSerDe.writeByte(output, (byte) 1, invert);
 
-    BinarySortableSerDe.writeByte(output, (byte) ((v >> 8) ^ 0x80), invert);
-    BinarySortableSerDe.writeByte(output, (byte) v, invert);
+    BinarySortableSerDe.serializeShort(output, v, invert);
   }
 
   /*
@@ -174,15 +182,7 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     // This field is not a null.
     BinarySortableSerDe.writeByte(output, (byte) 1, invert);
 
-    BinarySortableSerDe.writeByte(output, (byte) ((v >> 56) ^ 0x80), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 48), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 40), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 32), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 24), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 16), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 8), invert);
-    BinarySortableSerDe.writeByte(output, (byte) v, invert);
-
+    BinarySortableSerDe.serializeLong(output, v, invert);
   }
 
   /*
@@ -195,18 +195,7 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     // This field is not a null.
     BinarySortableSerDe.writeByte(output, (byte) 1, invert);
 
-    int v = Float.floatToIntBits(vf);
-    if ((v & (1 << 31)) != 0) {
-      // negative number, flip all bits
-      v = ~v;
-    } else {
-      // positive number, flip the first bit
-      v = v ^ (1 << 31);
-    }
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 24), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 16), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 8), invert);
-    BinarySortableSerDe.writeByte(output, (byte) v, invert);
+    BinarySortableSerDe.serializeFloat(output, vf, invert);
   }
 
   /*
@@ -219,22 +208,7 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     // This field is not a null.
     BinarySortableSerDe.writeByte(output, (byte) 1, invert);
 
-    long v = Double.doubleToLongBits(vd);
-    if ((v & (1L << 63)) != 0) {
-      // negative number, flip all bits
-      v = ~v;
-    } else {
-      // positive number, flip the first bit
-      v = v ^ (1L << 63);
-    }
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 56), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 48), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 40), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 32), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 24), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 16), invert);
-    BinarySortableSerDe.writeByte(output, (byte) (v >> 8), invert);
-    BinarySortableSerDe.writeByte(output, (byte) v, invert);
+    BinarySortableSerDe.serializeDouble(output, vd, invert);
   }
 
   /*
@@ -341,10 +315,7 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     BinarySortableSerDe.writeByte(output, (byte) 1, invert);
 
     tempTimestampWritable.set(vt);
-    byte[] data = tempTimestampWritable.getBinarySortable();
-    for (int i = 0; i < data.length; i++) {
-      BinarySortableSerDe.writeByte(output, data[i], invert);
-    }
+    BinarySortableSerDe.serializeTimestampWritable(output, tempTimestampWritable, invert);
   }
 
   /*
@@ -357,8 +328,7 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     // This field is not a null.
     BinarySortableSerDe.writeByte(output, (byte) 1, invert);
 
-    int totalMonths = viyt.getTotalMonths();
-    BinarySortableSerDe.serializeInt(output, totalMonths, invert);
+    BinarySortableSerDe.serializeHiveIntervalYearMonth(output, viyt, invert);
   }
 
   @Override
@@ -381,10 +351,7 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     // This field is not a null.
     BinarySortableSerDe.writeByte(output, (byte) 1, invert);
 
-    long totalSecs = vidt.getTotalSeconds();
-    int nanos = vidt.getNanos();
-    BinarySortableSerDe.serializeLong(output, totalSecs, invert);
-    BinarySortableSerDe.serializeInt(output, nanos, invert);
+    BinarySortableSerDe.serializeHiveIntervalDayTime(output, vidt, invert);
   }
 
   @Override
@@ -410,39 +377,6 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     // This field is not a null.
     BinarySortableSerDe.writeByte(output, (byte) 1, invert);
 
-    // decimals are encoded in three pieces:
-    // sign: 1, 2 or 3 for smaller, equal or larger than 0 respectively
-    // factor: Number that indicates the amount of digits you have to move
-    // the decimal point left or right until the resulting number is smaller
-    // than zero but has something other than 0 as the first digit.
-    // digits: which is a string of all the digits in the decimal. If the number
-    // is negative the binary string will be inverted to get the correct ordering.
-    // Example: 0.00123
-    // Sign is 3 (bigger than 0)
-    // Factor is -2 (move decimal point 2 positions right)
-    // Digits are: 123
-
-    // get the sign of the big decimal
-    int sign = dec.compareTo(HiveDecimal.ZERO);
-
-    // we'll encode the absolute value (sign is separate)
-    dec = dec.abs();
-
-    // get the scale factor to turn big decimal into a decimal < 1
-    int factor = dec.precision() - dec.scale();
-    factor = sign == 1 ? factor : -factor;
-
-    // convert the absolute big decimal to string
-    dec.scaleByPowerOfTen(Math.abs(dec.scale()));
-    String digits = dec.unscaledValue().toString();
-
-    // finally write out the pieces (sign, scale, digits)
-    BinarySortableSerDe.writeByte(output, (byte) ( sign + 1), invert);
-    BinarySortableSerDe.writeByte(output, (byte) ((factor >> 24) ^ 0x80), invert);
-    BinarySortableSerDe.writeByte(output, (byte) ( factor >> 16), invert);
-    BinarySortableSerDe.writeByte(output, (byte) ( factor >> 8), invert);
-    BinarySortableSerDe.writeByte(output, (byte)   factor, invert);
-    BinarySortableSerDe.serializeBytes(output, digits.getBytes(BinarySortableSerDe.decimalCharSet),
-        digits.length(), sign == -1 ? !invert : invert);
+    BinarySortableSerDe.serializeHiveDecimal(output, dec, invert);
   }
 }

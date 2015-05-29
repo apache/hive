@@ -109,6 +109,13 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
+          List<String> outputColumnNames, final boolean noOuterJoin,
+          final JoinCondDesc[] conds, ExprNodeDesc[][] joinKeys) {
+    this (exprs, outputColumnNames, noOuterJoin, conds,
+            new HashMap<Byte, List<ExprNodeDesc>>(), joinKeys);
+  }
+
+  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final boolean noOuterJoin,
       final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters,
       ExprNodeDesc[][] joinKeys) {
@@ -536,6 +543,10 @@ public class JoinDesc extends AbstractOperatorDesc {
     return baseSrc;
   }
 
+  public void setBaseSrc(String[] baseSrc) {
+    this.baseSrc = baseSrc;
+  }
+
   public String getId() {
     return id;
   }
@@ -546,6 +557,10 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   public Map<String, Operator<? extends OperatorDesc>> getAliasToOpInfo() {
     return aliasToOpInfo;
+  }
+
+  public void setAliasToOpInfo(Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo) {
+    this.aliasToOpInfo = aliasToOpInfo;
   }
 
   public boolean isLeftInputJoin() {
@@ -562,6 +577,10 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   public String[] getRightAliases() {
     return rightAliases;
+  }
+
+  public void setRightAliases(String[] rightAliases) {
+    this.rightAliases = rightAliases;
   }
 
   public List<String> getStreamAliases() {

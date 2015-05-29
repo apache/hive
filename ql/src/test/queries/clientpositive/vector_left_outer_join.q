@@ -1,5 +1,6 @@
 set hive.vectorized.execution.enabled=true;
 set hive.auto.convert.join=true;
+set hive.mapjoin.hybridgrace.hashtable=false;
 explain 
 select count(*) from (select c.ctinyint 
 from alltypesorc c

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -86,9 +87,11 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       return new GenericUDAFBinaryStatsEvaluator();
     case DECIMAL:
       return new GenericUDAFDecimalStatsEvaluator();
+    case DATE:
+      return new GenericUDAFDateStatsEvaluator();
     default:
       throw new UDFArgumentTypeException(0,
-          "Only integer/long/timestamp/float/double/string/binary/boolean/decimal type argument " +
+          "Only integer/long/timestamp/date/float/double/string/binary/boolean/decimal type argument " +
           "is accepted but "
           + parameters[0].getTypeName() + " is passed.");
     }
@@ -1312,6 +1315,75 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       ((NumericStatsAgg)agg).reset("Decimal");
+    }
+  }
+
+  /**
+   * GenericUDAFDateStatsEvaluator
+   * High/low value will be saved in stats DB as long value representing days since epoch.
+   */
+  public static class GenericUDAFDateStatsEvaluator
+      extends GenericUDAFNumericStatsEvaluator<DateWritable, DateObjectInspector> {
+
+    @Override
+    protected DateObjectInspector getValueObjectInspector() {
+      return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
+    }
+
+    @AggregationType(estimable = true)
+    public class DateStatsAgg extends NumericStatsAgg {
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return super.estimate() + model.primitive2() * 2;
+      }
+
+      @Override
+      protected void update(Object p, PrimitiveObjectInspector inputOI) {
+        // DateWritable is mutable, DateStatsAgg needs its own copy
+        DateWritable v = new DateWritable((DateWritable) inputOI.getPrimitiveWritableObject(p));
+
+        //Update min counter if new value is less than min seen so far
+        if (min == null || v.compareTo(min) < 0) {
+          min = v;
+        }
+        //Update max counter if new value is greater than max seen so far
+        if (max == null || v.compareTo(max) > 0) {
+          max = v;
+        }
+        // Add value to NumDistinctValue Estimator
+        numDV.addToEstimator(v.getDays());
+      }
+
+      @Override
+      protected void updateMin(Object minValue, DateObjectInspector minFieldOI) {
+        if ((minValue != null) && (min == null ||
+            min.compareTo(minFieldOI.getPrimitiveWritableObject(minValue)) > 0)) {
+          // DateWritable is mutable, DateStatsAgg needs its own copy
+          min = new DateWritable(minFieldOI.getPrimitiveWritableObject(minValue));
+        }
+      }
+
+      @Override
+      protected void updateMax(Object maxValue, DateObjectInspector maxFieldOI) {
+        if ((maxValue != null) && (max == null ||
+            max.compareTo(maxFieldOI.getPrimitiveWritableObject(maxValue)) < 0)) {
+          // DateWritable is mutable, DateStatsAgg needs its own copy
+          max = new DateWritable(maxFieldOI.getPrimitiveWritableObject(maxValue));
+        }
+      }
+    };
+
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      AggregationBuffer result = new DateStatsAgg();
+      reset(result);
+      return result;
+    }
+
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      ((NumericStatsAgg)agg).reset("Date");
     }
   }
 }

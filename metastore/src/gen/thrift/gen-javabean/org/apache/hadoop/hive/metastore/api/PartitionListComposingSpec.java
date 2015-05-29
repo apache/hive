@@ -350,7 +350,7 @@ public class PartitionListComposingSpec implements org.apache.thrift.TBase<Parti
                 struct.partitions = new ArrayList<Partition>(_list252.size);
                 for (int _i253 = 0; _i253 < _list252.size; ++_i253)
                 {
-                  Partition _elem254; // required
+                  Partition _elem254; // optional
                   _elem254 = new Partition();
                   _elem254.read(iprot);
                   struct.partitions.add(_elem254);
@@ -430,7 +430,7 @@ public class PartitionListComposingSpec implements org.apache.thrift.TBase<Parti
           struct.partitions = new ArrayList<Partition>(_list257.size);
           for (int _i258 = 0; _i258 < _list257.size; ++_i258)
           {
-            Partition _elem259; // required
+            Partition _elem259; // optional
             _elem259 = new Partition();
             _elem259.read(iprot);
             struct.partitions.add(_elem259);

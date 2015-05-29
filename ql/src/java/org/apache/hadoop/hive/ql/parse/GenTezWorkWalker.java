@@ -18,11 +18,13 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -52,6 +54,7 @@ public class GenTezWorkWalker extends DefaultGraphWalker {
     ctx.currentRootOperator = (Operator<? extends OperatorDesc>) nd;
     ctx.preceedingWork = null;
     ctx.parentOfRoot = null;
+    ctx.currentUnionOperators = new ArrayList<>();
   }
 
   /**
@@ -89,6 +92,7 @@ public class GenTezWorkWalker extends DefaultGraphWalker {
     // save some positional state
     Operator<? extends OperatorDesc> currentRoot = ctx.currentRootOperator;
     Operator<? extends OperatorDesc> parentOfRoot = ctx.parentOfRoot;
+    List<UnionOperator> currentUnionOperators = ctx.currentUnionOperators;
     BaseWork preceedingWork = ctx.preceedingWork;
 
     if (skip == null || !skip) {
@@ -99,6 +103,8 @@ public class GenTezWorkWalker extends DefaultGraphWalker {
         ctx.currentRootOperator = currentRoot;
         ctx.parentOfRoot = parentOfRoot;
         ctx.preceedingWork = preceedingWork;
+        ctx.currentUnionOperators = new ArrayList<>();
+        ctx.currentUnionOperators.addAll(currentUnionOperators);
 
         walk(ch);
       }

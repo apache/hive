@@ -25,10 +25,17 @@
 source ./env.sh
 
 #decide which DB to run against
+#Derby
 cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/hive/hive-site.xml ${HIVE_HOME}/conf/hive-site.xml
+#cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/hive/hive-site.mysql.xml ${HIVE_HOME}/conf/hive-site.xml
 #cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/hive/hive-site.mssql.xml ${HIVE_HOME}/conf/hive-site.xml
 
 cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/webhcat/webhcat-site.xml ${HIVE_HOME}/hcatalog/etc/webhcat/webhcat-site.xml
+cp ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/deployers/config/hive/hive-log4j.properties ${HIVE_HOME}/conf/hive-log4j.properties
+
+if [ -f ${MYSQL_CLIENT_JAR} ]; then
+  cp ${MYSQL_CLIENT_JAR} ${HIVE_HOME}/lib
+fi
 
 if [ -d ${WEBHCAT_LOG_DIR} ]; then
   rm -Rf ${WEBHCAT_LOG_DIR};

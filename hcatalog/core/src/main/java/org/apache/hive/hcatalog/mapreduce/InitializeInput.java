@@ -27,8 +27,8 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -93,7 +93,7 @@ class InitializeInput {
    */
   private static InputJobInfo getInputJobInfo(
     Configuration conf, InputJobInfo inputJobInfo, String locationFilter) throws Exception {
-    HiveMetaStoreClient client = null;
+    IMetaStoreClient client = null;
     HiveConf hiveConf = null;
     try {
       if (conf != null) {
@@ -101,7 +101,7 @@ class InitializeInput {
       } else {
         hiveConf = new HiveConf(HCatInputFormat.class);
       }
-      client = HCatUtil.getHiveClient(hiveConf);
+      client = HCatUtil.getHiveMetastoreClient(hiveConf);
       Table table = HCatUtil.getTable(client, inputJobInfo.getDatabaseName(),
         inputJobInfo.getTableName());
 

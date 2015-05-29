@@ -137,9 +137,9 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
     Map<String,String> parameters)
   {
     this();
-    this.name = org.apache.hive.common.util.HiveStringUtils.intern(name);
-    this.serializationLib = org.apache.hive.common.util.HiveStringUtils.intern(serializationLib);
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.name = name;
+    this.serializationLib = serializationLib;
+    this.parameters = parameters;
   }
 
   /**
@@ -147,10 +147,10 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
    */
   public SerDeInfo(SerDeInfo other) {
     if (other.isSetName()) {
-      this.name = org.apache.hive.common.util.HiveStringUtils.intern(other.name);
+      this.name = other.name;
     }
     if (other.isSetSerializationLib()) {
-      this.serializationLib = org.apache.hive.common.util.HiveStringUtils.intern(other.serializationLib);
+      this.serializationLib = other.serializationLib;
     }
     if (other.isSetParameters()) {
       Map<String,String> __this__parameters = new HashMap<String,String>();
@@ -159,9 +159,9 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
         String other_element_key = other_element.getKey();
         String other_element_value = other_element.getValue();
 
-        String __this__parameters_copy_key = org.apache.hive.common.util.HiveStringUtils.intern(other_element_key);
+        String __this__parameters_copy_key = other_element_key;
 
-        String __this__parameters_copy_value = org.apache.hive.common.util.HiveStringUtils.intern(other_element_value);
+        String __this__parameters_copy_value = other_element_value;
 
         __this__parameters.put(__this__parameters_copy_key, __this__parameters_copy_value);
       }
@@ -185,7 +185,7 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
   }
 
   public void setName(String name) {
-    this.name = org.apache.hive.common.util.HiveStringUtils.intern(name);
+    this.name = name;
   }
 
   public void unsetName() {
@@ -208,7 +208,7 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
   }
 
   public void setSerializationLib(String serializationLib) {
-    this.serializationLib = org.apache.hive.common.util.HiveStringUtils.intern(serializationLib);
+    this.serializationLib = serializationLib;
   }
 
   public void unsetSerializationLib() {
@@ -242,7 +242,7 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
   }
 
   public void setParameters(Map<String,String> parameters) {
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = parameters;
   }
 
   public void unsetParameters() {

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -86,6 +87,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class LimitPushdownOptimizer implements Transform {
 
+  @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
@@ -105,6 +107,7 @@ public class LimitPushdownOptimizer implements Transform {
 
   private static class TopNReducer implements NodeProcessor {
 
+    @Override
     public Object process(Node nd, Stack<Node> stack,
         NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator rs = null;
@@ -122,6 +125,10 @@ public class LimitPushdownOptimizer implements Transform {
         }
       }
       if (rs != null) {
+        if (OperatorUtils.findOperators(rs, GroupByOperator.class).size() > 1){
+          // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
+          return false;
+        }
         LimitOperator limit = (LimitOperator) nd;
         rs.getConf().setTopN(limit.getConf().getLimit());
         rs.getConf().setTopNMemoryUsage(((LimitPushdownContext) procCtx).threshold);
@@ -135,7 +142,7 @@ public class LimitPushdownOptimizer implements Transform {
 
   private static class LimitPushdownContext implements NodeProcessorCtx {
 
-    private float threshold;
+    private final float threshold;
 
     public LimitPushdownContext(HiveConf conf) throws SemanticException {
       threshold = conf.getFloatVar(HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE);

@@ -51,7 +51,10 @@ public class DecimalTypeInfo extends PrimitiveTypeInfo {
 
   @Override
   public boolean equals(Object other) {
-    if (other == null || !(other instanceof DecimalTypeInfo)) {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || getClass() != other.getClass()) {
       return false;
     }
 
@@ -99,7 +102,7 @@ public class DecimalTypeInfo extends PrimitiveTypeInfo {
 
   @Override
   public boolean accept(TypeInfo other) {
-    if (other == null || !(other instanceof DecimalTypeInfo)) {
+    if (other == null || getClass() != other.getClass()) {
       return false;
     }
 

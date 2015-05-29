@@ -780,7 +780,7 @@ public class PartitionWithoutSD implements org.apache.thrift.TBase<PartitionWith
                 struct.values = new ArrayList<String>(_list226.size);
                 for (int _i227 = 0; _i227 < _list226.size; ++_i227)
                 {
-                  String _elem228; // required
+                  String _elem228; // optional
                   _elem228 = iprot.readString();
                   struct.values.add(_elem228);
                 }
@@ -980,7 +980,7 @@ public class PartitionWithoutSD implements org.apache.thrift.TBase<PartitionWith
           struct.values = new ArrayList<String>(_list237.size);
           for (int _i238 = 0; _i238 < _list237.size; ++_i238)
           {
-            String _elem239; // required
+            String _elem239; // optional
             _elem239 = iprot.readString();
             struct.values.add(_elem239);
           }

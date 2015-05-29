@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * HiveInputSplit encapsulates an InputSplit with its corresponding
@@ -137,12 +137,11 @@ public class BucketizedHiveInputSplit extends HiveInputSplit {
   @Override
   public void readFields(DataInput in) throws IOException {
     String inputSplitClassName = in.readUTF();
-
     int numSplits = in.readInt();
     inputSplits = new InputSplit[numSplits];
     for (int i = 0; i < numSplits; i++) {
       try {
-        inputSplits[i] = (InputSplit) ReflectionUtils.newInstance(conf
+        inputSplits[i] = (InputSplit) ReflectionUtil.newInstance(conf
             .getClassByName(inputSplitClassName), conf);
       } catch (Exception e) {
         throw new IOException(

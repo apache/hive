@@ -586,7 +586,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (note instanceof Explain) {
       Explain xpl_note = (Explain) note;
       boolean invokeFlag = false;
-      if (this.work.isUserLevelExplain()) {
+      if (this.work != null && this.work.isUserLevelExplain()) {
         invokeFlag = Level.USER.in(xpl_note.explainLevels());
       } else {
         if (extended) {
@@ -618,7 +618,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         String appender = isLogical ? " (" + operator.getOperatorId() + ")" : "";
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
             jsonOutput, jsonOutput ? 0 : indent, appender);
-        if (this.work.isUserLevelExplain()) {
+        if (this.work != null && this.work.isUserLevelExplain()) {
           if (jsonOut != null && jsonOut.length() > 0) {
             ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("OperatorId:",
                 operator.getOperatorId());
@@ -659,7 +659,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       if (note instanceof Explain) {
         Explain xpl_note = (Explain) note;
         boolean invokeFlag = false;
-        if (this.work.isUserLevelExplain()) {
+        if (this.work != null && this.work.isUserLevelExplain()) {
           invokeFlag = Level.USER.in(xpl_note.explainLevels());
         } else {
           if (extended) {
