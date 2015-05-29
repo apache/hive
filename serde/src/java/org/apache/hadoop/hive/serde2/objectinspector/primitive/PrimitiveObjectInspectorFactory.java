@@ -391,8 +391,8 @@ public final class PrimitiveObjectInspectorFactory {
     case DECIMAL:
       result = new JavaHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
       break;
-      default:
-        throw new RuntimeException("Failed to create JavaHiveVarcharObjectInspector for " + typeInfo );
+    default:
+      throw new RuntimeException("Failed to create Java ObjectInspector for " + typeInfo);
     }
 
     AbstractPrimitiveJavaObjectInspector prev =

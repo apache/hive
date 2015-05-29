@@ -2334,6 +2334,26 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     verifyFetchedLog(incrementalLogs, expectedLogs);
   }
 
+  /**
+   * Test getting query log when HS2 disable logging.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testGetQueryLogOnDisabledLog() throws Exception {
+    Statement setStmt = con.createStatement();
+    setStmt.execute("set hive.server2.logging.operation.enabled = false");
+    String sql = "select count(*) from " + tableName;
+    HiveStatement stmt = (HiveStatement)con.createStatement();
+    assertNotNull("Statement is null", stmt);
+    stmt.executeQuery(sql);
+    List<String> logs = stmt.getQueryLog(false, 10);
+    stmt.close();
+    assertTrue(logs.size() == 0);
+    setStmt.execute("set hive.server2.logging.operation.enabled = true");
+    setStmt.close();
+  }
+
   private void verifyFetchedLog(List<String> logs, String[] expectedLogs) {
     StringBuilder stringBuilder = new StringBuilder();
 

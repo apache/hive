@@ -355,6 +355,9 @@ public final class PlanUtils {
       if (crtTblDesc.getTblProps() != null) {
         properties.putAll(crtTblDesc.getTblProps());
       }
+      if (crtTblDesc.getSerdeProps() != null) {
+        properties.putAll(crtTblDesc.getSerdeProps());
+      }
 
       // replace the default input & output file format with those found in
       // crtTblDesc

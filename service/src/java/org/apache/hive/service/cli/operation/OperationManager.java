@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.session.OperationLog;
@@ -221,13 +222,21 @@ public class OperationManager extends AbstractService {
   }
 
   public RowSet getOperationLogRowSet(OperationHandle opHandle,
-      FetchOrientation orientation, long maxRows)
+      FetchOrientation orientation, long maxRows, HiveConf hConf)
           throws HiveSQLException {
+    TableSchema tableSchema = new TableSchema(getLogSchema());
+    RowSet rowSet = RowSetFactory.create(tableSchema, getOperation(opHandle).getProtocolVersion());
+
+    if (hConf.getBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED) == false) {
+      LOG.warn("Try to get operation log when hive.server2.logging.operation.enabled is false, no log will be returned. ");
+      return rowSet;
+    }
     // get the OperationLog object from the operation
     OperationLog operationLog = getOperation(opHandle).getOperationLog();
     if (operationLog == null) {
       throw new HiveSQLException("Couldn't find log associated with operation handle: " + opHandle);
     }
+
 
     // read logs
     List<String> logs;
@@ -239,8 +248,6 @@ public class OperationManager extends AbstractService {
 
 
     // convert logs to RowSet
-    TableSchema tableSchema = new TableSchema(getLogSchema());
-    RowSet rowSet = RowSetFactory.create(tableSchema, getOperation(opHandle).getProtocolVersion());
     for (String log : logs) {
       rowSet.addRow(new String[] {log});
     }

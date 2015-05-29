@@ -99,7 +99,6 @@ import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlWindow;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.sql2rel.RelFieldTrimmer;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -145,6 +144,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4Join
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinCondTypeCheckProcFactory;
@@ -239,6 +240,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         try {
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             sinkOp = getOptimizedHiveOPDag();
+            LOG.info("CBO Succeeded; optimized logical plan.");
+            this.ctx.setCboInfo("Plan optimized by CBO.");
+            this.ctx.setCboSucceeded(true);
           } else {
             // 1. Gen Optimized AST
             ASTNode newAST = getOptimizedAST();
@@ -253,21 +257,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
               setAST(newAST);
               newAST = reAnalyzeCtasAfterCbo(newAST);
             }
-          Phase1Ctx ctx_1 = initPhase1Ctx();
-          if (!doPhase1(newAST, getQB(), ctx_1, null)) {
-            throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
-          }
-          // unfortunately making prunedPartitions immutable is not possible
-          // here with SemiJoins not all tables are costed in CBO, so their
-          // PartitionList is not evaluated until the run phase.
-          getMetaData(getQB());
-
-          disableJoinMerge = false;
-          sinkOp = genPlan(getQB());
-          LOG.info("CBO Succeeded; optimized logical plan.");
-          this.ctx.setCboInfo("Plan optimized by CBO.");
-          this.ctx.setCboSucceeded(true);
-          LOG.debug(newAST.dump());
+            Phase1Ctx ctx_1 = initPhase1Ctx();
+            if (!doPhase1(newAST, getQB(), ctx_1, null)) {
+              throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
+            }
+            // unfortunately making prunedPartitions immutable is not possible
+            // here with SemiJoins not all tables are costed in CBO, so their
+            // PartitionList is not evaluated until the run phase.
+            getMetaData(getQB());
+  
+            disableJoinMerge = false;
+            sinkOp = genPlan(getQB());
+            LOG.info("CBO Succeeded; optimized logical plan.");
+            this.ctx.setCboInfo("Plan optimized by CBO.");
+            this.ctx.setCboSucceeded(true);
+            LOG.debug(newAST.dump());
           }
         } catch (Exception e) {
           boolean isMissingStats = noColsMissingStats.get() > 0;
@@ -378,7 +382,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     // Now check QB in more detail. canHandleQbForCbo returns null if query can
     // be handled.
-    String msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true, needToLogMessage);
+    String msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true, needToLogMessage, qb);
     if (msg == null) {
       return true;
     }
@@ -407,11 +411,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
    *         2. Nested Subquery will return false for qbToChk.getIsQuery()
    */
   static String canHandleQbForCbo(QueryProperties queryProperties, HiveConf conf,
-      boolean topLevelQB, boolean verbose) {
+      boolean topLevelQB, boolean verbose, QB qb) {
     boolean isInTest = conf.getBoolVar(ConfVars.HIVE_IN_TEST);
     boolean isStrictTest = isInTest
         && !conf.getVar(ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("nonstrict");
-    boolean hasEnoughJoins = !topLevelQB || (queryProperties.getJoinCount() > 1) || isInTest;
+    boolean hasEnoughJoins = !topLevelQB || (queryProperties.getJoinCount() > 1) || isInTest || distinctExprsExists(qb);
 
     if (!isStrictTest && hasEnoughJoins && !queryProperties.hasClusterBy()
         && !queryProperties.hasDistributeBy() && !queryProperties.hasSortBy()
@@ -855,6 +859,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       calciteOptimizedPlan = hepPlanner.findBestExp();
 
+      // run rule to fix windowing issue when it is done over
+      // aggregation columns (HIVE-10627)
+      hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
+      hepPgmBldr.addRuleInstance(HiveWindowingFixRule.INSTANCE);
+      hepPlanner = new HepPlanner(hepPgmBldr.build());
+      hepPlanner.registerMetadataProviders(list);
+      cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+      hepPlanner.setRoot(calciteOptimizedPlan);
+      calciteOptimizedPlan = hepPlanner.findBestExp();
+
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         // run rules to aid in translation from Optiq tree -> Hive tree
         hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
@@ -940,7 +954,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           new HivePartitionPruneRule(conf));
 
       // 5. Projection Pruning
-      RelFieldTrimmer fieldTrimmer = new RelFieldTrimmer(null, HiveProject.DEFAULT_PROJECT_FACTORY,
+      HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null, HiveProject.DEFAULT_PROJECT_FACTORY,
           HiveFilter.DEFAULT_FILTER_FACTORY, HiveJoin.HIVE_JOIN_FACTORY,
           RelFactories.DEFAULT_SEMI_JOIN_FACTORY, HiveSort.HIVE_SORT_REL_FACTORY,
           HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY);
@@ -2700,7 +2714,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 0. Check if we can handle the SubQuery;
       // canHandleQbForCbo returns null if the query can be handled.
-      String reason = canHandleQbForCbo(queryProperties, conf, false, LOG.isDebugEnabled());
+      String reason = canHandleQbForCbo(queryProperties, conf, false, LOG.isDebugEnabled(), qb);
       if (reason != null) {
         String msg = "CBO can not handle Sub Query";
         if (LOG.isDebugEnabled()) {

@@ -12,8 +12,8 @@ of Apache Hadoop (TM), it provides:
 * Access to files stored either directly in Apache HDFS (TM) or in other
   data storage systems such as Apache HBase (TM)
 
-* Query execution using Apache Hadoop MapReduce or Apache Tez
-  frameworks.
+* Query execution using Apache Hadoop MapReduce, Apache Tez
+  or Apache Spark frameworks.
 
 Hive implements a dialect of SQL (Hive QL) that focuses on analytics
 and presents a rich set of SQL semantics including OLAP functions,

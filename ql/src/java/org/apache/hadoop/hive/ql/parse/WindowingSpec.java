@@ -274,7 +274,7 @@ public class WindowingSpec {
     }
 
     if ( end.getDirection() == Direction.PRECEDING &&
-        start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT ) {
+        end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT ) {
       throw new SemanticException("End of a WindowFrame cannot be UNBOUNDED PRECEDING");
     }
 

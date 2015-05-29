@@ -24,7 +24,9 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -123,13 +125,6 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
 
       batchCounter++;
 
-      // Do the per-batch setup for an outer join.
-
-      outerPerBatchSetup(batch);
-
-      // For outer join, DO NOT apply filters yet.  It is incorrect for outer join to
-      // apply the filter before hash table matching.
-
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
@@ -139,15 +134,50 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
         return;
       }
 
+      // Do the per-batch setup for an outer join.
+
+      outerPerBatchSetup(batch);
+
+      // For outer join, remember our input rows before ON expression filtering or before
+      // hash table matching so we can generate results for all rows (matching and non matching)
+      // later.
+      boolean inputSelectedInUse = batch.selectedInUse;
+      if (inputSelectedInUse) {
+        // if (!verifyMonotonicallyIncreasing(batch.selected, batch.size)) {
+        //   throw new HiveException("batch.selected is not in sort order and unique");
+        // }
+        System.arraycopy(batch.selected, 0, inputSelected, 0, inputLogicalSize);
+      }
+
+      // Filtering for outer join just removes rows available for hash table matching.
+      boolean someRowsFilteredOut =  false;
+      if (bigTableFilterExpressions.length > 0) {
+        // Since the input
+        for (VectorExpression ve : bigTableFilterExpressions) {
+          ve.evaluate(batch);
+        }
+        someRowsFilteredOut = (batch.size != inputLogicalSize);
+        if (LOG.isDebugEnabled()) {
+          if (batch.selectedInUse) {
+            if (inputSelectedInUse) {
+              LOG.debug(CLASS_NAME +
+                  " inputSelected " + intArrayToRangesString(inputSelected, inputLogicalSize) +
+                  " filtered batch.selected " + intArrayToRangesString(batch.selected, batch.size));
+            } else {
+              LOG.debug(CLASS_NAME +
+                " inputLogicalSize " + inputLogicalSize +
+                " filtered batch.selected " + intArrayToRangesString(batch.selected, batch.size));
+            }
+          }
+        }
+      }
+
       // Perform any key expressions.  Results will go into scratch columns.
       if (bigTableKeyExpressions != null) {
         for (VectorExpression ve : bigTableKeyExpressions) {
           ve.evaluate(batch);
         }
       }
-
-      // We rebuild in-place the selected array with rows destine to be forwarded.
-      int numSel = 0;
 
       /*
        * Single-Column Long specific declarations.
@@ -178,12 +208,16 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
          */
 
         JoinUtil.JoinResult joinResult;
-        if (!joinColVector.noNulls && joinColVector.isNull[0]) {
-          // Null key is no match for whole batch.
+        if (batch.size == 0) {
+          // Whole repeated key batch was filtered out.
+          joinResult = JoinUtil.JoinResult.NOMATCH;
+        } else if (!joinColVector.noNulls && joinColVector.isNull[0]) {
+          // Any (repeated) null key column is no match for whole batch.
           joinResult = JoinUtil.JoinResult.NOMATCH;
         } else {
           // Handle *repeated* join key, if found.
           long key = vector[0];
+          // LOG.debug(CLASS_NAME + " repeated key " + key);
           if (useMinMax && (key < min || key > max)) {
             // Out of range for whole batch.
             joinResult = JoinUtil.JoinResult.NOMATCH;
@@ -199,7 +233,8 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
-        numSel = finishOuterRepeated(batch, joinResult, hashMapResults[0], scratch1);
+        finishOuterRepeated(batch, joinResult, hashMapResults[0], someRowsFilteredOut,
+            inputSelectedInUse, inputLogicalSize);
       } else {
 
         /*
@@ -213,13 +248,12 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
         int selected[] = batch.selected;
         boolean selectedInUse = batch.selectedInUse;
 
-        // For outer join we must apply the filter after match and cause some matches to become
-        // non-matches, we do not track non-matches here.  Instead we remember all non spilled rows
-        // and compute non matches later in finishOuter.
         int hashMapResultCount = 0;
-        int matchCount = 0;
-        int nonSpillCount = 0;
+        int allMatchCount = 0;
+        int equalKeySeriesCount = 0;
         int spillCount = 0;
+
+        boolean atLeastOneNonMatch = someRowsFilteredOut;
 
         /*
          * Single-Column Long specific variables.
@@ -232,8 +266,10 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
         JoinUtil.JoinResult saveJoinResult = JoinUtil.JoinResult.NOMATCH;
 
         // Logical loop over the rows in the batch since the batch may have selected in use.
-        for (int logical = 0; logical < inputLogicalSize; logical++) {
+        for (int logical = 0; logical < batch.size; logical++) {
           int batchIndex = (selectedInUse ? selected[logical] : logical);
+
+          // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, taskName + ", " + getOperatorId() + " candidate " + CLASS_NAME + " batch");
 
           /*
            * Single-Column Long outer null detection.
@@ -250,8 +286,8 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
             //    Let a current SPILL equal key series keep going, or
             //    Let a current NOMATCH keep not matching.
 
-            // Remember non-matches for Outer Join.
-            nonSpills[nonSpillCount++] = batchIndex;
+            atLeastOneNonMatch = true;
+
             // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " NULL");
           } else {
 
@@ -269,9 +305,12 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
               // New key.
 
               if (haveSaveKey) {
-                // Move on with our count(s).
+                // Move on with our counts.
                 switch (saveJoinResult) {
                 case MATCH:
+                  hashMapResultCount++;
+                  equalKeySeriesCount++;
+                  break;
                 case SPILL:
                   hashMapResultCount++;
                   break;
@@ -300,41 +339,70 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
               } else {
                 saveJoinResult = hashMap.lookup(currentKey, hashMapResults[hashMapResultCount]);
               }
-              // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " New Key " + saveJoinResult.name());
+
+              // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " New Key " + currentKey + " " + saveJoinResult.name());
+
+              /*
+               * Common outer join result processing.
+               */
+
+              switch (saveJoinResult) {
+              case MATCH:
+                equalKeySeriesHashMapResultIndices[equalKeySeriesCount] = hashMapResultCount;
+                equalKeySeriesAllMatchIndices[equalKeySeriesCount] = allMatchCount;
+                equalKeySeriesIsSingleValue[equalKeySeriesCount] = hashMapResults[hashMapResultCount].isSingleRow();
+                equalKeySeriesDuplicateCounts[equalKeySeriesCount] = 1;
+                allMatchs[allMatchCount++] = batchIndex;
+                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH isSingleValue " + equalKeySeriesIsSingleValue[equalKeySeriesCount] + " currentKey " + currentKey);
+                break;
+
+              case SPILL:
+                spills[spillCount] = batchIndex;
+                spillHashMapResultIndices[spillCount] = hashMapResultCount;
+                spillCount++;
+                break;
+
+              case NOMATCH:
+                atLeastOneNonMatch = true;
+                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " NOMATCH" + " currentKey " + currentKey);
+                break;
+              }
             } else {
-              // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " Key Continues " + saveJoinResult.name());
+              // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " Key Continues " + saveKey + " " + saveJoinResult.name());
+
+              // Series of equal keys.
+
+              switch (saveJoinResult) {
+              case MATCH:
+                equalKeySeriesDuplicateCounts[equalKeySeriesCount]++;
+                allMatchs[allMatchCount++] = batchIndex;
+                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH duplicate");
+                break;
+
+              case SPILL:
+                spills[spillCount] = batchIndex;
+                spillHashMapResultIndices[spillCount] = hashMapResultCount;
+                spillCount++;
+                break;
+
+              case NOMATCH:
+                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " NOMATCH duplicate");
+                break;
+              }
             }
-
-            /*
-             * Common outer join result processing.
-             */
-
-            switch (saveJoinResult) {
-            case MATCH:
-              matchs[matchCount] = batchIndex;
-              matchHashMapResultIndices[matchCount] = hashMapResultCount;
-              matchCount++;
-              nonSpills[nonSpillCount++] = batchIndex;
-              break;
-
-            case SPILL:
-              spills[spillCount] = batchIndex;
-              spillHashMapResultIndices[spillCount] = hashMapResultCount;
-              spillCount++;
-              break;
-
-            case NOMATCH:
-              nonSpills[nonSpillCount++] = batchIndex;
-              // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " NOMATCH duplicate");
-              break;
-            }
+            // if (!verifyMonotonicallyIncreasing(allMatchs, allMatchCount)) {
+            //   throw new HiveException("allMatchs is not in sort order and unique");
+            // }
           }
         }
 
         if (haveSaveKey) {
-          // Account for last equal key sequence.
+          // Update our counts for the last key.
           switch (saveJoinResult) {
           case MATCH:
+            hashMapResultCount++;
+            equalKeySeriesCount++;
+            break;
           case SPILL:
             hashMapResultCount++;
             break;
@@ -345,26 +413,25 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
 
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter +
-              " matchs " + intArrayToRangesString(matchs, matchCount) +
-              " matchHashMapResultIndices " + intArrayToRangesString(matchHashMapResultIndices, matchCount) +
-              " nonSpills " + intArrayToRangesString(nonSpills, nonSpillCount) +
+              " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
+              " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +
+              " equalKeySeriesAllMatchIndices " + intArrayToRangesString(equalKeySeriesAllMatchIndices, equalKeySeriesCount) +
+              " equalKeySeriesIsSingleValue " + Arrays.toString(Arrays.copyOfRange(equalKeySeriesIsSingleValue, 0, equalKeySeriesCount)) +
+              " equalKeySeriesDuplicateCounts " + Arrays.toString(Arrays.copyOfRange(equalKeySeriesDuplicateCounts, 0, equalKeySeriesCount)) +
+              " atLeastOneNonMatch " + atLeastOneNonMatch +
+              " inputSelectedInUse " + inputSelectedInUse +
+              " inputLogicalSize " + inputLogicalSize +
               " spills " + intArrayToRangesString(spills, spillCount) +
               " spillHashMapResultIndices " + intArrayToRangesString(spillHashMapResultIndices, spillCount) +
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashMapResults, 0, hashMapResultCount)));
         }
 
         // We will generate results for all matching and non-matching rows.
-        // Note that scratch1 is undefined at this point -- it's preallocated storage.
-        numSel = finishOuter(batch,
-                    matchs, matchHashMapResultIndices, matchCount,
-                    nonSpills, nonSpillCount,
-                    spills, spillHashMapResultIndices, spillCount,
-                    hashMapResults, hashMapResultCount,
-                    scratch1);
+        finishOuter(batch,
+            allMatchCount, equalKeySeriesCount, atLeastOneNonMatch,
+            inputSelectedInUse, inputLogicalSize,
+            spillCount, hashMapResultCount);
       }
-
-      batch.selectedInUse = true;
-      batch.size =  numSel;
 
       if (batch.size > 0) {
         // Forward any remaining selected rows.

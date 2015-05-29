@@ -40,7 +40,10 @@ public class VarcharTypeInfo extends BaseCharTypeInfo {
 
   @Override
   public boolean equals(Object other) {
-    if (other == null || !(other instanceof VarcharTypeInfo)) {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || getClass() != other.getClass()) {
       return false;
     }
 

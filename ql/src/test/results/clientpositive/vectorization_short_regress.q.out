@@ -349,7 +349,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((cbigint <= 197) and (UDFToLong(cint) < cbigint)) or (((cdouble >= -26.28) and (UDFToDouble(csmallint) > cdouble)) or (((UDFToFloat(ctinyint) > cfloat) and (cstring1 rlike '.*ss.*')) or ((cfloat > 79.553) and (cstring2 like '10%'))))) (type: boolean)
+              predicate: (((cbigint <= 197) and (UDFToLong(cint) < cbigint)) or (((cdouble >= -26.28) and (UDFToDouble(csmallint) > cdouble)) or (((UDFToFloat(ctinyint) > cfloat) and cstring1 regexp '.*ss.*') or ((cfloat > 79.553) and (cstring2 like '10%'))))) (type: boolean)
               Statistics: Num rows: 6826 Data size: 1467614 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), cbigint (type: bigint), csmallint (type: smallint), cdouble (type: double), ctinyint (type: tinyint)
@@ -906,7 +906,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((cstring1 rlike 'a.*') and (cstring2 like '%ss%')) or (((1 <> cboolean2) and ((UDFToDouble(csmallint) < 79.553) and (-257 <> UDFToInteger(ctinyint)))) or (((cdouble > UDFToDouble(ctinyint)) and (cfloat >= UDFToFloat(cint))) or ((UDFToLong(cint) < cbigint) and (UDFToLong(ctinyint) > cbigint))))) (type: boolean)
+              predicate: ((cstring1 regexp 'a.*' and (cstring2 like '%ss%')) or (((1 <> cboolean2) and ((UDFToDouble(csmallint) < 79.553) and (-257 <> UDFToInteger(ctinyint)))) or (((cdouble > UDFToDouble(ctinyint)) and (cfloat >= UDFToFloat(cint))) or ((UDFToLong(cint) < cbigint) and (UDFToLong(ctinyint) > cbigint))))) (type: boolean)
               Statistics: Num rows: 9898 Data size: 2128105 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), cdouble (type: double), ctimestamp2 (type: timestamp), cstring1 (type: string), cboolean2 (type: boolean), ctinyint (type: tinyint), cfloat (type: float), ctimestamp1 (type: timestamp), csmallint (type: smallint), cbigint (type: bigint), (-3728 * cbigint) (type: bigint), (- cint) (type: int), (-863.257 - UDFToDouble(cint)) (type: double), (- csmallint) (type: smallint), (csmallint - (- csmallint)) (type: smallint), ((csmallint - (- csmallint)) + (- csmallint)) (type: smallint), (UDFToDouble(cint) / UDFToDouble(cint)) (type: double), ((-863.257 - UDFToDouble(cint)) - -26.28) (type: double), (- cfloat) (type: float), (cdouble * -89010.0) (type: double), (UDFToDouble(ctinyint) / 988888.0) (type: double), (- ctinyint) (type: tinyint), (79.553 / UDFToDouble(ctinyint)) (type: double)
@@ -2288,7 +2288,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(ctimestamp1) <> 0.0) and (((-257 <> UDFToInteger(ctinyint)) and (cboolean2 is not null and ((cstring1 rlike '.*ss') and (-3.0 < UDFToDouble(ctimestamp1))))) or ((UDFToDouble(ctimestamp2) = -5.0) or (((UDFToDouble(ctimestamp1) < 0.0) and (cstring2 like '%b%')) or ((cdouble = UDFToDouble(cint)) or (cboolean1 is null and (cfloat < UDFToFloat(cint)))))))) (type: boolean)
+              predicate: ((UDFToDouble(ctimestamp1) <> 0.0) and (((-257 <> UDFToInteger(ctinyint)) and (cboolean2 is not null and (cstring1 regexp '.*ss' and (-3.0 < UDFToDouble(ctimestamp1))))) or ((UDFToDouble(ctimestamp2) = -5.0) or (((UDFToDouble(ctimestamp1) < 0.0) and (cstring2 like '%b%')) or ((cdouble = UDFToDouble(cint)) or (cboolean1 is null and (cfloat < UDFToFloat(cint)))))))) (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctimestamp1 (type: timestamp), cstring1 (type: string), cint (type: int), csmallint (type: smallint), ctinyint (type: tinyint), cfloat (type: float), cdouble (type: double)
@@ -2624,7 +2624,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (cboolean1 is not null and (((cdouble < UDFToDouble(csmallint)) and ((cboolean2 = cboolean1) and (UDFToDouble(cbigint) <= -863.257))) or (((cint >= -257) and (cstring1 is not null and (cboolean1 >= 1))) or ((cstring2 rlike 'b') or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null))))) (type: boolean)
+              predicate: (cboolean1 is not null and (((cdouble < UDFToDouble(csmallint)) and ((cboolean2 = cboolean1) and (UDFToDouble(cbigint) <= -863.257))) or (((cint >= -257) and (cstring1 is not null and (cboolean1 >= 1))) or (cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null))))) (type: boolean)
               Statistics: Num rows: 4778 Data size: 1027287 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cboolean1 (type: boolean), cfloat (type: float), cbigint (type: bigint), cint (type: int), cdouble (type: double), ctinyint (type: tinyint), csmallint (type: smallint)
@@ -2802,9 +2802,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_count
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -2860,11 +2860,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_count
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: i (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count(_col0)
                 mode: hash

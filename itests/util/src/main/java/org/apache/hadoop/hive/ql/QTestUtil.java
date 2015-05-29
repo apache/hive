@@ -389,6 +389,7 @@ public class QTestUtil {
         // Set the security key provider so that the MiniDFS cluster is initialized
         // with encryption
         conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
+        conf.setInt("fs.trash.interval", 50);
 
         dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
         fs = dfs.getFileSystem();
@@ -705,7 +706,7 @@ public class QTestUtil {
           if(tblObj.isIndexTable()) {
             continue;
           }
-          db.dropTable(dbName, tblName);
+          db.dropTable(dbName, tblName, true, true, clusterType == MiniClusterType.encrypted);
         } else {
           // this table is defined in srcTables, drop all indexes on it
          List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
@@ -757,14 +758,12 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearKeysCreatedInTests();
 
-    if (clusterType != MiniClusterType.encrypted) {
-      // allocate and initialize a new conf since a test can
-      // modify conf by using 'set' commands
-      conf = new HiveConf (Driver.class);
-      initConf();
-      // renew the metastore since the cluster type is unencrypted
-      db = Hive.get(conf);  // propagate new conf to meta store
-    }
+    // allocate and initialize a new conf since a test can
+    // modify conf by using 'set' commands
+    conf = new HiveConf(Driver.class);
+    initConf();
+    // renew the metastore since the cluster type is unencrypted
+    db = Hive.get(conf);  // propagate new conf to meta store
 
     setup.preTest(conf);
   }
@@ -1062,7 +1061,7 @@ public class QTestUtil {
         rc = cliDriver.processLine(command);
       }
 
-      if (rc != 0) {
+      if (rc != 0 && !ignoreErrors()) {
         break;
       }
       command = "";
@@ -1071,6 +1070,14 @@ public class QTestUtil {
       SessionState.get().setLastCommand(null);  // reset
     }
     return rc;
+  }
+
+  /**
+   * This allows a .q file to continue executing after a statement runs into an error which is convenient
+   * if you want to use another hive cmd after the failure to sanity check the state of the system.
+   */
+  private boolean ignoreErrors() {
+    return conf.getBoolVar(HiveConf.ConfVars.CLIIGNOREERRORS);
   }
 
   private boolean isHiveCommand(String command) {

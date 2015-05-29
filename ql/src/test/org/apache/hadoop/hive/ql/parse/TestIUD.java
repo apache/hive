@@ -297,4 +297,11 @@ public class TestIUD {
         "(TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))",
       ast.toStringTree());
   }
+  @Test
+  public void testMultiInsert() throws ParseException {
+    ASTNode ast = parse("from S insert into T1 select a, b insert into T2 select c, d");
+    Assert.assertEquals("AST doesn't match", "(TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME S))) " +
+      "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME T1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a)) (TOK_SELEXPR (TOK_TABLE_OR_COL b)))) " +
+      "(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME T2))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL c)) (TOK_SELEXPR (TOK_TABLE_OR_COL d)))))", ast.toStringTree());
+  }
 }

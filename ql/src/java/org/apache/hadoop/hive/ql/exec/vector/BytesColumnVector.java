@@ -81,6 +81,15 @@ public class BytesColumnVector extends ColumnVector {
     length = new int[size];
   }
 
+  /**
+   * Additional reset work for BytesColumnVector (releasing scratch bytes for by value strings).
+   */
+  @Override
+  public void reset() {
+    super.reset();
+    initBuffer(0);
+  }
+
   /** Set a field by reference.
    *
    * @param elementNum index within column vector to set

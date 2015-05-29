@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -44,13 +45,13 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -171,6 +172,9 @@ public class StatsUtils {
           nr = ds / avgRowSize;
         }
       }
+      if (nr == 0) {
+        nr = 1;
+      }
       stats.setNumRows(nr);
       stats.setDataSize(ds);
 
@@ -227,6 +231,9 @@ public class StatsUtils {
           nr = ds / avgRowSize;
         }
       }
+      if (nr == 0) {
+        nr = 1;
+      }
       stats.addToNumRows(nr);
       stats.addToDataSize(ds);
 
@@ -240,8 +247,7 @@ public class StatsUtils {
         for (Partition part : partList.getNotDeniedPartns()) {
           partNames.add(part.getName());
         }
-        Map<String, String> colToTabAlias = new HashMap<String, String>();
-        neededColumns = processNeededColumns(schema, neededColumns, colToTabAlias);
+        neededColumns = processNeededColumns(schema, neededColumns);
         AggrStats aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
             neededColumns, partNames);
         if (null == aggrStats) {
@@ -262,8 +268,7 @@ public class StatsUtils {
             LOG.debug("Column stats requested for : " + neededColumns.size() + " columns. Able to" +
                 " retrieve for " + colStats.size() + " columns");
           }
-          List<ColStatistics> columnStats = convertColStats(colStats, table.getTableName(),
-              colToTabAlias);
+          List<ColStatistics> columnStats = convertColStats(colStats, table.getTableName());
 
           addParitionColumnStats(conf, neededColumns, referencedColumns, schema, table, partList,
               columnStats);
@@ -296,7 +301,10 @@ public class StatsUtils {
   public static void inferAndSetPrimaryKey(long numRows, List<ColStatistics> colStats) {
     if (colStats != null) {
       for (ColStatistics cs : colStats) {
-        if (cs != null && cs.getRange() != null && cs.getRange().minValue != null &&
+        if (cs != null && cs.getCountDistint() >= numRows) {
+          cs.setPrimaryKey(true);
+        }
+        else if (cs != null && cs.getRange() != null && cs.getRange().minValue != null &&
             cs.getRange().maxValue != null) {
           if (numRows ==
               ((cs.getRange().maxValue.longValue() - cs.getRange().minValue.longValue()) + 1)) {
@@ -324,6 +332,36 @@ public class StatsUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * Scale selectivity based on key range ratio.
+   * @param csPK - column statistics of primary key
+   * @param csFK - column statistics of potential foreign key
+   * @return
+   */
+  public static float getScaledSelectivity(ColStatistics csPK, ColStatistics csFK) {
+    float scaledSelectivity = 1.0f;
+    if (csPK != null && csFK != null) {
+      if (csPK.isPrimaryKey()) {
+        // Use Max-Min Range as NDV gets scaled by selectivity.
+        if (csPK.getRange() != null && csFK.getRange() != null) {
+          long pkRangeDelta = getRangeDelta(csPK.getRange());
+          long fkRangeDelta = getRangeDelta(csFK.getRange());
+          if (fkRangeDelta > 0 && pkRangeDelta > 0 && fkRangeDelta < pkRangeDelta) {
+            scaledSelectivity = (float) pkRangeDelta / (float) fkRangeDelta;
+          }
+        }
+      }
+    }
+    return scaledSelectivity;
+  }
+
+  private static long getRangeDelta(ColStatistics.Range range) {
+    if (range.minValue != null && range.maxValue != null) {
+      return (range.maxValue.longValue() - range.minValue.longValue());
+    }
+    return 0;
   }
 
   private static boolean isWithin(ColStatistics.Range range1, ColStatistics.Range range2) {
@@ -355,13 +393,15 @@ public class StatsUtils {
             // currently metastore does not store column stats for
             // partition column, so we calculate the NDV from pruned
             // partition list
-            ColStatistics partCS = new ColStatistics(table.getTableName(),
-                ci.getInternalName(), ci.getType().getTypeName());
+            ColStatistics partCS = new ColStatistics(ci.getInternalName(), ci.getType()
+                .getTypeName());
             long numPartitions = getNDVPartitionColumn(partList.getPartitions(),
                 ci.getInternalName());
             partCS.setCountDistint(numPartitions);
             partCS.setAvgColLen(StatsUtils.getAvgColLenOfVariableLengthTypes(conf,
                 ci.getObjectInspector(), partCS.getColumnType()));
+            partCS.setRange(getRangePartitionColumn(partList.getPartitions(), ci.getInternalName(),
+                ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULTPARTITIONNAME)));
             colStats.add(partCS);
           }
         }
@@ -375,6 +415,66 @@ public class StatsUtils {
       distinctVals.add(partition.getSpec().get(partColName));
     }
     return distinctVals.size();
+  }
+
+  private static Range getRangePartitionColumn(Set<Partition> partitions, String partColName,
+      String colType, String defaultPartName) {
+    Range range = null;
+    String partVal;
+    if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
+        || colType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
+        || colType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
+        || colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
+      long min = Long.MAX_VALUE;
+      long max = Long.MIN_VALUE;
+      for (Partition partition : partitions) {
+        partVal = partition.getSpec().get(partColName);
+        if (partVal.equals(defaultPartName)) {
+          // partition column value is null.
+          continue;
+        } else {
+          long value = Long.parseLong(partVal);
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
+      }
+      range = new Range(min, max);
+    } else if (colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)
+        || colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
+      double min = Double.MAX_VALUE;
+      double max = Double.MIN_VALUE;
+      for (Partition partition : partitions) {
+        partVal = partition.getSpec().get(partColName);
+        if (partVal.equals(defaultPartName)) {
+          // partition column value is null.
+          continue;
+        } else {
+          double value = Double.parseDouble(partVal);
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
+      }
+      range = new Range(min, max);
+    } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+      double min = Double.MAX_VALUE;
+      double max = Double.MIN_VALUE;
+      for (Partition partition : partitions) {
+        partVal = partition.getSpec().get(partColName);
+        if (partVal.equals(defaultPartName)) {
+          // partition column value is null.
+          continue;
+        } else {
+          double value = new BigDecimal(partVal).doubleValue();
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
+      }
+      range = new Range(min, max);
+    } else {
+      // Columns statistics for complex datatypes are not supported yet
+      return null;
+    }
+    return range;
   }
 
   private static void setUnknownRcDsToAverage(
@@ -532,7 +632,7 @@ public class StatsUtils {
    */
   public static ColStatistics getColStatistics(ColumnStatisticsObj cso, String tabName,
       String colName) {
-    ColStatistics cs = new ColStatistics(tabName, colName, cso.getColType());
+    ColStatistics cs = new ColStatistics(colName, cso.getColType());
     String colType = cso.getColType();
     ColumnStatisticsData csd = cso.getStatsData();
     if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
@@ -613,13 +713,12 @@ public class StatsUtils {
       Table table, List<ColumnInfo> schema, List<String> neededColumns) {
     String dbName = table.getDbName();
     String tabName = table.getTableName();
-    Map<String, String> colToTabAlias = new HashMap<String, String>(schema.size());
-    List<String> neededColsInTable = processNeededColumns(schema, neededColumns, colToTabAlias);
+    List<String> neededColsInTable = processNeededColumns(schema, neededColumns);
     List<ColStatistics> stats = null;
     try {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
           dbName, tabName, neededColsInTable);
-      stats = convertColStats(colStat, tabName, colToTabAlias);
+      stats = convertColStats(colStat, tabName);
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
       stats = null;
@@ -627,35 +726,29 @@ public class StatsUtils {
     return stats;
   }
 
-  private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName,
-    Map<String,String> colToTabAlias) {
+  private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName) {
     List<ColStatistics> stats = new ArrayList<ColStatistics>(colStats.size());
     for (ColumnStatisticsObj statObj : colStats) {
       ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
-      cs.setTableAlias(colToTabAlias.get(cs.getColumnName()));
       stats.add(cs);
     }
     return stats;
   }
   private static List<String> processNeededColumns(List<ColumnInfo> schema,
-      List<String> neededColumns, Map<String, String> colToTabAlias) {
-    for (ColumnInfo col : schema) {
-      if (col.isHiddenVirtualCol()) continue;
-      colToTabAlias.put(col.getInternalName(), col.getTabAlias());
-    }
+      List<String> neededColumns) {
     // Remove hidden virtual columns, as well as needed columns that are not
     // part of the table. TODO: the latter case should not really happen...
     List<String> neededColsInTable = null;
     int limit = neededColumns.size();
     for (int i = 0; i < limit; ++i) {
-      if (colToTabAlias.containsKey(neededColumns.get(i))) continue;
       if (neededColsInTable == null) {
         neededColsInTable = Lists.newArrayList(neededColumns);
       }
       neededColsInTable.remove(i--);
       --limit;
     }
-    return (neededColsInTable == null) ? neededColumns : neededColsInTable;
+    return (neededColsInTable == null || neededColsInTable.size() == 0) ? neededColumns
+        : neededColsInTable;
   }
 
   /**
@@ -1013,12 +1106,10 @@ public class StatsUtils {
     if (colExprMap != null  && rowSchema != null) {
       for (ColumnInfo ci : rowSchema.getSignature()) {
         String outColName = ci.getInternalName();
-        String outTabAlias = ci.getTabAlias();
         ExprNodeDesc end = colExprMap.get(outColName);
         ColStatistics colStat = getColStatisticsFromExpression(conf, parentStats, end);
         if (colStat != null) {
           colStat.setColumnName(outColName);
-          colStat.setTableAlias(outTabAlias);
           cs.add(colStat);
         }
       }
@@ -1059,10 +1150,6 @@ public class StatsUtils {
         colStat = null;
       }
       if (colStat != null) {
-        ColumnInfo ci = rowSchema.getColumnInfo(colStat.getColumnName());
-        if (ci != null) {
-          colStat.setTableAlias(ci.getTabAlias());
-        }
         cs.add(colStat);
       }
     }
@@ -1094,13 +1181,11 @@ public class StatsUtils {
     long numNulls = 0;
     ObjectInspector oi = null;
     long numRows = parentStats.getNumRows();
-    String tabAlias = null;
 
     if (end instanceof ExprNodeColumnDesc) {
       // column projection
       ExprNodeColumnDesc encd = (ExprNodeColumnDesc) end;
       colName = encd.getColumn();
-      tabAlias = encd.getTabAlias();
 
       if (encd.getIsPartitionColOrVirtualCol()) {
 
@@ -1117,7 +1202,7 @@ public class StatsUtils {
       } else {
 
         // clone the column stats and return
-        ColStatistics result = parentStats.getColumnStatisticsForColumn(tabAlias, colName);
+        ColStatistics result = parentStats.getColumnStatisticsFromColName(colName);
         if (result != null) {
           try {
             return result.clone();
@@ -1151,13 +1236,6 @@ public class StatsUtils {
       colType = engfd.getTypeString();
       countDistincts = numRows;
       oi = engfd.getWritableObjectInspector();
-    } else if (end instanceof ExprNodeNullDesc) {
-
-      // null projection
-      ExprNodeNullDesc ennd = (ExprNodeNullDesc) end;
-      colName = ennd.getName();
-      colType = "null";
-      numNulls = numRows;
     } else if (end instanceof ExprNodeColumnListDesc) {
 
       // column list
@@ -1189,7 +1267,7 @@ public class StatsUtils {
       avgColSize = getAvgColLenOfFixedLengthTypes(colType);
     }
 
-    ColStatistics colStats = new ColStatistics(tabAlias, colName, colType);
+    ColStatistics colStats = new ColStatistics(colName, colType);
     colStats.setAvgColLen(avgColSize);
     colStats.setCountDistint(countDistincts);
     colStats.setNumNulls(numNulls);
@@ -1324,40 +1402,6 @@ public class StatsUtils {
     return result;
   }
 
-  /**
-   * Returns fully qualified name of column
-   * @param tabName
-   * @param colName
-   * @return
-   */
-  public static String getFullyQualifiedColumnName(String tabName, String colName) {
-    return getFullyQualifiedName(null, tabName, colName);
-  }
-
-  /**
-   * Returns fully qualified name of column
-   * @param dbName
-   * @param tabName
-   * @param colName
-   * @return
-   */
-  public static String getFullyQualifiedColumnName(String dbName, String tabName, String colName) {
-    return getFullyQualifiedName(dbName, tabName, colName);
-  }
-
-  /**
-   * Returns fully qualified name of column
-   * @param dbName
-   * @param tabName
-   * @param partName
-   * @param colName
-   * @return
-   */
-  public static String getFullyQualifiedColumnName(String dbName, String tabName, String partName,
-      String colName) {
-    return getFullyQualifiedName(dbName, tabName, partName, colName);
-  }
-
   public static String getFullyQualifiedTableName(String dbName, String tabName) {
     return getFullyQualifiedName(dbName, tabName);
   }
@@ -1373,78 +1417,19 @@ public class StatsUtils {
   }
 
   /**
-   * Get fully qualified column name from output key column names and column expression map
+   * Get qualified column name from output key column names
    * @param keyExprs
    *          - output key names
-   * @param map
-   *          - column expression map
-   * @return list of fully qualified names
+   * @return list of qualified names
    */
-  public static List<String> getFullyQualifedReducerKeyNames(List<String> keyExprs,
-      Map<String, ExprNodeDesc> map) {
+  public static List<String> getQualifedReducerKeyNames(List<String> keyExprs) {
     List<String> result = Lists.newArrayList();
     if (keyExprs != null) {
       for (String key : keyExprs) {
-        String colName = key;
-        ExprNodeDesc end = map.get(colName);
-        // if we couldn't get expression try prepending "KEY." prefix to reducer key column names
-        if (end == null) {
-          colName = Utilities.ReduceField.KEY.toString() + "." + key;
-          end = map.get(colName);
-          if (end == null) {
-            continue;
-          }
-        }
-        if (end instanceof ExprNodeColumnDesc) {
-          ExprNodeColumnDesc encd = (ExprNodeColumnDesc) end;
-          String tabAlias = encd.getTabAlias();
-          result.add(getFullyQualifiedColumnName(tabAlias, colName));
-        } else if (end instanceof ExprNodeGenericFuncDesc) {
-          ExprNodeGenericFuncDesc enf = (ExprNodeGenericFuncDesc) end;
-          String tabAlias = "";
-          for (ExprNodeDesc childEnd : enf.getChildren()) {
-            if (childEnd instanceof  ExprNodeColumnDesc) {
-              tabAlias = ((ExprNodeColumnDesc) childEnd).getTabAlias();
-              break;
-            }
-          }
-          result.add(getFullyQualifiedColumnName(tabAlias, colName));
-        } else if (end instanceof ExprNodeConstantDesc) {
-          ExprNodeConstantDesc encd = (ExprNodeConstantDesc) end;
-          result.add(encd.getValue().toString());
-        }
+        result.add(Utilities.ReduceField.KEY.toString() + "." + key);
       }
     }
     return result;
-  }
-
-  /**
-   * Returns all table aliases from expression nodes
-   * @param columnExprMap - column expression map
-   * @return
-   */
-  public static Set<String> getAllTableAlias(
-      Map<String, ExprNodeDesc> columnExprMap) {
-    Set<String> result = new HashSet<String>();
-    if (columnExprMap != null) {
-      for (ExprNodeDesc end : columnExprMap.values()) {
-        getTableAliasFromExprNode(end, result);
-      }
-    }
-    return result;
-  }
-
-  private static void getTableAliasFromExprNode(ExprNodeDesc end,
-      Set<String> output) {
-
-    if (end instanceof ExprNodeColumnDesc) {
-      output.add(((ExprNodeColumnDesc) end).getTabAlias());
-    } else if (end instanceof ExprNodeGenericFuncDesc) {
-      for (ExprNodeDesc child : end.getChildren()) {
-        getTableAliasFromExprNode(child, output);
-      }
-    }
-
   }
 
   public static long getAvailableMemory(Configuration conf) {
@@ -1473,7 +1458,7 @@ public class StatsUtils {
     double result = a * b;
     return (result > Long.MAX_VALUE) ? Long.MAX_VALUE : (long)result;
   }
- 
+
   /** Bounded addition - overflows become MAX_VALUE */
   public static long safeAdd(long a, long b) {
     try {
@@ -1482,7 +1467,7 @@ public class StatsUtils {
       return Long.MAX_VALUE;
     }
   }
- 
+
   /** Bounded multiplication - overflows become MAX_VALUE */
   public static long safeMult(long a, long b) {
     try {

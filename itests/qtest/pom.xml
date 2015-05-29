@@ -36,16 +36,14 @@
     <run_disabled>false</run_disabled>
     <clustermode></clustermode>
     <execute.beeline.tests>false</execute.beeline.tests>
+    <!-- Profile activation clause for accumulo-tests will flip skip.accumulo.tests to false
+         as long as -DskipAccumuloTests is not specified -->
+    <skip.accumulo.tests>true</skip.accumulo.tests>
   </properties>
 
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- test intra-project -->
-    <dependency>
-      <groupId>org.apache.accumulo</groupId>
-      <artifactId>accumulo-minicluster</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-ant</artifactId>
@@ -375,6 +373,24 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>accumulo-tests</id>
+      <activation>
+        <property>
+          <name>!skipAccumuloTests</name>
+        </property>
+      </activation>
+      <properties>
+        <skip.accumulo.tests>false</skip.accumulo.tests>
+      </properties>
+      <dependencies>
+	<dependency>
+	  <groupId>org.apache.accumulo</groupId>
+	  <artifactId>accumulo-minicluster</artifactId>
+	  <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
   <build>
@@ -420,7 +436,6 @@
                 <mkdir dir="${project.build.directory}/qfile-results/hbase-handler/positive/" />
                 <mkdir dir="${project.build.directory}/qfile-results/hbase-handler/negative/" />
                 <mkdir dir="${project.build.directory}/qfile-results/hbase-handler/minimrpositive/" />
-                <mkdir dir="${project.build.directory}/qfile-results/accumulo-handler/positive/" />
 
                 <mkdir dir="${project.build.directory}/qfile-results/contribpositive"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribnegative"/>
@@ -637,19 +652,24 @@
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- Accumulo Positive -->
-                <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
-                  outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
-                  templatePath="${basedir}/${hive.path.to.root}/accumulo-handler/src/test/templates/" template="TestAccumuloCliDriver.vm"
-                  queryDirectory="${basedir}/${hive.path.to.root}/accumulo-handler/src/test/queries/positive/"
-                  queryFile="${qfile}"
-                  runDisabled="${run_disabled}"
-                  clusterMode="${clustermode}"
-                  resultsDirectory="${basedir}/${hive.path.to.root}/accumulo-handler/src/test/results/positive/" className="TestAccumuloCliDriver"
-                  logFile="${project.build.directory}/testaccumuloclidrivergen.log"
-                  logDirectory="${project.build.directory}/qfile-results/accumulo-handler/positive/"
-                  initScript="q_test_init.sql"
-                  cleanupScript="q_test_cleanup.sql"/>
-
+                <if>
+                  <equals arg1="${skip.accumulo.tests}" arg2="false" />
+                    <then>
+                      <mkdir dir="${project.build.directory}/qfile-results/accumulo-handler/positive/" />
+                      <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+                      outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
+	              templatePath="${basedir}/${hive.path.to.root}/accumulo-handler/src/test/templates/" template="TestAccumuloCliDriver.vm"
+                      queryDirectory="${basedir}/${hive.path.to.root}/accumulo-handler/src/test/queries/positive/"
+                      queryFile="${qfile}"
+                      runDisabled="${run_disabled}"
+                      clusterMode="${clustermode}"
+                      resultsDirectory="${basedir}/${hive.path.to.root}/accumulo-handler/src/test/results/positive/" className="TestAccumuloCliDriver"
+                      logFile="${project.build.directory}/testaccumuloclidrivergen.log"
+                      logDirectory="${project.build.directory}/qfile-results/accumulo-handler/positive/"
+                      initScript="q_test_init.sql"
+                      cleanupScript="q_test_cleanup.sql"/>
+                    </then>
+                </if>
 
                 <!-- Beeline -->
                 <if>

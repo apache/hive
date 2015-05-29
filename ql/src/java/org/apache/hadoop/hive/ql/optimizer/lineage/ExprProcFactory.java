@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
@@ -136,7 +135,7 @@ public class ExprProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      assert (nd instanceof ExprNodeConstantDesc || nd instanceof ExprNodeNullDesc);
+      assert (nd instanceof ExprNodeConstantDesc);
 
       // Create a dependency that has no basecols
       Dependency dep = new Dependency();

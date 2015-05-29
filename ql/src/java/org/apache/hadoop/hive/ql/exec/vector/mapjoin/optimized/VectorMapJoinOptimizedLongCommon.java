@@ -113,7 +113,7 @@ public class VectorMapJoinOptimizedLongCommon {
       }
 
       // byte[] bytes = Arrays.copyOf(currentKey.get(), currentKey.getLength());
-      // LOG.info("VectorMapJoinOptimizedLongCommon adaptPutRow key " + key + " min " + min + " max " + max + " hashTableKeyType " + hashTableKeyType.name() + " hex " + Hex.encodeHexString(bytes));
+      // LOG.debug("VectorMapJoinOptimizedLongCommon adaptPutRow key " + key + " min " + min + " max " + max + " hashTableKeyType " + hashTableKeyType.name() + " hex " + Hex.encodeHexString(bytes));
 
     }
 
@@ -145,7 +145,7 @@ public class VectorMapJoinOptimizedLongCommon {
     }
 
     // byte[] bytes = Arrays.copyOf(output.getData(), output.getLength());
-    // LOG.info("VectorMapJoinOptimizedLongCommon serialize key " + key + " hashTableKeyType " + hashTableKeyType.name() + " hex " + Hex.encodeHexString(bytes));
+    // LOG.debug("VectorMapJoinOptimizedLongCommon serialize key " + key + " hashTableKeyType " + hashTableKeyType.name() + " hex " + Hex.encodeHexString(bytes));
 
     serializedBytes.bytes = output.getData();
     serializedBytes.offset = 0;

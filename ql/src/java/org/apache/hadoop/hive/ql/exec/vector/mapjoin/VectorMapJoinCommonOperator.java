@@ -470,8 +470,8 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
       LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor bigTableByteColumnVectorColumns " + Arrays.toString(bigTableByteColumnVectorColumns));
       LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor smallTableByteColumnVectorColumns " + Arrays.toString(smallTableByteColumnVectorColumns));
 
-      LOG.info(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor outputProjection " + Arrays.toString(outputProjection));
-      LOG.info(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor outputTypeNames " + Arrays.toString(outputTypeNames));
+      LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor outputProjection " + Arrays.toString(outputProjection));
+      LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor outputTypeNames " + Arrays.toString(outputTypeNames));
     }
 
     setupVOutContext(conf.getOutputColumnNames());
@@ -503,7 +503,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    */
   protected void setupVOutContext(List<String> outputColumnNames) {
     if (LOG.isDebugEnabled()) {
-      LOG.info(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor outputColumnNames " + outputColumnNames);
+      LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor outputColumnNames " + outputColumnNames);
     }
     if (outputColumnNames.size() != outputProjection.length) {
       throw new RuntimeException("Output column names " + outputColumnNames + " length and output projection " + Arrays.toString(outputProjection) + " / " + Arrays.toString(outputTypeNames) + " length mismatch");
@@ -729,9 +729,9 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    * Common one time setup by native vectorized map join operator's processOp.
    */
   protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
-    LOG.info("VectorMapJoinInnerCommonOperator commonSetup begin...");
 
     if (LOG.isDebugEnabled()) {
+      LOG.debug("VectorMapJoinInnerCommonOperator commonSetup begin...");
       displayBatchColumns(batch, "batch");
       displayBatchColumns(overflowBatch, "overflowBatch");
     }

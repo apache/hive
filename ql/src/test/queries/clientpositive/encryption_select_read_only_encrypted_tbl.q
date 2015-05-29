@@ -1,6 +1,6 @@
 -- SORT_QUERY_RESULTS
 
-DROP TABLE IF EXISTS encrypted_table;
+DROP TABLE IF EXISTS encrypted_table PURGE;
 CREATE TABLE encrypted_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';
 
 CRYPTO CREATE_KEY --keyName key_128 --bitLength 128;
@@ -12,5 +12,5 @@ dfs -chmod -R 555 ${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_tab
 
 SELECT count(*) FROM encrypted_table;
 
-drop table encrypted_table;
+drop table encrypted_table PURGE;
 CRYPTO DELETE_KEY --keyName key_128;

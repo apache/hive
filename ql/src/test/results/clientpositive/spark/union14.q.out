@@ -32,21 +32,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
+                    Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 26 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count(1)
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint)
         Map 3 
             Map Operator Tree:
@@ -71,10 +76,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -85,21 +90,26 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'tst1' (type: string)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
+                    Statistics: Num rows: 26 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(1)
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
 
   Stage: Stage-0
@@ -124,20 +134,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-238	1
-311	1
-146	1
-278	1
-401	1
-128	1
-98	1
-255	1
-213	1
-150	1
-369	1
-66	1
-	10
-406	1
-tst1	1
 273	1
 224	1
+255	1
+	10
+369	1
+213	1
+tst1	1
+66	1
+406	1
+150	1
+238	1
+401	1
+98	1
+146	1
+311	1
+128	1
+278	1

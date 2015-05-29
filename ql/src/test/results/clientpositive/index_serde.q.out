@@ -172,14 +172,14 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 521 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (number > 6) (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: number (type: int), first_name (type: string), last_name (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

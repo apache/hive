@@ -93,10 +93,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -106,10 +109,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -119,10 +125,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -279,10 +288,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -313,10 +325,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -455,10 +470,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -469,10 +487,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -483,10 +504,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -648,10 +672,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -662,10 +689,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -676,10 +706,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -828,10 +861,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -842,10 +878,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -856,10 +895,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Statistics: Num rows: 9 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

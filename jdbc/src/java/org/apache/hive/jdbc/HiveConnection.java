@@ -225,6 +225,8 @@ public class HiveConnection implements java.sql.Connection {
           port = connParams.getPort();
           LOG.info("Will retry opening client transport");
         } else {
+          LOG.info("Transport Used for JDBC connection: " +
+            sessConfMap.get(JdbcConnectionParams.TRANSPORT_MODE));
           throw new SQLException("Could not open client transport with JDBC Uri: " + jdbcUriString
               + ": " + e.getMessage(), " 08S01", e);
         }
@@ -265,6 +267,9 @@ public class HiveConnection implements java.sql.Connection {
       }
     }
     catch (TException e) {
+      LOG.info("JDBC Connection Parameters used : useSSL = " + useSsl + " , httpPath  = " +
+        sessConfMap.get(JdbcConnectionParams.HTTP_PATH) + " Authentication type = " +
+        sessConfMap.get(JdbcConnectionParams.AUTH_TYPE));
       String msg =  "Could not create http connection to " +
           jdbcUriString + ". " + e.getMessage();
       throw new TTransportException(msg, e);

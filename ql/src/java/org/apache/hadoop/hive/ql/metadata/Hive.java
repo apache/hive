@@ -782,7 +782,7 @@ public class Hive {
       }
 
       org.apache.hadoop.hive.metastore.api.Table baseTbl = getTable(tableName).getTTable();
-      if (baseTbl.getTableType() == TableType.VIRTUAL_VIEW.toString()) {
+      if (TableType.VIRTUAL_VIEW.toString().equals(baseTbl.getTableType())) {
         throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
       }
       if (baseTbl.isTemporary()) {
@@ -1930,6 +1930,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         for (Path p : newFiles) {
           insertData.addToFilesAdded(p.toString());
         }
+      } else {
+        insertData.setFilesAdded(new ArrayList<String>());
       }
       FireEventRequest rqst = new FireEventRequest(true, data);
       rqst.setDbName(tbl.getDbName());

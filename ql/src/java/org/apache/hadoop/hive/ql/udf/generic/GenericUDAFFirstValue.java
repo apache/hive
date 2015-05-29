@@ -178,8 +178,8 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
 
       private final Deque<ValIndexPair> valueChain;
 
-      public State(int numPreceding, int numFollowing, AggregationBuffer buf) {
-        super(numPreceding, numFollowing, buf);
+      public State(AggregationBuffer buf) {
+        super(buf);
         valueChain = new ArrayDeque<ValIndexPair>(numPreceding + numFollowing + 1);
       }
 
@@ -225,7 +225,7 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
       AggregationBuffer underlying = wrappedEval.getNewAggregationBuffer();
-      return new State(numPreceding, numFollowing, underlying);
+      return new State(underlying);
     }
 
     protected ObjectInspector inputOI() {
@@ -252,7 +252,7 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
        * add row to chain. except in case of UNB preceding: - only 1 firstVal
        * needs to be tracked.
        */
-      if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT || s.valueChain.isEmpty()) {
+      if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT || s.valueChain.isEmpty()) {
         /*
          * add value to chain if it is not null or if skipNulls is false.
          */
@@ -261,7 +261,7 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
         }
       }
 
-      if (s.numRows >= (s.numFollowing)) {
+      if (s.numRows >= numFollowing) {
         /*
          * if skipNulls is true and there are no rows in valueChain => all rows
          * in partition are null so far; so add null in o/p
@@ -276,8 +276,8 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
 
       if (s.valueChain.size() > 0) {
         int fIdx = (Integer) s.valueChain.getFirst().idx;
-        if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-            && s.numRows > fIdx + s.numPreceding + s.numFollowing) {
+        if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+            && s.numRows > fIdx + numPreceding + numFollowing) {
           s.valueChain.removeFirst();
         }
       }
@@ -288,13 +288,13 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
       State s = (State) agg;
       ValIndexPair r = s.valueChain.size() == 0 ? null : s.valueChain.getFirst();
 
-      for (int i = 0; i < s.numFollowing; i++) {
+      for (int i = 0; i < numFollowing; i++) {
         s.results.add(r == null ? null : r.val);
         s.numRows++;
         if (r != null) {
           int fIdx = (Integer) r.idx;
-          if (s.numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-              && s.numRows > fIdx + s.numPreceding + s.numFollowing
+          if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
+              && s.numRows > fIdx + numPreceding + numFollowing
               && !s.valueChain.isEmpty()) {
             s.valueChain.removeFirst();
             r = !s.valueChain.isEmpty() ? s.valueChain.getFirst() : r;

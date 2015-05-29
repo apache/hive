@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 
@@ -55,6 +57,7 @@ public class QB {
   private boolean isAnalyzeRewrite;
   private CreateTableDesc tblDesc = null; // table descriptor of the final
   private CreateTableDesc directoryDesc = null ;
+  private List<Path> encryptedTargetTablePaths;
 
   // used by PTFs
   /*
@@ -387,4 +390,20 @@ public class QB {
     return havingClauseSubQueryPredicate;
   }
 
+  void addEncryptedTargetTablePath(Path p) {
+    if(encryptedTargetTablePaths == null) {
+      encryptedTargetTablePaths = new ArrayList<>();
+    }
+    encryptedTargetTablePaths.add(p);
+  }
+  /**
+   * List of dbName.tblName of encrypted target tables of insert statement
+   * Used to support Insert ... values(...)
+   */
+  List<Path> getEncryptedTargetTablePaths() {
+    if(encryptedTargetTablePaths == null) {
+      return Collections.emptyList();
+    }
+    return encryptedTargetTablePaths;
+  }
 }

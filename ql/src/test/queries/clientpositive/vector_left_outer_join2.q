@@ -3,6 +3,8 @@ set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000;
 
+-- SORT_QUERY_RESULTS
+
 drop table if exists TJOIN1;
 drop table if exists TJOIN2;
 create table if not exists TJOIN1 (RNUM int , C1 int, C2 int) STORED AS orc;

@@ -1,6 +1,10 @@
-PREHOOK: query: drop table if exists TJOIN1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table if exists TJOIN1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists TJOIN1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table if exists TJOIN1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table if exists TJOIN2
 PREHOOK: type: DROPTABLE
@@ -228,8 +232,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
-1	20	25	NULL
 0	10	15	NULL
+1	20	25	NULL
 2	NULL	50	NULL
 PREHOOK: query: explain
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
@@ -387,8 +391,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
-1	20	25	NULL
 0	10	15	NULL
+1	20	25	NULL
 2	NULL	50	NULL
 PREHOOK: query: explain
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
@@ -466,10 +470,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
+0	10	15	NULL
 1	20	25	NULL
 2	NULL	50	NULL
-0	10	15	BB
-0	10	15	FF
 PREHOOK: query: explain
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 )
 PREHOOK: type: QUERY
@@ -547,7 +550,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tjoin1
 POSTHOOK: Input: default@tjoin2
 #### A masked pattern was here ####
-2	NULL	50	NULL
+0	10	15	NULL
 1	20	25	NULL
-0	10	15	BB
-0	10	15	FF
+2	NULL	50	NULL

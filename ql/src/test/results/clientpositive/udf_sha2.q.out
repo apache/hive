@@ -1,0 +1,134 @@
+PREHOOK: query: DESCRIBE FUNCTION sha2
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sha2
+POSTHOOK: type: DESCFUNCTION
+sha2(string/binary, len) - Calculates the SHA-2 family of hash functions (SHA-224, SHA-256, SHA-384, and SHA-512).
+PREHOOK: query: DESC FUNCTION EXTENDED sha2
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED sha2
+POSTHOOK: type: DESCFUNCTION
+sha2(string/binary, len) - Calculates the SHA-2 family of hash functions (SHA-224, SHA-256, SHA-384, and SHA-512).
+The first argument is the string or binary to be hashed. The second argument indicates the desired bit length of the result, which must have a value of 224, 256, 384, 512, or 0 (which is equivalent to 256). SHA-224 is supported starting from Java 8. If either argument is NULL or the hash length is not one of the permitted values, the return value is NULL.
+Example: > SELECT sha2('ABC', 256);
+ 'b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78'
+PREHOOK: query: explain select sha2('ABC', 256)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select sha2('ABC', 256)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78' (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: select
+sha2('ABC', 0),
+sha2('', 0),
+sha2(binary('ABC'), 0),
+sha2(binary(''), 0),
+sha2(cast(null as string), 0),
+sha2(cast(null as binary), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+sha2('ABC', 0),
+sha2('', 0),
+sha2(binary('ABC'), 0),
+sha2(binary(''), 0),
+sha2(cast(null as string), 0),
+sha2(cast(null as binary), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	NULL	NULL
+PREHOOK: query: select
+sha2('ABC', 256),
+sha2('', 256),
+sha2(binary('ABC'), 256),
+sha2(binary(''), 256),
+sha2(cast(null as string), 256),
+sha2(cast(null as binary), 256)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+sha2('ABC', 256),
+sha2('', 256),
+sha2(binary('ABC'), 256),
+sha2(binary(''), 256),
+sha2(cast(null as string), 256),
+sha2(cast(null as binary), 256)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	NULL	NULL
+PREHOOK: query: select
+sha2('ABC', 384),
+sha2('', 384),
+sha2(binary('ABC'), 384),
+sha2(binary(''), 384),
+sha2(cast(null as string), 384),
+sha2(cast(null as binary), 384)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+sha2('ABC', 384),
+sha2('', 384),
+sha2(binary('ABC'), 384),
+sha2(binary(''), 384),
+sha2(cast(null as string), 384),
+sha2(cast(null as binary), 384)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1e02dc92a41db610c9bcdc9b5935d1fb9be5639116f6c67e97bc1a3ac649753baba7ba021c813e1fe20c0480213ad371	38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b	1e02dc92a41db610c9bcdc9b5935d1fb9be5639116f6c67e97bc1a3ac649753baba7ba021c813e1fe20c0480213ad371	38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b	NULL	NULL
+PREHOOK: query: select
+sha2('ABC', 512),
+sha2('', 512),
+sha2(binary('ABC'), 512),
+sha2(binary(''), 512),
+sha2(cast(null as string), 512),
+sha2(cast(null as binary), 512)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+sha2('ABC', 512),
+sha2('', 512),
+sha2(binary('ABC'), 512),
+sha2(binary(''), 512),
+sha2(cast(null as string), 512),
+sha2(cast(null as binary), 512)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+397118fdac8d83ad98813c50759c85b8c47565d8268bf10da483153b747a74743a58a90e85aa9f705ce6984ffc128db567489817e4092d050d8a1cc596ddc119	cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e	397118fdac8d83ad98813c50759c85b8c47565d8268bf10da483153b747a74743a58a90e85aa9f705ce6984ffc128db567489817e4092d050d8a1cc596ddc119	cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e	NULL	NULL
+PREHOOK: query: --null
+select
+sha2('ABC', 200),
+sha2('ABC', cast(null as int))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: --null
+select
+sha2('ABC', 200),
+sha2('ABC', cast(null as int))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL	NULL

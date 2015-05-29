@@ -68,23 +68,9 @@ public class PlanModifierUtil {
       if (collationInputRefs.contains(i)) {
         RexNode obyExpr = obChild.getChildExps().get(i);
         if (obyExpr instanceof RexCall) {
-          int a = -1;
-          List<RexNode> operands = new ArrayList<>();
-          for (int k = 0; k< ((RexCall) obyExpr).operands.size(); k++) {
-            RexNode rn = ((RexCall) obyExpr).operands.get(k);
-            for (int j = 0; j < resultSchema.size(); j++) {
-              if( obChild.getChildExps().get(j).toString().equals(rn.toString())) {
-                a = j;
-                break;
-              }
-            } if (a != -1) {
-              operands.add(new RexInputRef(a, rn.getType()));
-            } else {
-              operands.add(rn);
-            }
-            a = -1;
-          }
-          obyExpr = obChild.getCluster().getRexBuilder().makeCall(((RexCall)obyExpr).getOperator(), operands);
+          LOG.debug("Old RexCall : " + obyExpr);
+          obyExpr = adjustOBSchema((RexCall) obyExpr, obChild, resultSchema);
+          LOG.debug("New RexCall : " + obyExpr);
         }
         inputRefToCallMapBldr.put(i, obyExpr);
       }
@@ -104,6 +90,33 @@ public class PlanModifierUtil {
       obRel.replaceInput(0, replacementProjectRel);
     }
     obRel.setInputRefToCallMap(inputRefToCallMap);
+  }
+
+  private static RexCall adjustOBSchema(RexCall obyExpr, Project obChild,
+          List<FieldSchema> resultSchema) {
+    int a = -1;
+    List<RexNode> operands = new ArrayList<>();
+    for (int k = 0; k < obyExpr.operands.size(); k++) {
+      RexNode rn = obyExpr.operands.get(k);
+      for (int j = 0; j < resultSchema.size(); j++) {
+        if( obChild.getChildExps().get(j).toString().equals(rn.toString())) {
+          a = j;
+          break;
+        }
+      }
+      if (a != -1) {
+        operands.add(new RexInputRef(a, rn.getType()));
+      } else {
+        if (rn instanceof RexCall) {
+          operands.add(adjustOBSchema((RexCall)rn, obChild, resultSchema));
+        } else {
+          operands.add(rn);
+        }
+      }
+      a = -1;
+    }
+    return (RexCall) obChild.getCluster().getRexBuilder().makeCall(
+            obyExpr.getType(), obyExpr.getOperator(), operands);
   }
 
   protected static String generateInvalidSchemaMessage(Project topLevelProj,

@@ -58,6 +58,8 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 import com.google.common.base.Function;
@@ -95,15 +97,11 @@ public class HiveCalciteUtil {
   }
 
   public static boolean validateASTForUnsupportedTokens(ASTNode ast) {
-    String astTree = ast.toStringTree();
-    // if any of following tokens are present in AST, bail out
-    String[] tokens = { "TOK_CHARSETLITERAL", "TOK_TABLESPLITSAMPLE" };
-    for (String token : tokens) {
-      if (astTree.contains(token)) {
-        return false;
-      }
+    if (ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE)) {
+      return false;
+    } else {
+      return true;
     }
-    return true;
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {

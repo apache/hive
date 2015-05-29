@@ -142,7 +142,7 @@ public class VectorMapJoinFastValueStore {
     }
 
     public void set(VectorMapJoinFastValueStore valueStore, long valueRefWord) {
-      // LOG.info("VectorMapJoinFastValueStore set valueRefWord " + Long.toHexString(valueRefWord));
+      // LOG.debug("VectorMapJoinFastValueStore set valueRefWord " + Long.toHexString(valueRefWord));
 
       this.valueStore = valueStore;
       this.valueRefWord = valueRefWord;
@@ -473,7 +473,7 @@ public class VectorMapJoinFastValueStore {
       valueRefWord |= SmallValueLength.allBitsOnBitShifted;
     }
 
-    // LOG.info("VectorMapJoinFastValueStore addFirst valueLength " + valueLength + " newAbsoluteOffset " + newAbsoluteOffset + " valueRefWord " + Long.toHexString(valueRefWord));
+    // LOG.debug("VectorMapJoinFastValueStore addFirst valueLength " + valueLength + " newAbsoluteOffset " + newAbsoluteOffset + " valueRefWord " + Long.toHexString(valueRefWord));
 
     // The lower bits are the absolute value offset.
     valueRefWord |= newAbsoluteOffset;
@@ -499,7 +499,7 @@ public class VectorMapJoinFastValueStore {
     boolean isOldValueLast =
         ((oldValueRef & IsLastFlag.flagOnMask) != 0);
 
-    // LOG.info("VectorMapJoinFastValueStore addMore isOldValueLast " + isOldValueLast + " oldSmallValueLength " + oldSmallValueLength + " oldAbsoluteValueOffset " + oldAbsoluteValueOffset + " oldValueRef " + Long.toHexString(oldValueRef));
+    // LOG.debug("VectorMapJoinFastValueStore addMore isOldValueLast " + isOldValueLast + " oldSmallValueLength " + oldSmallValueLength + " oldAbsoluteValueOffset " + oldAbsoluteValueOffset + " oldValueRef " + Long.toHexString(oldValueRef));
 
     /*
      * Write information about the old value (which becomes our next) at the beginning
@@ -546,7 +546,7 @@ public class VectorMapJoinFastValueStore {
     // The lower bits are the absolute value offset.
     newValueRef |=  newAbsoluteOffset;
 
-    // LOG.info("VectorMapJoinFastValueStore addMore valueLength " + valueLength + " newAbsoluteOffset " + newAbsoluteOffset + " newValueRef " + Long.toHexString(newValueRef));
+    // LOG.debug("VectorMapJoinFastValueStore addMore valueLength " + valueLength + " newAbsoluteOffset " + newAbsoluteOffset + " newValueRef " + Long.toHexString(newValueRef));
 
     return newValueRef;
   }

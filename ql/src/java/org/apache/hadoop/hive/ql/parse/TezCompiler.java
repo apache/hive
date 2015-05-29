@@ -150,7 +150,7 @@ public class TezCompiler extends TaskCompiler {
         if (component.size() != 1) {
           LOG.info("Found cycle in operator plan...");
           cycleFree = false;
-          removeEventOperator(component);
+          removeEventOperator(component, procCtx);
           break;
         }
       }
@@ -158,7 +158,7 @@ public class TezCompiler extends TaskCompiler {
     }
   }
 
-  private void removeEventOperator(Set<Operator<?>> component) {
+  private void removeEventOperator(Set<Operator<?>> component, OptimizeTezProcContext context) {
     AppMasterEventOperator victim = null;
     for (Operator<?> o : component) {
       if (o instanceof AppMasterEventOperator) {
@@ -170,20 +170,17 @@ public class TezCompiler extends TaskCompiler {
       }
     }
 
-    Operator<?> child = victim;
-    Operator<?> curr = victim;
-
-    while (curr.getChildOperators().size() <= 1) {
-      child = curr;
-      curr = curr.getParentOperators().get(0);
+    if (victim == null ||
+        (!context.pruningOpsRemovedByPriorOpt.isEmpty() &&
+         context.pruningOpsRemovedByPriorOpt.contains(victim))) {
+      return;
     }
 
-    // at this point we've found the fork in the op pipeline that has the
-    // pruning as a child plan.
+    GenTezUtils.getUtils().removeBranch(victim);
+    // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
     LOG.info("Disabling dynamic pruning for: "
         + ((DynamicPruningEventDesc) victim.getConf()).getTableScan().toString()
         + ". Needed to break cyclic dependency");
-    curr.removeChild(child);
   }
 
   // Tarjan's algo

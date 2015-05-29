@@ -34,7 +34,7 @@ import org.apache.hadoop.io.Text;
  * Generic UDF for string function <code>INSTR(str,substr)</code>. This mimcs
  * the function from MySQL
  * http://dev.mysql.com/doc/refman/5.1/en/string-functions.html#function_instr
- * 
+ *
  * <pre>
  * usage:
  * INSTR(str, substr)

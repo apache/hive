@@ -1,0 +1,253 @@
+PREHOOK: query: -- We are not expecting either query to vectorize due to use of pruneing grouping set id,
+-- or use of GROUPING__ID virtual column.
+create table store_txt
+(
+    s_store_sk                int,
+    s_store_id                string,
+    s_rec_start_date          string,
+    s_rec_end_date            string,
+    s_closed_date_sk          int,
+    s_store_name              string,
+    s_number_employees        int,
+    s_floor_space             int,
+    s_hours                   string,
+    s_manager                 string,
+    s_market_id               int,
+    s_geography_class         string,
+    s_market_desc             string,
+    s_market_manager          string,
+    s_division_id             int,
+    s_division_name           string,
+    s_company_id              int,
+    s_company_name            string,
+    s_street_number           string,
+    s_street_name             string,
+    s_street_type             string,
+    s_suite_number            string,
+    s_city                    string,
+    s_county                  string,
+    s_state                   string,
+    s_zip                     string,
+    s_country                 string,
+    s_gmt_offset              decimal(5,2),
+    s_tax_precentage          decimal(5,2)                  
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_txt
+POSTHOOK: query: -- We are not expecting either query to vectorize due to use of pruneing grouping set id,
+-- or use of GROUPING__ID virtual column.
+create table store_txt
+(
+    s_store_sk                int,
+    s_store_id                string,
+    s_rec_start_date          string,
+    s_rec_end_date            string,
+    s_closed_date_sk          int,
+    s_store_name              string,
+    s_number_employees        int,
+    s_floor_space             int,
+    s_hours                   string,
+    s_manager                 string,
+    s_market_id               int,
+    s_geography_class         string,
+    s_market_desc             string,
+    s_market_manager          string,
+    s_division_id             int,
+    s_division_name           string,
+    s_company_id              int,
+    s_company_name            string,
+    s_street_number           string,
+    s_street_name             string,
+    s_street_type             string,
+    s_suite_number            string,
+    s_city                    string,
+    s_county                  string,
+    s_state                   string,
+    s_zip                     string,
+    s_country                 string,
+    s_gmt_offset              decimal(5,2),
+    s_tax_precentage          decimal(5,2)                  
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_200' OVERWRITE INTO TABLE store_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@store_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_200' OVERWRITE INTO TABLE store_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@store_txt
+PREHOOK: query: create table store
+stored as orc as
+select * from store_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@store_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store
+POSTHOOK: query: create table store
+stored as orc as
+select * from store_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@store_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store
+PREHOOK: query: explain
+select s_store_id
+ from store
+ group by s_store_id with rollup
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select s_store_id
+ from store
+ group by s_store_id with rollup
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: store
+            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s_store_id (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: _col0 (type: string), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+          pruneGroupingSetId: true
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select s_store_id
+ from store
+ group by s_store_id with rollup
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select s_store_id
+ from store
+ group by s_store_id with rollup
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+NULL
+AAAAAAAABAAAAAAA
+AAAAAAAACAAAAAAA
+AAAAAAAAEAAAAAAA
+AAAAAAAAHAAAAAAA
+AAAAAAAAIAAAAAAA
+AAAAAAAAKAAAAAAA
+PREHOOK: query: explain
+select s_store_id, GROUPING__ID
+ from store
+ group by s_store_id with rollup
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select s_store_id, GROUPING__ID
+ from store
+ group by s_store_id with rollup
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: store
+            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s_store_id (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: _col0 (type: string), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: string), _col1 (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select s_store_id, GROUPING__ID
+ from store
+ group by s_store_id with rollup
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select s_store_id, GROUPING__ID
+ from store
+ group by s_store_id with rollup
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+NULL	0
+AAAAAAAABAAAAAAA	1
+AAAAAAAACAAAAAAA	1
+AAAAAAAAEAAAAAAA	1
+AAAAAAAAHAAAAAAA	1
+AAAAAAAAIAAAAAAA	1
+AAAAAAAAKAAAAAAA	1
