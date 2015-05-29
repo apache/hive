@@ -31,31 +31,31 @@ ds                  	string
 ts                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
+PREHOOK: query: insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
-POSTHOOK: query: insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
+POSTHOOK: query: insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100
+PREHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
-POSTHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100
+POSTHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 10
+PREHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
-POSTHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 10
+POSTHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
@@ -82,7 +82,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc_merge_test_part
 POSTHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 #### A masked pattern was here ####
-159653	47778930280
+143807	50348357904
 PREHOOK: query: alter table src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
 PREHOOK: Input: default@src_orc_merge_test_part
@@ -112,7 +112,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc_merge_test_part
 POSTHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
 #### A masked pattern was here ####
-159653	47778930280
+143807	50348357904
 PREHOOK: query: drop table src_orc_merge_test_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_merge_test_part

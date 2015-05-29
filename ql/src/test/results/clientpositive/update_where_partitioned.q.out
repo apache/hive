@@ -6,21 +6,21 @@ POSTHOOK: query: create table acid_uwp(a int, b varchar(128)) partitioned by (ds
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uwp
-PREHOOK: query: insert into table acid_uwp partition (ds='today') select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null and cint < 0 order by cint limit 10
+PREHOOK: query: insert into table acid_uwp partition (ds='today') select cint, cast(cstring1 as varchar(128)) as cs from alltypesorc where cint is not null and cint < 0 order by cint, cs limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@acid_uwp@ds=today
-POSTHOOK: query: insert into table acid_uwp partition (ds='today') select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null and cint < 0 order by cint limit 10
+POSTHOOK: query: insert into table acid_uwp partition (ds='today') select cint, cast(cstring1 as varchar(128)) as cs from alltypesorc where cint is not null and cint < 0 order by cint, cs limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acid_uwp@ds=today
 POSTHOOK: Lineage: acid_uwp PARTITION(ds=today).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acid_uwp PARTITION(ds=today).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: insert into table acid_uwp partition (ds='tomorrow') select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null and cint > 100 order by cint limit 10
+PREHOOK: query: insert into table acid_uwp partition (ds='tomorrow') select cint, cast(cstring1 as varchar(128)) as cs from alltypesorc where cint is not null and cint > 100 order by cint, cs limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@acid_uwp@ds=tomorrow
-POSTHOOK: query: insert into table acid_uwp partition (ds='tomorrow') select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null and cint > 100 order by cint limit 10
+POSTHOOK: query: insert into table acid_uwp partition (ds='tomorrow') select cint, cast(cstring1 as varchar(128)) as cs from alltypesorc where cint is not null and cint > 100 order by cint, cs limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acid_uwp@ds=tomorrow
@@ -53,11 +53,11 @@ POSTHOOK: Input: default@acid_uwp@ds=tomorrow
 762	BLoMwUJ51ns6pd	tomorrow
 762	a10E76jX35YwquKCTA	tomorrow
 762	q5y2Vy1	tomorrow
+6981	NULL	tomorrow
 6981	1FNNhmiFLGw425NA13g	tomorrow
+6981	4KhrrQ0nJ7bMNTvhSCA	tomorrow
 6981	K630vaVf	tomorrow
-6981	YdG61y00526u5	tomorrow
-6981	a3EhVU6Wuy7ycJ7wY7h2gv	tomorrow
-6981	o4lvY20511w0EOX3P3I82p63	tomorrow
+6981	Y5x3JuI3M8jngv5N	tomorrow
 PREHOOK: query: update acid_uwp set b = 'fred' where b = 'k17Am8uPHWk02cEf1jet'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uwp
@@ -99,8 +99,8 @@ POSTHOOK: Input: default@acid_uwp@ds=tomorrow
 762	BLoMwUJ51ns6pd	tomorrow
 762	a10E76jX35YwquKCTA	tomorrow
 762	q5y2Vy1	tomorrow
+6981	NULL	tomorrow
 6981	1FNNhmiFLGw425NA13g	tomorrow
+6981	4KhrrQ0nJ7bMNTvhSCA	tomorrow
 6981	K630vaVf	tomorrow
-6981	YdG61y00526u5	tomorrow
-6981	a3EhVU6Wuy7ycJ7wY7h2gv	tomorrow
-6981	o4lvY20511w0EOX3P3I82p63	tomorrow
+6981	Y5x3JuI3M8jngv5N	tomorrow

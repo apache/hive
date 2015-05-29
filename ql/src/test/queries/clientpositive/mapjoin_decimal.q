@@ -26,12 +26,12 @@ CREATE TABLE t2(dec decimal(4,0)) STORED AS ORC;
 INSERT INTO TABLE t2 select dec from over1k;
 
 explain
-select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec);
+select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec) order by t1.dec;
 
 set hive.mapjoin.optimized.hashtable=false;
 
-select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec);
+select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec) order by t1.dec;
 
 set hive.mapjoin.optimized.hashtable=true;
 
-select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec);
+select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec) order by t1.dec;

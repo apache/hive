@@ -9,7 +9,7 @@ STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat';
 
 FROM src
-INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value LIMIT 10;
+INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value ORDER BY src.key, src.value LIMIT 10;
 describe columnTable;
 
 SET hive.vectorized.execution.enabled=true;

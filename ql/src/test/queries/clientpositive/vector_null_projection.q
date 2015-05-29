@@ -1,6 +1,8 @@
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
+-- SORT_QUERY_RESULTS
+
 create table a(s string) stored as orc;
 create table b(s string) stored as orc;
 insert into table a values('aaa');

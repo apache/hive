@@ -1,6 +1,10 @@
-PREHOOK: query: explain select distinct src.* from src
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+explain select distinct src.* from src
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select distinct src.* from src
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+explain select distinct src.* from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1419,6 +1423,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+	
+	val_165
+	val_193
+	val_265
+	val_27
+	val_409
+	val_484
 0	val_0
 10	val_10
 100	val_100
@@ -1436,6 +1447,7 @@ POSTHOOK: Input: default@src1
 120	val_120
 125	val_125
 126	val_126
+128	
 128	val_128
 129	val_129
 131	val_131
@@ -1447,8 +1459,10 @@ POSTHOOK: Input: default@src1
 143	val_143
 145	val_145
 146	val_146
+146	val_146
 149	val_149
 15	val_15
+150	val_150
 150	val_150
 152	val_152
 153	val_153
@@ -1502,6 +1516,7 @@ POSTHOOK: Input: default@src1
 208	val_208
 209	val_209
 213	val_213
+213	val_213
 214	val_214
 216	val_216
 217	val_217
@@ -1510,6 +1525,7 @@ POSTHOOK: Input: default@src1
 221	val_221
 222	val_222
 223	val_223
+224	
 224	val_224
 226	val_226
 228	val_228
@@ -1518,6 +1534,7 @@ POSTHOOK: Input: default@src1
 233	val_233
 235	val_235
 237	val_237
+238	val_238
 238	val_238
 239	val_239
 24	val_24
@@ -1528,6 +1545,7 @@ POSTHOOK: Input: default@src1
 248	val_248
 249	val_249
 252	val_252
+255	val_255
 255	val_255
 256	val_256
 257	val_257
@@ -1541,9 +1559,11 @@ POSTHOOK: Input: default@src1
 27	val_27
 272	val_272
 273	val_273
+273	val_273
 274	val_274
 275	val_275
 277	val_277
+278	val_278
 278	val_278
 28	val_28
 280	val_280
@@ -1568,6 +1588,7 @@ POSTHOOK: Input: default@src1
 308	val_308
 309	val_309
 310	val_310
+311	val_311
 311	val_311
 315	val_315
 316	val_316
@@ -1603,6 +1624,7 @@ POSTHOOK: Input: default@src1
 366	val_366
 367	val_367
 368	val_368
+369	
 369	val_369
 37	val_37
 373	val_373
@@ -1625,9 +1647,11 @@ POSTHOOK: Input: default@src1
 4	val_4
 400	val_400
 401	val_401
+401	val_401
 402	val_402
 403	val_403
 404	val_404
+406	val_406
 406	val_406
 407	val_407
 409	val_409
@@ -1705,6 +1729,7 @@ POSTHOOK: Input: default@src1
 64	val_64
 65	val_65
 66	val_66
+66	val_66
 67	val_67
 69	val_69
 70	val_70
@@ -1728,27 +1753,6 @@ POSTHOOK: Input: default@src1
 96	val_96
 97	val_97
 98	val_98
-	
-	val_165
-	val_193
-	val_265
-	val_27
-	val_409
-	val_484
-128	
-146	val_146
-150	val_150
-213	val_213
-224	
-238	val_238
-255	val_255
-273	val_273
-278	val_278
-311	val_311
-369	
-401	val_401
-406	val_406
-66	val_66
 98	val_98
 PREHOOK: query: select distinct * from src join src1 on src.key=src1.key
 PREHOOK: type: QUERY
@@ -3870,6 +3874,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
+	
+	val_165
+	val_193
+	val_265
+	val_27
+	val_409
+	val_484
 0	val_0
 10	val_10
 100	val_100
@@ -3887,6 +3898,7 @@ POSTHOOK: Input: default@src1
 120	val_120
 125	val_125
 126	val_126
+128	
 128	val_128
 129	val_129
 131	val_131
@@ -3898,8 +3910,10 @@ POSTHOOK: Input: default@src1
 143	val_143
 145	val_145
 146	val_146
+146	val_146
 149	val_149
 15	val_15
+150	val_150
 150	val_150
 152	val_152
 153	val_153
@@ -3953,6 +3967,7 @@ POSTHOOK: Input: default@src1
 208	val_208
 209	val_209
 213	val_213
+213	val_213
 214	val_214
 216	val_216
 217	val_217
@@ -3961,6 +3976,7 @@ POSTHOOK: Input: default@src1
 221	val_221
 222	val_222
 223	val_223
+224	
 224	val_224
 226	val_226
 228	val_228
@@ -3969,6 +3985,7 @@ POSTHOOK: Input: default@src1
 233	val_233
 235	val_235
 237	val_237
+238	val_238
 238	val_238
 239	val_239
 24	val_24
@@ -3979,6 +3996,7 @@ POSTHOOK: Input: default@src1
 248	val_248
 249	val_249
 252	val_252
+255	val_255
 255	val_255
 256	val_256
 257	val_257
@@ -3992,9 +4010,11 @@ POSTHOOK: Input: default@src1
 27	val_27
 272	val_272
 273	val_273
+273	val_273
 274	val_274
 275	val_275
 277	val_277
+278	val_278
 278	val_278
 28	val_28
 280	val_280
@@ -4019,6 +4039,7 @@ POSTHOOK: Input: default@src1
 308	val_308
 309	val_309
 310	val_310
+311	val_311
 311	val_311
 315	val_315
 316	val_316
@@ -4054,6 +4075,7 @@ POSTHOOK: Input: default@src1
 366	val_366
 367	val_367
 368	val_368
+369	
 369	val_369
 37	val_37
 373	val_373
@@ -4076,9 +4098,11 @@ POSTHOOK: Input: default@src1
 4	val_4
 400	val_400
 401	val_401
+401	val_401
 402	val_402
 403	val_403
 404	val_404
+406	val_406
 406	val_406
 407	val_407
 409	val_409
@@ -4156,6 +4180,7 @@ POSTHOOK: Input: default@src1
 64	val_64
 65	val_65
 66	val_66
+66	val_66
 67	val_67
 69	val_69
 70	val_70
@@ -4179,27 +4204,6 @@ POSTHOOK: Input: default@src1
 96	val_96
 97	val_97
 98	val_98
-	
-	val_165
-	val_193
-	val_265
-	val_27
-	val_409
-	val_484
-128	
-146	val_146
-150	val_150
-213	val_213
-224	
-238	val_238
-255	val_255
-273	val_273
-278	val_278
-311	val_311
-369	
-401	val_401
-406	val_406
-66	val_66
 98	val_98
 PREHOOK: query: select distinct * from src join src1 on src.key=src1.key
 PREHOOK: type: QUERY

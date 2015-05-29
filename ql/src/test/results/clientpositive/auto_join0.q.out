@@ -1,57 +1,47 @@
-Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: explain 
+Warning: Map Join MAPJOIN[45][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[38][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[12][tables = [src1, src2]] in Stage 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
 SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
-  (SELECT * FROM src WHERE src.key < 10) src1 
+  (SELECT * FROM src WHERE src.key < 10 order by src.key, src.value) src1
     JOIN 
-  (SELECT * FROM src WHERE src.key < 10) src2
+  (SELECT * FROM src WHERE src.key < 10 order by src.key, src.value) src2
   SORT BY k1, v1, k2, v2
 ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain 
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
 SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
-  (SELECT * FROM src WHERE src.key < 10) src1 
+  (SELECT * FROM src WHERE src.key < 10 order by src.key, src.value) src1
     JOIN 
-  (SELECT * FROM src WHERE src.key < 10) src2
+  (SELECT * FROM src WHERE src.key < 10 order by src.key, src.value) src2
   SORT BY k1, v1, k2, v2
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-2 depends on stages: Stage-6
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
+  Stage-1 is a root stage
+  Stage-8 depends on stages: Stage-1, Stage-5 , consists of Stage-9, Stage-10, Stage-2
+  Stage-9 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-9
+  Stage-3 depends on stages: Stage-2, Stage-6, Stage-7
+  Stage-4 depends on stages: Stage-3
+  Stage-10 has a backup stage: Stage-2
+  Stage-7 depends on stages: Stage-10
+  Stage-2
+  Stage-5 is a root stage
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
-  Stage: Stage-6
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a:src1:src 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a:src1:src 
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (key < 10) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), value (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 
-                    1 
-
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -64,20 +54,68 @@ STAGE PLANS:
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  keys:
-                    0 
-                    1 
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                    sort order: ++++
-                    Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a:$INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a:$INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              keys:
+                0 
+                1 
+
+  Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 
+                1 
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+              sort order: ++++
+              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
@@ -95,7 +133,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -117,20 +155,115 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a:$INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a:$INTNAME 
+          TableScan
+            HashTable Sink Operator
+              keys:
+                0 
+                1 
+
+  Stage: Stage-7
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 
+                1 
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string)
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key < 10) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[45][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[38][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[12][tables = [src1, src2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
 SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
-  (SELECT * FROM src WHERE src.key < 10) src1 
+  (SELECT * FROM src WHERE src.key < 10 order by src.key, src.value) src1
     JOIN 
-  (SELECT * FROM src WHERE src.key < 10) src2
+  (SELECT * FROM src WHERE src.key < 10 order by src.key, src.value) src2
   SORT BY k1, v1, k2, v2
 ) a
 PREHOOK: type: QUERY
@@ -140,9 +273,9 @@ POSTHOOK: query: select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
 SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
-  (SELECT * FROM src WHERE src.key < 10) src1 
+  (SELECT * FROM src WHERE src.key < 10 order by src.key, src.value) src1
     JOIN 
-  (SELECT * FROM src WHERE src.key < 10) src2
+  (SELECT * FROM src WHERE src.key < 10 order by src.key, src.value) src2
   SORT BY k1, v1, k2, v2
 ) a
 POSTHOOK: type: QUERY

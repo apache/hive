@@ -1,8 +1,12 @@
-PREHOOK: query: create table a(s string) stored as orc
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table a(s string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@a
-POSTHOOK: query: create table a(s string) stored as orc
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table a(s string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a

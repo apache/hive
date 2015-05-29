@@ -5,6 +5,8 @@ set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
 
 -- 9. Test Windowing Functions
+-- SORT_QUERY_RESULTS
+
 select count(c_int) over() from cbo_t1;
 select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1;
 select * from (select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1) cbo_t1;
