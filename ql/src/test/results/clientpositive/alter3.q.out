@@ -181,8 +181,10 @@ POSTHOOK: Input: default@alter3_like_renamed
 POSTHOOK: Output: default@alter3_like_renamed
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 cbo_t1
 cbo_t2
@@ -216,8 +218,10 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:alter3_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:alter3_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:alter3_db
 PREHOOK: query: CREATE TABLE alter3_src (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: alter3_db@alter3_src
