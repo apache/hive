@@ -1,9 +1,13 @@
-PREHOOK: query: -- This test checks that selecting from an acid table and inserting into a non-acid table works.
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- This test checks that selecting from an acid table and inserting into a non-acid table works.
 create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@sample_06
-POSTHOOK: query: -- This test checks that selecting from an acid table and inserting into a non-acid table works.
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- This test checks that selecting from an acid table and inserting into a non-acid table works.
 create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -27,11 +31,11 @@ POSTHOOK: query: select * from sample_06 where gpa = 3.00
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sample_06
 #### A masked pattern was here ####
-eee	32	3
-ccc	32	3
-bbb	32	3
-ddd	35	3
 aaa	35	3
+bbb	32	3
+ccc	32	3
+ddd	35	3
+eee	32	3
 PREHOOK: query: create table tab1 (name varchar(50), age int, gpa decimal(3, 2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -59,8 +63,8 @@ POSTHOOK: query: select * from tab1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab1
 #### A masked pattern was here ####
-eee	32	3
-ccc	32	3
-bbb	32	3
-ddd	35	3
 aaa	35	3
+bbb	32	3
+ccc	32	3
+ddd	35	3
+eee	32	3

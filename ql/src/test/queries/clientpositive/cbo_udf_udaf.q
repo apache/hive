@@ -4,6 +4,8 @@ set hive.exec.check.crossproducts=false;
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
 
+-- SORT_QUERY_RESULTS
+
 -- 8. Test UDF/UDAF
 select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from cbo_t1;
 select count(*), count(c_int) as a, sum(c_int), avg(c_int), max(c_int), min(c_int), case c_int when 0  then 1 when 1 then 2 else 3 end, sum(case c_int when 0  then 1 when 1 then 2 else 3 end) from cbo_t1 group by c_int order by a;

@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 explain select distinct src.* from src;
 
 select distinct src.* from src;

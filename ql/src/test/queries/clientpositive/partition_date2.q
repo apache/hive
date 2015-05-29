@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 drop table partition_date2_1;
 
 create table partition_date2_1 (key string, value string) partitioned by (dt date, region int);

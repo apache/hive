@@ -7,9 +7,10 @@ CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORE
 
 INSERT OVERWRITE TABLE alltypesorc_string
 SELECT
-  to_utc_timestamp(ctimestamp1, 'America/Los_Angeles'),
-  CAST(to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS STRING)
+  to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS toutc,
+  CAST(to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS STRING) as cst
 FROM alltypesorc
+ORDER BY toutc, cst
 LIMIT 40;
 
 SET hive.vectorized.execution.enabled = true;

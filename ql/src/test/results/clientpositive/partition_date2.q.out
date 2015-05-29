@@ -1,6 +1,10 @@
-PREHOOK: query: drop table partition_date2_1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table partition_date2_1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table partition_date2_1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table partition_date2_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partition_date2_1 (key string, value string) partitioned by (dt date, region int)
 PREHOOK: type: CREATETABLE

@@ -7,8 +7,8 @@ CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1;
 DESCRIBE foo;
 DESCRIBE bar;
 
-explain select * from foo limit 10;
-select * from foo limit 10;
+explain select * from foo order by key limit 10;
+select * from foo order by key limit 10;
 
 explain select * from (select * from foo union all select * from bar) u order by key limit 10;
 select * from (select * from foo union all select * from bar) u order by key limit 10;
@@ -22,7 +22,7 @@ select * from bay;
 
 INSERT OVERWRITE TABLE bay SELECT * FROM src ORDER BY key;
 
-select * from bay limit 10;
+select * from bay order by key limit 10;
 
 SHOW TABLES;
 

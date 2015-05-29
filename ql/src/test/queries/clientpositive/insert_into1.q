@@ -1,18 +1,21 @@
 set hive.compute.query.using.stats=true;
+
+-- SORT_QUERY_RESULTS
+
 DROP TABLE insert_into1;
 
 CREATE TABLE insert_into1 (key int, value string);
 
-EXPLAIN INSERT INTO TABLE insert_into1 SELECT * from src LIMIT 100;
-INSERT INTO TABLE insert_into1 SELECT * from src LIMIT 100;
+EXPLAIN INSERT INTO TABLE insert_into1 SELECT * from src ORDER BY key LIMIT 100;
+INSERT INTO TABLE insert_into1 SELECT * from src ORDER BY key LIMIT 100;
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into1
 ) t;
 explain 
 select count(*) from insert_into1;
 select count(*) from insert_into1;
-EXPLAIN INSERT INTO TABLE insert_into1 SELECT * FROM src LIMIT 100;
-INSERT INTO TABLE insert_into1 SELECT * FROM src LIMIT 100;
+EXPLAIN INSERT INTO TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 100;
+INSERT INTO TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 100;
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into1
 ) t;
@@ -21,8 +24,8 @@ explain
 SELECT COUNT(*) FROM insert_into1;
 select count(*) from insert_into1;
 
-EXPLAIN INSERT OVERWRITE TABLE insert_into1 SELECT * FROM src LIMIT 10;
-INSERT OVERWRITE TABLE insert_into1 SELECT * FROM src LIMIT 10;
+EXPLAIN INSERT OVERWRITE TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 10;
+INSERT OVERWRITE TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 10;
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into1
 ) t;
