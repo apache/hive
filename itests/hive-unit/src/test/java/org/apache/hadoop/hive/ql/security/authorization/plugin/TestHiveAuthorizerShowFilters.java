@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
- * Test HiveAuthorizer api invocation
+ * Test HiveAuthorizer api invocation for filtering objects
  */
 public class TestHiveAuthorizerShowFilters {
   protected static HiveConf conf;

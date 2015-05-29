@@ -24,6 +24,9 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
@@ -77,6 +80,13 @@ public class GetTablesOperation extends MetadataOperation {
     try {
       IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
       String schemaPattern = convertSchemaPattern(schemaName);
+      List<String> matchingDbs = metastoreClient.getDatabases(schemaPattern);
+      if(isAuthV2Enabled()){
+        List<HivePrivilegeObject> privObjs = HivePrivilegeObjectUtils.getHivePrivDbObjects(matchingDbs);
+        String cmdStr = "catalog : " + catalogName + ", schemaPattern : " + schemaName;
+        authorizeMetaGets(HiveOperationType.GET_TABLES, privObjs, cmdStr);
+      }
+
       String tablePattern = convertIdentifierPattern(tableName, true);
       for (String dbName : metastoreClient.getDatabases(schemaPattern)) {
         List<String> tableNames = metastoreClient.getTables(dbName, tablePattern);

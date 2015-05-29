@@ -50,17 +50,10 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
 
   @Override
   public List<String> filterDatabases(List<String> dbList) throws MetaException {
-    List<HivePrivilegeObject> listObjs = getHivePrivObjects(dbList);
+    List<HivePrivilegeObject> listObjs = HivePrivilegeObjectUtils.getHivePrivDbObjects(dbList);
     return getDbNames(getFilteredObjects(listObjs));
   }
 
-  private List<HivePrivilegeObject> getHivePrivObjects(List<String> dbList) {
-    List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
-    for(String dbname : dbList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbname, dbname));
-    }
-    return objs;
-  }
 
   private List<String> getDbNames(List<HivePrivilegeObject> filteredObjects) {
     List<String> tnames = new ArrayList<String>();
