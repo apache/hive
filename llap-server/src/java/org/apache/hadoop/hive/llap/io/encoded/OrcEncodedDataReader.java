@@ -655,7 +655,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     int stripeIx = 0;
     for (StripeInformation stripe : stripes) {
       long stripeStart = stripe.getOffset();
-      if (offset > stripeStart) continue;
+      if (offset > stripeStart) {
+        // We assume splits will never start in the middle of the stripe.
+        ++stripeIx;
+        continue;
+      }
       if (stripeIxFrom == -1) {
         if (DebugUtils.isTraceOrcEnabled()) {
           LlapIoImpl.LOG.info("Including stripes from " + stripeIx
@@ -664,11 +668,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         stripeIxFrom = stripeIx;
       }
       if (stripeStart >= maxOffset) {
+        stripeIxTo = stripeIx;
         if (DebugUtils.isTraceOrcEnabled()) {
           LlapIoImpl.LOG.info("Including stripes until " + stripeIxTo + " (" + stripeStart
               + " >= " + maxOffset + "); " + (stripeIxTo - stripeIxFrom) + " stripes");
         }
-        stripeIxTo = stripeIx;
         break;
       }
       ++stripeIx;
