@@ -117,6 +117,12 @@ final class SearchArgumentImpl implements SearchArgument {
 
     @Override
     public Object getLiteral() {
+      // To get around a kryo 2.22 bug while deserialize a Timestamp into Date
+      // (https://github.com/EsotericSoftware/kryo/issues/88)
+      // When we see a Date, convert back into Timestamp
+      if (literal instanceof java.util.Date) {
+        return new Timestamp(((java.util.Date)literal).getTime());
+      }
       return literal;
     }
 
