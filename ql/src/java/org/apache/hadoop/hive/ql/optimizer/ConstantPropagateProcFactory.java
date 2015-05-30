@@ -196,9 +196,13 @@ public final class ConstantPropagateProcFactory {
   /**
    * Fold input expression desc.
    *
-   * If desc is a UDF and all parameters are constants, evaluate it. If desc is a column expression,
-   * find it from propagated constants, and if there is, replace it with constant.
-   *
+   * This function recursively checks if any subexpression of a specified expression
+   * can be evaluated to be constant and replaces such subexpression with the constant.
+   * If the expression is a derterministic UDF and all the subexpressions are constants,
+   * the value will be calculated immediately (during compilation time vs. runtime).
+   * e.g.:
+   *   concat(year, month) => 200112 for year=2001, month=12 since concat is deterministic UDF
+   *   unix_timestamp(time) => unix_timestamp(123) for time=123 since unix_timestamp is nonderministic UDF
    * @param desc folding expression
    * @param constants current propagated constant map
    * @param cppCtx
@@ -213,12 +217,7 @@ public final class ConstantPropagateProcFactory {
     if (desc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) desc;
 
-      // The function must be deterministic, or we can't fold it.
       GenericUDF udf = funcDesc.getGenericUDF();
-      if (!isDeterministicUdf(udf)) {
-        LOG.debug("Function " + udf.getClass() + " undeterministic, quit folding.");
-        return desc;
-      }
 
       boolean propagateNext = propagate && propagatableUdfs.contains(udf.getClass());
       List<ExprNodeDesc> newExprs = new ArrayList<ExprNodeDesc>();
@@ -226,27 +225,33 @@ public final class ConstantPropagateProcFactory {
         newExprs.add(foldExpr(childExpr, constants, cppCtx, op, tag, propagateNext));
       }
 
-      // If all child expressions are constants, evaluate UDF immediately
-      ExprNodeDesc constant = evaluateFunction(udf, newExprs, desc.getChildren());
-      if (constant != null) {
-        LOG.debug("Folding expression:" + desc + " -> " + constant);
-        return constant;
-      } else {
-
-        // Check if the function can be short cut.
-        ExprNodeDesc shortcut = shortcutFunction(udf, newExprs, op);
-        if (shortcut != null) {
-          LOG.debug("Folding expression:" + desc + " -> " + shortcut);
-          return shortcut;
-        }
+      // Don't evalulate nondeterministic function since the value can only calculate during runtime.
+      if (!isDeterministicUdf(udf)) {
+        LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evalulating immediately.");
         ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
-      }
+        return desc;
+      } else {
+        // If all child expressions of deterministic function are constants, evaluate such UDF immediately
+        ExprNodeDesc constant = evaluateFunction(udf, newExprs, desc.getChildren());
+        if (constant != null) {
+          LOG.debug("Folding expression:" + desc + " -> " + constant);
+          return constant;
+        } else {
+          // Check if the function can be short cut.
+          ExprNodeDesc shortcut = shortcutFunction(udf, newExprs, op);
+          if (shortcut != null) {
+            LOG.debug("Folding expression:" + desc + " -> " + shortcut);
+            return shortcut;
+          }
+          ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
+        }
 
-      // If in some selected binary operators (=, is null, etc), one of the
-      // expressions are
-      // constant, add them to colToConstatns as half-deterministic columns.
-      if (propagate) {
-        propagate(udf, newExprs, op.getSchema(), constants);
+        // If in some selected binary operators (=, is null, etc), one of the
+        // expressions are
+        // constant, add them to colToConstants as half-deterministic columns.
+        if (propagate) {
+          propagate(udf, newExprs, op.getSchema(), constants);
+        }
       }
 
       return desc;
