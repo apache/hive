@@ -19,6 +19,16 @@ SELECT sort_array(array(2, 9, 7, 3, 5, 4, 1, 6, 8)) FROM src tablesample (1 rows
 -- Evaluate function against FLOAT valued keys
 SELECT sort_array(sort_array(array(2.333, 9, 1.325, 2.003, 0.777, -3.445, 1))) FROM src tablesample (1 rows);
 
+-- Evaluate function against LIST valued keys
+SELECT sort_array(array(array(2, 9, 7), array(3, 5, 4), array(1, 6, 8))) FROM src tablesample (1 rows);
+
+-- Evaluate function against STRUCT valued keys
+SELECT sort_array(array(struct(2, 9, 7), struct(3, 5, 4), struct(1, 6, 8))) FROM src tablesample (1 rows);
+
+-- Evaluate function against MAP valued keys
+SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3, "b", 5, "a", 1), map("a", 1, "c", 6, "b", 8))) FROM src tablesample (1 rows);
+
+
 -- Test it against data in a table.
 CREATE TABLE dest1 (
 	tinyints ARRAY<TINYINT>,

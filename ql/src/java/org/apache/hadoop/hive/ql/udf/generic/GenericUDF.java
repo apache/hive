@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -208,6 +209,27 @@ public abstract class GenericUDF implements Closeable {
     if (this.getClass() != newInstance.getClass()) {
       throw new UDFArgumentException("Invalid copy between " + this.getClass().getName()
           + " and " + newInstance.getClass().getName());
+    }
+  }
+
+  protected String getFuncName() {
+    return getClass().getSimpleName().substring(10).toLowerCase();
+  }
+
+  protected void checkArgsSize(ObjectInspector[] arguments, int min, int max)
+      throws UDFArgumentLengthException {
+    if (arguments.length < min || arguments.length > max) {
+      StringBuilder sb = new StringBuilder();
+      sb.append(getFuncName());
+      sb.append(" requires ");
+      if (min == max) {
+        sb.append(min);
+      } else {
+        sb.append(min).append("..").append(max);
+      }
+      sb.append(" argument(s), got ");
+      sb.append(arguments.length);
+      throw new UDFArgumentLengthException(sb.toString());
     }
   }
 }
