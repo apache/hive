@@ -363,6 +363,8 @@ public class TezTask extends Task<TezWork> {
         }
       }
     }
+    // Clear the work map after build. TODO: remove caching instead?
+    Utilities.clearWorkMap(conf);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     return dag;
   }
