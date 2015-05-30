@@ -2174,7 +2174,13 @@ public class HiveConf extends Configuration {
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
-      "If value is greater than 0 logs in fixed intervals of size n rather than exponentially.");
+      "If value is greater than 0 logs in fixed intervals of size n rather than exponentially."),
+    HIVE_MSCK_PATH_VALIDATION("hive.msck.path.validation", "throw",
+        new StringSet("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
+       "directories that are partition-like but contain unsupported characters. 'throw' (an " +
+       "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
+       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)");
+
 
     public final String varname;
     private final String defaultExpr;

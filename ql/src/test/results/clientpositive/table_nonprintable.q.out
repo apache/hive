@@ -1,0 +1,72 @@
+Found 1 items
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+Found 2 items
+#### A masked pattern was here ####
+PREHOOK: query: create external table table_external (c1 int, c2 int)
+partitioned by (day string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_external
+POSTHOOK: query: create external table table_external (c1 int, c2 int)
+partitioned by (day string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_external
+PREHOOK: query: msck repair table table_external
+PREHOOK: type: MSCK
+POSTHOOK: query: msck repair table table_external
+POSTHOOK: type: MSCK
+Partitions not in metastore:	table_external:day=¢Bar
+Repair: Cannot add partition table_external:day=Foo due to invalid characters in the name
+Repair: Added partition to metastore table_external:day=¢Bar
+Found 2 items
+#### A masked pattern was here ####
+PREHOOK: query: show partitions table_external
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table_external
+POSTHOOK: query: show partitions table_external
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table_external
+day=¢Bar
+PREHOOK: query: select * from table_external
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_external
+PREHOOK: Input: default@table_external@day=¢Bar
+#### A masked pattern was here ####
+POSTHOOK: query: select * from table_external
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_external
+POSTHOOK: Input: default@table_external@day=¢Bar
+#### A masked pattern was here ####
+NULL	35	¢Bar
+48	NULL	¢Bar
+100	100	¢Bar
+PREHOOK: query: alter table table_external drop partition (day='¢Bar')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@table_external
+PREHOOK: Output: default@table_external@day=¢Bar
+POSTHOOK: query: alter table table_external drop partition (day='¢Bar')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@table_external
+POSTHOOK: Output: default@table_external@day=¢Bar
+PREHOOK: query: show partitions table_external
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table_external
+POSTHOOK: query: show partitions table_external
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table_external
+PREHOOK: query: drop table table_external
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table_external
+PREHOOK: Output: default@table_external
+POSTHOOK: query: drop table table_external
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table_external
+POSTHOOK: Output: default@table_external
+#### A masked pattern was here ####

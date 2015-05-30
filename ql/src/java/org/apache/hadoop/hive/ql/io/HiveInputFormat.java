@@ -155,7 +155,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return inputSplit.getLocations();
     }
 
- // TODO#: THIS
     @Override
     public void readFields(DataInput in) throws IOException {
       String inputSplitClassName = in.readUTF();
