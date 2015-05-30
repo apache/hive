@@ -20,6 +20,10 @@ package org.apache.hive.jdbc;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.sql.Array;
@@ -176,7 +180,6 @@ public class HiveConnection implements java.sql.Connection {
       // set up the client
       client = new TCLIService.Client(new TBinaryProtocol(transport));
     }
-
     // add supported protocols
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2);
@@ -189,6 +192,9 @@ public class HiveConnection implements java.sql.Connection {
 
     // open client session
     openSession();
+
+    // Wrap the client with a thread-safe proxy to serialize the RPC calls
+    client = newSynchronizedClient(client);
   }
 
   private void openTransport() throws SQLException {
@@ -1356,5 +1362,42 @@ public class HiveConnection implements java.sql.Connection {
 
   public TProtocolVersion getProtocol() {
     return protocol;
+  }
+
+  public static TCLIService.Iface newSynchronizedClient(
+      TCLIService.Iface client) {
+    return (TCLIService.Iface) Proxy.newProxyInstance(
+        HiveConnection.class.getClassLoader(),
+      new Class [] { TCLIService.Iface.class },
+      new SynchronizedHandler(client));
+  }
+
+  private static class SynchronizedHandler implements InvocationHandler {
+    private final TCLIService.Iface client;
+
+    SynchronizedHandler(TCLIService.Iface client) {
+      this.client = client;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object [] args)
+        throws Throwable {
+      try {
+        synchronized (client) {
+          return method.invoke(client, args);
+        }
+      } catch (InvocationTargetException e) {
+        // all IFace APIs throw TException
+        if (e.getTargetException() instanceof TException) {
+          throw (TException)e.getTargetException();
+        } else {
+          // should not happen
+          throw new TException("Error in calling method " + method.getName(),
+              e.getTargetException());
+        }
+      } catch (Exception e) {
+        throw new TException("Error in calling method " + method.getName(), e);
+      }
+    }
   }
 }
