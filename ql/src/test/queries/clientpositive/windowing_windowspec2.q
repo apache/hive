@@ -40,3 +40,15 @@ select ts, f, min(f) over (partition by ts order by t rows between 2 preceding a
 select ts, f, min(f) over (partition by ts order by t rows between unbounded preceding and 1 preceding) from over10k limit 100;
 select ts, f, min(f) over (partition by ts order by t rows between 1 following and 2 following) from over10k limit 100;
 select ts, f, min(f) over (partition by ts order by t rows between unbounded preceding and 1 following) from over10k limit 100;
+
+-- first_value
+select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100;
+select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100;
+select ts, f, first_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100;
+select ts, f, first_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100;
+
+-- last_value
+select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100;
+select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 preceding) from over10k limit 100;
+select ts, f, last_value(f) over (partition by ts order by f rows between 1 following and 2 following) from over10k limit 100;
+select ts, f, last_value(f) over (partition by ts order by f rows between unbounded preceding and 1 following) from over10k limit 100;
