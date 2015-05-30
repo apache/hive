@@ -141,9 +141,7 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
-      BoundaryDef start = wFrmDef.getStart();
-      BoundaryDef end = wFrmDef.getEnd();
-      return new LastValStreamingFixedWindow(this, start.getAmt(), end.getAmt());
+      return new LastValStreamingFixedWindow(this, wFrmDef);
     }
   }
 
@@ -179,9 +177,8 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
       }
     }
 
-    public LastValStreamingFixedWindow(GenericUDAFEvaluator wrappedEval, int numPreceding,
-      int numFollowing) {
-      super(wrappedEval, numPreceding, numFollowing);
+    public LastValStreamingFixedWindow(GenericUDAFEvaluator wrappedEval, WindowFrameDef wFrameDef) {
+      super(wrappedEval, wFrameDef);
     }
 
     @Override
@@ -210,6 +207,11 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
        */
       if (lb.firstRow) {
         wrappedEval.iterate(lb, parameters);
+
+        // We need to insert 'null' before processing first row for the case: X preceding and y preceding
+        for (int i = wFrameDef.getEnd().getRelativeOffset(); i < 0; i++) {
+          s.results.add(null);
+        }
       }
 
       Object o = ObjectInspectorUtils.copyToStandardObject(parameters[0], inputOI(),
@@ -219,14 +221,14 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
         s.lastValue = o;
         s.lastIdx = s.numRows;
       } else if (lb.skipNulls && s.lastIdx != -1) {
-        if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-            && s.numRows > s.lastIdx + numPreceding + numFollowing) {
+        if (!wFrameDef.isStartUnbounded()
+            && s.numRows >= s.lastIdx + wFrameDef.getWindowSize()) {
           s.lastValue = null;
           s.lastIdx = -1;
         }
       }
 
-      if (s.numRows >= (numFollowing)) {
+      if (s.numRows >= wFrameDef.getEnd().getRelativeOffset()) {
         s.results.add(s.lastValue);
       }
       s.numRows++;
@@ -238,15 +240,22 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
       LastValueBuffer lb = (LastValueBuffer) s.wrappedBuf;
 
       if (lb.skipNulls && s.lastIdx != -1) {
-        if (numPreceding != BoundarySpec.UNBOUNDED_AMOUNT
-            && s.numRows > s.lastIdx + numPreceding + numFollowing) {
+        if (!wFrameDef.isStartUnbounded()
+            && s.numRows >= s.lastIdx + wFrameDef.getWindowSize()) {
           s.lastValue = null;
           s.lastIdx = -1;
         }
       }
 
-      for (int i = 0; i < numFollowing; i++) {
+      // After all the rows are processed, continue to generate results for the rows that results haven't generated.
+      // For the case: X following and Y following, process first Y-X results and then insert X nulls.
+      // For the case X preceding and Y following, process Y results.
+      for (int i = Math.max(0, wFrameDef.getStart().getRelativeOffset()); i < wFrameDef.getEnd().getRelativeOffset(); i++) {
         s.results.add(s.lastValue);
+      }
+      for (int i = 0; i < wFrameDef.getStart().getRelativeOffset(); i++) {
+        s.results.add(null);
+        s.numRows++;
       }
 
       return null;

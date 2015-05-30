@@ -34,33 +34,11 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
   protected final GenericUDAFEvaluator wrappedEval;
   protected final WindowFrameDef wFrameDef;
 
-  protected final int numPreceding;
-  protected final int numFollowing;
-
-  /**
-   * @param wrappedEval
-   * @param numPreceding
-   * @param numFollowing
-   * @deprecated
-   */
-  public GenericUDAFStreamingEvaluator(GenericUDAFEvaluator wrappedEval,
-      int numPreceding, int numFollowing) {
-    this.wrappedEval = wrappedEval;
-    this.wFrameDef = null;
-    this.mode = wrappedEval.mode;
-
-    this.numPreceding = numPreceding;
-    this.numFollowing = numFollowing;
-  }
-
   public GenericUDAFStreamingEvaluator(GenericUDAFEvaluator wrappedEval,
       WindowFrameDef wFrameDef) {
     this.wrappedEval = wrappedEval;
     this.wFrameDef = wFrameDef;
     this.mode = wrappedEval.mode;
-
-    this.numPreceding = -1;
-    this.numFollowing = -1;
   }
 
   class StreamingState extends AbstractAggregationBuffer {
