@@ -28,6 +28,7 @@ import java.util.Properties;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
@@ -58,6 +59,7 @@ public class TestHs2Hooks {
     public static String operation;
     public static Throwable error;
 
+    @Override
     public void run(HookContext hookContext) {
       try {
         if (hookContext.getHookType().equals(HookType.POST_EXEC_HOOK)) {
@@ -78,6 +80,7 @@ public class TestHs2Hooks {
     public static String operation;
     public static Throwable error;
 
+    @Override
     public void run(HookContext hookContext) {
       try {
         if (hookContext.getHookType().equals(HookType.PRE_EXEC_HOOK)) {
@@ -133,12 +136,13 @@ public class TestHs2Hooks {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     HiveConf hiveConf = new HiveConf();
-    hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS,
+    hiveConf.setVar(ConfVars.PREEXECHOOKS,
         PreExecHook.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS,
+    hiveConf.setVar(ConfVars.POSTEXECHOOKS,
         PostExecHook.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
+    hiveConf.setVar(ConfVars.SEMANTIC_ANALYZER_HOOK,
         SemanticAnalysisHook.class.getName());
+    hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
 
     hiveServer2 = new HiveServer2();
     hiveServer2.init(hiveConf);
