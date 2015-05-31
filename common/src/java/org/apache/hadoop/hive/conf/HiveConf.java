@@ -1934,20 +1934,20 @@ public class HiveConf extends Configuration {
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
-    HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "0ms",
+    HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "6h",
         new TimeValidator(TimeUnit.MILLISECONDS, 3000l, true, null, false),
         "The check interval for session/operation timeout, which can be disabled by setting to zero or negative value."),
-    HIVE_SERVER2_IDLE_SESSION_TIMEOUT("hive.server2.idle.session.timeout", "0ms",
+    HIVE_SERVER2_IDLE_SESSION_TIMEOUT("hive.server2.idle.session.timeout", "7d",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Session will be closed when it's not accessed for this duration, which can be disabled by setting to zero or negative value."),
-    HIVE_SERVER2_IDLE_OPERATION_TIMEOUT("hive.server2.idle.operation.timeout", "0ms",
+    HIVE_SERVER2_IDLE_OPERATION_TIMEOUT("hive.server2.idle.operation.timeout", "5d",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Operation will be closed when it's not accessed for this duration of time, which can be disabled by setting to zero value.\n" +
         "  With positive value, it's checked for operations in terminal state only (FINISHED, CANCELED, CLOSED, ERROR).\n" +
         "  With negative value, it's checked for all of the operations regardless of state."),
-    HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION("hive.server2.idle.session.check.operation", false,
+    HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION("hive.server2.idle.session.check.operation", true,
         "Session will be considered to be idle only if there is no activity, and there is no pending operation.\n" +
-        "This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
+        " This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
         "(hive.server2.session.check.interval) are enabled."),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
