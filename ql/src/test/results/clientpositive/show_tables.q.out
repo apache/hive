@@ -39,8 +39,10 @@ STAGE PLANS:
 
 PREHOOK: query: SHOW TABLES 'shtb_*'
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES 'shtb_*'
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 shtb_test1
 shtb_test2
 PREHOOK: query: EXPLAIN
@@ -68,8 +70,10 @@ STAGE PLANS:
 
 PREHOOK: query: SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 shtb_test1
 shtb_test2
 PREHOOK: query: -- SHOW TABLES FROM/IN database
@@ -120,15 +124,19 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: SHOW TABLES FROM test_db
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES FROM test_db
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 bar
 baz
 foo
 PREHOOK: query: SHOW TABLES FROM default
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES FROM default
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 cbo_t1
 cbo_t2
@@ -148,15 +156,19 @@ srcbucket2
 srcpart
 PREHOOK: query: SHOW TABLES IN test_db
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES IN test_db
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 bar
 baz
 foo
 PREHOOK: query: SHOW TABLES IN default
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES IN default
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 cbo_t1
 cbo_t2
@@ -176,12 +188,16 @@ srcbucket2
 srcpart
 PREHOOK: query: SHOW TABLES IN test_db "test*"
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES IN test_db "test*"
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 PREHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 PREHOOK: query: -- SHOW TABLE EXTENDED basic syntax tests and wildcard
 SHOW TABLE EXTENDED IN test_db LIKE foo
 PREHOOK: type: SHOW_TABLESTATUS
@@ -372,6 +388,8 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: SHOW TABLES FROM `database` LIKE "foo"
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:database
 POSTHOOK: query: SHOW TABLES FROM `database` LIKE "foo"
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:database
 foo

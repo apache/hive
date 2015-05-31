@@ -438,8 +438,10 @@ POSTHOOK: Input: default@bay
 104	val_104
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 bar
 bay
@@ -473,8 +475,10 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:two
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:two
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:two
 PREHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM default.foo
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@foo
@@ -487,8 +491,10 @@ POSTHOOK: Output: database:two
 POSTHOOK: Output: two@foo
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:two
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:two
 foo
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE

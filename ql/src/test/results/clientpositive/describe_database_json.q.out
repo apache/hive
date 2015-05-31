@@ -7,23 +7,31 @@ POSTHOOK: Output: database:jsondb1
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE DATABASE jsondb1
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:jsondb1
 POSTHOOK: query: DESCRIBE DATABASE jsondb1
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:jsondb1
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE DATABASE EXTENDED jsondb1
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:jsondb1
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED jsondb1
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:jsondb1
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE SCHEMA jsondb1
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:jsondb1
 POSTHOOK: query: DESCRIBE SCHEMA jsondb1
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:jsondb1
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE SCHEMA EXTENDED jsondb1
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:jsondb1
 POSTHOOK: query: DESCRIBE SCHEMA EXTENDED jsondb1
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:jsondb1
 #### A masked pattern was here ####
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -51,13 +59,17 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:jsondb1
 PREHOOK: query: DESCRIBE DATABASE jsondb1
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:jsondb1
 POSTHOOK: query: DESCRIBE DATABASE jsondb1
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:jsondb1
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE DATABASE EXTENDED jsondb1
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:jsondb1
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED jsondb1
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:jsondb1
 #### A masked pattern was here ####
 PREHOOK: query: DROP DATABASE jsondb1
 PREHOOK: type: DROPDATABASE

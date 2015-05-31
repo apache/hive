@@ -152,6 +152,11 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
   @Override
   public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
       HiveAuthzContext context) {
+    if (LOG.isDebugEnabled()) {
+      String msg = "Obtained following objects in  filterListCmdObjects " + listObjs + " for user "
+          + authenticator.getUserName() + ". Context Info: " + context;
+      LOG.debug(msg);
+    }
     return listObjs;
   }
 
