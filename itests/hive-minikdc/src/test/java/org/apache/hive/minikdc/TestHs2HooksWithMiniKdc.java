@@ -54,7 +54,7 @@ public class TestHs2HooksWithMiniKdc {
     confOverlay.put(ConfVars.PREEXECHOOKS.varname, PreExecHook.class.getName());
     confOverlay.put(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
         SemanticAnalysisHook.class.getName());
-
+    confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "" + Boolean.FALSE);
     HiveConf hiveConf = new HiveConf();
     miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);

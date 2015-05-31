@@ -214,8 +214,10 @@ STAGE PLANS:
 
 PREHOOK: query: SHOW TABLES 'view.*'
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES 'view.*'
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 view1
 view2
 view3
