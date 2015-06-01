@@ -628,13 +628,13 @@ STAGE PLANS:
               columns.types int:string
 #### A masked pattern was here ####
               name default.encrypted_table
-              numFiles 0
+              numFiles 1
               numRows 0
               rawDataSize 0
               serialization.ddl struct encrypted_table { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 0
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -648,13 +648,13 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.encrypted_table
-                numFiles 0
+                numFiles 1
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct encrypted_table { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.encrypted_table
