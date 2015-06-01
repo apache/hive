@@ -982,7 +982,11 @@ public final class PlanUtils {
       currentAlias = currentAlias.replace(SemanticAnalyzer.SUBQUERY_TAG_1, "")
           .replace(SemanticAnalyzer.SUBQUERY_TAG_2, "");
       ReadEntity input = viewAliasToInput.get(currentAlias);
-      if (input == null) {
+      if (input == null && currentInput != null) {
+        // To handle the case of - select * from (select * from V1) A;
+        // the currentInput != null check above is needed.
+        // the alias list that case would be A:V1:T. Lookup on A would return null,
+        // we need to go further to find the view inside it.
         return currentInput;
       }
       currentInput = input;

@@ -109,6 +109,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vt1
 #### A masked pattern was here ####
+PREHOOK: query: -- verify input objects required does not include table
+-- even if view is within a sub query
+select * from (select * from vt1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@vt1
+#### A masked pattern was here ####
+POSTHOOK: query: -- verify input objects required does not include table
+-- even if view is within a sub query
+select * from (select * from vt1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@vt1
+#### A masked pattern was here ####
 PREHOOK: query: grant all on table vt2 to user user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@vt2

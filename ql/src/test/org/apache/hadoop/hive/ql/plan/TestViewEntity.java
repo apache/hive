@@ -54,6 +54,7 @@ public class TestViewEntity {
   }
 
   private static Driver driver;
+  private final String NAME_PREFIX = "TestViewEntity5".toLowerCase();
 
   @BeforeClass
   public static void onetimeSetup() throws Exception {
@@ -79,29 +80,61 @@ public class TestViewEntity {
    */
   @Test
   public void testUnionView() throws Exception {
-    int ret = driver.run("create table t1(id int)").getResponseCode();
+    String prefix = "tunionview" + NAME_PREFIX;
+    final String tab1 = prefix + "t1";
+    final String tab2 = prefix + "t2";
+    final String view1 = prefix + "v1";
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
     assertEquals("Checking command success", 0, ret);
-    ret = driver.run("create table t2(id int)").getResponseCode();
+    ret = driver.run("create table " + tab2 + "(id int)").getResponseCode();
     assertEquals("Checking command success", 0, ret);
-    ret = driver.run("create view v1 as select t.id from "
-            + "(select t1.id from t1 union all select t2.id from t2) as t")
+    ret = driver.run("create view " + view1 + " as select t.id from "
+            + "(select " + tab1 + ".id from " + tab1 + " union all select " + tab2 + ".id from " + tab2 + ") as t")
         .getResponseCode();
     assertEquals("Checking command success", 0, ret);
 
-    driver.compile("select * from v1");
+    driver.compile("select * from " + view1 );
     // view entity
-    assertEquals("default@v1", CheckInputReadEntity.readEntities[0].getName());
+    assertEquals("default@" + view1, CheckInputReadEntity.readEntities[0].getName());
 
     // first table in union query with view as parent
-    assertEquals("default@t1", CheckInputReadEntity.readEntities[1].getName());
-    assertEquals("default@v1", CheckInputReadEntity.readEntities[1]
+    assertEquals("default@" + tab1, CheckInputReadEntity.readEntities[1].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[1].isDirect());
+    assertEquals("default@" + view1, CheckInputReadEntity.readEntities[1]
         .getParents()
         .iterator().next().getName());
     // second table in union query with view as parent
-    assertEquals("default@t2", CheckInputReadEntity.readEntities[2].getName());
-    assertEquals("default@v1", CheckInputReadEntity.readEntities[2]
+    assertEquals("default@" + tab2, CheckInputReadEntity.readEntities[2].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[2].isDirect());
+    assertEquals("default@" + view1, CheckInputReadEntity.readEntities[2]
         .getParents()
         .iterator().next().getName());
+
+  }
+
+
+  /**
+   * Verify that the parent entities are captured correctly for view in subquery
+   * @throws Exception
+   */
+  @Test
+  public void testViewInSubQuery() throws Exception {
+    String prefix = "tvsubquery" + NAME_PREFIX;
+    final String tab1 = prefix + "t";
+    final String view1 = prefix + "v";
+
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    driver.compile("select * from " + view1 );
+    // view entity
+    assertEquals("default@" + view1, CheckInputReadEntity.readEntities[0].getName());
+
+    // table as second read entity
+    assertEquals("default@" + tab1, CheckInputReadEntity.readEntities[1].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[1].isDirect());
 
   }
 
