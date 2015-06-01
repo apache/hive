@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.hadoop.hive.TestUtil;
+import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -120,7 +120,7 @@ public class TestHiveAuthorizerShowFilters {
     conf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    TestUtil.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
+    UtilsForTest.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
 
     SessionState.start(conf);
     driver = new Driver(conf);
