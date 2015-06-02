@@ -149,7 +149,7 @@ public enum Type {
         return type;
       }
     }
-    throw new IllegalArgumentException("Unregonized Thrift TTypeId value: " + tType);
+    throw new IllegalArgumentException("Unrecognized Thrift TTypeId value: " + tType);
   }
 
   public static Type getType(String name) {

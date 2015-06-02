@@ -34,6 +34,10 @@ set user.name=user2;
 explain authorization select * from vt1;
 select * from vt1;
 
+-- verify input objects required does not include table
+-- even if view is within a sub query
+select * from (select * from vt1) a;
+
 set user.name=user1;
 
 grant all on table vt2 to user user2;

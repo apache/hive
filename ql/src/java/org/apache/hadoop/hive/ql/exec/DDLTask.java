@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1728,6 +1729,40 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       checker.checkMetastore(names[0], names[1], msckDesc.getPartSpecs(), result);
       List<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       if (msckDesc.isRepairPartitions() && !partsNotInMs.isEmpty()) {
+        AbstractList<String> vals = null;
+        String settingStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION);
+        boolean doValidate = !("ignore".equals(settingStr));
+        boolean doSkip = doValidate && "skip".equals(settingStr);
+        // The default setting is "throw"; assume doValidate && !doSkip means throw.
+        if (doValidate) {
+          // Validate that we can add partition without escaping. Escaping was originally intended
+          // to avoid creating invalid HDFS paths; however, if we escape the HDFS path (that we
+          // deem invalid but HDFS actually supports - it is possible to create HDFS paths with
+          // unprintable characters like ASCII 7), metastore will create another directory instead
+          // of the one we are trying to "repair" here.
+          Iterator<CheckResult.PartitionResult> iter = partsNotInMs.iterator();
+          while (iter.hasNext()) {
+            CheckResult.PartitionResult part = iter.next();
+            try {
+              vals = Warehouse.makeValsFromName(part.getPartitionName(), vals);
+            } catch (MetaException ex) {
+              throw new HiveException(ex);
+            }
+            for (String val : vals) {
+              String escapedPath = FileUtils.escapePathName(val);
+              assert escapedPath != null;
+              if (escapedPath.equals(val)) continue;
+              String errorMsg = "Repair: Cannot add partition " + msckDesc.getTableName()
+                  + ':' + part.getPartitionName() + " due to invalid characters in the name";
+              if (doSkip) {
+                repairOutput.add(errorMsg);
+                iter.remove();
+              } else {
+                throw new HiveException(errorMsg);
+              }
+            }
+          }
+        }
         Table table = db.getTable(msckDesc.getTableName());
         AddPartitionDesc apd = new AddPartitionDesc(
             table.getDbName(), table.getTableName(), false);
@@ -1863,7 +1898,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       FileSystem fs = resFile.getFileSystem(conf);
       outStream = fs.create(resFile);
 
-      formatter.showTablePartitons(outStream, parts);
+      formatter.showTablePartitions(outStream, parts);
 
       outStream.close();
       outStream = null;

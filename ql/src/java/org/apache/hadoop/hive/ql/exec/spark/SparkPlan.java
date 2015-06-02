@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.io.BytesWritable;
@@ -36,6 +38,7 @@ import com.google.common.base.Preconditions;
 @SuppressWarnings("rawtypes")
 public class SparkPlan {
   private static final String CLASS_NAME = SparkPlan.class.getName();
+  private static final Log LOG = LogFactory.getLog(SparkPlan.class);
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
 
   private final Set<SparkTran> rootTrans = new HashSet<SparkTran>();
@@ -72,6 +75,8 @@ public class SparkPlan {
       tranToOutputRDDMap.put(tran, rdd);
     }
 
+    logSparkPlan();
+
     JavaPairRDD<HiveKey, BytesWritable> finalRDD = null;
     for (SparkTran leafTran : leafTrans) {
       JavaPairRDD<HiveKey, BytesWritable> rdd = tranToOutputRDDMap.get(leafTran);
@@ -83,7 +88,152 @@ public class SparkPlan {
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
+    if (LOG.isDebugEnabled()) {
+      LOG.info("print generated spark rdd graph:\n" + SparkUtilities.rddGraphToString(finalRDD));
+    }
     return finalRDD;
+  }
+
+  private void addNumberToTrans() {
+    int i = 1;
+    String name = null;
+
+    // Traverse leafTran & transGraph add numbers to trans
+    for (SparkTran leaf : leafTrans) {
+      name = leaf.getName() + " " + i++;
+      leaf.setName(name);
+    }
+    Set<SparkTran> sparkTrans = transGraph.keySet();
+    for (SparkTran tran : sparkTrans) {
+      name = tran.getName() + " " + i++;
+      tran.setName(name);
+    }
+  }
+
+  private void logSparkPlan() {
+    addNumberToTrans();
+    ArrayList<SparkTran> leafTran = new ArrayList<SparkTran>();
+    leafTran.addAll(leafTrans);
+
+    for (SparkTran leaf : leafTrans) {
+      collectLeafTrans(leaf, leafTran);
+    }
+
+    // Start Traverse from the leafTrans and get parents of each leafTrans till
+    // the end
+    StringBuilder sparkPlan = new StringBuilder(
+      "\n\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spark Plan !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n");
+    for (SparkTran leaf : leafTran) {
+      sparkPlan.append(leaf.getName());
+      getSparkPlan(leaf, sparkPlan);
+      sparkPlan.append("\n");
+    }
+    sparkPlan
+      .append(" \n\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spark Plan !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
+    LOG.info(sparkPlan);
+  }
+
+  private void collectLeafTrans(SparkTran leaf, List<SparkTran> reduceTrans) {
+    List<SparkTran> parents = getParents(leaf);
+    if (parents.size() > 0) {
+      SparkTran nextLeaf = null;
+      for (SparkTran leafTran : parents) {
+        if (leafTran instanceof ReduceTran) {
+          reduceTrans.add(leafTran);
+        } else {
+          if (getParents(leafTran).size() > 0)
+            nextLeaf = leafTran;
+        }
+      }
+      if (nextLeaf != null)
+        collectLeafTrans(nextLeaf, reduceTrans);
+    }
+  }
+
+  private void getSparkPlan(SparkTran tran, StringBuilder sparkPlan) {
+    List<SparkTran> parents = getParents(tran);
+    List<SparkTran> nextLeaf = new ArrayList<SparkTran>();
+    if (parents.size() > 0) {
+      sparkPlan.append(" <-- ");
+      boolean isFirst = true;
+      for (SparkTran leaf : parents) {
+        if (isFirst) {
+          sparkPlan.append("( " + leaf.getName());
+          if (leaf instanceof ShuffleTran) {
+            logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
+          } else {
+            logCacheStatus(leaf, sparkPlan);
+          }
+          isFirst = false;
+        } else {
+          sparkPlan.append("," + leaf.getName());
+          if (leaf instanceof ShuffleTran) {
+            logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
+          } else {
+            logCacheStatus(leaf, sparkPlan);
+          }
+        }
+        // Leave reduceTran it will be expanded in the next line
+        if (getParents(leaf).size() > 0 && !(leaf instanceof ReduceTran)) {
+          nextLeaf.add(leaf);
+        }
+      }
+      sparkPlan.append(" ) ");
+      if (nextLeaf.size() > 1) {
+        logLeafTran(nextLeaf, sparkPlan);
+      } else {
+        if (nextLeaf.size() != 0)
+          getSparkPlan(nextLeaf.get(0), sparkPlan);
+      }
+    }
+  }
+
+  private void logLeafTran(List<SparkTran> parent, StringBuilder sparkPlan) {
+    sparkPlan.append(" <-- ");
+    boolean isFirst = true;
+    for (SparkTran sparkTran : parent) {
+      List<SparkTran> parents = getParents(sparkTran);
+      SparkTran leaf = parents.get(0);
+      if (isFirst) {
+        sparkPlan.append("( " + leaf.getName());
+        if (leaf instanceof ShuffleTran) {
+          logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
+        } else {
+          logCacheStatus(leaf, sparkPlan);
+        }
+        isFirst = false;
+      } else {
+        sparkPlan.append("," + leaf.getName());
+        if (leaf instanceof ShuffleTran) {
+          logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
+        } else {
+          logCacheStatus(leaf, sparkPlan);
+        }
+      }
+    }
+    sparkPlan.append(" ) ");
+  }
+
+  private void logShuffleTranStatus(ShuffleTran leaf, StringBuilder sparkPlan) {
+    int noOfPartitions = leaf.getNoOfPartitions();
+    sparkPlan.append(" ( Partitions " + noOfPartitions);
+    SparkShuffler shuffler = leaf.getShuffler();
+    sparkPlan.append(", " + shuffler.getName());
+    if (leaf.isCacheEnable()) {
+      sparkPlan.append(", Cache on");
+    } else {
+      sparkPlan.append(", Cache off");
+    }
+  }
+
+  private void logCacheStatus(SparkTran sparkTran, StringBuilder sparkPlan) {
+    if (sparkTran.isCacheEnable() != null) {
+      if (sparkTran.isCacheEnable().booleanValue()) {
+        sparkPlan.append(" (cache on) ");
+      } else {
+        sparkPlan.append(" (cache off) ");
+      }
+    }
   }
 
   public void addTran(SparkTran tran) {

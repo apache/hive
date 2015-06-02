@@ -1,11 +1,7 @@
 set hive.optimize.skewjoin = true;
 set hive.skewjoin.key = 2;
 
-
-
-
-
-
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;
 CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE;
@@ -18,7 +14,6 @@ LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;
 LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3;
 LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4;
 
-
 EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value;
@@ -28,7 +23,6 @@ INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value;
 
 SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1;
 
-
 EXPLAIN
 SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
@@ -50,7 +44,6 @@ SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
           JOIN T4 d ON c.key = d.key;
-
 
 EXPLAIN FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
 FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
@@ -69,7 +62,6 @@ JOIN
 ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value));
 
-
 EXPLAIN FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -83,7 +75,6 @@ JOIN
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value));
-
 
 EXPLAIN
 SELECT sum(hash(src1.c1)), sum(hash(src2.c4)) 

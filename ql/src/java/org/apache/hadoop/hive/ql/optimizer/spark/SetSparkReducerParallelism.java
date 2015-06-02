@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
+import java.util.List;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -26,6 +27,7 @@ import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -75,7 +77,7 @@ public class SetSparkReducerParallelism implements NodeProcessor {
 
     context.getVisitedReduceSinks().add(sink);
 
-    if (desc.getNumReducers() <= 0) {
+    if (needSetParallelism(sink, context.getConf())) {
       if (constantReducers > 0) {
         LOG.info("Parallelism for reduce sink " + sink + " set by user to " + constantReducers);
         desc.setNumReducers(constantReducers);
@@ -115,6 +117,8 @@ public class SetSparkReducerParallelism implements NodeProcessor {
             sparkSession = SparkUtilities.getSparkSession(
               context.getConf(), sparkSessionManager);
             sparkMemoryAndCores = sparkSession.getMemoryAndCores();
+          } catch (HiveException e) {
+            throw new SemanticException("Failed to get a spark session: " + e);
           } catch (Exception e) {
             LOG.warn("Failed to get spark memory/core info", e);
           } finally {
@@ -153,6 +157,30 @@ public class SetSparkReducerParallelism implements NodeProcessor {
       LOG.info("Number of reducers determined to be: " + desc.getNumReducers());
     }
 
+    return false;
+  }
+
+  // tests whether the RS needs automatic setting parallelism
+  private boolean needSetParallelism(ReduceSinkOperator reduceSink, HiveConf hiveConf) {
+    ReduceSinkDesc desc = reduceSink.getConf();
+    if (desc.getNumReducers() <= 0) {
+      return true;
+    }
+    if (desc.getNumReducers() == 1 && desc.hasOrderBy() &&
+        hiveConf.getBoolVar(HiveConf.ConfVars.HIVESAMPLINGFORORDERBY) && !desc.isDeduplicated()) {
+      List<Operator<? extends OperatorDesc>> children = reduceSink.getChildOperators();
+      while (children != null && children.size() > 0) {
+        if (children.size() != 1 || children.get(0) instanceof LimitOperator) {
+          return false;
+        }
+        if (children.get(0) instanceof ReduceSinkOperator ||
+            children.get(0) instanceof FileSinkOperator) {
+          break;
+        }
+        children = children.get(0).getChildOperators();
+      }
+      return true;
+    }
     return false;
   }
 

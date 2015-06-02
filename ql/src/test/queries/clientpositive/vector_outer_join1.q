@@ -1,10 +1,10 @@
 SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
 
-create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null limit 5;
-create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null limit 5;
-create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null limit 5;
-create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null limit 5;
+create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by cint, ctinyint limit 5;
+create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by cint, ctinyint limit 5;
+create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by cint, ctinyint limit 5;
+create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by cint, ctinyint limit 5;
 
 create table small_alltypesorc_a stored as orc as select * from 
 (select * from (select * from small_alltypesorc1a) sq1

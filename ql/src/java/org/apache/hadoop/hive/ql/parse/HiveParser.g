@@ -2127,7 +2127,7 @@ queryStatementExpression[boolean topLevel]
     (w=withClause {topLevel}?)?
     queryStatementExpressionBody[topLevel] {
       if ($w.tree != null) {
-      adaptor.addChild($queryStatementExpressionBody.tree, $w.tree);
+      $queryStatementExpressionBody.tree.insertChild(0, $w.tree);
       }
     }
     ->  queryStatementExpressionBody
@@ -2302,7 +2302,7 @@ selectStatementWithCTE
     (w=withClause)?
     selectStatement[true] {
       if ($w.tree != null) {
-      adaptor.addChild($selectStatement.tree, $w.tree);
+      $selectStatement.tree.insertChild(0, $w.tree);
       }
     }
     ->  selectStatement

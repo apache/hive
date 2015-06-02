@@ -164,6 +164,24 @@ public class RpcServer implements Closeable {
   }
 
   /**
+   * Tells the RPC server to cancel the connection from an existing pending client
+   * @param clientId The identifier for the client
+   * @param msg The error message about why the connection should be canceled
+   */
+  public void cancelClient(final String clientId, final String msg) {
+    final ClientInfo cinfo = pendingClients.remove(clientId);
+    if (cinfo == null) {
+      // Nothing to be done here.
+      return;
+    }
+    cinfo.timeoutFuture.cancel(true);
+    if (!cinfo.promise.isDone()) {
+      cinfo.promise.setFailure(new RuntimeException(
+          String.format("Cancel client '%s'. Error: " + msg, clientId)));
+    }
+  }
+
+  /**
    * Creates a secret for identifying a client connection.
    */
   public String createSecret() {

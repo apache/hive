@@ -78,11 +78,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value
+PREHOOK: query: -- SORT_QUERY_RESULTS
+select * from myinput1 a join myinput1 b on a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+select * from myinput1 a join myinput1 b on a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####

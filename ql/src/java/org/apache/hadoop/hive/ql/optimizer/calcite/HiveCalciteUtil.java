@@ -504,7 +504,7 @@ public class HiveCalciteUtil {
       }
 
       // 1. Split leaf join predicate to expressions from left, right
-      HiveRelOptUtil.splitJoinCondition(systemFieldList, inputs, pe,
+      RelOptUtil.splitJoinCondition(systemFieldList, inputs, pe,
           joinKeyExprs, filterNulls, null);
 
       // 2. Collect child projection indexes used

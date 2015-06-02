@@ -112,6 +112,7 @@ public class HiveSparkClientFactory {
     String sparkMaster = hiveConf.get("spark.master");
     if (sparkMaster == null) {
       sparkMaster = sparkConf.get("spark.master");
+      hiveConf.set("spark.master", sparkMaster);
     }
     if (sparkMaster.equals("yarn-cluster")) {
       sparkConf.put("spark.yarn.maxAppAttempts", "1");

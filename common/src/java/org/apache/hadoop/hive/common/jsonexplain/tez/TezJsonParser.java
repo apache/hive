@@ -125,7 +125,7 @@ public class TezJsonParser implements JsonParser {
       if (candidate.tezStageDependency != null && candidate.tezStageDependency.size() > 0) {
         outputStream.println("Vertex dependency in root stage");
         for (Entry<Vertex, List<Connection>> entry : candidate.tezStageDependency.entrySet()) {
-          StringBuffer sb = new StringBuffer();
+          StringBuilder sb = new StringBuilder();
           sb.append(entry.getKey().name);
           sb.append(" <- ");
           boolean printcomma = false;

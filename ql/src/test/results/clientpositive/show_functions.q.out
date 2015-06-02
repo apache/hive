@@ -194,6 +194,7 @@ str_to_map
 struct
 substr
 substring
+substring_index
 sum
 tan
 to_date

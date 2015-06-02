@@ -260,7 +260,7 @@ public class Initiator extends CompactorThread {
           HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD);
       boolean bigEnough =   (float)deltaSize/(float)baseSize > deltaPctThreshold;
       if (LOG.isDebugEnabled()) {
-        StringBuffer msg = new StringBuffer("delta size: ");
+        StringBuilder msg = new StringBuilder("delta size: ");
         msg.append(deltaSize);
         msg.append(" base size: ");
         msg.append(baseSize);

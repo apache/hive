@@ -19,37 +19,57 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-9432] - CBO (Calcite Return Path): Removing QB from ParseContext
     * [HIVE-9501] - DbNotificationListener doesn't include dbname in create database notification and does not include tablename in create table notification
     * [HIVE-9508] - MetaStore client socket connection should have a lifetime
+    * [HIVE-9516] - Enable CBO related tests [Spark Branch]
     * [HIVE-9550] - ObjectStore.getNextNotification() can return events inside NotificationEventResponse as null which conflicts with its thrift "required" tag
     * [HIVE-9558] - [Parquet] support HiveDecimalWritable, HiveCharWritable, HiveVarcharWritable in vectorized mode
+    * [HIVE-9561] - SHUFFLE_SORT should only be used for order by query [Spark Branch]
     * [HIVE-9563] - CBO(Calcite Return Path): Translate GB to Hive OP [CBO branch]
+    * [HIVE-9569] - Enable more unit tests for UNION ALL [Spark Branch]
     * [HIVE-9571] - CBO (Calcite Return Path): Generate FileSink Op [CBO branch]
     * [HIVE-9582] - HCatalog should use IMetaStoreClient interface
     * [HIVE-9585] - AlterPartitionMessage should return getKeyValues instead of getValues
+    * [HIVE-9601] - New Beeline queries will hang If Beeline terminates in-properly [Spark Branch]
     * [HIVE-9657] - Use new parquet Types API builder to construct data types
+    * [HIVE-9659] - 'Error while trying to create table container' occurs during hive query case execution when hive.optimize.skewjoin set to 'true' [Spark Branch]
     * [HIVE-9666] - Improve some qtests
+    * [HIVE-9671] - Support Impersonation [Spark Branch]
     * [HIVE-9690] - Refactoring for non-numeric arithmetic operations
+    * [HIVE-9696] - Address RB comments for HIVE-9425 [Spark Branch]
+    * [HIVE-9698] - Merge trunk to Spark branch 2/15/2015 [Spark Branch]
+    * [HIVE-9726] - Upgrade to spark 1.3 [Spark Branch]
     * [HIVE-9750] - avoid log locks in operators
+    * [HIVE-9781] - Utilize spark.kryo.classesToRegister [Spark Branch]
     * [HIVE-9792] - Support interval type in expressions/predicates
     * [HIVE-9810] - prep object registry for multi threading
+    * [HIVE-9812] - Merge trunk to Spark branch 02/27/2015 [Spark Branch]
     * [HIVE-9819] - Add timeout check inside the HMS server
+    * [HIVE-9823] - Load spark-defaults.conf from classpath [Spark Branch]
     * [HIVE-9824] - LLAP: Native Vectorization of Map Join
+    * [HIVE-9871] - Print spark job id in history file [spark branch]
+    * [HIVE-9882] - Add jar/file doesn't work with yarn-cluster mode [Spark Branch]
+    * [HIVE-9889] - Merge trunk to Spark branch 3/6/2015 [Spark Branch]
     * [HIVE-9894] - Use new parquet Types API builder to construct DATE data type
     * [HIVE-9906] - Add timeout mechanism in RawStoreProxy
     * [HIVE-9937] - LLAP: Vectorized Field-By-Field Serialize / Deserialize to support new Vectorized Map Join
+    * [HIVE-9969] - Avoid Utilities.getMapRedWork for spark [Spark Branch]
     * [HIVE-9982] - CBO (Calcite Return Path): Prune TS Relnode schema
     * [HIVE-9998] - Vectorization support for interval types
+    * [HIVE-10006] - RSC has memory leak while execute multi queries.[Spark Branch]
     * [HIVE-10037] - JDBC support for interval expressions
     * [HIVE-10044] - Allow interval params for year/month/day/hour/minute/second functions
     * [HIVE-10053] - Override new init API fom ReadSupport instead of the deprecated one
     * [HIVE-10071] - CBO (Calcite Return Path): Join to MultiJoin rule
     * [HIVE-10076] - Bump up parquet-hadoop-bundle and parquet-column to the version of 1.6.0rc6
+    * [HIVE-10130] - Merge trunk to Spark branch 03/27/2015 [Spark Branch]
     * [HIVE-10131] - LLAP: BytesBytesMultiHashMap and mapjoin container should reuse refs
+    * [HIVE-10134] - Fix test failures after HIVE-10130 [Spark Branch]
     * [HIVE-10227] - Concrete implementation of Export/Import based ReplicationTaskFactory
     * [HIVE-10228] - Changes to Hive Export/Import/DropTable/DropPartition to support replication semantics
     * [HIVE-10243] - CBO (Calcite Return Path): Introduce JoinAlgorithm Interface
     * [HIVE-10252] - Make PPD work for Parquet in row group level
     * [HIVE-10262] - CBO (Calcite Return Path): Temporarily disable Aggregate check input for bucketing
     * [HIVE-10263] - CBO (Calcite Return Path): Aggregate checking input for bucketing should be conditional
+    * [HIVE-10291] - Hive on Spark job configuration needs to be logged [Spark Branch]
     * [HIVE-10326] - CBO (Calcite Return Path): Invoke Hive's Cumulative Cost
     * [HIVE-10329] - Hadoop reflectionutils has issues
     * [HIVE-10343] - CBO (Calcite Return Path): Parameterize algorithm cost model
@@ -73,17 +93,19 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10526] - CBO (Calcite Return Path): HiveCost epsilon comparison should take row count in to account
     * [HIVE-10547] - CBO (Calcite Return Path) : genFileSinkPlan uses wrong partition col to create FS
     * [HIVE-10549] - CBO (Calcite Return Path): Enable NonBlockingOpDeDupProc
-
+    * [HIVE-10804] - CBO: Calcite Operator To Hive Operator (Calcite Return Path): optimizer for limit 0 does not work
 
 ** Bug
     * [HIVE-3454] - Problem with CAST(BIGINT as TIMESTAMP)
     * [HIVE-4625] - HS2 should not attempt to get delegation token from metastore if using embedded metastore
     * [HIVE-5545] - HCatRecord getInteger method returns String when used on Partition columns of type INT
     * [HIVE-5672] - Insert with custom separator not supported for non-local directory
+    * [HIVE-5733] - Publish hive-exec artifact without all the dependencies
     * [HIVE-6069] - Improve error message in GenericUDFRound
     * [HIVE-6099] - Multi insert does not work properly with distinct count
     * [HIVE-6950] - Parsing Error in GROUPING SETS
     * [HIVE-7351] - ANALYZE TABLE statement fails on postgres metastore
+    * [HIVE-7641] - INSERT ... SELECT with no source table leads to NPE
     * [HIVE-8524] - When table is renamed stats are lost as changes are not propagated to metastore tables TAB_COL_STATS and PART_COL_STATS
     * [HIVE-8626] - Extend HDFS super-user checks to dropPartitions
     * [HIVE-8746] - ORC timestamp columns are sensitive to daylight savings time
@@ -154,11 +176,11 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-9679] - Remove redundant null-checks from DbNotificationListener.
     * [HIVE-9680] - GlobalLimitOptimizer is not checking filters correctly
     * [HIVE-9681] - Extend HiveAuthorizationProvider to support partition-sets.
-    * [HIVE-9684] - Incorrect disk range computation in ORC because of optional stream kind
     * [HIVE-9706] - HBase handler support for snapshots should confirm properties before use
     * [HIVE-9711] - ORC Vectorization DoubleColumnVector.isRepeating=false if all entries are NaN
     * [HIVE-9716] - Map job fails when table's LOCATION does not have scheme
     * [HIVE-9717] - The max/min function used by AggrStats for decimal type is not what we expected
+    * [HIVE-9718] - Insert into dynamic partitions with same column structure in the "distibute by" clause barfs
     * [HIVE-9720] - Metastore does not properly migrate column stats when renaming a table across databases.
     * [HIVE-9721] - Hadoop23Shims.setFullFileStatus should check for null
     * [HIVE-9727] - GroupingID translation from Calcite
@@ -175,9 +197,11 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-9779] - ATSHook does not log the end user if doAs=false (it logs the hs2 server user)
     * [HIVE-9791] - insert into table throws NPE
     * [HIVE-9797] - Need update some spark tests for java 8
+    * [HIVE-9803] - SparkClientImpl should not attempt impersonation in CLI mode [Spark Branch]
     * [HIVE-9813] - Hive JDBC - DatabaseMetaData.getColumns method cannot find classes added with "add jar" command
     * [HIVE-9817] - fix DateFormat pattern in hive-exec
     * [HIVE-9826] - Firing insert event fails on temporary table
+    * [HIVE-9830] - Map join could dump a small table multiple times [Spark Branch]
     * [HIVE-9831] - HiveServer2 should use ConcurrentHashMap in ThreadFactory
     * [HIVE-9832] - Merge join followed by union and a map join in hive on tez fails.
     * [HIVE-9834] - VectorGroupByOperator logs too much
@@ -185,18 +209,22 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-9839] - HiveServer2 leaks OperationHandle on async queries which fail at compile phase
     * [HIVE-9841] - IOException thrown by ORC should include the path of processing file
     * [HIVE-9845] - HCatSplit repeats information making input split data size huge
+    * [HIVE-9847] - Hive should not allow additional attemps when RSC fails [Spark Branch]
     * [HIVE-9848] - readlink -f is GNU coreutils only (used in bin/hive)
     * [HIVE-9851] - org.apache.hadoop.hive.serde2.avro.AvroSerializer should use org.apache.avro.generic.GenericData.Array when serializing a list
     * [HIVE-9855] - Runtime skew join doesn't work when skewed data only exists in big table
     * [HIVE-9860] - MapredLocalTask/SecureCmdDoAs leaks local files
     * [HIVE-9866] - Changing a column's type doesn't change column stats type in metastore
     * [HIVE-9869] - Trunk doesn't build with hadoop-1
+    * [HIVE-9872] - Making yarn-cluster default for Hive on Spark [Spark Branch]
     * [HIVE-9873] - Hive on MR throws DeprecatedParquetHiveInput exception
     * [HIVE-9877] - Beeline cannot run multiple statements in the same row
     * [HIVE-9886] - Hive on tez: NPE when converting join to SMB in sub-query
     * [HIVE-9892] - various MSSQL upgrade scripts don't work
+    * [HIVE-9902] - Map join small table files need more replications [Spark Branch]
     * [HIVE-9908] - vectorization error binary type not supported, group by with binary columns
     * [HIVE-9915] - Allow specifying file format for managed tables
+    * [HIVE-9918] - Spark branch build is failing due to unknown url [Spark Branch]
     * [HIVE-9919] - upgrade scripts don't work on some auto-created DBs due to absence of tables
     * [HIVE-9920] - DROP DATABASE IF EXISTS throws exception if database does not exist
     * [HIVE-9923] - No clear message when "from" is missing
@@ -204,7 +232,9 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-9930] - fix QueryPlan.makeQueryId time format
     * [HIVE-9932] - DDLTask.conf hides base class Task.conf
     * [HIVE-9934] - Vulnerability in LdapAuthenticationProviderImpl enables HiveServer2 client to degrade the authentication mechanism to "none", allowing authentication without password
+    * [HIVE-9935] - Fix tests for java 1.8 [Spark Branch]
     * [HIVE-9936] - fix potential NPE in DefaultUDAFEvaluatorResolver
+    * [HIVE-9939] - Code cleanup for redundant if check in ExplainTask [Spark Branch]
     * [HIVE-9944] - Convert array[] to string properly in log messages
     * [HIVE-9945] - FunctionTask.conf hides Task.conf field
     * [HIVE-9947] - ScriptOperator replaceAll uses unescaped dot and result is not assigned
@@ -224,15 +254,20 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-9977] - Compactor not running on partitions after dynamic partitioned insert
     * [HIVE-9984] - JoinReorder's getOutputSize is exponential
     * [HIVE-9991] - Cannot do a SELECT on external tables that are on S3 due to Encryption error
+    * [HIVE-9993] - Retrying task could use cached bad operators [Spark Branch]
     * [HIVE-9994] - Hive query plan returns sensitive data to external applications
     * [HIVE-9997] - minor tweaks for bytes mapjoin hash table
     * [HIVE-10001] - SMB join in reduce side
+    * [HIVE-10009] - LazyObjectInspectorFactory is not thread safe [Spark Branch]
+    * [HIVE-10017] - SparkTask log improvement [Spark Branch]
+    * [HIVE-10023] - Fix more cache related concurrency issue [Spark Branch]
     * [HIVE-10032] - Remove HCatalog broken java file from source code
     * [HIVE-10042] - clean up TreeReaders - ORC refactoring for LLAP on trunk
     * [HIVE-10050] - Support overriding memory configuration for AM launched for TempletonControllerJob
     * [HIVE-10059] - Make udaf_percentile_approx_23.q test more stable
     * [HIVE-10062] - HiveOnTez: Union followed by Multi-GB followed by Multi-insert loses data
     * [HIVE-10066] - Hive on Tez job submission through WebHCat doesn't ship Tez artifacts
+    * [HIVE-10073] - Runtime exception when querying HBase with Spark [Spark Branch]
     * [HIVE-10074] - Ability to run HCat Client Unit tests in a system test setting
     * [HIVE-10078] - Optionally allow logging of records processed in fixed intervals
     * [HIVE-10083] - SMBJoin fails in case one table is uninitialized
@@ -248,6 +283,7 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10123] - Hybrid grace Hash join : Use estimate key count from stats to initialize BytesBytesMultiHashMap
     * [HIVE-10128] - BytesBytesMultiHashMap does not allow concurrent read-only access
     * [HIVE-10136] - BaseWork.vectorMode hides AbstractOperatorDesc.vectorMode
+    * [HIVE-10143] - HS2 fails to clean up Spark client state on timeout [Spark Branch]
     * [HIVE-10145] - set Tez ACLs appropriately in hive
     * [HIVE-10148] - update of bucketing column should not be allowed
     * [HIVE-10150] - delete from acidTbl where a in(select a from nonAcidOrcTbl) fails
@@ -260,6 +296,7 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10197] - Add lockId to all ACID log statements
     * [HIVE-10202] - Beeline outputs prompt+query on standard output when used in non-interactive mode
     * [HIVE-10208] - templeton.hive.extra.files should be commented out in webhcat-default.xml
+    * [HIVE-10209] - FetchTask with VC may fail because ExecMapper.done is true
     * [HIVE-10213] - MapReduce jobs using dynamic-partitioning fail on commit.
     * [HIVE-10225] - CLI JLine does not flush history on quit/Ctrl-C
     * [HIVE-10226] - Column stats for Date columns not supported
@@ -351,8 +388,8 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10612] - HIVE-10578 broke TestSQLStdHiveAccessControllerHS2 tests
     * [HIVE-10614] - schemaTool upgrade from 0.14.0 to 1.3.0 causes failure
     * [HIVE-10638] - HIVE-9736 introduces issues with Hadoop23Shims.checkFileAccess
+    * [HIVE-10685] - Alter table concatenate oparetor will cause duplicate data
     * [HIVE-10715] - RAT failures - many files do not have ASF licenses
-
 
 ** Improvement
     * [HIVE-1575] - get_json_object does not support JSON array at the root level
@@ -387,6 +424,7 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-9788] - Make double quote optional in tsv/csv/dsv output
     * [HIVE-9793] - Remove hard coded paths from cli driver tests
     * [HIVE-9800] - Create scripts to do metastore upgrade tests on Jenkins
+    * [HIVE-9804] - Turn on some kryo settings by default for Spark [Spark Branch]
     * [HIVE-9857] - Create Factorial UDF
     * [HIVE-9858] - Create cbrt (cube root) UDF
     * [HIVE-9859] - Create bitwise left/right shift UDFs
@@ -417,7 +455,6 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10546] - genFileSinkPlan should use the generated SEL's RR for the partition col of FS
     * [HIVE-10568] - Select count(distinct()) can have more optimal execution plan
 
-
 ** New Feature
     * [HIVE-7998] - Enhance JDBC Driver to not require class specification
     * [HIVE-9039] - Support Union Distinct
@@ -428,7 +465,6 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-10038] - Add Calcite's ProjectMergeRule.
     * [HIVE-10099] - Enable constant folding for Decimal
     * [HIVE-10591] - Support limited integer type promotion in ORC
-
 
 ** Task
     * [HIVE-6617] - Reduce ambiguity in grammar
@@ -441,73 +477,315 @@ Release Notes - Hive - Version 1.2.0
     * [HIVE-9520] - Create NEXT_DAY UDF
     * [HIVE-9572] - Merge from Spark branch to trunk 02/03/2015
     * [HIVE-9703] - Merge from Spark branch to trunk 02/16/2015
+    * [HIVE-9861] - Add spark-assembly on Hive's classpath [Spark Branch]
     * [HIVE-9867] - Migrate usage of deprecated Calcite methods
     * [HIVE-9903] - Update calcite version
     * [HIVE-9966] - Get rid of customBucketMapJoin field from MapJoinDesc
     * [HIVE-10019] - Configure jenkins precommit jobs to run HMS upgrade tests
     * [HIVE-10222] - Upgrade Calcite dependency to newest version
     * [HIVE-10268] - Merge cbo branch into trunk
+    * [HIVE-10325] - Remove ExprNodeNullEvaluator
     * [HIVE-10676] - Update Hive's README to mention spark, and to remove jdk1.6
-
 
 ** Test
     * [HIVE-7948] - Add an E2E test  to verify fix for HIVE-7155
     * [HIVE-8949] - Test for PARQUET-26
     * [HIVE-9399] - ppd_multi_insert.q generate same output in different order, when mapred.reduce.tasks is set to larger than 1
     * [HIVE-9525] - Enable constant propagation optimization in few existing tests where it was disabled.
+    * [HIVE-9924] - Fix union12 and union31 for spark [Spark Branch]
     * [HIVE-10135] - Add qtest to access  struct<> data type with parquet format after parquet column index access enabled
     * [HIVE-10168] - make groupby3_map.q more stable
     * [HIVE-10396] - decimal_precision2.q test is failing on trunk
-
 
 
 Release Notes - Hive - Version 1.1.0
 
 ** Sub-task
     * [HIVE-7073] - Implement Binary in ParquetSerDe
+    * [HIVE-7331] - Create SparkCompiler [Spark Branch]
+    * [HIVE-7334] - Create SparkShuffler, shuffling data between map-side data processing and reduce-side processing [Spark Branch]
+    * [HIVE-7335] - Create SparkPlan, DAG representation of a Spark job [Spark Branch]
+    * [HIVE-7336] - Create MapFunction [Spark Branch]
+    * [HIVE-7337] - Create ReduceFunction [Spark Branch]
+    * [HIVE-7338] - Create SparkPlanGenerator [Spark Branch]
+    * [HIVE-7382] - Create a MiniSparkCluster and set up a testing framework [Spark Branch]
+    * [HIVE-7384] - Research into reduce-side join [Spark Branch]
+    * [HIVE-7410] - Spark 1.0.1 is released, stop using SNAPSHOT [Spark Branch]
+    * [HIVE-7411] - Exclude hadoop 1 from spark dep [Spark Branch]
+    * [HIVE-7436] - Load Spark configuration into Hive driver [Spark Branch]
+    * [HIVE-7439] - Spark job monitoring and error reporting [Spark Branch]
+    * [HIVE-7465] - Implement pre-commit testing [Spark Branch]
+    * [HIVE-7492] - Enhance SparkCollector [Spark Branch]
+    * [HIVE-7503] - Support Hive's multi-table insert query with Spark [Spark Branch]
+    * [HIVE-7527] - Support order by and sort by on Spark [Spark Branch]
+    * [HIVE-7528] - Support cluster by and distributed by [Spark Branch]
+    * [HIVE-7541] - Support union all on Spark [Spark Branch]
+    * [HIVE-7560] - StarterProject: Fix exception handling in POC code [Spark Branch]
+    * [HIVE-7561] - StarterProject: Move from assert to Guava Preconditions.* in Hive on Spark [Spark Branch]
+    * [HIVE-7580] - Support dynamic partitioning [Spark Branch]
+    * [HIVE-7597] - Support analyze table [Spark Branch]
+    * [HIVE-7613] - Research optimization of auto convert join to map join [Spark branch]
+    * [HIVE-7665] - Create TestSparkCliDriver to run test in spark local mode [Spark Branch]
+    * [HIVE-7674] - Update to Spark 1.2 [Spark Branch]
+    * [HIVE-7677] - Implement native HiveReduceFunction [Spark Branch]
+    * [HIVE-7702] - Start running .q file tests on spark [Spark Branch]
+    * [HIVE-7708] - Fix qtest-spark pom.xml reference to test properties [Spark Branch]
+    * [HIVE-7709] - Create SparkReporter [Spark Branch]
+    * [HIVE-7717] - Add .q tests coverage for "union all" [Spark Branch]
+    * [HIVE-7728] - Enable q-tests for TABLESAMPLE feature  [Spark Branch]
+    * [HIVE-7729] - Enable q-tests for ANALYZE TABLE feature [Spark Branch]
+    * [HIVE-7731] - Incorrect result returned when a map work has multiple downstream reduce works [Spark Branch]
+    * [HIVE-7746] - Cleanup SparkClient and make refreshLocalResources method synchronized [Spark Branch]
+    * [HIVE-7748] - Add qfile_regex to qtest-spark pom [Spark Branch]
+    * [HIVE-7749] - Enable timestamp.* tests [Spark Branch]
+    * [HIVE-7755] - Enable avro* tests [Spark Branch]
+    * [HIVE-7758] - PTest2 separates test files with spaces while QTestGen uses commas [Spark Branch]
+    * [HIVE-7766] - Cleanup Reduce operator code [Spark Branch]
+    * [HIVE-7767] - hive.optimize.union.remove does not work properly [Spark Branch]
+    * [HIVE-7773] - Union all query finished with errors [Spark Branch]
+    * [HIVE-7775] - enable sample8.q.[Spark Branch]
+    * [HIVE-7776] - enable sample10.q.[Spark Branch]
+    * [HIVE-7781] - Enable windowing and analytic function qtests [Spark Branch]
+    * [HIVE-7791] - Enable tests on Spark branch (1) [Sparch Branch]
+    * [HIVE-7792] - Enable tests on Spark branch (2) [Sparch Branch]
+    * [HIVE-7793] - Enable tests on Spark branch (3) [Sparch Branch]
+    * [HIVE-7794] - Enable tests on Spark branch (4) [Sparch Branch]
+    * [HIVE-7810] - Insert overwrite table query has strange behavior when set hive.optimize.union.remove=true [Spark Branch]
+    * [HIVE-7815] - Reduce Side Join with single reducer [Spark Branch]
+    * [HIVE-7816] - Enable map-join tests which Tez executes [Spark Branch]
+    * [HIVE-7821] - StarterProject: enable groupby4.q [Spark Branch]
+    * [HIVE-7839] - Update union_null results now that it's deterministic [Spark Branch]
+    * [HIVE-7842] - Enable qtest load_dyn_part1.q [Spark Branch]
+    * [HIVE-7843] - orc_analyze.q fails due to random mapred.task.id in FileSinkOperator [Spark Branch]
+    * [HIVE-7844] - optimize_nullscan.q fails due to differences in explain plan [Spark Branch]
+    * [HIVE-7848] - Refresh SparkContext when spark configuration changes [Spark Branch]
+    * [HIVE-7856] - Enable parallelism in Reduce Side Join [Spark Branch]
+    * [HIVE-7861] - Enable reduce-side join tests (1) [Spark Branch]
+    * [HIVE-7866] - Merge from trunk (1) [Spark Branch]
+    * [HIVE-7867] - Re-order spark.query.files in sorted order [Spark Branch]
+    * [HIVE-7870] - Insert overwrite table query does not generate correct task plan [Spark Branch]
+    * [HIVE-7873] - Re-enable lazy HiveBaseFunctionResultList [Spark Branch]
+    * [HIVE-7880] - Support subquery [Spark Branch]
+    * [HIVE-7881] - enable Qtest scriptfile1.q [Spark Branch]
+    * [HIVE-7922] - Merge from trunk (2) [Spark Branch]
+    * [HIVE-7952] - Investigate query failures (1)
+    * [HIVE-7954] - Investigate query failures (3)
+    * [HIVE-8015] - Merge from trunk (3) [Spark Branch]
+    * [HIVE-8017] - Use HiveKey instead of BytesWritable as key type of the pair RDD [Spark Branch]
+    * [HIVE-8054] - Disable hive.optimize.union.remove when hive.execution.engine=spark [Spark Branch]
+    * [HIVE-8055] - Code cleanup after HIVE-8054 [Spark Branch]
+    * [HIVE-8074] - Merge trunk into spark 9/12/2014
+    * [HIVE-8106] - Enable vectorization for spark [spark branch]
     * [HIVE-8121] - Create micro-benchmarks for ParquetSerde and evaluate performance
     * [HIVE-8122] - Make use of SearchArgument classes for Parquet SERDE
     * [HIVE-8130] - Support Date in Avro
     * [HIVE-8131] - Support timestamp in Avro
+    * [HIVE-8140] - Remove obsolete code from SparkWork [Spark Branch]
+    * [HIVE-8141] - Refactor the GraphTran code by moving union handling logic to UnionTran [Spark Branch]
+    * [HIVE-8202] - Support SMB Join for Hive on Spark [Spark Branch]
+    * [HIVE-8206] - Merge from trunk to spark 9/20/14
+    * [HIVE-8275] - Introduce MapInput encapsulating a Hadoop RDD [Spark Branch]
+    * [HIVE-8276] - Separate shuffle from ReduceTran and so create ShuffleTran [Spark Branch]
+    * [HIVE-8278] - Restoring a graph representation of SparkPlan [Spark Branch]
+    * [HIVE-8302] - GroupByShuffler.java missing apache license header [Spark Branch]
+    * [HIVE-8303] - Merge from trunk to spark 9/29/14
+    * [HIVE-8352] - Enable windowing.q for spark [Spark Branch]
+    * [HIVE-8353] - Merge trunk into spark 10/4/2015 [Spark Branch]
+    * [HIVE-8356] - Fix fs_default_name2.q on spark [Spark Branch]
     * [HIVE-8362] - Investigate flaky test parallel.q
+    * [HIVE-8405] - Research Bucket Map Join [Spark Branch]
+    * [HIVE-8412] - Make reduce side join work for all join queries [Spark Branch]
+    * [HIVE-8422] - Turn on all join .q tests [Spark Branch]
+    * [HIVE-8436] - Modify SparkWork to split works with multiple child works [Spark Branch]
+    * [HIVE-8437] - Modify SparkPlan generation to set toCache flag to SparkTrans where caching is needed [Spark Branch]
+    * [HIVE-8438] - Clean up code introduced by HIVE-7503 and such [Spark Plan]
+    * [HIVE-8455] - Print Spark job progress format info on the console[Spark Branch]
+    * [HIVE-8456] - Support Hive Counter to collect spark job metric[Spark Branch]
+    * [HIVE-8477] - Update timestamp in status console [Spark Branch]
+    * [HIVE-8486] - TPC-DS Query 96 parallelism is not set correcly
+    * [HIVE-8502] - Merge trunk into spark 10/17/14 [Spark Branch]
+    * [HIVE-8507] - UT: fix rcfile_bigdata test [Spark Branch]
+    * [HIVE-8508] - UT: fix bucketsort_insert tests - related to SMBMapJoinOperator
+    * [HIVE-8509] - UT: fix list_bucket_dml_2 test [Spark Branch]
+    * [HIVE-8528] - Add remote Spark client to Hive [Spark Branch]
+    * [HIVE-8539] - Enable collect table statistics based on SparkCounter[Spark Branch]
+    * [HIVE-8540] - HivePairFlatMapFunction.java missing license header [Spark Branch]
+    * [HIVE-8599] - Add InterfaceAudience annotations to spark-client [Spark Branch]
+    * [HIVE-8616] - convert joinOp to MapJoinOp and generate MapWorks only [Spark Branch]
+    * [HIVE-8621] - Dump small table join data for map-join [Spark Branch]
+    * [HIVE-8622] - Split map-join plan into 2 SparkTasks in 3 stages [Spark Branch]
+    * [HIVE-8623] - Implement HashTableLoader for Spark map-join [Spark Branch]
+    * [HIVE-8638] - Implement bucket map join optimization [Spark Branch]
+    * [HIVE-8639] - Convert SMBJoin to MapJoin [Spark Branch]
+    * [HIVE-8640] - Support hints of SMBJoin [Spark Branch]
+    * [HIVE-8649] - Increase level of parallelism in reduce phase [Spark Branch]
     * [HIVE-8651] - CBO: sort column changed in infer_bucket_sort test
+    * [HIVE-8670] - Combine Hive Operator statistic and Spark Metric to an uniformed query statistic.[Spark Branch]
+    * [HIVE-8674] - Fix tests after merge [Spark Branch]
+    * [HIVE-8682] - Enable table statistic collection on counter for CTAS query[Spark Branch]
+    * [HIVE-8700] - Replace ReduceSink to HashTableSink (or equi.) for small tables [Spark Branch]
     * [HIVE-8707] - Fix ordering differences due to Java 8 HashMap function
     * [HIVE-8718] - Refactoring: move mapLocalWork field from MapWork to BaseWork
+    * [HIVE-8725] - spark-client build failed sometimes.[Spark Branch]
+    * [HIVE-8726] - Collect Spark TaskMetrics and build job statistic[Spark Branch]
+    * [HIVE-8756] - numRows and rawDataSize are not collected by the Spark stats [Spark Branch]
+    * [HIVE-8758] - Fix hadoop-1 build [Spark Branch]
     * [HIVE-8773] - Fix TestWebHCatE2e#getStatus for Java8
+    * [HIVE-8775] - Merge from trunk 11/6/14 [SPARK BRANCH]
+    * [HIVE-8776] - Generate MapredLocalWork in SparkMapJoinResolver [Spark Brach]
+    * [HIVE-8777] - Should only register used counters in SparkCounters[Spark Branch]
+    * [HIVE-8780] - insert1.q and ppd_join4.q hangs with hadoop-1 [Spark Branch]
+    * [HIVE-8783] - Create some tests that use Spark counter for stats collection [Spark Branch]
+    * [HIVE-8787] - UT: update hive-site.xml for spark UTs to add hive_admin_user to admin role
+    * [HIVE-8788] - UT: fix partition test case [Spark Branch]
+    * [HIVE-8793] - Refactor to make splitting SparkWork a physical resolver [Spark Branch]
+    * [HIVE-8810] - Make HashTableSinkOperator works for Spark Branch [Spark Branch]
+    * [HIVE-8833] - Unify spark client API and implement remote spark client.[Spark Branch]
+    * [HIVE-8834] - enable job progress monitoring of Remote Spark Context [Spark Branch]
+    * [HIVE-8835] - identify dependency scope for Remote Spark Context.[Spark Branch]
+    * [HIVE-8836] - Enable automatic tests with remote spark client [Spark Branch]
+    * [HIVE-8840] - Print prettier Spark work graph after HIVE-8793 [Spark Branch]
+    * [HIVE-8841] - Make RDD caching work for multi-insert after HIVE-8793 when map join is involved [Spark Branch]
+    * [HIVE-8842] - auto_join2.q produces incorrect tree [Spark Branch]
+    * [HIVE-8843] - Release RDD cache when Hive query is done [Spark Branch]
+    * [HIVE-8844] - Choose a persisent policy for RDD caching [Spark Branch]
+    * [HIVE-8852] - Update new spark progress API for local submitted job monitoring [Spark Branch]
+    * [HIVE-8853] - Make vectorization work with Spark [Spark Branch]
+    * [HIVE-8854] - Guava dependency conflict between hive driver and remote spark context[Spark Branch]
+    * [HIVE-8855] - Automatic calculate reduce number for spark job [Spark Branch]
+    * [HIVE-8859] - ColumnStatsTask fails because of SparkMapJoinResolver [Spark Branch]
+    * [HIVE-8860] - Populate ExecMapperContext in SparkReduceRecordHandler [Spark Branch]
     * [HIVE-8862] - Fix ordering diferences on TestParse tests due to Java8
+    * [HIVE-8865] - Needs to set hashTableMemoryUsage for MapJoinDesc [Spark Branch]
+    * [HIVE-8867] - Investigate test failure on mapjoin_filter_on_outerjoin.q [Spark Branch]
+    * [HIVE-8868] - SparkSession and SparkClient mapping[Spark Branch]
+    * [HIVE-8882] - Fix test TestHiveKVResultCache [Spark Branch]
+    * [HIVE-8883] - Investigate test failures on auto_join30.q [Spark Branch]
+    * [HIVE-8885] - Investigate test failure on auto_join13.q [Spark Branch]
+    * [HIVE-8887] - Investigate test failures on auto_join6, auto_join7, auto_join18, auto_join18_multi_distinct [Spark Branch]
+    * [HIVE-8892] - Use MEMORY_AND_DISK for RDD caching [Spark Branch]
+    * [HIVE-8899] - Merge from trunk to spark [Spark Branch]
+    * [HIVE-8905] - Servlet classes signer information does not match [Spark branch]
+    * [HIVE-8908] - Investigate test failure on join34.q [Spark Branch]
+    * [HIVE-8911] - Enable mapjoin hints [Spark Branch]
+    * [HIVE-8920] - IOContext problem with multiple MapWorks cloned for multi-insert [Spark Branch]
+    * [HIVE-8921] - Investigate test failure on auto_join2.q [Spark Branch]
     * [HIVE-8922] - CBO: assorted date and timestamp issues
     * [HIVE-8923] - HIVE-8512 needs to be fixed also for CBO
+    * [HIVE-8924] - Investigate test failure for join_empty.q [Spark Branch]
+    * [HIVE-8934] - Investigate test failure on bucketmapjoin10.q and bucketmapjoin11.q [Spark Branch]
     * [HIVE-8936] - Add SORT_QUERY_RESULTS for join tests that do not guarantee order
+    * [HIVE-8942] - Investigate test failure on skewjoin.q [Spark Branch]
+    * [HIVE-8943] - Fix memory limit check for combine nested mapjoins [Spark Branch]
+    * [HIVE-8946] - Enable Map Join [Spark Branch]
+    * [HIVE-8951] - Spark remote context doesn't work with local-cluster [Spark Branch]
+    * [HIVE-8956] - Hive hangs while some error/exception happens beyond job execution [Spark Branch]
+    * [HIVE-8959] - SparkSession is not closed until JVM exit.[Spark Branch]
+    * [HIVE-8961] - Remove unnecessary dependency collection task [Spark Branch]
     * [HIVE-8962] - Add SORT_QUERY_RESULTS for join tests that do not guarantee order #2
+    * [HIVE-8963] - Investigate test failure on bucketmapjoin7.q [Spark Branch]
+    * [HIVE-8970] - Enable map join optimization only when hive.auto.convert.join is true [Spark Branch]
+    * [HIVE-8972] - Implement more fine-grained remote client-level events [Spark Branch]
+    * [HIVE-8982] - IndexOutOfBounds exception in mapjoin [Spark Branch]
+    * [HIVE-8984] - Enable job metrics/statistics gathering for remote spark context [Spark Branch]
+    * [HIVE-8991] - Fix custom_input_output_format [Spark Branch]
+    * [HIVE-8992] - Fix bucket related test failure: parquet_join.q [Spark Branch]
+    * [HIVE-8993] - Make sure Spark + HS2 work [Spark Branch]
+    * [HIVE-8994] - Merge from trunk Nov 28 2014
+    * [HIVE-8995] - Find thread leak in RSC Tests [Spark Branch]
+    * [HIVE-8998] - Logging is not configured in spark-submit sub-process
+    * [HIVE-9007] - Hive may generate wrong plan for map join queries due to IdentityProjectRemover [Spark Branch]
+    * [HIVE-9016] - SparkCounter display name is not set correctly[Spark Branch]
+    * [HIVE-9019] - Avoid using SPARK_JAVA_OPTS [Spark Branch]
+    * [HIVE-9026] - Re-enable remaining tests after HIVE-8970 [Spark Branch]
+    * [HIVE-9027] - Enable ppd_join4 [Spark Branch]
     * [HIVE-9030] - CBO: Plans with comparison of values with different types
     * [HIVE-9033] - Fix ordering differences due to Java8 (part 2)
     * [HIVE-9034] - CBO: type change in literal_ints.q
     * [HIVE-9035] - CBO: Disable PPD when functions are non-deterministic (ppd_random.q  - non-deterministic udf rand() pushed above join)
+    * [HIVE-9036] - Replace akka for remote spark client RPC [Spark Branch]
+    * [HIVE-9040] - Spark Memory can be formatted string [Spark Branch]
+    * [HIVE-9041] - Generate better plan for queries containing both union and multi-insert [Spark Branch]
+    * [HIVE-9042] - Support multiple mapjoin operators in one work [Spark Branch]
     * [HIVE-9043] - HiveException: Conflict on row inspector for {table}
+    * [HIVE-9054] - Add additional logging to SetSparkReducerParallelism [Spark Branch]
+    * [HIVE-9059] - Remove wrappers for SparkJobInfo and SparkStageInfo [Spark Branch]
+    * [HIVE-9063] - NPE in RemoteSparkJobStatus.getSparkStatistics [Spark Branch]
     * [HIVE-9066] - temporarily disable CBO for non-deterministic functions
+    * [HIVE-9078] - Hive should not submit second SparkTask while previous one has failed.[Spark Branch]
+    * [HIVE-9079] - Hive hangs while failed to get executorCount[Spark Branch]
+    * [HIVE-9081] - Bucket mapjoin should use the new alias in posToAliasMap [Spark Branch]
+    * [HIVE-9085] - Spark Client RPC should have larger default max message size [Spark Branch]
+    * [HIVE-9088] - Spark counter serialization error in spark.log [Spark Branch]
+    * [HIVE-9094] - TimeoutException when trying get executor count from RSC [Spark Branch]
+    * [HIVE-9098] - Check cross product for conditional task [Spark Branch]
+    * [HIVE-9099] - infer_bucket_sort_convert_join.q and mapjoin_hook.q failed.[Spark Branch]
+    * [HIVE-9101] - bucket_map_join_spark4.q failed due to NPE.[Spark Branch]
     * [HIVE-9104] - windowing.q failed when mapred.reduce.tasks is set to larger than one
     * [HIVE-9109] - Add support for Java 8 specific q-test out files
+    * [HIVE-9110] - Performance of SELECT COUNT(*) FROM store_sales WHERE ss_item_sk IS NOT NULL [Spark Branch]
+    * [HIVE-9116] - Add unit test for multi sessions.[Spark Branch]
+    * [HIVE-9121] - Enable beeline query progress information for Spark job[Spark Branch]
     * [HIVE-9127] - Improve CombineHiveInputFormat.getSplit performance
     * [HIVE-9133] - CBO (Calcite Return Path): Refactor Semantic Analyzer to Move CBO code out 
+    * [HIVE-9135] - Cache Map and Reduce works in RSC [Spark Branch]
+    * [HIVE-9136] - Profile query compiler [Spark Branch]
     * [HIVE-9153] - Perf enhancement on CombineHiveInputFormat and HiveInputFormat
+    * [HIVE-9157] - Merge from trunk to spark 12/26/2014 [Spark Branch]
     * [HIVE-9161] - Fix ordering differences on UDF functions due to Java8
+    * [HIVE-9164] - Profile query compiler #2 [Spark Branch]
+    * [HIVE-9170] - UT: udf_in_file fails with filenotfoundexception [Spark Branch]
+    * [HIVE-9174] - Enable queuing of HCatalog notification events in metastore DB
+    * [HIVE-9175] - Add alters to list of events handled by NotificationListener
+    * [HIVE-9178] - Create a separate API for remote Spark Context RPC other than job submission [Spark Branch]
+    * [HIVE-9179] - Add listeners on JobHandle so job status change can be notified to the client [Spark Branch]
     * [HIVE-9181] - Fix SkewJoinOptimizer related Java 8 ordering differences
+    * [HIVE-9184] - Modify HCatClient to support new notification methods in HiveMetaStoreClient
+    * [HIVE-9192] - One-pass SMB Optimizations [Spark Branch]
     * [HIVE-9193] - Fix ordering differences due to Java 8 (Part 3)
     * [HIVE-9194] - Support select distinct *
     * [HIVE-9200] - CBO (Calcite Return Path): Inline Join, Properties
+    * [HIVE-9202] - Choose Kryo as the serializer for pTest [Spark Branch]
     * [HIVE-9206] - Fix Desc Formatted related Java 8 ordering differences
+    * [HIVE-9207] - Add more log information for debug RSC[Spark Branch]
+    * [HIVE-9209] - Spark branch compile failed on hadoop-1[Spark Branch]
+    * [HIVE-9211] - Research on build mini HoS cluster on YARN for unit test[Spark Branch]
+    * [HIVE-9216] - Avoid redundant clone of JobConf [Spark Branch]
+    * [HIVE-9218] - Remove authorization_admin_almighty1 from spark tests [Spark Branch]
     * [HIVE-9222] - Fix ordering differences due to Java 8 (Part 4)
     * [HIVE-9224] - CBO (Calcite Return Path): Inline Table, Properties
+    * [HIVE-9230] - Followup for HIVE-9125, update ppd_join4.q.out for Spark [Spark Branch]
     * [HIVE-9239] - Fix ordering differences due to Java 8 (Part 5)
     * [HIVE-9241] - Fix TestCliDriver.testCliDriver_subquery_multiinsert
+    * [HIVE-9246] - Remove tabs from spark code [Spark Branch]
+    * [HIVE-9251] - SetSparkReducerParallelism is likely to set too small number of reducers [Spark Branch]
+    * [HIVE-9256] - Merge trunk to spark 1/5/2015 [Spark Branch]
     * [HIVE-9257] - Merge from spark to trunk January 2015
     * [HIVE-9259] - Fix ClassCastException when CBO is enabled for HOS [Spark Branch]
     * [HIVE-9264] - Merge encryption branch to trunk
+    * [HIVE-9267] - Ensure custom UDF works with Spark [Spark Branch]
+    * [HIVE-9281] - Code cleanup [Spark Branch]
+    * [HIVE-9288] - TODO cleanup task1.[Spark Branch]
     * [HIVE-9292] - CBO (Calcite Return Path): Inline GroupBy, Properties
+    * [HIVE-9305] - Set default miniClusterType back to none in QTestUtil.[Spark branch]
+    * [HIVE-9306] - Let Context.isLocalOnlyExecutionMode() return false if execution engine is Spark [Spark Branch]
     * [HIVE-9315] - CBO (Calcite Return Path): Inline FileSinkOperator, Properties
+    * [HIVE-9319] - Cleanup Modified Files [Spark Branch]
+    * [HIVE-9321] - Notification message size can be arbitrarily long, DbNotificationListener limits to 1024
+    * [HIVE-9323] - Merge from trunk to spark 1/8/2015
+    * [HIVE-9326] - BaseProtocol.Error failed to deserialization due to NPE.[Spark Branch]
+    * [HIVE-9335] - Address review items on HIVE-9257 [Spark Branch]
+    * [HIVE-9337] - Move more hive.spark.* configurations to HiveConf [Spark Branch]
+    * [HIVE-9342] - add num-executors / executor-cores / executor-memory option support for hive on spark in Yarn mode [Spark Branch]
     * [HIVE-9352] - Merge from spark to trunk (follow-up of HIVE-9257)
+    * [HIVE-9370] - SparkJobMonitor timeout as sortByKey would launch extra Spark job before original job get submitted [Spark Branch]
+    * [HIVE-9379] - Fix tests with some versions of Spark + Snappy [Spark Branch]
+    * [HIVE-9387] - Shutting down cli takes quite some time [Spark Branch]
+    * [HIVE-9395] - Make WAIT_SUBMISSION_TIMEOUT configuable and check timeout in SparkJobMonitor level.[Spark Branch]
     * [HIVE-9409] - Avoid ser/de loggers as logging framework can be incompatible on driver and workers
     * [HIVE-9410] - ClassNotFoundException occurs during hive query case execution with UDF defined [Spark Branch]
+    * [HIVE-9425] - Add jar/file doesn't work with yarn-cluster mode [Spark Branch]
+    * [HIVE-9426] - Merge trunk to spark 1/21/2015
     * [HIVE-9428] - LocalSparkJobStatus may return failed job as successful [Spark Branch]
     * [HIVE-9431] - CBO (Calcite Return Path): Removing AST from ParseContext
     * [HIVE-9434] - Shim the method Path.getPathWithoutSchemeAndAuthority
@@ -517,6 +795,10 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9477] - No error thrown when global limit optimization failed to find enough number of rows [Spark Branch]
     * [HIVE-9487] - Make Remote Spark Context secure [Spark Branch]
     * [HIVE-9493] - Failed job may not throw exceptions [Spark Branch]
+    * [HIVE-9517] - UNION ALL query failed with ArrayIndexOutOfBoundsException [Spark Branch]
+    * [HIVE-9552] - Merge trunk to Spark branch 2/2/2015 [Spark Branch]
+    * [HIVE-9568] - Revert changes in two test configuration files accidently brought in by HIVE-9552 [Spark Branch]
+    * [HIVE-9574] - Lazy computing in HiveBaseFunctionResultList may hurt performance [Spark Branch]
 
 ** Bug
     * [HIVE-1344] - error in select disinct
@@ -525,30 +807,45 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-3781] - Index related events should be delivered to metastore event listener
     * [HIVE-4009] - CLI Tests fail randomly due to MapReduce LocalJobRunner race condition
     * [HIVE-5536] - Incorrect Operation Name is passed to hookcontext
-    * [HIVE-5631] - Index creation on a skew table fails
-    * [HIVE-5664] - Drop cascade database fails when the db has any tables with indexes
     * [HIVE-5865] - AvroDeserializer incorrectly assumes keys to Maps will always be of type 'org.apache.avro.util.Utf8'
     * [HIVE-6165] - Unify HivePreparedStatement from jdbc:hive and jdbc:hive2
-    * [HIVE-6198] - ORC file and struct column names are case sensitive
     * [HIVE-6308] - COLUMNS_V2 Metastore table not populated for tables created without an explicit column list.
     * [HIVE-6421] - abs() should preserve precision/scale of decimal input
-    * [HIVE-6468] - HS2 & Metastore using SASL out of memory error when curl sends a get request
     * [HIVE-6623] - Add "owner" tag to ptest2 created instances
-    * [HIVE-6679] - HiveServer2 should support configurable the server side socket timeout and keepalive for various transports types where applicable
     * [HIVE-6683] - Beeline does not accept comments at end of line
     * [HIVE-6914] - parquet-hive cannot write nested map (map value is map)
     * [HIVE-7024] - Escape control characters for explain result
     * [HIVE-7069] - Zookeeper connection leak
-    * [HIVE-7270] - SerDe Properties are not considered by show create table Command
+    * [HIVE-7431] - When run on spark cluster, some spark tasks may fail
+    * [HIVE-7489] - Change ql/pom.xml to fix mvn project setup [Spark Branch]
+    * [HIVE-7523] - Fix spark build after merge merging trunk
+    * [HIVE-7530] - Go thru the common code to find references to HIVE_EXECUCTION_ENGINE to make sure conditions works with Spark [Spark Branch]
+    * [HIVE-7540] - NotSerializableException encountered when using sortByKey transformation
+    * [HIVE-7556] - Fix code style, license header, tabs, etc. [Spark Branch]
+    * [HIVE-7591] - GenMapRedUtils::addStatsTask only assumes either MapredWork or TezWork
+    * [HIVE-7624] - Reduce operator initialization failed when running multiple MR query on spark
+    * [HIVE-7626] - Add jar through CLI did not loaded by Spark executor[Spark Branck]
+    * [HIVE-7627] - FSStatsPublisher does fit into Spark multi-thread task mode[Spark Branch]
+    * [HIVE-7642] - Set hive input format by configuration.[Spark Branch]
+    * [HIVE-7643] - ExecMapper static states lead to unpredictable query result.[Spark Branch]
+    * [HIVE-7652] - Check OutputCollector after closing ExecMapper/ExecReducer
+    * [HIVE-7745] - NullPointerException when turn on hive.optimize.union.remove, hive.merge.mapfiles and hive.merge.mapredfiles [Spark Branch]
+    * [HIVE-7747] - Submitting a query to Spark from HiveServer2 fails [Spark Branch]
+    * [HIVE-7763] - Failed to query TABLESAMPLE on empty bucket table [Spark Branch]
+    * [HIVE-7795] - Enable ptf.q and ptf_streaming.q.[Spark Branch]
+    * [HIVE-7799] - TRANSFORM failed in transform_ppr1.q[Spark Branch]
+    * [HIVE-7909] - Fix sample8.q automatic test failure[Spark Branch]
+    * [HIVE-7930] - enable vectorization_short_regress.q,  vector_string_concat.q [Spark Branch]
     * [HIVE-7932] - It may cause NP exception when add accessed columns to ReadEntity
     * [HIVE-7951] - InputFormats implementing (Job)Configurable should not be cached
     * [HIVE-7997] - Potential null pointer reference in ObjectInspectorUtils#compareTypes()
-    * [HIVE-8099] - IN operator for partition column fails when the partition column type is DATE
+    * [HIVE-8118] - Support work that have multiple child works to work around SPARK-3622  [Spark Branch]
+    * [HIVE-8180] - Update SparkReduceRecordHandler for processing the vectors [spark branch]
     * [HIVE-8182] - beeline fails when executing multiple-line queries with trailing spaces
     * [HIVE-8257] - Accumulo introduces old hadoop-client dependency
     * [HIVE-8266] - create function using <resource> statement compilation should include resource URI entity
     * [HIVE-8284] - Equality comparison is done between two floating point variables in HiveRelMdUniqueKeys#getUniqueKeys()
-    * [HIVE-8295] - Add batch retrieve partition objects for metastore direct sql 
+    * [HIVE-8300] - Missing guava lib causes IllegalStateException when deserializing a task [Spark Branch]
     * [HIVE-8308] - Acid related table properties should be defined in one place and should be case insensitive
     * [HIVE-8317] - WebHCat pom should explicitly depend on jersey-core
     * [HIVE-8326] - Using DbTxnManager with concurrency off results in run time error
@@ -556,18 +853,21 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-8338] - Add ip and command to semantic analyzer hook context
     * [HIVE-8345] - q-test for Avro date support
     * [HIVE-8359] - Map containing null values are not correctly written in Parquet files
-    * [HIVE-8374] - schematool fails on Postgres versions < 9.2
     * [HIVE-8381] - Update hive version on trunk to 0.15
     * [HIVE-8387] - add retry logic to ZooKeeperStorage in WebHCat
+    * [HIVE-8425] - enable vectorized_mapjoin.q,vectorized_nested_mapjoin.q [Sparch Branch]
+    * [HIVE-8426] - paralle.q assert failed.[Spark Branch]
     * [HIVE-8448] - Union All might not work due to the type conversion issue
     * [HIVE-8450] - Create table like does not copy over table properties
-    * [HIVE-8485] - HMS on Oracle incompatibility
+    * [HIVE-8457] - MapOperator initialization fails when multiple Spark threads is enabled [Spark Branch]
     * [HIVE-8491] - Fix build name in ptest pre-commit message
+    * [HIVE-8496] - Re-enable statistics [Spark Branch]
     * [HIVE-8500] - beeline does not need to set hive.aux.jars.path
     * [HIVE-8512] - queries with star and gby produce incorrect results
     * [HIVE-8518] - Compile time skew join optimization returns duplicated results
     * [HIVE-8523] - Potential null dereference in DDLSemanticAnalyzer#addInputsOutputsAlterTable()
-    * [HIVE-8532] - return code of "source xxx" clause is missing
+    * [HIVE-8542] - Enable groupby_map_ppr.q and groupby_map_ppr_multi_distinct.q [Spark Branch]
+    * [HIVE-8545] - Exception when casting Text to BytesWritable [Spark Branch]
     * [HIVE-8556] - introduce overflow control and sanity check to BytesBytesMapJoin
     * [HIVE-8564] - DROP TABLE IF EXISTS throws exception if the table does not exist.  
     * [HIVE-8565] - beeline may go into an infinite loop when using EOF
@@ -584,49 +884,33 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-8666] - hive.metastore.server.max.threads default is too high
     * [HIVE-8680] - Set Max Message for Binary Thrift endpoints
     * [HIVE-8693] - Separate out fair scheduler dependency from hadoop 0.23 shim
-    * [HIVE-8706] - Table statistic collection on counter failed due to table name character case.
     * [HIVE-8708] - Add query id to explain log option
-    * [HIVE-8715] - Hive 14 upgrade scripts can fail for statistics if database was created using auto-create
     * [HIVE-8720] - Update orc_merge tests to make it consistent across OS'es
     * [HIVE-8728] - Fix ptf.q determinism
     * [HIVE-8730] - schemaTool failure when date partition has non-date value
     * [HIVE-8736] - add ordering to cbo_correctness to make result consistent
-    * [HIVE-8739] - handle Derby and Oracle errors with joins and filters in Direct SQL in a invalid-DB-specific path
+    * [HIVE-8743] - Disable MapJoin [Spark Branch]
     * [HIVE-8757] - YARN dep in scheduler shim should be optional
     * [HIVE-8762] - HiveMetaStore.BooleanPointer should be replaced with an AtomicBoolean
-    * [HIVE-8784] - Querying partition does not work with JDO enabled against PostgreSQL
     * [HIVE-8791] - Hive permission inheritance throws exception S3
     * [HIVE-8796] - TestCliDriver acid tests with decimal needs benchmark to be updated
     * [HIVE-8797] - Simultaneous dynamic inserts can result in "partition already exists" error
     * [HIVE-8803] - DESC SCHEMA <DATABASE-NAME> is not working
-    * [HIVE-8805] - CBO skipped due to SemanticException: Line 0:-1 Both left and right aliases encountered in JOIN 'avg_cs_ext_discount_amt'
     * [HIVE-8808] - HiveInputFormat caching cannot work with all input formats
-    * [HIVE-8811] - Dynamic partition pruning can result in NPE during query compilation
     * [HIVE-8812] - TestMinimrCliDriver failure if run in the same command as TestHBaseNegativeCliDriver
     * [HIVE-8825] - SQLCompletor catches Throwable and ignores it
-    * [HIVE-8827] - Remove SSLv2Hello from list of disabled protocols
-    * [HIVE-8830] - hcatalog process don't exit because of non daemon thread
-    * [HIVE-8845] - Switch to Tez 0.5.2
     * [HIVE-8847] - Fix bugs in jenkins scripts
     * [HIVE-8848] - data loading from text files or text file processing doesn't handle nulls correctly
     * [HIVE-8850] - ObjectStore:: rollbackTransaction() needs to be looked into further.
     * [HIVE-8863] - Cannot drop table with uppercase name after "compute statistics for columns"
-    * [HIVE-8866] - Vectorization on partitioned table throws ArrayIndexOutOfBoundsException when partitions are not of same #of columns
     * [HIVE-8869] - RowSchema not updated for some ops when columns are pruned
-    * [HIVE-8870] - errors when selecting a struct field within an array from ORC based tables
     * [HIVE-8872] - Hive view of HBase range scan intermittently returns incorrect data.
-    * [HIVE-8873] - Switch to calcite 0.9.2
     * [HIVE-8874] - Error Accessing HBase from Hive via Oozie on Kerberos 5.0.1 cluster
     * [HIVE-8875] - hive.optimize.sort.dynamic.partition should be turned off for ACID
-    * [HIVE-8876] - incorrect upgrade script for Oracle (13->14)
     * [HIVE-8877] - improve context logging during job submission via WebHCat
     * [HIVE-8879] - Upgrade derby version to address race candition
-    * [HIVE-8880] - non-synchronized access to split list in OrcInputFormat
     * [HIVE-8881] - Receiving json "{"error":"Could not find job job_1415748506143_0002"}" when web client tries to fetch all jobs from webhcat where HDFS does not have the data.
-    * [HIVE-8886] - Some Vectorized String CONCAT expressions result in runtime error Vectorization: Unsuported vector output type: StringGroup
-    * [HIVE-8888] - Mapjoin with LateralViewJoin generates wrong plan in Tez
     * [HIVE-8889] - JDBC Driver ResultSet.getXXXXXX(String columnLabel) methods Broken
-    * [HIVE-8890] - HiveServer2 dynamic service discovery: use persistent ephemeral nodes curator recipe
     * [HIVE-8891] - Another possible cause to NucleusObjectNotFoundException from drops/rollback
     * [HIVE-8893] - Implement whitelist for builtin UDFs to avoid untrused code execution in multiuser mode
     * [HIVE-8901] - increase retry attempt, interval on metastore database errors
@@ -637,62 +921,44 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-8926] - Projections that only swap input columns are identified incorrectly as identity projections
     * [HIVE-8938] - Compiler should save the transform URI as input entity
     * [HIVE-8944] - TestCompactor fails with IncompatibleClassChangeError
-    * [HIVE-8947] - HIVE-8876 also affects Postgres < 9.2
     * [HIVE-8948] - TestStreaming is flaky
     * [HIVE-8964] - Some TestMiniTezCliDriver tests taking two hours
     * [HIVE-8965] - Enhance PTest to kill all processes between tests and to report when a TEST*.xml file is not generated
     * [HIVE-8967] - Fix bucketmapjoin7.q determinism
     * [HIVE-8975] - Possible performance regression on bucket_map_join_tez2.q
     * [HIVE-8978] - Fix test determinism issue for qfile: smb_mapjoin_1.q etc
+    * [HIVE-8986] - Add limit_partition_metadataonly.q in testconfiguration.properties [Spark Branch]
     * [HIVE-8990] - mapjoin_mapjoin.q is failing on Tez (missed golden file update)
     * [HIVE-9001] - Ship with log4j.properties file that has a reliable time based rolling policy
-    * [HIVE-9003] - Vectorized IF expr broken for the scalar and scalar case
     * [HIVE-9006] - hiveserver thrift api version is still 6
     * [HIVE-9011] - Fix parquet_join.q determinism
     * [HIVE-9024] - NullPointerException when starting webhcat server if templeton.hive.properties is not set
-    * [HIVE-9025] - join38.q (without map join) produces incorrect result when testing with multiple reducers
     * [HIVE-9032] - Help for orcfiledump script does not reflect new options
     * [HIVE-9048] - Hive build failed on hadoop-1 after HIVE-8828.
-    * [HIVE-9051] - TezJobMonitor in-place updates logs too often to logfile
-    * [HIVE-9053] - select constant in union all followed by group by gives wrong result
     * [HIVE-9055] - Tez: union all followed by group by followed by another union all gives error
     * [HIVE-9060] - Fix child operator references after NonBlockingOpDeDupProc
-    * [HIVE-9067] - OrcFileMergeOperator may create merge file that does not match properties of input files
     * [HIVE-9077] - Set completer in CliDriver is not working
-    * [HIVE-9090] - Rename "Tez File Merge Work" to smaller name
     * [HIVE-9096] - GenericUDF may be left unclosed in PartitionPrune#visitCall()
-    * [HIVE-9108] - Fix for HIVE-8735 is incorrect (stats with long paths)
-    * [HIVE-9111] - Potential NPE in OrcStruct for list and map types
-    * [HIVE-9112] - Query may generate different results depending on the number of reducers
     * [HIVE-9113] - Explain on query failed with NPE
-    * [HIVE-9114] - union all query in cbo test has undefined ordering
     * [HIVE-9120] - Hive Query log does not work when hive.exec.parallel is true
     * [HIVE-9122] - Need to remove additional references to hive-shims-common-secure, hive-shims-0.20
-    * [HIVE-9126] - Backport HIVE-8827 (Remove SSLv2Hello from list of disabled protocols) to 0.14 branch
     * [HIVE-9129] - Migrate to newer Calcite snapshot, where ByteString is now in org.apache.calcite.avatica.util
     * [HIVE-9130] -  vector_partition_diff_num_cols result is not updated after CBO upgrade
     * [HIVE-9131] - MiniTez optimize_nullscan test is unstable
-    * [HIVE-9141] - HiveOnTez: mix of union all, distinct, group by generates error
     * [HIVE-9149] - Add unit test to test implicit conversion during dynamic partitioning/distribute by
     * [HIVE-9150] - Unrelated types are compared in GenTezWork#getFollowingWorkIndex()
     * [HIVE-9154] - Cache pathToPartitionInfo in context aware record reader
-    * [HIVE-9155] - HIVE_LOCKS uses int instead of bigint hive-txn-schema-0.14.0.mssql.sql
-    * [HIVE-9162] - stats19 test is environment-dependant
-    * [HIVE-9166] - Place an upper bound for SARG CNF conversion
-    * [HIVE-9168] - Vectorized Coalesce for strings is broken
     * [HIVE-9177] - Fix child operator references after NonBlockingOpDeDupProc (II)
     * [HIVE-9195] - CBO changes constant to column type
     * [HIVE-9197] - fix lvj_mapjoin.q diff in trunk
     * [HIVE-9199] - Excessive exclusive lock used in some DDLs with DummyTxnManager
     * [HIVE-9203] - CREATE TEMPORARY FUNCTION hangs trying to acquire lock
-    * [HIVE-9205] - Change default tez install directory to use /tmp instead of /user and create the directory if it does not exist
     * [HIVE-9215] - Some mapjoin queries broken with IdentityProjectRemover with PPD
     * [HIVE-9221] - Remove deprecation warning for hive.metastore.local
-    * [HIVE-9234] - HiveServer2 leaks FileSystem objects in FileSystem.CACHE
     * [HIVE-9242] - Many places in CBO code eat exceptions
     * [HIVE-9243] - Static Map in IOContext is not thread safe
-    * [HIVE-9249] - java.lang.ClassCastException: org.apache.hadoop.hive.serde2.io.HiveVarcharWritable cannot be cast to org.apache.hadoop.hive.common.type.HiveVarchar when joining tables
     * [HIVE-9255] - Fastpath for limited fetches from unpartitioned tables
+    * [HIVE-9289] - TODO : Store user name in session [Spark Branch]
     * [HIVE-9296] - Need to add schema upgrade changes for queueing events in the database
     * [HIVE-9299] - Reuse Configuration in AvroSerdeUtils
     * [HIVE-9300] - Make TCompactProtocol configurable
@@ -700,27 +966,20 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9309] - schematool fails on Postgres 8.1
     * [HIVE-9310] - CLI JLine does not flush history back to ~/.hivehistory
     * [HIVE-9316] - TestSqoop tests in WebHCat testsuite hardcode libdir path to hdfs
-    * [HIVE-9317] - move Microsoft copyright to NOTICE file
-    * [HIVE-9321] - Notification message size can be arbitrarily long, DbNotificationListener limits to 1024
     * [HIVE-9330] - DummyTxnManager will throw NPE if WriteEntity writeType has not been set
     * [HIVE-9331] - get rid of pre-optimized-hashtable memory optimizations
     * [HIVE-9344] - Fix flaky test optimize_nullscan
     * [HIVE-9347] - Bug with max() together with rank() and grouping sets
     * [HIVE-9351] - Running Hive Jobs with Tez cause templeton to never report percent complete
     * [HIVE-9353] - make TABLE keyword optional in INSERT INTO TABLE foo...
-    * [HIVE-9359] - Export of a large table causes OOM in Metastore and Client
-    * [HIVE-9361] - Intermittent NPE in SessionHiveMetaStoreClient.alterTempTable
     * [HIVE-9366] - wrong date in description annotation in date_add() and date_sub() udf
     * [HIVE-9369] - fix arguments length checking in Upper and Lower UDF
     * [HIVE-9377] - UDF in_file() in WHERE predicate causes NPE.
     * [HIVE-9381] - HCatalog hardcodes maximum append limit to 1000.
     * [HIVE-9382] - Query got rerun with Global Limit optimization on and Fetch optimization off
     * [HIVE-9386] - FileNotFoundException when using in_file()
-    * [HIVE-9390] - Enhance retry logic wrt DB access in TxnHandler
     * [HIVE-9393] - reduce noisy log level of ColumnarSerDe.java:116 from INFO to DEBUG
     * [HIVE-9396] - date_add()/date_sub() should allow tinyint/smallint/bigint arguments in addition to int
-    * [HIVE-9401] - Backport: Fastpath for limited fetches from unpartitioned tables
-    * [HIVE-9404] - NPE in org.apache.hadoop.hive.metastore.txn.TxnHandler.determineDatabaseProduct()
     * [HIVE-9414] - Fixup post HIVE-9264 - Merge encryption branch to trunk
     * [HIVE-9437] - Beeline does not add any existing HADOOP_CLASSPATH
     * [HIVE-9440] - Folders may not be pruned for Hadoop 2
@@ -731,11 +990,10 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9448] - Merge spark to trunk 1/23/15
     * [HIVE-9454] - Test failures due to new Calcite version
     * [HIVE-9462] - HIVE-8577 - breaks type evolution
-    * [HIVE-9473] - sql std auth should disallow built-in udfs that allow any java methods to be called
     * [HIVE-9475] - HiveMetastoreClient.tableExists does not work
     * [HIVE-9476] - Beeline fails to start on trunk
     * [HIVE-9502] - Parquet cannot read Map types from files written with Hive <= 0.12
-    * [HIVE-9514] - schematool is broken in hive 1.0.0
+    * [HIVE-9515] - Check hive.vectorized.execution.reduce.enabled [Spark Branch]
     * [HIVE-9519] - Bump up spark client connection timeout
     * [HIVE-9593] - ORC Reader should ignore unknown metadata streams 
     * [HIVE-9610] - Continuation of HIVE-9438 - The standalone-jdbc jar missing some classes
@@ -743,11 +1001,18 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9621] - HiveServer2 http mode - embedded jetty should use SynchronousQueue
     * [HIVE-9646] - Beeline doesn't show Spark job progress info [Spark Branch]
     * [HIVE-9651] - FileSinkOperator does not pass in conf to serde.initialize
+    * [HIVE-9684] - Incorrect disk range computation in ORC because of optional stream kind
+    * [HIVE-9685] - CLIService should create SessionState after logging into kerberos
+    * [HIVE-9686] - HiveMetastore.logAuditEvent can be used before sasl server is started
+    * [HIVE-9701] - JMH module does not compile under hadoop-1 profile
+    * [HIVE-9921] - Compile hive failed
+    * [HIVE-10041] - Set defaults for HBASE_HOME in a smarter way
+    * [HIVE-10573] - Improve Hive service for connection
+    * [HIVE-10685] - Alter table concatenate oparetor will cause duplicate data
 
 ** Improvement
     * [HIVE-2828] - make timestamp accessible in the hbase KeyValue 
     * [HIVE-3187] - support ISO-2012 timestamp literals
-    * [HIVE-3280] - Make HiveMetaStoreClient a public API
     * [HIVE-4639] - Add has null flag to ORC internal index
     * [HIVE-4766] - Support HS2 client login timeout when the thrift thread max# is reached
     * [HIVE-4809] - ReduceSinkOperator of PTFOperator can have redundant key columns
@@ -757,21 +1022,29 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-7313] - Allow in-memory/ssd session-level temp-tables
     * [HIVE-7408] - HCatPartition needs getPartCols method
     * [HIVE-7550] - Extend cached evaluation to multiple expressions
+    * [HIVE-7564] - Remove some redundant code plus a bit of cleanup in SparkClient [Spark Branch]
     * [HIVE-7605] - add more javadoc to HivePrivilegeObject
+    * [HIVE-7659] - Unnecessary sort in query plan [Spark Branch]
     * [HIVE-7685] - Parquet memory manager
+    * [HIVE-7707] - Optimize SparkMapRecordHandler implementation
     * [HIVE-7858] - Parquet compression should be configurable via table property
     * [HIVE-7868] - AvroSerDe error handling could be improved
     * [HIVE-7896] - orcfiledump should be able to dump data
     * [HIVE-7977] - Avoid creating serde for partitions if possible in FetchTask
+    * [HIVE-8029] - Remove reducers number configure in SparkTask [Spark Branch]
     * [HIVE-8094] - add LIKE keyword support for SHOW FUNCTIONS
     * [HIVE-8155] -  In select statement after * any random characters are allowed in hive but in RDBMS its not allowed
+    * [HIVE-8249] - Refactoring SparkPlan and SparkPlanGenerator [Spark Branch]
     * [HIVE-8337] - Change default of hive.warehouse.subdir.inherit.perms to true
     * [HIVE-8347] - Use base-64 encoding instead of custom encoding for serialized objects
     * [HIVE-8357] - Path type entities should use qualified path rather than string
     * [HIVE-8395] - CBO: enable by default
     * [HIVE-8424] - Support fair scheduler user queue mapping in non-impersonation mode
     * [HIVE-8449] - webhcat startup does not create the log directory
+    * [HIVE-8463] - Add numPartitions info to SparkEdgeProperty [Spark Branch]
     * [HIVE-8469] - Add parquet.compression as a Serde Property
+    * [HIVE-8535] - Enable compile time skew join optimization for spark [Spark Branch]
+    * [HIVE-8536] - Enable SkewJoinResolver for spark [Spark Branch]
     * [HIVE-8552] - Remove hard code of offline and make addHost api public
     * [HIVE-8642] - Hive stack() UDTF Doesn't Support NULL Insert Values
     * [HIVE-8661] - JDBC MinimizeJAR should be configurable in pom.xml
@@ -781,7 +1054,7 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-8829] - Upgrade to Thrift 0.9.2
     * [HIVE-8839] - Support "alter table .. add/replace columns cascade"
     * [HIVE-8910] - Refactoring of PassThroughOutputFormat 
-    * [HIVE-8933] - Check release builds for SNAPSHOT dependencies
+    * [HIVE-8913] - Make SparkMapJoinResolver handle runtime skew join [Spark Branch]
     * [HIVE-8971] - HIVE-8965 exposed some classes which start with Test but are not tests
     * [HIVE-8976] - Make nine additional tests deterministic
     * [HIVE-8977] - TestParquetDirect should be abstract
@@ -791,6 +1064,7 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9037] - Improve explain plan to show joining keys for shuffle join
     * [HIVE-9049] - Metastore should use TCompactProtocol as opposed to TBinaryProtocol
     * [HIVE-9062] - Explain plan doesn't print join keys for Tez shuffle join
+    * [HIVE-9097] - Support runtime skew join for more queries [Spark Branch]
     * [HIVE-9106] - improve the performance of null scan optimizer when several table scans share a physical path
     * [HIVE-9119] - ZooKeeperHiveLockManager does not use zookeeper in the proper way
     * [HIVE-9140] - Add Calcite's ReduceExpressionRules to Hive
@@ -806,26 +1080,40 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9358] - Create LAST_DAY UDF
     * [HIVE-9367] - CombineFileInputFormatShim#getDirIndices is expensive
     * [HIVE-9372] - Parallel checking non-combinable paths in CombineHiveInputFormat
+    * [HIVE-9378] - Spark qfile tests should reuse RSC [Spark Branch]
     * [HIVE-9383] - Improve schema verification error message
     * [HIVE-9538] - Exclude thirdparty directory from tarballs
     * [HIVE-9549] - Include missing directories in source tarball
     * [HIVE-9586] - Too verbose log can hurt performance, we should always check log level first
     * [HIVE-9608] - Define SPARK_HOME if not defined automagically
+    * [HIVE-9691] - Include a few more files include the source tarball
+    * [HIVE-9705] - All curator deps should be listed in dependency management section
+    * [HIVE-9707] - ExecDriver does not get token from environment
+    * [HIVE-9708] - Remove testlibs directory
 
 ** New Feature
     * [HIVE-3405] - UDF initcap to obtain a string with the first letter of each word in uppercase other letters in lowercase
     * [HIVE-7122] - Storage format for create like table
     * [HIVE-8435] - Add identity project remover optimization
-    * [HIVE-9174] - Enable queuing of HCatalog notification events in metastore DB
-    * [HIVE-9175] - Add alters to list of events handled by NotificationListener
-    * [HIVE-9184] - Modify HCatClient to support new notification methods in HiveMetaStoreClient
 
 ** Task
-    * [HIVE-6977] - Delete Hiveserver1
     * [HIVE-7111] - Extend join transitivity PPD to non-column expressions
+    * [HIVE-7371] - Identify a minimum set of JARs needed to ship to Spark cluster [Spark Branch]
+    * [HIVE-7526] - Research to use groupby transformation to replace Hive existing partitionByKey and SparkCollector combination
+    * [HIVE-7567] - support automatic calculating reduce task number [Spark Branch]
+    * [HIVE-7584] - Change SparkCompiler to generate a SparkWork that contains UnionWork from logical operator tree
+    * [HIVE-7585] - Implement the graph transformation execution
+    * [HIVE-7586] - Generate plan for spark work which uses spark union transformation
+    * [HIVE-7606] - Design SparkSession, SparkSessionManager [Spark Branch]
+    * [HIVE-8043] - Support merging small files [Spark Branch]
+    * [HIVE-8160] - Upgrade Spark dependency to 1.2.0-SNAPSHOT [Spark Branch]
+    * [HIVE-8274] - Refactoring SparkPlan and SparkPlanGeneration [Spark Branch]
+    * [HIVE-8331] - HIVE-8303 followup, investigate result diff [Spark Branch]
     * [HIVE-8351] - Allow testing of both hadoop-1 and hadoop-2 for precommits
     * [HIVE-8370] - Fix tabs in DefaultHBaseValueFactory
     * [HIVE-8465] - Fix some minor test fails on trunk
+    * [HIVE-8537] - Update to use the stable TaskContext API [Spark Branch]
+    * [HIVE-8607] - Java 8 support for Hive
     * [HIVE-8608] - Move jenkins scripts to source control
     * [HIVE-8609] - Move beeline to jline2
     * [HIVE-8826] - Remove jdbm from top level license file
@@ -836,6 +1124,7 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-8979] - Merge shims/common-secure into shims/common
     * [HIVE-8989] - Make groupby_multi_single_reducer.q and smb_mapjoin_3.q deterministic
     * [HIVE-9183] - Compilation against HBase 1.0.0 fails due to missing dependency on high_scale_lib.Counter
+    * [HIVE-9293] - Cleanup SparkTask getMapWork to skip UnionWork check [Spark Branch]
     * [HIVE-9304] - [Refactor] remove unused method in SemAly
     * [HIVE-9345] - Add encryption branch to pre-commit script
     * [HIVE-9402] - Create GREATEST and LEAST udf
@@ -846,12 +1135,20 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9672] - Update RELEASE_NOTES on trunk to reflect the 1.0.0 release
 
 ** Test
+    * [HIVE-7772] - Add tests for order/sort/distribute/cluster by query [Spark Branch]
     * [HIVE-7924] - auto_sortmerge_join_8 sometimes fails with OOM
+    * [HIVE-8207] - Add .q tests for multi-table insertion [Spark Branch]
     * [HIVE-8256] - Add SORT_QUERY_RESULTS for test that doesn't guarantee order #2
     * [HIVE-8327] - mvn site -Pfindbugs
+    * [HIVE-8430] - Enable parquet_join.q [Spark Branch]
+    * [HIVE-8431] - Enable smb_mapjoin_11.q and smb_mapjoin_12.q [Spark Branch]
+    * [HIVE-8533] - Enable all q-tests for multi-insertion [Spark Branch]
+    * [HIVE-8572] - Enable more vectorization tests [Spark Branch]
     * [HIVE-8573] - Fix some non-deterministic vectorization tests
     * [HIVE-8601] - Fix auto_sortmerge_join_16 determinism
     * [HIVE-8602] - Add SORT_QUERY_RESULTS for skewjoinopt2
+    * [HIVE-8617] - Turn on all join .q tests #2 [Spark Branch]
+    * [HIVE-8686] - Enable vectorization tests with query results sort [Spark Branch]
     * [HIVE-8753] - TestMiniTezCliDriver.testCliDriver_vector_mapjoin_reduce failing on trunk
     * [HIVE-8801] - Make orc_merge_incompat1.q deterministic across platforms
     * [HIVE-8929] - incorrect error message for cbo path
@@ -862,7 +1159,7 @@ Release Notes - Hive - Version 1.1.0
     * [HIVE-9403] - File tests determinism with multiple reducers
     * [HIVE-9417] - Fix failing test groupby_grouping_window.q on trunk
     * [HIVE-9435] - Fix auto_join21.q for Tez
-
+    * [HIVE-9627] - Add cbo_gby_empty.q.out for Spark [Spark Branch]
 
 
 Release Notes - Hive - Version 1.0.0

@@ -87,6 +87,39 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [-3.445,0.777,1.0,1.325,2.003,2.333,9.0]
+PREHOOK: query: -- Evaluate function against LIST valued keys
+SELECT sort_array(array(array(2, 9, 7), array(3, 5, 4), array(1, 6, 8))) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- Evaluate function against LIST valued keys
+SELECT sort_array(array(array(2, 9, 7), array(3, 5, 4), array(1, 6, 8))) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+[[1,6,8],[2,9,7],[3,5,4]]
+PREHOOK: query: -- Evaluate function against STRUCT valued keys
+SELECT sort_array(array(struct(2, 9, 7), struct(3, 5, 4), struct(1, 6, 8))) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- Evaluate function against STRUCT valued keys
+SELECT sort_array(array(struct(2, 9, 7), struct(3, 5, 4), struct(1, 6, 8))) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+[{"col1":1,"col2":6,"col3":8},{"col1":2,"col2":9,"col3":7},{"col1":3,"col2":5,"col3":4}]
+PREHOOK: query: -- Evaluate function against MAP valued keys
+SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3, "b", 5, "a", 1), map("a", 1, "c", 6, "b", 8))) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- Evaluate function against MAP valued keys
+SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3, "b", 5, "a", 1), map("a", 1, "c", 6, "b", 8))) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+[{"b":5,"a":1,"c":3},{"b":8,"a":1,"c":6},{"b":2,"a":9,"c":7}]
 PREHOOK: query: -- Test it against data in a table.
 CREATE TABLE dest1 (
 	tinyints ARRAY<TINYINT>,

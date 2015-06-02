@@ -1,5 +1,7 @@
 set hive.auto.convert.join =true;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE;
 
 explain

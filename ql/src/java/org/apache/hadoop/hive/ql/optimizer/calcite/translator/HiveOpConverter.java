@@ -32,7 +32,6 @@ import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -63,6 +62,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -156,8 +156,8 @@ public class HiveOpConverter {
       return visit((MultiJoin) rn);
     } else if (rn instanceof HiveJoin) {
       return visit((HiveJoin) rn);
-    } else if (rn instanceof SemiJoin) {
-      SemiJoin sj = (SemiJoin) rn;
+    } else if (rn instanceof HiveSemiJoin) {
+      HiveSemiJoin sj = (HiveSemiJoin) rn;
       HiveJoin hj = HiveJoin.getJoin(sj.getCluster(), sj.getLeft(), sj.getRight(),
           sj.getCondition(), sj.getJoinType(), true);
       return visit(hj);

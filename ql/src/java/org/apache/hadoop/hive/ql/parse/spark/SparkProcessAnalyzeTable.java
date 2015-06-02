@@ -168,7 +168,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
       StatsWork statsWork, GenSparkProcContext context, Task<StatsWork> statsTask)
               throws SemanticException {
     String aggregationKey = tableScan.getConf().getStatsAggPrefix();
-    StringBuffer aggregationKeyBuffer = new StringBuffer(aggregationKey);
+    StringBuilder aggregationKeyBuffer = new StringBuilder(aggregationKey);
     List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(tableScan, aggregationKeyBuffer);
     aggregationKey = aggregationKeyBuffer.toString();
 

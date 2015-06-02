@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 select key from
 (
 select key from src
