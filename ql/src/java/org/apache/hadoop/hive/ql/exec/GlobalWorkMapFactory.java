@@ -82,7 +82,8 @@ public class GlobalWorkMapFactory {
   DummyMap<Path, BaseWork> dummy = new DummyMap<Path, BaseWork>();
 
   public Map<Path, BaseWork> get(Configuration conf) {
-    if (LlapIoProxy.isDaemon() || SessionState.get().isHiveServerQuery()
+    if (LlapIoProxy.isDaemon()
+        || (SessionState.get() != null && SessionState.get().isHiveServerQuery())
         || HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
       if (threadLocalWorkMap == null) {
         threadLocalWorkMap = new ThreadLocal<Map<Path, BaseWork>>() {
