@@ -102,7 +102,7 @@ public class SparkPlanGenerator {
     try {
       for (BaseWork work : sparkWork.getAllWork()) {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
-        SparkTran tran = generate(work);
+        SparkTran tran = generate(work, sparkWork);
         SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
         sparkPlan.addTran(tran);
         sparkPlan.connect(parentTran, tran);
@@ -206,18 +206,19 @@ public class SparkPlanGenerator {
     return new ShuffleTran(sparkPlan, shuffler, edge.getNumPartitions(), toCache);
   }
 
-  private SparkTran generate(BaseWork work) throws Exception {
+  private SparkTran generate(BaseWork work, SparkWork sparkWork) throws Exception {
     initStatsPublisher(work);
     JobConf newJobConf = cloneJobConf(work);
     checkSpecs(work, newJobConf);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
+    boolean caching = isCachingWork(work, sparkWork);
     if (work instanceof MapWork) {
-      MapTran mapTran = new MapTran();
+      MapTran mapTran = new MapTran(caching);
       HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
       mapTran.setMapFunction(mapFunc);
       return mapTran;
     } else if (work instanceof ReduceWork) {
-      ReduceTran reduceTran = new ReduceTran();
+      ReduceTran reduceTran = new ReduceTran(caching);
       HiveReduceFunction reduceFunc = new HiveReduceFunction(confBytes, sparkReporter);
       reduceTran.setReduceFunction(reduceFunc);
       return reduceTran;
@@ -225,6 +226,22 @@ public class SparkPlanGenerator {
       throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, "
         + "but found " + work.getClass().getName());
     }
+  }
+
+  private boolean isCachingWork(BaseWork work, SparkWork sparkWork) {
+    boolean caching = true;
+    List<BaseWork> children = sparkWork.getChildren(work);
+    if (children.size() < 2) {
+      caching = false;
+    } else {
+      // do not cache this if its child RDD is intend to be cached.
+      for (BaseWork child : children) {
+        if (cloneToWork.containsKey(child)) {
+          caching = false;
+        }
+      }
+    }
+    return caching;
   }
 
   private void checkSpecs(BaseWork work, JobConf jc) throws Exception {

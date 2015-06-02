@@ -197,7 +197,7 @@ public class TestHCatLoaderEncryption {
     createTableInSpecifiedPath(ENCRYPTED_TABLE, "a int, b string",
       WindowsPathUtil.getHdfsUriString(encryptedTablePath), driver);
 
-    associateEncryptionZoneWithPath(encryptedTablePath);
+    associateEncryptionZoneWithPath(WindowsPathUtil.getHdfsUriString(encryptedTablePath));
 
     int LOOP_SIZE = 3;
     String[] input = new String[LOOP_SIZE * LOOP_SIZE];
@@ -237,7 +237,7 @@ public class TestHCatLoaderEncryption {
     FileSystem fs;
     HadoopShims shims = ShimLoader.getHadoopShims();
     conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
-
+    WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
     int numberOfDataNodes = 4;
     dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
     fs = dfs.getFileSystem();
@@ -367,12 +367,13 @@ public class TestHCatLoaderEncryption {
     job.setNumReduceTasks(0);
 
     FileSystem fs = new LocalFileSystem();
-    Path path = new Path(TEST_DATA_DIR + "/testHCatMREncryptionOutput");
+    String pathLoc = TEST_DATA_DIR + "/testHCatMREncryptionOutput";
+    Path path = new Path(pathLoc);
     if (fs.exists(path)) {
       fs.delete(path, true);
     }
 
-    TextOutputFormat.setOutputPath(job, path);
+    TextOutputFormat.setOutputPath(job, new Path(WindowsPathUtil.getHdfsUriString(pathLoc)));
 
     job.waitForCompletion(true);
 

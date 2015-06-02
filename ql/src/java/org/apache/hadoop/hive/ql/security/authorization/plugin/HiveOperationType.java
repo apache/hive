@@ -118,11 +118,28 @@ public enum HiveOperationType {
   ALTERTABLE_COMPACT,
   SHOW_COMPACTIONS,
   SHOW_TRANSACTIONS,
+  // ==== Hive command operation types starts here ==== //
   SET,
   RESET,
   DFS,
   ADD,
   DELETE,
-  COMPILE
+  COMPILE,
+  // ==== Hive command operations ends here ==== //
+
+  // ==== HiveServer2 metadata api types start here ==== //
+  // these corresponds to various java.sql.DatabaseMetaData calls.
+  GET_CATALOGS, // DatabaseMetaData.getCatalogs()  catalogs are actually not supported in
+                // hive, so this is a no-op
+
+  GET_COLUMNS, // getColumns(String catalog, String schemaPattern, String
+               // tableNamePattern, String columnNamePattern)
+
+  GET_FUNCTIONS, // getFunctions(String catalog, String schemaPattern, String functionNamePattern)
+  GET_SCHEMAS, // getSchemas()
+  GET_TABLES, // getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
+  GET_TABLETYPES,// getTableTypes()
+  GET_TYPEINFO // getTypeInfo()
+  // ==== HiveServer2 metadata api types ends here ==== //
 
 }

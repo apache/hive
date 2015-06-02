@@ -5,6 +5,7 @@ LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1;
 
 -- merging
 explain select * from myinput1 a join myinput1 b on a.key<=>b.value;
+-- SORT_QUERY_RESULTS
 select * from myinput1 a join myinput1 b on a.key<=>b.value;
 
 explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key;
@@ -14,6 +15,7 @@ explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput
 select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key;
 
 explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
+
 select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
 
 explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value;

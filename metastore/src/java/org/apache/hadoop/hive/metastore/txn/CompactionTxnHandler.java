@@ -340,7 +340,7 @@ public class CompactionTxnHandler extends TxnHandler {
         if (txnids.size() > 0) {
 
           // Remove entries from txn_components, as there may be aborted txn components
-          StringBuffer buf = new StringBuffer();
+          StringBuilder buf = new StringBuilder();
           buf.append("delete from TXN_COMPONENTS where tc_txnid in (");
           boolean first = true;
           for (long id : txnids) {
@@ -404,7 +404,7 @@ public class CompactionTxnHandler extends TxnHandler {
         Set<Long> txnids = new HashSet<Long>();
         while (rs.next()) txnids.add(rs.getLong(1));
         if (txnids.size() > 0) {
-          StringBuffer buf = new StringBuffer("delete from TXNS where txn_id in (");
+          StringBuilder buf = new StringBuilder("delete from TXNS where txn_id in (");
           boolean first = true;
           for (long tid : txnids) {
             if (first) first = false;
@@ -412,8 +412,9 @@ public class CompactionTxnHandler extends TxnHandler {
             buf.append(tid);
           }
           buf.append(")");
-          LOG.debug("Going to execute update <" + buf.toString() + ">");
-          int rc = stmt.executeUpdate(buf.toString());
+          String bufStr = buf.toString();
+          LOG.debug("Going to execute update <" + bufStr + ">");
+          int rc = stmt.executeUpdate(bufStr);
           LOG.debug("Removed " + rc + " records from txns");
           LOG.debug("Going to commit");
           dbConn.commit();

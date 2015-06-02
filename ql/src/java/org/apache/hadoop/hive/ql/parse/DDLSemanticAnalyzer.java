@@ -2068,6 +2068,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     DescDatabaseDesc descDbDesc = new DescDatabaseDesc(ctx.getResFile(),
         dbName, isExtended);
+    inputs.add(new ReadEntity(getDatabase(dbName)));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), descDbDesc), conf));
     setFetchTask(createFetchTask(descDbDesc.getSchema()));
   }
@@ -2178,7 +2179,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
       break;
     }
-
+    inputs.add(new ReadEntity(getDatabase(dbName)));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showTblsDesc), conf));
     setFetchTask(createFetchTask(showTblsDesc.getSchema()));

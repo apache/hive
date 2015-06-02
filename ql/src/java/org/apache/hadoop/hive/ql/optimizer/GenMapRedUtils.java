@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1854,7 +1855,7 @@ public final class GenMapRedUtils {
   }
 
   public static List<Path> getInputPathsForPartialScan(TableScanOperator tableScanOp,
-          StringBuffer aggregationKey) throws SemanticException {
+          Appendable aggregationKey) throws SemanticException {
     List<Path> inputPaths = new ArrayList<Path>();
     switch (tableScanOp.getConf().getTableMetadata().getTableSpec().specType) {
       case TABLE_ONLY:
@@ -1869,6 +1870,8 @@ public final class GenMapRedUtils {
         } catch (MetaException e) {
           throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
               part.getDataLocation().toString() + e.getMessage()));
+        } catch (IOException e) {
+          throw new RuntimeException(e);
         }
         inputPaths.add(part.getDataLocation());
         break;

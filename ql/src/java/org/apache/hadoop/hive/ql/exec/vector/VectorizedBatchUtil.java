@@ -643,7 +643,7 @@ public class VectorizedBatchUtil {
   }
 
   public static void debugDisplayOneRow(VectorizedRowBatch batch, int index, String prefix) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(prefix + " row " + index + " ");
     for (int column = 0; column < batch.cols.length; column++) {
       ColumnVector colVector = batch.cols[column];

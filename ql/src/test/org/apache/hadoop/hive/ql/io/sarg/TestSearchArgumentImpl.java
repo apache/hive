@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionBuilder;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionTree;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.PredicateLeafImpl;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.junit.Test;
@@ -37,7 +38,9 @@ import org.junit.Test;
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
@@ -3037,5 +3040,29 @@ public class TestSearchArgumentImpl {
     String expected = "and(and(and(and(lt(x, 22), lt(x1, 22)), lteq(y, Binary{\"hi\"})), eq(z, " +
         "0.22)), eq(z1, 0.22))";
     assertEquals(expected, p.toString());
+  }
+
+  @Test
+  public void testTimestampSerialization() throws Exception {
+    // There is a kryo which after serialize/deserialize,
+    // Timestamp becomes Date. We get around this issue in
+    // SearchArgumentImpl.getLiteral. Once kryo fixed the issue
+    // We can simplify SearchArgumentImpl.getLiteral
+    Timestamp now = new Timestamp(new java.util.Date().getTime());
+    SearchArgument sarg =
+      SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("x", now)
+        .end()
+        .build();
+
+    String serializedSarg = sarg.toKryo();
+    SearchArgument sarg2 = SearchArgumentImpl.fromKryo(serializedSarg);
+
+    Field literalField = PredicateLeafImpl.class.getDeclaredField("literal");
+    literalField.setAccessible(true);
+    assertTrue(literalField.get(sarg2.getLeaves().get(0)) instanceof java.util.Date);
+    Timestamp ts = (Timestamp)sarg2.getLeaves().get(0).getLiteral();
+    assertEquals(ts, now);
   }
 }

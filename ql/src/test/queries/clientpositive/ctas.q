@@ -1,4 +1,5 @@
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
+-- SORT_QUERY_RESULTS
 
 create table nzhang_Tmp(a int, b string);
 select * from nzhang_Tmp;

@@ -98,11 +98,11 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
       for (int j = 0; j < joinPredInfo.getEquiJoinPredicateElements().size(); j++) {
         JoinLeafPredicateInfo joinLeafPredInfo = joinPredInfo.
             getEquiJoinPredicateElements().get(j);
+        keyListBuilder.add(joinLeafPredInfo.getJoinKeyExprs(i).get(0));
         for (int pos : joinLeafPredInfo.getProjsJoinKeysInChildSchema(i)) {
           if (!joinKeyPositions.contains(pos)) {
             joinKeyPositions.add(pos);
             collationListBuilder.add(new RelFieldCollation(pos));
-            keyListBuilder.add(joinLeafPredInfo.getJoinKeyExprs(i).get(0));
           }
         }
       }

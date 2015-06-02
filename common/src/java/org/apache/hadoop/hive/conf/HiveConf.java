@@ -79,7 +79,7 @@ public class HiveConf extends Configuration {
   private final List<String> restrictList = new ArrayList<String>();
 
   private Pattern modWhiteListPattern = null;
-  private boolean isSparkConfigUpdated = false;
+  private volatile boolean isSparkConfigUpdated = false;
 
   public boolean getSparkConfigUpdated() {
     return isSparkConfigUpdated;
@@ -1937,20 +1937,20 @@ public class HiveConf extends Configuration {
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
 
-    HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "0ms",
+    HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "6h",
         new TimeValidator(TimeUnit.MILLISECONDS, 3000l, true, null, false),
         "The check interval for session/operation timeout, which can be disabled by setting to zero or negative value."),
-    HIVE_SERVER2_IDLE_SESSION_TIMEOUT("hive.server2.idle.session.timeout", "0ms",
+    HIVE_SERVER2_IDLE_SESSION_TIMEOUT("hive.server2.idle.session.timeout", "7d",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Session will be closed when it's not accessed for this duration, which can be disabled by setting to zero or negative value."),
-    HIVE_SERVER2_IDLE_OPERATION_TIMEOUT("hive.server2.idle.operation.timeout", "0ms",
+    HIVE_SERVER2_IDLE_OPERATION_TIMEOUT("hive.server2.idle.operation.timeout", "5d",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Operation will be closed when it's not accessed for this duration of time, which can be disabled by setting to zero value.\n" +
         "  With positive value, it's checked for operations in terminal state only (FINISHED, CANCELED, CLOSED, ERROR).\n" +
         "  With negative value, it's checked for all of the operations regardless of state."),
-    HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION("hive.server2.idle.session.check.operation", false,
+    HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION("hive.server2.idle.session.check.operation", true,
         "Session will be considered to be idle only if there is no activity, and there is no pending operation.\n" +
-        "This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
+        " This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
         "(hive.server2.session.check.interval) are enabled."),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
@@ -2218,7 +2218,13 @@ public class HiveConf extends Configuration {
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
-      "If value is greater than 0 logs in fixed intervals of size n rather than exponentially.");
+      "If value is greater than 0 logs in fixed intervals of size n rather than exponentially."),
+    HIVE_MSCK_PATH_VALIDATION("hive.msck.path.validation", "throw",
+        new StringSet("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
+       "directories that are partition-like but contain unsupported characters. 'throw' (an " +
+       "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
+       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)");
+
 
     public final String varname;
     private final String defaultExpr;
@@ -2458,8 +2464,13 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + "of parameters that can't be modified at runtime");
     }
-    isSparkConfigUpdated = isSparkRelatedConfig(name);
-    set(name, value);
+    String oldValue = name != null ? get(name) : null;
+    if (name == null || value == null || !value.equals(oldValue)) {
+      // When either name or value is null, the set method below will fail,
+      // and throw IllegalArgumentException
+      set(name, value);
+      isSparkConfigUpdated = isSparkRelatedConfig(name);
+    }
   }
 
   /**
@@ -2861,7 +2872,6 @@ public class HiveConf extends Configuration {
     ConfVars.HIVEENFORCESORTING.varname,
     ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
     ConfVars.HIVEEXPREVALUATIONCACHE.varname,
-    ConfVars.HIVEGROUPBYSKEW.varname,
     ConfVars.HIVEHASHTABLELOADFACTOR.varname,
     ConfVars.HIVEHASHTABLETHRESHOLD.varname,
     ConfVars.HIVEIGNOREMAPJOINHINT.varname,
@@ -2915,8 +2925,10 @@ public class HiveConf extends Configuration {
     "hive\\.exec\\.infer\\..*",
     "hive\\.exec\\.mode.local\\..*",
     "hive\\.exec\\.orc\\..*",
+    "hive\\.exec\\.parallel.*",
     "hive\\.explain\\..*",
     "hive\\.fetch.task\\..*",
+    "hive\\.groupby\\..*",
     "hive\\.hbase\\..*",
     "hive\\.index\\..*",
     "hive\\.index\\..*",
@@ -2941,11 +2953,16 @@ public class HiveConf extends Configuration {
     "mapred\\.map\\..*",
     "mapred\\.reduce\\..*",
     "mapred\\.output\\.compression\\.codec",
+    "mapred\\.job\\.queuename",
+    "mapred\\.output\\.compression\\.type",
+    "mapred\\.min\\.split\\.size",
     "mapreduce\\.job\\.reduce\\.slowstart\\.completedmaps",
     "mapreduce\\.job\\.queuename",
     "mapreduce\\.input\\.fileinputformat\\.split\\.minsize",
     "mapreduce\\.map\\..*",
     "mapreduce\\.reduce\\..*",
+    "mapreduce\\.output\\.fileoutputformat\\.compress\\.codec",
+    "mapreduce\\.output\\.fileoutputformat\\.compress\\.type",
     "tez\\.am\\..*",
     "tez\\.task\\..*",
     "tez\\.runtime\\..*",

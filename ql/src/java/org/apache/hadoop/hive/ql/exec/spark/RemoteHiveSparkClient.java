@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -167,10 +168,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       try {
         URI fileUri = SparkUtilities.getURI(addedFile);
         if (fileUri != null && !localFiles.contains(fileUri)) {
+          localFiles.add(fileUri);
           if (SparkUtilities.needUploadToHDFS(fileUri, sparkConf)) {
             fileUri = SparkUtilities.uploadToHDFS(fileUri, hiveConf);
           }
-          localFiles.add(fileUri);
           remoteClient.addFile(fileUri);
         }
       } catch (URISyntaxException e) {
@@ -184,10 +185,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       try {
         URI jarUri = SparkUtilities.getURI(addedJar);
         if (jarUri != null && !localJars.contains(jarUri)) {
+          localJars.add(jarUri);
           if (SparkUtilities.needUploadToHDFS(jarUri, sparkConf)) {
             jarUri = SparkUtilities.uploadToHDFS(jarUri, hiveConf);
           }
-          localJars.add(jarUri);
           remoteClient.addJar(jarUri);
         }
       } catch (URISyntaxException e) {
@@ -198,15 +199,19 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   @Override
   public void close() {
-    remoteClient.stop();
+    if (remoteClient != null) {
+      remoteClient.stop();
+    }
   }
 
   private static class JobStatusJob implements Job<Serializable> {
 
+    private static final long serialVersionUID = 1L;
     private final byte[] jobConfBytes;
     private final byte[] scratchDirBytes;
     private final byte[] sparkWorkBytes;
 
+    @SuppressWarnings("unused")
     private JobStatusJob() {
       // For deserialization.
       this(null, null, null);
@@ -224,10 +229,9 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
       // Add jar to current thread class loader dynamically, and add jar paths to JobConf as Spark
       // may need to load classes from this jar in other threads.
-      List<String> addedJars = jc.getAddedJars();
+      Set<String> addedJars = jc.getAddedJars();
       if (addedJars != null && !addedJars.isEmpty()) {
-        SparkClientUtilities.addToClassPath(addedJars.toArray(new String[addedJars.size()]),
-            localJobConf, jc.getLocalTmpDir());
+        SparkClientUtilities.addToClassPath(addedJars, localJobConf, jc.getLocalTmpDir());
         localJobConf.set(Utilities.HIVE_ADDED_JARS, StringUtils.join(addedJars, ";"));
       }
 

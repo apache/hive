@@ -78,8 +78,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   private boolean fetchFirst = false;
 
   private final TProtocolVersion protocol;
-  private ReentrantLock transportLock;
-
 
   public static class Builder {
 
@@ -191,7 +189,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     this.stmtHandle = builder.stmtHandle;
     this.sessHandle = builder.sessHandle;
     this.fetchSize = builder.fetchSize;
-    this.transportLock = builder.transportLock;
     columnNames = new ArrayList<String>();
     normalizedColumnNames = new ArrayList<String>();
     columnTypes = new ArrayList<String>();
@@ -252,16 +249,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       TGetResultSetMetadataReq metadataReq = new TGetResultSetMetadataReq(stmtHandle);
       // TODO need session handle
       TGetResultSetMetadataResp  metadataResp;
-      if (transportLock == null) {
-        metadataResp = client.GetResultSetMetadata(metadataReq);
-      } else {
-        transportLock.lock();
-        try {
-          metadataResp = client.GetResultSetMetadata(metadataReq);
-        } finally {
-          transportLock.unlock();
-        }
-      }
+      metadataResp = client.GetResultSetMetadata(metadataReq);
       Utils.verifySuccess(metadataResp.getStatus());
 
       StringBuilder namesSb = new StringBuilder();
@@ -372,16 +360,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
             orientation, fetchSize);
         TFetchResultsResp fetchResp;
-        if (transportLock == null) {
-          fetchResp = client.FetchResults(fetchReq);
-        } else {
-          transportLock.lock();
-          try {
-            fetchResp = client.FetchResults(fetchReq);
-          } finally {
-            transportLock.unlock();
-          }
-        }
+        fetchResp = client.FetchResults(fetchReq);
         Utils.verifySuccessWithInfo(fetchResp.getStatus());
 
         TRowSet results = fetchResp.getResults();

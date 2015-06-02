@@ -475,7 +475,7 @@ public final class ObjectInspectorUtils {
       return result.toString();
     }
     case UNION: {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
       result.append(oi.getClass().getSimpleName() + "<");
       UnionObjectInspector uoi = (UnionObjectInspector)oi;
       List<ObjectInspector> ois = uoi.getObjectInspectors();

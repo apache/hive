@@ -538,29 +538,6 @@ public abstract class GenericUDF implements Closeable {
     return v;
   }
 
-  protected Long getConstantLongValue(ObjectInspector[] arguments, int i)
-      throws UDFArgumentTypeException {
-    Object constValue = ((ConstantObjectInspector) arguments[i]).getWritableConstantValue();
-    if (constValue == null) {
-      return null;
-    }
-    long v;
-    if (constValue instanceof IntWritable) {
-      v = ((LongWritable) constValue).get();
-    } else if (constValue instanceof IntWritable) {
-      v = ((IntWritable) constValue).get();
-    } else if (constValue instanceof ShortWritable) {
-      v = ((ShortWritable) constValue).get();
-    } else if (constValue instanceof ByteWritable) {
-      v = ((ByteWritable) constValue).get();
-    } else {
-      throw new UDFArgumentTypeException(i, getFuncName()
-          + " only takes LONG/INT/SHORT/BYTE types as " + getArgOrder(i) + " argument, got "
-          + constValue.getClass());
-    }
-    return v;
-  }
-
   protected String getArgOrder(int i) {
     i++;
     switch (i % 100) {

@@ -113,15 +113,32 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         }
         String fileName = localWork.getBucketFileName(bigInputPath);
         Path path = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte) pos, fileName);
-        LOG.info("\tLoad back all hashtable files from tmp folder uri:" + path);
-        mapJoinTables[pos] = mapJoinTableSerdes[pos].load(fs, path);
+        mapJoinTables[pos] = load(fs, path, mapJoinTableSerdes[pos]);
       }
     } catch (Exception e) {
       throw new HiveException(e);
     }
   }
 
-  @SuppressWarnings("unchecked")
+  private MapJoinTableContainer load(FileSystem fs, Path path,
+      MapJoinTableContainerSerDe mapJoinTableSerde) throws HiveException {
+    LOG.info("\tLoad back all hashtable files from tmp folder uri:" + path);
+    if (!SparkUtilities.isDedicatedCluster(hconf)) {
+      return mapJoinTableSerde.load(fs, path);
+    }
+    MapJoinTableContainer mapJoinTable = SmallTableCache.get(path);
+    if (mapJoinTable == null) {
+      synchronized (path.toString().intern()) {
+        mapJoinTable = SmallTableCache.get(path);
+        if (mapJoinTable == null) {
+          mapJoinTable = mapJoinTableSerde.load(fs, path);
+          SmallTableCache.cache(path, mapJoinTable);
+        }
+      }
+    }
+    return mapJoinTable;
+  }
+
   private void loadDirectly(MapJoinTableContainer[] mapJoinTables, String inputFileName)
       throws Exception {
     MapredLocalWork localWork = context.getLocalWork();

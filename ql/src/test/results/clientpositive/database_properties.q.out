@@ -24,13 +24,17 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db2
 PREHOOK: query: describe database db2
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:db2
 POSTHOOK: query: describe database db2
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:db2
 db2		location/in/test	hive_test_user	USER	
 PREHOOK: query: describe database extended db2
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:db2
 POSTHOOK: query: describe database extended db2
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:db2
 #### A masked pattern was here ####
 PREHOOK: query: alter database db2 set dbproperties (
   'new.property' = 'some new props',
@@ -44,6 +48,8 @@ POSTHOOK: type: ALTERDATABASE
 POSTHOOK: Output: database:db2
 PREHOOK: query: describe database extended db2
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:db2
 POSTHOOK: query: describe database extended db2
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:db2
 #### A masked pattern was here ####

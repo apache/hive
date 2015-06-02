@@ -372,11 +372,16 @@ public class Warehouse {
    * @param name Partition name.
    * @param result The result. Must be pre-sized to the expected number of columns.
    */
-  public static void makeValsFromName(
+  public static AbstractList<String> makeValsFromName(
       String name, AbstractList<String> result) throws MetaException {
     assert name != null;
     String[] parts = slash.split(name, 0);
-    if (parts.length != result.size()) {
+    if (result == null) {
+      result = new ArrayList<>(parts.length);
+      for (int i = 0; i < parts.length; ++i) {
+        result.add(null);
+      }
+    } else if (parts.length != result.size()) {
       throw new MetaException(
           "Expected " + result.size() + " components, got " + parts.length + " (" + name + ")");
     }
@@ -387,6 +392,7 @@ public class Warehouse {
       }
       result.set(i, unescapePathName(parts[i].substring(eq + 1)));
     }
+    return result;
   }
 
   public static LinkedHashMap<String, String> makeSpecFromName(String name)
@@ -519,7 +525,7 @@ public class Warehouse {
    */
   public FileStatus[] getFileStatusesForUnpartitionedTable(Database db, Table table)
       throws MetaException {
-    Path tablePath = getTablePath(db, table.getTableName());
+    Path tablePath = getDnsPath(new Path(table.getSd().getLocation()));
     try {
       FileSystem fileSys = tablePath.getFileSystem(conf);
       return HiveStatsUtils.getFileStatusRecurse(tablePath, -1, fileSys);

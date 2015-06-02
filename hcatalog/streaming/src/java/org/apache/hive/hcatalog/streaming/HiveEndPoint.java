@@ -418,7 +418,7 @@ public class HiveEndPoint {
         throw new IllegalArgumentException("Partition values:" + partVals +
                 ", does not match the partition Keys in table :" + partKeys );
       }
-      StringBuffer buff = new StringBuffer(partKeys.size()*20);
+      StringBuilder buff = new StringBuilder(partKeys.size()*20);
       buff.append(" ( ");
       int i=0;
       for (FieldSchema schema : partKeys) {

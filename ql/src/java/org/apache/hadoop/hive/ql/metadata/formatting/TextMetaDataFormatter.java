@@ -105,7 +105,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     try {
       while (iterTbls.hasNext()) {
         // create a row per table name
-        out.writeBytes(iterTbls.next());
+        out.write(iterTbls.next().getBytes("UTF-8"));
         out.write(terminator);
       }
     } catch (IOException e) {
@@ -148,7 +148,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           outStream.write(terminator);
           if (part != null) {
             // show partition information
-            outStream.writeBytes("Detailed Partition Information");
+            outStream.write(("Detailed Partition Information").getBytes("UTF-8"));
             outStream.write(separator);
             outStream.write(part.getTPartition().toString().getBytes("UTF-8"));
             outStream.write(separator);
@@ -156,7 +156,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             outStream.write(terminator);
           } else {
             // show table information
-            outStream.writeBytes("Detailed Table Information");
+            outStream.write(("Detailed Table Information").getBytes("UTF-8"));
             outStream.write(separator);
             outStream.write(tbl.getTTable().toString().getBytes("UTF-8"));
             outStream.write(separator);
@@ -213,21 +213,21 @@ class TextMetaDataFormatter implements MetaDataFormatter {
               "partition_columns", tbl.getPartCols());
         }
 
-        outStream.writeBytes("tableName:" + tableName);
+        outStream.write(("tableName:" + tableName).getBytes("UTF-8"));
         outStream.write(terminator);
-        outStream.writeBytes("owner:" + owner);
+        outStream.write(("owner:" + owner).getBytes("UTF-8"));
         outStream.write(terminator);
-        outStream.writeBytes("location:" + tblLoc);
+        outStream.write(("location:" + tblLoc).getBytes("UTF-8"));
         outStream.write(terminator);
-        outStream.writeBytes("inputformat:" + inputFormattCls);
+        outStream.write(("inputformat:" + inputFormattCls).getBytes("UTF-8"));
         outStream.write(terminator);
-        outStream.writeBytes("outputformat:" + outputFormattCls);
+        outStream.write(("outputformat:" + outputFormattCls).getBytes("UTF-8"));
         outStream.write(terminator);
-        outStream.writeBytes("columns:" + ddlCols);
+        outStream.write(("columns:" + ddlCols).getBytes("UTF-8"));
         outStream.write(terminator);
-        outStream.writeBytes("partitioned:" + isPartitioned);
+        outStream.write(("partitioned:" + isPartitioned).getBytes("UTF-8"));
         outStream.write(terminator);
-        outStream.writeBytes("partitionColumns:" + partitionCols);
+        outStream.write(("partitionColumns:" + partitionCols).getBytes("UTF-8"));
         outStream.write(terminator);
         // output file system information
         Path tblPath = tbl.getPath();
@@ -338,50 +338,50 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     String unknownString = "unknown";
 
     for (int k = 0; k < indent; k++) {
-      outStream.writeBytes(Utilities.INDENT);
+      outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
-    outStream.writeBytes("totalNumberFiles:");
-    outStream.writeBytes(unknown ? unknownString : "" + numOfFiles);
+    outStream.write("totalNumberFiles:".getBytes("UTF-8"));
+    outStream.write((unknown ? unknownString : "" + numOfFiles).getBytes("UTF-8"));
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
-      outStream.writeBytes(Utilities.INDENT);
+      outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
-    outStream.writeBytes("totalFileSize:");
-    outStream.writeBytes(unknown ? unknownString : "" + totalFileSize);
+    outStream.write("totalFileSize:".getBytes("UTF-8"));
+    outStream.write((unknown ? unknownString : "" + totalFileSize).getBytes("UTF-8"));
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
-      outStream.writeBytes(Utilities.INDENT);
+      outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
-    outStream.writeBytes("maxFileSize:");
-    outStream.writeBytes(unknown ? unknownString : "" + maxFileSize);
+    outStream.write("maxFileSize:".getBytes("UTF-8"));
+    outStream.write((unknown ? unknownString : "" + maxFileSize).getBytes("UTF-8"));
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
-      outStream.writeBytes(Utilities.INDENT);
+      outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
-    outStream.writeBytes("minFileSize:");
+    outStream.write("minFileSize:".getBytes("UTF-8"));
     if (numOfFiles > 0) {
-      outStream.writeBytes(unknown ? unknownString : "" + minFileSize);
+      outStream.write((unknown ? unknownString : "" + minFileSize).getBytes("UTF-8"));
     } else {
-      outStream.writeBytes(unknown ? unknownString : "" + 0);
+      outStream.write((unknown ? unknownString : "" + 0).getBytes("UTF-8"));
     }
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
-      outStream.writeBytes(Utilities.INDENT);
+      outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
-    outStream.writeBytes("lastAccessTime:");
+    outStream.write("lastAccessTime:".getBytes("UTF-8"));
     outStream.writeBytes((unknown || lastAccessTime < 0) ? unknownString : ""
         + lastAccessTime);
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
-      outStream.writeBytes(Utilities.INDENT);
+      outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
-    outStream.writeBytes("lastUpdateTime:");
-    outStream.writeBytes(unknown ? unknownString : "" + lastUpdateTime);
+    outStream.write("lastUpdateTime:".getBytes("UTF-8"));
+    outStream.write((unknown ? unknownString : "" + lastUpdateTime).getBytes("UTF-8"));
     outStream.write(terminator);
           }
 
@@ -389,7 +389,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    * Show the table partitions.
    */
   @Override
-  public void showTablePartitons(DataOutputStream outStream, List<String> parts)
+  public void showTablePartitions(DataOutputStream outStream, List<String> parts)
       throws HiveException
       {
     try {
@@ -399,9 +399,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         SessionState ss = SessionState.get();
         if (ss != null && ss.getConf() != null &&
             !ss.getConf().getBoolVar(HiveConf.ConfVars.HIVE_DECODE_PARTITION_NAME)) {
-          outStream.writeBytes(part);
+          outStream.write(part.getBytes("UTF-8"));
         } else {
-          outStream.writeBytes(FileUtils.unescapePathName(part));
+          outStream.write(FileUtils.unescapePathName(part).getBytes("UTF-8"));
         }
         outStream.write(terminator);
       }
@@ -420,7 +420,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     try {
       for (String database : databases) {
         // create a row per database name
-        outStream.writeBytes(database);
+        outStream.write(database.getBytes("UTF-8"));
         outStream.write(terminator);
       }
     } catch (IOException e) {
@@ -436,26 +436,26 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       String location, String ownerName, String ownerType, Map<String, String> params)
           throws HiveException {
     try {
-      outStream.writeBytes(database);
+      outStream.write(database.getBytes("UTF-8"));
       outStream.write(separator);
       if (comment != null) {
         outStream.write(comment.getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (location != null) {
-        outStream.writeBytes(location);
+        outStream.write(location.getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (ownerName != null) {
-        outStream.writeBytes(ownerName);
+        outStream.write(ownerName.getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (ownerType != null) {
-        outStream.writeBytes(ownerType);
+        outStream.write(ownerType.getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (params != null && !params.isEmpty()) {
-        outStream.writeBytes(params.toString());
+        outStream.write(params.toString().getBytes("UTF-8"));
       }
       outStream.write(terminator);
     } catch (IOException e) {

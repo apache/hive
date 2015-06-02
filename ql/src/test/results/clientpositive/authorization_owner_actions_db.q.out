@@ -26,8 +26,10 @@ POSTHOOK: type: ALTERDATABASE_OWNER
 POSTHOOK: Output: database:testdb
 PREHOOK: query: desc database testdb
 PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:testdb
 POSTHOOK: query: desc database testdb
 POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:testdb
 testdb		location/in/test	testrole	ROLE	
 #### A masked pattern was here ####
 -- create table
