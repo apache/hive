@@ -737,4 +737,10 @@ public interface HadoopShims {
    * @throws IOException If an error occurred on adding the token.
    */
   public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException;
+
+  /**
+   * Gets file ID. Only supported on hadoop-2.
+   * @return inode ID of the file.
+   */
+  long getFileId(FileSystem fs, String path) throws IOException;
 }

@@ -717,10 +717,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public List<HdfsFileStatusWithId> listLocatedHdfsStatus(
       FileSystem fs, Path p, PathFilter filter) throws IOException {
-    if (!(fs instanceof DistributedFileSystem)) {
-      throw new UnsupportedOperationException("Only supported for DFS; got " + fs.getClass());
-    }
-    DFSClient dfsc = ((DistributedFileSystem)fs).getClient();
+    DistributedFileSystem dfs = ensureDfs(fs);
+    DFSClient dfsc = dfs.getClient();
     final String src = p.toUri().getPath();
     DirectoryListing current = dfsc.listPaths(src,
         org.apache.hadoop.hdfs.protocol.HdfsFileStatus.EMPTY_NAME, true);
@@ -739,11 +737,19 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           if (!filter.accept(filterPath)) continue;
         }
         LocatedFileStatus lfs = next.makeQualifiedLocated(fsUri, p);
-        result.add(new HdfsFileStatusWithIdImpl(lfs, next.getFileId()));
+        result.add(new HdfsFileStatusWithIdImpl(lfs, next.getFileId())); // TODO#: here
       }
       current = current.hasMore() ? dfsc.listPaths(src, current.getLastName(), true) : null;
     }
     return result;
+  }
+
+  private DistributedFileSystem ensureDfs(FileSystem fs) {
+    if (!(fs instanceof DistributedFileSystem)) {
+      throw new UnsupportedOperationException("Only supported for DFS; got " + fs.getClass());
+    }
+    DistributedFileSystem dfs = (DistributedFileSystem)fs;
+    return dfs;
   }
 
   @Override
@@ -1430,5 +1436,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
     // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
     fs.addDelegationTokens(uname, cred);
+  }
+
+  @Override
+  public long getFileId(FileSystem fs, String path) throws IOException {
+    return ensureDfs(fs).getClient().getFileInfo(path).getFileId();
   }
 }
