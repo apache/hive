@@ -438,8 +438,7 @@ public class RecordReaderUtils {
   public static long getFileId(FileSystem fileSystem, Path path) throws IOException {
     String pathStr = path.toUri().getPath();
     if (fileSystem instanceof DistributedFileSystem) {
-      DFSClient client = ((DistributedFileSystem)fileSystem).getClient();
-      return client.getFileInfo(pathStr).getFileId();
+      return SHIMS.getFileId(fileSystem, pathStr);
     }
     // If we are not on DFS, we just hash the file name + size and hope for the best.
     // TODO: we assume it only happens in tests. Fix?

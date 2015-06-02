@@ -739,4 +739,9 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     Token<?> fsToken = fs.getDelegationToken(uname);
     cred.addToken(fsToken.getService(), fsToken);
   }
+
+  @Override
+  public long getFileId(FileSystem fs, String path) throws IOException {
+    throw new UnsupportedOperationException("Not supported on old version");
+  }
 }
