@@ -1188,7 +1188,6 @@ public class Commands {
     return true;
   }
 
-
   public boolean all(String line) {
     int index = beeLine.getDatabaseConnections().getIndex();
     boolean success = true;

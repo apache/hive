@@ -36,10 +36,15 @@ import java.io.PrintStream;
 
 public class TestHiveCli {
   private static final Log LOG = LogFactory.getLog(TestHiveCli.class.getName());
+  private static final int ERRNO_OK = 0;
+  private static final int ERRNO_ARGS = 1;
+  private static final int ERRNO_OTHER = 2;
 
-  final static String CMD = "create database if not exists test;\ncreate table if not exists test" +
-      ".testTbl(a " +
-      "" + "string, b string);\n";
+  private final static String SOURCE_CONTEXT =
+      "create table if not exists test.testSrcTbl(a string, b string);";
+  final static String CMD =
+      "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b "
+          + "string);\n";
   private HiveCli cli;
   private OutputStream os;
   private PrintStream ps;
@@ -65,53 +70,53 @@ public class TestHiveCli {
     }
   }
 
-  private void verifyCMD(String CMD, String keywords, OutputStream os, String[] options, int
-      retCode) {
+  private void verifyCMD(String CMD, String keywords, OutputStream os, String[] options,
+      int retCode) {
     executeCMD(options, CMD, retCode);
     String output = os.toString();
     Assert.assertTrue(output.contains(keywords));
   }
 
-  @Test
-  public void testInValidCmd() {
-    verifyCMD("!lss\n", "Failed to execute lss", errS, null, 0);
+  @Test public void testInValidCmd() {
+    verifyCMD("!lss\n", "Failed to execute lss", errS, null, ERRNO_OK);
   }
 
-  @Test
-  public void testHelp() {
-    verifyCMD(null, "usage: hive", os, new String[]{"-H"}, 1);
+  @Test public void testHelp() {
+    verifyCMD(null, "usage: hive", os, new String[] { "-H" }, ERRNO_ARGS);
   }
 
-  @Test
-  public void testInvalidDatabaseOptions() {
-    verifyCMD("\nshow tables\nquit\n", "Database does not exist: invalidDB", errS, new
-        String[]{"--database", "invalidDB"}, 0);
+  @Test public void testInvalidDatabaseOptions() {
+    verifyCMD("\nshow tables\nquit\n", "Database does not exist: invalidDB", errS,
+        new String[] { "--database", "invalidDB" }, ERRNO_OK);
   }
 
-  @Test
-  public void testDatabaseOptions() {
-    verifyCMD("\nshow tables;\nquit;", "testTbl", os, new String[]{"--database", "test"}, 0);
+  @Test public void testDatabaseOptions() {
+    verifyCMD("\nshow tables;\nquit;", "testTbl", os, new String[] { "--database", "test" },
+        ERRNO_OK);
   }
 
-  @Test
-  public void testSqlFromCmd() {
-    verifyCMD(null, "", os, new String[]{"-e", "show databases;"}, 0);
+  @Test public void testSourceCmd() {
+    File f = generateTmpFile(SOURCE_CONTEXT);
+    verifyCMD("source " + f.getPath() + "\n" + "desc testSrcTbl\n" + "quit\n", "col_name", os,
+        new String[] { "--database", "test" }, ERRNO_OK);
   }
 
-  @Test
-  public void testSqlFromCmdWithDBName() {
-    verifyCMD(null, "testTbl", os, new String[]{"-e", "show tables;", "--database", "test"}, 0);
+  @Test public void testSqlFromCmd() {
+    verifyCMD(null, "", os, new String[] { "-e", "show databases;" }, ERRNO_OK);
   }
 
-  @Test
-  public void testInvalidOptions() {
-    verifyCMD(null, "The '-e' and '-f' options cannot be specified simultaneously", errS, new
-        String[]{"-e", "show tables;", "-f", "path/to/file"}, 1);
+  @Test public void testSqlFromCmdWithDBName() {
+    verifyCMD(null, "testTbl", os, new String[] { "-e", "show tables;", "--database", "test" },
+        ERRNO_OK);
   }
 
-  @Test
-  public void testInvalidOptions2() {
-    verifyCMD(null, "Unrecognized option: -k", errS, new String[]{"-k"}, 1);
+  @Test public void testInvalidOptions() {
+    verifyCMD(null, "The '-e' and '-f' options cannot be specified simultaneously", errS,
+        new String[] { "-e", "show tables;", "-f", "path/to/file" }, ERRNO_ARGS);
+  }
+
+  @Test public void testInvalidOptions2() {
+    verifyCMD(null, "Unrecognized option: -k", errS, new String[] { "-k" }, ERRNO_ARGS);
   }
 
   private void redirectOutputStream() {
@@ -124,30 +129,36 @@ public class TestHiveCli {
     System.setErr(errPs);
   }
 
-  private void initFileFromFile() {
+  private void initFromFile() {
+    tmp = generateTmpFile(CMD);
+    if (tmp == null) {
+      Assert.fail("Fail to create the initial file");
+    }
+    executeCMD(new String[] { "-f", "\"" + tmp.getAbsolutePath() + "\"" }, null, 0);
+  }
+
+  private File generateTmpFile(String context) {
+    File file = null;
     BufferedWriter bw = null;
     try {
-      // create a tmp file
-      tmp = File.createTempFile("test", ".sql");
-      bw = new BufferedWriter(new FileWriter(tmp));
-      bw.write(CMD);
+      file = File.createTempFile("test", ".sql");
+      bw = new BufferedWriter(new FileWriter(file));
+      bw.write(context);
     } catch (IOException e) {
       LOG.error("Failed to write tmp file due to the exception: " + e);
     } finally {
       IOUtils.closeQuietly(bw);
     }
-    executeCMD(new String[]{"-f", "\"" + tmp.getAbsolutePath() + "\""}, null, 0);
+    return file;
   }
 
-  @Before
-  public void setup() {
+  @Before public void setup() {
     cli = new HiveCli();
     redirectOutputStream();
-    initFileFromFile();
+    initFromFile();
   }
 
-  @After
-  public void tearDown() {
+  @After public void tearDown() {
     tmp.delete();
   }
 }
