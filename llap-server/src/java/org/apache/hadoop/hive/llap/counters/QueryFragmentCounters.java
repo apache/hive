@@ -59,7 +59,7 @@ public class QueryFragmentCounters implements LowLevelCacheCounters {
 
   public QueryFragmentCounters(Configuration conf) {
     fixedCounters = new AtomicLongArray(Counter.values().length);
-    descs = new String[Desc.values().length];
+    descs = new Object[Desc.values().length];
     doUseTimeCounters = HiveConf.getBoolVar(conf, ConfVars.LLAP_ORC_ENABLE_TIME_COUNTERS);
     if (!doUseTimeCounters) {
       setCounter(Counter.TOTAL_IO_TIME_US, -1);
