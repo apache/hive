@@ -16,6 +16,9 @@ package org.apache.hadoop.hive.llap.daemon.registry.impl;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +49,7 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.log4j.Logger;
+import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.zookeeper.CreateMode;
 
 import com.google.common.base.Preconditions;
@@ -117,6 +121,25 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
         shufflePort);
   }
 
+  public Endpoint getServicesEndpoint() {
+    final int servicePort =
+        conf.getInt(LlapConfiguration.LLAP_DAEMON_SERVICE_PORT,
+            LlapConfiguration.LLAP_DAEMON_SERVICE_PORT_DEFAULT);
+    final boolean isSSL =
+        conf.getBoolean(LlapConfiguration.LLAP_DAEMON_SERVICE_SSL,
+            LlapConfiguration.LLAP_DAEMON_SERVICE_SSL_DEFAULT);
+    final String scheme = isSSL ? "https" : "http";
+    final URL serviceURL;
+    try {
+      serviceURL = new URL(scheme, hostname, servicePort, "");
+      return RegistryTypeUtils.webEndpoint("services", serviceURL.toURI());
+    } catch (MalformedURLException e) {
+      throw new TezUncheckedException(e);
+    } catch (URISyntaxException e) {
+      throw new TezUncheckedException("llap service URI for " + hostname + " is invalid", e);
+    }
+  }
+
   private final String getPath() {
     return this.path;
   }
@@ -127,6 +150,7 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
     ServiceRecord srv = new ServiceRecord();
     srv.addInternalEndpoint(getRpcEndpoint());
     srv.addInternalEndpoint(getShuffleEndpoint());
+    srv.addExternalEndpoint(getServicesEndpoint());
 
     for (Map.Entry<String, String> kv : this.conf) {
       if (kv.getKey().startsWith(LlapConfiguration.LLAP_DAEMON_PREFIX)

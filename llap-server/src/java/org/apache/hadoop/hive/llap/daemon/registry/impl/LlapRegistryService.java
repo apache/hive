@@ -14,31 +14,13 @@
 package org.apache.hadoop.hive.llap.daemon.registry.impl;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.UUID;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceRegistry;
-import org.apache.hadoop.registry.client.api.RegistryOperationsFactory;
-import org.apache.hadoop.registry.client.binding.RegistryPathUtils;
-import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
-import org.apache.hadoop.registry.client.binding.RegistryUtils;
-import org.apache.hadoop.registry.client.binding.RegistryUtils.ServiceRecordMarshal;
-import org.apache.hadoop.registry.client.impl.zk.RegistryOperationsService;
-import org.apache.hadoop.registry.client.types.Endpoint;
-import org.apache.hadoop.registry.client.types.ProtocolTypes;
-import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.service.AbstractService;
-import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.log4j.Logger;
-import org.apache.zookeeper.CreateMode;
-
-import com.google.common.base.Preconditions;
 
 public class LlapRegistryService extends AbstractService {
 
