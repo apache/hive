@@ -567,7 +567,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * some token, of which only one matches, it is not guaranteed to be found. We
    * use this for simple things. Not thread-safe - reuses searchQueue.
    */
-  static class ASTSearcher {
+  public static class ASTSearcher {
     private final LinkedList<ASTNode> searchQueue = new LinkedList<ASTNode>();
 
     public ASTNode simpleBreadthFirstSearch(ASTNode ast, int... tokens) {

@@ -34,13 +34,13 @@ import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ContentSummary;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -653,6 +653,15 @@ public class Context {
 
   public Map<String, ContentSummary> getPathToCS() {
     return pathToCS;
+  }
+
+  // for hook context, which is public
+  public Map<String, org.apache.hadoop.fs.ContentSummary> getPathToHadoopCS() {
+    Map<String, org.apache.hadoop.fs.ContentSummary> summaryMap = new HashMap<>();
+    for (Map.Entry<String, ContentSummary> entry : pathToCS.entrySet()) {
+      summaryMap.put(entry.getKey(), entry.getValue());
+    }
+    return summaryMap;
   }
 
   public Configuration getConf() {

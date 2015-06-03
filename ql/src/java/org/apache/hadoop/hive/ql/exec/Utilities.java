@@ -92,7 +92,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -2533,6 +2532,7 @@ public final class Utilities {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
+    boolean validSummary = true;
     long[] summary = {0, 0, 0};
 
     final List<String> pathNeedProcess = new ArrayList<String>();
@@ -2550,14 +2550,12 @@ public final class Utilities {
 
         ContentSummary cs = ctx.getCS(path);
         if (cs == null) {
-          if (path == null) {
-            continue;
-          }
           pathNeedProcess.add(path);
         } else {
           summary[0] += cs.getLength();
           summary[1] += cs.getFileCount();
           summary[2] += cs.getDirectoryCount();
+          validSummary &= cs.isValidSummary();
         }
       }
 
@@ -2618,14 +2616,18 @@ public final class Utilities {
                     inputFormatCls, myJobConf);
                 if (inputFormatObj instanceof ContentSummaryInputFormat) {
                   ContentSummaryInputFormat cs = (ContentSummaryInputFormat) inputFormatObj;
-                  resultMap.put(pathStr, cs.getContentSummary(p, myJobConf));
+                  resultMap.put(pathStr, new ContentSummary(cs.getContentSummary(p, myJobConf), true));
                   return;
                 }
-                HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf,
-                    SerDeUtils.createOverlayedProperties(
-                        partDesc.getTableDesc().getProperties(),
-                        partDesc.getProperties())
-                        .getProperty(hive_metastoreConstants.META_TABLE_STORAGE));
+                Properties property = SerDeUtils.createOverlayedProperties(
+                    partDesc.getTableDesc().getProperties(),
+                    partDesc.getProperties());
+                String storageHandler = property.getProperty(hive_metastoreConstants.META_TABLE_STORAGE);
+
+                HiveStorageHandler handler = null;
+                if (storageHandler != null) {
+                  handler = HiveUtils.getStorageHandler(myConf, storageHandler);
+                }
                 if (handler instanceof InputEstimator) {
                   long total = 0;
                   TableDesc tableDesc = partDesc.getTableDesc();
@@ -2639,12 +2641,12 @@ public final class Utilities {
                     Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
                     total += estimator.estimate(myJobConf, scanOp, -1).getTotalLength();
                   }
-                  resultMap.put(pathStr, new ContentSummary(total, -1, -1));
+                  resultMap.put(pathStr, new ContentSummary(total, -1, -1, true));
                 }
                 // todo: should nullify summary for non-native tables,
                 // not to be selected as a mapjoin target
                 FileSystem fs = p.getFileSystem(myConf);
-                resultMap.put(pathStr, fs.getContentSummary(p));
+                resultMap.put(pathStr, new ContentSummary(fs.getContentSummary(p), storageHandler == null));
               } catch (Exception e) {
                 // We safely ignore this exception for summary data.
                 // We don't update the cache to protect it from polluting other
@@ -2689,6 +2691,7 @@ public final class Utilities {
           summary[0] += cs.getLength();
           summary[1] += cs.getFileCount();
           summary[2] += cs.getDirectoryCount();
+          validSummary &= cs.isValidSummary();
 
           ctx.addCS(entry.getKey(), cs);
           LOG.info("Cache Content Summary for " + entry.getKey() + " length: " + cs.getLength()
@@ -2697,7 +2700,7 @@ public final class Utilities {
         }
 
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
-        return new ContentSummary(summary[0], summary[1], summary[2]);
+        return new ContentSummary(summary[0], summary[1], summary[2], validSummary);
       } finally {
         HiveInterruptUtils.remove(interrup);
       }
