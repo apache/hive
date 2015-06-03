@@ -21,6 +21,7 @@ updateCli() {
     CLASS=org.apache.hadoop.hive.cli.CliDriver
     JAR=hive-cli-*.jar
   else
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configuration=beeline-log4j.properties"
     CLASS=org.apache.hive.beeline.cli.HiveCli
     JAR=hive-beeline-*.jar
   fi
