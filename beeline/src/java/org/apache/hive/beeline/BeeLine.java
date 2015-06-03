@@ -1053,7 +1053,8 @@ public class BeeLine implements Closeable {
     if (cmd == null)
       return null;
     String[] tokens = tokenizeCmd(cmd);
-    if (cmd.equalsIgnoreCase("quit") || cmd.equalsIgnoreCase("exit")) {
+    if (cmd.equalsIgnoreCase("quit") || cmd.equalsIgnoreCase("exit")
+	|| cmd.equalsIgnoreCase("quit;") || cmd.equals("exit;")) {
       return null;
     } else if (tokens[0].equalsIgnoreCase("source")) {
       return COMMAND_PREFIX + cmd;
