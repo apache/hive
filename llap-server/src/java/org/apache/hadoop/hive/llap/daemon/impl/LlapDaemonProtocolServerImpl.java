@@ -68,7 +68,7 @@ public class LlapDaemonProtocolServerImpl extends AbstractService
   }
 
   @Override
-  public SubmitWorkResponseProto submitWork(RpcController controller,
+  public SubmitWorkResponseProto submitWork (RpcController controller,
                                             SubmitWorkRequestProto request) throws
       ServiceException {
     try {

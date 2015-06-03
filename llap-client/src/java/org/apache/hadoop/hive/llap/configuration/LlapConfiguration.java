@@ -133,4 +133,10 @@ public class LlapConfiguration extends Configuration {
   public static final String LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS =
       LLAP_PREFIX + "task.communicator.connection.sleep-between-retries-millis";
   public static final long LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS_DEFAULT = 2000l;
+
+  public static final String LLAP_DAEMON_SERVICE_PORT = LLAP_DAEMON_PREFIX + "service.port";
+  public static final int LLAP_DAEMON_SERVICE_PORT_DEFAULT = 15002;
+
+  public static final String LLAP_DAEMON_SERVICE_SSL = LLAP_DAEMON_PREFIX + "service.ssl";
+  public static final boolean LLAP_DAEMON_SERVICE_SSL_DEFAULT = false;
 }

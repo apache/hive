@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryComp
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.services.impl.LlapWebServices;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
@@ -54,6 +55,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   private final LlapDaemonProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
   private final LlapRegistryService registry;
+  private final LlapWebServices webServices;
   private final AtomicLong numSubmissions = new AtomicLong(0);
   private JvmPauseMonitor pauseMonitor;
   private final ObjectName llapDaemonInfoBean;
@@ -153,6 +155,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
         metrics);
 
     this.registry = new LlapRegistryService(true);
+    this.webServices = new LlapWebServices();
   }
 
   private void printAsciiArt() {
@@ -174,6 +177,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     server.init(conf);
     containerRunner.init(conf);
     registry.init(conf);
+    webServices.init(conf);
     LlapIoProxy.setDaemon(true);
     LlapIoProxy.initializeLlapIo(conf);
   }
@@ -185,6 +189,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     containerRunner.start();
     registry.start();
     registry.registerWorker();
+    webServices.start();
   }
 
   public void serviceStop() throws Exception {
@@ -194,6 +199,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     server.stop();
     registry.unregisterWorker();
     registry.stop();
+    webServices.stop();
     ShuffleHandler.shutdown();
   }
 
