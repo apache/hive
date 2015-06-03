@@ -2,13 +2,13 @@ PREHOOK: query: DESCRIBE FUNCTION unix_timestamp
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION unix_timestamp
 POSTHOOK: type: DESCFUNCTION
-unix_timestamp([date[, pattern]]) - Returns the UNIX timestamp
+unix_timestamp(date[, pattern]) - Converts the time to a number
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED unix_timestamp
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED unix_timestamp
 POSTHOOK: type: DESCFUNCTION
-unix_timestamp([date[, pattern]]) - Returns the UNIX timestamp
-Converts the current or specified time to number of seconds since 1970-01-01.
+unix_timestamp(date[, pattern]) - Converts the time to a number
+Converts the specified time to number of seconds since 1970-01-01. The unix_timestamp(void) overload is deprecated, use current_timestamp.
 PREHOOK: query: create table oneline(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -70,6 +70,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline
 #### A masked pattern was here ####
 2009 Mar 20 11:30:01 am	1237573801
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+PREHOOK: query: create table foo as SELECT
+  'deprecated' as a,
+  unix_timestamp() as b
+FROM oneline
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@oneline
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create table foo as SELECT
+  'deprecated' as a,
+  unix_timestamp() as b
+FROM oneline
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@oneline
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: drop table foo
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@foo
+PREHOOK: Output: default@foo
+POSTHOOK: query: drop table foo
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@foo
+POSTHOOK: Output: default@foo
 PREHOOK: query: SELECT
   'random_string',
   unix_timestamp('random_string')
