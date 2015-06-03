@@ -48,11 +48,14 @@ public class QueryFragmentCounters implements LowLevelCacheCounters {
   }
 
   public static enum Desc {
-    TABLE
+    MACHINE,
+    TABLE,
+    FILE,
+    STRIPES
   }
 
   private final AtomicLongArray fixedCounters;
-  private final String[] descs;
+  private final Object[] descs;
 
   public QueryFragmentCounters(Configuration conf) {
     fixedCounters = new AtomicLongArray(Counter.values().length);
@@ -62,7 +65,7 @@ public class QueryFragmentCounters implements LowLevelCacheCounters {
       setCounter(Counter.TOTAL_IO_TIME_US, -1);
       setCounter(Counter.DECODE_TIME_US, -1);
       setCounter(Counter.HDFS_TIME_US, -1);
-      setCounter(Counter.HDFS_TIME_US, -1);
+      setCounter(Counter.CONSUMER_TIME_US, -1);
     }
   }
 
@@ -88,7 +91,7 @@ public class QueryFragmentCounters implements LowLevelCacheCounters {
     fixedCounters.set(counter.ordinal(), value);
   }
 
-  public void setDesc(Desc key, String desc) {
+  public void setDesc(Desc key, Object desc) {
     descs[key.ordinal()] = desc;
   }
 
@@ -122,7 +125,9 @@ public class QueryFragmentCounters implements LowLevelCacheCounters {
       if (i != 0) {
         sb.append(", ");
       }
-      sb.append(descs[i]);
+      if (descs[i] != null) {
+        sb.append(descs[i]);
+      }
     }
     sb.append("]: [ ");
     for (int i = 0; i < fixedCounters.length(); ++i) {

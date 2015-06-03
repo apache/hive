@@ -143,6 +143,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fs = split.getPath().getFileSystem(conf);
     fileId = determineFileId(fs, split);
+    counters.setDesc(QueryFragmentCounters.Desc.FILE, fileId);
 
     try {
       fileMetadata = getOrReadFileMetadata();
@@ -165,6 +166,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       recordReaderTime(startTime);
       return null; // No data to read.
     }
+    counters.setDesc(QueryFragmentCounters.Desc.STRIPES, stripeIxFrom + "," + readState.length);
 
     // 3. Apply SARG if needed, and otherwise determine what RGs to read.
     int stride = fileMetadata.getRowIndexStride();
