@@ -47,7 +47,6 @@
     <module>serde</module>
     <module>service</module>
     <module>llap-client</module>
-    <module>llap-server</module>
     <module>shims</module>
     <module>spark-client</module>
     <module>testutils</module>
@@ -1076,6 +1075,9 @@
     </profile>
     <profile>
       <id>hadoop-2</id>
+      <modules>
+        <module>llap-server</module>
+      </modules>
       <dependencyManagement>
         <dependencies>
           <dependency>
