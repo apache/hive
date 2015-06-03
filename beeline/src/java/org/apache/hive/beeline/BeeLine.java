@@ -828,12 +828,13 @@ public class BeeLine implements Closeable {
         }
       } else {
         int code = initArgsFromCliVars(args);
+        defaultConnect(false);
         if (code != 0)
           return code;
       }
 
       if (getOpts().getScriptFile() != null) {
-        return executeFile(getOpts().getScriptFile());
+        return executeFile(getOpts().getScriptFile(), false);
       }
       try {
         info(getApplicationTitle());
@@ -852,7 +853,7 @@ public class BeeLine implements Closeable {
     if (initFile != null) {
       info("Running init script " + initFile);
       try {
-        return executeFile(initFile);
+        return executeFile(initFile, false);
       } finally {
         exit = false;
       }
@@ -887,7 +888,7 @@ public class BeeLine implements Closeable {
     return ERRNO_OK;
   }
 
-  private int executeFile(String fileName) {
+  private int executeFile(String fileName, boolean isSourceCMD) {
     FileInputStream initStream = null;
     try {
       initStream = new FileInputStream(fileName);
@@ -897,27 +898,49 @@ public class BeeLine implements Closeable {
       return ERRNO_OTHER;
     } finally {
       IOUtils.closeStream(initStream);
-      consoleReader = null;
-      output("");   // dummy new line
+      if(!isSourceCMD) {
+        consoleReader = null;
+        output("");   // dummy new line
+      }
+    }
+  }
+
+  private boolean isSourceCMD(String cmd) {
+    if (cmd == null || cmd.isEmpty())
+      return false;
+    String[] tokens = tokenizeCmd(cmd);
+    return tokens[0].equalsIgnoreCase("!source");
+  }
+
+  private boolean sourceFile(String cmd) {
+    String[] tokens = tokenizeCmd(cmd);
+    String cmd_1 = getFirstCmd(cmd, tokens[0].length());
+    File sourceFile = new File(cmd_1);
+    if (!sourceFile.isFile()) {
+      return false;
+    } else {
+      boolean ret = (executeFile(cmd_1, true) == ERRNO_OK);
+      // For source command, we should not exit even when meeting some empty line.
+      setExit(false);
+      return ret;
     }
   }
 
   private int execute(ConsoleReader reader, boolean exitOnError) {
     String line;
-    if (!isBeeLine) {
-      if (defaultConnect(exitOnError) != ERRNO_OK && exitOnError) {
-        return ERRNO_OTHER;
-      }
-    }
     while (!exit) {
       try {
         // Execute one instruction; terminate on executing a script if there is an error
         // in silent mode, prevent the query and prompt being echoed back to terminal
-        line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ?
-                 reader.readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
+        line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
+            .readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
+
+        // trim line
+        line = (line == null) ? null : line.trim();
         if (!isBeeLine) {
           line = cliToBeelineCmd(line);
         }
+
         if (!dispatch(line) && exitOnError) {
           return ERRNO_OTHER;
         }
@@ -1015,7 +1038,6 @@ public class BeeLine implements Closeable {
     return consoleReader;
   }
 
-
   void usage() {
     output(loc("cmd-usage"));
   }
@@ -1024,26 +1046,29 @@ public class BeeLine implements Closeable {
     return cmd.split("\\s+");
   }
 
-  public String cliToBeelineCmd(String cmd) {
+  /**
+   * Extract and clean up the first command in the input.
+   */
+  private String getFirstCmd(String cmd, int length) {
+    return cmd.substring(length).trim();
+  }
+
+  private String cliToBeelineCmd(String cmd) {
     if (cmd == null)
       return null;
-    String cmd_trimmed = cmd.trim();
-    String[] tokens = tokenizeCmd(cmd_trimmed);
-
-    if (cmd_trimmed.equalsIgnoreCase("quit") || cmd_trimmed.equalsIgnoreCase("exit")) {
+    String[] tokens = tokenizeCmd(cmd);
+    if (cmd.equalsIgnoreCase("quit") || cmd.equalsIgnoreCase("exit")) {
       return null;
     } else if (tokens[0].equalsIgnoreCase("source")) {
-      //TODO
-      return cmd;
-    } else if (cmd_trimmed.startsWith("!")) {
-      String shell_cmd = cmd_trimmed.substring(1);
+      return COMMAND_PREFIX + cmd;
+    } else if (cmd.startsWith("!")) {
+      String shell_cmd = cmd.substring(1);
       return "!sh " + shell_cmd;
     } else { // local mode
       // command like dfs
       return cmd;
     }
   }
-
 
   /**
    * Dispatch the specified line to the appropriate {@link CommandHandler}.
@@ -1065,6 +1090,10 @@ public class BeeLine implements Closeable {
 
     if (isComment(line)) {
       return true;
+    }
+
+    if(isSourceCMD(line)){
+      return sourceFile(line);
     }
 
     line = line.trim();
