@@ -44,14 +44,13 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
   private transient int numRows;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     try {
       fetcher = initializeFetcher(hconf);
     } catch (Exception e) {
       throw new HiveException(e);
     }
-    return result;
   }
 
   private FetchFormatter initializeFetcher(Configuration conf) throws Exception {

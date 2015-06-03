@@ -65,8 +65,8 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   protected transient DynamicPartitionCtx dpCtx;
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     this.jc = new JobConf(hconf);
     incompatFileSet = new HashSet<Path>();
     autoDelete = false;
@@ -94,7 +94,6 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       throw new HiveException("Failed to initialize AbstractFileMergeOperator",
           e);
     }
-    return result;
   }
 
   // sets up temp and task temp path

@@ -84,8 +84,8 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
   public static final byte UDTF_TAG = 1;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
     ArrayList<String> fieldNames = conf.getOutputInternalColNames();
@@ -107,8 +107,6 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
 
     outputObjInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(fieldNames, ois);
-    return result;
-
   }
 
   // acc is short for accumulator. It's used to build the row before forwarding

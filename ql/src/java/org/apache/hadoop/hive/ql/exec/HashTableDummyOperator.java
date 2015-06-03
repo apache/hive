@@ -33,8 +33,8 @@ public class HashTableDummyOperator extends Operator<HashTableDummyDesc> impleme
   private static final long serialVersionUID = 1L;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     TableDesc tbl = this.getConf().getTbl();
     try {
       Deserializer serde = tbl.getDeserializerClass().newInstance();
@@ -44,7 +44,6 @@ public class HashTableDummyOperator extends Operator<HashTableDummyDesc> impleme
       LOG.error("Generating output obj inspector from dummy object error", e);
       e.printStackTrace();
     }
-    return result;
   }
 
   @Override

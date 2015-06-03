@@ -50,8 +50,8 @@ public class FilterOperator extends Operator<FilterDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
@@ -65,7 +65,6 @@ public class FilterOperator extends Operator<FilterDesc> implements
     } catch (Throwable e) {
       throw new HiveException(e);
     }
-    return result;
   }
 
   @Override

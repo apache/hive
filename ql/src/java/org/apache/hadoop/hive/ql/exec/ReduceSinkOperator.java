@@ -156,8 +156,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   private final transient LongWritable recordCounter = new LongWritable();
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     try {
 
       numRows = 0;
@@ -248,7 +248,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       LOG.error(msg, e);
       throw new RuntimeException(e);
     }
-    return result;
   }
 
 

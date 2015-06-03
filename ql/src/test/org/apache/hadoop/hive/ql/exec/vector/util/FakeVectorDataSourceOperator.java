@@ -62,8 +62,8 @@ public class FakeVectorDataSourceOperator extends Operator<FakeVectorDataSourceO
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration conf) throws HiveException {
-    return super.initializeOp(conf);
+  public void initializeOp(Configuration conf) throws HiveException {
+    super.initializeOp(conf);
   }
 
   @Override

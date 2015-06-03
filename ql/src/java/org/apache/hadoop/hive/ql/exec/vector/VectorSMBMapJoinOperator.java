@@ -131,8 +131,8 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     vrbCtx = new VectorizedRowBatchCtx();
     vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) this.outputObjInspector);
@@ -214,7 +214,6 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     }
     // Now replace the old evaluators with our own
     joinValues[posBigTable] = vectorNodeEvaluators;
-    return result;
   }
 
   @Override

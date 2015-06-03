@@ -74,10 +74,9 @@ public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration conf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(conf);
+  public void initializeOp(Configuration conf) throws HiveException {
+    super.initializeOp(conf);
     rows = new ArrayList<Object>();
-    return result;
   }
 
   @Override

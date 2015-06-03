@@ -63,7 +63,7 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  public void initializeOp(Configuration hconf) throws HiveException {
 
     // We need a input object inspector that is for the row we will extract out of the
     // vectorized row batch, not for example, an original inspector for an ORC table, etc.
@@ -71,12 +71,8 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
         VectorizedBatchUtil.convertToStandardStructObjectInspector((StructObjectInspector) inputObjInspectors[0]);
 
     // Call AppMasterEventOperator with new input inspector.
-    Collection<Future<?>> result = super.initializeOp(hconf);
-    assert result.isEmpty();
-
+    super.initializeOp(hconf);
     firstBatch = true;
-
-    return result;
   }
 
   @Override

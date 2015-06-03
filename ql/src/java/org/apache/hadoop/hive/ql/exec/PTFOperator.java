@@ -67,8 +67,8 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
    * 4. Create input partition to store rows coming from previous operator
    */
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration jobConf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(jobConf);
+  protected void initializeOp(Configuration jobConf) throws HiveException {
+    super.initializeOp(jobConf);
     hiveConf = jobConf;
     isMapOperator = conf.isMapSide();
 
@@ -86,7 +86,6 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
     ptfInvocation = setupChain();
     ptfInvocation.initializeStreaming(jobConf, isMapOperator);
     firstMapRow = true;
-    return result;
   }
 
   @Override

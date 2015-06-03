@@ -74,8 +74,8 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> ret = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     /*
      * The conversion to standard object inspector was necessitated by HIVE-5973. The issue
      * happens when a select operator preceeds this operator as in the case of a subquery. The
@@ -90,7 +90,6 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
      */
     outputObjInspector = ObjectInspectorUtils.getStandardObjectInspector(inputObjInspectors[0]);
     result = new InspectableObject(null, outputObjInspector);
-    return ret;
   }
 
   @Override
