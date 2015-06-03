@@ -55,6 +55,9 @@ public class TestSessionState {
   private final static String reloadClazzFileName = "reloadingClazz.jar";
   private final static String reloadClazzName = "org.apache.test.RefreshedJarClass";
   private final static String versionMethodName = "version";
+  private final static String RELOADED_CLAZZ_PREFIX_NAME = "RefreshedJarClass";
+  private final static String V1 = "V1";
+  private final static String V2 = "V2";
   private static String hiveReloadPath;
   private File reloadFolder;
   public static final Log LOG = LogFactory.getLog(TestSessionState.class);
@@ -170,6 +173,13 @@ public class TestSessionState {
     Class addedClazz = Class.forName(reloadClazzName, true, cl);
     Method versionMethod = addedClazz.getMethod(versionMethodName);
     return (String) versionMethod.invoke(addedClazz.newInstance());
+  }
+
+  private void generateRefreshJarFiles(String version) throws IOException, InterruptedException {
+    String u = HiveTestUtils
+        .getFileFromClasspath(RELOADED_CLAZZ_PREFIX_NAME + version + HiveTestUtils.TXT_FILE_EXT);
+    File jarFile = HiveTestUtils.genLocalJarForTest(u, RELOADED_CLAZZ_PREFIX_NAME);
+    Files.move(jarFile, new File(jarFile.getAbsolutePath() + "." + version));
   }
 
   @Test
