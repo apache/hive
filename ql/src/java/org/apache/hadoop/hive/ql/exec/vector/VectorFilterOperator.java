@@ -61,8 +61,8 @@ public class VectorFilterOperator extends FilterOperator {
 
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
@@ -77,7 +77,6 @@ public class VectorFilterOperator extends FilterOperator {
         filterMode = -1;
       }
     }
-    return result;
   }
 
   public void setFilterCondition(VectorExpression expr) {

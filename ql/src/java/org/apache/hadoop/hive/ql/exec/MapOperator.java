@@ -420,8 +420,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    return super.initializeOp(hconf);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
   }
 
   public void initializeMapOperator(Configuration hconf) throws HiveException {

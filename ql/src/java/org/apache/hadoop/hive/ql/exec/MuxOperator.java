@@ -171,8 +171,8 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   private transient long[] nextCntrs;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     // A MuxOperator should only have a single child
     if (childOperatorsArray.length != 1) {
@@ -208,7 +208,6 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
       cntrs[i] = 0;
       nextCntrs[i] = 1;
     }
-    return result;
   }
 
   /**

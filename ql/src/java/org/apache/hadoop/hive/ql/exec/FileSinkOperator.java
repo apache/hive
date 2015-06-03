@@ -325,8 +325,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     try {
       this.hconf = hconf;
       filesCreated = false;
@@ -445,7 +445,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       e.printStackTrace();
       throw new HiveException(e);
     }
-    return result;
   }
 
   private void logOutputFormatError(Configuration hconf, HiveException ex) {

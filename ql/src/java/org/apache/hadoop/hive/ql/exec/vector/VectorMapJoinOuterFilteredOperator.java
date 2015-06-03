@@ -60,7 +60,7 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  public void initializeOp(Configuration hconf) throws HiveException {
 
     final int posBigTable = conf.getPosBigTable();
 
@@ -71,11 +71,9 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
 
     // Call super VectorMapJoinOuterFilteredOperator, which calls super MapJoinOperator with
     // new input inspector.
-    Collection<Future<?>> result = super.initializeOp(hconf);
+    super.initializeOp(hconf);
 
     firstBatch = true;
-
-    return result;
   }
 
   @Override

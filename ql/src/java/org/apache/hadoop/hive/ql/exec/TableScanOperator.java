@@ -193,17 +193,17 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     inputFileChanged = false;
 
     if (conf == null) {
-      return result;
+      return;
     }
 
     rowLimit = conf.getRowLimit();
     if (!conf.isGatherStats()) {
-      return result;
+      return;
     }
 
     this.hconf = hconf;
@@ -217,11 +217,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     currentStat = null;
     stats = new HashMap<String, Stat>();
-    if (conf.getPartColumns() == null || conf.getPartColumns().size() == 0) {
-      // NON PARTITIONED table
-      return result;
-    }
-    return result;
   }
 
   @Override

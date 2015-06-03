@@ -774,9 +774,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
-    assert result.isEmpty();
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -839,7 +838,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       processingMode = this.new ProcessingModeHashAggregate();
     }
     processingMode.initialize(hconf);
-    return result;
   }
 
   /**

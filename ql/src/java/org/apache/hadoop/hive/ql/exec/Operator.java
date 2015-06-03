@@ -72,6 +72,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
+  protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
 
   private static AtomicInteger seqId;
 
@@ -362,38 +363,57 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // derived classes can set this to different object if needed
     outputObjInspector = inputObjInspectors[0];
 
-    Collection<Future<?>> asyncInitOperations = initializeOp(hconf);
+    boolean isInitOk = false;
+    try {
+      initializeOp(hconf);
+      // sanity checks
+      if (!rootInitializeCalled
+          || childOperatorsArray.length != childOperators.size()) {
+        throw new AssertionError("Internal error during operator initialization");
+      }
+      if (isLogInfoEnabled) {
+        LOG.info("Initialization Done " + id + " " + getName());
+      }
 
-    // sanity checks
-    if (!rootInitializeCalled
-	|| asyncInitOperations == null
-	|| childOperatorsArray.length != childOperators.size()) {
-      throw new AssertionError("Internal error during operator initialization");
+      initializeChildren(hconf);
+      isInitOk = true;
+    } finally {
+      // TODO: ugly hack because Java doesn't have dtors and Tez input hangs on shutdown.
+      if (!isInitOk) {
+        cancelAsyncInitOps();
+      }
     }
-
-    if (isLogInfoEnabled) {
-      LOG.info("Initialization Done " + id + " " + getName());
-    }
-
-    initializeChildren(hconf);
 
     // let's wait on the async ops before continuing
     completeInitialization(asyncInitOperations);
   }
 
+  private void cancelAsyncInitOps() {
+    for (Future<?> f : asyncInitOperations) {
+      f.cancel(true);
+    }
+    asyncInitOperations.clear();
+  }
+
   private void completeInitialization(Collection<Future<?>> fs) throws HiveException {
     Object[] os = new Object[fs.size()];
     int i = 0;
+    Throwable asyncEx = null;
     for (Future<?> f : fs) {
-      try {
-        if (abortOp.get()) {
-          f.cancel(true);
-        } else {
+      if (abortOp.get() || asyncEx != null) {
+        // We were aborted, interrupted or one of the operations failed; terminate all.
+        f.cancel(true);
+      } else {
+        try {
           os[i++] = f.get();
+        } catch (Throwable t) {
+          f.cancel(true);
+          asyncEx = t;
         }
-      } catch (Exception e) {
-        throw new HiveException(e);
       }
+    }
+    if (asyncEx != null) {
+      throw new HiveException("Async initialization failed", asyncEx);
     }
     completeInitializationOp(os);
   }
@@ -421,9 +441,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   /**
    * Operator specific initialization.
    */
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     rootInitializeCalled = true;
-    return new ArrayList<Future<?>>();
   }
 
   /**
@@ -1363,8 +1382,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     @Override
-    protected Collection<Future<?>> initializeOp(Configuration conf) {
-      return childOperators;
+    protected void initializeOp(Configuration conf) {
     }
   }
 }
