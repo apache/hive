@@ -47,6 +47,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hive.common.util.HiveStringUtils;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -59,6 +60,7 @@ public class LlapInputFormat
   private final InputFormat sourceInputFormat;
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
+  private final String hostName;
 
   @SuppressWarnings("rawtypes")
   LlapInputFormat(InputFormat sourceInputFormat, ColumnVectorProducer cvp,
@@ -69,6 +71,7 @@ public class LlapInputFormat
     this.executor = executor;
     this.cvp = cvp;
     this.sourceInputFormat = sourceInputFormat;
+    this.hostName = HiveStringUtils.getHostname();
   }
 
   @Override
@@ -84,7 +87,7 @@ public class LlapInputFormat
     try {
       List<Integer> includedCols = ColumnProjectionUtils.isReadAllColumns(job)
           ? null : ColumnProjectionUtils.getReadColumnIDs(job);
-      return new LlapRecordReader(job, fileSplit, includedCols);
+      return new LlapRecordReader(job, fileSplit, includedCols, hostName);
     } catch (Exception ex) {
       throw new IOException(ex);
     }
@@ -114,12 +117,14 @@ public class LlapInputFormat
     private final QueryFragmentCounters counters;
     private long firstReturnTime;
 
-    public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols) {
+    public LlapRecordReader(
+        JobConf job, FileSplit split, List<Integer> includedCols, String hostName) {
       this.split = split;
       this.columnIds = includedCols;
       this.sarg = SearchArgumentFactory.createFromConf(job);
       this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
       this.counters = new QueryFragmentCounters(job);
+      this.counters.setDesc(QueryFragmentCounters.Desc.MACHINE, hostName);
       try {
         rbCtx = new VectorizedRowBatchCtx();
         rbCtx.init(job, split);
@@ -136,6 +141,7 @@ public class LlapInputFormat
         throw new AssertionError("next called after close");
       }
       // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
+      boolean wasFirst = isFirst;
       if (isFirst) {
         try {
           rbCtx.addPartitionColsToBatch(value);
@@ -153,7 +159,7 @@ public class LlapInputFormat
         throw new IOException(e);
       }
       if (cvb == null) {
-        if (isFirst) {
+        if (wasFirst) {
           firstReturnTime = counters.startTimeCounter();
         }
         counters.incrTimeCounter(Counter.CONSUMER_TIME_US, firstReturnTime);
@@ -170,7 +176,7 @@ public class LlapInputFormat
       }
       value.selectedInUse = false;
       value.size = cvb.size;
-      if (isFirst) {
+      if (wasFirst) {
         firstReturnTime = counters.startTimeCounter();
       }
       return true;
