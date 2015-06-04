@@ -4,7 +4,7 @@ PREHOOK: Output: test_max
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_max
-PREHOOK: query: create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1,
+PREHOOK: query: create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), current_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1,
 1,
 0)
  from src group by src.key
@@ -12,7 +12,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_grouped_old1
-POSTHOOK: query: create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1,
+POSTHOOK: query: create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), current_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1,
 1,
 0)
  from src group by src.key
@@ -33,7 +33,7 @@ c3                  	int
 c4                  	bigint              	                    
 c5                  	double              	                    
 c6                  	bigint              	                    
-c7                  	bigint              	                    
+c7                  	timestamp
 c8                  	int                 	                    
 c9                  	int                 	                    
 PREHOOK: query: create table dest_grouped_old2 as select distinct src.key from src
@@ -53,7 +53,7 @@ POSTHOOK: query: describe dest_grouped_old2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dest_grouped_old2
 key                 	string              	                    
-PREHOOK: query: create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10,
+PREHOOK: query: create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), current_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10,
 	(src.key +5) % 2,
 0)
 from src group by src.key
@@ -61,7 +61,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_grouped_new1
-POSTHOOK: query: create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10,
+POSTHOOK: query: create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), current_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10,
 	(src.key +5) % 2,
 0)
 from src group by src.key
@@ -82,7 +82,7 @@ test_max_length_src__3	int
 count_src_value_4   	bigint              	                    
 sin_count_src_value_5	double              	                    
 count_sin_src_value_6	bigint              	                    
-unix_timestamp_7    	bigint              	                    
+current_timestamp_7 	timestamp
 sum_if_value_10_valu_8	int                 	                    
 if_src_key_10_src_ke_9	double              	                    
 PREHOOK: query: create table dest_grouped_new2 as select distinct src.key from src

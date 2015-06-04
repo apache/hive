@@ -57,15 +57,8 @@ public class TestSessionState {
   private final static String reloadClazzFileName = "RefreshedJarClass.jar";
   private final static String versionMethodName = "version";
   private final static String RELOADED_CLAZZ_PREFIX_NAME = "RefreshedJarClass";
-  private final static String JAVA_FILE_EXT = ".java";
-  private final static String CLAZZ_FILE_EXT = ".class";
-  private final static String JAR_FILE_EXT = ".jar";
-  private final static String TXT_FILE_EXT = ".txt";
   private final static String V1 = "V1";
   private final static String V2 = "V2";
-  private final String clazzFile = RELOADED_CLAZZ_PREFIX_NAME + CLAZZ_FILE_EXT;
-  private final String jarFile = RELOADED_CLAZZ_PREFIX_NAME + JAR_FILE_EXT;
-  private final String javaFile = RELOADED_CLAZZ_PREFIX_NAME + JAVA_FILE_EXT;
   private static String hiveReloadPath;
   private File reloadFolder;
   public static final Log LOG = LogFactory.getLog(TestSessionState.class);
@@ -191,35 +184,10 @@ public class TestSessionState {
   }
 
   private void generateRefreshJarFiles(String version) throws IOException, InterruptedException {
-    String u = HiveTestUtils.getFileFromClasspath(
-      RELOADED_CLAZZ_PREFIX_NAME + version + TXT_FILE_EXT);
-    File dir = new File(u);
-    File parentDir = dir.getParentFile();
-    File f = new File(parentDir, javaFile);
-    Files.copy(dir, f);
-    executeCmd(new String[]{"javac", javaFile}, parentDir);
-    executeCmd(new String[]{"jar", "cf", jarFile, clazzFile}, parentDir);
-    Files.move(new File(parentDir, jarFile), new File(parentDir, jarFile + "." + version));
-    f.delete();
-    new File(parentDir, clazzFile).delete();
-  }
-
-  private void executeCmd(String[] cmdArr, File dir) throws IOException, InterruptedException {
-    final Process p1 = Runtime.getRuntime().exec(cmdArr, null, dir);
-    new Thread(new Runnable() {
-      public void run() {
-        BufferedReader input = new BufferedReader(new InputStreamReader(p1.getErrorStream()));
-        String line;
-        try {
-          while ((line = input.readLine()) != null) {
-            System.out.println(line);
-          }
-        } catch (IOException e) {
-          LOG.error("Failed to execute the command due the exception " + e);
-        }
-      }
-    }).start();
-    p1.waitFor();
+    String u = HiveTestUtils
+        .getFileFromClasspath(RELOADED_CLAZZ_PREFIX_NAME + version + HiveTestUtils.TXT_FILE_EXT);
+    File jarFile = HiveTestUtils.genLocalJarForTest(u, RELOADED_CLAZZ_PREFIX_NAME);
+    Files.move(jarFile, new File(jarFile.getAbsolutePath() + "." + version));
   }
 
   @Test

@@ -3,6 +3,8 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.enforce.bucketing=true;
 
+-- SORT_QUERY_RESULTS
+
 create table acid_uami(i int,
                  de decimal(5,2),
                  vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');

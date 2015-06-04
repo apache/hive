@@ -41,7 +41,7 @@ public class VectorFilterOperator extends FilterOperator {
   private VectorExpression conditionEvaluator = null;
 
   // Temporary selected vector
-  private final int[] temporarySelected = new int [VectorizedRowBatch.DEFAULT_SIZE];
+  private transient int[] temporarySelected;
 
   // filterMode is 1 if condition is always true, -1 if always false
   // and 0 if condition needs to be computed.
@@ -77,6 +77,8 @@ public class VectorFilterOperator extends FilterOperator {
         filterMode = -1;
       }
     }
+
+    temporarySelected = new int [VectorizedRowBatch.DEFAULT_SIZE];
   }
 
   public void setFilterCondition(VectorExpression expr) {

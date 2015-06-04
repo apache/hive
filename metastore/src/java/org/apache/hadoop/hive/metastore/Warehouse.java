@@ -200,7 +200,6 @@ public class Warehouse {
       fs = getFs(f);
       return FileUtils.mkdir(fs, f, inheritPerms, conf);
     } catch (IOException e) {
-      closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return false;
@@ -480,7 +479,6 @@ public class Warehouse {
     } catch (FileNotFoundException e) {
       return false;
     } catch (IOException e) {
-      closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return true;

@@ -36,6 +36,16 @@ import org.apache.hadoop.io.Writable;
 public abstract class ColumnVector {
 
   /*
+   * The current kinds of column vectors.
+   */
+  public static enum Type {
+    LONG,
+    DOUBLE,
+    BYTES,
+    DECIMAL
+  }
+
+  /*
    * If hasNulls is true, then this array contains true if the value
    * is null, otherwise false. The array is always allocated, so a batch can be re-used
    * later and nulls added.

@@ -21,9 +21,13 @@ SELECT
   unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
 FROM oneline;
 
+create table foo as SELECT
+  'deprecated' as a,
+  unix_timestamp() as b
+FROM oneline;
+drop table foo;
+
 SELECT
   'random_string',
   unix_timestamp('random_string')
 FROM oneline;
-
-

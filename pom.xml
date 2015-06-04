@@ -117,6 +117,7 @@
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.11.1.1</derby.version>
+    <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>14.0.1</guava.version>
     <groovy.version>2.1.6</groovy.version>
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
@@ -129,6 +130,8 @@
     <httpcomponents.core.version>4.4</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
     <jackson.version>1.9.2</jackson.version>
+    <!-- jackson 1 and 2 lines can coexist without issue, as they have different artifactIds -->
+    <jackson.new.version>2.4.2</jackson.new.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javolution.version>5.5.1</javolution.version>
     <jdo-api.version>3.0.1</jdo-api.version>

@@ -184,19 +184,6 @@ public final class BytesBytesMultiHashMap {
     this(initialCapacity, loadFactor, wbSize, -1);
   }
 
-  public class ThreadSafeGetter {
-    private WriteBuffers.Position position = new WriteBuffers.Position();
-    public byte getValueResult(byte[] key, int offset, int length,
-            BytesBytesMultiHashMap.Result hashMapResult) {
-      return BytesBytesMultiHashMap.this.getValueResult(key, offset, length, hashMapResult, position);
-    }
-
-    public void populateValue(WriteBuffers.ByteSegmentRef valueRef) {
-      // Convenience method, populateValue is thread-safe.
-      BytesBytesMultiHashMap.this.populateValue(valueRef);
-    }
-  }
-
   /**
    * The result of looking up a key in the multi-hash map.
    *
@@ -232,6 +219,14 @@ public final class BytesBytesMultiHashMap {
     public Result() {
       hasRows = false;
       byteSegmentRef = new WriteBuffers.ByteSegmentRef();
+      readPos = new WriteBuffers.Position();
+    }
+
+    /**
+     * Return the thread-safe read position.
+     */
+    public WriteBuffers.Position getReadPos() {
+      return readPos;
     }
 
     /**
@@ -260,14 +255,11 @@ public final class BytesBytesMultiHashMap {
      *          Whether there are multiple values (true) or just a single value (false).
      * @param offsetAfterListRecordKeyLen
      *          The offset of just after the key length in the list record.  Or, 0 when single row.
-     * @param readPos
-     *          Holds mutable read position for thread safety.
      */
     public void set(BytesBytesMultiHashMap hashMap, long firstOffset, boolean hasList,
-        long offsetAfterListRecordKeyLen, WriteBuffers.Position readPos) {
+        long offsetAfterListRecordKeyLen) {
 
       this.hashMap = hashMap;
-      this.readPos = readPos;
 
       this.firstOffset = firstOffset;
       this.hasList = hasList;
@@ -410,7 +402,6 @@ public final class BytesBytesMultiHashMap {
      */
     public void forget() {
       hashMap = null;
-      readPos = null;
       byteSegmentRef.reset(0, 0);
       hasRows = false;
       readIndex = 0;
@@ -481,28 +472,22 @@ public final class BytesBytesMultiHashMap {
     ++numValues;
   }
 
-  public ThreadSafeGetter createGetterForThread() {
-    return new ThreadSafeGetter();
-  }
-
-  /** Not thread-safe! Use createGetterForThread. */
-  public byte getValueResult(byte[] key, int offset, int length, Result hashMapResult) {
-    return getValueResult(key, offset, length, hashMapResult, writeBuffers.getReadPosition());
-  }
-
   /**
    * Finds a key.  Values can be read with the supplied result object.
+   *
+   * Important Note: The caller is expected to pre-allocate the hashMapResult and not
+   * share it among other threads.
    *
    * @param key Key buffer.
    * @param offset the offset to the key in the buffer
    * @param hashMapResult The object to fill in that can read the values.
-   * @param readPos Holds mutable read position for thread safety.
    * @return The state byte.
    */
-  private byte getValueResult(byte[] key, int offset, int length, Result hashMapResult,
-          WriteBuffers.Position readPos) {
+  public byte getValueResult(byte[] key, int offset, int length, Result hashMapResult) {
 
     hashMapResult.forget();
+
+    WriteBuffers.Position readPos = hashMapResult.getReadPos();
 
     // First, find first record for the key.
     long ref = findKeyRefToRead(key, offset, length, readPos);
@@ -515,8 +500,7 @@ public final class BytesBytesMultiHashMap {
     // This relies on findKeyRefToRead doing key equality check and leaving read ptr where needed.
     long offsetAfterListRecordKeyLen = hasList ? writeBuffers.getReadPoint(readPos) : 0;
 
-    hashMapResult.set(this, Ref.getOffset(ref), hasList, offsetAfterListRecordKeyLen,
-            readPos);
+    hashMapResult.set(this, Ref.getOffset(ref), hasList, offsetAfterListRecordKeyLen);
 
     return Ref.getStateByte(ref);
   }
