@@ -663,6 +663,9 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   public static class SargApplier {
+    public final static boolean[] READ_ALL_RGS = null;
+    public final static boolean[] READ_NO_RGS = new boolean[0];
+
     private final SearchArgument sarg;
     private final List<PredicateLeaf> sargLeaves;
     private final int[] filterColumns;
@@ -695,12 +698,13 @@ public class RecordReaderImpl implements RecordReader {
      * row groups must be read.
      * @throws IOException
      */
-    public boolean[] pickRowGroups(
-        StripeInformation stripe, OrcProto.RowIndex[] indexes) throws IOException {
+    public boolean[] pickRowGroups(StripeInformation stripe, OrcProto.RowIndex[] indexes,
+        boolean returnNone) throws IOException {
       long rowsInStripe = stripe.getNumberOfRows();
       int groupsInStripe = (int) ((rowsInStripe + rowIndexStride - 1) / rowIndexStride);
       boolean[] result = new boolean[groupsInStripe]; // TODO: avoid alloc?
       TruthValue[] leafValues = new TruthValue[sargLeaves.size()];
+      boolean hasSelected = false, hasSkipped = false;
       for (int rowGroup = 0; rowGroup < result.length; ++rowGroup) {
         for (int pred = 0; pred < leafValues.length; ++pred) {
           if (filterColumns[pred] != -1) {
@@ -722,6 +726,8 @@ public class RecordReaderImpl implements RecordReader {
           }
         }
         result[rowGroup] = sarg.evaluate(leafValues).isNeeded();
+        hasSelected = hasSelected || result[rowGroup];
+        hasSkipped = hasSkipped || (!result[rowGroup]);
         if (LOG.isDebugEnabled()) {
           LOG.debug("Row group " + (rowIndexStride * rowGroup) + " to " +
               (rowIndexStride * (rowGroup + 1) - 1) + " is " +
@@ -729,13 +735,7 @@ public class RecordReaderImpl implements RecordReader {
         }
       }
 
-      // if we found something to skip, use the array. otherwise, return null.
-      for (boolean b : result) {
-        if (!b) {
-          return result;
-        }
-      }
-      return null;
+      return hasSkipped ? ((hasSelected || !returnNone) ? result : READ_NO_RGS) : READ_ALL_RGS;
     }
   }
 
@@ -752,7 +752,7 @@ public class RecordReaderImpl implements RecordReader {
       return null;
     }
     readRowIndex(currentStripe, included, sargApp.sargColumns);
-    return sargApp.pickRowGroups(stripes.get(currentStripe), indexes);
+    return sargApp.pickRowGroups(stripes.get(currentStripe), indexes, false);
   }
 
   private void clearStreams() throws IOException {
