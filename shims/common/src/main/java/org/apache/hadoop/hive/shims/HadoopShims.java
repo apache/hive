@@ -146,8 +146,6 @@ public interface HadoopShims {
 
   public JobContext newJobContext(Job job);
 
-  public void startPauseMonitor(Configuration conf);
-
   /**
    * Check wether MR is configured to run in local-mode
    * @param conf
