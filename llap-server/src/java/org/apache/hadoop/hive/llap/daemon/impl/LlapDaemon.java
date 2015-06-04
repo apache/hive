@@ -38,18 +38,21 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.metrics2.util.MBeans;
-import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.service.CompositeService;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.hive.common.util.ShutdownHookManager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class LlapDaemon extends AbstractService implements ContainerRunner, LlapDaemonMXBean {
+public class LlapDaemon extends CompositeService implements ContainerRunner, LlapDaemonMXBean {
 
-  private static final Logger LOG = Logger.getLogger(LlapDaemon.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
 
   private final Configuration shuffleHandlerConf;
   private final LlapDaemonProtocolServerImpl server;
@@ -57,7 +60,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   private final LlapRegistryService registry;
   private final LlapWebServices webServices;
   private final AtomicLong numSubmissions = new AtomicLong(0);
-  private JvmPauseMonitor pauseMonitor;
+  private final JvmPauseMonitor pauseMonitor;
   private final ObjectName llapDaemonInfoBean;
   private final LlapDaemonExecutorMetrics metrics;
 
@@ -129,9 +132,8 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     // Less frequently set parameter, not passing in as a param.
     int numHandlers = daemonConf.getInt(LlapConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS,
         LlapConfiguration.LLAP_DAEMON_RPC_NUM_HANDLERS_DEFAULT);
-    this.server = new LlapDaemonProtocolServerImpl(numHandlers, this, address, rpcPort);
 
-    // Initialize the metric system
+    // Initialize the metrics system
     LlapMetricsSystem.initialize("LlapDaemon");
     this.pauseMonitor = new JvmPauseMonitor(daemonConf);
     pauseMonitor.start();
@@ -144,6 +146,9 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
         " sessionId: " + sessionId);
 
+    this.server = new LlapDaemonProtocolServerImpl(numHandlers, this, address, rpcPort);
+    addIfService(server);
+
     this.containerRunner = new ContainerRunnerImpl(daemonConf,
         numExecutors,
         waitQueueSize,
@@ -153,9 +158,12 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
         address,
         executorMemoryBytes,
         metrics);
+    addIfService(containerRunner);
 
     this.registry = new LlapRegistryService(true);
+    addIfService(registry);
     this.webServices = new LlapWebServices();
+    addIfService(webServices);
   }
 
   private void printAsciiArt() {
@@ -173,34 +181,23 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   }
 
   @Override
-  public void serviceInit(Configuration conf) {
-    server.init(conf);
-    containerRunner.init(conf);
-    registry.init(conf);
-    webServices.init(conf);
+  public void serviceInit(Configuration conf) throws Exception {
+    super.serviceInit(conf);
     LlapIoProxy.setDaemon(true);
     LlapIoProxy.initializeLlapIo(conf);
   }
 
   @Override
   public void serviceStart() throws Exception {
+    super.serviceStart();
     ShuffleHandler.initializeAndStart(shuffleHandlerConf);
-    server.start();
-    containerRunner.start();
-    registry.start();
-    registry.registerWorker();
-    webServices.start();
   }
 
   public void serviceStop() throws Exception {
-    // TODO Shutdown LlapIO
+    super.serviceStop();
     shutdown();
-    containerRunner.stop();
-    server.stop();
-    registry.unregisterWorker();
-    registry.stop();
-    webServices.stop();
     ShuffleHandler.shutdown();
+    LOG.info("LlapDaemon shutdown complete");
   }
 
   public void shutdown() {
@@ -221,6 +218,7 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
   }
 
   public static void main(String[] args) throws Exception {
+    Thread.setDefaultUncaughtExceptionHandler(new LlapDaemonUncaughtExceptionHandler());
     LlapDaemon llapDaemon = null;
     try {
       // Cache settings will need to be setup in llap-daemon-site.xml - since the daemons don't read hive-site.xml
@@ -245,6 +243,9 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
           new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, llapIoEnabled,
               cacheMemoryBytes, localDirs,
               rpcPort, shufflePort);
+
+      LOG.info("Adding shutdown hook for LlapDaemon");
+      ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);
 
       llapDaemon.init(daemonConf);
       llapDaemon.start();
@@ -332,5 +333,37 @@ public class LlapDaemon extends AbstractService implements ContainerRunner, Llap
     return maxJvmMemory;
   }
 
+  private static class LlapDaemonUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+      LOG.info("UncaughtExceptionHandler invoked");
+      if(ShutdownHookManager.isShutdownInProgress()) {
+        LOG.warn("Thread {} threw a Throwable, but we are shutting down, so ignoring this", t, e);
+      } else if(e instanceof Error) {
+        try {
+          LOG.error("Thread {} threw an Error.  Shutting down now...", t, e);
+        } catch (Throwable err) {
+          //We don't want to not exit because of an issue with logging
+        }
+        if(e instanceof OutOfMemoryError) {
+          //After catching an OOM java says it is undefined behavior, so don't
+          //even try to clean up or we can get stuck on shutdown.
+          try {
+            System.err.println("Halting due to Out Of Memory Error...");
+            e.printStackTrace();
+          } catch (Throwable err) {
+            //Again we done want to exit because of logging issues.
+          }
+          ExitUtil.halt(-1);
+        } else {
+          ExitUtil.terminate(-1);
+        }
+      } else {
+        LOG.error("Thread {} threw an Exception. Shutting down now...", t, e);
+        ExitUtil.terminate(-1);
+      }
+    }
+  }
 
 }

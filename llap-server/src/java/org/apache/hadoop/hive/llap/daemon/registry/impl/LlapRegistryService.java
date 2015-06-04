@@ -51,24 +51,30 @@ public class LlapRegistryService extends AbstractService {
     if (this.registry != null) {
       this.registry.start();
     }
+    if (isDaemon) {
+      registerWorker();
+    }
   }
 
   @Override
   public void serviceStop() throws Exception {
+    if (isDaemon) {
+      unregisterWorker();
+    }
     if (this.registry != null) {
-      this.registry.start();
+      this.registry.stop();
     } else {
       LOG.warn("Stopping non-existent registry service");
     }
   }
 
-  public void registerWorker() throws IOException {
+  private void registerWorker() throws IOException {
     if (this.registry != null) {
       this.registry.register();
     }
   }
 
-  public void unregisterWorker() throws IOException {
+  private void unregisterWorker() throws IOException {
     if (this.registry != null) {
       this.registry.unregister();
     }

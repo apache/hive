@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
 import org.apache.log4j.NDC;
@@ -58,7 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO Convert this to a CompositeService
-public class ContainerRunnerImpl extends AbstractService implements ContainerRunner, FragmentCompletionHandler {
+public class ContainerRunnerImpl extends CompositeService implements ContainerRunner, FragmentCompletionHandler {
 
   // TODO Setup a set of threads to process incoming requests.
   // Make sure requests for a single dag/query are handled by the same thread
@@ -88,10 +88,12 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     this.localAddress = localAddress;
 
     this.queryTracker = new QueryTracker(conf, localDirsBase);
+    addIfService(queryTracker);
     this.executorService = new TaskExecutorService(numExecutors, waitQueueSize, enablePreemption);
     AuxiliaryServiceHelper.setServiceDataIntoEnv(
         TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
         ByteBuffer.allocate(4).putInt(localShufflePort), localEnv);
+    addIfService(executorService);
 
     // 80% of memory considered for accounted buffers. Rest for objects.
     // TODO Tune this based on the available size.
@@ -113,14 +115,14 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
     );
   }
 
-  public void serviceInit(Configuration conf) {
-    queryTracker.init(conf);
+  public void serviceInit(Configuration conf) throws Exception {
+    super.serviceInit(conf);
   }
 
   @Override
-  public void serviceStart() {
+  public void serviceStart() throws Exception {
     // The node id will only be available at this point, since the server has been started in LlapDaemon
-    queryTracker.start();
+    super.serviceStart();
     LlapNodeId llapNodeId = LlapNodeId.getInstance(localAddress.get().getHostName(),
         localAddress.get().getPort());
     this.amReporter = new AMReporter(llapNodeId, conf);
@@ -130,12 +132,11 @@ public class ContainerRunnerImpl extends AbstractService implements ContainerRun
 
   @Override
   protected void serviceStop() throws Exception {
+    super.serviceStop();
     if (amReporter != null) {
       amReporter.stop();
       amReporter = null;
     }
-    queryTracker.stop();
-    super.serviceStop();
   }
 
   @Override
