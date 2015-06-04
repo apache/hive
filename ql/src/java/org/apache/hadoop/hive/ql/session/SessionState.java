@@ -903,12 +903,12 @@ public class SessionState {
       return ((ss != null) && (ss.out != null)) ? ss.out : System.out;
     }
 
-    public PrintStream getInfoStream() {
+    public static PrintStream getInfoStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.info != null)) ? ss.info : getErrStream();
     }
 
-    public PrintStream getErrStream() {
+    public static PrintStream getErrStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.err != null)) ? ss.err : System.err;
     }

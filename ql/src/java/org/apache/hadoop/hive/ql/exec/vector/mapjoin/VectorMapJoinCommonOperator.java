@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized.VectorMapJoinOptimizedCreateHashTable;
@@ -68,8 +69,12 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * This class is common operator class for native vectorized map join.
@@ -656,7 +661,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    * Setup our 2nd batch with the same "column schema" as the big table batch that can be used to
    * build join output results in.
    */
-  protected VectorizedRowBatch setupOverflowBatch() {
+  protected VectorizedRowBatch setupOverflowBatch() throws HiveException {
     VectorizedRowBatch overflowBatch;
 
     Map<Integer, String> scratchColumnTypeMap = vOutContext.getScratchColumnTypeMap();
@@ -699,23 +704,38 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    * Allocate overflow batch columns by hand.
    */
   private void allocateOverflowBatchColumnVector(VectorizedRowBatch overflowBatch, int outputColumn,
-              String typeName) {
+              String typeName) throws HiveException {
 
     if (overflowBatch.cols[outputColumn] == null) {
-      String vectorTypeName;
-      if (VectorizationContext.isIntFamily(typeName) ||
-          VectorizationContext.isDatetimeFamily(typeName)) {
-        vectorTypeName = "long";
-      } else if (VectorizationContext.isFloatFamily(typeName)) {
-        vectorTypeName = "double";
-      } else if (VectorizationContext.isStringFamily(typeName)) {
-         vectorTypeName = "string";
-      } else if (VectorizationContext.decimalTypePattern.matcher(typeName).matches()){
-        vectorTypeName = typeName;  // Keep precision and scale.
-      } else {
-        throw new RuntimeException("Cannot determine vector type for " + typeName);
+      typeName = VectorizationContext.mapTypeNameSynonyms(typeName);
+
+      String columnVectorTypeName;
+
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+      Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+
+      switch (columnVectorType) {
+      case LONG:
+        columnVectorTypeName = "long";
+        break;
+
+      case DOUBLE:
+        columnVectorTypeName = "double";
+        break;
+
+      case BYTES:
+        columnVectorTypeName = "string";
+        break;
+
+      case DECIMAL:
+        columnVectorTypeName = typeName;  // Keep precision and scale.
+        break;
+
+      default:
+        throw new HiveException("Unexpected column vector type " + columnVectorType);
       }
-      overflowBatch.cols[outputColumn] = VectorizedRowBatchCtx.allocateColumnVector(vectorTypeName, VectorizedRowBatch.DEFAULT_SIZE);
+
+      overflowBatch.cols[outputColumn] = VectorizedRowBatchCtx.allocateColumnVector(columnVectorTypeName, VectorizedRowBatch.DEFAULT_SIZE);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator initializeOp overflowBatch outputColumn " + outputColumn + " class " + overflowBatch.cols[outputColumn].getClass().getSimpleName());

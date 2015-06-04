@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.common.metrics;
 
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.conf.HiveConf;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
@@ -26,6 +29,8 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 /**
+ * This class may eventually get superseded by org.apache.hadoop.hive.common.metrics2.Metrics.
+ *
  * Metrics Subsystem  - allows exposure of a number of named parameters/counters
  *                      via jmx, intended to be used as a static subsystem
  *
@@ -38,12 +43,12 @@ import javax.management.ObjectName;
  *                      instantiated and amount of time(in milliseconds) spent inside
  *                      the scopes.
  */
-public class Metrics {
+public class LegacyMetrics implements Metrics {
 
-  private Metrics() {
+  private LegacyMetrics() {
     // block
   }
-  
+
   /**
    * MetricsScope : A class that encapsulates an idea of a metered scope.
    * Instantiating a named scope and then closing it exposes two counters:
@@ -52,11 +57,13 @@ public class Metrics {
    */
   public static class MetricsScope {
 
+    final LegacyMetrics metrics;
+
     final String name;
     final String numCounter;
     final String timeCounter;
     final String avgTimeCounter;
-    
+
     private boolean isOpen = false;
     private Long startTime = null;
 
@@ -65,7 +72,8 @@ public class Metrics {
      * @param name - name of the variable
      * @throws IOException
      */
-    private MetricsScope(String name) throws IOException {
+    private MetricsScope(String name, LegacyMetrics metrics) throws IOException {
+      this.metrics = metrics;
       this.name = name;
       this.numCounter = name + ".n";
       this.timeCounter = name + ".t";
@@ -74,11 +82,11 @@ public class Metrics {
     }
 
     public Long getNumCounter() throws IOException {
-      return (Long)Metrics.get(numCounter);
+      return (Long) metrics.get(numCounter);
     }
 
     public Long getTimeCounter() throws IOException {
-      return (Long)Metrics.get(timeCounter);
+      return (Long) metrics.get(timeCounter);
     }
 
     /**
@@ -103,10 +111,10 @@ public class Metrics {
       if (isOpen) {
         Long endTime = System.currentTimeMillis();
         synchronized(metrics) {
-          Long num = Metrics.incrementCounter(numCounter);
-          Long time = Metrics.incrementCounter(timeCounter, endTime - startTime);
+          Long num = metrics.incrementCounter(numCounter);
+          Long time = metrics.incrementCounter(timeCounter, endTime - startTime);
           if (num != null && time != null) {
-            Metrics.set(avgTimeCounter, Double.valueOf(time.doubleValue() / num.doubleValue()));
+            metrics.set(avgTimeCounter, Double.valueOf(time.doubleValue() / num.doubleValue()));
           }
         }
       } else {
@@ -135,13 +143,13 @@ public class Metrics {
   static {
     try {
       oname = new ObjectName(
-          "org.apache.hadoop.hive.common.metrics:type=MetricsMBean");      
+          "org.apache.hadoop.hive.common.metrics:type=MetricsMBean");
     } catch (MalformedObjectNameException mone) {
       throw new RuntimeException(mone);
     }
   }
-  
-  
+
+
   private static final ThreadLocal<HashMap<String, MetricsScope>> threadLocalScopes
     = new ThreadLocal<HashMap<String,MetricsScope>>() {
     @Override
@@ -150,26 +158,28 @@ public class Metrics {
     }
   };
 
-  private static boolean initialized = false;
+  private boolean initialized = false;
 
-  public static void init() throws Exception {
-    synchronized (metrics) {
-      if (!initialized) {
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        mbs.registerMBean(metrics, oname);
-        initialized = true;
-      }
+  public void init(HiveConf conf) throws Exception {
+    if (!initialized) {
+      MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+      mbs.registerMBean(metrics, oname);
+      initialized = true;
     }
   }
 
-  public static Long incrementCounter(String name) throws IOException{
+  public boolean isInitialized() {
+    return initialized;
+  }
+
+  public Long incrementCounter(String name) throws IOException{
     if (!initialized) {
       return null;
     }
     return incrementCounter(name,Long.valueOf(1));
   }
 
-  public static Long incrementCounter(String name, long increment) throws IOException{
+  public Long incrementCounter(String name, long increment) throws IOException{
     if (!initialized) {
       return null;
     }
@@ -186,33 +196,32 @@ public class Metrics {
     return value;
   }
 
-  public static void set(String name, Object value) throws IOException{
+  public void set(String name, Object value) throws IOException{
     if (!initialized) {
       return;
     }
     metrics.put(name,value);
   }
 
-  public static Object get(String name) throws IOException{
+  public Object get(String name) throws IOException{
     if (!initialized) {
       return null;
     }
     return metrics.get(name);
   }
 
-  public static MetricsScope startScope(String name) throws IOException{
+  public void startScope(String name) throws IOException{
     if (!initialized) {
-      return null;
+      return;
     }
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
-      threadLocalScopes.get().put(name, new MetricsScope(name));
+      threadLocalScopes.get().put(name, new MetricsScope(name, this));
     }
-    return threadLocalScopes.get().get(name);
   }
 
-  public static MetricsScope getScope(String name) throws IOException {
+  public MetricsScope getScope(String name) throws IOException {
     if (!initialized) {
       return null;
     }
@@ -223,7 +232,7 @@ public class Metrics {
     }
   }
 
-  public static void endScope(String name) throws IOException{
+  public void endScope(String name) throws IOException{
     if (!initialized) {
       return;
     }
@@ -235,10 +244,10 @@ public class Metrics {
   /**
    * Resets the static context state to initial.
    * Used primarily for testing purposes.
-   * 
+   *
    * Note that threadLocalScopes ThreadLocal is *not* cleared in this call.
    */
-  static void uninit() throws Exception {
+  public void deInit() throws Exception {
     synchronized (metrics) {
       if (initialized) {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();

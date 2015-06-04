@@ -142,6 +142,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4Join
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
@@ -933,17 +934,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
         basePlan = hepPlan(basePlan, true, mdProvider, HiveJoinAddNotNullRule.INSTANCE);
       }
 
-      // 3. PPD
+      // 3. Constant propagation, common filter extraction, and PPD
       basePlan = hepPlan(basePlan, true, mdProvider,
           ReduceExpressionsRule.PROJECT_INSTANCE,
           ReduceExpressionsRule.FILTER_INSTANCE,
           ReduceExpressionsRule.JOIN_INSTANCE,
-          new HiveFilterProjectTransposeRule(
-          Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
-          HiveProject.DEFAULT_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
-          HiveFilter.DEFAULT_FILTER_FACTORY),
-          new FilterMergeRule(HiveFilter.DEFAULT_FILTER_FACTORY), HiveFilterJoinRule.JOIN,
-          HiveFilterJoinRule.FILTER_ON_JOIN, new FilterAggregateTransposeRule(Filter.class,
+          HivePreFilteringRule.INSTANCE,
+          new HiveFilterProjectTransposeRule(Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY,
+                  HiveProject.class, HiveProject.DEFAULT_PROJECT_FACTORY),
+          new HiveFilterSetOpTransposeRule(HiveFilter.DEFAULT_FILTER_FACTORY),
+          HiveFilterJoinRule.JOIN,
+          HiveFilterJoinRule.FILTER_ON_JOIN,
+          new FilterAggregateTransposeRule(Filter.class,
               HiveFilter.DEFAULT_FILTER_FACTORY, Aggregate.class));
 
       // 4. Transitive inference & Partition Pruning

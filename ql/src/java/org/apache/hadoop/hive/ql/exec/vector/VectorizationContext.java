@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
@@ -2041,6 +2042,51 @@ public class VectorizationContext {
       return hiveTypeName;
     default:
       return "None";
+    }
+  }
+
+  public static String mapTypeNameSynonyms(String typeName) {
+    typeName = typeName.toLowerCase();
+    if (typeName.equals("long")) {
+      return "bigint";
+    } else if (typeName.equals("string_family")) {
+      return "string";
+    } else {
+      return typeName;
+    }
+  }
+
+  public static ColumnVector.Type getColumnVectorTypeFromTypeInfo(TypeInfo typeInfo) throws HiveException {
+    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+    PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
+
+    switch (primitiveCategory) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case DATE:
+    case TIMESTAMP:
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      return ColumnVector.Type.LONG;
+
+    case FLOAT:
+    case DOUBLE:
+      return ColumnVector.Type.DOUBLE;
+
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+    case BINARY:
+      return ColumnVector.Type.BYTES;
+
+    case DECIMAL:
+      return ColumnVector.Type.DECIMAL;
+
+    default:
+      throw new HiveException("Unexpected primitive type category " + primitiveCategory);
     }
   }
 
