@@ -500,7 +500,6 @@ public class MapJoinBytesTableContainer
     private byte aliasFilter;
 
     /** Hash table wrapper specific to the container. */
-    private final BytesBytesMultiHashMap.ThreadSafeGetter threadSafeHashMapGetter;
     private BytesBytesMultiHashMap.Result hashMapResult;
 
     /**
@@ -520,14 +519,13 @@ public class MapJoinBytesTableContainer
         valueStruct = null; // No rows?
       }
       uselessIndirection = new ByteArrayRef();
-      threadSafeHashMapGetter = hashMap.createGetterForThread();
       hashMapResult = new BytesBytesMultiHashMap.Result();
       clearRows();
     }
 
     public JoinUtil.JoinResult setFromOutput(Output output) {
 
-      aliasFilter = threadSafeHashMapGetter.getValueResult(
+      aliasFilter = hashMap.getValueResult(
               output.getData(), 0, output.getLength(), hashMapResult);
       dummyRow = null;
       if (hashMapResult.hasRows()) {
