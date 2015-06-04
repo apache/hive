@@ -106,12 +106,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-llap-server</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-registry</artifactId>
       <version>${hadoop-23.version}</version>
@@ -214,6 +208,12 @@
         <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
       </properties>
       <dependencies>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-llap-server</artifactId>
+          <version>${project.version}</version>
+          <scope>test</scope>
+        </dependency>
         <dependency>
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-servlet</artifactId>
