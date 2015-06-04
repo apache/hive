@@ -323,7 +323,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         };
 
-    private final ThreadLocal<TxnHandler> threadLocalTxn = new ThreadLocal<TxnHandler>() {
+    private static final ThreadLocal<TxnHandler> threadLocalTxn = new ThreadLocal<TxnHandler>() {
       @Override
       protected synchronized TxnHandler initialValue() {
         return null;
@@ -340,7 +340,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // Thread local configuration is needed as many threads could make changes
     // to the conf using the connection hook
-    private final ThreadLocal<Configuration> threadLocalConf =
+    private static final ThreadLocal<Configuration> threadLocalConf =
         new ThreadLocal<Configuration>() {
           @Override
           protected synchronized Configuration initialValue() {
