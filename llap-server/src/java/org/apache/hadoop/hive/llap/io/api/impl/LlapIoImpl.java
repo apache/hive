@@ -110,7 +110,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     // Arbitrary thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
     executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numThreads,
-        new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").build()));
+        new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build()));
 
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf, cacheMetrics,
@@ -148,5 +148,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       MBeans.unregister(buddyAllocatorMXBean);
       buddyAllocatorMXBean = null;
     }
+    executor.shutdownNow();
   }
 }

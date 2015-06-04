@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutorService;
@@ -116,8 +117,12 @@ public class AMReporter extends AbstractService {
 
       @Override
       public void onFailure(Throwable t) {
-        LOG.error("AMReporter QueueDrainer exited with error", t);
-        System.exit(-1);
+        if (t instanceof CancellationException && isShutdown.get()) {
+          LOG.info("AMReporter QueueDrainer exited as a result of a cancellation after shutdown");
+        } else {
+          LOG.error("AMReporter QueueDrainer exited with error", t);
+          Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
+        }
       }
     });
     LOG.info("Started service: " + getName());

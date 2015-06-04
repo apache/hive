@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
+import org.apache.hadoop.service.AbstractService;
 import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.slf4j.Logger;
@@ -65,7 +66,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * Task executor service can be shut down which will terminated all running tasks and reject all
  * new tasks. Shutting down of the task executor service can be done gracefully or immediately.
  */
-public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
+public class TaskExecutorService extends AbstractService implements Scheduler<TaskRunnerCallable> {
 
 
   private static final Logger LOG = LoggerFactory.getLogger(TaskExecutorService.class);
@@ -94,12 +95,14 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
   private final Object lock = new Object();
 
   public TaskExecutorService(int numExecutors, int waitQueueSize, boolean enablePreemption) {
+    super(TaskExecutorService.class.getSimpleName());
     this.waitQueue = new EvictingPriorityBlockingQueue<>(new WaitQueueComparator(), waitQueueSize);
     this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
         numExecutors, // max pool size
         1, TimeUnit.MINUTES,
         new SynchronousQueue<Runnable>(), // direct hand-off
-        new ThreadFactoryBuilder().setNameFormat(TASK_EXECUTOR_THREAD_NAME_FORMAT).build());
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat(TASK_EXECUTOR_THREAD_NAME_FORMAT)
+            .build());
     this.executorService = MoreExecutors.listeningDecorator(threadPoolExecutor);
     this.preemptionQueue = new PriorityBlockingQueue<>(numExecutors,
         new PreemptionQueueComparator());
@@ -122,6 +125,11 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
             + "numExecutors=" + numExecutors
             + ", waitQueueSize=" + waitQueueSize
             + ", enablePreemption=" + enablePreemption);
+  }
+
+  @Override
+  public void serviceStop() {
+    shutDown(false);
   }
 
 
@@ -149,7 +157,6 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
               }
               continue;
             }
-
             // if the task cannot finish and if no slots are available then don't schedule it.
             boolean shouldWait = false;
             if (task.getTaskRunnerCallable().canFinish()) {
@@ -216,6 +223,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
     @Override
     public void onFailure(Throwable t) {
       LOG.error("Wait queue scheduler worker exited with failure!", t);
+      Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), t);
     }
   }
 
@@ -443,7 +451,6 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
 
   }
 
-  // TODO: llap daemon should call this to gracefully shutdown the task executor service
   public void shutDown(boolean awaitTermination) {
     if (!isShutdown.getAndSet(true)) {
       if (awaitTermination) {
@@ -461,6 +468,7 @@ public class TaskExecutorService implements Scheduler<TaskRunnerCallable> {
         }
         executorService.shutdownNow();
         waitQueueExecutorService.shutdownNow();
+        executionCompletionExecutorService.shutdownNow();
       }
     }
   }
