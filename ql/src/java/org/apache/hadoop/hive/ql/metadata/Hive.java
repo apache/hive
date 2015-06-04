@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
@@ -2884,7 +2885,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   @LimitedPrivate(value = {"Hive"})
   @Unstable
-  public IMetaStoreClient getMSC() throws MetaException {
+  public synchronized IMetaStoreClient getMSC() throws MetaException {
     if (metaStoreClient == null) {
       try {
         owner = UserGroupInformation.getCurrentUser();
@@ -2894,6 +2895,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
         throw new MetaException(msg + "\n" + StringUtils.stringifyException(e));
       }
       metaStoreClient = createMetaStoreClient();
+      String metaStoreUris = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
+      if (!org.apache.commons.lang3.StringUtils.isEmpty(metaStoreUris)) {
+        // get a synchronized wrapper if the meta store is remote.
+        metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);
+      }
     }
     return metaStoreClient;
   }
