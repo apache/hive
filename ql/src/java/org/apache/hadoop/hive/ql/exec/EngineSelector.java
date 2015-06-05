@@ -42,7 +42,7 @@ import java.util.Map;
 
 public interface EngineSelector {
 
-  enum Engine {TEZ, SPARK, MR}
+  enum Engine {TEZ, SPARK, MR, DEFAULT}
 
   /**
    * select engine to be used, can return null for default value
@@ -54,7 +54,7 @@ public interface EngineSelector {
    */
   Engine select(HiveConf conf, ParseContext parseContext, String param);
 
-  public static class SimpleSelect implements EngineSelector {
+  public static class SimpleSelector implements EngineSelector {
 
     static final Log LOG = LogFactory.getLog(EngineSelector.class.getName());
 
@@ -97,7 +97,7 @@ public interface EngineSelector {
       } catch (Exception e) {
         LOG.warn("Failed to select engine by exception ", e);
       }
-      return null;
+      return Engine.DEFAULT;
     }
 
     Engine evaluate(String expressions, boolean skipEval) throws Exception {
