@@ -20,20 +20,21 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
-import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.exec.PTFRollingPartition;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -1079,6 +1080,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         return new DoubleValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
       case DECIMAL:
         return new HiveDecimalValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
+      case DATE:
+        return new DateValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
       case STRING:
         return new StringValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
       }
@@ -1166,6 +1169,34 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         return false;
       }
       return d1.equals(d2);
+    }
+  }
+
+  public static class DateValueBoundaryScanner extends ValueBoundaryScanner {
+    public DateValueBoundaryScanner(BoundaryDef bndDef, Order order,
+        PTFExpressionDef expressionDef) {
+      super(bndDef,order,expressionDef);
+    }
+
+    @Override
+    public boolean isGreater(Object v1, Object v2, int amt) {
+      Date l1 = PrimitiveObjectInspectorUtils.getDate(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      Date l2 = PrimitiveObjectInspectorUtils.getDate(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      if (l1 != null && l2 != null) {
+          return (double)(l1.getTime() - l2.getTime())/1000 > (long)amt * 24 * 3600; // Converts amt days to milliseconds
+      }
+      return l1 != l2; // True if only one date is null
+    }
+
+    @Override
+    public boolean isEqual(Object v1, Object v2) {
+      Date l1 = PrimitiveObjectInspectorUtils.getDate(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      Date l2 = PrimitiveObjectInspectorUtils.getDate(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      return (l1 == null && l2 == null) || (l1 != null && l1.equals(l2));
     }
   }
 
