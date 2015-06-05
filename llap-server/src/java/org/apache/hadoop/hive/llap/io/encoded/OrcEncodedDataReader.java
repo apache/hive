@@ -267,10 +267,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
               + stripe.getOffset() + ", " + stripe.getLength());
         }
         colRgs = readState[stripeIxMod];
-        assert colRgs.length > 0;
         // We assume that NO_RGS value is only set from SARG filter and for all columns;
         // intermediate changes for individual columns will unset values in the array.
-        if (colRgs[0] == SargApplier.READ_NO_RGS) continue;
+        // Skip this case for 0-column read. We could probably special-case it just like we do
+        // in EncodedReaderImpl, but for now it's not that important.
+        if (colRgs.length > 0 && colRgs[0] == SargApplier.READ_NO_RGS) continue;
 
         // 6.1. Determine the columns to read (usually the same as requested).
         if (cache == null || cols == null || cols.size() == colRgs.length) {

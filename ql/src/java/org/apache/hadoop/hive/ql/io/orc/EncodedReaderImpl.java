@@ -285,6 +285,8 @@ public class EncodedReaderImpl implements EncodedReader {
       int colIx = stream.getColumn();
       OrcProto.Stream.Kind streamKind = stream.getKind();
       if (!included[colIx] || StreamName.getArea(streamKind) != StreamName.Area.DATA) {
+        // We have a stream for included column, but in future it might have no data streams.
+        // It's more like "has at least one column included that has an index stream".
         hasIndexOnlyCols = hasIndexOnlyCols | included[colIx];
         if (DebugUtils.isTraceOrcEnabled()) {
           LOG.info("Skipping stream: " + streamKind + " at " + offset + ", " + length);
@@ -329,6 +331,7 @@ public class EncodedReaderImpl implements EncodedReader {
 
     if (listToRead.get() == null) {
       // No data to read for this stripe. Check if we have some included index-only columns.
+      // TODO: there may be a bug here. Could there be partial RG filtering on index-only column?
       if (hasIndexOnlyCols && (includedRgs == null)) {
         OrcEncodedColumnBatch ecb = ECB_POOL.take();
         ecb.init(fileId, stripeIx, OrcEncodedColumnBatch.ALL_RGS, colRgs.length);
