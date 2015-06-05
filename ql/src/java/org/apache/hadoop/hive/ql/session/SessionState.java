@@ -1458,7 +1458,7 @@ public class SessionState {
   }
 
   public void close() throws IOException {
-    registry.clear();;
+    registry.clear();
     if (txnMgr != null) txnMgr.closeTxnManager();
     JavaUtils.closeClassLoadersTo(conf.getClassLoader(), parentLoader);
     File resourceDir =
@@ -1493,7 +1493,7 @@ public class SessionState {
         sparkSession = null;
       }
     }
-
+    registry.closeCUDFLoaders();
     dropSessionPaths(conf);
   }
 
