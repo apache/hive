@@ -56,7 +56,7 @@ public class RemoveDynamicPruningBySize implements NodeProcessor {
         (context.pruningOpsRemovedByPriorOpt.isEmpty() ||
          !context.pruningOpsRemovedByPriorOpt.contains(event))) {
       context.pruningOpsRemovedByPriorOpt.add(event);
-      GenTezUtils.getUtils().removeBranch(event);
+      GenTezUtils.removeBranch(event);
       // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
       LOG.info("Disabling dynamic pruning for: "
           + ((DynamicPruningEventDesc) desc).getTableScan().getName()

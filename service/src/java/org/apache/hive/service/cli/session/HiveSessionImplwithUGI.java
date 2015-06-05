@@ -26,26 +26,37 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.server.HiveServer2;
 
 /**
  *
  * HiveSessionImplwithUGI.
  * HiveSession with connecting user's UGI and delegation token if required
+ * Note: this object may be shared between threads in HS2.
  */
 public class HiveSessionImplwithUGI extends HiveSessionImpl {
   public static final String HS2TOKEN = "HiveServer2ImpersonationToken";
+  static final Log LOG = LogFactory.getLog(HiveSessionImplwithUGI.class);
 
+  // Shared between threads.
   private UserGroupInformation sessionUgi = null;
   private String delegationTokenStr = null;
-  private Hive sessionHive = null;
   private HiveSession proxySession = null;
-  static final Log LOG = LogFactory.getLog(HiveSessionImplwithUGI.class);
+
+  // Has to be private per thread due to thread safety issues.
+  private static class ThreadLocalState {
+    public Hive sessionHive;
+  }
+
+  private final ThreadLocal<ThreadLocalState> threadLocalState =
+      new ThreadLocal<ThreadLocalState>() {
+        protected ThreadLocalState initialValue() { return new ThreadLocalState(); }
+      };
 
   public HiveSessionImplwithUGI(TProtocolVersion protocol, String username, String password,
       HiveConf hiveConf, String ipAddress, String delegationToken) throws HiveSQLException {
@@ -53,13 +64,30 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     setSessionUGI(username);
     setDelegationToken(delegationToken);
 
-    // create a new metastore connection for this particular user session
+    // Create a new metastore connection for this particular user session.
+    threadLocalState.get().sessionHive = createHive(getHiveConf());
+  }
+
+  private static Hive createHive(HiveConf conf) throws HiveSQLException {
     Hive.set(null);
     try {
-      sessionHive = Hive.get(getHiveConf());
+      return Hive.get(conf);
     } catch (HiveException e) {
       throw new HiveSQLException("Failed to setup metastore connection", e);
     }
+  }
+
+  private Hive getHive() {
+    // For HS2 only, create Hive on demand if missing in this thread.
+    ThreadLocalState state = threadLocalState.get();
+    if (state.sessionHive == null) {
+      try {
+        state.sessionHive = createHive(getHiveConf());
+      } catch (HiveSQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return state.sessionHive;
   }
 
   // setup appropriate UGI for the session
@@ -91,6 +119,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   protected synchronized void acquire(boolean userAccess) {
     super.acquire(userAccess);
     // if we have a metastore connection with impersonation, then set it first
+    Hive sessionHive = getHive();
     if (sessionHive != null) {
       Hive.set(sessionHive);
     }
