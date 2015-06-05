@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -406,6 +407,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       } else {
         try {
           os[i++] = f.get();
+        } catch (CancellationException ex) {
+          asyncEx = new InterruptedException("Future was canceled");
         } catch (Throwable t) {
           f.cancel(true);
           asyncEx = t;
