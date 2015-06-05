@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import java.util.Set;
+
 import javax.management.MXBean;
 
 /**
@@ -48,6 +50,12 @@ public interface LlapDaemonMXBean {
    * @return local dirs
    */
   public String getLocalDirs();
+
+  /**
+   * Executor states.
+   * @return Executor states.
+   */
+  public Set<String> getExecutorsStatus();
 
   /**
    * Gets llap daemon configured executor memory per instance.

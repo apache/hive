@@ -17,6 +17,7 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -311,6 +312,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   @Override
   public String getLocalDirs() {
     return Joiner.on(",").skipNulls().join(localDirs);
+  }
+
+  @Override
+  public Set<String> getExecutorsStatus() {
+    return containerRunner.getExecutorStatus();
   }
 
   @Override
