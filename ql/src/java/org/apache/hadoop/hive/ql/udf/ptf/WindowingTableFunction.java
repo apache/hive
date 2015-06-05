@@ -246,8 +246,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
-    int precedingSpan = 0;
-    int followingSpan = 0;
+    int startPos = Integer.MAX_VALUE;
+    int endPos = Integer.MIN_VALUE;
 
     for (int i = 0; i < tabDef.getWindowFunctions().size(); i++) {
       WindowFunctionDef wFnDef = tabDef.getWindowFunctions().get(i);
@@ -264,20 +264,9 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       BoundaryDef end = wdwFrame.getEnd();
       if (!(end instanceof ValueBoundaryDef)
           && !(start instanceof ValueBoundaryDef)) {
-        if (end.getAmt() != BoundarySpec.UNBOUNDED_AMOUNT
-            && start.getAmt() != BoundarySpec.UNBOUNDED_AMOUNT
-            && end.getDirection() != Direction.PRECEDING
-            && start.getDirection() != Direction.FOLLOWING) {
-
-          int amt = wdwFrame.getStart().getAmt();
-          if (amt > precedingSpan) {
-            precedingSpan = amt;
-          }
-
-          amt = wdwFrame.getEnd().getAmt();
-          if (amt > followingSpan) {
-            followingSpan = amt;
-          }
+        if (!end.isUnbounded() && !start.isUnbounded()) {
+          startPos = Math.min(startPos, wdwFrame.getStart().getRelativeOffset());
+          endPos = Math.max(endPos, wdwFrame.getEnd().getRelativeOffset());
           continue;
         }
       }
@@ -286,12 +275,12 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     
     int windowLimit = HiveConf.getIntVar(cfg, ConfVars.HIVEJOINCACHESIZE);
 
-    if (windowLimit < (followingSpan + precedingSpan + 1)) {
+    if (windowLimit < (endPos - startPos + 1)) {
       return null;
     }
 
     canAcceptInputAsStream = true;
-    return new int[] {precedingSpan, followingSpan};
+    return new int[] {startPos, endPos};
   }
 
   private void initializeWindowingFunctionInfoHelpers() throws SemanticException {
@@ -428,7 +417,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
                   : out);
         }
       } else {
-        int rowToProcess = streamingState.rollingPart.rowToProcess(wFn);
+        int rowToProcess = streamingState.rollingPart.rowToProcess(wFn.getWindowFrame());
         if (rowToProcess >= 0) {
           Range rng = getRange(wFn, rowToProcess, streamingState.rollingPart,
               streamingState.order);
@@ -482,7 +471,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
       GenericUDAFEvaluator fnEval = wFn.getWFnEval();
 
-      int numRowsRemaining = wFn.getWindowFrame().getEnd().getAmt();
+      int numRowsRemaining = wFn.getWindowFrame().getEnd().getRelativeOffset();
       if (fnEval instanceof ISupportStreamingModeForWindowing) {
         fnEval.terminate(streamingState.aggBuffers[i]);
 
@@ -682,7 +671,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     return vals;
   }
 
-  Range getRange(WindowFunctionDef wFnDef, int currRow, PTFPartition p, Order order) throws HiveException
+  private Range getRange(WindowFunctionDef wFnDef, int currRow, PTFPartition p, Order order) throws HiveException
   {
     BoundaryDef startB = wFnDef.getWindowFrame().getStart();
     BoundaryDef endB = wFnDef.getWindowFrame().getEnd();
@@ -716,7 +705,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     return new Range(start, end, p);
   }
 
-  int getRowBoundaryStart(BoundaryDef b, int currRow) throws HiveException {
+  private int getRowBoundaryStart(BoundaryDef b, int currRow) throws HiveException {
     Direction d = b.getDirection();
     int amt = b.getAmt();
     switch(d) {
@@ -735,7 +724,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     throw new HiveException("Unknown Start Boundary Direction: " + d);
   }
 
-  int getRowBoundaryEnd(BoundaryDef b, int currRow, PTFPartition p) throws HiveException {
+  private int getRowBoundaryEnd(BoundaryDef b, int currRow, PTFPartition p) throws HiveException {
     Direction d = b.getDirection();
     int amt = b.getAmt();
     switch(d) {
@@ -743,7 +732,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       if ( amt == 0 ) {
         return currRow + 1;
       }
-      return currRow - amt;
+      return currRow - amt + 1;
     case CURRENT:
       return currRow + 1;
     case FOLLOWING:
@@ -1468,7 +1457,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       return true;
     }
 
-    List<Object> nextOutputRow() throws HiveException {
+    private List<Object> nextOutputRow() throws HiveException {
       List<Object> oRow = new ArrayList<Object>();
       Object iRow = rollingPart.nextOutputRow();
       int i = 0;

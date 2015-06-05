@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import java.util.Date;
 
 /**
  * Statistics for DATE columns.
@@ -27,11 +27,11 @@ public interface DateColumnStatistics extends ColumnStatistics {
    * Get the minimum value for the column.
    * @return minimum value
    */
-  DateWritable getMinimum();
+  Date getMinimum();
 
   /**
    * Get the maximum value for the column.
    * @return maximum value
    */
-  DateWritable getMaximum();
+  Date getMaximum();
 }

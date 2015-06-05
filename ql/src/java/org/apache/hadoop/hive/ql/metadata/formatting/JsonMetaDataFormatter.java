@@ -313,7 +313,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    * Show the table partitions.
    */
   @Override
-  public void showTablePartitons(DataOutputStream out, List<String> parts)
+  public void showTablePartitions(DataOutputStream out, List<String> parts)
       throws HiveException {
     asJson(out, MapBuilder.create().put("partitions",
         makeTablePartions(parts)).build());

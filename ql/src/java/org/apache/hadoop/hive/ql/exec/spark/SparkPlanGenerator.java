@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 
@@ -37,6 +38,8 @@ import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
@@ -96,14 +99,20 @@ public class SparkPlanGenerator {
     workToTranMap.clear();
     workToParentWorkTranMap.clear();
 
-    for (BaseWork work : sparkWork.getAllWork()) {
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
-      SparkTran tran = generate(work);
-      SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
-      sparkPlan.addTran(tran);
-      sparkPlan.connect(parentTran, tran);
-      workToTranMap.put(work, tran);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+    try {
+      for (BaseWork work : sparkWork.getAllWork()) {
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+        SparkTran tran = generate(work, sparkWork);
+        SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
+        sparkPlan.addTran(tran);
+        sparkPlan.connect(parentTran, tran);
+        workToTranMap.put(work, tran);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+      }
+    } finally {
+      // clear all ThreadLocal cached MapWork/ReduceWork after plan generation
+      // as this may executed in a pool thread.
+      Utilities.clearWorkMap();
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
@@ -197,23 +206,50 @@ public class SparkPlanGenerator {
     return new ShuffleTran(sparkPlan, shuffler, edge.getNumPartitions(), toCache);
   }
 
-  private SparkTran generate(BaseWork work) throws Exception {
+  private SparkTran generate(BaseWork work, SparkWork sparkWork) throws Exception {
     initStatsPublisher(work);
     JobConf newJobConf = cloneJobConf(work);
+    checkSpecs(work, newJobConf);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
+    boolean caching = isCachingWork(work, sparkWork);
     if (work instanceof MapWork) {
-      MapTran mapTran = new MapTran();
+      MapTran mapTran = new MapTran(caching);
       HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
       mapTran.setMapFunction(mapFunc);
       return mapTran;
     } else if (work instanceof ReduceWork) {
-      ReduceTran reduceTran = new ReduceTran();
+      ReduceTran reduceTran = new ReduceTran(caching);
       HiveReduceFunction reduceFunc = new HiveReduceFunction(confBytes, sparkReporter);
       reduceTran.setReduceFunction(reduceFunc);
       return reduceTran;
     } else {
       throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, "
         + "but found " + work.getClass().getName());
+    }
+  }
+
+  private boolean isCachingWork(BaseWork work, SparkWork sparkWork) {
+    boolean caching = true;
+    List<BaseWork> children = sparkWork.getChildren(work);
+    if (children.size() < 2) {
+      caching = false;
+    } else {
+      // do not cache this if its child RDD is intend to be cached.
+      for (BaseWork child : children) {
+        if (cloneToWork.containsKey(child)) {
+          caching = false;
+        }
+      }
+    }
+    return caching;
+  }
+
+  private void checkSpecs(BaseWork work, JobConf jc) throws Exception {
+    Set<Operator<?>> opList = work.getAllOperators();
+    for (Operator<?> op : opList) {
+      if (op instanceof FileSinkOperator) {
+        ((FileSinkOperator) op).checkOutputSpecs(null, jc);
+      }
     }
   }
 

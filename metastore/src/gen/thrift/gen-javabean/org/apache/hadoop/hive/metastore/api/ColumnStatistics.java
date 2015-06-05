@@ -451,7 +451,7 @@ public class ColumnStatistics implements org.apache.thrift.TBase<ColumnStatistic
                 struct.statsObj = new ArrayList<ColumnStatisticsObj>(_list270.size);
                 for (int _i271 = 0; _i271 < _list270.size; ++_i271)
                 {
-                  ColumnStatisticsObj _elem272; // required
+                  ColumnStatisticsObj _elem272; // optional
                   _elem272 = new ColumnStatisticsObj();
                   _elem272.read(iprot);
                   struct.statsObj.add(_elem272);
@@ -531,7 +531,7 @@ public class ColumnStatistics implements org.apache.thrift.TBase<ColumnStatistic
         struct.statsObj = new ArrayList<ColumnStatisticsObj>(_list275.size);
         for (int _i276 = 0; _i276 < _list275.size; ++_i276)
         {
-          ColumnStatisticsObj _elem277; // required
+          ColumnStatisticsObj _elem277; // optional
           _elem277 = new ColumnStatisticsObj();
           _elem277.read(iprot);
           struct.statsObj.add(_elem277);

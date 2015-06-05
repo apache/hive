@@ -35,6 +35,7 @@ import org.apache.hadoop.security.GroupMappingServiceProvider;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairSchedulerConfiguration;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -76,7 +77,7 @@ public class TestSchedulerQueue {
   @Before
   public void setUp() throws Exception {
     DriverManager.setLoginTimeout(0);
-    miniHS2 = new MiniHS2(conf, true);
+    miniHS2 = new MiniHS2(conf, MiniClusterType.MR);
     miniHS2.setConfProperty(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
     miniHS2.setConfProperty(HiveConf.ConfVars.HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE.varname,
         "true");

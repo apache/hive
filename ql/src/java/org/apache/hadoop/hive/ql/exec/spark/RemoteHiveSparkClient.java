@@ -22,17 +22,20 @@ import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -165,8 +168,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       try {
         URI fileUri = SparkUtilities.getURI(addedFile);
         if (fileUri != null && !localFiles.contains(fileUri)) {
-          fileUri = SparkUtilities.uploadToHDFS(fileUri, hiveConf);
           localFiles.add(fileUri);
+          if (SparkUtilities.needUploadToHDFS(fileUri, sparkConf)) {
+            fileUri = SparkUtilities.uploadToHDFS(fileUri, hiveConf);
+          }
           remoteClient.addFile(fileUri);
         }
       } catch (URISyntaxException e) {
@@ -180,8 +185,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       try {
         URI jarUri = SparkUtilities.getURI(addedJar);
         if (jarUri != null && !localJars.contains(jarUri)) {
-          jarUri = SparkUtilities.uploadToHDFS(jarUri, hiveConf);
           localJars.add(jarUri);
+          if (SparkUtilities.needUploadToHDFS(jarUri, sparkConf)) {
+            jarUri = SparkUtilities.uploadToHDFS(jarUri, hiveConf);
+          }
           remoteClient.addJar(jarUri);
         }
       } catch (URISyntaxException e) {
@@ -192,15 +199,19 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   @Override
   public void close() {
-    remoteClient.stop();
+    if (remoteClient != null) {
+      remoteClient.stop();
+    }
   }
 
   private static class JobStatusJob implements Job<Serializable> {
 
+    private static final long serialVersionUID = 1L;
     private final byte[] jobConfBytes;
     private final byte[] scratchDirBytes;
     private final byte[] sparkWorkBytes;
 
+    @SuppressWarnings("unused")
     private JobStatusJob() {
       // For deserialization.
       this(null, null, null);
@@ -218,14 +229,15 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
       // Add jar to current thread class loader dynamically, and add jar paths to JobConf as Spark
       // may need to load classes from this jar in other threads.
-      List<String> addedJars = jc.getAddedJars();
+      Set<String> addedJars = jc.getAddedJars();
       if (addedJars != null && !addedJars.isEmpty()) {
-        SparkClientUtilities.addToClassPath(addedJars.toArray(new String[addedJars.size()]));
+        SparkClientUtilities.addToClassPath(addedJars, localJobConf, jc.getLocalTmpDir());
         localJobConf.set(Utilities.HIVE_ADDED_JARS, StringUtils.join(addedJars, ";"));
       }
 
       Path localScratchDir = KryoSerializer.deserialize(scratchDirBytes, Path.class);
       SparkWork localSparkWork = KryoSerializer.deserialize(sparkWorkBytes, SparkWork.class);
+      logConfigurations(localJobConf);
 
       SparkCounters sparkCounters = new SparkCounters(jc.sc());
       Map<String, List<String>> prefixes = localSparkWork.getRequiredCounterPrefix();
@@ -250,6 +262,18 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       jc.monitor(future, sparkCounters, plan.getCachedRDDIds());
       return null;
     }
-  }
 
+    private void logConfigurations(JobConf localJobConf) {
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Logging job configuration: ");
+        StringWriter outWriter = new StringWriter();
+        try {
+          Configuration.dumpConfiguration(localJobConf, outWriter);
+        } catch (IOException e) {
+          LOG.warn("Error logging job configuration", e);
+        }
+        LOG.info(outWriter.toString());
+      }
+    }
+  }
 }

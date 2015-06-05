@@ -580,6 +580,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     if (oldPaths != null) {
       job.set(HiveConf.ConfVars.HADOOPMAPREDINPUTDIR.varname, oldPaths);
     }
+
+    // clear work from ThreadLocal after splits generated in case of thread is reused in pool.
+    Utilities.clearWorkMapForConf(job);
+
     LOG.info("Number of all splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new InputSplit[result.size()]);

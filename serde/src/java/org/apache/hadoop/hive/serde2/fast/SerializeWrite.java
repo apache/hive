@@ -31,17 +31,23 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 
 /*
  * Directly serialize with the caller writing field-by-field a serialization format.
- * 
+ *
  * The caller is responsible for calling the write method for the right type of each field
  * (or calling writeNull if the field is a NULL).
- * 
+ *
  */
 public interface SerializeWrite {
 
   /*
-   * Set the buffer that will receive the serialized data.
+   * Set the buffer that will receive the serialized data.  The output buffer will be reset.
    */
   void set(Output output);
+
+  /*
+   * Set the buffer that will receive the serialized data.  The output buffer will NOT be reset.
+   */
+  void setAppend(Output output);
+
 
   /*
    * Reset the previously supplied buffer that will receive the serialized data.

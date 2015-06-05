@@ -78,9 +78,10 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
     }
 
     public boolean needsPrepare() {
-      return !(eval instanceof ExprNodeConstantEvaluator || eval instanceof ExprNodeNullEvaluator);
+      return !(eval instanceof ExprNodeConstantEvaluator);
     }
 
+    @Override
     public Object get() throws HiveException {
       if (!evaluated) {
         obj = eval.evaluate(rowObject, version);

@@ -152,8 +152,12 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       return retValue;
     }
     Timestamp timestamp = inputTimestampOI.getPrimitiveJavaObject(arguments[0].get());
-    retValue.set(timestamp.getTime() / 1000);
+    setValueFromTs(retValue, timestamp);
     return retValue;
+  }
+
+  protected static void setValueFromTs(LongWritable value, Timestamp timestamp) {
+    value.set(timestamp.getTime() / 1000);
   }
 
   @Override

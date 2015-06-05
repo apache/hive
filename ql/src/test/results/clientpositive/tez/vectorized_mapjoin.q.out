@@ -1,8 +1,12 @@
-PREHOOK: query: EXPLAIN SELECT COUNT(t1.cint), MAX(t2.cint), MIN(t1.cint), AVG(t1.cint+t2.cint)
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN SELECT COUNT(t1.cint), MAX(t2.cint), MIN(t1.cint), AVG(t1.cint+t2.cint)
   FROM alltypesorc t1
   JOIN alltypesorc t2 ON t1.cint = t2.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT COUNT(t1.cint), MAX(t2.cint), MIN(t1.cint), AVG(t1.cint+t2.cint)
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN SELECT COUNT(t1.cint), MAX(t2.cint), MIN(t1.cint), AVG(t1.cint+t2.cint)
   FROM alltypesorc t1
   JOIN alltypesorc t2 ON t1.cint = t2.cint
 POSTHOOK: type: QUERY
@@ -40,6 +44,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int), (_col0 + _col1) (type: int)
                           outputColumnNames: _col0, _col1, _col2

@@ -23,7 +23,6 @@
 # in order to execute the metastore-upgrade-tests for different
 # server configurations.
 
-set -e
 cd $(dirname $0)
 
 OUT_LOG="/tmp/$(basename $0).log"
@@ -70,12 +69,8 @@ lxc_exists() {
 }
 
 lxc_create() {
-	lxc-create -n $1 -t download -- --dist "ubuntu" --release "trusty" --arch "amd64"
-	lxc-attach -n $1 -- apt-get update
-	lxc-attach -n $1 -- apt-get install -y openssh-server subversion
-	printf "root\nroot" | sudo lxc-attach -n $1 -- passwd
-	lxc-attach -n $1 -- sed -i /etc/ssh/sshd_config 's/^PermitRootLogin without-password/PermitRootLogin yes/'
-	lxc-attach -n $1 -- service ssh restart
+	lxc-create -n $1 -t download -- --dist "ubuntu" --release "trusty" --arch "amd64" || return 1
+	lxc_start $1 || return 1
 }
 
 lxc_running() {
@@ -83,20 +78,32 @@ lxc_running() {
 }
 
 lxc_start() {
-	lxc-start -n $1 --daemon
-	lxc-wait -n mysql -s RUNNING
+	lxc-start -n $1 --daemon || return 1
+	lxc-wait -n $1 -s RUNNING || return 1
 	sleep 10 # wait a little longer
+}
+
+lxc_stop() {
+	lxc-stop -n $1
 }
 
 lxc_prepare() {
 	echo "Downloading hive source code from SVN, branch='$BRANCH' ..."
-	lxc-attach -n $1 -- rm -rf /tmp/hive
-	lxc-attach -n $1 -- mkdir /tmp/hive
 
-	lxc-attach -n $1 -- svn co http://svn.apache.org/repos/asf/hive/$BRANCH /tmp/hive >/dev/null
+	lxc-attach -n $1 -- apt-get update
+	lxc-attach -n $1 -- apt-get install -y patch git
 
-	lxc-attach -n $1 -- wget $PATCH_URL -O /tmp/hive/hms.patch
-	lxc-attach -n $1 -- patch -s -N -d /tmp/hive -p1 -i /tmp/hive/hms.patch
+	tmpfile=$(mktemp)
+	cat>$tmpfile<<EOF
+rm -rf hive
+mkdir hive
+git clone --depth 1 -b $BRANCH https://github.com/apache/hive.git >/dev/null
+cd hive
+wget $PATCH_URL -O hms.patch
+bash -x testutils/ptest2/src/main/resources/smart-apply-patch.sh hms.patch
+EOF
+
+	lxc-attach -n $1 -- bash -x -e < $tmpfile
 }
 
 lxc_print_metastore_log() {
@@ -104,7 +111,7 @@ lxc_print_metastore_log() {
 }
 
 run_tests() {
-	lxc-attach -n $1 -- bash /tmp/hive/testutils/metastore/metastore-upgrade-test.sh --db $1
+	lxc-attach -n $1 -- bash hive/testutils/metastore/metastore-upgrade-test.sh --db $1
 }
 
 # Install LXC packages if needed
@@ -141,5 +148,13 @@ do
 	# Execute metastore upgrade tests
 	echo "Running metastore upgrade tests for $name..."
 	run_tests $name
+	rc=$?
+
 	log "$(lxc_print_metastore_log $name)"
+	lxc_stop $name
+
+	if [[ $rc != 0 ]]; then
+		log "Tests failed. Exiting with error code (1)."
+		exit 1
+	fi
 done

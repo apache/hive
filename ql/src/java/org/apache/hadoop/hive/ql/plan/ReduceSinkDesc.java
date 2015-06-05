@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -114,8 +113,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   // Write type, since this needs to calculate buckets differently for updates and deletes
   private AcidUtils.Operation writeType;
 
-  // whether we'll enforce the sort order of the RS
-  private transient boolean enforceSort = false;
+  // whether this RS is deduplicated
+  private transient boolean isDeduplicated = false;
+
+  // used by spark mode to decide whether global order is needed
+  private transient boolean hasOrderBy = false;
 
   private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
@@ -171,7 +173,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setStatistics(this.getStatistics());
     desc.setSkipTag(skipTag);
     desc.reduceTraits = reduceTraits.clone();
-    desc.setEnforceSort(enforceSort);
+    desc.setDeduplicated(isDeduplicated);
+    desc.setHasOrderBy(hasOrderBy);
     return desc;
   }
 
@@ -430,11 +433,19 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return writeType;
   }
 
-  public boolean isEnforceSort() {
-    return enforceSort;
+  public boolean isDeduplicated() {
+    return isDeduplicated;
   }
 
-  public void setEnforceSort(boolean isDeduplicated) {
-    this.enforceSort = isDeduplicated;
+  public void setDeduplicated(boolean isDeduplicated) {
+    this.isDeduplicated = isDeduplicated;
+  }
+
+  public boolean hasOrderBy() {
+    return hasOrderBy;
+  }
+
+  public void setHasOrderBy(boolean hasOrderBy) {
+    this.hasOrderBy = hasOrderBy;
   }
 }

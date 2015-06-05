@@ -1,0 +1,381 @@
+PREHOOK: query: create table date_dim
+(
+    d_date_sk                 int,
+    d_date_id                 string,
+    d_date                    string,
+    d_month_seq               int,
+    d_week_seq                int,
+    d_quarter_seq             int,
+    d_year                    int,
+    d_dow                     int,
+    d_moy                     int,
+    d_dom                     int,
+    d_qoy                     int,
+    d_fy_year                 int,
+    d_fy_quarter_seq          int,
+    d_fy_week_seq             int,
+    d_day_name                string,
+    d_quarter_name            string,
+    d_holiday                 string,
+    d_weekend                 string,
+    d_following_holiday       string,
+    d_first_dom               int,
+    d_last_dom                int,
+    d_same_day_ly             int,
+    d_same_day_lq             int,
+    d_current_day             string,
+    d_current_week            string,
+    d_current_month           string,
+    d_current_quarter         string,
+    d_current_year            string 
+)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim
+POSTHOOK: query: create table date_dim
+(
+    d_date_sk                 int,
+    d_date_id                 string,
+    d_date                    string,
+    d_month_seq               int,
+    d_week_seq                int,
+    d_quarter_seq             int,
+    d_year                    int,
+    d_dow                     int,
+    d_moy                     int,
+    d_dom                     int,
+    d_qoy                     int,
+    d_fy_year                 int,
+    d_fy_quarter_seq          int,
+    d_fy_week_seq             int,
+    d_day_name                string,
+    d_quarter_name            string,
+    d_holiday                 string,
+    d_weekend                 string,
+    d_following_holiday       string,
+    d_first_dom               int,
+    d_last_dom                int,
+    d_same_day_ly             int,
+    d_same_day_lq             int,
+    d_current_day             string,
+    d_current_week            string,
+    d_current_month           string,
+    d_current_quarter         string,
+    d_current_year            string 
+)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim
+PREHOOK: query: create table store_sales
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         decimal(7,2),
+    ss_list_price             decimal(7,2),
+    ss_sales_price            decimal(7,2),
+    ss_ext_discount_amt       decimal(7,2),
+    ss_ext_sales_price        decimal(7,2),
+    ss_ext_wholesale_cost     decimal(7,2),
+    ss_ext_list_price         decimal(7,2),
+    ss_ext_tax                decimal(7,2),
+    ss_coupon_amt             decimal(7,2),
+    ss_net_paid               decimal(7,2),
+    ss_net_paid_inc_tax       decimal(7,2),
+    ss_net_profit             decimal(7,2)
+)
+partitioned by
+(
+    ss_store_sk               int
+)
+stored as orc
+tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: create table store_sales
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         decimal(7,2),
+    ss_list_price             decimal(7,2),
+    ss_sales_price            decimal(7,2),
+    ss_ext_discount_amt       decimal(7,2),
+    ss_ext_sales_price        decimal(7,2),
+    ss_ext_wholesale_cost     decimal(7,2),
+    ss_ext_list_price         decimal(7,2),
+    ss_ext_tax                decimal(7,2),
+    ss_coupon_amt             decimal(7,2),
+    ss_net_paid               decimal(7,2),
+    ss_net_paid_inc_tax       decimal(7,2),
+    ss_net_profit             decimal(7,2)
+)
+partitioned by
+(
+    ss_store_sk               int
+)
+stored as orc
+tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: create table store
+(
+    s_store_sk                int,
+    s_store_id                string,
+    s_rec_start_date          string,
+    s_rec_end_date            string,
+    s_closed_date_sk          int,
+    s_store_name              string,
+    s_number_employees        int,
+    s_floor_space             int,
+    s_hours                   string,
+    s_manager                 string,
+    s_market_id               int,
+    s_geography_class         string,
+    s_market_desc             string,
+    s_market_manager          string,
+    s_division_id             int,
+    s_division_name           string,
+    s_company_id              int,
+    s_company_name            string,
+    s_street_number           string,
+    s_street_name             string,
+    s_street_type             string,
+    s_suite_number            string,
+    s_city                    string,
+    s_county                  string,
+    s_state                   string,
+    s_zip                     string,
+    s_country                 string,
+    s_gmt_offset              decimal(5,2),
+    s_tax_precentage          decimal(5,2)                  
+)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store
+POSTHOOK: query: create table store
+(
+    s_store_sk                int,
+    s_store_id                string,
+    s_rec_start_date          string,
+    s_rec_end_date            string,
+    s_closed_date_sk          int,
+    s_store_name              string,
+    s_number_employees        int,
+    s_floor_space             int,
+    s_hours                   string,
+    s_manager                 string,
+    s_market_id               int,
+    s_geography_class         string,
+    s_market_desc             string,
+    s_market_manager          string,
+    s_division_id             int,
+    s_division_name           string,
+    s_company_id              int,
+    s_company_name            string,
+    s_street_number           string,
+    s_street_name             string,
+    s_street_type             string,
+    s_suite_number            string,
+    s_city                    string,
+    s_county                  string,
+    s_state                   string,
+    s_zip                     string,
+    s_country                 string,
+    s_gmt_offset              decimal(5,2),
+    s_tax_precentage          decimal(5,2)                  
+)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store
+PREHOOK: query: -- For MR, we are verifying this query DOES NOT vectorize the Map vertex with
+-- the 2 TableScanOperators that have different schema.
+
+explain select
+        s_state, count(1)
+ from store_sales,
+ store,
+ date_dim
+ where store_sales.ss_sold_date_sk = date_dim.d_date_sk and
+       store_sales.ss_store_sk = store.s_store_sk and
+       store.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
+ group by s_state
+ order by s_state
+ limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: -- For MR, we are verifying this query DOES NOT vectorize the Map vertex with
+-- the 2 TableScanOperators that have different schema.
+
+explain select
+        s_state, count(1)
+ from store_sales,
+ store,
+ date_dim
+ where store_sales.ss_sold_date_sk = date_dim.d_date_sk and
+       store_sales.ss_store_sk = store.s_store_sk and
+       store.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
+ group by s_state
+ order by s_state
+ limit 100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: ss_store_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: ss_store_sk (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      value expressions: ss_sold_date_sk (type: int)
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (s_store_sk is not null and (s_state) IN ('KS', 'AL', 'MN', 'AL', 'SC', 'VT')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: s_store_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: s_store_sk (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      value expressions: s_state (type: string)
+            Execution mode: vectorized
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: d_date_sk is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: d_date_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: d_date_sk (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 ss_store_sk (type: int)
+                  1 s_store_sk (type: int)
+                outputColumnNames: _col0, _col22, _col26, _col50
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col22 (type: int), _col26 (type: int), _col50 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 d_date_sk (type: int)
+                outputColumnNames: _col0, _col22, _col26, _col50, _col58
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Filter Operator
+                  predicate: (((_col0 = _col58) and (_col22 = _col26)) and (_col50) IN ('KS', 'AL', 'MN', 'AL', 'SC', 'VT')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: _col50 (type: string)
+                    outputColumnNames: _col50
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: _col50 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+        Reducer 5 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+

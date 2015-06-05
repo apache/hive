@@ -125,9 +125,7 @@ public class GenericUDAFMin extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
-      BoundaryDef start = wFrmDef.getStart();
-      BoundaryDef end = wFrmDef.getEnd();
-      return new MinStreamingFixedWindow(this, start.getAmt(), end.getAmt());
+      return new MinStreamingFixedWindow(this, wFrmDef);
     }
 
   }
@@ -135,8 +133,8 @@ public class GenericUDAFMin extends AbstractGenericUDAFResolver {
   static class MinStreamingFixedWindow extends MaxStreamingFixedWindow {
 
     public MinStreamingFixedWindow(GenericUDAFEvaluator wrappedEval,
-        int numPreceding, int numFollowing) {
-      super(wrappedEval, numPreceding, numFollowing);
+        WindowFrameDef wFrmDef) {
+      super(wrappedEval, wFrmDef);
     }
 
     protected ObjectInspector inputOI() {

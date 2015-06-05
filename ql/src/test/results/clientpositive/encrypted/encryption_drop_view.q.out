@@ -1,0 +1,34 @@
+PREHOOK: query: DROP TABLE IF EXISTS dve_encrypted_table PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS dve_encrypted_table PURGE
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dve_encrypted_table
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dve_encrypted_table
+Encryption key created: 'key_128'
+Encryption zone created: '/build/ql/test/data/warehouse/default/dve_encrypted_table' using key: 'key_128'
+PREHOOK: query: CREATE VIEW dve_view AS SELECT * FROM dve_encrypted_table
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@dve_encrypted_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dve_view
+POSTHOOK: query: CREATE VIEW dve_view AS SELECT * FROM dve_encrypted_table
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@dve_encrypted_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dve_view
+PREHOOK: query: DROP VIEW dve_view
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@dve_view
+PREHOOK: Output: default@dve_view
+POSTHOOK: query: DROP VIEW dve_view
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@dve_view
+POSTHOOK: Output: default@dve_view

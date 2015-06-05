@@ -50,6 +50,7 @@ cos
 count
 covar_pop
 covar_samp
+crc32
 create_union
 cume_dist
 current_database
@@ -57,6 +58,7 @@ current_date
 current_timestamp
 current_user
 date_add
+date_format
 date_sub
 datediff
 day
@@ -122,6 +124,7 @@ map_keys
 map_values
 matchpath
 max
+md5
 min
 minute
 month
@@ -150,6 +153,7 @@ positive
 pow
 power
 printf
+quarter
 radians
 rand
 rank
@@ -167,6 +171,9 @@ rpad
 rtrim
 second
 sentences
+sha
+sha1
+sha2
 shiftleft
 shiftright
 shiftrightunsigned
@@ -187,6 +194,7 @@ str_to_map
 struct
 substr
 substring
+substring_index
 sum
 tan
 to_date
@@ -239,6 +247,7 @@ cos
 count
 covar_pop
 covar_samp
+crc32
 create_union
 cume_dist
 current_database
@@ -297,6 +306,7 @@ POSTHOOK: query: SHOW FUNCTIONS '.*date.*'
 POSTHOOK: type: SHOWFUNCTIONS
 current_date
 date_add
+date_format
 date_sub
 datediff
 to_date
@@ -324,6 +334,7 @@ map_keys
 map_values
 matchpath
 max
+md5
 min
 minute
 month

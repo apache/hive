@@ -208,8 +208,10 @@ POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 cbo_t1
 cbo_t2
@@ -243,8 +245,10 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:alter2_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:alter2_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:alter2_db
 PREHOOK: query: CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: alter2_db@alter2

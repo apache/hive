@@ -1,6 +1,8 @@
 set hive.exec.dynamic.partition.mode=nonstrict;
 
 -- CTAS
+-- SORT_QUERY_RESULTS
+
 EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt;
 CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt;
 

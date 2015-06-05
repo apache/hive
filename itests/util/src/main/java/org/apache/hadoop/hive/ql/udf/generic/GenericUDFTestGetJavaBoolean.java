@@ -22,8 +22,8 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 
 /**
  * A test GenericUDF to return native Java's boolean type
@@ -41,10 +41,10 @@ public class GenericUDFTestGetJavaBoolean extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    String input = ((StringObjectInspector) argumentOIs[0]).getPrimitiveJavaObject(arguments[0].get());
-    if (input.equalsIgnoreCase("true")) {
+    Object input = ((PrimitiveObjectInspector) argumentOIs[0]).getPrimitiveJavaObject(arguments[0].get());
+    if ("true".equalsIgnoreCase(input.toString())) {
       return Boolean.TRUE;
-    } else if (input.equalsIgnoreCase("false")) {
+    } else if ("false".equalsIgnoreCase(input.toString())) {
       return false;
     } else {
       return null;

@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * DemuxOperator is an operator used by MapReduce Jobs optimized by
@@ -134,12 +134,12 @@ public class DemuxOperator extends Operator<DemuxDesc>
         cntrs[newTag] = 0;
         nextCntrs[newTag] = 0;
         TableDesc keyTableDesc = conf.getKeysSerializeInfos().get(newTag);
-        Deserializer inputKeyDeserializer = ReflectionUtils.newInstance(keyTableDesc
+        Deserializer inputKeyDeserializer = ReflectionUtil.newInstance(keyTableDesc
             .getDeserializerClass(), null);
         SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
 
         TableDesc valueTableDesc = conf.getValuesSerializeInfos().get(newTag);
-        Deserializer inputValueDeserializer = ReflectionUtils.newInstance(valueTableDesc
+        Deserializer inputValueDeserializer = ReflectionUtil.newInstance(valueTableDesc
             .getDeserializerClass(), null);
         SerDeUtils.initializeSerDe(inputValueDeserializer, null, valueTableDesc.getProperties(),
                                    null);

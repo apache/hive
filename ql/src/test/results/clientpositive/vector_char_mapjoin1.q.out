@@ -197,18 +197,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
-1	abc       	2	abc       
 1	abc       	1	abc       
-2	abc       	2	abc       
+1	abc       	2	abc       
 2	abc       	1	abc       
+2	abc       	2	abc       
 3	 abc      	3	 abc      
 PREHOOK: query: -- Join char with different length char
 explain select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
@@ -238,7 +242,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
-                  0 c2 (type: char(10))
+                  0 c2 (type: char(20))
                   1 c2 (type: char(20))
 
   Stage: Stage-2
@@ -254,7 +258,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 c2 (type: char(10))
+                  0 c2 (type: char(20))
                   1 c2 (type: char(20))
                 outputColumnNames: _col0, _col1, _col5, _col6
                 Statistics: Num rows: 2 Data size: 215 Basic stats: COMPLETE Column stats: NONE
@@ -289,20 +293,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_join1_vc1_orc
 PREHOOK: Input: default@char_join1_vc2_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_join1_vc1_orc
 POSTHOOK: Input: default@char_join1_vc2_orc
 #### A masked pattern was here ####
-1	abc       	2	abc                 
 1	abc       	1	abc                 
-2	abc       	2	abc                 
+1	abc       	2	abc                 
 2	abc       	1	abc                 
+2	abc       	2	abc                 
 3	 abc      	3	 abc                
 PREHOOK: query: -- Join char with string
 explain select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
@@ -382,12 +390,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_join1_str_orc
 PREHOOK: Input: default@char_join1_vc1_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_join1_str_orc
 POSTHOOK: Input: default@char_join1_vc1_orc

@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -73,10 +72,11 @@ public class Worker extends CompactorThread {
 
   @Override
   public void run() {
-    // Make sure nothing escapes this run method and kills the metastore at large,
-    // so wrap it in a big catch Throwable statement.
-    try {
-      do {
+    do {
+      boolean launchedJob = false;
+      // Make sure nothing escapes this run method and kills the metastore at large,
+      // so wrap it in a big catch Throwable statement.
+      try {
         CompactionInfo ci = txnHandler.findNextToCompact(name);
 
         if (ci == null && !stop.get()) {
@@ -93,6 +93,12 @@ public class Worker extends CompactorThread {
         Table t1 = null;
         try {
           t1 = resolveTable(ci);
+          if (t1 == null) {
+            LOG.info("Unable to find table " + ci.getFullTableName() +
+                ", assuming it was dropped and moving on.");
+            txnHandler.markCleaned(ci);
+            continue;
+          }
         } catch (MetaException e) {
           txnHandler.markCleaned(ci);
           continue;
@@ -105,6 +111,12 @@ public class Worker extends CompactorThread {
         Partition p = null;
         try {
           p = resolvePartition(ci);
+          if (p == null && ci.partName != null) {
+            LOG.info("Unable to find partition " + ci.getFullPartitionName() +
+                ", assuming it was dropped and moving on.");
+            txnHandler.markCleaned(ci);
+            continue;
+          }
         } catch (Exception e) {
           txnHandler.markCleaned(ci);
           continue;
@@ -124,7 +136,7 @@ public class Worker extends CompactorThread {
         final ValidTxnList txns =
             CompactionTxnHandler.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
         LOG.debug("ValidCompactTxnList: " + txns.writeToString());
-        final StringBuffer jobName = new StringBuffer(name);
+        final StringBuilder jobName = new StringBuilder(name);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());
 
@@ -143,6 +155,7 @@ public class Worker extends CompactorThread {
         final StatsUpdater su = StatsUpdater.init(ci, txnHandler.findColumnsWithStats(ci), conf,
           runJobAsSelf(runAs) ? runAs : t.getOwner());
         final CompactorMR mr = new CompactorMR();
+        launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
             mr.run(conf, jobName.toString(), t, sd, txns, isMajor, su);
@@ -163,11 +176,21 @@ public class Worker extends CompactorThread {
               ".  Marking clean to avoid repeated failures, " + StringUtils.stringifyException(e));
           txnHandler.markCleaned(ci);
         }
-      } while (!stop.get());
-    } catch (Throwable t) {
-      LOG.error("Caught an exception in the main loop of compactor worker " + name +
-          ", exiting " + StringUtils.stringifyException(t));
-    }
+      } catch (Throwable t) {
+        LOG.error("Caught an exception in the main loop of compactor worker " + name + ", " +
+            StringUtils.stringifyException(t));
+      }
+
+      // If we didn't try to launch a job it either means there was no work to do or we got
+      // here as the result of a communication failure with the DB.  Either way we want to wait
+      // a bit before we restart the loop.
+      if (!launchedJob && !stop.get()) {
+        try {
+          Thread.sleep(SLEEP_TIME);
+        } catch (InterruptedException e) {
+        }
+      }
+    } while (!stop.get());
   }
 
   @Override

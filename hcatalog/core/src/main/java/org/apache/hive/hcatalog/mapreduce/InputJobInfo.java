@@ -182,5 +182,10 @@ public class InputJobInfo implements Serializable {
     ObjectInputStream partInfoReader =
       new ObjectInputStream(new InflaterInputStream(ois));
     partitions = (List<PartInfo>)partInfoReader.readObject();
+    for (PartInfo partInfo : partitions) {
+      if (partInfo.getTableInfo() == null) {
+        partInfo.setTableInfo(this.tableInfo);
+      }
+    }
   }
 }

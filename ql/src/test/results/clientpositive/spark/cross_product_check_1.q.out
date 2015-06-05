@@ -1,10 +1,14 @@
-PREHOOK: query: create table A as
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table A as
 select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@A
-POSTHOOK: query: create table A as
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table A as
 select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -185,12 +189,12 @@ STAGE PLANS:
 Warning: Shuffle Join JOIN[16][tables = [a, od1]] in Work 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from A join 
          (select d1.key 
-          from B d1 join B d2 on d1.key = d2.key 
+          from B d1 join B d2 on d1.key = d2.key
           where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join 
          (select d1.key 
-          from B d1 join B d2 on d1.key = d2.key 
+          from B d1 join B d2 on d1.key = d2.key
           where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -302,9 +306,9 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[4][tables = [d1, d2]] in Work 'Reducer 2' is a cross product
 Warning: Shuffle Join JOIN[14][tables = [a, od1]] in Work 'Reducer 4' is a cross product
-PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
+PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1  group by d1.key) od1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
+POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1  group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -406,11 +410,11 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[21][tables = [ss, od1]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from 
-(select A.key from A group by key) ss join 
+(select A.key from A  group by key) ss join
 (select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from 
-(select A.key from A group by key) ss join 
+(select A.key from A  group by key) ss join
 (select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -51,6 +52,10 @@ import org.slf4j.LoggerFactory;
 /**
  * SerDe class for serializing to and from HCatRecord
  */
+
+@SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
+                          serdeConstants.LIST_COLUMN_TYPES})
+
 public class HCatRecordSerDe implements SerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatRecordSerDe.class);
@@ -124,7 +129,7 @@ public class HCatRecordSerDe implements SerDe {
       throw new SerDeException(getClass().getName() + ": expects HCatRecord!");
     }
 
-    return (HCatRecord) data;
+    return data;
   }
 
   /**
@@ -302,7 +307,7 @@ public class HCatRecordSerDe implements SerDe {
    */
   @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
-    return (ObjectInspector) cachedObjectInspector;
+    return cachedObjectInspector;
   }
 
   @Override

@@ -18,7 +18,7 @@
  */
 package org.apache.hive.hcatalog.messaging;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * HCat message sent when a table is Altered.
@@ -31,12 +31,12 @@ public abstract class AlterPartitionMessage extends HCatEventMessage {
 
   public abstract String getTable();
 
-  public abstract List<String> getValues();
+  public abstract Map<String,String> getKeyValues();
 
   @Override
   public HCatEventMessage checkValid() {
     if (getTable() == null) throw new IllegalStateException("Table name unset.");
-    if (getValues() == null) throw new IllegalStateException("Partition values unset");
+    if (getKeyValues() == null) throw new IllegalStateException("Partition values unset");
     return super.checkValid();
   }
 }

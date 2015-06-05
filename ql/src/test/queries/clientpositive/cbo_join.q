@@ -4,6 +4,7 @@ set hive.exec.check.crossproducts=false;
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
 
+-- SORT_QUERY_RESULTS
 -- 4. Test Select + Join + TS
 select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join             cbo_t2 on cbo_t1.key=cbo_t2.key;
 select cbo_t1.key from cbo_t1 join cbo_t3;

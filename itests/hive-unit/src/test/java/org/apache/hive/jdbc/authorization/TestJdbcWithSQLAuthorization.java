@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -87,6 +88,23 @@ public class TestJdbcWithSQLAuthorization {
       Connection hs2Conn = getConnection("user1");
       Statement stmt = hs2Conn.createStatement();
       stmt.execute("drop table " + tableName1);
+    }
+
+    {
+      // try using jdbc metadata api to get column list as user2 - should fail
+      Connection hs2Conn = getConnection("user2");
+      try {
+        hs2Conn.getMetaData().getColumns(null, "default", tableName2, null);
+        fail("Exception due to authorization failure is expected");
+      } catch (SQLException e) {
+        String msg = e.getMessage();
+        // check parts of the error, not the whole string so as not to tightly
+        // couple the error message with test
+        System.err.println("Got SQLException with message " + msg);
+        assertTrue("Checking permission denied error", msg.contains("user2"));
+        assertTrue("Checking permission denied error", msg.contains(tableName2));
+        assertTrue("Checking permission denied error", msg.contains("SELECT"));
+      }
     }
 
     {
@@ -174,5 +192,30 @@ public class TestJdbcWithSQLAuthorization {
     }
     fail("Message [" + message + "] does not contain substring [" + expectedSubString + "]");
   }
+
+  @Test
+  public void testConfigWhiteList() throws Exception {
+
+    // create tables as user1
+    Connection hs2Conn = getConnection("user1");
+
+    Statement stmt = hs2Conn.createStatement();
+    try {
+      stmt.execute("set hive.metastore.uris=x");
+      fail("exception expected");
+    } catch (SQLException e) {
+      String msg = "Cannot modify hive.metastore.uris at runtime. "
+          + "It is not in list of params that are allowed to be modified at runtime";
+      assertTrue(e.getMessage().contains(msg));
+    }
+
+    stmt.execute("set hive.exec.reducers.bytes.per.reducer=10000");
+    //no exception should be thrown
+
+    stmt.close();
+    hs2Conn.close();
+  }
+
+
 
 }

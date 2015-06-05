@@ -28,6 +28,6 @@
 
 REPOSITORY='hive-git'
 REVIEWBOARD_URL='https://reviews.apache.org'
-TRACKING_BRANCH='origin/trunk'
+TRACKING_BRANCH='origin/master'
 TARGET_GROUPS='hive'
 GUESS_FIELDS='true'

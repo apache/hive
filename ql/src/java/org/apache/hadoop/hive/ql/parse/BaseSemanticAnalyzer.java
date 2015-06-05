@@ -37,11 +37,13 @@ import java.util.Set;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -49,7 +51,6 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -63,6 +64,7 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -73,6 +75,7 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -304,16 +307,28 @@ public abstract class BaseSemanticAnalyzer {
     return getUnescapedName(tableOrColumnNode, null);
   }
 
+  public static Map.Entry<String,String> getDbTableNamePair(ASTNode tableNameNode) {
+    assert(tableNameNode.getToken().getType() == HiveParser.TOK_TABNAME);
+    if (tableNameNode.getChildCount() == 2) {
+      String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+      String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
+      return Pair.of(dbName, tableName);
+    } else {
+      String tableName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+      return Pair.of(null,tableName);
+    }
+  }
+
   public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) {
     int tokenType = tableOrColumnNode.getToken().getType();
     if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
-      if (tableOrColumnNode.getChildCount() == 2) {
-        String dbName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
-        String tableName = unescapeIdentifier(tableOrColumnNode.getChild(1).getText());
+      Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
+      String dbName = dbTablePair.getKey();
+      String tableName = dbTablePair.getValue();
+      if (dbName != null){
         return dbName + "." + tableName;
       }
-      String tableName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
       if (currentDatabase != null) {
         return currentDatabase + "." + tableName;
       }
@@ -973,17 +988,6 @@ public abstract class BaseSemanticAnalyzer {
     this.updateColumnAccessInfo = updateColumnAccessInfo;
   }
 
-  protected LinkedHashMap<String, String> extractPartitionSpecs(Tree partspec)
-      throws SemanticException {
-    LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
-    for (int i = 0; i < partspec.getChildCount(); ++i) {
-      CommonTree partspec_val = (CommonTree) partspec.getChild(i);
-      String val = stripQuotes(partspec_val.getChild(1).getText());
-      partSpec.put(partspec_val.getChild(0).getText().toLowerCase(), val);
-    }
-    return partSpec;
-  }
-
   /**
    * Checks if given specification is proper specification for prefix of
    * partition cols, for table partitioned by ds, hr, min valid ones are
@@ -1208,7 +1212,7 @@ public abstract class BaseSemanticAnalyzer {
     return storedAsDirs;
   }
 
-  private static boolean getPartExprNodeDesc(ASTNode astNode,
+  private static boolean getPartExprNodeDesc(ASTNode astNode, HiveConf conf,
       Map<ASTNode, ExprNodeDesc> astExprNodeMap) throws SemanticException {
 
     if (astNode == null) {
@@ -1218,19 +1222,22 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     boolean result = true;
     for (Node childNode : astNode.getChildren()) {
       ASTNode childASTNode = (ASTNode)childNode;
 
       if (childASTNode.getType() != HiveParser.TOK_PARTVAL) {
-        result = getPartExprNodeDesc(childASTNode, astExprNodeMap) && result;
+        result = getPartExprNodeDesc(childASTNode, conf, astExprNodeMap) && result;
       } else {
         boolean isDynamicPart = childASTNode.getChildren().size() <= 1;
         result = !isDynamicPart && result;
         if (!isDynamicPart) {
           ASTNode partVal = (ASTNode)childASTNode.getChildren().get(1);
-          astExprNodeMap.put((ASTNode)childASTNode.getChildren().get(0),
-            TypeCheckProcFactory.genExprNode(partVal, typeCheckCtx).get(partVal));
+          if (!defaultPartitionName.equalsIgnoreCase(unescapeSQLString(partVal.getText()))) {
+            astExprNodeMap.put((ASTNode)childASTNode.getChildren().get(0),
+                TypeCheckProcFactory.genExprNode(partVal, typeCheckCtx).get(partVal));
+          }
         }
       }
     }
@@ -1240,13 +1247,17 @@ public abstract class BaseSemanticAnalyzer {
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
     tbl.validatePartColumnNames(partSpec, shouldBeFull);
+    validatePartColumnType(tbl, partSpec, astNode, conf);
+  }
 
+  public static void validatePartColumnType(Table tbl, Map<String, String> partSpec,
+      ASTNode astNode, HiveConf conf) throws SemanticException {
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TYPE_CHECK_ON_INSERT)) {
       return;
     }
 
     Map<ASTNode, ExprNodeDesc> astExprNodeMap = new HashMap<ASTNode, ExprNodeDesc>();
-    if (!getPartExprNodeDesc(astNode, astExprNodeMap)) {
+    if (!getPartExprNodeDesc(astNode, conf, astExprNodeMap)) {
       STATIC_LOG.warn("Dynamic partitioning is used; only validating "
           + astExprNodeMap.size() + " columns");
     }
@@ -1266,29 +1277,38 @@ public abstract class BaseSemanticAnalyzer {
         astKeyName = stripIdentifierQuotes(astKeyName);
       }
       String colType = partCols.get(astKeyName);
-      ObjectInspector inputOI = astExprNodePair.getValue().getWritableObjectInspector();
+      ObjectInspector inputOI = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo
+          (astExprNodePair.getValue().getTypeInfo());
 
       TypeInfo expectedType =
           TypeInfoUtils.getTypeInfoFromTypeString(colType);
       ObjectInspector outputOI =
-          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(expectedType);
-      Object value = null;
-      String colSpec = partSpec.get(astKeyName);
-      try {
-        value =
-            ExprNodeEvaluatorFactory.get(astExprNodePair.getValue()).
-            evaluate(colSpec);
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
-      Object convertedValue =
-        ObjectInspectorConverters.getConverter(inputOI, outputOI).convert(value);
-      if (convertedValue == null) {
-        throw new SemanticException(ErrorMsg.PARTITION_SPEC_TYPE_MISMATCH, astKeyName,
-            inputOI.getTypeName(), outputOI.getTypeName());
+          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(expectedType);
+      //  Since partVal is a constant, it is safe to cast ExprNodeDesc to ExprNodeConstantDesc.
+      //  Its value should be in normalized format (e.g. no leading zero in integer, date is in
+      //  format of YYYY-MM-DD etc)
+      Object value = ((ExprNodeConstantDesc)astExprNodePair.getValue()).getValue();
+      Object convertedValue = value;
+      if (!inputOI.getTypeName().equals(outputOI.getTypeName())) {
+        convertedValue = ObjectInspectorConverters.getConverter(inputOI, outputOI).convert(value);
+        if (convertedValue == null) {
+          throw new SemanticException(ErrorMsg.PARTITION_SPEC_TYPE_MISMATCH, astKeyName,
+              inputOI.getTypeName(), outputOI.getTypeName());
+        }
+
+        if (!convertedValue.toString().equals(value.toString())) {
+          //  value might have been changed because of the normalization in conversion
+          STATIC_LOG.warn("Partition " + astKeyName + " expects type " + outputOI.getTypeName()
+          + " but input value is in type " + inputOI.getTypeName() + ". Convert "
+          + value.toString() + " to " + convertedValue.toString());
+        }
       }
 
-      normalizeColSpec(partSpec, astKeyName, colType, colSpec, convertedValue);
+      if (!convertedValue.toString().equals(partSpec.get(astKeyName))) {
+        STATIC_LOG.warn("Partition Spec " + astKeyName + "=" + partSpec.get(astKeyName)
+            + " has been changed to " + astKeyName + "=" + convertedValue.toString());
+      }
+      partSpec.put(astKeyName, convertedValue.toString());
     }
   }
 

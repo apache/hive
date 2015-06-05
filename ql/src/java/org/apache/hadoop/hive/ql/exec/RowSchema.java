@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -100,6 +101,14 @@ public class RowSchema implements Serializable {
       tableNames.add(var.getTabAlias());
     }
     return tableNames;
+  }
+
+  public List<String> getColumnNames() {
+    List<String> columnNames = new ArrayList<String>();
+    for (ColumnInfo var : this.signature) {
+      columnNames.add(var.getInternalName());
+    }
+    return columnNames;
   }
 
   @Override

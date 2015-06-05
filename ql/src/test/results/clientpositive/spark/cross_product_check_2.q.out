@@ -1,24 +1,28 @@
-PREHOOK: query: create table A as
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table A as
 select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@A
-POSTHOOK: query: create table A as
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table A as
 select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@A
 PREHOOK: query: create table B as
-select * from src
+select * from src order by key
 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@B
 POSTHOOK: query: create table B as
-select * from src
+select * from src order by key
 limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -43,7 +47,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -110,10 +114,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: string)
@@ -129,10 +133,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -142,7 +146,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
                         1 Map 2
-                      Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 
@@ -215,10 +219,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: string)
@@ -236,10 +240,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -249,17 +253,17 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -270,7 +274,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
                   keys:
                     0 
@@ -336,7 +340,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -354,7 +358,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -364,17 +368,17 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     input vertices:
                       1 Map 3
-                    Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -385,7 +389,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 47 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
                   keys:
                     0 
@@ -454,10 +458,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: string)
@@ -475,10 +479,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -488,17 +492,17 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 5
-                      Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
         Reducer 4 
@@ -509,7 +513,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
                   keys:
                     0 

@@ -48,7 +48,7 @@ Stripes:
       Entry 2: count: 1000 hasNull: false min: RG3 max: RG3 sum: 3000 positions: 0,2,125,0,0,66,488
       Entry 3: count: 0 hasNull: true positions: 0,4,125,0,0,136,488
       Entry 4: count: 0 hasNull: true positions: 0,6,125,0,0,136,488
-  Stripe: offset: 436 data: 156 rows: 5000 tail: 67 index: 119
+  Stripe: offset: 436 data: 156 rows: 5000 tail: 72 index: 119
     Stream: column 0 section ROW_INDEX start: 436 length 17
     Stream: column 1 section ROW_INDEX start: 453 length 63
     Stream: column 2 section ROW_INDEX start: 516 length 39
@@ -56,6 +56,8 @@ Stripes:
     Stream: column 1 section LENGTH start: 668 length 32
     Stream: column 2 section PRESENT start: 700 length 11
     Stream: column 2 section DATA start: 711 length 0
+    Stream: column 2 section LENGTH start: 711 length 0
+    Stream: column 2 section DICTIONARY_DATA start: 711 length 0
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[0]
@@ -65,15 +67,15 @@ Stripes:
       Entry 2: count: 0 hasNull: true positions: 0,2,120,0,0,0,0
       Entry 3: count: 0 hasNull: true positions: 0,4,115,0,0,0,0
       Entry 4: count: 0 hasNull: true positions: 0,6,110,0,0,0,0
-  Stripe: offset: 778 data: 186 rows: 5000 tail: 72 index: 148
-    Stream: column 0 section ROW_INDEX start: 778 length 17
-    Stream: column 1 section ROW_INDEX start: 795 length 63
-    Stream: column 2 section ROW_INDEX start: 858 length 68
-    Stream: column 1 section DATA start: 926 length 113
-    Stream: column 1 section LENGTH start: 1039 length 32
-    Stream: column 2 section DATA start: 1071 length 24
-    Stream: column 2 section LENGTH start: 1095 length 6
-    Stream: column 2 section DICTIONARY_DATA start: 1101 length 11
+  Stripe: offset: 783 data: 186 rows: 5000 tail: 72 index: 148
+    Stream: column 0 section ROW_INDEX start: 783 length 17
+    Stream: column 1 section ROW_INDEX start: 800 length 63
+    Stream: column 2 section ROW_INDEX start: 863 length 68
+    Stream: column 1 section DATA start: 931 length 113
+    Stream: column 1 section LENGTH start: 1044 length 32
+    Stream: column 2 section DATA start: 1076 length 24
+    Stream: column 2 section LENGTH start: 1100 length 6
+    Stream: column 2 section DICTIONARY_DATA start: 1106 length 11
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[1]
@@ -83,14 +85,16 @@ Stripes:
       Entry 2: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,198,464
       Entry 3: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,330,440
       Entry 4: count: 1000 hasNull: false min: STRIPE-3 max: STRIPE-3 sum: 8000 positions: 0,462,416
-  Stripe: offset: 1184 data: 156 rows: 5000 tail: 67 index: 119
-    Stream: column 0 section ROW_INDEX start: 1184 length 17
-    Stream: column 1 section ROW_INDEX start: 1201 length 63
-    Stream: column 2 section ROW_INDEX start: 1264 length 39
-    Stream: column 1 section DATA start: 1303 length 113
-    Stream: column 1 section LENGTH start: 1416 length 32
-    Stream: column 2 section PRESENT start: 1448 length 11
-    Stream: column 2 section DATA start: 1459 length 0
+  Stripe: offset: 1189 data: 156 rows: 5000 tail: 72 index: 119
+    Stream: column 0 section ROW_INDEX start: 1189 length 17
+    Stream: column 1 section ROW_INDEX start: 1206 length 63
+    Stream: column 2 section ROW_INDEX start: 1269 length 39
+    Stream: column 1 section DATA start: 1308 length 113
+    Stream: column 1 section LENGTH start: 1421 length 32
+    Stream: column 2 section PRESENT start: 1453 length 11
+    Stream: column 2 section DATA start: 1464 length 0
+    Stream: column 2 section LENGTH start: 1464 length 0
+    Stream: column 2 section DICTIONARY_DATA start: 1464 length 0
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[0]
@@ -101,6 +105,6 @@ Stripes:
       Entry 3: count: 0 hasNull: true positions: 0,4,115,0,0,0,0
       Entry 4: count: 0 hasNull: true positions: 0,6,110,0,0,0,0
 
-File length: 1775 bytes
+File length: 1784 bytes
 Padding length: 0 bytes
 Padding ratio: 0%

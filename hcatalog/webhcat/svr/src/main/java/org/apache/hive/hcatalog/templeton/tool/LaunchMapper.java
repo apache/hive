@@ -107,12 +107,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       }
       jdbcJars.setLength(jdbcJars.length() - 1);
       //this makes the jars available to Sqoop client
-      if(TempletonUtils.isset(System.getenv("HADOOP_CLASSPATH"))) {
-        env.put("HADOOP_CLASSPATH", System.getenv("HADOOP_CLASSPATH") + File.pathSeparator + jdbcJars.toString());
-      }
-      else {
-        env.put("HADOOP_CLASSPATH", jdbcJars.toString());
-      }
+      prependPathToVariable(HADOOP_CLASSPATH, env, jdbcJars.toString());
     }
   }
   private static void handleHadoopClasspathExtras(Configuration conf, Map<String, String> env)
@@ -128,17 +123,31 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       Path p = new Path(f);
       FileStatus fileStatus = fs.getFileStatus(p);
       paths.append(f);
-      if(fileStatus.isDirectory()) {
+      if(fileStatus.isDir()) {
         paths.append(File.separator).append("*");
       }
       paths.append(File.pathSeparator);
     }
     paths.setLength(paths.length() - 1);
-    if(TempletonUtils.isset(System.getenv("HADOOP_CLASSPATH"))) {
-      env.put("HADOOP_CLASSPATH", System.getenv("HADOOP_CLASSPATH") + File.pathSeparator + paths);
+    prependPathToVariable(HADOOP_CLASSPATH, env, paths.toString());
+  }
+  /**
+   * Ensures that {@code paths} are prepended to {@code pathVarName} and made available to forked child
+   * process.
+   * @param paths properly separated list of paths
+   */
+  private static void prependPathToVariable(String pathVarName, Map<String, String> env, String paths) {
+    if(!TempletonUtils.isset(pathVarName) || !TempletonUtils.isset(paths) || env == null) {
+      return;
+    }
+    if(TempletonUtils.isset(env.get(pathVarName))) {
+      env.put(pathVarName, paths + File.pathSeparator + env.get(pathVarName));
+    }
+    else if(TempletonUtils.isset(System.getenv(pathVarName))) {
+      env.put(pathVarName, paths + File.pathSeparator + System.getenv(pathVarName));
     }
     else {
-      env.put("HADOOP_CLASSPATH", paths.toString());
+      env.put(pathVarName, paths);
     }
   }
   protected Process startJob(Context context, String user, String overrideClasspath)

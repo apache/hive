@@ -78,6 +78,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   List<List<String>> skewedColValues;
   boolean isStoredAsSubDirectories = false;
   boolean isTemporary = false;
+  private boolean replaceMode = false;
 
   public CreateTableDesc() {
   }
@@ -551,4 +552,17 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.isTemporary = isTemporary;
   }
 
+  /**
+   * @param replaceMode Determine if this CreateTable should behave like a replace-into alter instead
+   */
+  public void setReplaceMode(boolean replaceMode) {
+    this.replaceMode = replaceMode;
+  }
+
+  /**
+   * @return true if this CreateTable should behave like a replace-into alter instead
+   */
+  public boolean getReplaceMode() {
+    return replaceMode;
+  }
 }

@@ -651,11 +651,22 @@ public class VectorDeserializeRow {
     }
   }
 
+  public void init(List<Integer> outputColumns) throws HiveException {
+
+    readersByValue = new Reader[primitiveTypeInfos.length];
+    readersByReference = new Reader[primitiveTypeInfos.length];
+
+    for (int i = 0; i < primitiveTypeInfos.length; i++) {
+      int outputColumn = outputColumns.get(i);
+      addReader(i, outputColumn);
+    }
+  }
+
   public void init(int startColumn) throws HiveException {
 
     readersByValue = new Reader[primitiveTypeInfos.length];
     readersByReference = new Reader[primitiveTypeInfos.length];
- 
+
     for (int i = 0; i < primitiveTypeInfos.length; i++) {
       int outputColumn = startColumn + i;
       addReader(i, outputColumn);

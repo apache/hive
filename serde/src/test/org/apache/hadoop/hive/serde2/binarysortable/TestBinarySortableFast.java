@@ -196,7 +196,18 @@ public class TestBinarySortableFast extends TestCase {
       // Need a map because we sort.
       Map<Object, PrimitiveTypeInfo[]> primitiveTypeInfoMap = new HashMap<Object, PrimitiveTypeInfo[]>();
 
-      for (int i = 0; i < num; i++) {
+      int i;
+      // First try non-random values
+      for (i = 0; i < MyTestClass.nrDecimal.length; i++) {
+        MyTestPrimitiveClass t = new MyTestPrimitiveClass();
+        ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
+        t.nonRandomFill(i, extraTypeInfo);
+        myTestPrimitiveClasses[i] = t;
+        PrimitiveTypeInfo[] primitiveTypeInfos = MyTestPrimitiveClass.getPrimitiveTypeInfos(extraTypeInfo);
+        primitiveTypeInfoMap.put(t, primitiveTypeInfos);
+      }
+
+      for ( ; i < num; i++) {
         int randField = r.nextInt(MyTestPrimitiveClass.primitiveCount);
         MyTestPrimitiveClass t = new MyTestPrimitiveClass();
         int field = 0;

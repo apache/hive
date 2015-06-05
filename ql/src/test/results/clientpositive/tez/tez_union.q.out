@@ -24,11 +24,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -38,8 +41,11 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 3
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         File Output Operator
                           compressed: false
+                          Statistics: Num rows: 775 Data size: 8233 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -65,11 +71,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      Statistics: Num rows: 775 Data size: 8233 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -165,54 +174,70 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Map 8 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Merge Join Operator
@@ -313,11 +338,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -327,11 +355,15 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 4
+                        Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Select Operator
                           expressions: _col1 (type: string), _col0 (type: string)
                           outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -340,11 +372,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -354,11 +389,15 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 4
+                        Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Select Operator
                           expressions: _col1 (type: string), _col0 (type: string)
                           outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
+                            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -480,11 +519,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -494,6 +536,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -506,12 +550,16 @@ STAGE PLANS:
                           input vertices:
                             1 Map 9
                             2 Map 10
+                          Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
                             outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col2 (type: string)
                               sort order: +
+                              Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col0 (type: string), _col1 (type: string)
         Map 10 
             Map Operator Tree:
@@ -561,11 +609,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -575,6 +626,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 6
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -587,12 +640,16 @@ STAGE PLANS:
                           input vertices:
                             1 Map 9
                             2 Map 10
+                          Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
                             outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col2 (type: string)
                               sort order: +
+                              Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col0 (type: string), _col1 (type: string)
         Map 6 
             Map Operator Tree:
@@ -615,11 +672,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -629,6 +689,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 8
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -641,12 +703,16 @@ STAGE PLANS:
                           input vertices:
                             1 Map 9
                             2 Map 10
+                          Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
+                          HybridGraceHashJoin: true
                           Select Operator
                             expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
                             outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col2 (type: string)
                               sort order: +
+                              Statistics: Num rows: 1815 Data size: 19278 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col0 (type: string), _col1 (type: string)
         Map 8 
             Map Operator Tree:
@@ -878,11 +944,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -892,8 +961,11 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 3
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         File Output Operator
                           compressed: false
+                          Statistics: Num rows: 550 Data size: 5842 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -919,11 +991,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -933,8 +1008,11 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
+                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         File Output Operator
                           compressed: false
+                          Statistics: Num rows: 550 Data size: 5842 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1051,9 +1129,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -1063,8 +1143,11 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Map 4
+                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1073,9 +1156,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -1085,8 +1170,11 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Map 4
+                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       File Output Operator
                         compressed: false
+                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1148,24 +1236,30 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1185,6 +1279,7 @@ STAGE PLANS:
                       input vertices:
                         0 Union 2
                       Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
@@ -1253,3 +1348,68 @@ POSTHOOK: query: drop table ut
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ut
 POSTHOOK: Output: default@ut
+PREHOOK: query: create table TABLE1(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TABLE1
+POSTHOOK: query: create table TABLE1(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TABLE1
+PREHOOK: query: create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TABLE3
+POSTHOOK: query: CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TABLE3
+PREHOOK: query: explain formatted select count(*) from TABLE3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain formatted select count(*) from TABLE3
+POSTHOOK: type: QUERY
+#### A masked pattern was here ####
+PREHOOK: query: drop table table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table2
+PREHOOK: Output: default@table2
+POSTHOOK: query: drop table table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: default@table2
+PREHOOK: query: create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1 UNION ALL select EMP_NAME,EMP_ID from TABLE2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TABLE3
+POSTHOOK: query: CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1 UNION ALL select EMP_NAME,EMP_ID from TABLE2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TABLE3
+POSTHOOK: Output: default@table3
+PREHOOK: query: explain formatted select count(*) from TABLE3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain formatted select count(*) from TABLE3
+POSTHOOK: type: QUERY
+#### A masked pattern was here ####

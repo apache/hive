@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Heartbeater;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -264,7 +265,8 @@ public class TezJobMonitor {
     Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
     Heartbeater heartbeater = new Heartbeater(txnMgr, conf);
     long startTime = 0;
-    boolean isProfileEnabled = conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY);
+    boolean isProfileEnabled = conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
+      Utilities.isPerfOrAboveLogging(conf);
     boolean inPlaceUpdates = conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_INPLACE_PROGRESS);
     boolean wideTerminal = false;
     boolean isTerminal = inPlaceUpdates == true ? isUnixTerminal() : false;
@@ -494,7 +496,7 @@ public class TezJobMonitor {
       if (progress != null) {
         final int totalTasks = progress.getTotalTaskCount();
         final int failedTaskAttempts = progress.getFailedTaskAttemptCount();
-        final int killedTasks = progress.getKilledTaskCount();
+        final int killedTaskAttempts = progress.getKilledTaskAttemptCount();
         final double duration =
             perfLogger.getDuration(PerfLogger.TEZ_RUN_VERTEX + vertexName) / 1000.0;
         VertexStatus vertexStatus = null;
@@ -581,7 +583,7 @@ public class TezJobMonitor {
             vertexName,
             totalTasks,
             failedTaskAttempts,
-            killedTasks,
+            killedTaskAttempts,
             secondsFormat.format((duration)),
             commaFormat.format(cpuTimeMillis),
             commaFormat.format(gcTimeMillis),
@@ -594,7 +596,7 @@ public class TezJobMonitor {
 
   private void printStatusInPlace(Map<String, Progress> progressMap, long startTime,
       boolean vextexStatusFromAM, DAGClient dagClient) {
-    StringBuffer reportBuffer = new StringBuffer();
+    StringBuilder reportBuffer = new StringBuilder();
     int sumComplete = 0;
     int sumTotal = 0;
 
@@ -621,7 +623,7 @@ public class TezJobMonitor {
       final int failed = progress.getFailedTaskAttemptCount();
       final int pending = progress.getTotalTaskCount() - progress.getSucceededTaskCount() -
           progress.getRunningTaskCount();
-      final int killed = progress.getKilledTaskCount();
+      final int killed = progress.getKilledTaskAttemptCount();
 
       // To get vertex status we can use DAGClient.getVertexStatus(), but it will be expensive to
       // get status from AM for every refresh of the UI. Lets infer the state from task counts.
@@ -779,7 +781,7 @@ public class TezJobMonitor {
   }
 
   private String getReport(Map<String, Progress> progressMap) {
-    StringBuffer reportBuffer = new StringBuffer();
+    StringBuilder reportBuffer = new StringBuilder();
 
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s: keys) {

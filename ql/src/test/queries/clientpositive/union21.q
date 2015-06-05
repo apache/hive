@@ -1,4 +1,4 @@
--- SORT_BEFORE_DIFF
+-- SORT_QUERY_RESULTS
 -- union of constants, udf outputs, and columns from text table and thrift table
 
 explain

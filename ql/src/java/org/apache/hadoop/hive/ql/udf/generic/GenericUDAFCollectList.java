@@ -42,10 +42,17 @@ public class GenericUDAFCollectList extends AbstractGenericUDAFResolver {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");
     }
-    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0,
-          "Only primitive type arguments are accepted but "
-          + parameters[0].getTypeName() + " was passed as parameter 1.");
+
+    switch (parameters[0].getCategory()) {
+      case PRIMITIVE:
+      case STRUCT:
+      case MAP:
+      case LIST:
+        break;
+      default:
+        throw new UDFArgumentTypeException(0,
+            "Only primitive, struct, list or map type arguments are accepted but "
+                + parameters[0].getTypeName() + " was passed as parameter 1.");
     }
     return new GenericUDAFMkCollectionEvaluator(BufferType.LIST);
   }

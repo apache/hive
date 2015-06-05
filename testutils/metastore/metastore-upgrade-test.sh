@@ -86,7 +86,10 @@ fi
 #
 
 log "Calling $SCRIPT_PREPARE ..."
-bash -e -x $SCRIPT_PREPARE || exit 1
+if ! bash -e -x $SCRIPT_PREPARE; then
+	log "Error: $SCRIPT_PREPARE failed. (see logs)"
+	exit 1
+fi
 log "Server prepared."
 
 #

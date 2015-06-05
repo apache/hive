@@ -674,8 +674,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case SHORT: {
         ShortObjectInspector spoi = (ShortObjectInspector) poi;
         short v = spoi.get(o);
-        writeByte(buffer, (byte) ((v >> 8) ^ 0x80), invert);
-        writeByte(buffer, (byte) v, invert);
+        serializeShort(buffer, v, invert);
         return;
       }
       case INT: {
@@ -692,38 +691,12 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
       case FLOAT: {
         FloatObjectInspector foi = (FloatObjectInspector) poi;
-        int v = Float.floatToIntBits(foi.get(o));
-        if ((v & (1 << 31)) != 0) {
-          // negative number, flip all bits
-          v = ~v;
-        } else {
-          // positive number, flip the first bit
-          v = v ^ (1 << 31);
-        }
-        writeByte(buffer, (byte) (v >> 24), invert);
-        writeByte(buffer, (byte) (v >> 16), invert);
-        writeByte(buffer, (byte) (v >> 8), invert);
-        writeByte(buffer, (byte) v, invert);
+        serializeFloat(buffer, foi.get(o), invert);
         return;
       }
       case DOUBLE: {
         DoubleObjectInspector doi = (DoubleObjectInspector) poi;
-        long v = Double.doubleToLongBits(doi.get(o));
-        if ((v & (1L << 63)) != 0) {
-          // negative number, flip all bits
-          v = ~v;
-        } else {
-          // positive number, flip the first bit
-          v = v ^ (1L << 63);
-        }
-        writeByte(buffer, (byte) (v >> 56), invert);
-        writeByte(buffer, (byte) (v >> 48), invert);
-        writeByte(buffer, (byte) (v >> 40), invert);
-        writeByte(buffer, (byte) (v >> 32), invert);
-        writeByte(buffer, (byte) (v >> 24), invert);
-        writeByte(buffer, (byte) (v >> 16), invert);
-        writeByte(buffer, (byte) (v >> 8), invert);
-        writeByte(buffer, (byte) v, invert);
+        serializeDouble(buffer, doi.get(o), invert);
         return;
       }
       case STRING: {
@@ -768,26 +741,19 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
         TimestampWritable t = toi.getPrimitiveWritableObject(o);
-        byte[] data = t.getBinarySortable();
-        for (int i = 0; i < data.length; i++) {
-          writeByte(buffer, data[i], invert);
-        }
+        serializeTimestampWritable(buffer, t, invert);
         return;
       }
       case INTERVAL_YEAR_MONTH: {
         HiveIntervalYearMonthObjectInspector ioi = (HiveIntervalYearMonthObjectInspector) poi;
         HiveIntervalYearMonth intervalYearMonth = ioi.getPrimitiveJavaObject(o);
-        int totalMonths = intervalYearMonth.getTotalMonths();
-        serializeInt(buffer, totalMonths, invert);
+        serializeHiveIntervalYearMonth(buffer, intervalYearMonth, invert);
         return;
       }
       case INTERVAL_DAY_TIME: {
         HiveIntervalDayTimeObjectInspector ioi = (HiveIntervalDayTimeObjectInspector) poi;
         HiveIntervalDayTime intervalDayTime = ioi.getPrimitiveJavaObject(o);
-        long totalSecs = intervalDayTime.getTotalSeconds();
-        int nanos = intervalDayTime.getNanos();
-        serializeLong(buffer, totalSecs, invert);
-        serializeInt(buffer, nanos, invert);
+        serializeHiveIntervalDayTime(buffer, intervalDayTime, invert);
         return;
       }
       case DECIMAL: {
@@ -805,29 +771,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
         HiveDecimalObjectInspector boi = (HiveDecimalObjectInspector) poi;
         HiveDecimal dec = boi.getPrimitiveJavaObject(o);
-
-        // get the sign of the big decimal
-        int sign = dec.compareTo(HiveDecimal.ZERO);
-
-        // we'll encode the absolute value (sign is separate)
-        dec = dec.abs();
-
-        // get the scale factor to turn big decimal into a decimal < 1
-        int factor = dec.precision() - dec.scale();
-        factor = sign == 1 ? factor : -factor;
-
-        // convert the absolute big decimal to string
-        dec.scaleByPowerOfTen(Math.abs(dec.scale()));
-        String digits = dec.unscaledValue().toString();
-
-        // finally write out the pieces (sign, scale, digits)
-        writeByte(buffer, (byte) ( sign + 1), invert);
-        writeByte(buffer, (byte) ((factor >> 24) ^ 0x80), invert);
-        writeByte(buffer, (byte) ( factor >> 16), invert);
-        writeByte(buffer, (byte) ( factor >> 8), invert);
-        writeByte(buffer, (byte)   factor, invert);
-        serializeBytes(buffer, digits.getBytes(decimalCharSet),
-            digits.length(), sign == -1 ? !invert : invert);
+        serializeHiveDecimal(buffer, dec, invert);
         return;
       }
 
@@ -918,6 +862,11 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte) 0, invert);
   }
 
+  public static void serializeShort(ByteStream.Output buffer, short v, boolean invert) {
+    writeByte(buffer, (byte) ((v >> 8) ^ 0x80), invert);
+    writeByte(buffer, (byte) v, invert);
+  }
+
   public static void serializeInt(ByteStream.Output buffer, int v, boolean invert) {
     writeByte(buffer, (byte) ((v >> 24) ^ 0x80), invert);
     writeByte(buffer, (byte) (v >> 16), invert);
@@ -934,6 +883,88 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte) (v >> 16), invert);
     writeByte(buffer, (byte) (v >> 8), invert);
     writeByte(buffer, (byte) v, invert);
+  }
+
+  public static void serializeFloat(ByteStream.Output buffer, float vf, boolean invert) {
+    int v = Float.floatToIntBits(vf);
+    if ((v & (1 << 31)) != 0) {
+      // negative number, flip all bits
+      v = ~v;
+    } else {
+      // positive number, flip the first bit
+      v = v ^ (1 << 31);
+    }
+    writeByte(buffer, (byte) (v >> 24), invert);
+    writeByte(buffer, (byte) (v >> 16), invert);
+    writeByte(buffer, (byte) (v >> 8), invert);
+    writeByte(buffer, (byte) v, invert);
+  }
+
+  public static void serializeDouble(ByteStream.Output buffer, double vd, boolean invert) {
+    long v = Double.doubleToLongBits(vd);
+    if ((v & (1L << 63)) != 0) {
+      // negative number, flip all bits
+      v = ~v;
+    } else {
+      // positive number, flip the first bit
+      v = v ^ (1L << 63);
+    }
+    writeByte(buffer, (byte) (v >> 56), invert);
+    writeByte(buffer, (byte) (v >> 48), invert);
+    writeByte(buffer, (byte) (v >> 40), invert);
+    writeByte(buffer, (byte) (v >> 32), invert);
+    writeByte(buffer, (byte) (v >> 24), invert);
+    writeByte(buffer, (byte) (v >> 16), invert);
+    writeByte(buffer, (byte) (v >> 8), invert);
+    writeByte(buffer, (byte) v, invert);
+  }
+
+  public static void serializeTimestampWritable(ByteStream.Output buffer, TimestampWritable t, boolean invert) {
+    byte[] data = t.getBinarySortable();
+    for (int i = 0; i < data.length; i++) {
+      writeByte(buffer, data[i], invert);
+    }
+  }
+
+  public static void serializeHiveIntervalYearMonth(ByteStream.Output buffer,
+      HiveIntervalYearMonth intervalYearMonth, boolean invert) {
+    int totalMonths = intervalYearMonth.getTotalMonths();
+    serializeInt(buffer, totalMonths, invert);
+  }
+
+  public static void serializeHiveIntervalDayTime(ByteStream.Output buffer,
+      HiveIntervalDayTime intervalDayTime, boolean invert) {
+    long totalSecs = intervalDayTime.getTotalSeconds();
+    int nanos = intervalDayTime.getNanos();
+    serializeLong(buffer, totalSecs, invert);
+    serializeInt(buffer, nanos, invert);
+  }
+
+  public static void serializeHiveDecimal(ByteStream.Output buffer, HiveDecimal dec, boolean invert) {
+    // get the sign of the big decimal
+    int sign = dec.compareTo(HiveDecimal.ZERO);
+
+    // we'll encode the absolute value (sign is separate)
+    dec = dec.abs();
+
+    // get the scale factor to turn big decimal into a decimal < 1
+    // This relies on the BigDecimal precision value, which as of HIVE-10270
+    // is now different from HiveDecimal.precision()
+    int factor = dec.bigDecimalValue().precision() - dec.bigDecimalValue().scale();
+    factor = sign == 1 ? factor : -factor;
+
+    // convert the absolute big decimal to string
+    dec.scaleByPowerOfTen(Math.abs(dec.scale()));
+    String digits = dec.unscaledValue().toString();
+
+    // finally write out the pieces (sign, scale, digits)
+    writeByte(buffer, (byte) ( sign + 1), invert);
+    writeByte(buffer, (byte) ((factor >> 24) ^ 0x80), invert);
+    writeByte(buffer, (byte) ( factor >> 16), invert);
+    writeByte(buffer, (byte) ( factor >> 8), invert);
+    writeByte(buffer, (byte)   factor, invert);
+    serializeBytes(buffer, digits.getBytes(decimalCharSet),
+        digits.length(), sign == -1 ? !invert : invert);
   }
 
   @Override

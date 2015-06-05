@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -51,11 +53,13 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
@@ -187,6 +191,23 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     }
   }
 
+  private void unpackDateStats(ObjectInspector oi, Object o, String fName,
+      ColumnStatisticsObj statsObj) {
+    if (fName.equals("countnulls")) {
+      long v = ((LongObjectInspector) oi).get(o);
+      statsObj.getStatsData().getDateStats().setNumNulls(v);
+    } else if (fName.equals("numdistinctvalues")) {
+      long v = ((LongObjectInspector) oi).get(o);
+      statsObj.getStatsData().getDateStats().setNumDVs(v);
+    } else if (fName.equals("max")) {
+      DateWritable v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
+      statsObj.getStatsData().getDateStats().setHighValue(new Date(v.getDays()));
+    } else if (fName.equals("min")) {
+      DateWritable v = ((DateObjectInspector) oi).getPrimitiveWritableObject(o);
+      statsObj.getStatsData().getDateStats().setLowValue(new Date(v.getDays()));
+    }
+  }
+
   private void unpackPrimitiveObject (ObjectInspector oi, Object o, String fieldName,
       ColumnStatisticsObj statsObj) {
     if (o == null) {
@@ -222,6 +243,10 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
         statsData.setDecimalStats(decimalStats);
         statsObj.setStatsData(statsData);
+      } else if (s.equalsIgnoreCase("date")) {
+        DateColumnStatsData dateStats = new DateColumnStatsData();
+        statsData.setDateStats(dateStats);
+        statsObj.setStatsData(statsData);
       }
     } else {
       // invoke the right unpack method depending on data type of the column
@@ -237,6 +262,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         unpackBinaryStats(oi, o, fieldName, statsObj);
       } else if (statsObj.getStatsData().isSetDecimalStats()) {
         unpackDecimalStats(oi, o, fieldName, statsObj);
+      } else if (statsObj.getStatsData().isSetDateStats()) {
+        unpackDateStats(oi, o, fieldName, statsObj);
       }
     }
   }

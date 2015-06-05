@@ -49,6 +49,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.util.Progressable;
 
 /**
@@ -388,4 +389,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       throws IOException, AccessControlException, Exception {
     DefaultFileAccess.checkFileAccess(fs, stat, action);
   }
+
+  @Override
+  abstract public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException;
 }

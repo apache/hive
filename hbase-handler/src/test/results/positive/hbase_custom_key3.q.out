@@ -70,14 +70,14 @@ STAGE PLANS:
         TableScan
           alias: hbase_ck_5
           filterExpr: ((key.col1 = '238') and (key.col2 = '1238')) (type: boolean)
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: ((key.col1 = '238') and (key.col2 = '1238')) (type: boolean)
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: struct<col1:string,col2:string,col3:string>), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
 PREHOOK: query: select * from hbase_ck_5 where key.col1 = '238' AND key.col2 = '1238'
@@ -107,14 +107,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: hbase_ck_5
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: ((key.col1 >= '165') and (key.col1 < '27')) (type: boolean)
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: struct<col1:string,col2:string,col3:string>), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
 PREHOOK: query: select * from hbase_ck_5 where key.col1 >= '165' AND key.col1 < '27'
@@ -145,14 +145,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: hbase_ck_5
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: ((key.col1 > '100') and (key.col2 >= '1238')) (type: boolean)
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: struct<col1:string,col2:string,col3:string>), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
 PREHOOK: query: select * from hbase_ck_5 where key.col1 > '100' AND key.col2 >= '1238'
@@ -181,14 +181,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: hbase_ck_5
-          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: ((key.col1 < '50') and (key.col2 >= '3238')) (type: boolean)
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: struct<col1:string,col2:string,col3:string>), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
 PREHOOK: query: select * from hbase_ck_5 where key.col1 < '50' AND key.col2 >= '3238'

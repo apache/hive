@@ -1,0 +1,303 @@
+PREHOOK: query: DROP TABLE over1k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE over1k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE hundredorc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE hundredorc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- data setup
+CREATE TABLE over1k(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
+POSTHOOK: query: -- data setup
+CREATE TABLE over1k(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over1k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over1k
+PREHOOK: query: CREATE TABLE hundredorc(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hundredorc
+POSTHOOK: query: CREATE TABLE hundredorc(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hundredorc
+PREHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@hundredorc
+POSTHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+POSTHOOK: Output: default@hundredorc
+POSTHOOK: Lineage: hundredorc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: hundredorc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: hundredorc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: hundredorc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: hundredorc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: hundredorc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: hundredorc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: hundredorc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: EXPLAIN 
+SELECT sum(hash(*))
+FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN 
+SELECT sum(hash(*))
+FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: bin is not null (type: boolean)
+                    Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 bin (type: binary)
+                        1 bin (type: binary)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 55 Data size: 16300 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
+                      Group By Operator
+                        aggregations: sum(hash(_col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col14,_col15,_col16,_col17,_col18,_col19,_col20,_col21,_col22,_col23,_col24))
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: bin is not null (type: boolean)
+                    Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: bin (type: binary)
+                      sort order: +
+                      Map-reduce partition columns: bin (type: binary)
+                      Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float), d (type: double), bo (type: boolean), s (type: string), ts (type: timestamp), dec (type: decimal(4,2))
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[13][bigTable=t1] in task 'Map 1' is a cross product
+PREHOOK: query: SELECT sum(hash(*))
+FROM hundredorc t1 JOIN hundredorc t2 ON t2.bin = t2.bin
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*))
+FROM hundredorc t1 JOIN hundredorc t2 ON t2.bin = t2.bin
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
+-107801098240
+PREHOOK: query: EXPLAIN 
+SELECT count(*), bin
+FROM hundredorc
+GROUP BY bin
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN 
+SELECT count(*), bin
+FROM hundredorc
+GROUP BY bin
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: hundredorc
+                  Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: bin (type: binary)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: _col0 (type: binary)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: binary)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: binary)
+                        Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: binary)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: bigint), _col0 (type: binary)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 50 Data size: 14819 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(*), bin
+FROM hundredorc
+GROUP BY bin
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*), bin
+FROM hundredorc
+GROUP BY bin
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
+5	american history
+5	biology
+2	chemistry
+2	debate
+4	education
+5	forestry
+4	geology
+5	history
+6	industrial engineering
+3	joggying
+5	kindergarten
+1	linguistics
+9	mathematics
+8	nap time
+1	opthamology
+2	philosophy
+5	quiet hour
+4	religion
+3	study skills
+7	topology
+1	undecided
+2	values clariffication
+3	wind surfing
+3	xylophone band
+2	yard duty
+3	zync studies

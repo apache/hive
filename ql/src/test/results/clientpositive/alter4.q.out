@@ -46,8 +46,10 @@ POSTHOOK: Input: default@set_bucketing_test
 POSTHOOK: Output: default@set_bucketing_test
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 cbo_t1
 cbo_t2
@@ -81,8 +83,10 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:alter4_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:alter4_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:alter4_db
 PREHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: alter4_db@set_bucketing_test

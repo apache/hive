@@ -172,7 +172,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Table t = partitionEvent.getTable();
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_DROP_PARTITION_EVENT,
-        msgFactory.buildDropPartitionMessage(t, partitionEvent.getPartition()).toString());
+        msgFactory.buildDropPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     enqueue(event);
@@ -187,7 +187,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Partition after = partitionEvent.getNewPartition();
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_ALTER_PARTITION_EVENT,
-        msgFactory.buildAlterPartitionMessage(before, after).toString());
+        msgFactory.buildAlterPartitionMessage(partitionEvent.getTable(),before, after).toString());
     event.setDbName(before.getDbName());
     event.setTableName(before.getTableName());
     enqueue(event);
@@ -223,7 +223,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
   public void onInsert(InsertEvent insertEvent) throws MetaException {
     NotificationEvent event = new NotificationEvent(0, now(), HCatConstants.HCAT_INSERT_EVENT,
         msgFactory.buildInsertMessage(insertEvent.getDb(), insertEvent.getTable(),
-            insertEvent.getPartitions(), insertEvent.getFiles()).toString());
+            insertEvent.getPartitionKeyValues(), insertEvent.getFiles()).toString());
     event.setDbName(insertEvent.getDb());
     event.setTableName(insertEvent.getTable());
     enqueue(event);

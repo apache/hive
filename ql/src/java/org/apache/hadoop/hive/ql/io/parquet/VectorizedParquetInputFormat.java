@@ -53,7 +53,7 @@ public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, 
     private final ParquetRecordReaderWrapper internalReader;
       private VectorizedRowBatchCtx rbCtx;
       private ArrayWritable internalValues;
-      private Void internalKey;
+      private NullWritable internalKey;
       private VectorColumnAssign[] assigners;
 
     public VectorizedParquetRecordReader(

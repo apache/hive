@@ -41,7 +41,7 @@ STAGE PLANS:
             predicate: (lint is not null and (not mstringstring is null)) (type: boolean)
             Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: size(lint) (type: int), size(lintstring) (type: int), size(mstringstring) (type: int), size(null) (type: int)
+              expressions: size(lint) (type: int), size(lintstring) (type: int), size(mstringstring) (type: int), -1 (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: NONE
               Limit

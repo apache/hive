@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import javax.security.auth.login.LoginException;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -62,6 +63,7 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 
@@ -706,4 +708,22 @@ public interface HadoopShims {
   public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException;
 
   public Path getPathWithoutSchemeAndAuthority(Path path);
+
+  /**
+   * Reads data into ByteBuffer.
+   * @param file File.
+   * @param dest Buffer.
+   * @return Number of bytes read, just like file.read. If any bytes were read, dest position
+   *         will be set to old position + number of bytes read.
+   */
+  int readByteBuffer(FSDataInputStream file, ByteBuffer dest) throws IOException;
+
+  /**
+   * Get Delegation token and add it to Credential.
+   * @param fs FileSystem object to HDFS
+   * @param cred Credentials object to add the token to.
+   * @param uname user name.
+   * @throws IOException If an error occurred on adding the token.
+   */
+  public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException;
 }

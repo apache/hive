@@ -147,7 +147,15 @@ public class TestBinarySortableSerDe extends TestCase {
       Random r = new Random(1234);
       MyTestClass rows[] = new MyTestClass[num];
 
-      for (int i = 0; i < num; i++) {
+      int i;
+      // First try non-random values
+      for (i = 0; i < MyTestClass.nrDecimal.length; i++) {
+        MyTestClass t = new MyTestClass();
+        t.nonRandomFill(i);
+        rows[i] = t;
+      }
+
+      for ( ; i < num; i++) {
         MyTestClass t = new MyTestClass();
         ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
         t.randomFill(r, extraTypeInfo);

@@ -68,7 +68,8 @@ public interface HiveHistory {
     TASK_COUNTERS,
     TASK_NUM_MAPPERS,
     TASK_NUM_REDUCERS,
-    ROWS_INSERTED
+    ROWS_INSERTED,
+    SPARK_JOB_ID
   };
 
   /**

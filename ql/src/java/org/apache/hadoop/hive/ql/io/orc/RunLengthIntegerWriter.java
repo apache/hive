@@ -31,7 +31,7 @@ class RunLengthIntegerWriter implements IntegerWriter {
   static final int MIN_DELTA = -128;
   static final int MAX_LITERAL_SIZE = 128;
   private static final int MAX_REPEAT_SIZE = 127 + MIN_REPEAT_SIZE;
-  private final OutStream output;
+  private final PositionedOutputStream output;
   private final boolean signed;
   private final long[] literals = new long[MAX_LITERAL_SIZE];
   private int numLiterals = 0;
@@ -40,7 +40,7 @@ class RunLengthIntegerWriter implements IntegerWriter {
   private int tailRunLength = 0;
   private SerializationUtils utils;
 
-  RunLengthIntegerWriter(OutStream output,
+  RunLengthIntegerWriter(PositionedOutputStream output,
                          boolean signed) {
     this.output = output;
     this.signed = signed;
@@ -132,11 +132,6 @@ class RunLengthIntegerWriter implements IntegerWriter {
         }
       }
     }
-  }
-
-  @Override
-  public void suppress() {
-    this.output.suppress();
   }
 
   @Override

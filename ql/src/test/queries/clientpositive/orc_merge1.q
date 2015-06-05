@@ -10,6 +10,8 @@ set hive.merge.tezfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 
+-- SORT_QUERY_RESULTS
+
 DROP TABLE orcfile_merge1;
 DROP TABLE orcfile_merge1b;
 DROP TABLE orcfile_merge1c;

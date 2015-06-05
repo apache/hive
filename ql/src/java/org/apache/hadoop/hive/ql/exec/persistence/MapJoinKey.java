@@ -42,6 +42,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -95,6 +98,17 @@ public abstract class MapJoinKey {
     if (!SUPPORTED_PRIMITIVES.contains(pc)) return false; // not supported
     return true;
   }
+
+  public static boolean isSupportedField(String typeName) {
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+
+    if (typeInfo.getCategory() != Category.PRIMITIVE) return false; // not supported
+    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+    PrimitiveCategory pc = primitiveTypeInfo.getPrimitiveCategory();
+    if (!SUPPORTED_PRIMITIVES.contains(pc)) return false; // not supported
+    return true;
+  }
+
 
   public static MapJoinKey readFromVector(Output output, MapJoinKey key, Object[] keyObject,
       List<ObjectInspector> keyOIs, boolean mayReuseKey) throws HiveException {

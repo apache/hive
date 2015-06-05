@@ -39,7 +39,7 @@
 
   <property>
     <name>templeton.libjars</name>
-    <value>${env.TEMPLETON_HOME}/../lib/zookeeper-3.4.6.jar,${env.TEMPLETON_HOME}/../lib/hive-common-1.2.0-SNAPSHOT.jar</value>
+    <value>${env.TEMPLETON_HOME}/../lib/zookeeper-${zookeeper.version}.jar,${env.TEMPLETON_HOME}/../lib/hive-common-${project.version}.jar</value>
     <description>Jars to add to the classpath.</description>
   </property>
 
@@ -87,7 +87,7 @@
 
   <property>
     <name>templeton.pig.path</name>
-    <value>pig-0.11.1.tar.gz/pig-0.11.1/bin/pig</value>
+    <value>pig-${pig.version}.tar.gz/pig-${pig.version}/bin/pig</value>
     <description>The path to the Pig executable.</description>
   </property>
 
@@ -105,7 +105,7 @@
 
   <property>
     <name>templeton.hive.path</name>
-    <value>hive-0.11.0.tar.gz/hive-0.11.0/bin/hive</value>
+    <value>hive-${project.version}.tar.gz/hive-${project.version}/bin/hive</value>
     <description>The path to the Hive executable.  Applies only if templeton.hive.archive is defined.</description>
   </property>
 
@@ -125,7 +125,7 @@
 
   <property>
     <name>templeton.hive.home</name>
-    <value>hive-0.14.0-SNAPSHOT-bin.tar.gz/hive-0.14.0-SNAPSHOT-bin</value>
+    <value>hive-${project.version}-bin.tar.gz/hive-${project.version}-bin</value>
     <description>
       The path to the Hive home within the tar.  This is needed if Hive is not installed on all
       nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
@@ -134,7 +134,7 @@
   </property>
   <property>
     <name>templeton.hcat.home</name>
-    <value>hive-0.14.0-SNAPSHOT-bin.tar.gz/hive-0.14.0-SNAPSHOT-bin/hcatalog</value>
+    <value>hive-${project.version}-bin.tar.gz/hive-${project.version}-bin/hcatalog</value>
     <description>
       The path to the HCat home within the tar.  This is needed if Hive is not installed on all
       nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig

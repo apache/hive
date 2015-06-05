@@ -29,6 +29,7 @@ import org.junit.Test;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -798,5 +799,49 @@ public class TestWorker extends CompactorTest {
     Assert.assertEquals("delta_21_22", stat[2].getPath().getName());
     Assert.assertEquals("delta_23_25", stat[3].getPath().getName());
     Assert.assertEquals("delta_26_27", stat[4].getPath().getName());
+  }
+
+  @Test
+  public void droppedTable() throws Exception {
+    Table t = newTable("default", "dt", false);
+
+    addDeltaFile(t, null, 1L, 2L, 2);
+    addDeltaFile(t, null, 3L, 4L, 2);
+    burnThroughTransactions(4);
+
+    CompactionRequest rqst = new CompactionRequest("default", "dt", CompactionType.MAJOR);
+    txnHandler.compact(rqst);
+
+    ms.dropTable("default", "dt");
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(0, compacts.size());
+  }
+
+  @Test
+  public void droppedPartition() throws Exception {
+    Table t = newTable("default", "dp", true);
+    Partition p = newPartition(t, "today");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions(25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "dp", CompactionType.MINOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+
+    ms.dropPartition("default", "dp", Collections.singletonList("today"), true);
+
+    startWorker();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(0, compacts.size());
   }
 }

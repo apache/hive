@@ -218,11 +218,11 @@ similarly for mapKeyType/mapKeyTypeInfo */
   public HCatFieldSchema(String fieldName, PrimitiveTypeInfo typeInfo, String comment)
           throws HCatException {
     this.fieldName = fieldName;
-    //HCatUtil.assertNotNull(fieldName, "fieldName cannot be null");//seems sometimes it can be 
-    // null, for ARRAY types in particular (which may be a complex type)
     this.category = Category.PRIMITIVE;
     this.typeInfo = typeInfo;
-    HCatUtil.assertNotNull(typeInfo, "typeInfo cannot be null; fieldName=" + fieldName, null);
+    if (typeInfo == null) {
+      throw new IllegalArgumentException("typeInfo cannot be null; fieldName=" + fieldName);
+    }
     type = Type.getPrimitiveHType(typeInfo);
     this.comment = comment;
   }

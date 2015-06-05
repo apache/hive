@@ -35,6 +35,7 @@ import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -126,6 +127,12 @@ public class RpcServer implements Closeable {
    */
   public Future<Rpc> registerClient(final String clientId, String secret,
       RpcDispatcher serverDispatcher) {
+    return registerClient(clientId, secret, serverDispatcher, config.getServerConnectTimeoutMs());
+  }
+
+  @VisibleForTesting
+  Future<Rpc> registerClient(final String clientId, String secret,
+      RpcDispatcher serverDispatcher, long clientTimeoutMs) {
     final Promise<Rpc> promise = group.next().newPromise();
 
     Runnable timeout = new Runnable() {
@@ -135,7 +142,7 @@ public class RpcServer implements Closeable {
       }
     };
     ScheduledFuture<?> timeoutFuture = group.schedule(timeout,
-        config.getServerConnectTimeoutMs(),
+        clientTimeoutMs,
         TimeUnit.MILLISECONDS);
     final ClientInfo client = new ClientInfo(clientId, promise, secret, serverDispatcher,
         timeoutFuture);
@@ -147,13 +154,31 @@ public class RpcServer implements Closeable {
     promise.addListener(new GenericFutureListener<Promise<Rpc>>() {
       @Override
       public void operationComplete(Promise<Rpc> p) {
-        if (p.isCancelled()) {
+        if (!p.isSuccess()) {
           pendingClients.remove(clientId);
         }
       }
     });
 
     return promise;
+  }
+
+  /**
+   * Tells the RPC server to cancel the connection from an existing pending client
+   * @param clientId The identifier for the client
+   * @param msg The error message about why the connection should be canceled
+   */
+  public void cancelClient(final String clientId, final String msg) {
+    final ClientInfo cinfo = pendingClients.remove(clientId);
+    if (cinfo == null) {
+      // Nothing to be done here.
+      return;
+    }
+    cinfo.timeoutFuture.cancel(true);
+    if (!cinfo.promise.isDone()) {
+      cinfo.promise.setFailure(new RuntimeException(
+          String.format("Cancel client '%s'. Error: " + msg, clientId)));
+    }
   }
 
   /**

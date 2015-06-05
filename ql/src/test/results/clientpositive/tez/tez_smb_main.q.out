@@ -282,6 +282,7 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -379,6 +380,7 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -476,6 +478,7 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -571,6 +574,7 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -580,6 +584,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 4
                         Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -773,8 +778,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
                     Merge Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -782,23 +789,29 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 254 Data size: 2694 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 254 Data size: 2694 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -899,6 +912,7 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -992,6 +1006,7 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1001,6 +1016,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 4
                         Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -1090,8 +1106,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -1101,6 +1119,8 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 4
+                      Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                      HybridGraceHashJoin: true
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1109,12 +1129,16 @@ STAGE PLANS:
                           1 key (type: int)
                         input vertices:
                           1 Map 6
+                        Statistics: Num rows: 279 Data size: 2963 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Map 4 
             Map Operator Tree:
@@ -1133,11 +1157,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1146,12 +1173,16 @@ STAGE PLANS:
                           1 key (type: int)
                         input vertices:
                           1 Map 6
+                        Statistics: Num rows: 279 Data size: 2963 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Map 6 
             Map Operator Tree:
@@ -1284,6 +1315,7 @@ STAGE PLANS:
                   input vertices:
                     0 Reducer 2
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
                   Filter Operator
                     predicate: (_col0 = _col1) (type: boolean)
                     Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE

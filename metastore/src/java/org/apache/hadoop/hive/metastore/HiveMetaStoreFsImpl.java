@@ -60,7 +60,6 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
     } catch (FileNotFoundException e) {
       return true; // ok even if there is not data
     } catch (Exception e) {
-      Warehouse.closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return false;

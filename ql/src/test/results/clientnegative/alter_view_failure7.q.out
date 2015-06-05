@@ -18,4 +18,4 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx8
-FAILED: SemanticException partition spec {ds=2011-01-01} doesn't contain all (2) partition columns
+FAILED: ValidationFailureSemanticException partition spec {ds=2011-01-01} doesn't contain all (2) partition columns

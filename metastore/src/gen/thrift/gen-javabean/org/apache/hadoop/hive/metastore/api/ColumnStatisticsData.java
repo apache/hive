@@ -39,6 +39,7 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
   private static final org.apache.thrift.protocol.TField STRING_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("stringStats", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField BINARY_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("binaryStats", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField DECIMAL_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("decimalStats", org.apache.thrift.protocol.TType.STRUCT, (short)6);
+  private static final org.apache.thrift.protocol.TField DATE_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("dateStats", org.apache.thrift.protocol.TType.STRUCT, (short)7);
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -47,7 +48,8 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
     DOUBLE_STATS((short)3, "doubleStats"),
     STRING_STATS((short)4, "stringStats"),
     BINARY_STATS((short)5, "binaryStats"),
-    DECIMAL_STATS((short)6, "decimalStats");
+    DECIMAL_STATS((short)6, "decimalStats"),
+    DATE_STATS((short)7, "dateStats");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -74,6 +76,8 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
           return BINARY_STATS;
         case 6: // DECIMAL_STATS
           return DECIMAL_STATS;
+        case 7: // DATE_STATS
+          return DATE_STATS;
         default:
           return null;
       }
@@ -128,6 +132,8 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BinaryColumnStatsData.class)));
     tmpMap.put(_Fields.DECIMAL_STATS, new org.apache.thrift.meta_data.FieldMetaData("decimalStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DecimalColumnStatsData.class)));
+    tmpMap.put(_Fields.DATE_STATS, new org.apache.thrift.meta_data.FieldMetaData("dateStats", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DateColumnStatsData.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnStatisticsData.class, metaDataMap);
   }
@@ -183,6 +189,12 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
     return x;
   }
 
+  public static ColumnStatisticsData dateStats(DateColumnStatsData value) {
+    ColumnStatisticsData x = new ColumnStatisticsData();
+    x.setDateStats(value);
+    return x;
+  }
+
 
   @Override
   protected void checkType(_Fields setField, Object value) throws ClassCastException {
@@ -217,6 +229,11 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
           break;
         }
         throw new ClassCastException("Was expecting value of type DecimalColumnStatsData for field 'decimalStats', but got " + value.getClass().getSimpleName());
+      case DATE_STATS:
+        if (value instanceof DateColumnStatsData) {
+          break;
+        }
+        throw new ClassCastException("Was expecting value of type DateColumnStatsData for field 'dateStats', but got " + value.getClass().getSimpleName());
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -287,6 +304,16 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             return null;
           }
+        case DATE_STATS:
+          if (field.type == DATE_STATS_FIELD_DESC.type) {
+            DateColumnStatsData dateStats;
+            dateStats = new DateColumnStatsData();
+            dateStats.read(iprot);
+            return dateStats;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
         default:
           throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -321,6 +348,10 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
       case DECIMAL_STATS:
         DecimalColumnStatsData decimalStats = (DecimalColumnStatsData)value_;
         decimalStats.write(oprot);
+        return;
+      case DATE_STATS:
+        DateColumnStatsData dateStats = (DateColumnStatsData)value_;
+        dateStats.write(oprot);
         return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -362,6 +393,11 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
           decimalStats = new DecimalColumnStatsData();
           decimalStats.read(iprot);
           return decimalStats;
+        case DATE_STATS:
+          DateColumnStatsData dateStats;
+          dateStats = new DateColumnStatsData();
+          dateStats.read(iprot);
+          return dateStats;
         default:
           throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -397,6 +433,10 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
         DecimalColumnStatsData decimalStats = (DecimalColumnStatsData)value_;
         decimalStats.write(oprot);
         return;
+      case DATE_STATS:
+        DateColumnStatsData dateStats = (DateColumnStatsData)value_;
+        dateStats.write(oprot);
+        return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
     }
@@ -417,6 +457,8 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
         return BINARY_STATS_FIELD_DESC;
       case DECIMAL_STATS:
         return DECIMAL_STATS_FIELD_DESC;
+      case DATE_STATS:
+        return DATE_STATS_FIELD_DESC;
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -521,6 +563,20 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
     value_ = value;
   }
 
+  public DateColumnStatsData getDateStats() {
+    if (getSetField() == _Fields.DATE_STATS) {
+      return (DateColumnStatsData)getFieldValue();
+    } else {
+      throw new RuntimeException("Cannot get field 'dateStats' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setDateStats(DateColumnStatsData value) {
+    if (value == null) throw new NullPointerException();
+    setField_ = _Fields.DATE_STATS;
+    value_ = value;
+  }
+
   public boolean isSetBooleanStats() {
     return setField_ == _Fields.BOOLEAN_STATS;
   }
@@ -548,6 +604,11 @@ public class ColumnStatisticsData extends org.apache.thrift.TUnion<ColumnStatist
 
   public boolean isSetDecimalStats() {
     return setField_ == _Fields.DECIMAL_STATS;
+  }
+
+
+  public boolean isSetDateStats() {
+    return setField_ == _Fields.DATE_STATS;
   }
 
 

@@ -475,7 +475,7 @@ public final class ObjectInspectorUtils {
       return result.toString();
     }
     case UNION: {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
       result.append(oi.getClass().getSimpleName() + "<");
       UnionObjectInspector uoi = (UnionObjectInspector)oi;
       List<ObjectInspector> ois = uoi.getObjectInspectors();
@@ -1029,10 +1029,10 @@ public final class ObjectInspectorUtils {
 
   public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value) {
     if (oi instanceof ConstantObjectInspector) {
-      return (ConstantObjectInspector) oi;  
+      return (ConstantObjectInspector) oi;
     }
     ObjectInspector writableOI = getStandardObjectInspector(oi, ObjectInspectorCopyOption.WRITABLE);
-    Object writableValue =
+    Object writableValue = value == null ? value :
       ObjectInspectorConverters.getConverter(oi, writableOI).convert(value);
     switch (writableOI.getCategory()) {
       case PRIMITIVE:

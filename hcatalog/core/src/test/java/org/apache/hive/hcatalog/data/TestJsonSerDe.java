@@ -227,7 +227,7 @@ public class TestJsonSerDe extends TestCase {
       return "";
     }
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     int numStrings = columnNames.split(",").length;
     sb.append("_col0");
     for (int i = 1; i < numStrings; i++) {

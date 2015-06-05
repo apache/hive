@@ -26,7 +26,7 @@ import org.apache.hive.hcatalog.data.ReaderWriter;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,10 +40,12 @@ import java.util.List;
 public class NoopCommand implements Command {
   private long eventId;
 
+  /**
+   * Trivial ctor to support Writable reflections instantiation
+   * do not expect to use this object as-is, unless you call
+   * readFields after using this ctor
+   */
   public NoopCommand(){
-    // trivial ctor to support Writable reflections instantiation
-    // do not expect to use this object as-is, unless you call
-    // readFields after using this ctor
   }
 
   public NoopCommand(long eventId){
@@ -52,7 +54,7 @@ public class NoopCommand implements Command {
 
   @Override
   public List<String> get() {
-    return new ArrayList<String>();
+    return Collections.emptyList();
   }
 
   @Override
@@ -67,17 +69,17 @@ public class NoopCommand implements Command {
 
   @Override
   public List<String> getUndo() {
-    return new ArrayList<String>();
+    return Collections.emptyList();
   }
 
   @Override
   public List<String> cleanupLocationsPerRetry() {
-    return new ArrayList<String>();
+    return Collections.emptyList();
   }
 
   @Override
   public List<String> cleanupLocationsAfterEvent() {
-    return new ArrayList<String>();
+    return Collections.emptyList();
   }
 
   @Override
@@ -87,12 +89,12 @@ public class NoopCommand implements Command {
 
   @Override
   public void write(DataOutput dataOutput) throws IOException {
-    ReaderWriter.writeDatum(dataOutput, Long.valueOf(eventId));
+    ReaderWriter.writeDatum(dataOutput, eventId);
   }
 
   @Override
   public void readFields(DataInput dataInput) throws IOException {
-    eventId = ((Long)ReaderWriter.readDatum(dataInput)).longValue();
+    eventId = (Long) ReaderWriter.readDatum(dataInput);
   }
 }
 

@@ -69,9 +69,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.AnnotationUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 
 import com.google.common.collect.Iterators;
 
@@ -204,13 +204,12 @@ public class FetchOperator implements Serializable {
        JobConf conf) throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
         JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
-      return ReflectionUtils
-          .newInstance(inputFormatClass, conf);
+      return ReflectionUtil.newInstance(inputFormatClass, conf);
     }
     InputFormat format = inputFormats.get(inputFormatClass.getName());
     if (format == null) {
       try {
-        format = ReflectionUtils.newInstance(inputFormatClass, conf);
+        format = ReflectionUtil.newInstance(inputFormatClass, conf);
         inputFormats.put(inputFormatClass.getName(), format);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
@@ -605,7 +604,13 @@ public class FetchOperator implements Serializable {
   // if table and all partitions have the same schema and serde, no need to convert
   private boolean needConversion(TableDesc tableDesc, List<PartitionDesc> partDescs) {
     Class<?> tableSerDe = tableDesc.getDeserializerClass();
-    String[] schemaProps = AnnotationUtils.getAnnotation(tableSerDe, SerDeSpec.class).schemaProps();
+    SerDeSpec spec = AnnotationUtils.getAnnotation(tableSerDe, SerDeSpec.class);
+    if (null == spec) {
+      // Serde may not have this optional annotation defined in which case be conservative
+      // and say conversion is needed.
+      return true;
+    }
+    String[] schemaProps = spec.schemaProps();
     Properties tableProps = tableDesc.getProperties();
     for (PartitionDesc partitionDesc : partDescs) {
       if (!tableSerDe.getName().equals(partitionDesc.getDeserializerClassName())) {

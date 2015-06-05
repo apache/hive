@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,6 +48,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -115,12 +117,14 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
@@ -207,9 +211,9 @@ import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.tools.HadoopArchives;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -1725,6 +1729,40 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       checker.checkMetastore(names[0], names[1], msckDesc.getPartSpecs(), result);
       List<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       if (msckDesc.isRepairPartitions() && !partsNotInMs.isEmpty()) {
+        AbstractList<String> vals = null;
+        String settingStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION);
+        boolean doValidate = !("ignore".equals(settingStr));
+        boolean doSkip = doValidate && "skip".equals(settingStr);
+        // The default setting is "throw"; assume doValidate && !doSkip means throw.
+        if (doValidate) {
+          // Validate that we can add partition without escaping. Escaping was originally intended
+          // to avoid creating invalid HDFS paths; however, if we escape the HDFS path (that we
+          // deem invalid but HDFS actually supports - it is possible to create HDFS paths with
+          // unprintable characters like ASCII 7), metastore will create another directory instead
+          // of the one we are trying to "repair" here.
+          Iterator<CheckResult.PartitionResult> iter = partsNotInMs.iterator();
+          while (iter.hasNext()) {
+            CheckResult.PartitionResult part = iter.next();
+            try {
+              vals = Warehouse.makeValsFromName(part.getPartitionName(), vals);
+            } catch (MetaException ex) {
+              throw new HiveException(ex);
+            }
+            for (String val : vals) {
+              String escapedPath = FileUtils.escapePathName(val);
+              assert escapedPath != null;
+              if (escapedPath.equals(val)) continue;
+              String errorMsg = "Repair: Cannot add partition " + msckDesc.getTableName()
+                  + ':' + part.getPartitionName() + " due to invalid characters in the name";
+              if (doSkip) {
+                repairOutput.add(errorMsg);
+                iter.remove();
+              } else {
+                throw new HiveException(errorMsg);
+              }
+            }
+          }
+        }
         Table table = db.getTable(msckDesc.getTableName());
         AddPartitionDesc apd = new AddPartitionDesc(
             table.getDbName(), table.getTableName(), false);
@@ -1860,7 +1898,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       FileSystem fs = resFile.getFileSystem(conf);
       outStream = fs.create(resFile);
 
-      formatter.showTablePartitons(outStream, parts);
+      formatter.showTablePartitions(outStream, parts);
 
       outStream.close();
       outStream = null;
@@ -3693,6 +3731,39 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void dropPartitions(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
+
+    ReplicationSpec replicationSpec = dropTbl.getReplicationSpec();
+    if (replicationSpec.isInReplicationScope()){
+      /**
+       * ALTER TABLE DROP PARTITION ... FOR REPLICATION(x) behaves as a DROP PARTITION IF OLDER THAN x
+       *
+       * So, we check each partition that matches our DropTableDesc.getPartSpecs(), and drop it only
+       * if it's older than the event that spawned this replicated request to drop partition
+       */
+      // TODO: Current implementation of replication will result in DROP_PARTITION under replication
+      // scope being called per-partition instead of multiple partitions. However, to be robust, we
+      // must still handle the case of multiple partitions in case this assumption changes in the
+      // future. However, if this assumption changes, we will not be very performant if we fetch
+      // each partition one-by-one, and then decide on inspection whether or not this is a candidate
+      // for dropping. Thus, we need a way to push this filter (replicationSpec.allowEventReplacementInto)
+      // to the  metastore to allow it to do drop a partition or not, depending on a Predicate on the
+      // parameter key values.
+      for (DropTableDesc.PartSpec partSpec : dropTbl.getPartSpecs()){
+        try {
+          for (Partition p : Iterables.filter(
+              db.getPartitionsByFilter(tbl, partSpec.getPartSpec().getExprString()),
+              replicationSpec.allowEventReplacementInto())){
+            db.dropPartition(tbl.getDbName(),tbl.getTableName(),p.getValues(),true);
+          }
+        } catch (NoSuchObjectException e){
+          // ignore NSOE because that means there's nothing to drop.
+        } catch (Exception e) {
+          throw new HiveException(e.getMessage(), e);
+        }
+      }
+      return;
+    }
+
     // ifExists is currently verified in DDLSemanticAnalyzer
     List<Partition> droppedParts
         = db.dropPartitions(dropTbl.getTableName(),
@@ -3735,12 +3806,52 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           " is protected from being dropped");
     }
 
+    ReplicationSpec replicationSpec = dropTbl.getReplicationSpec();
+    if ((tbl!= null) && replicationSpec.isInReplicationScope()){
+      /**
+       * DROP TABLE FOR REPLICATION behaves differently from DROP TABLE IF EXISTS - it more closely
+       * matches a DROP TABLE IF OLDER THAN(x) semantic.
+       *
+       * Ideally, commands executed under the scope of replication need to be idempotent and resilient
+       * to repeats. What can happen, sometimes, is that a drone processing a replication task can
+       * have been abandoned for not returning in time, but still execute its task after a while,
+       * which should not result in it mucking up data that has been impressed later on. So, for eg.,
+       * if we create partition P1, followed by droppping it, followed by creating it yet again,
+       * the replication of that drop should not drop the newer partition if it runs after the destination
+       * object is already in the newer state.
+       *
+       * Thus, we check the replicationSpec.allowEventReplacementInto to determine whether or not we can
+       * drop the object in question(will return false if object is newer than the event, true if not)
+       *
+       * In addition, since DROP TABLE FOR REPLICATION can result in a table not being dropped, while DROP
+       * TABLE will always drop the table, and the included partitions, DROP TABLE FOR REPLICATION must
+       * do one more thing - if it does not drop the table because the table is in a newer state, it must
+       * drop the partitions inside it that are older than this event. To wit, DROP TABLE FOR REPL
+       * acts like a recursive DROP TABLE IF OLDER.
+       */
+      if (!replicationSpec.allowEventReplacementInto(tbl)){
+        // Drop occured as part of replicating a drop, but the destination
+        // table was newer than the event being replicated. Ignore, but drop
+        // any partitions inside that are older.
+        if (tbl.isPartitioned()){
+
+          PartitionIterable partitions = new PartitionIterable(db,tbl,null,conf.getIntVar(
+              HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+
+          for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())){
+            db.dropPartition(tbl.getDbName(),tbl.getTableName(),p.getValues(),true);
+          }
+        }
+        return; // table is newer, leave it be.
+      }
+    }
+
     int partitionBatchSize = HiveConf.getIntVar(conf,
         ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
 
     // We should check that all the partitions of the table can be dropped
     if (tbl != null && tbl.isPartitioned()) {
-      List<String> partitionNames = db.getPartitionNames(tbl.getTableName(), (short)-1);
+      List<String> partitionNames = db.getPartitionNames(tbl.getDbName(), tbl.getTableName(), (short)-1);
 
       for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
         List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
@@ -3786,7 +3897,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private void validateSerDe(String serdeName) throws HiveException {
     try {
 
-      Deserializer d = ReflectionUtils.newInstance(conf.getClassByName(serdeName).
+      Deserializer d = ReflectionUtil.newInstance(conf.getClassByName(serdeName).
           asSubclass(Deserializer.class), conf);
       if (d != null) {
         LOG.debug("Found class for " + serdeName);
@@ -3889,7 +4000,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int createTable(Hive db, CreateTableDesc crtTbl) throws HiveException {
     // create the table
-    Table tbl = db.newTable(crtTbl.getTableName());
+    Table tbl;
+    if (crtTbl.getDatabaseName() == null || (crtTbl.getTableName().contains("."))){
+      tbl = db.newTable(crtTbl.getTableName());
+    }else {
+      tbl = new Table(crtTbl.getDatabaseName(),crtTbl.getTableName());
+    }
 
     if (crtTbl.getTblProps() != null) {
       tbl.getTTable().getParameters().putAll(crtTbl.getTblProps());
@@ -4043,7 +4159,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // create the table
-    db.createTable(tbl, crtTbl.getIfNotExists());
+    if (crtTbl.getReplaceMode()){
+      // replace-mode creates are really alters using CreateTableDesc.
+      try {
+        db.alterTable(tbl.getDbName()+"."+tbl.getTableName(),tbl);
+      } catch (InvalidOperationException e) {
+        throw new HiveException("Unable to alter table. " + e.getMessage(), e);
+      }
+    } else {
+      db.createTable(tbl, crtTbl.getIfNotExists());
+    }
     work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     return 0;
   }

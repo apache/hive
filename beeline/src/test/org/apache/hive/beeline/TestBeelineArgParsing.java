@@ -18,6 +18,7 @@
 
 package org.apache.hive.beeline;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -41,6 +43,9 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class TestBeelineArgParsing {
   private static final Log LOG = LogFactory.getLog(TestBeelineArgParsing.class.getName());
+
+  private static final String dummyDriverClazzName = "DummyDriver";
+
   private String connectionString;
   private String driverClazzName;
   private String driverJarFileName;
@@ -85,15 +90,17 @@ public class TestBeelineArgParsing {
     }
   }
 
-  @Parameters
-  public static Collection<Object[]> data() {
-    return Arrays.asList(
-        new Object[][] {
-            {"jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver", "postgresql-9.3.jdbc3.jar",
-                true},
-            {"jdbc:dummy://host:5432/testdb", "org.apache.dummy.DummyDriver",
-                "DummyDriver-1.0-SNAPSHOT.jar", false}
-        });
+  @Parameters public static Collection<Object[]> data() throws IOException, InterruptedException {
+    // generate the dummy driver by using txt file
+    String u = HiveTestUtils.getFileFromClasspath("DummyDriver.txt");
+    File jarFile = HiveTestUtils.genLocalJarForTest(u, dummyDriverClazzName);
+    String pathToDummyDriver = jarFile.getAbsolutePath();
+    return Arrays.asList(new Object[][] {
+        { "jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver",
+            System.getProperty("maven.local.repository") + File.separator + "postgresql"
+                + File.separator + "postgresql" + File.separator + "9.1-901.jdbc4" + File.separator
+                + "postgresql-9.1-901.jdbc4.jar", true },
+        { "jdbc:dummy://host:5432/testdb", dummyDriverClazzName, pathToDummyDriver, false } });
   }
 
   @Test
@@ -217,9 +224,8 @@ public class TestBeelineArgParsing {
     Assert.assertNull(bl.findLocalDriver(connectionString));
 
     LOG.info("Add " + driverJarFileName + " for the driver class " + driverClazzName);
-    String mysqlDriverPath = HiveTestUtils.getFileFromClasspath(driverJarFileName);
 
-    bl.addLocalJar(mysqlDriverPath);
+    bl.addLocalJar(driverJarFileName);
     bl.addlocaldrivername(driverClazzName);
     Assert.assertEquals(bl.findLocalDriver(connectionString).getClass().getName(), driverClazzName);
   }
@@ -229,9 +235,7 @@ public class TestBeelineArgParsing {
     TestBeeline bl = new TestBeeline();
 
     LOG.info("Add " + driverJarFileName + " for the driver class " + driverClazzName);
-    String mysqlDriverPath = HiveTestUtils.getFileFromClasspath(driverJarFileName);
-
-    bl.addLocalJar(mysqlDriverPath);
+    bl.addLocalJar(driverJarFileName);
     if (!defaultSupported) {
       Assert.assertNull(bl.findLocalDriver(connectionString));
     } else {

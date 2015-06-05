@@ -37,7 +37,7 @@ import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Location;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -219,7 +219,8 @@ public class TestRecordReaderImpl {
 
   @Test
   public void testGetMin() throws Exception {
-    assertEquals(10L, RecordReaderImpl.getMin(ColumnStatisticsImpl.deserialize(createIntStats(10L, 100L))));
+    assertEquals(10L, RecordReaderImpl.getMin(
+        ColumnStatisticsImpl.deserialize(createIntStats(10L, 100L))));
     assertEquals(10.0d, RecordReaderImpl.getMin(ColumnStatisticsImpl.deserialize(
         OrcProto.ColumnStatistics.newBuilder()
             .setDoubleStatistics(OrcProto.DoubleStatistics.newBuilder()
@@ -250,6 +251,13 @@ public class TestRecordReaderImpl {
     }
     return OrcProto.ColumnStatistics.newBuilder()
         .setIntStatistics(intStats.build()).build();
+  }
+
+  private static OrcProto.ColumnStatistics createBooleanStats(int n, int trueCount) {
+    OrcProto.BucketStatistics.Builder boolStats = OrcProto.BucketStatistics.newBuilder();
+    boolStats.addCount(trueCount);
+    return OrcProto.ColumnStatistics.newBuilder().setNumberOfValues(n).setBucketStatistics(
+        boolStats.build()).build();
   }
 
   private static OrcProto.ColumnStatistics createIntStats(int min, int max) {
@@ -289,7 +297,7 @@ public class TestRecordReaderImpl {
     return OrcProto.ColumnStatistics.newBuilder().setDateStatistics(dateStats.build()).build();
   }
 
-  private static OrcProto.ColumnStatistics createTimestampStats(int min, int max) {
+  private static OrcProto.ColumnStatistics createTimestampStats(long min, long max) {
     OrcProto.TimestampStatistics.Builder tsStats = OrcProto.TimestampStatistics.newBuilder();
     tsStats.setMinimum(min);
     tsStats.setMaximum(max);
@@ -334,6 +342,30 @@ public class TestRecordReaderImpl {
   }
 
   @Test
+  public void testPredEvalWithBooleanStats() throws Exception {
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.BOOLEAN, "x", true, null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 10), pred, null));
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 0), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.BOOLEAN, "x", "true", null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 10), pred, null));
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 0), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.BOOLEAN, "x", "hello", null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 10), pred, null));
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 0), pred, null));
+  }
+
+  @Test
   public void testPredEvalWithIntStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
@@ -345,18 +377,25 @@ public class TestRecordReaderImpl {
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
 
+    // Stats gets converted to column type. "15" is outside of "10" and "100"
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.STRING, "x", "15", null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
+
+    // Integer stats will not be converted date because of days/seconds/millis ambiguity
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.DATE, "x", new DateWritable(15).get(), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DATE, "x", new DateWritable(15), null);
-    assertEquals(TruthValue.NO,
+        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
   }
@@ -373,19 +412,31 @@ public class TestRecordReaderImpl {
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
 
+    // Stats gets converted to column type. "15.0" is outside of "10.0" and "100.0"
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.STRING, "x", "15", null);
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
 
+    // Double is not converted to date type because of days/seconds/millis ambiguity
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DATE, "x", new DateWritable(15), null);
-    assertEquals(TruthValue.NO,
+        PredicateLeaf.Type.DATE, "x", new DateWritable(15).get(), null);
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
     assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15*1000L), null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(150*1000L), null);
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
   }
 
@@ -406,13 +457,19 @@ public class TestRecordReaderImpl {
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createStringStats("10", "1000"), pred, null));
 
+    // IllegalArgumentException is thrown when converting String to Date, hence YES_NO
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DATE, "x", new DateWritable(100), null);
-    assertEquals(TruthValue.NO,
+        PredicateLeaf.Type.DATE, "x", new DateWritable(100).get(), null);
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createStringStats("10", "1000"), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(100), null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createStringStats("10", "1000"), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(100), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createStringStats("10", "1000"), pred, null));
   }
@@ -421,12 +478,14 @@ public class TestRecordReaderImpl {
   public void testPredEvalWithDateStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
-    assertEquals(TruthValue.NO,
+    // Date to Integer conversion is not possible.
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
 
+    // Date to Float conversion is also not possible.
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.FLOAT, "x", 15.0, null);
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
@@ -460,20 +519,30 @@ public class TestRecordReaderImpl {
         RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DATE, "x", new DateWritable(15), null);
+        PredicateLeaf.Type.DATE, "x", new DateWritable(15).get(), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DATE, "x", new DateWritable(150), null);
+        PredicateLeaf.Type.DATE, "x", new DateWritable(150).get(), null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
+
+    // Date to Decimal conversion is also not possible.
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15), null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
-    assertEquals(TruthValue.NO,
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15L * 24L * 60L * 60L * 1000L), null);
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
-
   }
 
   @Test
@@ -488,14 +557,16 @@ public class TestRecordReaderImpl {
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
 
+    // "15" out of range of "10.0" and "100.0"
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.STRING, "x", "15", null);
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
 
+    // Decimal to Date not possible.
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DATE, "x", new DateWritable(15), null);
-    assertEquals(TruthValue.NO,
+        PredicateLeaf.Type.DATE, "x", new DateWritable(15).get(), null);
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
@@ -503,6 +574,62 @@ public class TestRecordReaderImpl {
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
 
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15 * 1000L), null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(150 * 1000L), null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
+  }
+
+  @Test
+  public void testPredEvalWithTimestampStats() throws Exception {
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.FLOAT, "x", 15.0, null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10000, 100000), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.STRING, "x", "15", null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.STRING, "x", new Timestamp(15).toString(), null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.DATE, "x", new DateWritable(15).get(), null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10 * 24L * 60L * 60L * 1000L,
+            100 * 24L * 60L * 60L * 1000L), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10000, 100000), pred, null));
+
+    pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
+        PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15), null);
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10000, 100000), pred, null));
   }
 
   @Test
@@ -510,17 +637,17 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.INTEGER,
             "x", 15L, null);
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(15L, 30L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10L, 30L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10L, 15L), pred, null));
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(0L, 10L), pred, null));
-    assertEquals(TruthValue.YES,
+    assertEquals(TruthValue.YES_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(15L, 15L), pred, null));
   }
 
@@ -548,15 +675,15 @@ public class TestRecordReaderImpl {
     PredicateLeaf lessThan = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.LESS_THAN, PredicateLeaf.Type.INTEGER,
             "x", 15L, null);
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), lessThan, null));
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(15L, 30L), lessThan, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10L, 30L), lessThan, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10L, 15L), lessThan, null));
-    assertEquals(TruthValue.YES,
+    assertEquals(TruthValue.YES_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(0L, 10L), lessThan, null));
   }
 
@@ -565,15 +692,15 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.LESS_THAN_EQUALS, PredicateLeaf.Type.INTEGER,
             "x", 15L, null);
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(15L, 30L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10L, 30L), pred, null));
-    assertEquals(TruthValue.YES,
+    assertEquals(TruthValue.YES_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10L, 15L), pred, null));
-    assertEquals(TruthValue.YES,
+    assertEquals(TruthValue.YES_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(0L, 10L), pred, null));
   }
 
@@ -585,13 +712,13 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.INTEGER,
             "x", null, args);
-    assertEquals(TruthValue.YES,
+    assertEquals(TruthValue.YES_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 20L), pred, null));
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(30L, 30L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10L, 30L), pred, null));
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(12L, 18L), pred, null));
   }
 
@@ -603,19 +730,19 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.BETWEEN, PredicateLeaf.Type.INTEGER,
             "x", null, args);
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(0L, 5L), pred, null));
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(30L, 40L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(5L, 15L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(15L, 25L), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(5L, 25L), pred, null));
-    assertEquals(TruthValue.YES,
+    assertEquals(TruthValue.YES_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10L, 20L), pred, null));
-    assertEquals(TruthValue.YES,
+    assertEquals(TruthValue.YES_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(12L, 18L), pred, null));
   }
 
@@ -624,7 +751,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IS_NULL, PredicateLeaf.Type.INTEGER,
             "x", null, null);
-    assertEquals(TruthValue.NO,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), pred, null));
   }
 
@@ -1148,7 +1275,7 @@ public class TestRecordReaderImpl {
   public void testIntNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong(i);
     }
@@ -1163,15 +1290,15 @@ public class TestRecordReaderImpl {
   public void testIntEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong(i);
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createIntStats(10, 100));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong(15);
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1182,25 +1309,25 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.INTEGER,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong(i);
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createIntStats(10, 100));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong(19);
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong(15);
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
   public void testDoubleNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.FLOAT, "x", 15.0, null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addDouble(i);
     }
@@ -1215,15 +1342,15 @@ public class TestRecordReaderImpl {
   public void testDoubleEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.FLOAT, "x", 15.0, null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addDouble(i);
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createDoubleStats(10.0, 100.0));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addDouble(15.0);
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1234,25 +1361,25 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.FLOAT,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addDouble(i);
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createDoubleStats(10.0, 100.0));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addDouble(19.0);
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addDouble(15.0);
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
   public void testStringNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.STRING, "x", "str_15", null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString("str_" + i);
     }
@@ -1267,15 +1394,15 @@ public class TestRecordReaderImpl {
   public void testStringEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.STRING, "x", "str_15", null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString("str_" + i);
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createStringStats("str_10", "str_200"));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addString("str_15");
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1286,26 +1413,26 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.STRING,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString("str_" + i);
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createStringStats("str_10", "str_200"));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addString("str_19");
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addString("str_15");
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
   public void testDateWritableNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.DATE, "x", new DateWritable(15),
-        null);
-    BloomFilter bf = new BloomFilter(10000);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.DATE, "x",
+        new DateWritable(15).get(), null);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new DateWritable(i)).getDays());
     }
@@ -1319,38 +1446,39 @@ public class TestRecordReaderImpl {
   @Test
   public void testDateWritableEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.DATE, "x", new DateWritable(15), null);
-    BloomFilter bf = new BloomFilter(10000);
+        PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.DATE, "x",
+        new DateWritable(15).get(), null);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new DateWritable(i)).getDays());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createDateStats(10, 100));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new DateWritable(15)).getDays());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
   public void testDateWritableInBloomFilter() throws Exception {
     List<Object> args = new ArrayList<Object>();
-    args.add(new DateWritable(15));
-    args.add(new DateWritable(19));
+    args.add(new DateWritable(15).get());
+    args.add(new DateWritable(19).get());
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.DATE,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new DateWritable(i)).getDays());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createDateStats(10, 100));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new DateWritable(19)).getDays());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new DateWritable(15)).getDays());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1359,7 +1487,7 @@ public class TestRecordReaderImpl {
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.TIMESTAMP, "x",
         new Timestamp(15),
         null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new Timestamp(i)).getTime());
     }
@@ -1374,15 +1502,15 @@ public class TestRecordReaderImpl {
   public void testTimestampEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15), null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new Timestamp(i)).getTime());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createTimestampStats(10, 100));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new Timestamp(15)).getTime());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1393,18 +1521,18 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.TIMESTAMP,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong((new Timestamp(i)).getTime());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createTimestampStats(10, 100));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new Timestamp(19)).getTime());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new Timestamp(15)).getTime());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1413,7 +1541,7 @@ public class TestRecordReaderImpl {
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.DECIMAL, "x",
         HiveDecimal.create(15),
         null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString(HiveDecimal.create(i).toString());
     }
@@ -1429,15 +1557,15 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15),
         null);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString(HiveDecimal.create(i).toString());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createDecimalStats("10", "200"));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addString(HiveDecimal.create(15).toString());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1448,18 +1576,18 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.DECIMAL,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString(HiveDecimal.create(i).toString());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createDecimalStats("10", "200"));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addString(HiveDecimal.create(19).toString());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addString(HiveDecimal.create(15).toString());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1471,11 +1599,11 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.DECIMAL,
             "x", null, args);
-    BloomFilter bf = new BloomFilter(10000);
+    BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addString(HiveDecimal.create(i).toString());
     }
-    ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createDecimalStats("10", "200"));
+    ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createDecimalStats("10", "200", false));
     // hasNull is false, so bloom filter should return NO
     assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
