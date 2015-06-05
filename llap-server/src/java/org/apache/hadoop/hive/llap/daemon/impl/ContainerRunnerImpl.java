@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -145,7 +146,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
         localAddress.get().getHostName(), request.getFragmentSpec().getDagName(),
         request.getFragmentSpec().getVertexName(), request.getFragmentSpec().getFragmentNumber(),
         request.getFragmentSpec().getAttemptNumber());
-    LOG.info("Queueing container for execution: " + stringifySubmitRequest(request));
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Queueing container for execution: " + stringifySubmitRequest(request));
+    }
     // This is the start of container-annotated logging.
     // TODO Reduce the length of this string. Way too verbose at the moment.
     String ndcContextString = request.getFragmentSpec().getFragmentIdentifierString();
@@ -167,7 +170,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
               fragmentSpec.getVertexName(), fragmentSpec.getFragmentNumber(),
               fragmentSpec.getAttemptNumber(), request.getUser(), request.getFragmentSpec());
 
-      String []localDirs = fragmentInfo.getLocalDirs();
+      String[] localDirs = fragmentInfo.getLocalDirs();
       Preconditions.checkNotNull(localDirs);
 
       if (LOG.isDebugEnabled()) {
@@ -300,5 +303,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
                            Token<JobTokenIdentifier> jobToken, TezTaskAttemptID taskAttemptId) {
       amReporter.taskKilled(amLocation, port, user, jobToken, taskAttemptId);
     }
+  }
+
+  public Set<String> getExecutorStatus() {
+    return executorService.getExecutorsStatus();
   }
 }

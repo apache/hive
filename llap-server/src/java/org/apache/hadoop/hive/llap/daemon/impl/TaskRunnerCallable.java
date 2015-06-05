@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -131,6 +132,10 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.requestId = getRequestId(request);
     this.killedTaskHandler = killedTaskHandler;
     this.fragmentCompletionHanler = fragmentCompleteHandler;
+  }
+
+  public long getStartTime() {
+    return startTime;
   }
 
   @Override

@@ -17,7 +17,12 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -33,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
@@ -132,6 +138,50 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     shutDown(false);
   }
 
+  private static final ThreadLocal<SimpleDateFormat> sdf = new ThreadLocal<SimpleDateFormat>() {
+    @Override
+    protected SimpleDateFormat initialValue() {
+      return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    }
+  };
+
+  @Override
+  public Set<String> getExecutorsStatus() {
+    Set<String> result = new HashSet<>();
+    StringBuilder value = new StringBuilder();
+    for (Map.Entry<String, TaskWrapper> e : knownTasks.entrySet()) {
+      value.setLength(0);
+      value.append(e.getKey());
+      TaskWrapper task = e.getValue();
+      boolean isFirst = true;
+      TaskRunnerCallable c = task.getTaskRunnerCallable();
+      if (c != null && c.getRequest() != null && c.getRequest().getFragmentSpec() != null) {
+        FragmentSpecProto fs = c.getRequest().getFragmentSpec();
+        value.append(isFirst ? " (" : ", ").append(fs.getDagName())
+          .append("/").append(fs.getVertexName());
+        isFirst = false;
+      }
+      value.append(isFirst ? " (" : ", ");
+      if (task.isInWaitQueue()) {
+        value.append("in queue");
+      } else if (c != null) {
+        long startTime = c.getStartTime();
+        if (startTime != 0) {
+          value.append("started at ").append(sdf.get().format(new Date(startTime)));
+        } else {
+          value.append("not started");
+        }
+      } else {
+        value.append("has no callable");
+      }
+      if (task.isInPreemptionQueue()) {
+        value.append(", ").append("preemptable");
+      }
+      value.append(")");
+      result.add(value.toString());
+    }
+    return result;
+  }
 
   /**
    * Worker that takes tasks from wait queue and schedule it for execution.

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
@@ -36,4 +37,6 @@ public interface Scheduler<T> {
    * @param fragmentId
    */
   void killFragment(String fragmentId);
+
+  Set<String> getExecutorsStatus();
 }
