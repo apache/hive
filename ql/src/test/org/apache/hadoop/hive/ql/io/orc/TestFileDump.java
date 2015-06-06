@@ -130,16 +130,19 @@ public class TestFileDump {
         new BufferedReader(new FileReader(HiveTestUtils.getFileFromClasspath(expected)));
     BufferedReader aStream =
         new BufferedReader(new FileReader(actual));
-    String expectedLine = eStream.readLine();
+    String expectedLine = eStream.readLine().trim();
     while (expectedLine != null) {
-      String actualLine = aStream.readLine();
+      String actualLine = aStream.readLine().trim();
       System.out.println("actual:   " + actualLine);
       System.out.println("expected: " + expectedLine);
       assertEquals(expectedLine, actualLine);
       expectedLine = eStream.readLine();
+      expectedLine = expectedLine == null ? null : expectedLine.trim();
     }
     assertNull(eStream.readLine());
     assertNull(aStream.readLine());
+    eStream.close();
+    aStream.close();
   }
 
   @Test
