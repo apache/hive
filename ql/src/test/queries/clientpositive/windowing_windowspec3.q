@@ -16,6 +16,10 @@ create table emp(empno smallint,
 
 load data local inpath '../../data/files/emp2.txt' into table emp;
 
+-- No order by
+select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp;
+
+
 -- Support date datatype
 select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range 90 preceding),
@@ -25,5 +29,3 @@ select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range between 10 following and unbounded following),
     sum(salary) over (partition by deptno order by hiredate range between unbounded preceding and 10 following)
 from emp;
-
-
