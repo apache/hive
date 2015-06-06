@@ -134,7 +134,7 @@ public class WindowingSpec {
       }
 
       // 2. A Window Spec with no Parition Spec, is Partitioned on a Constant(number 0)
-      applyContantPartition(wdwSpec);
+      applyConstantPartition(wdwSpec);
 
       // 3. For missing Wdw Frames or for Frames with only a Start Boundary, completely
       //    specify them by the rules in {@link effectiveWindowFrame}
@@ -143,8 +143,8 @@ public class WindowingSpec {
       // 4. Validate the effective Window Frames with the rules in {@link validateWindowFrame}
       validateWindowFrame(wdwSpec);
 
-      // 5. If there is no Order, then add the Partition expressions as the Order.
-      wdwSpec.ensureOrderSpec();
+      // 5. Add the Partition expressions as the Order if there is no Order and validate Order spec.
+      setAndValidateOrderSpec(wdwSpec);
     }
   }
 
@@ -185,7 +185,7 @@ public class WindowingSpec {
     }
   }
 
-  private void applyContantPartition(WindowSpec wdwSpec) {
+  private void applyConstantPartition(WindowSpec wdwSpec) {
     PartitionSpec partSpec = wdwSpec.getPartition();
     if ( partSpec == null ) {
       partSpec = new PartitionSpec();
@@ -266,20 +266,36 @@ public class WindowingSpec {
         start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT ) {
       throw new SemanticException("End of a WindowFrame cannot be UNBOUNDED PRECEDING");
     }
-
-    validateValueBoundary(wFrame.getStart(), wdwSpec.getOrder());
-    validateValueBoundary(wFrame.getEnd(), wdwSpec.getOrder());
   }
 
-  private void validateValueBoundary(BoundarySpec bs, OrderSpec order) throws SemanticException {
-    if ( bs instanceof ValueBoundarySpec ) {
-      ValueBoundarySpec vbs = (ValueBoundarySpec) bs;
+  /**
+   * Add default order spec if there is no order and validate order spec for valued based
+   * windowing since only one sort key is allowed.
+   * @param wdwSpec
+   * @throws SemanticException
+   */
+  private void setAndValidateOrderSpec(WindowSpec wdwSpec) throws SemanticException {
+    wdwSpec.ensureOrderSpec();
+
+    WindowFrameSpec wFrame = wdwSpec.getWindowFrame();
+    OrderSpec order = wdwSpec.getOrder();
+
+    BoundarySpec start = wFrame.getStart();
+    BoundarySpec end = wFrame.getEnd();
+
+    if (start instanceof ValueBoundarySpec || end instanceof ValueBoundarySpec) {
       if ( order != null ) {
         if ( order.getExpressions().size() > 1 ) {
           throw new SemanticException("Range based Window Frame can have only 1 Sort Key");
         }
+
+        if (start instanceof ValueBoundarySpec) {
+          ((ValueBoundarySpec)start).setExpression(order.getExpressions().get(0).getExpression());
+        }
+        if (end instanceof ValueBoundarySpec) {
+          ((ValueBoundarySpec)end).setExpression(order.getExpressions().get(0).getExpression());
+        }
       }
-      vbs.setExpression(order.getExpressions().get(0).getExpression());
     }
   }
 
