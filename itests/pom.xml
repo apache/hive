@@ -38,6 +38,7 @@
    <module>util</module>
    <module>test-serde</module>
    <module>qtest</module>
+   <module>qtest-accumulo</module>
    <module>hive-jmh</module>
   </modules>
 
