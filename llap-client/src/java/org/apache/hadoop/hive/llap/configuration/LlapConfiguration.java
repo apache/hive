@@ -44,6 +44,9 @@ public class LlapConfiguration extends Configuration {
   public static final String LLAP_DAEMON_YARN_SHUFFLE_PORT = LLAP_DAEMON_PREFIX + "yarn.shuffle.port";
   public static final int LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT = 15551;
 
+  public static final String LLAP_DAEMON_YARN_CONTAINER_MB = LLAP_DAEMON_PREFIX + "yarn.container.mb";
+  public static final int LLAP_DAEMON_YARN_CONTAINER_MB_DEFAULT = -1;
+
   public static final String LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED = LLAP_DAEMON_PREFIX + "shuffle.dir-watcher.enabled";
   public static final boolean LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED_DEFAULT = false;
 

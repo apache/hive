@@ -38,6 +38,7 @@ public class MiniLlapCluster extends AbstractService {
   private final File testWorkDir;
   private final long execBytesPerService;
   private final boolean llapIoEnabled;
+  private final boolean ioIsDirect;
   private final long ioBytesPerService;
   private final int numExecutorsPerService;
   private final String[] localDirs;
@@ -46,15 +47,15 @@ public class MiniLlapCluster extends AbstractService {
   private LlapDaemon llapDaemon;
 
   public static MiniLlapCluster create(String clusterName, int numExecutorsPerService,
-                                       long execBytePerService, boolean llapIoEnabled,
-                                       long ioBytesPerService, int numLocalDirs) {
+      long execBytePerService, boolean llapIoEnabled, boolean ioIsDirect, long ioBytesPerService,
+      int numLocalDirs) {
     return new MiniLlapCluster(clusterName, numExecutorsPerService, execBytePerService,
-        llapIoEnabled, ioBytesPerService, numLocalDirs);
+        llapIoEnabled, ioIsDirect, ioBytesPerService, numLocalDirs);
   }
 
   // TODO Add support for multiple instances
   private MiniLlapCluster(String clusterName, int numExecutorsPerService, long execMemoryPerService,
-                          boolean llapIoEnabled, long ioBytesPerService, int numLocalDirs) {
+                          boolean llapIoEnabled, boolean ioIsDirect, long ioBytesPerService, int numLocalDirs) {
     super(clusterName + "_" + MiniLlapCluster.class.getSimpleName());
     Preconditions.checkArgument(numExecutorsPerService > 0);
     Preconditions.checkArgument(execMemoryPerService > 0);
@@ -105,6 +106,7 @@ public class MiniLlapCluster extends AbstractService {
     }
     this.numExecutorsPerService = numExecutorsPerService;
     this.execBytesPerService = execMemoryPerService;
+    this.ioIsDirect = ioIsDirect;
     this.llapIoEnabled = llapIoEnabled;
     this.ioBytesPerService = ioBytesPerService;
 
@@ -120,8 +122,9 @@ public class MiniLlapCluster extends AbstractService {
 
   @Override
   public void serviceInit(Configuration conf) {
-    llapDaemon = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
-        ioBytesPerService, localDirs, 0, 0);
+    llapDaemon =
+        new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
+            ioIsDirect, ioBytesPerService, localDirs, 0, 0);
     llapDaemon.init(conf);
   }
 
