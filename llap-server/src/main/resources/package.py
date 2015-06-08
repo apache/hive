@@ -15,26 +15,27 @@ class LlapResource(object):
 	def __init__(self, config):
 		self.memory = config["llap.daemon.memory.per.instance.mb"]
 		self.cores = config["llap.daemon.vcpus.per.instance"]
+		size = config["llap.daemon.yarn.container.mb"]
 		# convert to Mb
 		self.cache = config["hive.llap.io.cache.orc.size"] / (1024*1024.0)
 		self.direct = config["hive.llap.io.cache.direct"]
 		self.min_mb = -1
 		self.min_cores = -1
-		# compute heap
-		h = max(1.2*self.memory, self.memory + 256) 
+		# compute heap + cache as final Xmx
+		h = self.memory 
 		if (not self.direct):
 			h += self.cache
-		c = max(h*1.2, h + 128)
-		if (self.direct):
-			c += self.cache
-		if self.min_mb > 0:
-			c = c + c%self.min_mb
-			h = c/1.2
-			if self.direct:
-				h = h - self.cache
-		self.container_size = int(c)
+		if size == -1:
+			c = min(h*1.2, h + 1024) # + 1024 or 20%
+			c += (self.direct and self.cache) or 0
+			if self.min_mb > 0:
+				c = c + c%self.min_mb
+		else:
+			# do not mess with user input
+			c = size
+		self.container_size = size
 		self.container_cores = self.cores
-		self.heap_size = int(h)
+		self.heap_size = h
 
 	def __repr__(self):
 		return "<LlapResource heap=%d container=%d>" % (self.heap_size, self.container_size)
@@ -47,7 +48,7 @@ def zipdir(path, zip, prefix="."):
 			zip.write(src, dst)
 	
 def main(args):
-	opts, args = getopt(args,"",["instances=","output=", "input=","args=","name=","loglevel=","chaosmonkey="])
+	opts, args = getopt(args,"",["instances=","output=", "input=","args=","name=","loglevel=","chaosmonkey=","size=","xmx=", "cache=", "executors="])
 	version = os.getenv("HIVE_VERSION")
 	if not version:
 		version = strftime("%d%b%Y", gmtime()) 
@@ -144,7 +145,7 @@ def main(args):
 
 	with open(join(output, "run.sh"), "w") as f:
 		f.write(runner % vars)
-	os.chmod(join(output, "run.sh"), 0755)
+	os.chmod(join(output, "run.sh"), 0700)
 
 	print "Prepared %s/run.sh for running LLAP on Slider" % (output)
 

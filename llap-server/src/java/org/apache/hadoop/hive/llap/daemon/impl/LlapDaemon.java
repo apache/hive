@@ -15,6 +15,10 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Set;
@@ -48,6 +52,7 @@ import org.apache.hive.common.util.ShutdownHookManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +82,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final AtomicReference<InetSocketAddress> address = new AtomicReference<InetSocketAddress>();
 
   public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
-      boolean ioEnabled, long ioMemoryBytes, String[] localDirs, int rpcPort,
+      boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int rpcPort,
       int shufflePort) {
     super("LlapDaemon");
 
@@ -91,7 +96,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     Preconditions.checkArgument(shufflePort == 0 || (shufflePort > 1024 && shufflePort < 65536),
         "Shuffle Port must be betwee 1024 and 65535, or 0 for automatic selection");
 
-    this.maxJvmMemory = Runtime.getRuntime().maxMemory();
+    this.maxJvmMemory = getTotalHeapSize();
     this.llapIoEnabled = ioEnabled;
     this.executorMemoryPerInstance = executorMemoryBytes;
     this.ioMemoryPerInstance = ioMemoryBytes;
@@ -111,12 +116,15 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         ", shufflePort=" + shufflePort +
         ", executorMemory=" + executorMemoryBytes +
         ", llapIoEnabled=" + ioEnabled +
+        ", llapIoCacheIsDirect=" + isDirectCache +
         ", llapIoCacheSize=" + ioMemoryBytes +
         ", jvmAvailableMemory=" + maxJvmMemory +
         ", waitQueueSize= " + waitQueueSize +
         ", enablePreemption= " + enablePreemption);
 
-    long memRequired = executorMemoryBytes + (ioEnabled ? ioMemoryBytes : 0);
+    long memRequired =
+        executorMemoryBytes + (ioEnabled && isDirectCache == false ? ioMemoryBytes : 0);
+    // TODO: this check is somewhat bogus as the maxJvmMemory != Xmx parameters (see annotation in LlapServiceDriver)
     Preconditions.checkState(maxJvmMemory >= memRequired,
         "Invalid configuration. Xmx value too small. maxAvailable=" + maxJvmMemory +
             ", configured(exec + io if enabled)=" +
@@ -165,6 +173,28 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     addIfService(registry);
     this.webServices = new LlapWebServices();
     addIfService(webServices);
+  }
+
+  private long getTotalHeapSize() {
+    // runtime.getMax() gives a very different number from the actual Xmx sizing.
+    // you can iterate through the
+    // http://docs.oracle.com/javase/7/docs/api/java/lang/management/MemoryPoolMXBean.html
+    // from java.lang.management to figure this out, but the hard-coded params in the llap run.sh
+    // result in 89% usable heap (-XX:NewRatio=8) + a survivor region which is technically not
+    // in the usable space.
+
+    long total = 0;
+    MemoryMXBean m = ManagementFactory.getMemoryMXBean();
+    for (MemoryPoolMXBean mp : ManagementFactory.getMemoryPoolMXBeans()) {
+      long sz = mp.getUsage().getMax();
+      if (mp.getName().contains("Survivor")) {
+        sz *= 2; // there are 2 survivor spaces
+      }
+      if (mp.getType().equals(MemoryType.HEAP)) {
+        total += sz;
+      }
+    }
+    return total;
   }
 
   private void printAsciiArt() {
@@ -239,9 +269,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
               LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT) * 1024l * 1024l;
       long cacheMemoryBytes =
           HiveConf.getLongVar(daemonConf, HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
+      boolean isDirectCache =
+          HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT);
       boolean llapIoEnabled = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED);
       llapDaemon =
-          new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, llapIoEnabled,
+          new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, llapIoEnabled, isDirectCache,
               cacheMemoryBytes, localDirs,
               rpcPort, shufflePort);
 

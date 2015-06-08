@@ -41,6 +41,8 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.google.common.base.Preconditions;
+
 public class LlapServiceDriver {
 
   protected static final Log LOG = LogFactory.getLog(LlapServiceDriver.class.getName());
@@ -119,9 +121,51 @@ public class LlapServiceDriver {
     conf.reloadConfiguration();
 
     if (options.getName() != null) {
-      // update service registry configs - caveat: this has nothing to do with the actual settings as read by the AM
-      // if needed, use --hiveconf llap.daemon.service.hosts=@llap0 to dynamically switch between instances
+      // update service registry configs - caveat: this has nothing to do with the actual settings
+      // as read by the AM
+      // if needed, use --hiveconf llap.daemon.service.hosts=@llap0 to dynamically switch between
+      // instances
       conf.set(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS, "@" + options.getName());
+    }
+
+    if (options.getSize() != -1) {
+      if (options.getCache() != -1) {
+        Preconditions.checkArgument(options.getCache() < options.getSize(),
+            "Cache has to be smaller than the container sizing");
+      }
+      if (options.getXmx() != -1) {
+        Preconditions.checkArgument(options.getXmx() < options.getSize(),
+            "Working memory has to be smaller than the container sizing");
+      }
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT)) {
+        Preconditions.checkArgument(options.getXmx() + options.getCache() < options.getSize(),
+            "Working memory + cache has to be smaller than the containing sizing ");
+      }
+    }
+
+    final long minAlloc = conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1);
+    if (options.getSize() != -1) {
+      final long containerSize = options.getSize() / (1024 * 1024);
+      Preconditions.checkArgument(containerSize >= minAlloc,
+          "Container size should be greater than minimum allocation(%s)", minAlloc + "m");
+      conf.setLong(LlapConfiguration.LLAP_DAEMON_YARN_CONTAINER_MB, containerSize);
+    }
+
+    if (options.getExecutors() != -1) {
+      conf.setLong(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS, options.getExecutors());
+      // TODO: vcpu settings - possibly when DRFA works right
+    }
+
+    if (options.getCache() != -1) {
+      conf.setLong(HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, options.getCache());
+    }
+
+    if (options.getXmx() != -1) {
+      // Needs more explanation here
+      // Xmx is not the max heap value in JDK8
+      // You need to subtract 50% of the survivor fraction from this, to get actual usable memory before it goes into GC 
+      conf.setLong(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB, (long)(options.getXmx())
+          / (1024 * 1024));
     }
 
     URL logger = conf.getResource("llap-daemon-log4j.properties");
@@ -181,6 +225,10 @@ public class LlapServiceDriver {
 
     // extract configs for processing by the python fragments in Slider
     JSONObject configs = new JSONObject();
+
+    configs.put(LlapConfiguration.LLAP_DAEMON_YARN_CONTAINER_MB, conf.getInt(
+        LlapConfiguration.LLAP_DAEMON_YARN_CONTAINER_MB,
+        LlapConfiguration.LLAP_DAEMON_YARN_CONTAINER_MB_DEFAULT));
 
     configs.put(HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname,
         HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE));
