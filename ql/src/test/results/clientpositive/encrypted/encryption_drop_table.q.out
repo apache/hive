@@ -36,7 +36,7 @@ PREHOOK: query: DROP TABLE default.encrypted_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Unable to drop table because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Unable to drop default.encrypted_table because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.)
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
