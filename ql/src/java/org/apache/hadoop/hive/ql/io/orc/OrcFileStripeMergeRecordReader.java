@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
 
 public class OrcFileStripeMergeRecordReader implements
     RecordReader<OrcFileKeyWrapper, OrcFileValueWrapper> {
@@ -79,7 +79,7 @@ public class OrcFileStripeMergeRecordReader implements
       // if stripe offset is outside the split boundary then ignore the current
       // stripe as it will be handled by some other mapper.
       if (si.getOffset() >= start && si.getOffset() < end) {
-        valueWrapper.setStripeStatistics(stripeStatistics.get(stripeIdx++));
+        valueWrapper.setStripeStatistics(stripeStatistics.get(stripeIdx));
         valueWrapper.setStripeInformation(si);
         if (!iter.hasNext()) {
           valueWrapper.setLastStripeInFile(true);
@@ -94,6 +94,7 @@ public class OrcFileStripeMergeRecordReader implements
       } else {
         continue;
       }
+      stripeIdx++;
       return true;
     }
 
