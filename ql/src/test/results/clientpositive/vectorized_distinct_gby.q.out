@@ -6,11 +6,11 @@ POSTHOOK: query: create table dtest(a int, b int) clustered by (a) sorted by (a)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dtest
-PREHOOK: query: insert into table dtest select c,b from (select array(300,300,300,300,300) as a, 1 as b from src limit 1) y lateral view  explode(a) t1 as c
+PREHOOK: query: insert into table dtest select c,b from (select array(300,300,300,300,300) as a, 1 as b from src order by a limit 1) y lateral view  explode(a) t1 as c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dtest
-POSTHOOK: query: insert into table dtest select c,b from (select array(300,300,300,300,300) as a, 1 as b from src limit 1) y lateral view  explode(a) t1 as c
+POSTHOOK: query: insert into table dtest select c,b from (select array(300,300,300,300,300) as a, 1 as b from src order by a limit 1) y lateral view  explode(a) t1 as c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dtest

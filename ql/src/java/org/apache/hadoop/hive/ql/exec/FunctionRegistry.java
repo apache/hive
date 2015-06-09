@@ -180,6 +180,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("concat", GenericUDFConcat.class);
     system.registerUDF("substr", UDFSubstr.class, false);
     system.registerUDF("substring", UDFSubstr.class, false);
+    system.registerGenericUDF("substring_index", GenericUDFSubstringIndex.class);
     system.registerUDF("space", UDFSpace.class, false);
     system.registerUDF("repeat", UDFRepeat.class, false);
     system.registerUDF("ascii", UDFAscii.class, false);

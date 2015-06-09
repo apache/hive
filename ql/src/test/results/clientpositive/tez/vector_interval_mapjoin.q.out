@@ -1,0 +1,281 @@
+PREHOOK: query: create table vectortab_a_1k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab_a_1k
+POSTHOOK: query: create table vectortab_a_1k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab_a_1k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab_a_1k' OVERWRITE INTO TABLE vectortab_a_1k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@vectortab_a_1k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab_a_1k' OVERWRITE INTO TABLE vectortab_a_1k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@vectortab_a_1k
+PREHOOK: query: CREATE TABLE vectortab_a_1korc STORED AS ORC AS SELECT * FROM vectortab_a_1k
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@vectortab_a_1k
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab_a_1korc
+POSTHOOK: query: CREATE TABLE vectortab_a_1korc STORED AS ORC AS SELECT * FROM vectortab_a_1k
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@vectortab_a_1k
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab_a_1korc
+PREHOOK: query: create table vectortab_b_1k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab_b_1k
+POSTHOOK: query: create table vectortab_b_1k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab_b_1k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab_b_1k' OVERWRITE INTO TABLE vectortab_b_1k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@vectortab_b_1k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab_b_1k' OVERWRITE INTO TABLE vectortab_b_1k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@vectortab_b_1k
+PREHOOK: query: CREATE TABLE vectortab_b_1korc STORED AS ORC AS SELECT * FROM vectortab_b_1k
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@vectortab_b_1k
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab_b_1korc
+POSTHOOK: query: CREATE TABLE vectortab_b_1korc STORED AS ORC AS SELECT * FROM vectortab_b_1k
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@vectortab_b_1k
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab_b_1korc
+PREHOOK: query: explain
+select
+   v1.s,
+   v2.s,
+   v1.intrvl1 
+from
+   ( select
+      s,
+      (cast(dt as date) - cast(ts as date)) as intrvl1 
+   from
+      vectortab_a_1korc ) v1 
+join
+   (
+      select
+         s ,
+         (cast(dt as date) - cast(ts as date)) as intrvl2 
+      from
+         vectortab_b_1korc 
+   ) v2 
+      on v1.intrvl1 = v2.intrvl2 
+      and v1.s = v2.s
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select
+   v1.s,
+   v2.s,
+   v1.intrvl1 
+from
+   ( select
+      s,
+      (cast(dt as date) - cast(ts as date)) as intrvl1 
+   from
+      vectortab_a_1korc ) v1 
+join
+   (
+      select
+         s ,
+         (cast(dt as date) - cast(ts as date)) as intrvl2 
+      from
+         vectortab_b_1korc 
+   ) v2 
+      on v1.intrvl1 = v2.intrvl2 
+      and v1.s = v2.s
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vectortab_a_1korc
+                  Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: s is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 230132 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 230132 Basic stats: COMPLETE Column stats: NONE
+                      Filter Operator
+                        predicate: _col1 is not null (type: boolean)
+                        Statistics: Num rows: 250 Data size: 115066 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: interval_day_time), _col0 (type: string)
+                            1 _col1 (type: interval_day_time), _col0 (type: string)
+                          outputColumnNames: _col0, _col1, _col2
+                          input vertices:
+                            1 Map 2
+                          Statistics: Num rows: 275 Data size: 126572 Basic stats: COMPLETE Column stats: NONE
+                          HybridGraceHashJoin: true
+                          Select Operator
+                            expressions: _col0 (type: string), _col2 (type: string), _col1 (type: interval_day_time)
+                            outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 275 Data size: 126572 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 275 Data size: 126572 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: vectortab_b_1korc
+                  Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: s is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 229224 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 229224 Basic stats: COMPLETE Column stats: NONE
+                      Filter Operator
+                        predicate: _col1 is not null (type: boolean)
+                        Statistics: Num rows: 250 Data size: 114612 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col1 (type: interval_day_time), _col0 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col1 (type: interval_day_time), _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 114612 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+   v1.s,
+   v2.s,
+   v1.intrvl1 
+from
+   ( select
+      s,
+      (cast(dt as date) - cast(ts as date)) as intrvl1 
+   from
+      vectortab_a_1korc ) v1 
+join
+   (
+      select
+         s ,
+         (cast(dt as date) - cast(ts as date)) as intrvl2 
+      from
+         vectortab_b_1korc 
+   ) v2 
+      on v1.intrvl1 = v2.intrvl2 
+      and v1.s = v2.s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab_a_1korc
+PREHOOK: Input: default@vectortab_b_1korc
+#### A masked pattern was here ####
+POSTHOOK: query: select
+   v1.s,
+   v2.s,
+   v1.intrvl1 
+from
+   ( select
+      s,
+      (cast(dt as date) - cast(ts as date)) as intrvl1 
+   from
+      vectortab_a_1korc ) v1 
+join
+   (
+      select
+         s ,
+         (cast(dt as date) - cast(ts as date)) as intrvl2 
+      from
+         vectortab_b_1korc 
+   ) v2 
+      on v1.intrvl1 = v2.intrvl2 
+      and v1.s = v2.s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab_a_1korc
+POSTHOOK: Input: default@vectortab_b_1korc
+#### A masked pattern was here ####

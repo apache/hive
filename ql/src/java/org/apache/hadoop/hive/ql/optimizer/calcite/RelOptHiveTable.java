@@ -221,7 +221,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   }
 
   private String getColNamesForLogging(Set<String> colLst) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean firstEntry = true;
     for (String colName : colLst) {
       if (firstEntry) {

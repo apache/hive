@@ -127,7 +127,7 @@ public class TezJobMonitor {
           TezJobMonitor.killRunningJobs();
         }
         try {
-          for (TezSessionState s: TezSessionState.getOpenSessions()) {
+          for (TezSessionState s : TezSessionPoolManager.getInstance().getOpenSessions()) {
             System.err.println("Shutting down tez session.");
             TezSessionPoolManager.getInstance().close(s, false);
           }
@@ -496,7 +496,7 @@ public class TezJobMonitor {
       if (progress != null) {
         final int totalTasks = progress.getTotalTaskCount();
         final int failedTaskAttempts = progress.getFailedTaskAttemptCount();
-        final int killedTasks = progress.getKilledTaskCount();
+        final int killedTaskAttempts = progress.getKilledTaskAttemptCount();
         final double duration =
             perfLogger.getDuration(PerfLogger.TEZ_RUN_VERTEX + vertexName) / 1000.0;
         VertexStatus vertexStatus = null;
@@ -583,7 +583,7 @@ public class TezJobMonitor {
             vertexName,
             totalTasks,
             failedTaskAttempts,
-            killedTasks,
+            killedTaskAttempts,
             secondsFormat.format((duration)),
             commaFormat.format(cpuTimeMillis),
             commaFormat.format(gcTimeMillis),
@@ -596,7 +596,7 @@ public class TezJobMonitor {
 
   private void printStatusInPlace(Map<String, Progress> progressMap, long startTime,
       boolean vextexStatusFromAM, DAGClient dagClient) {
-    StringBuffer reportBuffer = new StringBuffer();
+    StringBuilder reportBuffer = new StringBuilder();
     int sumComplete = 0;
     int sumTotal = 0;
 
@@ -623,7 +623,7 @@ public class TezJobMonitor {
       final int failed = progress.getFailedTaskAttemptCount();
       final int pending = progress.getTotalTaskCount() - progress.getSucceededTaskCount() -
           progress.getRunningTaskCount();
-      final int killed = progress.getKilledTaskCount();
+      final int killed = progress.getKilledTaskAttemptCount();
 
       // To get vertex status we can use DAGClient.getVertexStatus(), but it will be expensive to
       // get status from AM for every refresh of the UI. Lets infer the state from task counts.
@@ -781,7 +781,7 @@ public class TezJobMonitor {
   }
 
   private String getReport(Map<String, Progress> progressMap) {
-    StringBuffer reportBuffer = new StringBuffer();
+    StringBuilder reportBuffer = new StringBuilder();
 
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s: keys) {

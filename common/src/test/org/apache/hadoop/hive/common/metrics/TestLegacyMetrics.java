@@ -31,28 +31,34 @@ import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.apache.hadoop.hive.common.metrics.Metrics.MetricsScope;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.LegacyMetrics.MetricsScope;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class TestMetrics {
+public class TestLegacyMetrics {
 
   private static final String scopeName = "foo";
   private static final long periodMs = 50L;
+  private static LegacyMetrics metrics;
 
   @Before
   public void before() throws Exception {
-    Metrics.uninit();
-    Metrics.init();
+    MetricsFactory.deInit();
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, LegacyMetrics.class.getCanonicalName());
+    MetricsFactory.init(conf);
+    metrics = (LegacyMetrics) MetricsFactory.getMetricsInstance();
   }
-  
+
   @After
   public void after() throws Exception {
-    Metrics.uninit();
+    MetricsFactory.deInit();
   }
-  
+
   @Test
   public void testMetricsMBean() throws Exception {
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -106,20 +112,21 @@ public class TestMetrics {
     v = mbs.getAttribute(oname, "fooMetric");
     assertEquals(Long.valueOf(0), v);
   }
-  
+
   private <T> void expectIOE(Callable<T> c) throws Exception {
     try {
       T t = c.call();
       fail("IOE expected but ["+t+"] was returned.");
     } catch (IOException ioe) {
       // ok, expected
-    } 
+    }
   }
 
   @Test
   public void testScopeSingleThread() throws Exception {
-    final MetricsScope fooScope = Metrics.startScope(scopeName);
-    // the time and number counters become available only after the 1st 
+    metrics.startScope(scopeName);
+    final MetricsScope fooScope = metrics.getScope(scopeName);
+    // the time and number counters become available only after the 1st
     // scope close:
     expectIOE(new Callable<Long>() {
       @Override
@@ -143,61 +150,62 @@ public class TestMetrics {
         return null;
       }
     });
-    
-    assertSame(fooScope, Metrics.getScope(scopeName));
-    Thread.sleep(periodMs+1);
+
+    assertSame(fooScope, metrics.getScope(scopeName));
+    Thread.sleep(periodMs+ 1);
     // 1st close:
     // closing of open scope should be ok:
-    Metrics.endScope(scopeName); 
+    metrics.endScope(scopeName);
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        Metrics.endScope(scopeName); // closing of closed scope not allowed
+        metrics.endScope(scopeName); // closing of closed scope not allowed
         return null;
       }
     });
-    
+
     assertEquals(Long.valueOf(1), fooScope.getNumCounter());
-    final long t1 = fooScope.getTimeCounter().longValue(); 
+    final long t1 = fooScope.getTimeCounter().longValue();
     assertTrue(t1 > periodMs);
-    
-    assertSame(fooScope, Metrics.getScope(scopeName));
-    
+
+    assertSame(fooScope, metrics.getScope(scopeName));
+
    // opening allowed after closing:
-    Metrics.startScope(scopeName);
+    metrics.startScope(scopeName);
     // opening of already open scope not allowed:
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        Metrics.startScope(scopeName); 
+        metrics.startScope(scopeName);
         return null;
       }
     });
-    
+
     assertEquals(Long.valueOf(1), fooScope.getNumCounter());
     assertEquals(t1, fooScope.getTimeCounter().longValue());
-    
-    assertSame(fooScope, Metrics.getScope(scopeName));
+
+    assertSame(fooScope, metrics.getScope(scopeName));
     Thread.sleep(periodMs + 1);
-    // Reopening (close + open) allowed in opened state: 
+    // Reopening (close + open) allowed in opened state:
     fooScope.reopen();
 
     assertEquals(Long.valueOf(2), fooScope.getNumCounter());
     assertTrue(fooScope.getTimeCounter().longValue() > 2 * periodMs);
-    
+
     Thread.sleep(periodMs + 1);
     // 3rd close:
     fooScope.close();
-    
+
     assertEquals(Long.valueOf(3), fooScope.getNumCounter());
     assertTrue(fooScope.getTimeCounter().longValue() > 3 * periodMs);
-    Double avgT = (Double)Metrics.get("foo.avg_t");
+    Double avgT = (Double) metrics.get("foo.avg_t");
     assertTrue(avgT.doubleValue() > periodMs);
   }
-  
+
   @Test
   public void testScopeConcurrency() throws Exception {
-    MetricsScope fooScope = Metrics.startScope(scopeName);
+    metrics.startScope(scopeName);
+    MetricsScope fooScope = metrics.getScope(scopeName);
     final int threads = 10;
     ExecutorService executorService = Executors.newFixedThreadPool(threads);
     for (int i=0; i<threads; i++) {
@@ -206,24 +214,25 @@ public class TestMetrics {
         @Override
         public Void call() throws Exception {
           testScopeImpl(n);
-          return null; 
+          return null;
         }
       });
     }
     executorService.shutdown();
     assertTrue(executorService.awaitTermination(periodMs * 3 * threads, TimeUnit.MILLISECONDS));
 
-    fooScope = Metrics.getScope(scopeName);
+    fooScope = metrics.getScope(scopeName);
     assertEquals(Long.valueOf(3 * threads), fooScope.getNumCounter());
     assertTrue(fooScope.getTimeCounter().longValue() > 3 * periodMs * threads);
-    Double avgT = (Double)Metrics.get("foo.avg_t");
+    Double avgT = (Double) metrics.get("foo.avg_t");
     assertTrue(avgT.doubleValue() > periodMs);
-    Metrics.endScope(scopeName);
+    metrics.endScope(scopeName);
   }
-  
+
   void testScopeImpl(int n) throws Exception {
-    final MetricsScope fooScope = Metrics.startScope(scopeName);
-    // cannot open scope that is already open:
+    metrics.startScope(scopeName);
+    final MetricsScope fooScope = metrics.getScope(scopeName);
+      // cannot open scope that is already open:
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
@@ -231,56 +240,56 @@ public class TestMetrics {
         return null;
       }
     });
-    
-    assertSame(fooScope, Metrics.getScope(scopeName));
-    Thread.sleep(periodMs+1);
+
+    assertSame(fooScope, metrics.getScope(scopeName));
+    Thread.sleep(periodMs+ 1);
     // 1st close:
-    Metrics.endScope(scopeName); // closing of open scope should be ok.
-    
+    metrics.endScope(scopeName); // closing of open scope should be ok.
+
     assertTrue(fooScope.getNumCounter().longValue() >= 1);
-    final long t1 = fooScope.getTimeCounter().longValue(); 
+    final long t1 = fooScope.getTimeCounter().longValue();
     assertTrue(t1 > periodMs);
-    
+
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        Metrics.endScope(scopeName); // closing of closed scope not allowed
+        metrics.endScope(scopeName); // closing of closed scope not allowed
         return null;
       }
     });
-    
-    assertSame(fooScope, Metrics.getScope(scopeName));
-    
+
+    assertSame(fooScope, metrics.getScope(scopeName));
+
    // opening allowed after closing:
-    Metrics.startScope(scopeName);
-    
+    metrics.startScope(scopeName);
+
     assertTrue(fooScope.getNumCounter().longValue() >= 1);
     assertTrue(fooScope.getTimeCounter().longValue() >= t1);
-    
+
    // opening of already open scope not allowed:
     expectIOE(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        Metrics.startScope(scopeName); 
+        metrics.startScope(scopeName);
         return null;
       }
     });
-    
-    assertSame(fooScope, Metrics.getScope(scopeName));
+
+    assertSame(fooScope, metrics.getScope(scopeName));
     Thread.sleep(periodMs + 1);
-    // Reopening (close + open) allowed in opened state: 
+    // Reopening (close + open) allowed in opened state:
     fooScope.reopen();
 
     assertTrue(fooScope.getNumCounter().longValue() >= 2);
     assertTrue(fooScope.getTimeCounter().longValue() > 2 * periodMs);
-    
+
     Thread.sleep(periodMs + 1);
     // 3rd close:
     fooScope.close();
-    
+
     assertTrue(fooScope.getNumCounter().longValue() >= 3);
     assertTrue(fooScope.getTimeCounter().longValue() > 3 * periodMs);
-    Double avgT = (Double)Metrics.get("foo.avg_t");
+    Double avgT = (Double) metrics.get("foo.avg_t");
     assertTrue(avgT.doubleValue() > periodMs);
   }
 }

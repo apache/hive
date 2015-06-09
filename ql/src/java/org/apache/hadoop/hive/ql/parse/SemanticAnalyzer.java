@@ -709,10 +709,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
 
-    unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
-    if (aliasIndex != 0) {
-      unparseTranslator.addIdentifierTranslation((ASTNode) tabref
-          .getChild(aliasIndex));
+    // if alias to CTE contains the alias, we do not do the translation because
+    // cte is actually a subquery.
+    if (!this.aliasToCTEs.containsKey(alias)) {
+      unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
+      if (aliasIndex != 0) {
+        unparseTranslator.addIdentifierTranslation((ASTNode) tabref.getChild(aliasIndex));
+      }
     }
 
     return alias;
@@ -952,20 +955,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    */
   private ASTNode findCTEFromName(QB qb, String cteName) {
-
-    /*
-     * When saving a view definition all table references in the AST are qualified; including CTE references.
-     * Where as CTE definitions have no DB qualifier; so we strip out the DB qualifier before searching in
-     * <code>aliasToCTEs</code> map.
-     */
-    String currDB = SessionState.get().getCurrentDatabase();
-    if ( currDB != null && cteName.startsWith(currDB) &&
-        cteName.length() > currDB.length() &&
-        cteName.charAt(currDB.length()) == '.'   ) {
-      cteName = cteName.substring(currDB.length() + 1);
-    }
-
-    StringBuffer qId = new StringBuffer();
+    StringBuilder qId = new StringBuilder();
     if (qb.getId() != null) {
       qId.append(qb.getId());
     }
@@ -997,14 +987,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     cteAlias = cteAlias == null ? cteName : cteAlias;
     ASTNode cteQryNode = findCTEFromName(qb, cteName);
     QBExpr cteQBExpr = new QBExpr(cteAlias);
-
-    String cteText = ctx.getTokenRewriteStream().toString(
-        cteQryNode.getTokenStartIndex(), cteQryNode.getTokenStopIndex());
-    final ASTNodeOrigin cteOrigin = new ASTNodeOrigin("CTE", cteName,
-        cteText, cteAlias, cteQryNode);
-    cteQryNode = (ASTNode) ParseDriver.adaptor.dupTree(cteQryNode);
-    SubQueryUtils.setOriginDeep(cteQryNode, cteOrigin);
-
     doPhase1QBExpr(cteQryNode, cteQBExpr, qb.getId(), cteAlias);
     qb.rewriteCTEToSubq(cteAlias, cteName, cteQBExpr);
   }
@@ -1571,31 +1553,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       for (String alias : tabAliases) {
         String tab_name = qb.getTabNameForAlias(alias);
+        
+        // we first look for this alias from CTE, and then from catalog.
+        /*
+         * if this s a CTE reference: Add its AST as a SubQuery to this QB.
+         */
+        ASTNode cteNode = findCTEFromName(qb, tab_name.toLowerCase());
+        if (cteNode != null) {
+          String cte_name = tab_name.toLowerCase();
+          if (ctesExpanded.contains(cte_name)) {
+            throw new SemanticException("Recursive cte " + tab_name + " detected (cycle: "
+                + StringUtils.join(ctesExpanded, " -> ") + " -> " + tab_name + ").");
+          }
+          addCTEAsSubQuery(qb, cte_name, alias);
+          sqAliasToCTEName.put(alias, cte_name);
+          continue;
+        }
+
         Table tab = db.getTable(tab_name, false);
         if (tab == null) {
-          /*
-           * if this s a CTE reference:
-           * Add its AST as a SubQuery to this QB.
-           */
-          ASTNode cteNode = findCTEFromName(qb, tab_name.toLowerCase());
-          if ( cteNode != null ) {
-            String cte_name = tab_name.toLowerCase();
-            if (ctesExpanded.contains(cte_name)) {
-              throw new SemanticException("Recursive cte " + tab_name +
-                  " detected (cycle: " + StringUtils.join(ctesExpanded, " -> ") +
-                  " -> " + tab_name + ").");
-            }
-            addCTEAsSubQuery(qb, cte_name, alias);
-            sqAliasToCTEName.put(alias, cte_name);
-            continue;
-          }
           ASTNode src = qb.getParseInfo().getSrcForAlias(alias);
           if (null != src) {
             throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(src));
           } else {
             throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(alias));
           }
-
         }
 
         // Disallow INSERT INTO on bucketized tables

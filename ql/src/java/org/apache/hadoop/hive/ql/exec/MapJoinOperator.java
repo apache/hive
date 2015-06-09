@@ -525,7 +525,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     if ((this.getExecContext() != null) && (this.getExecContext().getLocalWork() != null)
         && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
         && !(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
-          && SparkUtilities.isDedicatedCluster(hconf))) {
+            && SparkUtilities.isDedicatedCluster(hconf))) {
       if (isLogInfoEnabled) {
         LOG.info("MR: Clearing all map join table containers.");
       }

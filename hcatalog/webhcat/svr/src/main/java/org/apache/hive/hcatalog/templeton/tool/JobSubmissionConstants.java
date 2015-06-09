@@ -55,6 +55,7 @@ public interface JobSubmissionConstants {
   public static final String MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER =
     "__MR_JOB_TAGS_OPTION=MR_JOB_TAGS_JOBID__";
 
+  public static final String HADOOP_CLASSPATH = "HADOOP_CLASSPATH";
   /**
    * constants needed for Pig job submission
    * The string values here are what Pig expects to see in it's environment

@@ -585,7 +585,7 @@ public class CompactorMR {
 
     @Override
     public String toString() {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append(size());
       buf.append(':');
       if (size() > 0) {
@@ -631,14 +631,15 @@ public class CompactorMR {
 
     @Override
     public String toString() {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       buf.append(size());
       buf.append(':');
       if (size() > 0) {
         for (Path p : this) {
-          buf.append(p.toString().length());
+          String pStr = p.toString();
+          buf.append(pStr.length());
           buf.append(':');
-          buf.append(p.toString());
+          buf.append(pStr);
         }
       }
       return buf.toString();

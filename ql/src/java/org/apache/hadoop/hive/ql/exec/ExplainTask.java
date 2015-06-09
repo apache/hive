@@ -854,7 +854,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
     }
     else {
-      StringBuffer s = new StringBuffer();
+      StringBuilder s = new StringBuilder();
       first = true;
       for (Task<?> parent : task.getParentTasks()) {
         if (!first) {
@@ -886,7 +886,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (task instanceof ConditionalTask
         && ((ConditionalTask) task).getListTasks() != null) {
-      StringBuffer s = new StringBuffer();
+      StringBuilder s = new StringBuilder();
       first = true;
       for (Task<?> con : ((ConditionalTask) task).getListTasks()) {
         if (!first) {

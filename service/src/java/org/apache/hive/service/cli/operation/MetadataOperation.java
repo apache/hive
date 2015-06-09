@@ -18,6 +18,16 @@
 
 package org.apache.hive.service.cli.operation;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.OperationType;
@@ -95,6 +105,31 @@ public abstract class MetadataOperation extends Operation {
     return pattern
         .replaceAll("([^\\\\])%", "$1" + wStr).replaceAll("\\\\%", "%").replaceAll("^%", wStr)
         .replaceAll("([^\\\\])_", "$1.").replaceAll("\\\\_", "_").replaceAll("^_", ".");
+  }
+
+  protected boolean isAuthV2Enabled(){
+    SessionState ss = SessionState.get();
+    return (ss.isAuthorizationModeV2() &&
+        HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED));
+  }
+
+  protected void authorizeMetaGets(HiveOperationType opType, List<HivePrivilegeObject> inpObjs)
+      throws HiveSQLException {
+    authorizeMetaGets(opType, inpObjs, null);
+  }
+
+  protected void authorizeMetaGets(HiveOperationType opType, List<HivePrivilegeObject> inpObjs,
+      String cmdString) throws HiveSQLException {
+    SessionState ss = SessionState.get();
+    HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
+    ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
+    ctxBuilder.setCommandString(cmdString);
+    try {
+      ss.getAuthorizerV2().checkPrivileges(opType, inpObjs, null,
+          ctxBuilder.build());
+    } catch (HiveAuthzPluginException | HiveAccessControlException e) {
+      throw new HiveSQLException(e.getMessage(), e);
+    }
   }
 
 }

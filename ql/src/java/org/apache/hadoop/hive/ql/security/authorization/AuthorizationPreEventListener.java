@@ -68,14 +68,14 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
   public static final Log LOG = LogFactory.getLog(
       AuthorizationPreEventListener.class);
 
-  private final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
+  private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
     @Override
     protected Configuration initialValue() {
       return new HiveConf(AuthorizationPreEventListener.class);
     }
   };
 
-  private final ThreadLocal<HiveMetastoreAuthenticationProvider> tAuthenticator
+  private static final ThreadLocal<HiveMetastoreAuthenticationProvider> tAuthenticator
       = new ThreadLocal<HiveMetastoreAuthenticationProvider>() {
     @Override
     protected HiveMetastoreAuthenticationProvider initialValue() {
@@ -88,7 +88,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
     }
   };
 
-  private final ThreadLocal<List<HiveMetastoreAuthorizationProvider>> tAuthorizers
+  private static final ThreadLocal<List<HiveMetastoreAuthorizationProvider>> tAuthorizers
       = new ThreadLocal<List<HiveMetastoreAuthorizationProvider>>() {
     @Override
     protected List<HiveMetastoreAuthorizationProvider> initialValue() {
@@ -101,7 +101,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
     }
   };
 
-  private final ThreadLocal<Boolean> tConfigSetOnAuths = new ThreadLocal<Boolean>() {
+  private static final ThreadLocal<Boolean> tConfigSetOnAuths = new ThreadLocal<Boolean>() {
     @Override
     protected Boolean initialValue() {
       return false;

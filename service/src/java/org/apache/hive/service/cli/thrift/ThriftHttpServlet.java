@@ -446,10 +446,10 @@ public class ThriftHttpServlet extends TServlet {
       KerberosNameShim fullKerberosName;
       try {
         fullKerberosName = ShimLoader.getHadoopShims().getKerberosNameShim(fullPrincipal);
+        return fullKerberosName.getShortName();
       } catch (IOException e) {
         throw new HttpAuthenticationException(e);
       }
-      return fullKerberosName.getServiceName();
     }
   }
 

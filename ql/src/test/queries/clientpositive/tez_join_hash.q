@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 create table orc_src (key string, value string) STORED AS ORC;
 insert into table orc_src select * from src;
 

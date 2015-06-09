@@ -1,0 +1,110 @@
+PREHOOK: query: -- Test value based windowing spec
+
+drop table if exists emp
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Test value based windowing spec
+
+drop table if exists emp
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table emp(empno smallint,
+           ename varchar(10),
+           job varchar(10),
+           manager smallint,
+           hiredate date,
+           hirets timestamp,
+           salary double,
+           bonus double,
+           deptno tinyint)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emp
+POSTHOOK: query: create table emp(empno smallint,
+           ename varchar(10),
+           job varchar(10),
+           manager smallint,
+           hiredate date,
+           hirets timestamp,
+           salary double,
+           bonus double,
+           deptno tinyint)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emp
+PREHOOK: query: load data local inpath '../../data/files/emp2.txt' into table emp
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@emp
+POSTHOOK: query: load data local inpath '../../data/files/emp2.txt' into table emp
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@emp
+PREHOOK: query: -- No order by
+select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emp
+#### A masked pattern was here ####
+POSTHOOK: query: -- No order by
+select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emp
+#### A masked pattern was here ####
+NULL	1500.0	3000.0
+NULL	1500.0	3000.0
+1980-12-17 00:00:00	800.0	800.0
+1981-02-20 00:00:00	1600.0	1600.0
+1981-02-22 00:00:00	1250.0	1250.0
+1981-04-02 00:00:00	2975.0	2975.0
+1981-05-01 00:00:00	2850.0	2850.0
+1981-06-09 00:00:00	2450.0	2450.0
+1981-09-08 00:00:00	1500.0	1500.0
+1981-09-28 00:00:00	1250.0	1250.0
+1981-11-17 00:00:00	5000.0	5000.0
+1981-12-03 00:00:00	3000.0	3950.0
+1981-12-03 00:00:00	950.0	3950.0
+1982-01-23 00:00:00	1300.0	1300.0
+1982-12-09 00:00:00	3000.0	3000.0
+1983-01-12 00:00:00	1100.0	1100.0
+PREHOOK: query: -- Support date datatype
+select deptno, empno, hiredate, salary,
+    sum(salary) over (partition by deptno order by hiredate range 90 preceding),
+    sum(salary) over (partition by deptno order by hiredate range between 90 preceding and 90 following),
+    sum(salary) over (partition by deptno order by hiredate range between 90 preceding and 10 preceding),
+    sum(salary) over (partition by deptno order by hiredate range between 10 following and 90 following),
+    sum(salary) over (partition by deptno order by hiredate range between 10 following and unbounded following),
+    sum(salary) over (partition by deptno order by hiredate range between unbounded preceding and 10 following)
+from emp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emp
+#### A masked pattern was here ####
+POSTHOOK: query: -- Support date datatype
+select deptno, empno, hiredate, salary,
+    sum(salary) over (partition by deptno order by hiredate range 90 preceding),
+    sum(salary) over (partition by deptno order by hiredate range between 90 preceding and 90 following),
+    sum(salary) over (partition by deptno order by hiredate range between 90 preceding and 10 preceding),
+    sum(salary) over (partition by deptno order by hiredate range between 10 following and 90 following),
+    sum(salary) over (partition by deptno order by hiredate range between 10 following and unbounded following),
+    sum(salary) over (partition by deptno order by hiredate range between unbounded preceding and 10 following)
+from emp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emp
+#### A masked pattern was here ####
+10	7988	NULL	1500.0	3000.0	3000.0	NULL	NULL	8750.0	3000.0
+10	7987	NULL	1500.0	3000.0	3000.0	NULL	NULL	8750.0	3000.0
+10	7782	1981-06-09	2450.0	2450.0	2450.0	NULL	NULL	6300.0	5450.0
+10	7839	1981-11-17	5000.0	5000.0	6300.0	NULL	1300.0	1300.0	10450.0
+10	7934	1982-01-23	1300.0	6300.0	6300.0	5000.0	NULL	NULL	11750.0
+20	7369	1980-12-17	800.0	800.0	800.0	NULL	NULL	10075.0	800.0
+20	7566	1981-04-02	2975.0	2975.0	2975.0	NULL	NULL	7100.0	3775.0
+20	7902	1981-12-03	3000.0	3000.0	3000.0	NULL	NULL	4100.0	6775.0
+20	7788	1982-12-09	3000.0	3000.0	4100.0	NULL	1100.0	1100.0	9775.0
+20	7876	1983-01-12	1100.0	4100.0	4100.0	3000.0	NULL	NULL	10875.0
+30	7499	1981-02-20	1600.0	1600.0	5700.0	NULL	2850.0	6550.0	2850.0
+30	7521	1981-02-22	1250.0	2850.0	5700.0	NULL	2850.0	6550.0	2850.0
+30	7698	1981-05-01	2850.0	5700.0	5700.0	2850.0	NULL	3700.0	5700.0
+30	7844	1981-09-08	1500.0	1500.0	3700.0	NULL	2200.0	2200.0	7200.0
+30	7654	1981-09-28	1250.0	2750.0	3700.0	1500.0	950.0	950.0	8450.0
+30	7900	1981-12-03	950.0	3700.0	3700.0	2750.0	NULL	NULL	9400.0

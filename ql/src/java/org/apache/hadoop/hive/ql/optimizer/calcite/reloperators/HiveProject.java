@@ -39,10 +39,10 @@ import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
+
 import com.google.common.collect.ImmutableList;
 
 public class HiveProject extends Project implements HiveRelNode {
@@ -68,6 +68,7 @@ public class HiveProject extends Project implements HiveRelNode {
   public HiveProject(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       List<? extends RexNode> exps, RelDataType rowType, int flags) {
     super(cluster, traitSet, child, exps, rowType, flags);
+    assert traitSet.containsIfApplicable(HiveRelNode.CONVENTION);
     virtualCols = ImmutableList.copyOf(HiveCalciteUtil.getVirtualCols(exps));
   }
 
