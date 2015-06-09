@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -77,11 +78,12 @@ public class AMReporter extends AbstractService {
 
   private static final Logger LOG = LoggerFactory.getLogger(AMReporter.class);
 
-  private final LlapNodeId nodeId;
+  private volatile LlapNodeId nodeId;
   private final Configuration conf;
   private final ListeningExecutorService queueLookupExecutor;
   private final ListeningExecutorService executor;
   private final DelayQueue<AMNodeInfo> pendingHeartbeatQueeu = new DelayQueue();
+  private final AtomicReference<InetSocketAddress> localAddress;
   private final long heartbeatInterval;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   // Tracks appMasters to which heartbeats are being sent. This should not be used for any other
@@ -89,9 +91,9 @@ public class AMReporter extends AbstractService {
   private final Map<LlapNodeId, AMNodeInfo> knownAppMasters = new HashMap<>();
   volatile ListenableFuture<Void> queueLookupFuture;
 
-  public AMReporter(LlapNodeId nodeId, Configuration conf) {
+  public AMReporter(AtomicReference<InetSocketAddress> localAddress, Configuration conf) {
     super(AMReporter.class.getName());
-    this.nodeId = nodeId;
+    this.localAddress = localAddress;
     this.conf = conf;
     ExecutorService rawExecutor = Executors.newCachedThreadPool(
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AMReporter %d").build());
@@ -102,7 +104,7 @@ public class AMReporter extends AbstractService {
     this.heartbeatInterval =
         conf.getLong(LlapConfiguration.LLAP_DAEMON_LIVENESS_HEARTBEAT_INTERVAL_MS,
             LlapConfiguration.LLAP_DAEMON_LIVENESS_HEARTBEAT_INTERVAL_MS_DEFAULT);
-    LOG.info("AMReporter running with NodeId: {}", nodeId);
+
   }
 
   @Override
@@ -125,7 +127,8 @@ public class AMReporter extends AbstractService {
         }
       }
     });
-    LOG.info("Started service: " + getName());
+    nodeId = LlapNodeId.getInstance(localAddress.get().getHostName(), localAddress.get().getPort());
+    LOG.info("AMReporter running with NodeId: {}", nodeId);
   }
 
   @Override
@@ -170,7 +173,7 @@ public class AMReporter extends AbstractService {
     synchronized (knownAppMasters) {
       amNodeInfo = knownAppMasters.get(amNodeId);
       if (amNodeInfo == null) {
-        LOG.info(("Ignoring duplocate unregisterRequest for am at: " + amLocation + ":" + port));
+        LOG.info(("Ignoring duplicate unregisterRequest for am at: " + amLocation + ":" + port));
       }
       amNodeInfo.decrementAndGetTaskCount();
       // Not removing this here. Will be removed when taken off the queue and discovered to have 0
@@ -184,6 +187,9 @@ public class AMReporter extends AbstractService {
     // knownAppMasters is used for sending heartbeats for queued tasks. Killed messages use a new connection.
     LlapNodeId amNodeId = LlapNodeId.getInstance(amLocation, port);
     AMNodeInfo amNodeInfo = new AMNodeInfo(amNodeId, user, jobToken, conf);
+
+    // Even if the service hasn't started up. It's OK to make this invocation since this will
+    // only happen after the AtomicReference address has been populated. Not adding an additional check.
     ListenableFuture<Void> future =
         executor.submit(new KillTaskCallable(taskAttemptId, amNodeInfo));
     Futures.addCallback(future, new FutureCallback<Void>() {

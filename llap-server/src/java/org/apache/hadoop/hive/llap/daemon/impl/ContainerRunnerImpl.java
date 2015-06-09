@@ -25,7 +25,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
@@ -67,7 +66,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private static final Logger LOG = LoggerFactory.getLogger(ContainerRunnerImpl.class);
   public static final String THREAD_NAME_FORMAT_PREFIX = "ContainerExecutor ";
 
-  private volatile AMReporter amReporter;
+  private final AMReporter amReporter;
   private final QueryTracker queryTracker;
   private final Scheduler<TaskRunnerCallable> executorService;
   private final AtomicReference<InetSocketAddress> localAddress;
@@ -81,12 +80,14 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   public ContainerRunnerImpl(Configuration conf, int numExecutors, int waitQueueSize,
       boolean enablePreemption, String[] localDirsBase, int localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
-      long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics) {
+      long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics,
+      AMReporter amReporter) {
     super("ContainerRunnerImpl");
     this.conf = conf;
     Preconditions.checkState(numExecutors > 0,
         "Invalid number of executors: " + numExecutors + ". Must be > 0");
     this.localAddress = localAddress;
+    this.amReporter = amReporter;
 
     this.queryTracker = new QueryTracker(conf, localDirsBase);
     addIfService(queryTracker);
@@ -122,22 +123,13 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   @Override
   public void serviceStart() throws Exception {
-    // The node id will only be available at this point, since the server has been started in LlapDaemon
     super.serviceStart();
-    LlapNodeId llapNodeId = LlapNodeId.getInstance(localAddress.get().getHostName(),
-        localAddress.get().getPort());
-    this.amReporter = new AMReporter(llapNodeId, conf);
-    amReporter.init(conf);
-    amReporter.start();
+
   }
 
   @Override
   protected void serviceStop() throws Exception {
     super.serviceStop();
-    if (amReporter != null) {
-      amReporter.stop();
-      amReporter = null;
-    }
   }
 
   @Override
