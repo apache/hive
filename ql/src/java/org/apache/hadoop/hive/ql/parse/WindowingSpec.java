@@ -58,20 +58,21 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
  * building RowResolvers.
  */
 public class WindowingSpec {
-  HashMap<String, WindowExpressionSpec> aliasToWdwExpr;
-  HashMap<String, WindowSpec> windowSpecs;
-  ArrayList<WindowExpressionSpec> windowExpressions;
+  private HashMap<String, WindowExpressionSpec> aliasToWdwExpr;
+  private HashMap<String, WindowSpec> windowSpecs;
+  private ArrayList<WindowExpressionSpec> windowExpressions;
+
+  public WindowingSpec() {
+    aliasToWdwExpr = new HashMap<String, WindowExpressionSpec>();
+    windowSpecs = new HashMap<String, WindowSpec>();
+    windowExpressions = new ArrayList<WindowExpressionSpec>();
+  }
 
   public void addWindowSpec(String name, WindowSpec wdwSpec) {
-    windowSpecs = windowSpecs == null ? new HashMap<String, WindowSpec>() : windowSpecs;
     windowSpecs.put(name, wdwSpec);
   }
 
   public void addWindowFunction(WindowFunctionSpec wFn) {
-    windowExpressions = windowExpressions == null ?
-        new ArrayList<WindowExpressionSpec>() : windowExpressions;
-    aliasToWdwExpr = aliasToWdwExpr == null ?
-        new HashMap<String, WindowExpressionSpec>() : aliasToWdwExpr;
     windowExpressions.add(wFn);
     aliasToWdwExpr.put(wFn.getAlias(), wFn);
   }
@@ -80,24 +81,12 @@ public class WindowingSpec {
     return aliasToWdwExpr;
   }
 
-  public void setAliasToWdwExpr(HashMap<String, WindowExpressionSpec> aliasToWdwExpr) {
-    this.aliasToWdwExpr = aliasToWdwExpr;
-  }
-
   public HashMap<String, WindowSpec> getWindowSpecs() {
     return windowSpecs;
   }
 
-  public void setWindowSpecs(HashMap<String, WindowSpec> windowSpecs) {
-    this.windowSpecs = windowSpecs;
-  }
-
   public ArrayList<WindowExpressionSpec> getWindowExpressions() {
     return windowExpressions;
-  }
-
-  public void setWindowExpressions(ArrayList<WindowExpressionSpec> windowExpressions) {
-    this.windowExpressions = windowExpressions;
   }
 
   public PartitioningSpec getQueryPartitioningSpec() {
@@ -171,7 +160,7 @@ public class WindowingSpec {
       WindowSpec source = getWindowSpecs().get(sourceId);
       if (source == null || source.equals(dest))
       {
-        throw new SemanticException(String.format("Window Spec %s refers to an unknown source " ,
+        throw new SemanticException(String.format("%s refers to an unknown source" ,
             dest));
       }
 
@@ -445,9 +434,10 @@ public class WindowingSpec {
    */
   public static class WindowSpec
   {
-    String sourceId;
-    PartitioningSpec partitioning;
-    WindowFrameSpec windowFrame;
+    private String sourceId;
+    private PartitioningSpec partitioning;
+    private WindowFrameSpec windowFrame;
+
     public String getSourceId() {
       return sourceId;
     }
@@ -495,6 +485,14 @@ public class WindowingSpec {
         order.prefixBy(getPartition());
         setOrder(order);
       }
+    }
+
+    @Override
+    public String toString() {
+      return String.format("Window Spec=[%s%s%s]",
+          sourceId == null ? "" : "Name='" + sourceId + "'",
+          partitioning == null ? "" : partitioning,
+          windowFrame == null ? "" : windowFrame);
     }
   };
 
