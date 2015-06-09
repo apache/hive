@@ -526,7 +526,7 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers);
+    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers, false);
     Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf,
@@ -568,7 +568,7 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers);
+    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers, false);
     Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf, new Authorizations("foo,bar"));
@@ -622,7 +622,7 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers);
+    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers, false);
     Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf,
@@ -678,7 +678,7 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers);
+    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers, false);
     Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf,
