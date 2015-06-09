@@ -2902,6 +2902,7 @@ public class HiveConf extends Configuration {
     "mapred\\.min\\.split\\.size",
     "mapreduce\\.job\\.reduce\\.slowstart\\.completedmaps",
     "mapreduce\\.job\\.queuename",
+    "mapreduce\\.job\\.tags",
     "mapreduce\\.input\\.fileinputformat\\.split\\.minsize",
     "mapreduce\\.map\\..*",
     "mapreduce\\.reduce\\..*",
@@ -2911,6 +2912,7 @@ public class HiveConf extends Configuration {
     "tez\\.task\\..*",
     "tez\\.runtime\\..*",
     "tez.queue.name",
+
   };
 
 
