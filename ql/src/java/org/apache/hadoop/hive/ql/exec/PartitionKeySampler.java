@@ -112,7 +112,7 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
     return partitionKeys;
   }
 
-  public void writePartitionKeys(Path path, HiveConf conf, JobConf job) throws IOException {
+  public void writePartitionKeys(Path path, JobConf job) throws IOException {
     byte[][] partitionKeys = getPartitionKeys(job.getNumReduceTasks());
     int numPartition = partitionKeys.length + 1;
     if (numPartition != job.getNumReduceTasks()) {
@@ -133,10 +133,11 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
   }
 
   // random sampling
-  public static FetchOperator createSampler(FetchWork work, HiveConf conf, JobConf job,
+  public static FetchOperator createSampler(FetchWork work, JobConf job,
       Operator<?> operator) throws HiveException {
-    int sampleNum = conf.getIntVar(HiveConf.ConfVars.HIVESAMPLINGNUMBERFORORDERBY);
-    float samplePercent = conf.getFloatVar(HiveConf.ConfVars.HIVESAMPLINGPERCENTFORORDERBY);
+    int sampleNum = HiveConf.getIntVar(job, HiveConf.ConfVars.HIVESAMPLINGNUMBERFORORDERBY);
+    float samplePercent =
+        HiveConf.getFloatVar(job, HiveConf.ConfVars.HIVESAMPLINGPERCENTFORORDERBY);
     if (samplePercent < 0.0 || samplePercent > 1.0) {
       throw new IllegalArgumentException("Percentile value must be within the range of 0 to 1.");
     }
