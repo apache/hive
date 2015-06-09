@@ -63,6 +63,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final Configuration shuffleHandlerConf;
   private final LlapDaemonProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
+  private final AMReporter amReporter;
   private final LlapRegistryService registry;
   private final LlapWebServices webServices;
   private final AtomicLong numSubmissions = new AtomicLong(0);
@@ -155,8 +156,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
         " sessionId: " + sessionId);
 
+
+    this.amReporter = new AMReporter(address, daemonConf);
+
+
     this.server = new LlapDaemonProtocolServerImpl(numHandlers, this, address, rpcPort);
-    addIfService(server);
+
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf,
         numExecutors,
@@ -166,13 +171,19 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         shufflePort,
         address,
         executorMemoryBytes,
-        metrics);
+        metrics,
+        amReporter);
     addIfService(containerRunner);
 
     this.registry = new LlapRegistryService(true);
     addIfService(registry);
     this.webServices = new LlapWebServices();
     addIfService(webServices);
+    // Bring up the server only after all other components have started.
+    addIfService(server);
+    // AMReporter after the server so that it gets the correct address. It knows how to deal with
+    // requests before it is started.
+    addIfService(amReporter);
   }
 
   private long getTotalHeapSize() {
@@ -220,14 +231,16 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   @Override
   public void serviceStart() throws Exception {
-    super.serviceStart();
+    // Start the Shuffle service before the listener - until it's a service as well.
     ShuffleHandler.initializeAndStart(shuffleHandlerConf);
+    super.serviceStart();
+    LOG.info("LlapDaemon serviceStart complete");
   }
 
   public void serviceStop() throws Exception {
     super.serviceStop();
-    shutdown();
     ShuffleHandler.shutdown();
+    shutdown();
     LOG.info("LlapDaemon shutdown complete");
   }
 
