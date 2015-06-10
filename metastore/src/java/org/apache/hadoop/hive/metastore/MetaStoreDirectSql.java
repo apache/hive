@@ -1100,6 +1100,7 @@ class MetaStoreDirectSql {
   public AggrStats aggrColStatsForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames, boolean useDensityFunctionForNDVEstimation)
       throws MetaException {
+    if (colNames.isEmpty() || partNames.isEmpty()) return new AggrStats(); // Nothing to aggregate.
     long partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
     List<ColumnStatisticsObj> colStatsList;
     // Try to read from the cache first
@@ -1160,6 +1161,7 @@ class MetaStoreDirectSql {
 
   private long partsFoundForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException {
+    assert !colNames.isEmpty() && !partNames.isEmpty();
     long partsFound = 0;
     boolean doTrace = LOG.isDebugEnabled();
     String queryText = "select count(\"COLUMN_NAME\") from \"PART_COL_STATS\""

@@ -250,7 +250,8 @@ public class StatsUtils {
         neededColumns = processNeededColumns(schema, neededColumns);
         AggrStats aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
             neededColumns, partNames);
-        if (null == aggrStats) {
+        if (null == aggrStats || null == aggrStats.getColStats()
+            || aggrStats.getColStatsSize() == 0) {
           // There are some partitions with no state (or we didn't fetch any state).
           // Update the stats with empty list to reflect that in the
           // state/initialize structures.
