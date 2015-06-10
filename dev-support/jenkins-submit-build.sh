@@ -44,6 +44,10 @@ case "$BUILD_PROFILE" in
    test -n "$PARQUET_URL" || fail "PARQUET_URL must be specified"
    url="$PARQUET_URL&ISSUE_NUM=$ISSUE_NUM"
   ;;
+  beeline-cli-mr2)
+   test -n "$BEELINE_CLI_URL" || fail "BEELINE_CLI_URL must be specified"
+   url="$BEELINE_CLI_URL&ISSUE_NUM=$ISSUE_NUM"
+  ;;
   *)
   echo "Unknown profile '$BUILD_PROFILE'"
   exit 1
