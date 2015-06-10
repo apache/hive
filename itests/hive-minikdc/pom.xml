@@ -29,6 +29,7 @@
 
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
+    <exclude.tests>None</exclude.tests>
   </properties>
 
   <dependencies>
@@ -265,6 +266,16 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <activation>
+	<os>
+          <family>Windows</family>
+        </os>
+      </activation>
+    <properties>
+      <exclude.tests>**/*.java</exclude.tests>
+    </properties>
+    </profile>
   </profiles>
 
   <build>
@@ -274,6 +285,15 @@
         <artifactId>maven-bundle-plugin</artifactId>
         <inherited>true</inherited>
         <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>${exclude.tests}</exclude>
+          </excludes>
+        </configuration>
       </plugin>
     </plugins>
   </build>
