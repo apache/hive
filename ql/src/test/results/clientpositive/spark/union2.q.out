@@ -44,7 +44,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
