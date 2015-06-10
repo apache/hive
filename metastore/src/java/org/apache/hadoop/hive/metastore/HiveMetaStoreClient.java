@@ -1900,6 +1900,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
     List<String> colNames, List<String> partNames) throws NoSuchObjectException, MetaException, TException {
+    if (colNames.isEmpty()) return null; // Nothing to aggregate.
     PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
     return client.get_aggr_stats_for(req);
   }
