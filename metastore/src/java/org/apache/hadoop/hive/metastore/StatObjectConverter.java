@@ -464,14 +464,14 @@ public class StatObjectConverter {
         colType.startsWith("varchar") || colType.startsWith("char")) {
       StringColumnStatsData stringStats = new StringColumnStatsData();
       stringStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
-      stringStats.setAvgColLen((Double)avglen);
+      stringStats.setAvgColLen(MetaStoreDirectSql.extractSqlDouble(avglen));
       stringStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
       stringStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
       binaryStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
-      binaryStats.setAvgColLen((Double)avglen);
+      binaryStats.setAvgColLen(MetaStoreDirectSql.extractSqlDouble(avglen));
       binaryStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
       data.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") ||
@@ -491,10 +491,10 @@ public class StatObjectConverter {
       DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
       doubleStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       if (dhigh != null) {
-        doubleStats.setHighValue((Double)dhigh);
+        doubleStats.setHighValue(MetaStoreDirectSql.extractSqlDouble(dhigh));
       }
       if (dlow != null) {
-        doubleStats.setLowValue((Double)dlow);
+        doubleStats.setLowValue(MetaStoreDirectSql.extractSqlDouble(dlow));
       }
       doubleStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setDoubleStats(doubleStats);
@@ -539,14 +539,14 @@ public class StatObjectConverter {
         || colType.startsWith("char")) {
       StringColumnStatsData stringStats = new StringColumnStatsData();
       stringStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
-      stringStats.setAvgColLen((Double) avglen);
+      stringStats.setAvgColLen(MetaStoreDirectSql.extractSqlDouble(avglen));
       stringStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
       stringStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
       binaryStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
-      binaryStats.setAvgColLen((Double) avglen);
+      binaryStats.setAvgColLen(MetaStoreDirectSql.extractSqlDouble(avglen));
       binaryStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
       data.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") || colType.equals("smallint")
@@ -583,10 +583,10 @@ public class StatObjectConverter {
       DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
       doubleStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       if (dhigh != null) {
-        doubleStats.setHighValue((Double) dhigh);
+        doubleStats.setHighValue(MetaStoreDirectSql.extractSqlDouble(dhigh));
       }
       if (dlow != null) {
-        doubleStats.setLowValue((Double) dlow);
+        doubleStats.setLowValue(MetaStoreDirectSql.extractSqlDouble(dlow));
       }
       long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
       long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
