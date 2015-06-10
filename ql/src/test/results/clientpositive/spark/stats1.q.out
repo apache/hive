@@ -121,7 +121,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
