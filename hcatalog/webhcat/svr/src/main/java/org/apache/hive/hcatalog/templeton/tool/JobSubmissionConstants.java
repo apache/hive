@@ -22,6 +22,7 @@ public interface JobSubmissionConstants {
   public static final String COPY_NAME = "templeton.copy";
   public static final String STATUSDIR_NAME = "templeton.statusdir";
   public static final String ENABLE_LOG = "templeton.enablelog";
+  public static final String ENABLE_JOB_RECONNECT = "templeton.enablejobreconnect";
   public static final String JOB_TYPE = "templeton.jobtype";
   public static final String JAR_ARGS_NAME = "templeton.args";
   public static final String TEMPLETON_JOB_LAUNCH_TIME_NAME = "templeton.job.launch.time";
@@ -31,6 +32,7 @@ public interface JobSubmissionConstants {
   public static final String EXIT_FNAME = "exit";
   public static final int WATCHER_TIMEOUT_SECS = 10;
   public static final int KEEP_ALIVE_MSEC = 60 * 1000;
+  public static final int POLL_JOBPROGRESS_MSEC = 30 * 1000;
   /**
    * A comma-separated list of files to be added to HADOOP_CLASSPATH in 
    * {@link org.apache.hive.hcatalog.templeton.tool.LaunchMapper}.  Used to localize additional

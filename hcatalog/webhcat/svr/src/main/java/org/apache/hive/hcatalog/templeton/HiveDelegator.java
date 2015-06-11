@@ -46,25 +46,28 @@ public class HiveDelegator extends LauncherDelegator {
   public EnqueueBean run(String user, Map<String, Object> userArgs,
                String execute, String srcFile, List<String> defines,
                List<String> hiveArgs, String otherFiles,
-               String statusdir, String callback, String completedUrl, boolean enablelog)
+               String statusdir, String callback, String completedUrl, boolean enablelog,
+               Boolean enableJobReconnect)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException
   {
     runAs = user;
     List<String> args = makeArgs(execute, srcFile, defines, hiveArgs, otherFiles, statusdir,
-                   completedUrl, enablelog);
+                   completedUrl, enablelog, enableJobReconnect);
 
     return enqueueController(user, userArgs, callback, args);
   }
 
   private List<String> makeArgs(String execute, String srcFile,
              List<String> defines, List<String> hiveArgs, String otherFiles,
-             String statusdir, String completedUrl, boolean enablelog)
+             String statusdir, String completedUrl, boolean enablelog,
+             Boolean enableJobReconnect)
     throws BadParam, IOException, InterruptedException
   {
     ArrayList<String> args = new ArrayList<String>();
     try {
-      args.addAll(makeBasicArgs(execute, srcFile, otherFiles, statusdir, completedUrl, enablelog));
+      args.addAll(makeBasicArgs(execute, srcFile, otherFiles, statusdir, completedUrl,
+          enablelog, enableJobReconnect));
       args.add("--");
       TempletonUtils.addCmdForWindows(args);
       addHiveMetaStoreTokenArg();
@@ -117,7 +120,7 @@ public class HiveDelegator extends LauncherDelegator {
 
   private List<String> makeBasicArgs(String execute, String srcFile, String otherFiles,
                                          String statusdir, String completedUrl,
-                                         boolean enablelog)
+                                         boolean enablelog, Boolean enableJobReconnect)
     throws URISyntaxException, IOException,
     InterruptedException
   {
@@ -135,7 +138,7 @@ public class HiveDelegator extends LauncherDelegator {
     }
 
     args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles,
-                enablelog, JobType.HIVE));
+                enablelog, enableJobReconnect, JobType.HIVE));
 
     if (appConf.hiveArchive() != null && !appConf.hiveArchive().equals(""))
     {
