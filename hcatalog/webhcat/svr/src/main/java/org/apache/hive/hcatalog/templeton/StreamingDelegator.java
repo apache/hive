@@ -48,6 +48,7 @@ public class StreamingDelegator extends LauncherDelegator {
                String callback,
                String completedUrl,
                boolean enableLog,
+               Boolean enableJobReconnect,
                JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
@@ -58,7 +59,7 @@ public class StreamingDelegator extends LauncherDelegator {
     return d.run(user, userArgs,
       appConf.streamingJar(), null,
       null, files, args, defines,
-      statusdir, callback, false, completedUrl, enableLog, jobType);
+      statusdir, callback, false, completedUrl, enableLog, enableJobReconnect, jobType);
   }
 
   private List<String> makeArgs(List<String> inputs,
