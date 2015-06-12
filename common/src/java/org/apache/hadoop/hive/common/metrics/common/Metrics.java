@@ -28,16 +28,12 @@ import java.io.IOException;
  */
 public interface Metrics {
 
-  /**
-   * Initialize Metrics system with given Hive configuration.
-   * @param conf
-   */
-  public void init(HiveConf conf) throws Exception;
+  //Must declare CTOR taking in HiveConf.
 
   /**
    * Deinitializes the Metrics system.
    */
-  public void deInit() throws Exception;
+  public void close() throws Exception;
 
   /**
    * @param name
