@@ -748,9 +748,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter(function);
       logInfo((getIpAddress() == null ? "" : "source:" + getIpAddress() + " ") +
           function + extraLogInfo);
-      if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
+      if (MetricsFactory.getInstance() != null) {
         try {
-          MetricsFactory.getMetricsInstance().startScope(function);
+          MetricsFactory.getInstance().startScope(function);
         } catch (IOException e) {
           LOG.debug("Exception when starting metrics scope"
             + e.getClass().getName() + " " + e.getMessage(), e);
@@ -792,9 +792,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void endFunction(String function, MetaStoreEndFunctionContext context) {
-      if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
+      if (MetricsFactory.getInstance() != null) {
         try {
-          MetricsFactory.getMetricsInstance().endScope(function);
+          MetricsFactory.getInstance().endScope(function);
         } catch (IOException e) {
           LOG.debug("Exception when closing metrics scope" + e);
         }
@@ -823,7 +823,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
         try {
-          MetricsFactory.deInit();
+          MetricsFactory.close();
         } catch (Exception e) {
           LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
             + e.getMessage(), e);
