@@ -271,9 +271,9 @@ public class HiveServer2 extends CompositeService {
     HiveConf hiveConf = this.getHiveConf();
     super.stop();
     // Shutdown Metrics
-    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+    if (MetricsFactory.getInstance() != null) {
       try {
-        MetricsFactory.getMetricsInstance().deInit();
+        MetricsFactory.close();
       } catch (Exception e) {
         LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
           + e.getMessage(), e);
@@ -320,7 +320,7 @@ public class HiveServer2 extends CompositeService {
         server.start();
 
         if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
-          MetricsFactory.getMetricsInstance().init(hiveConf);
+          MetricsFactory.init(hiveConf);
         }
         try {
           JvmPauseMonitor pauseMonitor = new JvmPauseMonitor(hiveConf);

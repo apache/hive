@@ -149,7 +149,6 @@ public class LegacyMetrics implements Metrics {
     }
   }
 
-
   private static final ThreadLocal<HashMap<String, MetricsScope>> threadLocalScopes
     = new ThreadLocal<HashMap<String,MetricsScope>>() {
     @Override
@@ -158,31 +157,16 @@ public class LegacyMetrics implements Metrics {
     }
   };
 
-  private boolean initialized = false;
-
-  public void init(HiveConf conf) throws Exception {
-    if (!initialized) {
-      MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-      mbs.registerMBean(metrics, oname);
-      initialized = true;
-    }
-  }
-
-  public boolean isInitialized() {
-    return initialized;
+  public LegacyMetrics(HiveConf conf) throws Exception {
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    mbs.registerMBean(metrics, oname);
   }
 
   public Long incrementCounter(String name) throws IOException{
-    if (!initialized) {
-      return null;
-    }
     return incrementCounter(name,Long.valueOf(1));
   }
 
   public Long incrementCounter(String name, long increment) throws IOException{
-    if (!initialized) {
-      return null;
-    }
     Long value;
     synchronized(metrics) {
       if (!metrics.hasKey(name)) {
@@ -197,23 +181,14 @@ public class LegacyMetrics implements Metrics {
   }
 
   public void set(String name, Object value) throws IOException{
-    if (!initialized) {
-      return;
-    }
     metrics.put(name,value);
   }
 
   public Object get(String name) throws IOException{
-    if (!initialized) {
-      return null;
-    }
     return metrics.get(name);
   }
 
   public void startScope(String name) throws IOException{
-    if (!initialized) {
-      return;
-    }
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
@@ -222,9 +197,6 @@ public class LegacyMetrics implements Metrics {
   }
 
   public MetricsScope getScope(String name) throws IOException {
-    if (!initialized) {
-      return null;
-    }
     if (threadLocalScopes.get().containsKey(name)) {
       return threadLocalScopes.get().get(name);
     } else {
@@ -233,9 +205,6 @@ public class LegacyMetrics implements Metrics {
   }
 
   public void endScope(String name) throws IOException{
-    if (!initialized) {
-      return;
-    }
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();
     }
@@ -247,16 +216,14 @@ public class LegacyMetrics implements Metrics {
    *
    * Note that threadLocalScopes ThreadLocal is *not* cleared in this call.
    */
-  public void deInit() throws Exception {
+  public void close() throws Exception {
     synchronized (metrics) {
-      if (initialized) {
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        if (mbs.isRegistered(oname)) {
-          mbs.unregisterMBean(oname);
-        }
-        metrics.clear();
-        initialized = false;
+      MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+      if (mbs.isRegistered(oname)) {
+        mbs.unregisterMBean(oname);
       }
+      metrics.clear();
+      threadLocalScopes.remove();
     }
   }
 }
