@@ -29,3 +29,23 @@ select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range between 10 following and unbounded following),
     sum(salary) over (partition by deptno order by hiredate range between unbounded preceding and 10 following)
 from emp;
+
+-- Support timestamp datatype. Value in seconds (90days = 90 * 24 * 3600 seconds)
+select deptno, empno, hirets, salary,
+    sum(salary) over (partition by deptno order by hirets range 7776000 preceding),
+    sum(salary) over (partition by deptno order by hirets range between 7776000 preceding and 7776000 following),
+    sum(salary) over (partition by deptno order by hirets range between 7776000 preceding and 864000 preceding),
+    sum(salary) over (partition by deptno order by hirets range between 864000 following and 7776000 following),
+    sum(salary) over (partition by deptno order by hirets range between 864000 following and unbounded following),
+    sum(salary) over (partition by deptno order by hirets range between unbounded preceding and 864000 following)
+from emp;
+
+-- Support double datatype
+select deptno, empno, bonus,
+    avg(bonus) over (partition by deptno order by bonus range 200 preceding),
+    avg(bonus) over (partition by deptno order by bonus range between 200 preceding and 200 following),
+    avg(bonus) over (partition by deptno order by bonus range between 200 preceding and 100 preceding),
+    avg(bonus) over (partition by deptno order by bonus range between 100 following and 200 following),
+    avg(bonus) over (partition by deptno order by bonus range between 200 following and unbounded following),
+    avg(bonus) over (partition by deptno order by bonus range between unbounded preceding and 200 following)
+from emp;
