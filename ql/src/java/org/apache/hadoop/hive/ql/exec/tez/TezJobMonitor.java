@@ -129,7 +129,7 @@ public class TezJobMonitor {
           TezJobMonitor.killRunningJobs();
         }
         try {
-          for (TezSessionState s: TezSessionState.getOpenSessions()) {
+          for (TezSessionState s : TezSessionPoolManager.getInstance().getOpenSessions()) {
             System.err.println("Shutting down tez session.");
             TezSessionPoolManager.getInstance().close(s, false);
           }

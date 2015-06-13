@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -223,6 +224,11 @@ public class GenTezUtils {
 
     Iterator<Operator<?>> it = newRoots.iterator();
     for (Operator<?> orig: roots) {
+      Set<FileSinkOperator> fsOpSet = OperatorUtils.findOperators(orig, FileSinkOperator.class);
+      for (FileSinkOperator fsOp : fsOpSet) {
+        context.fileSinkSet.remove(fsOp);
+      }
+
       Operator<?> newRoot = it.next();
 
       replacementMap.put(orig, newRoot);
@@ -286,6 +292,8 @@ public class GenTezUtils {
         linked.add(desc);
 
         desc.setDirName(new Path(path, ""+linked.size()));
+        desc.setLinkedFileSink(true);
+        desc.setParentDir(path);
         desc.setLinkedFileSinkDesc(linked);
       }
 

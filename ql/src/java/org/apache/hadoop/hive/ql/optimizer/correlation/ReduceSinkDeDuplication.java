@@ -595,6 +595,9 @@ public class ReduceSinkDeDuplication implements Transform {
           CorrelationUtilities.findPossibleParent(
               start, ReduceSinkOperator.class, dedupCtx.trustScript());
       if (pRS != null && merge(cRS, pRS, dedupCtx.minReducer())) {
+        if (dedupCtx.getPctx().getConf().getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+          return false;
+        }
         CorrelationUtilities.removeReduceSinkForGroupBy(cRS, cGBY, dedupCtx.getPctx(), dedupCtx);
         pRS.getConf().setDeduplicated(true);
         return true;

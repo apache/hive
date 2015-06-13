@@ -98,7 +98,7 @@ public class TestHiveAccumuloTableOutputFormat {
     outputFormat.configureAccumuloOutputFormat(conf);
 
     Mockito.verify(outputFormat).setAccumuloConnectorInfo(conf, user, new PasswordToken(password));
-    Mockito.verify(outputFormat).setAccumuloZooKeeperInstance(conf, instanceName, zookeepers);
+    Mockito.verify(outputFormat).setAccumuloZooKeeperInstance(conf, instanceName, zookeepers, false);
     Mockito.verify(outputFormat).setDefaultAccumuloTableName(conf, outputTable);
   }
 

@@ -1,0 +1,148 @@
+PREHOOK: query: create table dummy(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
+POSTHOOK: query: create table dummy(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummy
+PREHOOK: query: insert into table dummy values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@dummy
+POSTHOOK: query: insert into table dummy values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@dummy
+POSTHOOK: Lineage: dummy.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from dummy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dummy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy
+#### A masked pattern was here ####
+1
+PREHOOK: query: create table partunion1(id1 int) partitioned by (part1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partunion1
+POSTHOOK: query: create table partunion1(id1 int) partitioned by (part1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partunion1
+PREHOOK: query: explain insert into table partunion1 partition(part1)
+select temps.* from (
+select 1 as id1, '2014' as part1 from dummy 
+union all 
+select 2 as id1, '2014' as part1 from dummy ) temps
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert into table partunion1 partition(part1)
+select temps.* from (
+select 1 as id1, '2014' as part1 from dummy 
+union all 
+select 2 as id1, '2014' as part1 from dummy ) temps
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 3 <- Union 2 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: dummy
+                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 1 (type: int), '2014' (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.partunion1
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dummy
+                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 2 (type: int), '2014' (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.partunion1
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            part1 
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.partunion1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: insert into table partunion1 partition(part1)
+select temps.* from (
+select 1 as id1, '2014' as part1 from dummy 
+union all 
+select 2 as id1, '2014' as part1 from dummy ) temps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@partunion1
+POSTHOOK: query: insert into table partunion1 partition(part1)
+select temps.* from (
+select 1 as id1, '2014' as part1 from dummy 
+union all 
+select 2 as id1, '2014' as part1 from dummy ) temps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@partunion1@part1=2014
+POSTHOOK: Lineage: partunion1 PARTITION(part1=2014).id1 EXPRESSION []
+PREHOOK: query: select * from partunion1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partunion1
+PREHOOK: Input: default@partunion1@part1=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from partunion1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partunion1
+POSTHOOK: Input: default@partunion1@part1=2014
+#### A masked pattern was here ####
+1	2014
+2	2014

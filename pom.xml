@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>1.3.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -54,7 +54,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>1.3.0</hive.version.shortname>
+    <hive.version.shortname>2.0.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -75,6 +75,7 @@
 
     <!-- To add additional exclude patterns set this property -->
     <test.excludes.additional></test.excludes.additional>
+    <skip.spark.files></skip.spark.files>
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
@@ -826,6 +827,7 @@
             <exclude>**/TestHiveServer2Concurrency.java</exclude>
             <exclude>**/TestHiveMetaStore.java</exclude>
             <exclude>${test.excludes.additional}</exclude>
+            <exclude>%regex[${skip.spark.files}]</exclude>
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -1209,6 +1211,17 @@
         <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
         <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>
         <test.log4j.scheme>file:/</test.log4j.scheme>
+      </properties>
+    </profile>
+    <profile>
+      <id>spark-test</id>
+      <activation>
+	<property>
+          <name>!skipSparkTests</name>
+	</property>
+      </activation>
+      <properties>
+        <skip.spark.files>.*[TestSparkSessionManagerImpl|TestMultiSessionsHS2WithLocalClusterSpark|TestJdbcWithLocalClusterSpark].class</skip.spark.files>
       </properties>
     </profile>
   </profiles>
