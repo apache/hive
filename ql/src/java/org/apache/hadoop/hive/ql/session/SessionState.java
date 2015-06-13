@@ -863,6 +863,25 @@ public class SessionState {
   }
 
   /**
+   * Update the history if set hive.session.history.enabled
+   *
+   * @param historyEnabled
+   * @param ss
+   */
+  public void updateHistory(boolean historyEnabled, SessionState ss) {
+    if (historyEnabled) {
+      // Uses a no-op proxy
+      if (ss.hiveHist.getHistFileName() == null) {
+        ss.hiveHist = new HiveHistoryImpl(ss);
+      }
+    } else {
+      if (ss.hiveHist.getHistFileName() != null) {
+        ss.hiveHist = HiveHistoryProxyHandler.getNoOpHiveHistoryProxy();
+      }
+    }
+  }
+
+  /**
    * Create a session ID. Looks like:
    *   $user_$pid@$host_$date
    * @return the unique string

@@ -77,7 +77,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   private LoadingCache<String, Timer> timers;
   private LoadingCache<String, Counter> counters;
 
-  private boolean initialized = false;
   private HiveConf conf;
   private final Set<Closeable> reporters = new HashSet<Closeable>();
 
@@ -139,11 +138,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
-  public synchronized void init(HiveConf conf) throws Exception {
-    if (initialized) {
-      return;
-    }
-
+  public CodahaleMetrics(HiveConf conf) throws Exception {
     this.conf = conf;
     //Codahale artifacts are lazily-created.
     timers = CacheBuilder.newBuilder().build(
@@ -190,32 +185,23 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       }
     }
     initReporting(finalReporterList);
-    initialized = true;
   }
 
 
-  public synchronized void deInit() throws Exception {
-    if (initialized) {
-      if (reporters != null) {
-        for (Closeable reporter : reporters) {
-          reporter.close();
-        }
+  public void close() throws Exception {
+    if (reporters != null) {
+      for (Closeable reporter : reporters) {
+        reporter.close();
       }
-      for (Map.Entry<String, Metric> metric : metricRegistry.getMetrics().entrySet()) {
-        metricRegistry.remove(metric.getKey());
-      }
-      timers.invalidateAll();
-      counters.invalidateAll();
-      initialized = false;
     }
+    for (Map.Entry<String, Metric> metric : metricRegistry.getMetrics().entrySet()) {
+      metricRegistry.remove(metric.getKey());
+    }
+    timers.invalidateAll();
+    counters.invalidateAll();
   }
 
   public void startScope(String name) throws IOException {
-    synchronized (this) {
-      if (!initialized) {
-        return;
-      }
-    }
     name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
@@ -224,12 +210,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
-  public void endScope(String name) throws IOException{
-    synchronized (this) {
-      if (!initialized) {
-        return;
-      }
-    }
+  public void endScope(String name) throws IOException {
     name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();

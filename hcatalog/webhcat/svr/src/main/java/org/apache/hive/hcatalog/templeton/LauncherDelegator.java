@@ -118,6 +118,7 @@ public class LauncherDelegator extends TempletonDelegator {
                      String completedUrl,
                      List<String> copyFiles,
                      boolean enablelog,
+                     Boolean enableJobReconnect,
                      JobType jobType) {
     ArrayList<String> args = new ArrayList<String>();
 
@@ -149,6 +150,19 @@ public class LauncherDelegator extends TempletonDelegator {
       jobType.toString());
     addDef(args, TempletonControllerJob.TEMPLETON_JOB_LAUNCH_TIME_NAME,
       Long.toString(System.currentTimeMillis()));
+
+    if (enableJobReconnect == null) {
+      // If enablejobreconnect param was not passed by a user, use a cluster
+      // wide default
+      if (appConf.enableJobReconnectDefault() != null) {
+        enableJobReconnect = Boolean.parseBoolean(appConf.enableJobReconnectDefault());
+      } else {
+        // default is false
+        enableJobReconnect = false;
+      }
+    }
+    addDef(args, TempletonControllerJob.ENABLE_JOB_RECONNECT,
+        Boolean.toString(enableJobReconnect));
 
     // Hadoop queue information
     addDef(args, "mapred.job.queue.name", appConf.hadoopQueueName());

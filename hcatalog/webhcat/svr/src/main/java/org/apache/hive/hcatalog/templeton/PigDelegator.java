@@ -48,13 +48,14 @@ public class PigDelegator extends LauncherDelegator {
                String execute, String srcFile,
                List<String> pigArgs, String otherFiles,
                String statusdir, String callback, 
-               boolean usesHcatalog, String completedUrl, boolean enablelog)
+               boolean usesHcatalog, String completedUrl, boolean enablelog,
+               Boolean enableJobReconnect)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
     runAs = user;
     List<String> args = makeArgs(execute,
       srcFile, pigArgs,
-      otherFiles, statusdir, usesHcatalog, completedUrl, enablelog);
+      otherFiles, statusdir, usesHcatalog, completedUrl, enablelog, enableJobReconnect);
 
     return enqueueController(user, userArgs, callback, args);
   }
@@ -68,6 +69,8 @@ public class PigDelegator extends LauncherDelegator {
    * @param usesHcatalog whether the command uses hcatalog/needs to connect
    *         to hive metastore server
    * @param completedUrl call back url
+   * @param enablelog
+   * @param enableJobReconnect
    * @return list of arguments
    * @throws BadParam
    * @throws IOException
@@ -76,7 +79,8 @@ public class PigDelegator extends LauncherDelegator {
   private List<String> makeArgs(String execute, String srcFile,
                   List<String> pigArgs, String otherFiles,
                   String statusdir, boolean usesHcatalog,
-                  String completedUrl, boolean enablelog)
+                  String completedUrl, boolean enablelog,
+                  Boolean enableJobReconnect)
     throws BadParam, IOException, InterruptedException {
     ArrayList<String> args = new ArrayList<String>();
     //check if the REST command specified explicitly to use hcatalog
@@ -93,7 +97,8 @@ public class PigDelegator extends LauncherDelegator {
         allFiles.addAll(Arrays.asList(ofs));
       }
 
-      args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles, enablelog, JobType.PIG));
+      args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles, enablelog,
+          enableJobReconnect, JobType.PIG));
       boolean shipPigTar = appConf.pigArchive() != null && !appConf.pigArchive().equals("");
       boolean shipHiveTar = needsMetastoreAccess && appConf.hiveArchive() != null 
               && !appConf.hiveArchive().equals("");

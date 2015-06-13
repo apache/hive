@@ -230,4 +230,10 @@
   <value>hive_admin_user</value>
 </property>
 
+<property>
+  <name>hive.in.test</name>
+  <value>true</value>
+  <description>Internal marker for test. Used for masking env-dependent values</description>
+</property>
+
 </configuration>

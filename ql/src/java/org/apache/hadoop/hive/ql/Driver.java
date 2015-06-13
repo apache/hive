@@ -1188,6 +1188,9 @@ public class Driver implements CommandProcessor {
       if (ret != 0) {
         return createProcessorResponse(ret);
       }
+    } else {
+      // Since we're reusing the compiled plan, we need to update its start time for current run
+      plan.setQueryStartTime(perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
     }
 
     // the reason that we set the txn manager for the cxt here is because each

@@ -20,13 +20,16 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
@@ -49,6 +52,9 @@ public class TezSessionPoolManager {
 
   private static TezSessionPoolManager sessionPool = null;
 
+  private static List<TezSessionState> openSessions = Collections
+      .synchronizedList(new LinkedList<TezSessionState>());
+
   public static TezSessionPoolManager getInstance()
       throws Exception {
     if (sessionPool == null) {
@@ -68,6 +74,7 @@ public class TezSessionPoolManager {
       TezSessionState sessionState = defaultQueuePool.take();
       newConf.set("tez.queue.name", sessionState.getQueueName());
       sessionState.open(newConf);
+      openSessions.add(sessionState);
       defaultQueuePool.put(sessionState);
     }
   }
@@ -148,6 +155,7 @@ public class TezSessionPoolManager {
     String what = "Created";
     if (doOpen) {
       retTezSessionState.open(conf);
+      openSessions.add(retTezSessionState);
       what = "Started";
     }
 
@@ -175,6 +183,7 @@ public class TezSessionPoolManager {
     LOG.info("Closing tez session default? " + tezSessionState.isDefault());
     if (!tezSessionState.isDefault()) {
       tezSessionState.close(keepTmpDir);
+      openSessions.remove(tezSessionState);
     }
   }
 
@@ -184,9 +193,12 @@ public class TezSessionPoolManager {
     }
 
     // we can just stop all the sessions
-    for (TezSessionState sessionState: TezSessionState.getOpenSessions()) {
+    Iterator<TezSessionState> iter = openSessions.iterator();
+    while (iter.hasNext()) {
+      TezSessionState sessionState = iter.next();
       if (sessionState.isDefault()) {
         sessionState.close(false);
+        iter.remove();
       }
     }
   }
@@ -282,5 +294,10 @@ public class TezSessionPoolManager {
     }
     close(sessionState, keepTmpDir);
     sessionState.open(conf, additionalFiles);
+    openSessions.add(sessionState);
+  }
+
+  public List<TezSessionState> getOpenSessions() {
+    return openSessions;
   }
 }

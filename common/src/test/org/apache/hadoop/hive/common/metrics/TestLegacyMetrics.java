@@ -47,16 +47,16 @@ public class TestLegacyMetrics {
 
   @Before
   public void before() throws Exception {
-    MetricsFactory.deInit();
+    MetricsFactory.close();
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, LegacyMetrics.class.getCanonicalName());
     MetricsFactory.init(conf);
-    metrics = (LegacyMetrics) MetricsFactory.getMetricsInstance();
+    metrics = (LegacyMetrics) MetricsFactory.getInstance();
   }
 
   @After
   public void after() throws Exception {
-    MetricsFactory.deInit();
+    MetricsFactory.close();
   }
 
   @Test

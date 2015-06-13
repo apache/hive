@@ -21,9 +21,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.TypeConverter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
-
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.ApplicationsRequestScope;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
@@ -177,6 +177,22 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
     } catch (IOException ioe) {
       throw new RuntimeException("Exception occurred while killing child job(s)", ioe);
     }
+  }
+
+  /**
+   * Returns all jobs tagged with the given tag that have been started after the
+   * given timestamp. Returned jobIds are MapReduce JobIds.
+   */
+  @Override
+  public Set<String> getJobs(String tag, long timestamp) {
+    Set<ApplicationId> childYarnJobs = getYarnChildJobs(tag, timestamp);
+    Set<String> childJobs = new HashSet<String>();
+    for(ApplicationId id : childYarnJobs) {
+      // Convert to a MapReduce job id
+      String childJobId = TypeConverter.fromYarn(id).toString();
+      childJobs.add(childJobId);
+    }
+    return childJobs;
   }
 
   /**
