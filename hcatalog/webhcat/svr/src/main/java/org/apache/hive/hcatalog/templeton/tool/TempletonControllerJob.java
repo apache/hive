@@ -133,9 +133,10 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
 
     JobClient jc = new JobClient(new JobConf(job.getConfiguration()));
 
-    Token<DelegationTokenIdentifier> mrdt = jc.getDelegationToken(new Text("mr token"));
-    job.getCredentials().addToken(new Text("mr token"), mrdt);
-
+    if(UserGroupInformation.isSecurityEnabled()) {
+      Token<DelegationTokenIdentifier> mrdt = jc.getDelegationToken(new Text("mr token"));
+      job.getCredentials().addToken(new Text("mr token"), mrdt);
+    }
     String metastoreTokenStrForm = addHMSToken(job, user);
 
     job.submit();
