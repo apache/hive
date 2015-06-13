@@ -190,6 +190,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: tinyint)
@@ -201,8 +202,8 @@ STAGE PLANS:
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
-            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -216,7 +217,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -276,6 +276,7 @@ STAGE PLANS:
                           value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -290,8 +291,8 @@ STAGE PLANS:
                     Map-reduce partition columns: _col4 (type: tinyint)
                     Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
-            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -305,7 +306,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_limit_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -363,6 +363,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
@@ -376,7 +377,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_buck_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -433,6 +433,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
@@ -446,7 +447,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_buck_sort_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -573,6 +573,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: tinyint)
@@ -584,8 +585,8 @@ STAGE PLANS:
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
-            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -599,7 +600,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -659,6 +659,7 @@ STAGE PLANS:
                           value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -673,8 +674,8 @@ STAGE PLANS:
                     Map-reduce partition columns: _col4 (type: tinyint)
                     Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
-            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -688,7 +689,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_limit_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -746,6 +746,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
@@ -759,7 +760,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_buck_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -816,6 +816,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
@@ -829,7 +830,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.over1k_part_buck_sort_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -1373,6 +1373,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: smallint), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: tinyint)
@@ -1386,7 +1387,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part2_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -1444,6 +1444,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: smallint), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: tinyint)
@@ -1455,8 +1456,8 @@ STAGE PLANS:
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
-            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -1470,7 +1471,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part2_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -1525,6 +1525,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float)
@@ -1546,8 +1547,8 @@ STAGE PLANS:
                         Map-reduce partition columns: _col4 (type: tinyint)
                         Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
-            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -1561,7 +1562,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part2_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -1623,6 +1623,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: smallint), KEY._col1 (type: int), KEY._col2 (type: bigint), KEY._col3 (type: float), KEY._col4 (type: tinyint)
@@ -1637,7 +1638,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part2_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -1702,6 +1702,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: smallint), KEY._col1 (type: int), KEY._col2 (type: bigint), KEY._col3 (type: float), KEY._col4 (type: tinyint)
@@ -1714,8 +1715,8 @@ STAGE PLANS:
                   Map-reduce partition columns: _col4 (type: tinyint)
                   Statistics: Num rows: 524 Data size: 155436 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
-            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
@@ -1729,7 +1730,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part2_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -2113,6 +2113,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col4 (type: tinyint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), KEY.reducesinkkey0 (type: float), VALUE._col3 (type: tinyint)
@@ -2126,7 +2127,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part_buck_sort2_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -2183,6 +2183,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint), '_bucket_number' (type: string)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint), VALUE._bucket_number (type: string)
@@ -2196,7 +2197,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part_buck_sort2_orc
-            Execution mode: vectorized
 
   Stage: Stage-2
     Dependency Collection
@@ -2401,6 +2401,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2414,7 +2415,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -2620,6 +2620,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2633,7 +2634,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

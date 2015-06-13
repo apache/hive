@@ -70,6 +70,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: bigint), _col2 (type: decimal(20,10)), _col3 (type: decimal(20,10)), _col4 (type: decimal(30,10)), _col5 (type: bigint), _col6 (type: decimal(23,14)), _col7 (type: decimal(23,14)), _col8 (type: decimal(33,14)), _col9 (type: bigint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), max(VALUE._col1), min(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), max(VALUE._col5), min(VALUE._col6), sum(VALUE._col7), count(VALUE._col8)
@@ -91,7 +92,6 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

@@ -246,6 +246,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -295,7 +296,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -581,6 +581,7 @@ STAGE PLANS:
                       tag: 0
                       value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
                       auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -630,7 +631,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [p1]
-            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -648,6 +648,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -697,7 +698,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [p2]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -925,6 +925,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -974,7 +975,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1197,6 +1197,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1246,7 +1247,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1530,6 +1530,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1579,7 +1580,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1874,6 +1874,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1923,7 +1924,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1962,6 +1962,7 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: true
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1977,7 +1978,6 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col2 (type: int)
                   auto parallelism: true
-            Execution mode: vectorized
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2188,6 +2188,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2237,7 +2238,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2255,6 +2255,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2304,7 +2305,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [p1]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2512,6 +2512,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2561,7 +2562,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [p1]
-            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -2576,6 +2576,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2625,7 +2626,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3504,6 +3504,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3553,7 +3554,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3838,6 +3838,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3887,7 +3888,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -4252,6 +4252,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4301,7 +4302,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -4675,6 +4675,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_partkey (type: int), p_size (type: int), p_retailprice (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4724,7 +4725,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -4742,6 +4742,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4791,7 +4792,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [p1]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5060,6 +5060,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -5109,7 +5110,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5148,6 +5148,7 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: true
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -5176,7 +5177,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -5352,6 +5352,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col2 (type: double)
                         auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -5401,7 +5402,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5831,6 +5831,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -5880,7 +5881,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6449,6 +6449,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_name (type: string), p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -6498,7 +6499,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6901,6 +6901,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_name (type: string), p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -6950,7 +6951,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -7334,6 +7334,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -7383,7 +7384,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -7757,6 +7757,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -7806,7 +7807,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -8250,6 +8250,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -8299,7 +8300,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -8687,6 +8687,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: p_size (type: int)
                     auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -8736,7 +8737,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-            Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:

@@ -161,7 +161,9 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
       if (!lockBuffer(buffer, true)) {
         // If we cannot lock, remove this from cache and continue.
         matches.remove();
-        resultObj.didGetAllData = false;
+        if (resultObj != null) {
+          resultObj.didGetAllData = false;
+        }
         continue;
       }
       long cacheOffset = e.getKey();
@@ -177,7 +179,9 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
     }
     if (currentNotCached != null) {
       assert !currentNotCached.hasData();
-      resultObj.didGetAllData = false;
+      if (resultObj != null) {
+        resultObj.didGetAllData = false;
+      }
     }
   }
 
@@ -202,7 +206,9 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
       }
     } else {
       // There's some part of current buffer that is not cached.
-      resultObj.didGetAllData = false;
+      if (resultObj != null) {
+        resultObj.didGetAllData = false;
+      }
       assert currentNotCached.getOffset() < currentCached.getOffset()
         || currentNotCached.prev == null
         || currentNotCached.prev.getEnd() <= currentCached.getOffset();

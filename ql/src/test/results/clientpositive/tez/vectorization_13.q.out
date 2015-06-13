@@ -119,6 +119,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: boolean), KEY.reducesinkkey1 (type: tinyint), KEY.reducesinkkey2 (type: timestamp), KEY.reducesinkkey3 (type: float), KEY.reducesinkkey4 (type: string), VALUE._col0 (type: tinyint), VALUE._col1 (type: tinyint), VALUE._col2 (type: tinyint), VALUE._col3 (type: double), VALUE._col4 (type: double), VALUE._col5 (type: double), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col5 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: float), VALUE._col13 (type: double), VALUE._col14 (type: tinyint)
@@ -134,7 +135,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -373,6 +373,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: boolean), KEY.reducesinkkey1 (type: tinyint), KEY.reducesinkkey2 (type: timestamp), KEY.reducesinkkey3 (type: float), KEY.reducesinkkey4 (type: string), VALUE._col0 (type: tinyint), VALUE._col1 (type: tinyint), VALUE._col2 (type: tinyint), VALUE._col3 (type: double), VALUE._col4 (type: double), VALUE._col5 (type: double), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col5 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: float), VALUE._col13 (type: double), VALUE._col14 (type: tinyint)
@@ -388,7 +389,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

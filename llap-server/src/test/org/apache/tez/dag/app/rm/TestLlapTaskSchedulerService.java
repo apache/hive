@@ -285,7 +285,7 @@ public class TestLlapTaskSchedulerService {
     }
 
     TestTaskSchedulerServiceWrapper(long disableTimeoutMillis) {
-      this(2000l, new String[]{HOST1, HOST2, HOST3}, 4,
+      this(disableTimeoutMillis, new String[]{HOST1, HOST2, HOST3}, 4,
           LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE_DEFAULT);
     }
 

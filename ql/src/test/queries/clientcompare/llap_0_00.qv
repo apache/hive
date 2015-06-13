@@ -1,0 +1,1 @@
+SET hive.llap.io.enabled = false;
