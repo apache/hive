@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Index;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.google.protobuf.CodedOutputStream;
 
@@ -151,20 +152,22 @@ public class TestIncrementalObjectSizeEstimator {
     DummyMetadataReader mr = new DummyMetadataReader();
     mr.doStreamStep = false;
     mr.isEmpty = true;
-    osm = new OrcStripeMetadata(stripeKey, mr, null, null, null);
+    StripeInformation si = Mockito.mock(StripeInformation.class);
+    Mockito.when(si.getNumberOfRows()).thenReturn(0L);
+    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null);
     LOG.info("Estimated " + root.estimate(osm, map) + " for an empty OSM");
     mr.doStreamStep = true;
-    osm = new OrcStripeMetadata(stripeKey, mr, null, null, null);
+    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null);
     LOG.info("Estimated " + root.estimate(osm, map) + " for an empty OSM after serde");
 
     mr.isEmpty = false;
     stripeKey = new OrcBatchKey(0, 0, 0);
-    osm = new OrcStripeMetadata(stripeKey, mr, null, null, null);
+    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null);
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM");
     osm.resetRowIndex();
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM w/o row index");
     mr.doStreamStep = true;
-    osm = new OrcStripeMetadata(stripeKey, mr, null, null, null);
+    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null);
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM after serde");
     osm.resetRowIndex();
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM w/o row index after serde");

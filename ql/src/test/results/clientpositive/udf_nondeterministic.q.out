@@ -90,7 +90,7 @@ STAGE PLANS:
             1 month (type: int)
           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: unix_timestamp('2001-01-01 00:00:00') (type: bigint)
+            expressions: 978336000 (type: bigint)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

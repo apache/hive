@@ -3,7 +3,8 @@ SET hive.vectorized.execution.enabled=true;
 SELECT   cfloat,
          cint,
          cdouble,
-         cbigint
+         cbigint,
+         cstring1
 FROM     alltypesorc
 WHERE    (cbigint > -23)
            AND ((cdouble != 988888)

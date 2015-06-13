@@ -62,6 +62,7 @@ STAGE PLANS:
                           value expressions: _col4 (type: decimal(20,10))
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -74,8 +75,8 @@ STAGE PLANS:
                   sort order: ++++
                   Statistics: Num rows: 763 Data size: 180068 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col4 (type: decimal(20,10))
-            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: decimal(20,10)), KEY.reducesinkkey3 (type: decimal(23,14)), VALUE._col0 (type: decimal(20,10))
@@ -91,7 +92,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

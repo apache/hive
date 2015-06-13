@@ -295,13 +295,11 @@ public class IncrementalObjectSizeEstimator {
   private static void addArrayEstimator(
       HashMap<Class<?>, ObjectEstimator> byType, Deque<Object> stack,
       Field field, Object fieldObj) {
-    int arrayLen = 0;
-    if (fieldObj != null) {
-      arrayLen = Array.getLength(fieldObj);
-      if (arrayLen == 0) {
-        if (DebugUtils.isTraceEnabled()) {
-          LlapIoImpl.LOG.info("Empty array " + field);
-        }
+    if (fieldObj == null) return;
+    int arrayLen = Array.getLength(fieldObj);
+    if (arrayLen == 0) {
+      if (DebugUtils.isTraceEnabled()) {
+        LlapIoImpl.LOG.info("Empty array " + field);
       }
     }
     for (int i = 0; i < arrayLen; ++i) {

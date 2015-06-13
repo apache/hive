@@ -85,6 +85,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: decimal(21,0)), _col2 (type: decimal(22,1)), _col3 (type: decimal(23,2)), _col4 (type: decimal(24,3)), _col5 (type: decimal(21,0)), _col6 (type: decimal(21,0)), _col7 (type: decimal(21,0)), _col8 (type: decimal(21,0)), _col9 (type: decimal(21,0)), _col10 (type: decimal(21,0)), _col11 (type: decimal(21,0)), _col12 (type: decimal(21,0))
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(21,0)), VALUE._col0 (type: decimal(21,0)), VALUE._col1 (type: decimal(22,1)), VALUE._col2 (type: decimal(23,2)), VALUE._col3 (type: decimal(24,3)), VALUE._col4 (type: decimal(21,0)), VALUE._col5 (type: decimal(21,0)), VALUE._col6 (type: decimal(21,0)), VALUE._col7 (type: decimal(21,0)), VALUE._col8 (type: decimal(21,0)), VALUE._col9 (type: decimal(21,0)), VALUE._col10 (type: decimal(21,0)), VALUE._col11 (type: decimal(21,0))
@@ -97,7 +98,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -198,6 +198,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: decimal(21,0)), _col2 (type: decimal(22,1)), _col3 (type: decimal(23,2)), _col4 (type: decimal(24,3)), _col5 (type: decimal(25,4)), _col6 (type: decimal(21,0)), _col7 (type: decimal(21,0)), _col8 (type: decimal(21,0)), _col9 (type: decimal(21,0)), _col10 (type: decimal(21,0)), _col11 (type: decimal(21,0)), _col12 (type: decimal(22,1)), _col13 (type: decimal(23,2)), _col14 (type: decimal(24,3)), _col15 (type: decimal(25,4)), _col16 (type: decimal(21,0)), _col17 (type: decimal(21,0)), _col18 (type: decimal(21,0)), _col19 (type: decimal(21,0))
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(21,0)), VALUE._col0 (type: decimal(21,0)), VALUE._col1 (type: decimal(22,1)), VALUE._col2 (type: decimal(23,2)), VALUE._col3 (type: decimal(24,3)), VALUE._col4 (type: decimal(25,4)), VALUE._col5 (type: decimal(21,0)), VALUE._col6 (type: decimal(21,0)), VALUE._col7 (type: decimal(21,0)), VALUE._col8 (type: decimal(21,0)), VALUE._col9 (type: decimal(21,0)), VALUE._col10 (type: decimal(21,0)), VALUE._col11 (type: decimal(22,1)), VALUE._col12 (type: decimal(23,2)), VALUE._col13 (type: decimal(24,3)), VALUE._col14 (type: decimal(25,4)), VALUE._col15 (type: decimal(21,0)), VALUE._col16 (type: decimal(21,0)), VALUE._col17 (type: decimal(21,0)), VALUE._col18 (type: decimal(21,0))
@@ -210,7 +211,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -338,6 +338,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: decimal(21,0)), _col2 (type: decimal(21,0)), _col3 (type: decimal(21,0)), _col4 (type: decimal(21,0)), _col5 (type: decimal(21,0)), _col6 (type: decimal(21,0)), _col7 (type: decimal(21,0)), _col8 (type: decimal(21,0)), _col9 (type: decimal(21,0)), _col10 (type: decimal(21,0)), _col11 (type: decimal(21,0)), _col12 (type: decimal(21,0)), _col13 (type: decimal(21,0)), _col14 (type: decimal(21,0)), _col15 (type: decimal(21,0)), _col16 (type: decimal(21,0)), _col17 (type: decimal(22,1)), _col18 (type: decimal(23,2)), _col19 (type: decimal(24,3)), _col20 (type: decimal(25,4)), _col21 (type: decimal(26,5)), _col22 (type: decimal(27,6)), _col23 (type: decimal(28,7)), _col24 (type: decimal(29,8)), _col25 (type: decimal(30,9)), _col26 (type: decimal(31,10)), _col27 (type: decimal(32,11)), _col28 (type: decimal(33,12)), _col29 (type: decimal(34,13)), _col31 (type: decimal(35,14)), _col32 (type: decimal(36,15)), _col33 (type: decimal(37,16))
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(21,0)), VALUE._col0 (type: decimal(21,0)), VALUE._col1 (type: decimal(21,0)), VALUE._col2 (type: decimal(21,0)), VALUE._col3 (type: decimal(21,0)), VALUE._col4 (type: decimal(21,0)), VALUE._col5 (type: decimal(21,0)), VALUE._col6 (type: decimal(21,0)), VALUE._col7 (type: decimal(21,0)), VALUE._col8 (type: decimal(21,0)), VALUE._col9 (type: decimal(21,0)), VALUE._col10 (type: decimal(21,0)), VALUE._col11 (type: decimal(21,0)), VALUE._col12 (type: decimal(21,0)), VALUE._col13 (type: decimal(21,0)), VALUE._col14 (type: decimal(21,0)), VALUE._col15 (type: decimal(21,0)), VALUE._col16 (type: decimal(22,1)), VALUE._col17 (type: decimal(23,2)), VALUE._col18 (type: decimal(24,3)), VALUE._col19 (type: decimal(25,4)), VALUE._col20 (type: decimal(26,5)), VALUE._col21 (type: decimal(27,6)), VALUE._col22 (type: decimal(28,7)), VALUE._col23 (type: decimal(29,8)), VALUE._col24 (type: decimal(30,9)), VALUE._col25 (type: decimal(31,10)), VALUE._col26 (type: decimal(32,11)), VALUE._col27 (type: decimal(33,12)), VALUE._col28 (type: decimal(34,13)), VALUE._col28 (type: decimal(34,13)), VALUE._col29 (type: decimal(35,14)), VALUE._col30 (type: decimal(36,15)), VALUE._col31 (type: decimal(37,16))
@@ -350,7 +351,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -467,6 +467,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: decimal(30,9)), _col2 (type: decimal(17,9)), _col3 (type: decimal(17,9))
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(30,9)), VALUE._col0 (type: decimal(30,9)), VALUE._col1 (type: decimal(17,9)), VALUE._col2 (type: decimal(17,9))
@@ -479,7 +480,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
