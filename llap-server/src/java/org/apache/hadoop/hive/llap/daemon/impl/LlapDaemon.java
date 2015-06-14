@@ -195,7 +195,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // in the usable space.
 
     long total = 0;
-    MemoryMXBean m = ManagementFactory.getMemoryMXBean();
     for (MemoryPoolMXBean mp : ManagementFactory.getMemoryPoolMXBeans()) {
       long sz = mp.getUsage().getMax();
       if (mp.getName().contains("Survivor")) {
@@ -205,6 +204,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         total += sz;
       }
     }
+    // round up to the next MB
+    total += (total % (1024*1024));
     return total;
   }
 
