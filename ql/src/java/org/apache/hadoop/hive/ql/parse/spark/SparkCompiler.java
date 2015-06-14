@@ -44,6 +44,9 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
@@ -63,6 +66,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
@@ -87,6 +91,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
@@ -99,6 +104,26 @@ public class SparkCompiler extends TaskCompiler {
   private static final Log LOGGER = LogFactory.getLog(SparkCompiler.class);
 
   public SparkCompiler() {
+  }
+
+  @Override
+  public void initSession(SessionState session) {
+    super.initSession(session);
+
+    SparkSession sparkSession = session.getSparkSession();
+    // Spark configurations are updated close the existing session
+    try {
+      SparkSessionManager sparkSessionManager = SparkSessionManagerImpl.getInstance();
+      if (sparkSession != null && conf.getSparkConfigUpdated()) {
+        sparkSessionManager.closeSession(sparkSession);
+        conf.setSparkConfigUpdated(false);
+      }
+      sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
+      session.setSparkSession(sparkSession);
+    } catch (HiveException e) {
+      LOGGER.warn("Failed to init spark session", e);
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -134,7 +159,7 @@ public class SparkCompiler extends TaskCompiler {
     ParseContext parseContext = procCtx.getParseContext();
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
-        new RuleRegExp(new String("Dynamic Partition Pruning"),
+        new RuleRegExp("Dynamic Partition Pruning",
             FilterOperator.getOperatorName() + "%"),
         new DynamicPartitionPruningOptimization());
 

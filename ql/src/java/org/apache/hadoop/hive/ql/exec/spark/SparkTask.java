@@ -98,7 +98,7 @@ public class SparkTask extends Task<SparkWork> {
     try {
       printConfigInfo();
       sparkSessionManager = SparkSessionManagerImpl.getInstance();
-      sparkSession = SparkUtilities.getSparkSession(conf, sparkSessionManager);
+      sparkSession = SessionState.get().getSparkSession();
 
       SparkWork sparkWork = getWork();
       sparkWork.setRequiredCounterPrefix(getCounterPrefixes());

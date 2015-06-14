@@ -499,19 +499,6 @@ public class SessionState {
       throw new RuntimeException(e);
     }
 
-    if (HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)
-        .equals("tez") && (startSs.isHiveServerQuery == false)) {
-      try {
-        if (startSs.tezSessionState == null) {
-          startSs.tezSessionState = new TezSessionState(startSs.getSessionId());
-        }
-        if (!startSs.tezSessionState.isOpen()) {
-          startSs.tezSessionState.open(startSs.conf); // should use conf on session start-up
-        }
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
     return startSs;
   }
 
@@ -574,7 +561,7 @@ public class SessionState {
       Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
     }
     FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
-    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
+    if (rootHDFSDirPath.toUri() != null) {
       String schema = rootHDFSDirPath.toUri().getScheme();
       LOG.debug(
         "HDFS root scratch dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
@@ -1026,8 +1013,9 @@ public class SessionState {
 
     // remove the previous renewable jars
     try {
-      if (preReloadableAuxJars != null && !preReloadableAuxJars.isEmpty()) {
-        Utilities.removeFromClassPath(preReloadableAuxJars.toArray(new String[0]));
+      if (!preReloadableAuxJars.isEmpty()) {
+        Utilities.removeFromClassPath(preReloadableAuxJars.toArray(
+            new String[preReloadableAuxJars.size()]));
       }
     } catch (Exception e) {
       String msg = "Fail to remove the reloaded jars loaded last time: " + e;
@@ -1035,12 +1023,12 @@ public class SessionState {
     }
 
     try {
-      if (reloadedAuxJars != null && !reloadedAuxJars.isEmpty()) {
+      if (!reloadedAuxJars.isEmpty()) {
         URLClassLoader currentCLoader =
             (URLClassLoader) SessionState.get().getConf().getClassLoader();
         currentCLoader =
             (URLClassLoader) Utilities.addToClassPath(currentCLoader,
-                reloadedAuxJars.toArray(new String[0]));
+                reloadedAuxJars.toArray(new String[reloadedAuxJars.size()]));
         conf.setClassLoader(currentCLoader);
         Thread.currentThread().setContextClassLoader(currentCLoader);
       }
@@ -1057,7 +1045,8 @@ public class SessionState {
     LogHelper console = getConsole();
     try {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      ClassLoader newLoader = Utilities.addToClassPath(loader, newJars.toArray(new String[0]));
+      ClassLoader newLoader = Utilities.addToClassPath(loader,
+          newJars.toArray(new String[newJars.size()]));
       Thread.currentThread().setContextClassLoader(newLoader);
       SessionState.get().getConf().setClassLoader(newLoader);
       console.printInfo("Added " + newJars + " to class path");
@@ -1070,7 +1059,7 @@ public class SessionState {
   static boolean unregisterJar(List<String> jarsToUnregister) {
     LogHelper console = getConsole();
     try {
-      Utilities.removeFromClassPath(jarsToUnregister.toArray(new String[0]));
+      Utilities.removeFromClassPath(jarsToUnregister.toArray(new String[jarsToUnregister.size()]));
       console.printInfo("Deleted " + jarsToUnregister + " from class path");
       return true;
     } catch (Exception e) {

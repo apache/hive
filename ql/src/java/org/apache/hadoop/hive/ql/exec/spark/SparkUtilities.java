@@ -120,22 +120,6 @@ public class SparkUtilities {
     return master.startsWith("yarn-") || master.startsWith("local");
   }
 
-  public static SparkSession getSparkSession(HiveConf conf,
-      SparkSessionManager sparkSessionManager) throws HiveException {
-    SparkSession sparkSession = SessionState.get().getSparkSession();
-
-    // Spark configurations are updated close the existing session
-    if (conf.getSparkConfigUpdated()) {
-      sparkSessionManager.closeSession(sparkSession);
-      sparkSession =  null;
-      conf.setSparkConfigUpdated(false);
-    }
-    sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
-    SessionState.get().setSparkSession(sparkSession);
-    return sparkSession;
-  }
-
-
   public static String rddGraphToString(JavaPairRDD rdd) {
     StringBuilder sb = new StringBuilder();
     rddToString(rdd.rdd(), sb, "");

@@ -10217,6 +10217,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
       compiler.init(conf, console, db);
       compiler.compile(pCtx, rootTasks, inputs, outputs);
+      compiler.initSession(SessionState.get());
       fetchTask = pCtx.getFetchTask();
     }
     LOG.info("Completed plan generation");

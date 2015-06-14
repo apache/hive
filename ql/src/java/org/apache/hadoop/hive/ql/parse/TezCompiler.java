@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -85,6 +86,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
@@ -107,6 +109,25 @@ public class TezCompiler extends TaskCompiler {
     // We require the use of recursive input dirs for union processing
     conf.setBoolean("mapred.input.dir.recursive", true);
     HiveConf.setBoolVar(conf, ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
+  }
+
+  @Override
+  public void initSession(SessionState session) {
+    super.initSession(session);
+    if (session.isHiveServerQuery()) {
+      try {
+        TezSessionState tezSession = session.getTezSession();
+        if (tezSession == null) {
+          session.setTezSession(tezSession = new TezSessionState(session.getSessionId()));
+        }
+        if (!tezSession.isOpen()) {
+          tezSession.open(session.getConf()); // should use conf on session start-up
+        }
+      } catch(Exception e) {
+        LOG.warn("Failed to initialize tez session");
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Override

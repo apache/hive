@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -50,16 +51,17 @@ public interface EngineSelector {
    * @param conf
    * @param parseContext
    * @param param
+   * @param available active engines for selection
    * @return
    */
-  Engine select(HiveConf conf, ParseContext parseContext, String param);
+  Engine select(HiveConf conf, ParseContext parseContext, String param, EnumSet<Engine> available);
 
   public static class SimpleSelector implements EngineSelector {
 
     static final Log LOG = LogFactory.getLog(EngineSelector.class.getName());
 
     @Override
-    public Engine select(HiveConf conf, ParseContext pctx, String param) {
+    public Engine select(HiveConf conf, ParseContext pctx, String param, EnumSet<Engine> available) {
       Map<String, PrunedPartitionList> pruned = pctx.getPrunedPartitions();
       Map<String, Operator<?>> topOps = pctx.getTopOps();
 
@@ -75,7 +77,7 @@ public interface EngineSelector {
 
           ContentSummary summary = Utilities.getInputSummary(pctx.getContext(), dummy, null);
           if (!summary.isValidSummary()) {
-            LOG.info("Cannot estimate size of " + alias);
+            LOG.info("Cannot estimate the size of " + alias);
             total = -1;
             break;
           }
@@ -86,13 +88,13 @@ public interface EngineSelector {
         param = param.replaceAll("$num_aliases", String.valueOf(topOps.size()));
         param = param.replaceAll("$total", String.valueOf(total));
         param = param.replaceAll("$biggest", String.valueOf(biggest));
-        param = param.replaceAll("(\\d)+kb", "$1 * 1024L");
-        param = param.replaceAll("(\\d)+mb", "$1 * 1024L * 1024L");
-        param = param.replaceAll("(\\d)+gb", "$1 * 1024L * 1024L * 1024L");
-        param = param.replaceAll("(\\d)+tb", "$1 * 1024L * 1024L * 1024L * 1024L");
+        param = param.replaceAll("(\\d)+( )?kb", "$1 * 1024L");
+        param = param.replaceAll("(\\d)+( )?mb", "$1 * 1024L * 1024L");
+        param = param.replaceAll("(\\d)+( )?gb", "$1 * 1024L * 1024L * 1024L");
+        param = param.replaceAll("(\\d)+( )?tb", "$1 * 1024L * 1024L * 1024L * 1024L");
 
-        Engine selected = evaluate(param.trim(), total < 0);
-        LOG.info("Engine selected " + selected);
+        Engine selected = evaluate(available, param.trim(), total < 0);
+        LOG.info("Execution engine selected " + selected);
         return selected;
       } catch (Exception e) {
         LOG.warn("Failed to select engine by exception ", e);
@@ -100,7 +102,7 @@ public interface EngineSelector {
       return Engine.DEFAULT;
     }
 
-    Engine evaluate(String expressions, boolean skipEval) throws Exception {
+    Engine evaluate(EnumSet<Engine> available, String expressions, boolean skipEval) throws Exception {
       ParseDriver driver = new ParseDriver();
       CalcitePlanner.ASTSearcher searcher = new CalcitePlanner.ASTSearcher();
 
@@ -109,11 +111,16 @@ public interface EngineSelector {
         expression = expression.trim();
         String[] split = expression.split("=");
         if (split.length == 1) {
-          return Engine.valueOf(split[0].trim().toUpperCase());
+          Engine engine = engineOfName(split[0]);
+          if (available.contains(engine)) {
+            return engine;
+          }
+          continue;
         }
         if (skipEval) {
           continue;
         }
+        // hack
         ASTNode astNode = driver.parseSelect("select " + split[1], null);
 
         ASTNode target = (ASTNode) searcher.simpleBreadthFirstSearch(
@@ -123,10 +130,17 @@ public interface EngineSelector {
         evaluator.initialize(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
         BooleanObjectInspector inspector = (BooleanObjectInspector) evaluator.getOutputOI();
         if (inspector.get(evaluator.evaluate(null))) {
-          return Engine.valueOf(split[0].trim().toUpperCase());
+          Engine engine = engineOfName(split[0]);
+          if (available.contains(engine)) {
+            return engine;
+          }
         }
       }
       return null;
+    }
+
+    private Engine engineOfName(String engineName) {
+      return Engine.valueOf(engineName.trim().toUpperCase());
     }
   }
 }

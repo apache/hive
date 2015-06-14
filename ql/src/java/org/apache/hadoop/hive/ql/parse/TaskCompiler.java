@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 import com.google.common.collect.Interner;
@@ -79,6 +80,11 @@ public abstract class TaskCompiler {
     this.conf = conf;
     this.db = db;
     this.console = console;
+  }
+
+  // called when compilation is completed.
+  // initialize something(session, for example) for the engine to execute the query.
+  public void initSession(SessionState session) {
   }
 
   @SuppressWarnings({"nls", "unchecked"})

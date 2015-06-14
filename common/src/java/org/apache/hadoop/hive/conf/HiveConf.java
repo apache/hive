@@ -2059,6 +2059,8 @@ public class HiveConf extends Configuration {
 
     HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez", "spark"),
         "Chooses execution engine. Options are: mr (Map reduce, default), tez (hadoop 2 only), spark"),
+    HIVE_EXECUTION_ENGINE_AVAILABLE("hive.execution.engine.available", "",
+        "Comma separated list of available engines for auto selection. Regards empty value as all engines are available."),
     HIVE_EXECUTION_ENGINE_SELECTOR("hive.execution.engine.selector", null, "Chooses execution engine by EngineSelector"),
     HIVE_EXECUTION_ENGINE_SELECTOR_PARAM("hive.execution.engine.selector.param", null,
         "Parameter which will be handed over to EngineSelector"),

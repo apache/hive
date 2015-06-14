@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.ql.parse.spark.GenSparkUtils;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * SetSparkReducerParallelism determines how many reducers should
@@ -114,8 +114,7 @@ public class SetSparkReducerParallelism implements NodeProcessor {
           SparkSession sparkSession = null;
           try {
             sparkSessionManager = SparkSessionManagerImpl.getInstance();
-            sparkSession = SparkUtilities.getSparkSession(
-              context.getConf(), sparkSessionManager);
+            sparkSession = SessionState.get().getSparkSession();
             sparkMemoryAndCores = sparkSession.getMemoryAndCores();
           } catch (HiveException e) {
             throw new SemanticException("Failed to get a spark session: " + e);
