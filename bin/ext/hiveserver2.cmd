@@ -55,6 +55,46 @@ if defined HBASE_HOME (
   )
 )
 
+@rem add auxilary jars such as serdes
+if not defined HIVE_AUX_JARS_PATH goto :AddMiscAuxLibDir
+
+setLocal EnableDelayedExpansion
+:auxJarLoop
+    for /f "delims=," %%a in ("!HIVE_AUX_JARS_PATH!") do (
+        set auxjar=%%a
+        if exist %%a (
+            if exist "%%a\nul" (
+                @rem %%a is a dir
+                pushd %%a
+                for /f %%b IN ('dir /b *.jar') do (
+                    call :AddToAuxJavaParam %%a\%%b
+                )
+                popd
+            ) else (
+                @rem %%a is a file
+                call :AddToAuxJavaParam %%a
+            )
+        )
+    )
+    :striploop
+    set stripchar=!HIVE_AUX_JARS_PATH:~0,1!
+    set HIVE_AUX_JARS_PATH=!HIVE_AUX_JARS_PATH:~1!
+    if "!HIVE_AUX_JARS_PATH!" EQU "" goto auxJarLoopEnd
+    if "!stripchar!" NEQ "," goto striploop
+    goto auxJarLoop
+
+:auxJarLoopEnd
+
+:AddMiscAuxLibDir
+@rem adding jars from hcatalog\share\hcatalog directory
+if exist %HIVE_HOME%\hcatalog\share\hcatalog (
+    pushd %HIVE_HOME%\hcatalog\share\hcatalog
+    for /f %%a IN ('dir /b *.jar') do (
+        call :AddToAuxJavaParam %HIVE_HOME%\hcatalog\share\hcatalog\%%a
+    )
+    popd
+)
+
 if [%1]==[hiveserver2_help] goto :hiveserver2_help
 
 if [%1]==[hiveserver2_catservice] goto :hiveserver2_catservice
@@ -76,7 +116,7 @@ goto :EOF
 @echo   ^<name^>HiveServer2^</name^>
 @echo   ^<description^>Hadoop HiveServer2 Service^</description^>
 @echo   ^<executable^>%JAVA_HOME%\bin\java^</executable^>
-@echo   ^<arguments^>%JAVA_HEAP_MAX% -XX:MaxPermSize=512m %HADOOP_OPTS% -classpath %CLASSPATH%;%HIVE_HBASE_PATH%;%HIVE_HOME%\hcatalog\share\hcatalog\* %CLASS% -hiveconf hive.hadoop.classpath=%HIVE_LIB%\*;%HIVE_HOME%\hcatalog\share\hcatalog\* -hiveconf hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory -hiveconf hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator -hiveconf hive.metastore.uris=" " %HIVE_OPTS%^</arguments^>
+@echo   ^<arguments^>%JAVA_HEAP_MAX% -XX:MaxPermSize=512m %HADOOP_OPTS% -classpath %CLASSPATH%;%HIVE_HBASE_PATH%;%HIVE_HOME%\hcatalog\share\hcatalog\* %CLASS% -hiveconf hive.hadoop.classpath=%HIVE_LIB%\*;%HIVE_HOME%\hcatalog\share\hcatalog\* -hiveconf hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory -hiveconf hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator -hiveconf hive.metastore.uris=" " -hiveconf hive.aux.jars.path=%AUX_JAVA_PARAM% %HIVE_OPTS%^</arguments^>
 @echo ^</service^>
 goto :EOF
 
@@ -86,5 +126,14 @@ if not defined HIVE_HBASE_PATH (
    ) else (
    set HIVE_HBASE_PATH=%HIVE_HBASE_PATH%;%1
    )
+)
+goto :EOF
+
+:AddToAuxJavaParam
+if not defined AUX_JAVA_PARAM (
+    set AUX_JAVA_PARAM=file:///%1
+    ) else (
+    set AUX_JAVA_PARAM=%AUX_JAVA_PARAM%,file:///%1
+    )
 )
 goto :EOF
