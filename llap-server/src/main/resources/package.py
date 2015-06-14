@@ -33,7 +33,7 @@ class LlapResource(object):
 		else:
 			# do not mess with user input
 			c = size
-		self.container_size = size
+		self.container_size = c
 		self.container_cores = self.cores
 		self.heap_size = h
 
