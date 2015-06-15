@@ -134,11 +134,6 @@ public class ThriftHttpServlet extends TServlet {
         // For a kerberos setup
         if (isKerberosAuthMode(authType)) {
           clientUserName = doKerberosAuth(request);
-          String doAsQueryParam = getDoAsQueryParam(request.getQueryString());
-
-          if (doAsQueryParam != null) {
-            SessionManager.setProxyUserName(doAsQueryParam);
-          }
         }
         // For password based authentication
         else {
@@ -146,8 +141,16 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
       LOG.debug("Client username: " + clientUserName);
+
       // Set the thread local username to be used for doAs if true
       SessionManager.setUserName(clientUserName);
+
+      // find proxy user if any from query param
+      String doAsQueryParam = getDoAsQueryParam(request.getQueryString());
+      if (doAsQueryParam != null) {
+        SessionManager.setProxyUserName(doAsQueryParam);
+      }
+
       clientIpAddress = request.getRemoteAddr();
       LOG.debug("Client IP Address: " + clientIpAddress);
       // Set the thread local ip address
@@ -225,7 +228,7 @@ public class ThriftHttpServlet extends TServlet {
           LOG.debug("Validated the cookie for user " + userName);
         }
         return userName;
-	  }
+      }
     }
     // No valid HS2 generated cookies found, return null
     return null;
@@ -522,6 +525,9 @@ public class ThriftHttpServlet extends TServlet {
   }
 
   private static String getDoAsQueryParam(String queryString) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("URL query string:" + queryString);
+    }
     if (queryString == null) {
       return null;
     }
