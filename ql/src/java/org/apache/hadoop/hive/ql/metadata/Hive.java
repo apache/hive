@@ -2615,6 +2615,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         } else {
           if (destIsSubDir) {
             FileStatus[] srcs = fs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
+            if (srcs.length == 0) {
+              success = true; // Nothing to move.
+            }
             for (FileStatus status : srcs) {
               success = FileUtils.copy(srcf.getFileSystem(conf), status.getPath(), destf.getFileSystem(conf), destf,
                   true,     // delete source
