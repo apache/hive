@@ -92,6 +92,7 @@ public class OrcFileStripeMergeRecordReader implements
         keyWrapper.setRowIndexStride(reader.getRowIndexStride());
         keyWrapper.setTypes(reader.getTypes());
       } else {
+        stripeIdx++;
         continue;
       }
       return true;
