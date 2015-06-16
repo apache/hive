@@ -54,6 +54,8 @@ import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
 
+import com.google.common.collect.Lists;
+
 /**
  * Process input from tez LogicalInput and write output - for a map plan
  * Just pump the records through the query plan.
@@ -63,8 +65,6 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   private static final String REDUCE_PLAN_KEY = "__REDUCE_PLAN__";
 
   private ObjectCache cache;
-
-  private String cacheKey;
 
   public static final Log l4j = LogFactory.getLog(ReduceRecordProcessor.class);
 
@@ -98,7 +98,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     }
 
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    cacheKey = queryId + processorContext.getTaskVertexName() + REDUCE_PLAN_KEY;
+    String cacheKey = queryId + processorContext.getTaskVertexName() + REDUCE_PLAN_KEY;
+    cacheKeys = Lists.newArrayList(cacheKey);
     reduceWork = (ReduceWork) cache.retrieve(cacheKey, new Callable<Object>() {
         @Override
         public Object call() {

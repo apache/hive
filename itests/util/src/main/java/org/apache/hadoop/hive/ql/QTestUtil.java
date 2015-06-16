@@ -355,9 +355,15 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
+      String confDir, String hadoopVer, String initScript,
+      String cleanupScript, String tezDirectory) throws Exception {
+    this(outDir, logDir, clusterType, confDir,
+        hadoopVer, initScript, cleanupScript, tezDirectory, true);
+  }
+
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
        String confDir, String hadoopVer, String initScript,
-       String cleanupScript, String tezDirectory)
-    throws Exception {
+       String cleanupScript, String tezDirectory, boolean withLlapIo) throws Exception {
 
     this.outDir = outDir;
     this.logDir = logDir;
@@ -419,8 +425,11 @@ public class QTestUtil {
 
     initConf();
 
-    LOG.info("initializing llap");
-    LlapIoProxy.initializeLlapIo(conf);
+    if (withLlapIo && clusterType != MiniClusterType.spark
+        && clusterType != MiniClusterType.miniSparkOnYarn) {
+      LOG.info("initializing llap");
+      LlapIoProxy.initializeLlapIo(conf);
+    }
 
     // Use the current directory if it is not specified
     String dataDir = conf.get("test.data.files");
@@ -1849,7 +1858,8 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20", "", "");
+      qt[i] = new QTestUtil(
+          resDir, logDir, MiniClusterType.none, null, null, "0.20", "", "", false);
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

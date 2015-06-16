@@ -198,6 +198,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         // we can't use the cached table because it has spilled.
         loadHashTable(getExecContext(), MapredContext.get());
       } else {
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Using tables from cache: " + pair.getLeft());
+        }
         // let's use the table from the cache.
         mapJoinTables = pair.getLeft();
         mapJoinTableSerdes = pair.getRight();
@@ -419,7 +422,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
     } catch (Exception e) {
-      String msg = "Unexpected exception: " + e.getMessage();
+      String msg = "Unexpected exception from "
+          + this.getClass().getSimpleName() + " : " + e.getMessage();
       LOG.error(msg, e);
       throw new HiveException(msg, e);
     }
