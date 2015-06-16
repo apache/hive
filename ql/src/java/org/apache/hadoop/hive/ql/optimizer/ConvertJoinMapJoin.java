@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MuxOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -368,6 +369,26 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ReduceSinkOperator bigTableRS =
         (ReduceSinkOperator) joinOp.getParentOperators().get(bigTablePosition);
     int numBuckets = bigTableRS.getParentOperators().get(0).getOpTraits().getNumBuckets();
+
+    int size = -1;
+    for (Operator<?> parentOp : joinOp.getParentOperators()) {
+      // each side better have 0 or more RS. if either side is unbalanced, cannot convert.
+      // This is a workaround for now. Right fix would be to refactor code in the
+      // MapRecordProcessor and ReduceRecordProcessor with respect to the sources.
+      Set<ReduceSinkOperator> set =
+          OperatorUtils.findOperatorsUpstream(parentOp.getParentOperators(),
+              ReduceSinkOperator.class);
+      if (size < 0) {
+        size = set.size();
+        continue;
+      }
+
+      if (((size > 0) && (set.size() > 0)) || ((size == 0) && (set.size() == 0))) {
+        continue;
+      } else {
+        return false;
+      }
+    }
 
     // the sort and bucket cols have to match on both sides for this
     // transformation of the join operation
