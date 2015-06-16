@@ -185,8 +185,15 @@ public class SparkPlanGenerator {
     JobConf jobConf = cloneJobConf(mapWork);
     Class ifClass = getInputFormat(jobConf, mapWork);
 
-    JavaPairRDD<WritableComparable, Writable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
-        WritableComparable.class, Writable.class);
+    JavaPairRDD<WritableComparable, Writable> hadoopRDD;
+    if (mapWork.getNumMapTasks() != null) {
+      jobConf.setNumMapTasks(mapWork.getNumMapTasks());
+      hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
+          WritableComparable.class, Writable.class, mapWork.getNumMapTasks());
+    } else {
+      hadoopRDD = sc.hadoopRDD(jobConf, ifClass, WritableComparable.class, Writable.class);
+    }
+
     // Caching is disabled for MapInput due to HIVE-8920
     MapInput result = new MapInput(sparkPlan, hadoopRDD, false/*cloneToWork.containsKey(mapWork)*/);
     return result;
@@ -284,6 +291,10 @@ public class SparkPlanGenerator {
             FileOutputFormat.class);
       } else {
         cloned.set(Utilities.MAPRED_MAPPER_CLASS, ExecMapper.class.getName());
+      }
+      if (((MapWork) work).getMinSplitSize() != null) {
+        HiveConf.setLongVar(cloned, HiveConf.ConfVars.MAPREDMINSPLITSIZE,
+            ((MapWork) work).getMinSplitSize());
       }
       // remember the JobConf cloned for each MapWork, so we won't clone for it again
       workToJobConf.put(work, cloned);
