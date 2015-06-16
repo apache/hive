@@ -83,6 +83,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import com.google.common.collect.Lists;
+
 /**
  * File Sink operator implementation.
  **/
@@ -899,7 +901,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       /* create default directory. */
       lbDirName = FileUtils.makeDefaultListBucketingDirName(skewedCols,
           lbCtx.getDefaultDirName());
-      List<String> defaultKey = Arrays.asList(lbCtx.getDefaultKey());
+      List<String> defaultKey = Lists.newArrayList(lbCtx.getDefaultKey());
       if (!locationMap.containsKey(defaultKey)) {
         locationMap.put(defaultKey, lbDirName);
       }
