@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.TableSample;
@@ -72,6 +73,9 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private ExprNodeGenericFuncDesc filterExpr;
   private transient Serializable filterObject;
+  private String serializedFilterExpr;
+  private String serializedFilterObject;
+
 
   // Both neededColumnIDs and neededColumns should never be null.
   // When neededColumnIDs is an empty list,
@@ -100,7 +104,6 @@ public class TableScanDesc extends AbstractOperatorDesc {
   private transient TableSample tableSample;
 
   private transient final Table tableMetadata;
-
 
   public TableScanDesc() {
     this(null, null);
@@ -144,7 +147,11 @@ public class TableScanDesc extends AbstractOperatorDesc {
   }
 
   public void setFilterExpr(ExprNodeGenericFuncDesc filterExpr) {
+    // TODO: we could avoid serialization if it's the same expr. Check?
     this.filterExpr = filterExpr;
+    if (filterExpr != null) {
+      serializedFilterExpr = Utilities.serializeExpression(filterExpr);
+    }
   }
 
   public Serializable getFilterObject() {
@@ -153,6 +160,9 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setFilterObject(Serializable filterObject) {
     this.filterObject = filterObject;
+    if (filterObject != null) {
+      serializedFilterObject = Utilities.serializeObject(filterObject);
+    }
   }
 
   public void setNeededColumnIDs(List<Integer> neededColumnIDs) {
@@ -280,5 +290,13 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setTableSample(TableSample tableSample) {
     this.tableSample = tableSample;
+  }
+
+  public String getSerializedFilterExpr() {
+    return serializedFilterExpr;
+  }
+
+  public String getSerializedFilterObject() {
+    return serializedFilterObject;
   }
 }
