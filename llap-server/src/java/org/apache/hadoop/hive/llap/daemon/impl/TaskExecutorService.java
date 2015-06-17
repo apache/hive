@@ -263,11 +263,17 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     }
   }
 
-  private static class WaitQueueWorkerCallback implements FutureCallback {
+  private class WaitQueueWorkerCallback implements FutureCallback {
 
     @Override
     public void onSuccess(Object result) {
-      LOG.error("Wait queue scheduler worker exited with success!");
+      if (isShutdown.get()) {
+        LOG.info("Wait queue scheduler worker exited with success!");
+      } else {
+        LOG.error("Wait queue scheduler worker exited with success!");
+        Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(),
+            new IllegalStateException("WaitQueue worked exited before shutdown"));
+      }
     }
 
     @Override

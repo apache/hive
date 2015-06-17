@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -126,7 +125,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     // Register with the AMReporter when the callable is setup. Unregister once it starts running.
     if (jobToken != null) {
     this.amReporter.registerTask(request.getAmHost(), request.getAmPort(),
-        request.getUser(), jobToken);
+        request.getUser(), jobToken, null, request.getFragmentSpec().getDagName());
     }
     this.metrics = metrics;
     this.requestId = getRequestId(request);
@@ -287,7 +286,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
    */
   public void reportTaskKilled() {
     killedTaskHandler
-        .taskKilled(request.getAmHost(), request.getAmPort(), request.getUser(), jobToken,
+        .taskKilled(request.getAmHost(), request.getAmPort(), request.getUser(), jobToken, null,
+            taskSpec.getDAGName(),
             taskSpec.getTaskAttemptID());
   }
 

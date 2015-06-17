@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -99,6 +100,10 @@ public class QueryInfo {
 
   public void unregisterFragment(QueryFragmentInfo fragmentInfo) {
     knownFragments.remove(fragmentInfo);
+  }
+
+  public List<QueryFragmentInfo> getRegisteredFragments() {
+    return Lists.newArrayList(knownFragments);
   }
 
   private synchronized void createLocalDirs() throws IOException {

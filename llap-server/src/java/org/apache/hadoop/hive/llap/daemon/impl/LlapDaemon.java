@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
+import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
 import org.apache.hadoop.hive.llap.daemon.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -157,7 +158,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         " sessionId: " + sessionId);
 
 
-    this.amReporter = new AMReporter(address, daemonConf);
+    this.amReporter = new AMReporter(address, new QueryFailedHandlerProxy(), daemonConf);
 
 
     this.server = new LlapDaemonProtocolServerImpl(numHandlers, this, address, rpcPort);
@@ -418,4 +419,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     }
   }
 
+
+  private class QueryFailedHandlerProxy implements QueryFailedHandler {
+
+    @Override
+    public void queryFailed(String queryId, String dagName) {
+      containerRunner.queryFailed(queryId, dagName);
+    }
+  }
 }

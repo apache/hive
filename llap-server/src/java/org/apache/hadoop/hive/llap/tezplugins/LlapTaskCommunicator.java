@@ -31,6 +31,7 @@ import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
@@ -449,7 +450,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
 
     @Override
-    public void nodeHeartbeat(Text hostname, int port) {
+    public void nodeHeartbeat(Text hostname, int port) throws IOException {
       entityTracker.nodePinged(hostname.toString(), port);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received heartbeat from [" + hostname + ":" + port +"]");
@@ -457,7 +458,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
 
     @Override
-    public void taskKilled(TezTaskAttemptID taskAttemptId) {
+    public void taskKilled(TezTaskAttemptID taskAttemptId) throws IOException {
       // TODO Unregister the task for state updates, which could in turn unregister the node.
       getTaskCommunicatorContext().taskKilled(taskAttemptId,
           TaskAttemptEndReason.EXTERNAL_PREEMPTION, "Attempt preempted");

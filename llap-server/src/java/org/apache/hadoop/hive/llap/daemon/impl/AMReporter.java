@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import javax.net.SocketFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedExceptionAction;
@@ -39,8 +40,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.retry.RetryPolicies;
+import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.SecurityUtil;
@@ -79,9 +83,13 @@ public class AMReporter extends AbstractService {
   private static final Logger LOG = LoggerFactory.getLogger(AMReporter.class);
 
   private volatile LlapNodeId nodeId;
+  private final QueryFailedHandler queryFailedHandler;
   private final Configuration conf;
   private final ListeningExecutorService queueLookupExecutor;
   private final ListeningExecutorService executor;
+  private final RetryPolicy retryPolicy;
+  private final long retryTimeout;
+  private final SocketFactory socketFactory;
   private final DelayQueue<AMNodeInfo> pendingHeartbeatQueeu = new DelayQueue();
   private final AtomicReference<InetSocketAddress> localAddress;
   private final long heartbeatInterval;
@@ -91,9 +99,11 @@ public class AMReporter extends AbstractService {
   private final Map<LlapNodeId, AMNodeInfo> knownAppMasters = new HashMap<>();
   volatile ListenableFuture<Void> queueLookupFuture;
 
-  public AMReporter(AtomicReference<InetSocketAddress> localAddress, Configuration conf) {
+  public AMReporter(AtomicReference<InetSocketAddress> localAddress,
+                    QueryFailedHandler queryFailedHandler, Configuration conf) {
     super(AMReporter.class.getName());
     this.localAddress = localAddress;
+    this.queryFailedHandler = queryFailedHandler;
     this.conf = conf;
     ExecutorService rawExecutor = Executors.newCachedThreadPool(
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AMReporter %d").build());
@@ -102,9 +112,25 @@ public class AMReporter extends AbstractService {
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AMReporterQueueDrainer").build());
     this.queueLookupExecutor = MoreExecutors.listeningDecorator(rawExecutor2);
     this.heartbeatInterval =
-        conf.getLong(LlapConfiguration.LLAP_DAEMON_LIVENESS_HEARTBEAT_INTERVAL_MS,
-            LlapConfiguration.LLAP_DAEMON_LIVENESS_HEARTBEAT_INTERVAL_MS_DEFAULT);
+        conf.getLong(LlapConfiguration.LLAP_DAEMON_AM_LIVENESS_HEARTBEAT_INTERVAL_MS,
+            LlapConfiguration.LLAP_DAEMON_AM_LIVENESS_HEARTBEAT_INTERVAL_MS_DEFAULT);
 
+    this.retryTimeout =
+        conf.getLong(LlapConfiguration.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MILLIS,
+            LlapConfiguration.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MILLIS_DEFAULT);
+    long retrySleep = conf.getLong(
+        LlapConfiguration.LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS,
+        LlapConfiguration.LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS_DEFAULT);
+    this.retryPolicy = RetryPolicies
+        .retryUpToMaximumTimeWithFixedSleep(retryTimeout, retrySleep,
+            TimeUnit.MILLISECONDS);
+
+    this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
+
+    LOG.info("Setting up AMReporter with " +
+        "heartbeatInterval(ms)=" + heartbeatInterval +
+        ", retryTime(ms)=" + retryTimeout +
+        ", retrySleep(ms)=" + retrySleep);
   }
 
   @Override
@@ -143,23 +169,26 @@ public class AMReporter extends AbstractService {
     }
   }
 
-
-  public void registerTask(String amLocation, int port, String user, Token<JobTokenIdentifier> jobToken) {
+  public void registerTask(String amLocation, int port, String user,
+                           Token<JobTokenIdentifier> jobToken, String queryId, String dagName) {
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Registering for heartbeat: " + amLocation + ":" + port);
+      LOG.trace("Registering for heartbeat: " + amLocation + ":" + port + " for dagName=" + dagName);
     }
     AMNodeInfo amNodeInfo;
     synchronized (knownAppMasters) {
       LlapNodeId amNodeId = LlapNodeId.getInstance(amLocation, port);
       amNodeInfo = knownAppMasters.get(amNodeId);
       if (amNodeInfo == null) {
-        amNodeInfo = new AMNodeInfo(amNodeId, user, jobToken, conf);
+        amNodeInfo =
+            new AMNodeInfo(amNodeId, user, jobToken, dagName, retryPolicy, retryTimeout, socketFactory,
+                conf);
         knownAppMasters.put(amNodeId, amNodeInfo);
         // Add to the queue only the first time this is registered, and on
         // subsequent instances when it's taken off the queue.
         amNodeInfo.setNextHeartbeatTime(System.currentTimeMillis() + heartbeatInterval);
         pendingHeartbeatQueeu.add(amNodeInfo);
       }
+      amNodeInfo.setCurrentDagName(dagName);
       amNodeInfo.incrementAndGetTaskCount();
     }
   }
@@ -182,11 +211,13 @@ public class AMReporter extends AbstractService {
   }
 
   public void taskKilled(String amLocation, int port, String user, Token<JobTokenIdentifier> jobToken,
-                         final TezTaskAttemptID taskAttemptId) {
+                         final String queryId, final String dagName, final TezTaskAttemptID taskAttemptId) {
     // Not re-using the connection for the AM heartbeat - which may or may not be open by this point.
     // knownAppMasters is used for sending heartbeats for queued tasks. Killed messages use a new connection.
     LlapNodeId amNodeId = LlapNodeId.getInstance(amLocation, port);
-    AMNodeInfo amNodeInfo = new AMNodeInfo(amNodeId, user, jobToken, conf);
+    AMNodeInfo amNodeInfo =
+        new AMNodeInfo(amNodeId, user, jobToken, dagName, retryPolicy, retryTimeout, socketFactory,
+            conf);
 
     // Even if the service hasn't started up. It's OK to make this invocation since this will
     // only happen after the AtomicReference address has been populated. Not adding an additional check.
@@ -212,9 +243,15 @@ public class AMReporter extends AbstractService {
     protected Void callInternal() {
       while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
         try {
-          AMNodeInfo amNodeInfo = pendingHeartbeatQueeu.take();
-          if (amNodeInfo.getTaskCount() == 0) {
+          final AMNodeInfo amNodeInfo = pendingHeartbeatQueeu.take();
+          if (amNodeInfo.getTaskCount() == 0 || amNodeInfo.hasAmFailed()) {
             synchronized (knownAppMasters) {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Removing am {} with last associated dag{} from heartbeat with taskCount={}, amFailed={}",
+                    amNodeInfo.amNodeId, amNodeInfo.getCurrentDagName(), amNodeInfo.getTaskCount(),
+                    amNodeInfo.hasAmFailed(), amNodeInfo);
+              }
               knownAppMasters.remove(amNodeInfo.amNodeId);
             }
             amNodeInfo.stopUmbilical();
@@ -223,7 +260,22 @@ public class AMReporter extends AbstractService {
             long next = System.currentTimeMillis() + heartbeatInterval;
             amNodeInfo.setNextHeartbeatTime(next);
             pendingHeartbeatQueeu.add(amNodeInfo);
-            executor.submit(new AMHeartbeatCallable(amNodeInfo));
+            ListenableFuture<Void> future = executor.submit(new AMHeartbeatCallable(amNodeInfo));
+            Futures.addCallback(future, new FutureCallback<Void>() {
+              @Override
+              public void onSuccess(Void result) {
+                // Nothing to do.
+              }
+
+              @Override
+              public void onFailure(Throwable t) {
+                String currentDagName = amNodeInfo.getCurrentDagName();
+                amNodeInfo.setAmFailed(true);
+                LOG.warn("Heartbeat failed to AM {}. Killing all other tasks for the query={}",
+                    amNodeInfo.amNodeId, currentDagName, t);
+                queryFailedHandler.queryFailed(null, currentDagName);
+              }
+            });
           }
         } catch (InterruptedException e) {
           if (isShutdown.get()) {
@@ -284,11 +336,14 @@ public class AMReporter extends AbstractService {
           amNodeInfo.getUmbilical().nodeHeartbeat(new Text(nodeId.getHostname()),
               nodeId.getPort());
         } catch (IOException e) {
-          // TODO Ideally, this could be used to avoid running a task - AM down / unreachable, so there's no point running it.
-          LOG.warn("Failed to communicate with AM. May retry later: " + amNodeInfo.amNodeId, e);
+          String currentDagName = amNodeInfo.getCurrentDagName();
+          amNodeInfo.setAmFailed(true);
+          LOG.warn("Failed to communicated with AM at {}. Killing remaining fragments for query {}",
+              amNodeInfo.amNodeId, currentDagName, e);
+          queryFailedHandler.queryFailed(null, currentDagName);
         } catch (InterruptedException e) {
           if (!isShutdown.get()) {
-            LOG.warn("Interrupted while trying to send heartbeat to AM: " + amNodeInfo.amNodeId, e);
+            LOG.warn("Interrupted while trying to send heartbeat to AM {}", amNodeInfo.amNodeId, e);
           }
         }
       } else {
@@ -308,15 +363,28 @@ public class AMReporter extends AbstractService {
     private final Token<JobTokenIdentifier> jobToken;
     private final Configuration conf;
     private final LlapNodeId amNodeId;
+    private final RetryPolicy retryPolicy;
+    private final long timeout;
+    private final SocketFactory socketFactory;
+    private final AtomicBoolean amFailed = new AtomicBoolean(false);
+    private String currentDagName;
     private LlapTaskUmbilicalProtocol umbilical;
     private long nextHeartbeatTime;
 
 
     public AMNodeInfo(LlapNodeId amNodeId, String user,
                       Token<JobTokenIdentifier> jobToken,
+                      String currentDagName,
+                      RetryPolicy retryPolicy,
+                      long timeout,
+                      SocketFactory socketFactory,
                       Configuration conf) {
       this.user = user;
       this.jobToken = jobToken;
+      this.currentDagName = currentDagName;
+      this.retryPolicy = retryPolicy;
+      this.timeout = timeout;
+      this.socketFactory = socketFactory;
       this.conf = conf;
       this.amNodeId = amNodeId;
     }
@@ -331,8 +399,10 @@ public class AMReporter extends AbstractService {
         umbilical = ugi.doAs(new PrivilegedExceptionAction<LlapTaskUmbilicalProtocol>() {
           @Override
           public LlapTaskUmbilicalProtocol run() throws Exception {
-            return RPC.getProxy(LlapTaskUmbilicalProtocol.class,
-                LlapTaskUmbilicalProtocol.versionID, address, conf);
+            return RPC
+                .getProxy(LlapTaskUmbilicalProtocol.class, LlapTaskUmbilicalProtocol.versionID,
+                    address, UserGroupInformation.getCurrentUser(), conf, socketFactory,
+                    (int) timeout);
           }
         });
       }
@@ -354,8 +424,24 @@ public class AMReporter extends AbstractService {
       return taskCount.decrementAndGet();
     }
 
+    void setAmFailed(boolean val) {
+      amFailed.set(val);
+    }
+
+    boolean hasAmFailed() {
+      return amFailed.get();
+    }
+
     int getTaskCount() {
       return taskCount.get();
+    }
+
+    public synchronized String getCurrentDagName() {
+      return currentDagName;
+    }
+
+    public synchronized void setCurrentDagName(String currentDagName) {
+      this.currentDagName = currentDagName;
     }
 
     synchronized void setNextHeartbeatTime(long nextTime) {
