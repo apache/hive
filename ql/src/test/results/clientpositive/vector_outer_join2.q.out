@@ -46,6 +46,7 @@ PREHOOK: query: create table small_alltypesorc_a stored as orc as select * from
  select * from (select * from small_alltypesorc3a) sq3
  union all
  select * from (select * from small_alltypesorc4a) sq4) q
+order by cint, ctinyint, cstring1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@small_alltypesorc1a
 PREHOOK: Input: default@small_alltypesorc2a
@@ -61,6 +62,7 @@ POSTHOOK: query: create table small_alltypesorc_a stored as orc as select * from
  select * from (select * from small_alltypesorc3a) sq3
  union all
  select * from (select * from small_alltypesorc4a) sq4) q
+order by cint, ctinyint, cstring1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@small_alltypesorc1a
 POSTHOOK: Input: default@small_alltypesorc2a
