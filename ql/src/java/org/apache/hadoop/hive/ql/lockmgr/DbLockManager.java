@@ -79,10 +79,10 @@ public class DbLockManager implements HiveLockManager{
    */
   LockState lock(LockRequest lock, String queryId, boolean isBlocking, List<HiveLock> acquiredLocks) throws LockException {
     try {
-      LOG.debug("Requesting: queryId=" + queryId + " " + lock);
+      LOG.info("Requesting: queryId=" + queryId + " " + lock);
       LockResponse res = client.lock(lock);
       //link lockId to queryId
-      LOG.debug("Response " + res);
+      LOG.info("Response to queryId=" + queryId + " " + res);
       if(!isBlocking) {
         if(res.getState() == LockState.WAITING) {
           return LockState.WAITING;

@@ -73,4 +73,13 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public int compareTo(CompactionInfo o) {
     return getFullPartitionName().compareTo(o.getFullPartitionName());
   }
+  public String toString() {
+    return "id:" + id + "," +
+      "dbname:" + dbname + "," +
+      "tableName:" + tableName + "," +
+      "partName:" + partName + "," +
+      "type:" + type + "," +
+      "runAs:" + runAs + "," +
+      "tooManyAborts:" + tooManyAborts;
+  }
 }

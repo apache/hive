@@ -105,7 +105,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
     LockRequestBuilder rqstBuilder = new LockRequestBuilder();
     //link queryId to txnId
-    LOG.debug("Setting lock request transaction to " + txnId + " for queryId=" + plan.getQueryId());
+    LOG.info("Setting lock request transaction to " + txnId + " for queryId=" + plan.getQueryId());
     rqstBuilder.setTransactionId(txnId)
         .setUser(username);
 
