@@ -150,3 +150,6 @@ JOIN srcpart z2 ON (x.value = z2.value)
 JOIN src y2     ON (x.value = y2.value)
 WHERE z1.key < 'zzzzzzzz' AND z2.key < 'zzzzzzzzzz'
  AND y1.value < 'zzzzzzzz' AND y2.value < 'zzzzzzzzzz';
+
+
+reset hive.cbo.enable;
