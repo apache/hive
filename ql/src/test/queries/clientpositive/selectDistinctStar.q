@@ -50,8 +50,6 @@ on src1.key=src2.key;
 
 select distinct * from (select distinct * from src)src1;
 
-set hive.cbo.enable=false;
-
 explain select distinct src.* from src;
 
 select distinct src.* from src;
