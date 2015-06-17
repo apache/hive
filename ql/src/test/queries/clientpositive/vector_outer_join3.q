@@ -14,7 +14,9 @@ create table small_alltypesorc_a stored as orc as select * from
  union all
  select * from (select * from small_alltypesorc3a) sq3
  union all
- select * from (select * from small_alltypesorc4a) sq4) q;
+ select * from (select * from small_alltypesorc4a) sq4) q
+order by cint, ctinyint, cstring1;
+
 
 ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS;
 ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS;
