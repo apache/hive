@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -47,6 +49,7 @@ public class QueryTracker extends CompositeService {
 
   private final String[] localDirsBase;
   private final FileSystem localFs;
+  private final long defaultDeleteDelaySeconds;
 
   // TODO At the moment there's no way of knowing whether a query is running or not.
   // A race is possible between dagComplete and registerFragment - where the registerFragment
@@ -74,6 +77,9 @@ public class QueryTracker extends CompositeService {
     } catch (IOException e) {
       throw new RuntimeException("Failed to setup local filesystem instance", e);
     }
+
+    this.defaultDeleteDelaySeconds = conf.getLong(LlapConfiguration.LLAP_FILE_CLEANUP_DELAY_SECONDS,
+        LlapConfiguration.LLAP_FILE_CLEANUP_DELAY_SECONDS_DEFAULT);
 
     queryFileCleaner = new QueryFileCleaner(conf, localFs);
     addService(queryFileCleaner);
@@ -142,7 +148,10 @@ public class QueryTracker extends CompositeService {
    * @param dagName
    * @param deleteDelay
    */
-  void queryComplete(String queryId, String dagName, long deleteDelay) {
+  List<QueryFragmentInfo> queryComplete(String queryId, String dagName, long deleteDelay) {
+    if (deleteDelay == -1) {
+      deleteDelay = defaultDeleteDelaySeconds;
+    }
     ReadWriteLock dagLock = getDagLock(dagName);
     dagLock.writeLock().lock();
     try {
@@ -153,6 +162,7 @@ public class QueryTracker extends CompositeService {
       QueryInfo queryInfo = queryInfoMap.remove(dagName);
       if (queryInfo == null) {
         LOG.warn("Ignoring query complete for unknown dag: {}", dagName);
+        return Collections.emptyList();
       }
       String[] localDirs = queryInfo.getLocalDirsNoCreate();
       if (localDirs != null) {
@@ -161,8 +171,13 @@ public class QueryTracker extends CompositeService {
           ShuffleHandler.get().unregisterDag(localDir, dagName, queryInfo.getDagIdentifier());
         }
       }
+      // Clearing this before sending a kill is OK, since canFinish will change to false.
+      // Ideally this should be a state machine where kills are issued to the executor,
+      // and the structures are cleaned up once all tasks complete. New requests, however, should not
+      // be allowed after a query complete is received.
       sourceCompletionMap.remove(dagName);
       dagSpecificLocks.remove(dagName);
+      return queryInfo.getRegisteredFragments();
       // TODO HIVE-10762 Issue a kill message to all running fragments for this container.
       // TODO HIVE-10535 Cleanup map join cache
     } finally {

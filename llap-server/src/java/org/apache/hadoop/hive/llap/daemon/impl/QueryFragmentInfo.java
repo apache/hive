@@ -71,6 +71,10 @@ public class QueryFragmentInfo {
     return attemptNumber;
   }
 
+  public String getFragmentIdentifierString() {
+    return fragmentSpec.getFragmentIdentifierString();
+  }
+
   /**
    * Check whether a task can run to completion or may end up blocking on it's sources.
    * This currently happens via looking up source state.

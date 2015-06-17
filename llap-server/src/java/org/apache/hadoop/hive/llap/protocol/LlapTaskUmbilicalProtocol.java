@@ -32,8 +32,8 @@ public interface LlapTaskUmbilicalProtocol extends VersionedProtocol {
   public TezHeartbeatResponse heartbeat(TezHeartbeatRequest request)
       throws IOException, TezException;
 
-  public void nodeHeartbeat(Text hostname, int port);
+  public void nodeHeartbeat(Text hostname, int port) throws IOException;
 
-  public void taskKilled(TezTaskAttemptID taskAttemptId);
+  public void taskKilled(TezTaskAttemptID taskAttemptId) throws IOException;
 
 }

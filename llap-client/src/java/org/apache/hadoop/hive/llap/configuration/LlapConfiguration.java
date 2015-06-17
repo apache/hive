@@ -51,8 +51,26 @@ public class LlapConfiguration extends Configuration {
   public static final boolean LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED_DEFAULT = false;
 
   // This needs to be kept below the task timeout interval, but otherwise as high as possible to avoid unnecessary traffic.
-  public static final String LLAP_DAEMON_LIVENESS_HEARTBEAT_INTERVAL_MS = LLAP_DAEMON_PREFIX + "liveness.heartbeat.interval-ms";
-  public static final long LLAP_DAEMON_LIVENESS_HEARTBEAT_INTERVAL_MS_DEFAULT = 10000l;
+  public static final String LLAP_DAEMON_AM_LIVENESS_HEARTBEAT_INTERVAL_MS = LLAP_DAEMON_PREFIX + "am.liveness.heartbeat.interval-ms";
+  public static final long LLAP_DAEMON_AM_LIVENESS_HEARTBEAT_INTERVAL_MS_DEFAULT = 10000l;
+
+  /**
+   * Amount of time to wait on connection failures to the AM from an LLAP daemon before considering
+   * the AM to be dead
+   */
+  public static final String LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MILLIS =
+      LLAP_PREFIX + "am.liveness.connection.timeout-millis";
+  public static final long LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MILLIS_DEFAULT = 10000l;
+
+  // Not used yet - since the Writable RPC engine does not support this policy.
+  /**
+   * Sleep duration while waiting to retry connection failures to the AM from the daemon for the
+   * general keep-alive thread
+   */
+  public static final String LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS =
+      LLAP_PREFIX + "am.liveness.connection.sleep-between-retries-millis";
+  public static final long LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS_DEFAULT =
+      2000l;
 
 
   // Section for configs used in AM and executors
@@ -136,6 +154,8 @@ public class LlapConfiguration extends Configuration {
   public static final String LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS =
       LLAP_PREFIX + "task.communicator.connection.sleep-between-retries-millis";
   public static final long LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MILLIS_DEFAULT = 2000l;
+
+
 
   public static final String LLAP_DAEMON_SERVICE_PORT = LLAP_DAEMON_PREFIX + "service.port";
   public static final int LLAP_DAEMON_SERVICE_PORT_DEFAULT = 15002;
