@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -38,7 +37,9 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hive.common.util.BloomFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.AggregateStatsCache;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -52,10 +53,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.hbase.AggregateStatsCache.AggrColStatsCached;
 import org.apache.hadoop.hive.metastore.hbase.stats.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.hbase.stats.ColumnStatsAggregatorFactory;
-import org.apache.hadoop.hive.metastore.hbase.utils.BloomFilter;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -1581,7 +1580,7 @@ class HBaseReadWrite {
       List<List<String>> partVals, List<String> colNames) throws IOException {
     // One ColumnStatisticsObj per column
     List<ColumnStatisticsObj> colStatsList = new ArrayList<ColumnStatisticsObj>();
-    AggrColStatsCached colStatsAggrCached;
+    AggregateStatsCache.AggrColStats colStatsAggrCached;
     ColumnStatisticsObj colStatsAggr;
     int maxPartitionsPerCacheNode = aggrStatsCache.getMaxPartsPerCacheNode();
     float falsePositiveProbability = aggrStatsCache.getFalsePositiveProbability();
@@ -1672,7 +1671,7 @@ class HBaseReadWrite {
       }
       // Add partition to the bloom filter if it's requested
       if (bloomFilter != null) {
-        bloomFilter.addToFilter(partNames.get(pOff).getBytes());
+        bloomFilter.add(partNames.get(pOff).getBytes());
       }
     }
     return colStatsAggr;
