@@ -666,7 +666,6 @@ class RecordReaderImpl implements RecordReader {
     private final List<PredicateLeaf> sargLeaves;
     private final int[] filterColumns;
     private final long rowIndexStride;
-    private final OrcProto.BloomFilterIndex[] bloomFilterIndices;
     // same as the above array, but indices are set to true
     private final boolean[] sargColumns;
     public SargApplier(SearchArgument sarg, String[] columnNames, long rowIndexStride,
@@ -674,7 +673,6 @@ class RecordReaderImpl implements RecordReader {
       this.sarg = sarg;
       sargLeaves = sarg.getLeaves();
       filterColumns = mapSargColumns(sargLeaves, columnNames, 0);
-      bloomFilterIndices = new OrcProto.BloomFilterIndex[types.size()];
       this.rowIndexStride = rowIndexStride;
       // included will not be null, row options will fill the array with trues if null
       sargColumns = new boolean[includedCount];
@@ -694,7 +692,8 @@ class RecordReaderImpl implements RecordReader {
      * @throws IOException
      */
     public boolean[] pickRowGroups(
-        StripeInformation stripe, OrcProto.RowIndex[] indexes) throws IOException {
+        StripeInformation stripe, OrcProto.RowIndex[] indexes,
+        OrcProto.BloomFilterIndex[] bloomFilterIndices) throws IOException {
       long rowsInStripe = stripe.getNumberOfRows();
       int groupsInStripe = (int) ((rowsInStripe + rowIndexStride - 1) / rowIndexStride);
       boolean[] result = new boolean[groupsInStripe]; // TODO: avoid alloc?
@@ -705,7 +704,7 @@ class RecordReaderImpl implements RecordReader {
             OrcProto.ColumnStatistics stats =
                 indexes[filterColumns[pred]].getEntry(rowGroup).getStatistics();
             OrcProto.BloomFilter bf = null;
-            if (bloomFilterIndices[filterColumns[pred]] != null) {
+            if (bloomFilterIndices != null && bloomFilterIndices[filterColumns[pred]] != null) {
               bf = bloomFilterIndices[filterColumns[pred]].getBloomFilter(rowGroup);
             }
             leafValues[pred] = evaluatePredicateProto(stats, sargLeaves.get(pred), bf);
@@ -749,7 +748,7 @@ class RecordReaderImpl implements RecordReader {
       return null;
     }
     readRowIndex(currentStripe, included, sargApp.sargColumns);
-    return sargApp.pickRowGroups(stripes.get(currentStripe), indexes);
+    return sargApp.pickRowGroups(stripes.get(currentStripe), indexes, bloomFilterIndices);
   }
 
   private void clearStreams() throws IOException {
