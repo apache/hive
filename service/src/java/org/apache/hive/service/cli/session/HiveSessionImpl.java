@@ -319,11 +319,6 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
-  public String getUsername() {
-    return username;
-  }
-
-  @Override
   public String getPassword() {
     return password;
   }
@@ -727,14 +722,14 @@ public class HiveSessionImpl implements HiveSession {
   @Override
   public String getDelegationToken(HiveAuthFactory authFactory, String owner, String renewer)
       throws HiveSQLException {
-    HiveAuthFactory.verifyProxyAccess(getUsername(), owner, getIpAddress(), getHiveConf());
+    HiveAuthFactory.verifyProxyAccess(getUserName(), owner, getIpAddress(), getHiveConf());
     return authFactory.getDelegationToken(owner, renewer);
   }
 
   @Override
   public void cancelDelegationToken(HiveAuthFactory authFactory, String tokenStr)
       throws HiveSQLException {
-    HiveAuthFactory.verifyProxyAccess(getUsername(), getUserFromToken(authFactory, tokenStr),
+    HiveAuthFactory.verifyProxyAccess(getUserName(), getUserFromToken(authFactory, tokenStr),
         getIpAddress(), getHiveConf());
     authFactory.cancelDelegationToken(tokenStr);
   }
@@ -742,7 +737,7 @@ public class HiveSessionImpl implements HiveSession {
   @Override
   public void renewDelegationToken(HiveAuthFactory authFactory, String tokenStr)
       throws HiveSQLException {
-    HiveAuthFactory.verifyProxyAccess(getUsername(), getUserFromToken(authFactory, tokenStr),
+    HiveAuthFactory.verifyProxyAccess(getUserName(), getUserFromToken(authFactory, tokenStr),
         getIpAddress(), getHiveConf());
     authFactory.renewDelegationToken(tokenStr);
   }
