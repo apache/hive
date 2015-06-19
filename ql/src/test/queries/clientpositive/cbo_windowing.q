@@ -8,8 +8,8 @@ set hive.auto.convert.join=false;
 -- SORT_QUERY_RESULTS
 
 select count(c_int) over() from cbo_t1;
-select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1;
-select * from (select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1) cbo_t1;
+select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over() as rn, rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(partition by c_boolean order by c_float), lag(c_float, 2, c_float) over(partition by c_boolean order by c_float) from cbo_t1 order by rn;
+select * from (select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over() as rn, rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(partition by c_boolean order by c_float), lag(c_float, 2, c_float) over(partition by c_boolean order by c_float) from cbo_t1 order by rn) cbo_t1;
 select x from (select count(c_int) over() as x, sum(c_float) over() from cbo_t1) cbo_t1;
 select 1+sum(c_int) over() from cbo_t1;
 select sum(c_int)+sum(sum(c_int)) over() from cbo_t1;
