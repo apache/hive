@@ -605,6 +605,7 @@ public class Commands {
             "" + beeLine.getReflector().invoke(beeLine.getDatabaseMetaData(),
                 m[i], new Object[0])));
       } catch (Exception e) {
+        beeLine.output(beeLine.getColorBuffer().pad(m[i], padlen), false);
         beeLine.handleException(e);
       }
     }
