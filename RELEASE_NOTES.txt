@@ -1,4 +1,136 @@
 
+Release Notes - Hive - Version 1.2.1
+
+** Sub-task
+    * [HIVE-10629] - Dropping table in an encrypted zone does not drop warehouse directory
+    * [HIVE-10630] - Renaming tables across encryption zones renames table even though the operation throws error
+    * [HIVE-10658] - Insert with values clause may expose data that should be encrypted
+    * [HIVE-10747] - Enable the cleanup of side effect for the Encryption related qfile test
+    * [HIVE-10910] - Alter table drop partition queries in encrypted zone failing to remove data from HDFS
+
+
+** Bug
+    * [HIVE-4577] - hive CLI can't handle hadoop dfs command  with space and quotes.
+    * [HIVE-8931] - Test TestAccumuloCliDriver is not completing
+    * [HIVE-9069] - Simplify filter predicates for CBO
+    * [HIVE-9828] - Semantic analyzer does not capture view parent entity for tables referred in view with union all
+    * [HIVE-9842] - Enable session/operation timeout by default in HiveServer2
+    * [HIVE-10107] - Union All : Vertex missing stats resulting in OOM and in-efficient plans
+    * [HIVE-10244] - Vectorization : TPC-DS Q80 fails with java.lang.ClassCastException when hive.vectorized.execution.reduce.enabled is enabled
+    * [HIVE-10453] - HS2 leaking open file descriptors when using UDFs
+    * [HIVE-10528] - Hiveserver2 in HTTP mode is not applying auth_to_local rules
+    * [HIVE-10563] - MiniTezCliDriver tests ordering issues
+    * [HIVE-10605] - Make hive version number update automatically in webhcat-default.xml during hive tar generation
+    * [HIVE-10606] - Divide by zero error in HybridHashTableContainer
+    * [HIVE-10627] - Queries fail with Failed to breakup Windowing invocations into Groups
+    * [HIVE-10628] - Incorrect result when vectorized native mapjoin is enabled using null safe operators <=>
+    * [HIVE-10659] - Beeline command which contains semi-colon as a non-command terminator will fail
+    * [HIVE-10664] - Unit tests run fail in windows because of  illegal escape character in file path
+    * [HIVE-10672] - Analyze command on a table using row format serde JsonSerDe fails with NoClassDefFoundError
+    * [HIVE-10674] - jars should not be checked in to the source control repo
+    * [HIVE-10675] - Provide option to skip Accumulo related Hive tests in itests directory
+    * [HIVE-10677] - hive.exec.parallel=true has problem when it is used for analyze table column stats
+    * [HIVE-10678] - update sql standard authorization configuration whitelist - more optimization flags
+    * [HIVE-10679] - JsonSerde ignores varchar and char size limit specified during table creation
+    * [HIVE-10684] - Fix the unit test failures for HIVE-7553 after HIVE-10674 removed the binary jar files
+    * [HIVE-10685] - Alter table concatenate oparetor will cause duplicate data
+    * [HIVE-10686] - java.lang.IndexOutOfBoundsException for query with rank() over(partition ...)
+    * [HIVE-10688] - constant folding is broken for case-when udf
+    * [HIVE-10689] - HS2 metadata api calls should use HiveAuthorizer interface for authorization
+    * [HIVE-10690] - ArrayIndexOutOfBounds exception in MetaStoreDirectSql.aggrColStatsForPartitions()
+    * [HIVE-10696] - TestAddResource tests are non-portable
+    * [HIVE-10704] - Errors in Tez HashTableLoader when estimated table size is 0
+    * [HIVE-10711] - Tez HashTableLoader attempts to allocate more memory than available when HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD exceeds process max mem
+    * [HIVE-10719] - Hive metastore failure when alter table rename is attempted.
+    * [HIVE-10724] - WebHCat e2e test TestStreaming_5 fails on Windows
+    * [HIVE-10727] - Import throws error message "org.apache.thrift.protocol.TProtocolException: Required field 'filesAdded' is unset!"
+    * [HIVE-10735] - Cached plan race condition - VectorMapJoinCommonOperator has no closeOp()
+    * [HIVE-10736] - HiveServer2 shutdown of cached tez app-masters is not clean
+    * [HIVE-10741] - count distinct rewrite is not firing
+    * [HIVE-10745] - Better null handling by Vectorizer
+    * [HIVE-10746] -  Hive 1.2.0+Tez produces 1-byte FileSplits from mapred.TextInputFormat
+    * [HIVE-10753] - hs2 jdbc url - wrong connection string cause  error on beeline/jdbc/odbc client, misleading message
+    * [HIVE-10760] - Templeton: HCatalog Get Column for Non-existent column returns Server Error (500) rather than Not Found(404)
+    * [HIVE-10768] - In QTestGenTask.execute() we should not throw an exception right away if we are unable to clean any old files
+    * [HIVE-10776] - Schema on insert for bucketed tables throwing NullPointerException
+    * [HIVE-10789] - union distinct query with NULL constant on both the sides throws "Unsuported vector output type: void" error
+    * [HIVE-10792] - PPD leads to wrong answer when mapper scans the same table with multiple aliases
+    * [HIVE-10801] - 'drop view' fails throwing java.lang.NullPointerException
+    * [HIVE-10805] - OOM in vectorized reduce
+    * [HIVE-10811] - RelFieldTrimmer throws NoSuchElementException in some cases
+    * [HIVE-10813] - Fix current test failures after HIVE-8769
+    * [HIVE-10819] - SearchArgumentImpl for Timestamp is broken by HIVE-10286
+    * [HIVE-10828] - Insert with schema and dynamic partitions NullPointerException
+    * [HIVE-10829] - ATS hook fails for explainTask
+    * [HIVE-10839] - TestHCatLoaderEncryption.* tests fail in windows because of path related issues
+    * [HIVE-10840] - NumberFormatException while running analyze table partition compute statics query
+    * [HIVE-10841] - [WHERE col is not null] does not work sometimes for queries with many JOIN statements
+    * [HIVE-10843] - desc database and show tables commands don't pass db to HiveAuthorizer check
+    * [HIVE-10845] - TezJobMonitor uses killedTaskCount instead of killedTaskAttemptCount
+    * [HIVE-10857] - Accumulo storage handler fail throwing java.lang.IllegalArgumentException: Cannot determine SASL mechanism for token class: class org.apache.accumulo.core.client.security.tokens.PasswordToken
+    * [HIVE-10858] - WebHCat specific resources should be added to HADOOP_CLASSPATH first
+    * [HIVE-10862] - TestHiveAuthorizerShowFilters tests fail when run in sequence
+    * [HIVE-10874] - Fail in TestMinimrCliDriver.testCliDriver_ql_rewrite_gbtoidx_cbo_2.q due to duplicate column name
+    * [HIVE-10875] - Select query with view in subquery adds underlying table as direct input
+    * [HIVE-10877] - TestUtil class name confuses ptest2
+    * [HIVE-10885] - with vectorization enabled join operation involving interval_day_time fails
+    * [HIVE-10887] - TestCliDriver tests ordering issues with Mac and CentOS
+    * [HIVE-10892] - TestHCatClient should not accept external metastore param from -Dhive.metastore.uris
+    * [HIVE-10907] - Hive on Tez: Classcast exception in some cases with SMB joins
+    * [HIVE-10919] - Windows: create table with JsonSerDe failed via beeline unless you add hcatalog core jar to classpath
+    * [HIVE-10922] - In HS2 doAs=false mode, file system related errors in one query causes other failures
+    * [HIVE-10925] - Non-static threadlocals in metastore code can potentially cause memory leak
+    * [HIVE-10929] - In Tez mode,dynamic partitioning query with union all fails at moveTask,Invalid partition key & values
+    * [HIVE-10934] - Restore support for DROP PARTITION PURGE
+    * [HIVE-10941] - Provide option to disable spark tests outside itests
+    * [HIVE-10949] - Disable hive-minikdc tests in Windows
+    * [HIVE-10957] - QueryPlan's start time is incorrect in certain cases
+    * [HIVE-10958] - Centos: TestMiniTezCliDriver.testCliDriver_mergejoin fails
+    * [HIVE-10959] - webhcat launcher job should reconnect to the running child job on task retry
+    * [HIVE-10965] - direct SQL for stats fails in 0-column case
+    * [HIVE-10966] - direct SQL for stats has a cast exception on some databases
+    * [HIVE-10967] - add mapreduce.job.tags to sql std authorization config whitelist
+    * [HIVE-10968] - Windows: analyze json table via beeline failed throwing Class org.apache.hive.hcatalog.data.JsonSerDe not found
+    * [HIVE-10971] - count(*) with count(distinct) gives wrong results when hive.groupby.skewindata=true
+    * [HIVE-10992] - WebHCat should not create delegation tokens when Kerberos is not enabled
+    * [HIVE-10994] - Hive.moveFile should not fail on a no-op move
+    * [HIVE-11001] - HS2 http cookie mode does not honor doAs url parameter
+    * [HIVE-11006] - improve logging wrt ACID module
+    * [HIVE-11010] - Accumulo storage handler queries via HS2 fail
+    * [HIVE-11023] - Disable directSQL if datanucleus.identifierFactory = datanucleus2
+    * [HIVE-11027] - Hive on tez: Bucket map joins fail when hashcode goes negative
+    * [HIVE-11031] - ORC concatenation of old files can fail while merging column statistics
+    * [HIVE-11033] - BloomFilter index is not honored by ORC reader
+    * [HIVE-11035] - PPD: Orc Split elimination fails because filterColumns=[-1]
+    * [HIVE-11040] - Change Derby dependency version to 10.10.2.0
+    * [HIVE-11041] - Update tests for HIVE-9302 after removing binaries
+    * [HIVE-11047] - Update versions of branch-1.2 to 1.2.1
+
+
+** Improvement
+    * [HIVE-8769] - Physical optimizer : Incorrect CE results in a shuffle join instead of a Map join (PK/FK pattern not detected)
+    * [HIVE-10812] - Scaling PK/FK's selectivity for stats annotation
+    * [HIVE-10900] - Fix the indeterministic stats for some hive queries
+
+
+** New Feature
+    * [HIVE-10636] - CASE comparison operator rotation optimization
+    * [HIVE-10716] - Fold case/when udf for expression involving nulls in filter operator.
+
+
+** Task
+    * [HIVE-10327] - Remove ExprNodeNullDesc
+    * [HIVE-11018] - Turn on cbo in more q files
+
+
+** Test
+    * [HIVE-10869] - fold_case.q failing on trunk
+    * [HIVE-10909] - Make TestFilterHooks robust
+    * [HIVE-10939] - Make TestFileDump robust
+    * [HIVE-10955] - CliDriver leaves tables behind at end of test run
+    * [HIVE-11026] - Make vector_outer_join* test more robust
+
+
 
 Release Notes - Hive - Version 1.2.0
 
