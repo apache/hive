@@ -32,15 +32,14 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: lockneg2@tstsrcpart@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: lock table tstsrcpart shared
-PREHOOK: type: LOCKTABLE
-POSTHOOK: query: lock table tstsrcpart shared
-POSTHOOK: type: LOCKTABLE
+PREHOOK: query: lock database lockneg2 shared
+PREHOOK: type: LOCKDATABASE
+POSTHOOK: query: lock database lockneg2 shared
+POSTHOOK: type: LOCKDATABASE
 PREHOOK: query: show locks
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks
 POSTHOOK: type: SHOWLOCKS
-lockneg2@tstsrcpart	SHARED
 PREHOOK: query: lock database lockneg2 exclusive
 PREHOOK: type: LOCKDATABASE
 Unable to acquire EXPLICIT, EXCLUSIVE lock lockneg2 after 1 attempts.

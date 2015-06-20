@@ -51,7 +51,7 @@ public class HiveLockObject {
       this.queryId = removeDelimiter(queryId);
       this.lockTime = removeDelimiter(lockTime);
       this.lockMode = removeDelimiter(lockMode);
-      this.queryStr = removeDelimiter(queryStr.trim());
+      this.queryStr = removeDelimiter(queryStr == null ? null : queryStr.trim());
     }
 
     /**

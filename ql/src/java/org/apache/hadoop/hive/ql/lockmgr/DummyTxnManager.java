@@ -157,21 +157,6 @@ class DummyTxnManager extends HiveTxnManagerImpl {
       return;
     }
 
-    HiveLockObject.HiveLockObjectData lockData =
-      new HiveLockObject.HiveLockObjectData(plan.getQueryId(),
-                             String.valueOf(System.currentTimeMillis()),
-                             "IMPLICIT",
-                             plan.getQueryStr());
-
-    // Lock the database also
-    String currentDb = SessionState.get().getCurrentDatabase();
-    lockObjects.add(
-        new HiveLockObj(
-            new HiveLockObject(currentDb, lockData),
-            HiveLockMode.SHARED
-            )
-        );
-
     dedupLockObjects(lockObjects);
     List<HiveLock> hiveLocks = lockMgr.lock(lockObjects, false);
 

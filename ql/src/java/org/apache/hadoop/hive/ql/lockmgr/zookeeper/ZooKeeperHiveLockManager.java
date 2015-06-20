@@ -255,6 +255,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   private ZooKeeperHiveLock lock (HiveLockObject key, HiveLockMode mode,
       boolean keepAlive, boolean parentCreated) throws LockException {
+    LOG.info("Acquiring lock for " + key.getName() + " with mode " + key.getData().getLockMode());
+
     int tryNum = 0;
     ZooKeeperHiveLock ret = null;
     Set<String> conflictingLocks = new HashSet<String>();
