@@ -33,7 +33,7 @@ c3                  	int
 c4                  	bigint              	                    
 c5                  	double              	                    
 c6                  	bigint              	                    
-c7                  	timestamp
+c7                  	timestamp           	                    
 c8                  	int                 	                    
 c9                  	int                 	                    
 PREHOOK: query: create table dest_grouped_old2 as select distinct src.key from src
@@ -82,7 +82,7 @@ test_max_length_src__3	int
 count_src_value_4   	bigint              	                    
 sin_count_src_value_5	double              	                    
 count_sin_src_value_6	bigint              	                    
-current_timestamp_7 	timestamp
+current_timestamp_7 	timestamp           	                    
 sum_if_value_10_valu_8	int                 	                    
 if_src_key_10_src_ke_9	double              	                    
 PREHOOK: query: create table dest_grouped_new2 as select distinct src.key from src

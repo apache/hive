@@ -128,10 +128,18 @@ class MetaStoreDirectSql {
     convertMapNullsToEmptyStrings =
         HiveConf.getBoolVar(conf, ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
 
-    this.isCompatibleDatastore = ensureDbInit() && runTestQuery();
-    if (isCompatibleDatastore) {
-      LOG.info("Using direct SQL, underlying DB is " + dbType);
+    String jdoIdFactory = HiveConf.getVar(conf, ConfVars.METASTORE_IDENTIFIER_FACTORY);
+    if (! ("datanucleus1".equalsIgnoreCase(jdoIdFactory))){
+      LOG.warn("Underlying metastore does not use 'datanuclues1' for its ORM naming scheme."
+          + " Disabling directSQL as it uses hand-hardcoded SQL with that assumption.");
+      isCompatibleDatastore = false;
+    } else {
+      isCompatibleDatastore = ensureDbInit() && runTestQuery();
+      if (isCompatibleDatastore) {
+        LOG.info("Using direct SQL, underlying DB is " + dbType);
+      }
     }
+
     isAggregateStatsCacheEnabled = HiveConf.getBoolVar(conf, ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED);
     if (isAggregateStatsCacheEnabled) {
       aggrStatsCache = AggregateStatsCache.getInstance(conf);
@@ -1100,6 +1108,7 @@ class MetaStoreDirectSql {
   public AggrStats aggrColStatsForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames, boolean useDensityFunctionForNDVEstimation)
       throws MetaException {
+    if (colNames.isEmpty() || partNames.isEmpty()) return new AggrStats(); // Nothing to aggregate.
     long partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
     List<ColumnStatisticsObj> colStatsList;
     // Try to read from the cache first
@@ -1160,6 +1169,7 @@ class MetaStoreDirectSql {
 
   private long partsFoundForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException {
+    assert !colNames.isEmpty() && !partNames.isEmpty();
     long partsFound = 0;
     boolean doTrace = LOG.isDebugEnabled();
     String queryText = "select count(\"COLUMN_NAME\") from \"PART_COL_STATS\""

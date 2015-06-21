@@ -108,7 +108,7 @@ join
 (select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id;
 
-set mapred.reduce.tasks=18;
+set mapred.reduce.tasks=3;
 select * from (select * from tab where tab.key = 0)a full outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key;
 select * from (select * from tab where tab.key = 0)a right outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key;
 

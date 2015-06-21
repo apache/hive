@@ -376,7 +376,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       if (mWork.getSamplingType() > 0 && rWork != null && job.getNumReduceTasks() > 1) {
         try {
-          handleSampling(driverContext, mWork, job, conf);
+          handleSampling(ctx, mWork, job);
           job.setPartitionerClass(HiveTotalOrderPartitioner.class);
         } catch (IllegalStateException e) {
           console.printInfo("Not enough sampling data.. Rolling back to single reducer task");
@@ -496,7 +496,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return (returnVal);
   }
 
-  private void handleSampling(DriverContext context, MapWork mWork, JobConf job, HiveConf conf)
+  private void handleSampling(Context context, MapWork mWork, JobConf job)
       throws Exception {
     assert mWork.getAliasToWork().keySet().size() == 1;
 
@@ -512,7 +512,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       inputPaths.add(new Path(path));
     }
 
-    Path tmpPath = context.getCtx().getExternalTmpPath(inputPaths.get(0));
+    Path tmpPath = context.getExternalTmpPath(inputPaths.get(0));
     Path partitionFile = new Path(tmpPath, ".partitions");
     ShimLoader.getHadoopShims().setTotalOrderPartitionFile(job, partitionFile);
     PartitionKeySampler sampler = new PartitionKeySampler();
@@ -541,9 +541,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       fetchWork.setSource(ts);
 
       // random sampling
-      FetchOperator fetcher = PartitionKeySampler.createSampler(fetchWork, conf, job, ts);
+      FetchOperator fetcher = PartitionKeySampler.createSampler(fetchWork, job, ts);
       try {
-        ts.initialize(conf, new ObjectInspector[]{fetcher.getOutputObjectInspector()});
+        ts.initialize(job, new ObjectInspector[]{fetcher.getOutputObjectInspector()});
         OperatorUtils.setChildrenCollector(ts.getChildOperators(), sampler);
         while (fetcher.pushRow()) { }
       } finally {
@@ -552,7 +552,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     } else {
       throw new IllegalArgumentException("Invalid sampling type " + mWork.getSamplingType());
     }
-    sampler.writePartitionKeys(partitionFile, conf, job);
+    sampler.writePartitionKeys(partitionFile, job);
   }
 
   /**

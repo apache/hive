@@ -16,6 +16,8 @@
  */
 package org.apache.hadoop.hive.accumulo;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Instance;
@@ -96,5 +98,22 @@ public class TestAccumuloConnectionParameters {
     // We just want to test that we fail before trying to make a connector
     // with null password
     cnxnParams.getConnector(instance);
+  }
+
+  public void testSasl() {
+    Configuration conf = new Configuration(false);
+
+    // Default is false
+    AccumuloConnectionParameters cnxnParams = new AccumuloConnectionParameters(conf);
+    assertFalse(cnxnParams.useSasl());
+
+    conf.set(AccumuloConnectionParameters.SASL_ENABLED, "true");
+
+    cnxnParams = new AccumuloConnectionParameters(conf);
+
+    assertTrue(cnxnParams.useSasl());
+
+    conf.set(AccumuloConnectionParameters.SASL_ENABLED, "false");
+    assertFalse(cnxnParams.useSasl());
   }
 }

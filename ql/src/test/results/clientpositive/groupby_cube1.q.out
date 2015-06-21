@@ -377,7 +377,8 @@ SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -405,7 +406,31 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(DISTINCT KEY._col2:0._col0)
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
-          mode: complete
+          mode: partials
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: string)
+              sort order: ++
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 2 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col2 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: final
           outputColumnNames: _col0, _col2
           Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true

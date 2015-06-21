@@ -8493,12 +8493,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (tree.getJoinSrc() == null) {
       return;
     }
+
     // make array with QBJoinTree : outer most(0) --> inner most(n)
     List<QBJoinTree> trees = new ArrayList<QBJoinTree>();
     for (;tree != null; tree = tree.getJoinSrc()) {
       trees.add(tree);
     }
+
     // merging from 'target'(inner) to 'node'(outer)
+    boolean mergedQBJTree = false;
     for (int i = trees.size() - 1; i >= 0; i--) {
       QBJoinTree target = trees.get(i);
       if (target == null) {
@@ -8528,6 +8531,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           mergeJoins(qb, node, target, pos, mergeDetails.getSecond());
           trees.set(j, null);
+          mergedQBJTree = true;
           continue; // continue merging with next alias
         }
         /*
@@ -8540,6 +8544,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+
+    // Now that we reordered QBJoinTrees, update leftaliases of all
+    // QBJoinTree from innermost to outer
+    if ((trees.size() > 1) && mergedQBJTree) {
+      QBJoinTree curQBJTree = null;
+      QBJoinTree prevQBJTree = null;
+      for (int i = trees.size() - 1; i >= 0; i--) {
+        curQBJTree = trees.get(i);
+        if (curQBJTree != null) {
+          if (prevQBJTree != null) {
+            ArrayList<String> newCurLeftAliases = new ArrayList<String>();
+            newCurLeftAliases.addAll(Arrays.asList(prevQBJTree.getLeftAliases()));
+            newCurLeftAliases.addAll(Arrays.asList(prevQBJTree.getRightAliases()));
+            curQBJTree
+                .setLeftAliases(newCurLeftAliases.toArray(new String[newCurLeftAliases.size()]));
+          }
+          prevQBJTree = curQBJTree;
+        }
+      }
+    }
+
     // reconstruct join tree
     QBJoinTree current = null;
     for (int i = 0; i < trees.size(); i++) {

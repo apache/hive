@@ -26,7 +26,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -43,7 +42,6 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
 
   private UserGroupInformation sessionUgi = null;
   private String delegationTokenStr = null;
-  private Hive sessionHive = null;
   private HiveSession proxySession = null;
   static final Log LOG = LogFactory.getLog(HiveSessionImplwithUGI.class);
 
@@ -52,14 +50,6 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     super(protocol, username, password, hiveConf, ipAddress);
     setSessionUGI(username);
     setDelegationToken(delegationToken);
-
-    // create a new metastore connection for this particular user session
-    Hive.set(null);
-    try {
-      sessionHive = Hive.get(getHiveConf());
-    } catch (HiveException e) {
-      throw new HiveSQLException("Failed to setup metastore connection", e);
-    }
   }
 
   // setup appropriate UGI for the session
@@ -85,15 +75,6 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
 
   public String getDelegationToken () {
     return this.delegationTokenStr;
-  }
-
-  @Override
-  protected synchronized void acquire(boolean userAccess) {
-    super.acquire(userAccess);
-    // if we have a metastore connection with impersonation, then set it first
-    if (sessionHive != null) {
-      Hive.set(sessionHive);
-    }
   }
 
   /**
@@ -146,8 +127,6 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
       } catch (HiveException e) {
         throw new HiveSQLException("Couldn't cancel delegation token", e);
       }
-      // close the metastore connection created with this delegation token
-      Hive.closeCurrent();
     }
   }
 

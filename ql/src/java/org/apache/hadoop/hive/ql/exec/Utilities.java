@@ -404,7 +404,7 @@ public final class Utilities {
         LOG.info("local path = " + localPath);
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
           LOG.debug("Loading plan from string: "+path.toUri().getPath());
-          String planString = conf.get(path.toUri().getPath());
+          String planString = conf.getRaw(path.toUri().getPath());
           if (planString == null) {
             LOG.info("Could not find plan string in conf");
             return null;

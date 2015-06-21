@@ -1,0 +1,81 @@
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp PURGE
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encrypted_table_dp
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encrypted_table_dp
+Encryption key created: 'key_128'
+Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table_dp' using key: 'key_128'
+PREHOOK: query: INSERT INTO encrypted_table_dp PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@encrypted_table_dp
+POSTHOOK: query: INSERT INTO encrypted_table_dp PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-23
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-24
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-23).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-23).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-24).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-24).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: SELECT * FROM encrypted_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-23
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-23
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+1	foo	2014-09-23
+2	bar	2014-09-24
+PREHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Output: default@encrypted_table_dp@p=2014-09-23
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to drop default.encrypted_table_dp.[2014-09-23] because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.
+PREHOOK: query: SELECT * FROM encrypted_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-23
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-23
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+1	foo	2014-09-23
+2	bar	2014-09-24
+PREHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23') PURGE
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Output: default@encrypted_table_dp@p=2014-09-23
+POSTHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23') PURGE
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-23
+PREHOOK: query: SELECT * FROM encrypted_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+2	bar	2014-09-24

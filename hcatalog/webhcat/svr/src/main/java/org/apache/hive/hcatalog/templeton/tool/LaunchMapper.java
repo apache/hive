@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -150,13 +151,8 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       env.put(pathVarName, paths);
     }
   }
-  protected Process startJob(Context context, String user, String overrideClasspath)
+  protected Process startJob(Configuration conf, String jobId, String user, String overrideClasspath)
     throws IOException, InterruptedException {
-    Configuration conf = context.getConfiguration();
-
-    // Kill previously launched child MR jobs started by this launcher to prevent having
-    // same jobs running side-by-side
-    killLauncherChildJobs(conf, context.getJobID().toString());
 
     copyLocal(COPY_NAME, conf);
     String[] jarArgs = TempletonUtils.decodeArray(conf.get(JAR_ARGS_NAME));
@@ -175,7 +171,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");
     handleMapReduceJobTag(jarArgsList, JobSubmissionConstants.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER,
-        JobSubmissionConstants.MAPREDUCE_JOB_TAGS, context.getJobID().toString());
+        JobSubmissionConstants.MAPREDUCE_JOB_TAGS, jobId);
     return TrivialExecService.getInstance().run(jarArgsList, removeEnv, env);
   }
 
@@ -289,17 +285,105 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     }
   }
 
+  /**
+   * Checks if reconnection to an already running job is enabled and supported for a given
+   * job type.
+   */
+  private boolean reconnectToRunningJobEnabledAndSupported(Configuration conf,
+      LauncherDelegator.JobType jobType) {
+    if (conf.get(ENABLE_JOB_RECONNECT) == null) {
+      return false;
+    }
+
+    Boolean enableJobReconnect = Boolean.parseBoolean(conf.get(ENABLE_JOB_RECONNECT));
+    if (!enableJobReconnect) {
+      return false;
+    }
+
+    // Reconnect is only supported for MR and Streaming jobs at this time
+    return jobType.equals(LauncherDelegator.JobType.JAR)
+        || jobType.equals(LauncherDelegator.JobType.STREAMING);
+  }
+
+  /**
+   * Attempts to reconnect to an already running child job of the templeton launcher. This
+   * is used in cases where the templeton launcher task has failed and is retried by the
+   * MR framework. If reconnect to the child job is possible, the method will continue
+   * tracking its progress until completion.
+   * @return Returns true if reconnect was successful, false if not supported or
+   *         no child jobs were found.
+   */
+  private boolean tryReconnectToRunningJob(Configuration conf, Context context,
+      LauncherDelegator.JobType jobType, String statusdir) throws IOException, InterruptedException {
+    if (!reconnectToRunningJobEnabledAndSupported(conf, jobType)) {
+      return false;
+    }
+
+    long startTime = getTempletonLaunchTime(conf);
+    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+    WebHCatJTShim tracker = ShimLoader.getHadoopShims().getWebHCatShim(conf, ugi);
+    try {
+      Set<String> childJobs = tracker.getJobs(context.getJobID().toString(), startTime);
+      if (childJobs.size() == 0) {
+        LOG.info("No child jobs found to reconnect with");
+        return false;
+      }
+
+      if (childJobs.size() > 1) {
+        LOG.warn(String.format(
+            "Found more than one child job to reconnect with: %s, skipping reconnect",
+            Arrays.toString(childJobs.toArray())));
+        return false;
+      }
+
+      String childJobIdString = childJobs.iterator().next();
+      org.apache.hadoop.mapred.JobID childJobId =
+          org.apache.hadoop.mapred.JobID.forName(childJobIdString);
+      LOG.info(String.format("Reconnecting to an existing job %s", childJobIdString));
+
+      // Update job state with the childJob id
+      updateJobStatePercentAndChildId(conf, context.getJobID().toString(), null, childJobIdString);
+
+      do {
+        org.apache.hadoop.mapred.JobStatus jobStatus = tracker.getJobStatus(childJobId);
+        if (jobStatus.isJobComplete()) {
+          LOG.info(String.format("Child job %s completed", childJobIdString));
+          int exitCode = 0;
+          if (jobStatus.getRunState() != org.apache.hadoop.mapred.JobStatus.SUCCEEDED) {
+            exitCode = 1;
+          }
+          updateJobStateToDoneAndWriteExitValue(conf, statusdir, context.getJobID().toString(),
+              exitCode);
+          break;
+        }
+
+        String percent = String.format("map %s%%, reduce %s%%",
+            jobStatus.mapProgress()*100, jobStatus.reduceProgress()*100);
+        updateJobStatePercentAndChildId(conf, context.getJobID().toString(), percent, null);
+
+        LOG.info("KeepAlive Heart beat");
+
+        context.progress();
+        Thread.sleep(POLL_JOBPROGRESS_MSEC);
+      } while (true);
+
+      // Reconnect was successful
+      return true;
+    }
+    catch (IOException ex) {
+      LOG.error("Exception encountered in tryReconnectToRunningJob", ex);
+      throw ex;
+    } finally {
+      tracker.close();
+    }
+  }
+
   @Override
   public void run(Context context) throws IOException, InterruptedException {
 
     Configuration conf = context.getConfiguration();
-
-    Process proc = startJob(context,
-            conf.get("user.name"),
-            conf.get(OVERRIDE_CLASSPATH));
-
+    LauncherDelegator.JobType jobType = LauncherDelegator.JobType.valueOf(conf.get(JOB_TYPE));
     String statusdir = conf.get(STATUSDIR_NAME);
-
     if (statusdir != null) {
       try {
         statusdir = TempletonUtils.addUserHomeDirectoryIfApplicable(statusdir,
@@ -311,8 +395,20 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       }
     }
 
-    Boolean enablelog = Boolean.parseBoolean(conf.get(ENABLE_LOG));
-    LauncherDelegator.JobType jobType = LauncherDelegator.JobType.valueOf(conf.get(JOB_TYPE));
+    // Try to reconnect to a child job if one is found
+    if (tryReconnectToRunningJob(conf, context, jobType, statusdir)) {
+      return;
+    }
+
+    // Kill previously launched child MR jobs started by this launcher to prevent having
+    // same jobs running side-by-side
+    killLauncherChildJobs(conf, context.getJobID().toString());
+
+    // Start the job
+    Process proc = startJob(conf,
+            context.getJobID().toString(),
+            conf.get("user.name"),
+            conf.get(OVERRIDE_CLASSPATH));
 
     ExecutorService pool = Executors.newCachedThreadPool();
     executeWatcher(pool, conf, context.getJobID(),
@@ -328,24 +424,64 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       pool.shutdownNow();
     }
 
-    writeExitValue(conf, proc.exitValue(), statusdir);
-    JobState state = new JobState(context.getJobID().toString(), conf);
-    state.setExitValue(proc.exitValue());
-    state.setCompleteStatus("done");
-    state.close();
+    updateJobStateToDoneAndWriteExitValue(conf, statusdir, context.getJobID().toString(),
+        proc.exitValue());
 
+    Boolean enablelog = Boolean.parseBoolean(conf.get(ENABLE_LOG));
     if (enablelog && TempletonUtils.isset(statusdir)) {
       LOG.info("templeton: collecting logs for " + context.getJobID().toString()
-              + " to " + statusdir + "/logs");
+               + " to " + statusdir + "/logs");
       LogRetriever logRetriever = new LogRetriever(statusdir, jobType, conf);
       logRetriever.run();
     }
+  }
 
-    if (proc.exitValue() != 0) {
+  private void updateJobStateToDoneAndWriteExitValue(Configuration conf,
+      String statusdir, String jobId, int exitCode) throws IOException {
+    writeExitValue(conf, exitCode, statusdir);
+    JobState state = new JobState(jobId, conf);
+    state.setExitValue(exitCode);
+    state.setCompleteStatus("done");
+    state.close();
+
+    if (exitCode != 0) {
       LOG.info("templeton: job failed with exit code "
-              + proc.exitValue());
+              + exitCode);
     } else {
       LOG.info("templeton: job completed with exit code 0");
+    }
+  }
+
+  /**
+   * Updates the job state percent and childid in the templeton storage. Update only
+   * takes place for non-null values.
+   */
+  private static void updateJobStatePercentAndChildId(Configuration conf,
+      String jobId, String percent, String childid) {
+    JobState state = null;
+    try {
+      if (percent != null || childid != null) {
+        state = new JobState(jobId, conf);
+        if (percent != null) {
+          state.setPercentComplete(percent);
+        }
+        if (childid != null) {
+          JobState childState = new JobState(childid, conf);
+          childState.setParent(jobId);
+          state.addChild(childid);
+          state.close();
+        }
+      }
+    } catch (IOException e) {
+      LOG.error("templeton: state error: ", e);
+    } finally {
+      if (state != null) {
+        try {
+          state.close();
+        } catch (IOException e) {
+          LOG.warn(e);
+        }
+      }
     }
   }
 
@@ -371,6 +507,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       PrintWriter writer = new PrintWriter(out);
       writer.println(exitValue);
       writer.close();
+      LOG.info("templeton: Exit value successfully written");
     }
   }
 
@@ -414,34 +551,9 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
         String line;
         while ((line = reader.readLine()) != null) {
           writer.println(line);
-          JobState state = null;
-          try {
-            String percent = TempletonUtils.extractPercentComplete(line);
-            String childid = TempletonUtils.extractChildJobId(line);
-
-            if (percent != null || childid != null) {
-              state = new JobState(jobid.toString(), conf);
-              if (percent != null) {
-                state.setPercentComplete(percent);
-              }
-              if (childid != null) {
-                JobState childState = new JobState(childid, conf);
-                childState.setParent(jobid.toString());
-                state.addChild(childid);
-                state.close();
-              }
-            }
-          } catch (IOException e) {
-            LOG.error("templeton: state error: ", e);
-          } finally {
-            if (state != null) {
-              try {
-                state.close();
-              } catch (IOException e) {
-                LOG.warn(e);
-              }
-            }
-          }
+          String percent = TempletonUtils.extractPercentComplete(line);
+          String childid = TempletonUtils.extractChildJobId(line);
+          updateJobStatePercentAndChildId(conf, jobid.toString(), percent, childid);
         }
         writer.flush();
         if(out != System.err && out != System.out) {

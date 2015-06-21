@@ -1161,20 +1161,28 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
     @Override
     public boolean isGreater(Object v1, Object v2, int amt) {
-      long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return (l1 -l2) > amt;
+      if (v1 != null && v2 != null) {
+        long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return (l1 -l2) > amt;
+      }
+
+      return v1 != null || v2 != null; // True if only one value is null
     }
 
     @Override
     public boolean isEqual(Object v1, Object v2) {
-      long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return l1 == l2;
+      if (v1 != null && v2 != null) {
+        long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return l1 == l2;
+      }
+
+      return v1 == null && v2 == null; // True if both are null
     }
   }
 
@@ -1186,20 +1194,28 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
     @Override
     public boolean isGreater(Object v1, Object v2, int amt) {
-      double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return (d1 -d2) > amt;
+      if (v1 != null && v2 != null) {
+        double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return (d1 -d2) > amt;
+      }
+
+      return v1 != null || v2 != null; // True if only one value is null
     }
 
     @Override
     public boolean isEqual(Object v1, Object v2) {
-      double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return d1 == d2;
+      if (v1 != null && v2 != null) {
+        double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return d1 == d2;
+      }
+
+      return v1 == null && v2 == null; // True if both are null
     }
   }
 
