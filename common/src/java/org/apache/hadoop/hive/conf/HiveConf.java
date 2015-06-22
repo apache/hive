@@ -1891,6 +1891,27 @@ public class HiveConf extends Configuration {
          " order specified until a connection is successful."),
     HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null, "LDAP base DN"),
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null, ""),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN("hive.server2.authentication.ldap.groupDNPattern", null,
+        "COLON-separated list of patterns to use to find DNs for group entities in this directory.\n" +
+        "Use %s where the actual group name is to be substituted for.\n" +
+        "For example: CN=%s,CN=Groups,DC=subdomain,DC=domain,DC=com."),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER("hive.server2.authentication.ldap.groupFilter", null,
+        "COMMA-separated list of LDAP Group names (short name not full DNs).\n" +
+        "For example: HiveAdmins,HadoopAdmins,Administrators"),
+    HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN("hive.server2.authentication.ldap.userDNPattern", null,
+        "COLON-separated list of patterns to use to find DNs for users in this directory.\n" +
+        "Use %s where the actual group name is to be substituted for.\n" +
+        "For example: CN=%s,CN=Users,DC=subdomain,DC=domain,DC=com."),
+    HIVE_SERVER2_PLAIN_LDAP_USERFILTER("hive.server2.authentication.ldap.userFilter", null,
+        "COMMA-separated list of LDAP usernames (just short names, not full DNs).\n" +
+        "For example: hiveuser,impalauser,hiveadmin,hadoopadmin"),
+    HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY("hive.server2.authentication.ldap.customLDAPQuery", null,
+        "A full LDAP query that LDAP Atn provider uses to execute against LDAP Server.\n" +
+        "If this query returns a null resultset, the LDAP Provider fails the Authentication\n" +
+        "request, succeeds if the user is part of the resultset." +
+        "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
+        "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
+        "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
         "Custom authentication class. Used when property\n" +
         "'hive.server2.authentication' is set to 'CUSTOM'. Provided class\n" +
