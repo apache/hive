@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -437,7 +438,8 @@ public final class FileDump {
       String filename) throws IOException, JSONException {
     Path path = new Path(filename);
     Reader reader = OrcFile.createReader(path.getFileSystem(conf), path);
-    OutputStreamWriter out = new OutputStreamWriter(System.out, "UTF-8");
+    PrintStream printStream = System.out;
+    OutputStreamWriter out = new OutputStreamWriter(printStream, "UTF-8");
     RecordReader rows = reader.rows(null);
     Object row = null;
     List<OrcProto.Type> types = reader.getTypes();
@@ -447,6 +449,9 @@ public final class FileDump {
       printObject(writer, row, types, 0);
       out.write("\n");
       out.flush();
+      if (printStream.checkError()) {
+        throw new IOException("Error encountered when writing to stdout.");
+      }
     }
   }
 }
