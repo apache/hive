@@ -1777,8 +1777,26 @@ public final class Utilities {
     return (ret);
   }
 
-  private static String replaceTaskId(String taskId, int bucketNum) {
-    return replaceTaskId(taskId, String.valueOf(bucketNum));
+  /**
+   * Replace taskId with input bucketNum. For example, if taskId is 000000 and bucketNum is 1,
+   * return should be 000001; if taskId is (ds%3D1)000000 and bucketNum is 1, return should be
+   * (ds%3D1)000001. This method is different from the replaceTaskId(String, String) method.
+   * In this method, the pattern is in taskId.
+   * @param taskId
+   * @param bucketNum
+   * @return
+   */
+  public static String replaceTaskId(String taskId, int bucketNum) {
+    String bucketNumStr = String.valueOf(bucketNum);
+    Matcher m = PREFIXED_TASK_ID_REGEX.matcher(taskId);
+    if (!m.matches()) {
+        LOG.warn("Unable to determine bucket number from task id: " + taskId + ". Using " +
+            "task ID as bucket number.");
+        return adjustBucketNumLen(bucketNumStr, taskId);
+    } else {
+      String adjustedBucketNum = adjustBucketNumLen(bucketNumStr, m.group(2));
+      return (m.group(1) == null ? "" : m.group(1)) + adjustedBucketNum;
+    }
   }
 
   /**
