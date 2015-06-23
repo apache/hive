@@ -127,10 +127,10 @@ public final class ColumnPrunerProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
-      GroupByOperator op = (GroupByOperator) nd;
+      GroupByOperator gbOp = (GroupByOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
       List<String> colLists = new ArrayList<String>();
-      GroupByDesc conf = op.getConf();
+      GroupByDesc conf = gbOp.getConf();
       ArrayList<ExprNodeDesc> keys = conf.getKeys();
       for (ExprNodeDesc key : keys) {
         colLists = Utilities.mergeUniqElems(colLists, key.getCols());
@@ -145,17 +145,52 @@ public final class ColumnPrunerProcFactory {
       }
       int groupingSetPosition = conf.getGroupingSetPosition();
       if (groupingSetPosition >= 0) {
-        List<String> cols = cppCtx.genColLists(op);
+        List<String> neededCols = cppCtx.genColLists(gbOp);
         String groupingColumn = conf.getOutputColumnNames().get(groupingSetPosition);
-        if (!cols.contains(groupingColumn)) {
+        if (!neededCols.contains(groupingColumn)) {
           conf.getOutputColumnNames().remove(groupingSetPosition);
-          if (op.getSchema() != null) {
-            op.getSchema().getSignature().remove(groupingSetPosition);
+          if (gbOp.getSchema() != null) {
+            gbOp.getSchema().getSignature().remove(groupingSetPosition);
           }
         }
       }
 
-      cppCtx.getPrunedColLists().put(op, colLists);
+      // If the child has a different schema, we create a Project operator between them both,
+      // as we cannot prune the columns in the GroupBy operator
+      for (Operator<?> child : gbOp.getChildOperators()) {
+        if (child instanceof SelectOperator || child instanceof ReduceSinkOperator) {
+          continue;
+        }
+        Set<String> neededCols = new HashSet<String>(cppCtx.genColLists(gbOp, child));
+        if (neededCols.size() < gbOp.getSchema().getSignature().size()) {
+          ArrayList<ExprNodeDesc> exprs = new ArrayList<ExprNodeDesc>();
+          ArrayList<String> outputColNames = new ArrayList<String>();
+          Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+          ArrayList<ColumnInfo> outputRS = new ArrayList<ColumnInfo>();
+          for (ColumnInfo colInfo : gbOp.getSchema().getSignature()) {
+            if (!neededCols.contains(colInfo.getInternalName())) {
+              continue;
+            }
+            ExprNodeDesc colDesc = new ExprNodeColumnDesc(colInfo.getType(),
+                colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+            exprs.add(colDesc);
+            outputColNames.add(colInfo.getInternalName());
+            ColumnInfo newCol = new ColumnInfo(colInfo.getInternalName(), colInfo.getType(),
+                    colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+            newCol.setAlias(colInfo.getAlias());
+            outputRS.add(newCol);
+            colExprMap.put(colInfo.getInternalName(), colDesc);
+          }
+          SelectDesc select = new SelectDesc(exprs, outputColNames, false);
+          gbOp.removeChild(child);
+          SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(
+              select, new RowSchema(outputRS), gbOp);
+          OperatorFactory.makeChild(sel, child);
+          sel.setColumnExprMap(colExprMap);
+        }
+      }
+
+      cppCtx.getPrunedColLists().put(gbOp, colLists);
       return null;
     }
   }
