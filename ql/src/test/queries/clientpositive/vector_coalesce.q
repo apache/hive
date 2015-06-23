@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 EXPLAIN SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) 
 FROM alltypesorc

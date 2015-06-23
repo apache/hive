@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.auto.convert.join=true;
 
 explain 

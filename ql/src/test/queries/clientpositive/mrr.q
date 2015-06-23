@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- simple query with multiple reduce stages
 -- SORT_QUERY_RESULTS
 

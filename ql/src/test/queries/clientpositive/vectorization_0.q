@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 
 -- Use ORDER BY clauses to generate 2 stages.

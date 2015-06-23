@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.map.aggr=false;
 set hive.groupby.skewindata=true;
 

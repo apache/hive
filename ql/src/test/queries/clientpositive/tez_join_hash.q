@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
 create table orc_src (key string, value string) STORED AS ORC;

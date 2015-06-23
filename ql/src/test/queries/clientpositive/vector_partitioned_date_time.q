@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.fetch.task.conversion=minimal;
 
 

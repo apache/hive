@@ -18,22 +18,24 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-public final class Attr implements Comparable<Attr> {
-  public final String name;
-  public final String value;
+public final class Printer {
+  public static final String lineSeparator = System.getProperty("line.separator");;
+  private final StringBuilder builder = new StringBuilder();
 
-  public Attr(String name, String value) {
-    super();
-    this.name = name;
-    this.value = value;
+  public void print(String string) {
+    builder.append(string);
   }
 
-  @Override
-  public int compareTo(Attr o) {
-    return this.name.compareToIgnoreCase(o.name);
+  public void println(String string) {
+    builder.append(string);
+    builder.append(lineSeparator);
   }
 
+  public void println() {
+    builder.append(lineSeparator);
+  }
+  
   public String toString() {
-    return this.name + this.value;
+    return builder.toString();
   }
 }

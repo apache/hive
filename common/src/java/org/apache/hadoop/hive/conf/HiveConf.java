@@ -1705,7 +1705,7 @@ public class HiveConf extends Configuration {
     HIVE_LOG_EXPLAIN_OUTPUT("hive.log.explain.output", false,
         "Whether to log explain output for every query.\n" +
         "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level."),
-    HIVE_EXPLAIN_USER("hive.explain.user", false,
+    HIVE_EXPLAIN_USER("hive.explain.user", true,
         "Whether to show explain result at user level.\n" +
         "When enabled, will log EXPLAIN output for the query at user level."),
 

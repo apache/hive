@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
 set hive.auto.convert.join=true;

@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
 drop table sour1;
