@@ -105,6 +105,9 @@ from
 group by ss_ticket_number
 limit 20;
 
+-- The Reduce task has 2 MergePartial GROUP BY operators in a row.  Currently,
+-- we don't issue startGroup with keys out of the 1st vectorized GROUP BY, so we can't
+-- vectorize the 2nd GROUP BY...
 explain
 select 
     min(ss_ticket_number)
