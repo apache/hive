@@ -55,8 +55,15 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
+<<<<<<< HEAD
         Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
+=======
+        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
+        Reducer 5 <- Reducer 4 (GROUP, 2)
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
 #### A masked pattern was here ####
       Vertices:
         Map 4 
@@ -73,6 +80,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 2 Data size: 280 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -87,6 +95,8 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 2 Data size: 280 Basic stats: COMPLETE Column stats: NONE
+=======
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -251,8 +261,15 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
+<<<<<<< HEAD
         Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
+=======
+        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
+        Reducer 5 <- Reducer 4 (GROUP, 2)
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
 #### A masked pattern was here ####
       Vertices:
         Map 4 
@@ -269,6 +286,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 2 Data size: 280 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -283,6 +301,8 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 2 Data size: 280 Basic stats: COMPLETE Column stats: NONE
+=======
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator

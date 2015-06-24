@@ -39,8 +39,14 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
+<<<<<<< HEAD
         Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
+=======
+        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
+        Reducer 5 <- Reducer 2 (GROUP, 2)
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
 #### A masked pattern was here ####
       Vertices:
         Map 4 
@@ -57,6 +63,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -71,6 +78,8 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+=======
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -91,12 +100,21 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
+<<<<<<< HEAD
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col1:0._col0)
                 keys: KEY._col0 (type: string)
                 mode: complete
+=======
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: final
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
@@ -811,8 +829,14 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
+<<<<<<< HEAD
         Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
+=======
+        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
+        Reducer 5 <- Reducer 2 (GROUP, 2)
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
 #### A masked pattern was here ####
       Vertices:
         Map 4 
@@ -829,6 +853,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -843,6 +868,8 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+=======
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -863,12 +890,21 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
+<<<<<<< HEAD
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col1:0._col0)
                 keys: KEY._col0 (type: string)
                 mode: complete
+=======
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: final
+>>>>>>> 47f796e... HIVE-10844: Combine equivalent Works for HoS[Spark Branch] (Chengxiang via Xuefu)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
