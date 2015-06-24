@@ -36,7 +36,7 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
         Reducer 3 <- Map 4 (PARTITION-LEVEL SORT, 2), Map 7 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 5 (GROUP, 1)
+        Reducer 6 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -73,22 +73,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string)
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: s1
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count(1)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
         Map 7 
             Map Operator Tree:
                 TableScan

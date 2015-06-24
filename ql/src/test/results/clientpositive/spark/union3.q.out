@@ -45,52 +45,13 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 5 <- Map 4 (GROUP, 1)
-        Reducer 7 <- Map 6 (GROUP, 1)
-        Reducer 9 <- Map 8 (GROUP, 1)
+        Reducer 5 <- Map 1 (GROUP, 1)
+        Reducer 7 <- Map 1 (GROUP, 1)
+        Reducer 9 <- Map 1 (GROUP, 1)
         Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2), Reducer 7 (PARTITION-LEVEL SORT, 2), Reducer 9 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 1
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 1
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 1
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: src
