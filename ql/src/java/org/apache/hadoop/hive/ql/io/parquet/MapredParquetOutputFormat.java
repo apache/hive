@@ -40,7 +40,7 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.util.Progressable;
 
-import parquet.hadoop.ParquetOutputFormat;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
 
 /**
  *

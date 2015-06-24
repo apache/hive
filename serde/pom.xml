@@ -81,7 +81,7 @@
       <version>${opencsv.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.twitter</groupId>
+      <groupId>org.apache.parquet</groupId>
       <artifactId>parquet-hadoop-bundle</artifactId>
       <version>${parquet.version}</version>
     </dependency>

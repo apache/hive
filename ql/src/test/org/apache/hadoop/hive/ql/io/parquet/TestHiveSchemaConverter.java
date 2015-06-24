@@ -25,12 +25,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.junit.Test;
 
-import parquet.schema.MessageType;
-import parquet.schema.MessageTypeParser;
-import parquet.schema.OriginalType;
-import parquet.schema.Types;
-import parquet.schema.PrimitiveType.PrimitiveTypeName;
-import parquet.schema.Type.Repetition;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.MessageTypeParser;
+import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.Types;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.schema.Type.Repetition;
 
 public class TestHiveSchemaConverter {
 
@@ -194,13 +194,13 @@ public class TestHiveSchemaConverter {
     final MessageType messageTypeFound = HiveSchemaConverter.convert(columnNames, columnTypes);
     // this messageType only has one optional field, whose name is mapCol, original Type is MAP
     assertEquals(1, messageTypeFound.getFieldCount());
-    parquet.schema.Type topLevel = messageTypeFound.getFields().get(0);
+    org.apache.parquet.schema.Type topLevel = messageTypeFound.getFields().get(0);
     assertEquals("mapCol",topLevel.getName());
     assertEquals(OriginalType.MAP, topLevel.getOriginalType());
     assertEquals(Repetition.OPTIONAL, topLevel.getRepetition());
 
     assertEquals(1, topLevel.asGroupType().getFieldCount());
-    parquet.schema.Type secondLevel = topLevel.asGroupType().getFields().get(0);
+    org.apache.parquet.schema.Type secondLevel = topLevel.asGroupType().getFields().get(0);
     //there is one repeated field for mapCol, the field name is "map" and its original Type is MAP_KEY_VALUE;
     assertEquals("map", secondLevel.getName());
     assertEquals(OriginalType.MAP_KEY_VALUE, secondLevel.getOriginalType());

@@ -24,9 +24,9 @@ import java.util.List;
 
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
-import parquet.io.api.Converter;
-import parquet.schema.GroupType;
-import parquet.schema.Type;
+import org.apache.parquet.io.api.Converter;
+import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.Type;
 
 public class HiveCollectionConverter extends HiveGroupConverter {
   private final GroupType collectionType;

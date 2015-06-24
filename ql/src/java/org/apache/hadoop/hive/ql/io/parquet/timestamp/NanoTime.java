@@ -16,9 +16,9 @@ package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import parquet.Preconditions;
-import parquet.io.api.Binary;
-import parquet.io.api.RecordConsumer;
+import org.apache.parquet.Preconditions;
+import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.io.api.RecordConsumer;
 /**
  * Provides a wrapper representing a parquet-timestamp, with methods to
  * convert to and from binary.

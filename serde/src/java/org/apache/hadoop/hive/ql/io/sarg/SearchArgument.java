@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
 
 import java.util.List;
 

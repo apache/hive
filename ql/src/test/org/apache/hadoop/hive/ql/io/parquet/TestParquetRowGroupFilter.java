@@ -37,9 +37,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import parquet.io.api.RecordConsumer;
-import parquet.schema.MessageType;
-import parquet.schema.MessageTypeParser;
+import org.apache.parquet.io.api.RecordConsumer;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.MessageTypeParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;

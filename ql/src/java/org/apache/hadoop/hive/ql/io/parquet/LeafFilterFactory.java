@@ -19,17 +19,17 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf.Operator;
 
-import parquet.filter2.predicate.FilterApi;
-import parquet.filter2.predicate.FilterPredicate;
-import parquet.io.api.Binary;
+import org.apache.parquet.filter2.predicate.FilterApi;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.io.api.Binary;
 
-import static parquet.filter2.predicate.FilterApi.eq;
-import static parquet.filter2.predicate.FilterApi.lt;
-import static parquet.filter2.predicate.FilterApi.ltEq;
-import static parquet.filter2.predicate.FilterApi.binaryColumn;
-import static parquet.filter2.predicate.FilterApi.booleanColumn;
-import static parquet.filter2.predicate.FilterApi.doubleColumn;
-import static parquet.filter2.predicate.FilterApi.intColumn;
+import static org.apache.parquet.filter2.predicate.FilterApi.eq;
+import static org.apache.parquet.filter2.predicate.FilterApi.lt;
+import static org.apache.parquet.filter2.predicate.FilterApi.ltEq;
+import static org.apache.parquet.filter2.predicate.FilterApi.binaryColumn;
+import static org.apache.parquet.filter2.predicate.FilterApi.booleanColumn;
+import static org.apache.parquet.filter2.predicate.FilterApi.doubleColumn;
+import static org.apache.parquet.filter2.predicate.FilterApi.intColumn;
 
 public class LeafFilterFactory {
   private static final Log LOG = LogFactory.getLog(LeafFilterFactory.class);

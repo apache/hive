@@ -33,7 +33,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
-import parquet.hadoop.ParquetInputFormat;
+import org.apache.parquet.hadoop.ParquetInputFormat;
 
 /**
  * Vectorized input format for Parquet files
