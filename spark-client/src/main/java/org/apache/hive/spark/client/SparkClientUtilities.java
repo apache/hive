@@ -43,21 +43,24 @@ public class SparkClientUtilities {
    */
   public static void addToClassPath(Set<String> newPaths, Configuration conf, File localTmpDir)
       throws Exception {
-    ClassLoader cloader = Thread.currentThread().getContextClassLoader();
-    URLClassLoader loader = (URLClassLoader) cloader;
+    URLClassLoader loader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
     List<URL> curPath = Lists.newArrayList(loader.getURLs());
 
+    boolean newPathAdded = false;
     for (String newPath : newPaths) {
       URL newUrl = urlFromPathString(newPath, conf, localTmpDir);
       if (newUrl != null && !curPath.contains(newUrl)) {
         curPath.add(newUrl);
         LOG.info("Added jar[" + newUrl + "] to classpath.");
+        newPathAdded = true;
       }
     }
 
-    URLClassLoader newLoader =
-        new URLClassLoader(curPath.toArray(new URL[curPath.size()]), loader);
-    Thread.currentThread().setContextClassLoader(newLoader);
+    if (newPathAdded) {
+      URLClassLoader newLoader =
+          new URLClassLoader(curPath.toArray(new URL[curPath.size()]), loader);
+      Thread.currentThread().setContextClassLoader(newLoader);
+    }
   }
 
   /**

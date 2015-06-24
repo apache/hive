@@ -469,6 +469,11 @@
       <version>${spark.version}</version>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-servlet</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>

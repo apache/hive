@@ -168,7 +168,7 @@ public class TestSparkClient {
         future.get(TIMEOUT, TimeUnit.SECONDS);
         MetricsCollection metrics = future.getMetrics();
         assertEquals(1, metrics.getJobIds().size());
-        assertTrue(metrics.getAllMetrics().executorRunTime > 0L);
+        assertTrue(metrics.getAllMetrics().executorRunTime >= 0L);
         verify(listener).onSparkJobStarted(same(future),
           eq(metrics.getJobIds().iterator().next()));
 
@@ -179,7 +179,7 @@ public class TestSparkClient {
         MetricsCollection metrics2 = future2.getMetrics();
         assertEquals(1, metrics2.getJobIds().size());
         assertFalse(Objects.equal(metrics.getJobIds(), metrics2.getJobIds()));
-        assertTrue(metrics2.getAllMetrics().executorRunTime > 0L);
+        assertTrue(metrics2.getAllMetrics().executorRunTime >= 0L);
         verify(listener2).onSparkJobStarted(same(future2),
           eq(metrics2.getJobIds().iterator().next()));
       }
