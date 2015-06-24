@@ -18,7 +18,7 @@ import static org.mockito.Mockito.mock;
 import org.apache.hadoop.io.ArrayWritable;
 import org.junit.Test;
 
-import parquet.hadoop.ParquetInputFormat;
+import org.apache.parquet.hadoop.ParquetInputFormat;
 
 public class TestMapredParquetInputFormat {
   @Test

@@ -44,7 +44,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
-import parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
 
 /**
  * These test the SARG implementation.

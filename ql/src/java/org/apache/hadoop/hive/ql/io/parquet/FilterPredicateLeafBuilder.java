@@ -16,11 +16,11 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
-import parquet.filter2.predicate.FilterApi;
-import parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.filter2.predicate.FilterApi;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
 
-import static parquet.filter2.predicate.FilterApi.not;
-import static parquet.filter2.predicate.FilterApi.or;
+import static org.apache.parquet.filter2.predicate.FilterApi.not;
+import static org.apache.parquet.filter2.predicate.FilterApi.or;
 
 /**
  * The base class for building parquet supported filter predicate in primary types.

@@ -64,8 +64,8 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-import parquet.filter2.predicate.FilterApi;
-import parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.filter2.predicate.FilterApi;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
 
 /**
  * The implementation of SearchArguments.
