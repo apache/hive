@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -733,6 +734,8 @@ public class HybridHashTableContainer
 
     private final ByteArrayRef uselessIndirection; // LBStruct needs ByteArrayRef
     private final LazyBinaryStruct valueStruct;
+    private final boolean needsComplexObjectFixup;
+    private final ArrayList<Object> complexObjectArrayBuffer;
 
     private int partitionId; // Current hashMap in use
 
@@ -740,8 +743,18 @@ public class HybridHashTableContainer
       if (internalValueOi != null) {
         valueStruct = (LazyBinaryStruct)
             LazyBinaryFactory.createLazyBinaryObject(internalValueOi);
+        needsComplexObjectFixup = MapJoinBytesTableContainer.hasComplexObjects(internalValueOi);
+        if (needsComplexObjectFixup) {
+          complexObjectArrayBuffer =
+              new ArrayList<Object>(
+                  Collections.nCopies(internalValueOi.getAllStructFieldRefs().size(), null));
+        } else {
+          complexObjectArrayBuffer = null;
+        }
       } else {
         valueStruct = null; // No rows?
+        needsComplexObjectFixup =  false;
+        complexObjectArrayBuffer = null;
       }
       uselessIndirection = new ByteArrayRef();
       hashMapResult = new BytesBytesMultiHashMap.Result();
@@ -836,7 +849,7 @@ public class HybridHashTableContainer
       if (byteSegmentRef == null) {
         return null;
       } else {
-        return uppack(byteSegmentRef);
+        return unpack(byteSegmentRef);
       }
 
     }
@@ -848,18 +861,29 @@ public class HybridHashTableContainer
       if (byteSegmentRef == null) {
         return null;
       } else {
-        return uppack(byteSegmentRef);
+        return unpack(byteSegmentRef);
       }
 
     }
 
-    private List<Object> uppack(WriteBuffers.ByteSegmentRef ref) throws HiveException {
+    private List<Object> unpack(WriteBuffers.ByteSegmentRef ref) throws HiveException {
       if (ref.getLength() == 0) {
         return EMPTY_LIST; // shortcut, 0 length means no fields
       }
       uselessIndirection.setData(ref.getBytes());
       valueStruct.init(uselessIndirection, (int)ref.getOffset(), ref.getLength());
-      return valueStruct.getFieldsAsList(); // TODO: should we unset bytes after that?
+      List<Object> result;
+      if (!needsComplexObjectFixup) {
+        // Good performance for common case where small table has no complex objects.
+        result = valueStruct.getFieldsAsList();
+      } else {
+        // Convert the complex LazyBinary objects to standard (Java) objects so downstream
+        // operators like FileSinkOperator can serialize complex objects in the form they expect
+        // (i.e. Java objects).
+        result = MapJoinBytesTableContainer.getComplexFieldsAsList(
+            valueStruct, complexObjectArrayBuffer, internalValueOi);
+      }
+      return result;
     }
 
     @Override
