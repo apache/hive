@@ -330,4 +330,18 @@ public class BytesColumnVector extends ColumnVector {
   public void init() {
     initBuffer(0);
   }
+
+  @Override
+  public void stringifyValue(StringBuilder buffer, int row) {
+    if (isRepeating) {
+      row = 0;
+    }
+    if (noNulls || !isNull[row]) {
+      buffer.append('"');
+      buffer.append(new String(this.buffer, start[row], length[row]));
+      buffer.append('"');
+    } else {
+      buffer.append("null");
+    }
+  }
 }

@@ -166,5 +166,13 @@ public abstract class ColumnVector {
     public void init() {
       // Do nothing by default
     }
+
+    /**
+     * Print the value for this column into the given string builder.
+     * @param buffer the buffer to print into
+     * @param row the id of the row to print
+     */
+    public abstract void stringifyValue(StringBuilder buffer,
+                                        int row);
   }
 

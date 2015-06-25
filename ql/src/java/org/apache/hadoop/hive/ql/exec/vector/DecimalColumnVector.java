@@ -85,6 +85,18 @@ public class DecimalColumnVector extends ColumnVector {
     }
   }
 
+  @Override
+  public void stringifyValue(StringBuilder buffer, int row) {
+    if (isRepeating) {
+      row = 0;
+    }
+    if (noNulls || !isNull[row]) {
+      buffer.append(vector[row].toString());
+    } else {
+      buffer.append("null");
+    }
+  }
+
   public void set(int elementNum, HiveDecimalWritable writeable) {
     HiveDecimal hiveDec = writeable.getHiveDecimal(precision, scale);
     if (hiveDec == null) {

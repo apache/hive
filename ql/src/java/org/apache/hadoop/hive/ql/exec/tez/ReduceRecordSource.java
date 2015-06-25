@@ -444,9 +444,6 @@ public class ReduceRecordSource implements RecordSource {
     } catch (Exception e) {
       String rowString = null;
       try {
-        /* batch.toString depends on this */
-        batch.setValueWriters(valueStringWriters
-            .toArray(new VectorExpressionWriter[0]));
         rowString = batch.toString();
       } catch (Exception e2) {
         rowString = "[Error getting row data with exception "
