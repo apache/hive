@@ -141,10 +141,10 @@ public class SparkHashTableSinkOperator
       } catch (FileExistsException e) {
         // No problem, use a new name
       }
-      // TODO find out numOfPartitions for the big table
-      int numOfPartitions = replication;
-      replication = (short) Math.max(MIN_REPLICATION, numOfPartitions);
     }
+    // TODO find out numOfPartitions for the big table
+    int numOfPartitions = replication;
+    replication = (short) Math.max(MIN_REPLICATION, numOfPartitions);
     htsOperator.console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag
       + " with group count: " + tableContainer.size() + " into file: " + path);
     // get the hashtable file and path
