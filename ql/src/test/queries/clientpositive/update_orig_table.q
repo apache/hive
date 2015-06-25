@@ -5,6 +5,8 @@ set hive.enforce.bucketing=true;
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/update_orig_table;
 dfs -copyFromLocal ../../data/files/alltypesorc ${system:test.tmp.dir}/update_orig_table/00000_0; 
 
+-- SORT_QUERY_RESULTS
+
 create table acid_uot(
     ctinyint TINYINT,
     csmallint SMALLINT,

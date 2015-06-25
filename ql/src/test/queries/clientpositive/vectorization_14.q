@@ -1,6 +1,8 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 
+-- SORT_QUERY_RESULTS
+
 EXPLAIN 
 SELECT   ctimestamp1,
          cfloat,
