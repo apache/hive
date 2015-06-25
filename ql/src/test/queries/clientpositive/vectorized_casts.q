@@ -1,5 +1,7 @@
 SET hive.vectorized.execution.enabled = true;
 
+-- SORT_QUERY_RESULTS
+
 -- Test type casting in vectorized mode to verify end-to-end functionality.
 
 explain 

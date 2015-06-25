@@ -1,5 +1,7 @@
 SET hive.vectorized.execution.enabled=true;
 
+-- SORT_QUERY_RESULTS
+
 -- Use ORDER BY clauses to generate 2 stages.
 EXPLAIN
 SELECT MIN(ctinyint) as c1,
