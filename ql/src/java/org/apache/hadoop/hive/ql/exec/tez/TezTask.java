@@ -114,7 +114,9 @@ public class TezTask extends Task<TezWork> {
       // Need to remove this static hack. But this is the way currently to get a session.
       SessionState ss = SessionState.get();
       session = ss.getTezSession();
-      session = TezSessionPoolManager.getInstance().getSession(session, conf, false);
+      session =
+          TezSessionPoolManager.getInstance().getSession(session, conf, false,
+              getWork().getLlapMode());
       ss.setTezSession(session);
 
       // jobConf will hold all the configuration for hadoop, tez, and hive
@@ -173,7 +175,7 @@ public class TezTask extends Task<TezWork> {
       // fetch the counters
       Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
       counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
-      TezSessionPoolManager.getInstance().returnSession(session);
+      TezSessionPoolManager.getInstance().returnSession(session, getWork().getLlapMode());
 
       if (LOG.isInfoEnabled() && counters != null
           && (conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||

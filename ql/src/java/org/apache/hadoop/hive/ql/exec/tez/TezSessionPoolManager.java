@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -45,8 +46,10 @@ public class TezSessionPoolManager {
   private static final Log LOG = LogFactory.getLog(TezSessionPoolManager.class);
 
   private BlockingQueue<TezSessionState> defaultQueuePool;
+  private Semaphore llapQueue;
   private int blockingQueueLength = -1;
   private HiveConf initConf = null;
+  int numConcurrentLlapQueries = -1;
 
   private boolean inited = false;
 
@@ -83,11 +86,15 @@ public class TezSessionPoolManager {
 
     String defaultQueues = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
     int numSessions = conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
+    numConcurrentLlapQueries =
+        conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
 
     // the list of queues is a comma separated list.
     String defaultQueueList[] = defaultQueues.split(",");
     defaultQueuePool =
         new ArrayBlockingQueue<TezSessionState>(numSessions * defaultQueueList.length);
+    llapQueue = new Semaphore(numConcurrentLlapQueries, true);
+
     this.initConf = conf;
     /*
      *  with this the ordering of sessions in the queue will be (with 2 sessions 3 queues)
@@ -164,8 +171,11 @@ public class TezSessionPoolManager {
     return retTezSessionState;
   }
 
-  public void returnSession(TezSessionState tezSessionState)
+  public void returnSession(TezSessionState tezSessionState, boolean llap)
       throws Exception {
+    if (llap && (this.numConcurrentLlapQueries > 0)) {
+      llapQueue.release();
+    }
     if (tezSessionState.isDefault()) {
       LOG.info("The session " + tezSessionState.getSessionId()
           + " belongs to the pool. Put it back in");
@@ -207,9 +217,9 @@ public class TezSessionPoolManager {
     return new TezSessionState(sessionId);
   }
 
-  public TezSessionState getSession(
-      TezSessionState session, HiveConf conf, boolean doOpen) throws Exception {
-    return getSession(session, conf, doOpen, false);
+  public TezSessionState getSession(TezSessionState session, HiveConf conf, boolean doOpen,
+      boolean llap) throws Exception {
+    return getSession(session, conf, doOpen, false, llap);
   }
 
   /*
@@ -268,8 +278,11 @@ public class TezSessionPoolManager {
     return true;
   }
 
-  public TezSessionState getSession(TezSessionState session, HiveConf conf,
-      boolean doOpen, boolean forceCreate) throws Exception {
+  public TezSessionState getSession(TezSessionState session, HiveConf conf, boolean doOpen,
+      boolean forceCreate, boolean llap) throws Exception {
+    if (llap && (this.numConcurrentLlapQueries > 0)) {
+      llapQueue.acquire(); // blocks if no more llap queries can be submitted.
+    }
     if (canWorkWithSameSession(session, conf)) {
       return session;
     }

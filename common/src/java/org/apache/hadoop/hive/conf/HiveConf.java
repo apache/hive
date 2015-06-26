@@ -2241,7 +2241,9 @@ public class HiveConf extends Configuration {
         new StringSet("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
        "directories that are partition-like but contain unsupported characters. 'throw' (an " +
        "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
-       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)");
+       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
+    HIVE_SERVER2_LLAP_CONCURRENT_QUERIES("hive.server2.llap.concurrent.queries", -1,
+        "The number of queries allowed in parallel via llap. Negative number implies 'infinite'.");
 
 
     public final String varname;
