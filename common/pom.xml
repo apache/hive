@@ -96,19 +96,19 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
+      <groupId>com.codahale.metrics</groupId>
       <artifactId>metrics-core</artifactId>
-      <version>${dropwizard.version}</version>
+      <version>${metrics-core.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
+      <groupId>com.codahale.metrics</groupId>
       <artifactId>metrics-jvm</artifactId>
-      <version>${dropwizard.version}</version>
+      <version>${metrics-core.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
+      <groupId>com.codahale.metrics</groupId>
       <artifactId>metrics-json</artifactId>
-      <version>${dropwizard.version}</version>
+      <version>${metrics-core.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

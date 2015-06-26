@@ -28,7 +28,6 @@ import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.json.MetricsModule;
 import com.codahale.metrics.jvm.BufferPoolMetricSet;
-import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
@@ -167,7 +166,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     registerAll("buffers", new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
     registerAll("memory", new MemoryUsageGaugeSet());
     registerAll("threads", new ThreadStatesGaugeSet());
-    registerAll("classLoading", new ClassLoadingGaugeSet());
 
     //Metrics reporter
     Set<MetricsReporting> finalReporterList = new HashSet<MetricsReporting>();
