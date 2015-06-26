@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -50,9 +51,7 @@ public class HiveOpConverterPostProc implements Transform {
   private static final Log LOG = LogFactory.getLog(HiveOpConverterPostProc.class);
 
   private ParseContext                                  pctx;
-  private Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo;
-  private Map<String, String>                           opToAlias;
-  private int                                           uniqueCounter;
+  private Map<String, Operator<? extends OperatorDesc>> aliasToJoinOpInfo;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -67,16 +66,13 @@ public class HiveOpConverterPostProc implements Transform {
 
     // 1. Initialize aux data structures
     this.pctx = pctx;
-    this.aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();
-    this.opToAlias = new HashMap<String, String>();
-    this.uniqueCounter = 0;
+    this.aliasToJoinOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();
 
     // 2. Trigger transformation
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", JoinOperator.getOperatorName() + "%"), new JoinAnnotate());
-    opRules.put(new RuleRegExp("R2", TableScanOperator.getOperatorName() + "%"), new TableScanAnnotate());
 
-    Dispatcher disp = new DefaultRuleDispatcher(new DefaultAnnotate(), opRules, null);
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
     GraphWalker ogw = new ForwardWalker(disp);
 
     List<Node> topNodes = new ArrayList<Node>();
@@ -91,7 +87,6 @@ public class HiveOpConverterPostProc implements Transform {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       JoinOperator joinOp = (JoinOperator) nd;
-      joinOp.getName();
 
       // 1. Additional data structures needed for the join optimization
       //    through Hive
@@ -99,77 +94,38 @@ public class HiveOpConverterPostProc implements Transform {
       String[] rightAliases = new String[joinOp.getParentOperators().size()-1];
       for (int i = 0; i < joinOp.getParentOperators().size(); i++) {
         ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(i);
-        final String opId = rsOp.getParentOperators().get(0).toString();
-        baseSrc[i] = opToAlias.get(opId);
+        Set<String> aliases = rsOp.getSchema().getTableNames();
+        if (aliases == null || aliases.size() != 1) {
+          throw new SemanticException(
+              "In return path join annotate rule, we find " + aliases == null ? null : aliases
+                  .size() + " aliases for " + rsOp.toString());
+        }
+        baseSrc[i] = aliases.iterator().next();
         if (i == 0) {
           joinOp.getConf().setLeftAlias(baseSrc[i]);
         } else {
           rightAliases[i-1] = baseSrc[i];
-        }        
+        }
       }
       joinOp.getConf().setBaseSrc(baseSrc);
       joinOp.getConf().setRightAliases(rightAliases);
-      joinOp.getConf().setAliasToOpInfo(aliasToOpInfo);
+      joinOp.getConf().setAliasToOpInfo(aliasToJoinOpInfo);
 
-      // 2. Generate self alias
-      final String joinOpAlias = genUniqueAlias();
-      aliasToOpInfo.put(joinOpAlias, joinOp);
-      opToAlias.put(joinOp.toString(), joinOpAlias);
+      // 2. Use self alias
+      Set<String> aliases = joinOp.getSchema().getTableNames();
+      if (aliases == null || aliases.size() != 1) {
+        throw new SemanticException(
+            "In return path join annotate rule, we find " + aliases == null ? null : aliases
+                .size() + " aliases for " + joinOp.toString());
+      }
+      final String joinOpAlias = aliases.iterator().next();;
+      aliasToJoinOpInfo.put(joinOpAlias, joinOp);
 
       // 3. Populate other data structures
       pctx.getJoinOps().add(joinOp);
 
       return null;
     }
-
   }
 
-  private class TableScanAnnotate implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      TableScanOperator tableScanOp = (TableScanOperator) nd;
-
-      // 1. Get alias from topOps
-      String opAlias = null;
-      for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpEntry : pctx.getTopOps().entrySet()) {
-        if (topOpEntry.getValue() == tableScanOp) {
-          opAlias = topOpEntry.getKey();
-        }
-      }
-
-      assert opAlias != null;
-
-      // 2. Add alias to 1) aliasToOpInfo and 2) opToAlias
-      aliasToOpInfo.put(opAlias, tableScanOp);
-      opToAlias.put(tableScanOp.toString(), opAlias);
-
-      return null;
-    }
-  }
-
-  private class DefaultAnnotate implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      Operator<? extends OperatorDesc> op = (Operator<?>) nd;
-
-      // 1. Copy or generate alias
-      if(op.getParentOperators().size() == 1) {
-        final String opAlias = opToAlias.get(op.getParentOperators().get(0).toString());
-        opToAlias.put(op.toString(), opAlias);
-      } else {
-        final String opAlias = genUniqueAlias();
-        opToAlias.put(op.toString(), opAlias);
-      }
-
-      return null;
-    }
-  }
-
-  private String genUniqueAlias() {
-    return "op-" + (++uniqueCounter);
-  }
 }

@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,14 +32,8 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.SimpleMapEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
-import org.apache.hadoop.hive.serde2.objectinspector.TestSimpleMapEqualComparer.TextStringMapHolder;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -72,7 +65,7 @@ public class TestLazySimpleSerDe extends TestCase {
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL\t");
       t.append(new byte[]{(byte)Integer.parseInt("10111111", 2)}, 0, 1);
-      StringBuffer sb = new StringBuffer("123\t456\t789\t1000\t5.3\thive and hadoop\t1\tNULL\t");
+      StringBuilder sb = new StringBuilder("123\t456\t789\t1000\t5.3\thive and hadoop\t1\tNULL\t");
       String s = sb.append(new String(Base64.encodeBase64(new byte[]{(byte)Integer.parseInt("10111111", 2)}))).toString();
       Object[] expectedFieldsData = {new ByteWritable((byte) 123),
           new ShortWritable((short) 456), new IntWritable(789),

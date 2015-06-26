@@ -1,6 +1,8 @@
+set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
 -- no agg, corr
+-- SORT_QUERY_RESULTS
 explain
 select * 
 from src b 

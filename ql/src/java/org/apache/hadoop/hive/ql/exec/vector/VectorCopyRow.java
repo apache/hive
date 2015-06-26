@@ -20,6 +20,12 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * This class copies specified columns of a row from one VectorizedRowBatch to another.
@@ -186,7 +192,7 @@ public class VectorCopyRow {
   private CopyRow[] subRowToBatchCopiersByValue;
   private CopyRow[] subRowToBatchCopiersByReference;
 
-  public void init(VectorColumnMapping columnMapping) {
+  public void init(VectorColumnMapping columnMapping) throws HiveException {
     int count = columnMapping.getCount();
     subRowToBatchCopiersByValue = new CopyRow[count];
     subRowToBatchCopiersByReference = new CopyRow[count];
@@ -194,24 +200,35 @@ public class VectorCopyRow {
     for (int i = 0; i < count; i++) {
       int inputColumn = columnMapping.getInputColumns()[i];
       int outputColumn = columnMapping.getOutputColumns()[i];
-      String typeName = columnMapping.getTypeNames()[i];
+      String typeName = columnMapping.getTypeNames()[i].toLowerCase();
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+      Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
 
       CopyRow copyRowByValue = null;
       CopyRow copyRowByReference = null;
 
-      if (VectorizationContext.isIntFamily(typeName) ||
-          VectorizationContext.isDatetimeFamily(typeName)) {
+      switch (columnVectorType) {
+      case LONG:
         copyRowByValue = new LongCopyRow(inputColumn, outputColumn);
-      } else if (VectorizationContext.isFloatFamily(typeName)) {
+        break;
+
+      case DOUBLE:
         copyRowByValue = new DoubleCopyRow(inputColumn, outputColumn);
-      } else if (VectorizationContext.isStringFamily(typeName)) {
+        break;
+
+      case BYTES:
         copyRowByValue = new BytesCopyRowByValue(inputColumn, outputColumn);
         copyRowByReference = new BytesCopyRowByReference(inputColumn, outputColumn);
-      } else if (VectorizationContext.decimalTypePattern.matcher(typeName).matches()){
+        break;
+
+      case DECIMAL:
         copyRowByValue = new DecimalCopyRow(inputColumn, outputColumn);
-      } else {
-        throw new RuntimeException("Cannot allocate vector copy row for " + typeName);
+        break;
+
+      default:
+        throw new HiveException("Unexpected column vector type " + columnVectorType);
       }
+
       subRowToBatchCopiersByValue[i] = copyRowByValue;
       if (copyRowByReference == null) {
         subRowToBatchCopiersByReference[i] = copyRowByValue;

@@ -22,21 +22,38 @@ package org.apache.hadoop.hive.ql.plan.ptf;
 public class WindowFrameDef {
   private BoundaryDef start;
   private BoundaryDef end;
+  private final int windowSize;
+
+  public WindowFrameDef(BoundaryDef start, BoundaryDef end) {
+    this.start = start;
+    this.end = end;
+
+    // Calculate window size
+    if (start.getDirection() == end.getDirection()) {
+      windowSize =  Math.abs(end.getAmt() - start.getAmt()) + 1;
+    } else {
+      windowSize =  end.getAmt() + start.getAmt() + 1;
+    }
+  }
 
   public BoundaryDef getStart() {
     return start;
-  }
-
-  public void setStart(BoundaryDef start) {
-    this.start = start;
   }
 
   public BoundaryDef getEnd() {
     return end;
   }
 
-  public void setEnd(BoundaryDef end) {
-    this.end = end;
+  public boolean isStartUnbounded() {
+    return start.isUnbounded();
+  }
+
+  public boolean isEndUnbounded() {
+    return end.isUnbounded();
+  }
+
+  public int getWindowSize() {
+    return windowSize;
   }
 
   @Override

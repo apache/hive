@@ -33,6 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -80,6 +81,7 @@ public class PTest {
   private final String mBuildTag;
   private final SSHCommandExecutor mSshCommandExecutor;
   private final RSyncCommandExecutor mRsyncCommandExecutor;
+  private final ImmutableMap<String, String> templateDefaults;
 
   public PTest(final TestConfiguration configuration, final ExecutionContext executionContext,
       final String buildTag, final File logDir, final LocalCommandFactory localCommandFactory,
@@ -124,7 +126,10 @@ public class PTest {
     put("mavenArgs", configuration.getMavenArgs()).
     put("mavenBuildArgs", configuration.getMavenBuildArgs()).
     put("mavenTestArgs", configuration.getMavenTestArgs());
-    final ImmutableMap<String, String> templateDefaults = templateDefaultsBuilder.build();
+    if (!Strings.isNullOrEmpty(configuration.getAdditionalProfiles())) {
+      templateDefaultsBuilder.put("additionalProfiles", configuration.getAdditionalProfiles());
+    }
+    templateDefaults = templateDefaultsBuilder.build();
     TestParser testParser = new TestParser(configuration.getContext(), configuration.getTestCasePropertyName(),
         new File(mExecutionContext.getLocalWorkingDirectory(), configuration.getRepositoryName() + "-source"),
         logger);
@@ -359,5 +364,10 @@ public class PTest {
       }
     }
     System.exit(exitCode);
+  }
+
+  @VisibleForTesting
+  public Map<String, String> getTemplateDefaults() {
+    return templateDefaults;
   }
 }

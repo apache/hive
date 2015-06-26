@@ -79,11 +79,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
-                    outputColumnNames: key
+                    outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      keys: key (type: string)
+                      keys: _col0 (type: string)
                       mode: final
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -164,6 +164,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
+WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: -- Test map group by doesn't affect inference, should be bucketed and sorted by value
 EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT a.key, a.value FROM (

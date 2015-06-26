@@ -96,6 +96,7 @@ public class AppConfig extends Configuration {
   public static final String EXEC_MAX_PROCS_NAME = "templeton.exec.max-procs";
   public static final String EXEC_TIMEOUT_NAME   = "templeton.exec.timeout";
   public static final String HADOOP_QUEUE_NAME   = "templeton.hadoop.queue.name";
+  public static final String ENABLE_JOB_RECONNECT_DEFAULT = "templeton.enable.job.reconnect.default";
   public static final String HADOOP_NAME         = "templeton.hadoop";
   public static final String HADOOP_CONF_DIR     = "templeton.hadoop.conf.dir";
   public static final String HCAT_NAME           = "templeton.hcat";
@@ -306,6 +307,7 @@ public class AppConfig extends Configuration {
 
   public String libJars()          { return get(LIB_JARS_NAME); }
   public String hadoopQueueName()  { return get(HADOOP_QUEUE_NAME); }
+  public String enableJobReconnectDefault() { return get(ENABLE_JOB_RECONNECT_DEFAULT); }
   public String clusterHadoop()    { return get(HADOOP_NAME); }
   public String clusterHcat()      { return get(HCAT_NAME); }
   public String clusterPython()    { return get(PYTHON_NAME); }

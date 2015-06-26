@@ -43,16 +43,28 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  */
 public class ConstantPropagateProcCtx implements NodeProcessorCtx {
 
+  public enum ConstantPropagateOption {
+    FULL,      // Do full constant propagation
+    SHORTCUT,  // Only perform expression short-cutting - remove unnecessary AND/OR operators
+               // if one of the child conditions is true/false.
+  };
+
   private static final org.apache.commons.logging.Log LOG = LogFactory
       .getLog(ConstantPropagateProcCtx.class);
 
   private final Map<Operator<? extends Serializable>, Map<ColumnInfo, ExprNodeDesc>> opToConstantExprs;
   private final List<Operator<? extends Serializable>> opToDelete;
+  private ConstantPropagateOption constantPropagateOption = ConstantPropagateOption.FULL;
 
   public ConstantPropagateProcCtx() {
+    this(ConstantPropagateOption.FULL);
+  }
+
+  public ConstantPropagateProcCtx(ConstantPropagateOption option) {
     opToConstantExprs =
         new HashMap<Operator<? extends Serializable>, Map<ColumnInfo, ExprNodeDesc>>();
     opToDelete = new ArrayList<Operator<? extends Serializable>>();
+    this.constantPropagateOption = option;
   }
 
   public Map<Operator<? extends Serializable>, Map<ColumnInfo, ExprNodeDesc>> getOpToConstantExprs() {
@@ -183,5 +195,14 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
 
   public List<Operator<? extends Serializable>> getOpToDelete() {
     return opToDelete;
+  }
+
+  public ConstantPropagateOption getConstantPropagateOption() {
+    return constantPropagateOption;
+  }
+
+  public void setConstantPropagateOption(
+      ConstantPropagateOption constantPropagateOption) {
+    this.constantPropagateOption = constantPropagateOption;
   }
 }

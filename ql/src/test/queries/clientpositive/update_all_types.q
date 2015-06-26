@@ -2,6 +2,8 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.enforce.bucketing=true;
 
+-- SORT_QUERY_RESULTS
+
 create table acid_uat(ti tinyint,
                  si smallint,
                  i int,

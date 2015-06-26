@@ -24,10 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -52,20 +52,15 @@ public class RemoveDynamicPruningBySize implements NodeProcessor {
     AppMasterEventDesc desc = event.getConf();
 
     if (desc.getStatistics().getDataSize() > context.conf
-        .getLongVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE)) {
-      Operator<?> child = event;
-      Operator<?> curr = event;
-
-      while (curr.getChildOperators().size() <= 1) {
-        child = curr;
-        curr = curr.getParentOperators().get(0);
-      }
-      // at this point we've found the fork in the op pipeline that has the
-      // pruning as a child plan.
+        .getLongVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE) &&
+        (context.pruningOpsRemovedByPriorOpt.isEmpty() ||
+         !context.pruningOpsRemovedByPriorOpt.contains(event))) {
+      context.pruningOpsRemovedByPriorOpt.add(event);
+      GenTezUtils.getUtils().removeBranch(event);
+      // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
       LOG.info("Disabling dynamic pruning for: "
           + ((DynamicPruningEventDesc) desc).getTableScan().getName()
           + ". Expected data size is too big: " + desc.getStatistics().getDataSize());
-      curr.removeChild(child);
     }
     return false;
   }

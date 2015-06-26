@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
-//Currently not used, turn this on later
 public class HiveProjectMergeRule extends ProjectMergeRule {
   public static final HiveProjectMergeRule INSTANCE = new HiveProjectMergeRule();
 

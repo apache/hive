@@ -22,14 +22,24 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.cli.*;
+import org.apache.hive.service.cli.FetchOrientation;
+import org.apache.hive.service.cli.FetchType;
+import org.apache.hive.service.cli.GetInfoType;
+import org.apache.hive.service.cli.GetInfoValue;
+import org.apache.hive.service.cli.HiveSQLException;
+import org.apache.hive.service.cli.OperationHandle;
+import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.TableSchema;
 
 public interface HiveSession extends HiveSessionBase {
 
   void open(Map<String, String> sessionConfMap) throws Exception;
 
   IMetaStoreClient getMetaStoreClient() throws HiveSQLException;
+
+  Hive getSessionHive()  throws HiveSQLException;
 
   /**
    * getInfo operation handler

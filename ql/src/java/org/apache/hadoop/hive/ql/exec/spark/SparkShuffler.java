@@ -27,4 +27,6 @@ public interface SparkShuffler {
   JavaPairRDD<HiveKey, Iterable<BytesWritable>> shuffle(
       JavaPairRDD<HiveKey, BytesWritable> input, int numPartitions);
 
+  public String getName();
+
 }

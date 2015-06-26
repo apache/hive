@@ -97,7 +97,7 @@ public class NullStructSerDe extends AbstractSerDe {
     }
 
     public Category getCategory() {
-      return Category.PRIMITIVE;
+      return Category.STRUCT;
     }
 
     @Override

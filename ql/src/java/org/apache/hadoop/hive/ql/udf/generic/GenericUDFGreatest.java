@@ -97,6 +97,7 @@ public class GenericUDFGreatest extends GenericUDF {
     return getStandardDisplayString(getFuncName(), children, ",");
   }
 
+  @Override
   protected String getFuncName() {
     return "greatest";
   }

@@ -132,7 +132,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
       return sql;
     }
 
-    StringBuffer newSql = new StringBuffer(sql);
+    StringBuilder newSql = new StringBuilder(sql);
 
     int paramLoc = 1;
     while (getCharIndexFromSqlByParamLocation(sql, '?', paramLoc) > 0) {

@@ -21,7 +21,7 @@ STAGE PLANS:
             predicate: (ctinyint > 0) (type: boolean)
             Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: ((ctinyint % 2) + 1) (type: int), cstring1 (type: string), cint (type: int), elt(((ctinyint % 2) + 1), cstring1, cint) (type: string)
+              expressions: ((UDFToInteger(ctinyint) % 2) + 1) (type: int), cstring1 (type: string), cint (type: int), elt(((UDFToInteger(ctinyint) % 2) + 1), cstring1, cint) (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
               Limit

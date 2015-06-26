@@ -50,7 +50,7 @@ public class TestTimestampWritable {
   private static ThreadLocal<DateFormat> DATE_FORMAT =
       new ThreadLocal<DateFormat>() {
         @Override
-        protected synchronized DateFormat initialValue() {
+        protected DateFormat initialValue() {
           return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         }
       };

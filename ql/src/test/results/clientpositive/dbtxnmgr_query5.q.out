@@ -37,8 +37,10 @@ POSTHOOK: Output: database:foo
 POSTHOOK: Output: foo@V1
 PREHOOK: query: show tables
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:foo
 POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:foo
 t1
 v1
 PREHOOK: query: describe T1

@@ -28,7 +28,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 
@@ -84,12 +86,13 @@ import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public class TestHCatLoaderEncryption {
+  private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoader.class);
-  private static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty
+  private final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty
       ("java.io.tmpdir") + File.separator + TestHCatLoader.class.getCanonicalName() + "-" +
-      System.currentTimeMillis());
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
-  private static final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
+      System.currentTimeMillis() + "_" + salt.getAndIncrement());
+  private final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
+  private final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
   private static final String BASIC_TABLE = "junit_unparted_basic";
   private static final String ENCRYPTED_TABLE = "encrypted_table";
   private static final String SECURITY_KEY_PROVIDER_URI_NAME = "dfs.encryption.key.provider.uri";
@@ -180,6 +183,13 @@ public class TestHCatLoaderEncryption {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
 
+    String s = hiveConf.get("hdfs.minidfs.basedir");
+    if(s == null || s.length() <= 0) {
+      //return System.getProperty("test.build.data", "build/test/data") + "/dfs/";
+      hiveConf.set("hdfs.minidfs.basedir", 
+        System.getProperty("test.build.data", "build/test/data") + "_" + System.currentTimeMillis() +
+          "_" + salt.getAndIncrement() + "/dfs/");
+    }
     if (Shell.WINDOWS) {
       WindowsPathUtil.convertPathsFromWindowsToHdfs(hiveConf);
     }
@@ -197,7 +207,7 @@ public class TestHCatLoaderEncryption {
     createTableInSpecifiedPath(ENCRYPTED_TABLE, "a int, b string",
       WindowsPathUtil.getHdfsUriString(encryptedTablePath), driver);
 
-    associateEncryptionZoneWithPath(encryptedTablePath);
+    associateEncryptionZoneWithPath(WindowsPathUtil.getHdfsUriString(encryptedTablePath));
 
     int LOOP_SIZE = 3;
     String[] input = new String[LOOP_SIZE * LOOP_SIZE];
@@ -237,7 +247,7 @@ public class TestHCatLoaderEncryption {
     FileSystem fs;
     HadoopShims shims = ShimLoader.getHadoopShims();
     conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
-
+    WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
     int numberOfDataNodes = 4;
     dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
     fs = dfs.getFileSystem();
@@ -367,12 +377,13 @@ public class TestHCatLoaderEncryption {
     job.setNumReduceTasks(0);
 
     FileSystem fs = new LocalFileSystem();
-    Path path = new Path(TEST_DATA_DIR + "/testHCatMREncryptionOutput");
+    String pathLoc = TEST_DATA_DIR + "/testHCatMREncryptionOutput";
+    Path path = new Path(pathLoc);
     if (fs.exists(path)) {
       fs.delete(path, true);
     }
 
-    TextOutputFormat.setOutputPath(job, path);
+    TextOutputFormat.setOutputPath(job, new Path(WindowsPathUtil.getHdfsUriString(pathLoc)));
 
     job.waitForCompletion(true);
 

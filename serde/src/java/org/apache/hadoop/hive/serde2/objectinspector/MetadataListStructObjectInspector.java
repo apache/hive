@@ -49,7 +49,7 @@ public class MetadataListStructObjectInspector extends
       List<String> columnNames) {
     ArrayList<List<String>> key = new ArrayList<List<String>>(1);
     key.add(columnNames);
-    MetadataListStructObjectInspector result = cached.get(columnNames);
+    MetadataListStructObjectInspector result = cached.get(key);
     if (result == null) {
       result = new MetadataListStructObjectInspector(columnNames);
       MetadataListStructObjectInspector prev = cached.putIfAbsent(key, result);

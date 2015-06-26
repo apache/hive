@@ -1,4 +1,7 @@
+set hive.explain.user=false;
 -- simple query with multiple reduce stages
+-- SORT_QUERY_RESULTS
+
 EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt;
 SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt;
 

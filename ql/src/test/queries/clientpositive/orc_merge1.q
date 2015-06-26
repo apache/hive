@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.merge.orcfile.stripe.level=false;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
@@ -9,6 +10,8 @@ set tez.grouping.max-size=2000;
 set hive.merge.tezfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
+
+-- SORT_QUERY_RESULTS
 
 DROP TABLE orcfile_merge1;
 DROP TABLE orcfile_merge1b;

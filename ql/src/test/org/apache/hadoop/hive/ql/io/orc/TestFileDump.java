@@ -130,16 +130,19 @@ public class TestFileDump {
         new BufferedReader(new FileReader(HiveTestUtils.getFileFromClasspath(expected)));
     BufferedReader aStream =
         new BufferedReader(new FileReader(actual));
-    String expectedLine = eStream.readLine();
+    String expectedLine = eStream.readLine().trim();
     while (expectedLine != null) {
-      String actualLine = aStream.readLine();
+      String actualLine = aStream.readLine().trim();
       System.out.println("actual:   " + actualLine);
       System.out.println("expected: " + expectedLine);
       assertEquals(expectedLine, actualLine);
       expectedLine = eStream.readLine();
+      expectedLine = expectedLine == null ? null : expectedLine.trim();
     }
     assertNull(eStream.readLine());
     assertNull(aStream.readLine());
+    eStream.close();
+    aStream.close();
   }
 
   @Test
@@ -316,7 +319,7 @@ public class TestFileDump {
         .compress(CompressionKind.ZLIB)
         .bufferSize(10000)
         .rowIndexStride(1000)
-        .bloomFilterColumns("s");
+        .bloomFilterColumns("S");
     Writer writer = OrcFile.createWriter(testFilePath, options);
     Random r1 = new Random(1);
     String[] words = new String[]{"It", "was", "the", "best", "of", "times,",

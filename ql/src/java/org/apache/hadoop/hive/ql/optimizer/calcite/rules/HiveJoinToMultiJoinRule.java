@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -26,21 +26,24 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.rules.MultiJoin;
+import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
+import org.apache.calcite.rel.rules.JoinCommuteRule;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Rule that merges a join with multijoin/join children if
@@ -49,130 +52,172 @@ import com.google.common.collect.Maps;
 public class HiveJoinToMultiJoinRule extends RelOptRule {
 
   public static final HiveJoinToMultiJoinRule INSTANCE =
-      new HiveJoinToMultiJoinRule(Join.class);
+      new HiveJoinToMultiJoinRule(HiveJoin.class, HiveProject.DEFAULT_PROJECT_FACTORY);
+
+  private final ProjectFactory projectFactory;
+
 
   //~ Constructors -----------------------------------------------------------
 
   /**
    * Creates a JoinToMultiJoinRule.
    */
-  public HiveJoinToMultiJoinRule(Class<? extends Join> clazz) {
-    super(
-            operand(clazz,
-                operand(RelNode.class, any()),
-                operand(RelNode.class, any())));
+  public HiveJoinToMultiJoinRule(Class<? extends Join> clazz, ProjectFactory projectFactory) {
+    super(operand(clazz,
+            operand(RelNode.class, any()),
+            operand(RelNode.class, any())));
+    this.projectFactory = projectFactory;
   }
 
   //~ Methods ----------------------------------------------------------------
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    final Join join = call.rel(0);
+    final HiveJoin join = call.rel(0);
     final RelNode left = call.rel(1);
     final RelNode right = call.rel(2);
 
-    final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
-
-    // We do not merge outer joins currently
-    if (join.getJoinType() != JoinRelType.INNER) {
+    // 1. We try to merge this join with the left child
+    RelNode multiJoin = mergeJoin(join, left, right);
+    if (multiJoin != null) {
+      call.transformTo(multiJoin);
       return;
     }
+
+    // 2. If we cannot, we swap the inputs so we can try
+    //    to merge it with its right child
+    RelNode swapped = JoinCommuteRule.swap(join, true);
+    assert swapped != null;
+
+    //    The result of the swapping operation is either
+    //    i)  a Project or,
+    //    ii) if the project is trivial, a raw join
+    final Join newJoin;
+    Project topProject = null;
+    if (swapped instanceof Join) {
+      newJoin = (Join) swapped;
+    } else {
+      topProject = (Project) swapped;
+      newJoin = (Join) swapped.getInput(0);
+    }
+
+    // 3. We try to merge the join with the right child
+    multiJoin = mergeJoin(newJoin, right, left);
+    if (multiJoin != null) {
+      if (topProject != null) {
+        multiJoin = projectFactory.createProject(multiJoin,
+                topProject.getChildExps(),
+                topProject.getRowType().getFieldNames());
+      }
+      call.transformTo(multiJoin);
+      return;
+    }
+  }
+
+  // This method tries to merge the join with its left child. The left
+  // child should be a join for this to happen.
+  private static RelNode mergeJoin(Join join, RelNode left, RelNode right) {
+    final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
 
     // We check whether the join can be combined with any of its children
     final List<RelNode> newInputs = Lists.newArrayList();
     final List<RexNode> newJoinFilters = Lists.newArrayList();
     newJoinFilters.add(join.getCondition());
-    final List<Pair<JoinRelType, RexNode>> joinSpecs = Lists.newArrayList();
-    final List<ImmutableBitSet> projFields = Lists.newArrayList();
+    final List<Pair<Pair<Integer,Integer>, JoinRelType>> joinSpecs = Lists.newArrayList();
 
     // Left child
-    if (left instanceof Join || left instanceof MultiJoin) {
+    if (left instanceof Join || left instanceof HiveMultiJoin) {
       final RexNode leftCondition;
+      final List<Pair<Integer,Integer>> leftJoinInputs;
+      final List<JoinRelType> leftJoinTypes;
       if (left instanceof Join) {
-        leftCondition = ((Join) left).getCondition();
+        Join hj = (Join) left;
+        leftCondition = hj.getCondition();
+        leftJoinInputs = ImmutableList.of(Pair.of(0, 1));
+        leftJoinTypes = ImmutableList.of(hj.getJoinType());
       } else {
-        leftCondition = ((MultiJoin) left).getJoinFilter();
+        HiveMultiJoin hmj = (HiveMultiJoin) left;
+        leftCondition = hmj.getCondition();
+        leftJoinInputs = hmj.getJoinInputs();
+        leftJoinTypes = hmj.getJoinTypes();
       }
 
       boolean combinable = isCombinablePredicate(join, join.getCondition(),
               leftCondition);
       if (combinable) {
         newJoinFilters.add(leftCondition);
-        for (RelNode input : left.getInputs()) {
-          projFields.add(null);
-          joinSpecs.add(Pair.of(JoinRelType.INNER, (RexNode) null));
-          newInputs.add(input);
+        for (int i = 0; i < leftJoinInputs.size(); i++) {
+          joinSpecs.add(Pair.of(leftJoinInputs.get(i), leftJoinTypes.get(i)));
         }
-      } else {
-        projFields.add(null);
-        joinSpecs.add(Pair.of(JoinRelType.INNER, (RexNode) null));
-        newInputs.add(left);
+        newInputs.addAll(left.getInputs());
+      } else { // The join operation in the child is not on the same keys
+        return null;
       }
-    } else {
-      projFields.add(null);
-      joinSpecs.add(Pair.of(JoinRelType.INNER, (RexNode) null));
-      newInputs.add(left);
+    } else { // The left child is not a join or multijoin operator
+      return null;
     }
+    final int numberLeftInputs = newInputs.size();
 
     // Right child
-    if (right instanceof Join || right instanceof MultiJoin) {
-      final RexNode rightCondition;
-      if (right instanceof Join) {
-        rightCondition = shiftRightFilter(join, left, right,
-                ((Join) right).getCondition());
-      } else {
-        rightCondition = shiftRightFilter(join, left, right,
-                ((MultiJoin) right).getJoinFilter());
-      }
-      
-      boolean combinable = isCombinablePredicate(join, join.getCondition(),
-              rightCondition);
-      if (combinable) {
-        newJoinFilters.add(rightCondition);
-        for (RelNode input : right.getInputs()) {
-          projFields.add(null);
-          joinSpecs.add(Pair.of(JoinRelType.INNER, (RexNode) null));
-          newInputs.add(input);
-        }
-      } else {
-        projFields.add(null);
-        joinSpecs.add(Pair.of(JoinRelType.INNER, (RexNode) null));
-        newInputs.add(right);
-      }
-    } else {
-      projFields.add(null);
-      joinSpecs.add(Pair.of(JoinRelType.INNER, (RexNode) null));
-      newInputs.add(right);
-    }
+    newInputs.add(right);
 
     // If we cannot combine any of the children, we bail out
     if (newJoinFilters.size() == 1) {
-      return;
+      return null;
     }
 
+    final List<RelDataTypeField> systemFieldList = ImmutableList.of();
+    List<List<RexNode>> joinKeyExprs = new ArrayList<List<RexNode>>();
+    List<Integer> filterNulls = new ArrayList<Integer>();
+    for (int i=0; i<newInputs.size(); i++) {
+      joinKeyExprs.add(new ArrayList<RexNode>());
+    }
+    RexNode otherCondition = HiveRelOptUtil.splitJoinCondition(systemFieldList, newInputs, join.getCondition(),
+        joinKeyExprs, filterNulls, null);
+    // If there are remaining parts in the condition, we bail out
+    if (!otherCondition.isAlwaysTrue()) {
+      return null;
+    }
+    ImmutableBitSet.Builder keysInInputsBuilder = ImmutableBitSet.builder();
+    for (int i=0; i<newInputs.size(); i++) {
+      List<RexNode> partialCondition = joinKeyExprs.get(i);
+      if (!partialCondition.isEmpty()) {
+        keysInInputsBuilder.set(i);
+      }
+    }
+    // If we cannot merge, we bail out
+    ImmutableBitSet keysInInputs = keysInInputsBuilder.build();
+    ImmutableBitSet leftReferencedInputs =
+            keysInInputs.intersect(ImmutableBitSet.range(numberLeftInputs));
+    ImmutableBitSet rightReferencedInputs =
+            keysInInputs.intersect(ImmutableBitSet.range(numberLeftInputs, newInputs.size()));
+    if (join.getJoinType() != JoinRelType.INNER &&
+            (leftReferencedInputs.cardinality() > 1 || rightReferencedInputs.cardinality() > 1)) {
+      return null;
+    }
+    // Otherwise, we add to the join specs
+    if (join.getJoinType() != JoinRelType.INNER) {
+      int leftInput = keysInInputs.nextSetBit(0);
+      int rightInput = keysInInputs.nextSetBit(numberLeftInputs);
+      joinSpecs.add(Pair.of(Pair.of(leftInput, rightInput), join.getJoinType()));
+    } else {
+      for (int i : leftReferencedInputs) {
+        for (int j : rightReferencedInputs) {
+          joinSpecs.add(Pair.of(Pair.of(i, j), join.getJoinType()));
+        }
+      }
+    }
+
+    // We can now create a multijoin operator
     RexNode newCondition = RexUtil.flatten(rexBuilder,
             RexUtil.composeConjunction(rexBuilder, newJoinFilters, false));
-    final ImmutableMap<Integer, ImmutableIntList> newJoinFieldRefCountsMap =
-        addOnJoinFieldRefCounts(newInputs,
-            join.getRowType().getFieldCount(),
-            newCondition);
-
-    List<RexNode> newPostJoinFilters = combinePostJoinFilters(join, left, right);
-
-    RelNode multiJoin =
-        new MultiJoin(
+    return new HiveMultiJoin(
             join.getCluster(),
             newInputs,
             newCondition,
             join.getRowType(),
-            false,
-            Pair.right(joinSpecs),
             Pair.left(joinSpecs),
-            projFields,
-            newJoinFieldRefCountsMap,
-            RexUtil.composeConjunction(rexBuilder, newPostJoinFilters, true));
-
-    call.transformTo(multiJoin);
+            Pair.right(joinSpecs));
   }
 
   private static boolean isCombinablePredicate(Join join,
@@ -203,7 +248,7 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
    * @param rightFilter the filter originating from the right child
    * @return the adjusted right filter
    */
-  private RexNode shiftRightFilter(
+  private static RexNode shiftRightFilter(
       Join joinRel,
       RelNode left,
       RelNode right,
@@ -228,106 +273,4 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
     return rightFilter;
   }
 
-  /**
-   * Adds on to the existing join condition reference counts the references
-   * from the new join condition.
-   *
-   * @param multiJoinInputs          inputs into the new MultiJoin
-   * @param nTotalFields             total number of fields in the MultiJoin
-   * @param joinCondition            the new join condition
-   * @param origJoinFieldRefCounts   existing join condition reference counts
-   *
-   * @return Map containing the new join condition
-   */
-  private ImmutableMap<Integer, ImmutableIntList> addOnJoinFieldRefCounts(
-      List<RelNode> multiJoinInputs,
-      int nTotalFields,
-      RexNode joinCondition) {
-    // count the input references in the join condition
-    int[] joinCondRefCounts = new int[nTotalFields];
-    joinCondition.accept(new InputReferenceCounter(joinCondRefCounts));
-
-    // add on to the counts for each input into the MultiJoin the
-    // reference counts computed for the current join condition
-    final Map<Integer, int[]> refCountsMap = Maps.newHashMap();
-    int nInputs = multiJoinInputs.size();
-    int currInput = -1;
-    int startField = 0;
-    int nFields = 0;
-    for (int i = 0; i < nTotalFields; i++) {
-      if (joinCondRefCounts[i] == 0) {
-        continue;
-      }
-      while (i >= (startField + nFields)) {
-        startField += nFields;
-        currInput++;
-        assert currInput < nInputs;
-        nFields =
-            multiJoinInputs.get(currInput).getRowType().getFieldCount();
-      }
-      int[] refCounts = refCountsMap.get(currInput);
-      if (refCounts == null) {
-        refCounts = new int[nFields];
-        refCountsMap.put(currInput, refCounts);
-      }
-      refCounts[i - startField] += joinCondRefCounts[i];
-    }
-
-    final ImmutableMap.Builder<Integer, ImmutableIntList> builder =
-        ImmutableMap.builder();
-    for (Map.Entry<Integer, int[]> entry : refCountsMap.entrySet()) {
-      builder.put(entry.getKey(), ImmutableIntList.of(entry.getValue()));
-    }
-    return builder.build();
-  }
-
-  /**
-   * Combines the post-join filters from the left and right inputs (if they
-   * are MultiJoinRels) into a single AND'd filter.
-   *
-   * @param joinRel the original LogicalJoin
-   * @param left    left child of the LogicalJoin
-   * @param right   right child of the LogicalJoin
-   * @return combined post-join filters AND'd together
-   */
-  private List<RexNode> combinePostJoinFilters(
-      Join joinRel,
-      RelNode left,
-      RelNode right) {
-    final List<RexNode> filters = Lists.newArrayList();
-    if (right instanceof MultiJoin) {
-      final MultiJoin multiRight = (MultiJoin) right;
-      filters.add(
-          shiftRightFilter(joinRel, left, multiRight,
-              multiRight.getPostJoinFilter()));
-    }
-
-    if (left instanceof MultiJoin) {
-      filters.add(((MultiJoin) left).getPostJoinFilter());
-    }
-
-    return filters;
-  }
-
-  //~ Inner Classes ----------------------------------------------------------
-
-  /**
-   * Visitor that keeps a reference count of the inputs used by an expression.
-   */
-  private class InputReferenceCounter extends RexVisitorImpl<Void> {
-    private final int[] refCounts;
-
-    public InputReferenceCounter(int[] refCounts) {
-      super(true);
-      this.refCounts = refCounts;
-    }
-
-    public Void visitInputRef(RexInputRef inputRef) {
-      refCounts[inputRef.getIndex()]++;
-      return null;
-    }
-  }
 }
-
-// End JoinToMultiJoinRule.java
-

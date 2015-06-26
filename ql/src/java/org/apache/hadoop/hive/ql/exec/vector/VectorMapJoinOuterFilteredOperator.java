@@ -62,10 +62,12 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
   @Override
   public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
 
+    final int posBigTable = conf.getPosBigTable();
+
     // We need a input object inspector that is for the row we will extract out of the
     // vectorized row batch, not for example, an original inspector for an ORC table, etc.
-    inputObjInspectors[0] =
-        VectorizedBatchUtil.convertToStandardStructObjectInspector((StructObjectInspector) inputObjInspectors[0]);
+    inputObjInspectors[posBigTable] =
+        VectorizedBatchUtil.convertToStandardStructObjectInspector((StructObjectInspector) inputObjInspectors[posBigTable]);
 
     // Call super VectorMapJoinOuterFilteredOperator, which calls super MapJoinOperator with
     // new input inspector.

@@ -153,9 +153,6 @@ public class VectorMapJoinInnerMultiKeyOperator extends VectorMapJoinInnerGenera
         }
       }
 
-      // We rebuild in-place the selected array with rows destine to be forwarded.
-      int numSel = 0;
-
       /*
        * Multi-Key specific declarations.
        */
@@ -207,7 +204,7 @@ public class VectorMapJoinInnerMultiKeyOperator extends VectorMapJoinInnerGenera
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
-        numSel = finishInnerRepeated(batch, joinResult, hashMapResults[0]);
+        finishInnerRepeated(batch, joinResult, hashMapResults[0]);
       } else {
 
         /*
@@ -279,7 +276,7 @@ public class VectorMapJoinInnerMultiKeyOperator extends VectorMapJoinInnerGenera
             haveSaveKey = true;
 
             /*
-             * Multi-Key specific save key and lookup.
+             * Multi-Key specific save key.
              */
 
             temp = saveKeyOutput;
@@ -368,17 +365,9 @@ public class VectorMapJoinInnerMultiKeyOperator extends VectorMapJoinInnerGenera
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashMapResults, 0, hashMapResultCount)));
         }
 
-        numSel = finishInner(batch,
-            allMatchs, allMatchCount,
-            equalKeySeriesHashMapResultIndices, equalKeySeriesAllMatchIndices,
-            equalKeySeriesIsSingleValue, equalKeySeriesDuplicateCounts,
-            equalKeySeriesCount,
-            spills, spillHashMapResultIndices, spillCount,
-            hashMapResults, hashMapResultCount);
+        finishInner(batch,
+            allMatchCount, equalKeySeriesCount, spillCount, hashMapResultCount);
       }
-
-      batch.selectedInUse = true;
-      batch.size =  numSel;
 
       if (batch.size > 0) {
         // Forward any remaining selected rows.

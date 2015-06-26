@@ -1,10 +1,10 @@
 PREHOOK: query: -- SORT_QUERY_RESULTS
 
-DROP TABLE IF EXISTS encrypted_table
+DROP TABLE IF EXISTS encrypted_table PURGE
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: -- SORT_QUERY_RESULTS
 
-DROP TABLE IF EXISTS encrypted_table
+DROP TABLE IF EXISTS encrypted_table PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -35,11 +35,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table
 #### A masked pattern was here ####
 500
-PREHOOK: query: drop table encrypted_table
+PREHOOK: query: drop table encrypted_table PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: drop table encrypted_table
+POSTHOOK: query: drop table encrypted_table PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Output: default@encrypted_table

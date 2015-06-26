@@ -1,0 +1,178 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table a(s string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@a
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table a(s string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@a
+PREHOOK: query: create table b(s string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b
+POSTHOOK: query: create table b(s string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@b
+PREHOOK: query: insert into table a values('aaa')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@a
+POSTHOOK: query: insert into table a values('aaa')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@a
+POSTHOOK: Lineage: a.s SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table b values('aaa')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@b
+POSTHOOK: query: insert into table b values('aaa')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@b
+POSTHOOK: Lineage: b.s SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: -- We expect no vectorization due to NULL (void) projection type.
+explain
+select NULL from a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- We expect no vectorization due to NULL (void) projection type.
+explain
+select NULL from a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: null (type: void)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select NULL from a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@a
+#### A masked pattern was here ####
+POSTHOOK: query: select NULL from a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: explain
+select NULL as x from a union distinct select NULL as x from b
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select NULL as x from a union distinct select NULL as x from b
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 4 <- Union 2 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Group By Operator
+                        keys: null (type: void)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: void)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: void)
+                          Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Group By Operator
+                        keys: null (type: void)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: void)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: void)
+                          Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: void)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select NULL as x from a union distinct select NULL as x from b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@a
+PREHOOK: Input: default@b
+#### A masked pattern was here ####
+POSTHOOK: query: select NULL as x from a union distinct select NULL as x from b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a
+POSTHOOK: Input: default@b
+#### A masked pattern was here ####
+NULL

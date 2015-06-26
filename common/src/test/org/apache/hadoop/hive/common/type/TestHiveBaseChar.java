@@ -55,7 +55,7 @@ public class TestHiveBaseChar extends TestCase {
   }
 
   public static String createRandomSupplementaryCharString(int len) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int idx = 0; idx < len; ++idx) {
       sb.appendCodePoint(getRandomCodePoint(' '));
     }

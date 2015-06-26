@@ -146,7 +146,10 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
 
   @Override
   public boolean equals(Object other) {
-    if (other == null || !(other instanceof HiveDecimalWritable)) {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || getClass() != other.getClass()) {
       return false;
     }
     HiveDecimalWritable bdw = (HiveDecimalWritable) other;

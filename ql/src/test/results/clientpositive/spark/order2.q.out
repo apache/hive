@@ -43,7 +43,7 @@ STAGE PLANS:
                   Number of rows: 10
                   Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (_col0 < 10) (type: boolean)
+                    predicate: (UDFToDouble(_col0) < 10.0) (type: boolean)
                     Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false

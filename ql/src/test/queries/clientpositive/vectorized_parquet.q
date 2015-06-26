@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.exec.submitviachild=true;
 set hive.exec.submit.local.task.via.child=true;
 

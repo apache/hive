@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.thrift.TCLIService;
@@ -51,6 +53,7 @@ import org.apache.hive.service.cli.thrift.TFetchOrientation;
  *
  */
 public class HiveStatement implements java.sql.Statement {
+  public static final Log LOG = LogFactory.getLog(HiveStatement.class.getName());
   private final HiveConnection connection;
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle = null;
@@ -105,9 +108,6 @@ public class HiveStatement implements java.sql.Statement {
    */
   private boolean isExecuteStatementFailed = false;
 
-  // A fair reentrant lock
-  private ReentrantLock transportLock = new ReentrantLock(true);
-
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
     this(connection, client, sessHandle, false);
@@ -145,7 +145,6 @@ public class HiveStatement implements java.sql.Statement {
       return;
     }
 
-    transportLock.lock();
     try {
       if (stmtHandle != null) {
         TCancelOperationReq cancelReq = new TCancelOperationReq(stmtHandle);
@@ -156,8 +155,6 @@ public class HiveStatement implements java.sql.Statement {
       throw e;
     } catch (Exception e) {
       throw new SQLException(e.toString(), "08S01", e);
-    } finally {
-      transportLock.unlock();
     }
     isCancelled = true;
   }
@@ -185,7 +182,6 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   void closeClientOperation() throws SQLException {
-    transportLock.lock();
     try {
       if (stmtHandle != null) {
         TCloseOperationReq closeReq = new TCloseOperationReq(stmtHandle);
@@ -196,8 +192,6 @@ public class HiveStatement implements java.sql.Statement {
       throw e;
     } catch (Exception e) {
       throw new SQLException(e.toString(), "08S01", e);
-    } finally {
-      transportLock.unlock();
     }
     isQueryClosed = true;
     isExecuteStatementFailed = false;
@@ -248,7 +242,6 @@ public class HiveStatement implements java.sql.Statement {
     execReq.setRunAsync(true);
     execReq.setConfOverlay(sessConf);
 
-    transportLock.lock();
     try {
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
       Utils.verifySuccessWithInfo(execResp.getStatus());
@@ -260,8 +253,6 @@ public class HiveStatement implements java.sql.Statement {
     } catch (Exception ex) {
       isExecuteStatementFailed = true;
       throw new SQLException(ex.toString(), "08S01", ex);
-    } finally {
-      transportLock.unlock();
     }
 
     TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
@@ -275,12 +266,7 @@ public class HiveStatement implements java.sql.Statement {
          * For an async SQLOperation, GetOperationStatus will use the long polling approach
          * It will essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
-        transportLock.lock();
-        try {
-          statusResp = client.GetOperationStatus(statusReq);
-        } finally {
-          transportLock.unlock();
-        }
+        statusResp = client.GetOperationStatus(statusReq);
         Utils.verifySuccessWithInfo(statusResp.getStatus());
         if (statusResp.isSetOperationState()) {
           switch (statusResp.getOperationState()) {
@@ -319,7 +305,7 @@ public class HiveStatement implements java.sql.Statement {
     }
     resultSet =  new HiveQueryResultSet.Builder(this).setClient(client).setSessionHandle(sessHandle)
         .setStmtHandle(stmtHandle).setMaxRows(maxRows).setFetchSize(fetchSize)
-        .setScrollable(isScrollableResultset).setTransportLock(transportLock)
+        .setScrollable(isScrollableResultset)
         .build();
     return true;
   }
@@ -736,7 +722,10 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setQueryTimeout(int seconds) throws SQLException {
-    throw new SQLException("Method not supported");
+    // 0 is supported which means "no limit"
+    if (seconds != 0) {
+      throw new SQLException("Query timeout seconds must be 0");
+    }
   }
 
   /*
@@ -807,7 +796,6 @@ public class HiveStatement implements java.sql.Statement {
 
     List<String> logs = new ArrayList<String>();
     TFetchResultsResp tFetchResultsResp = null;
-    transportLock.lock();
     try {
       if (stmtHandle != null) {
         TFetchResultsReq tFetchResultsReq = new TFetchResultsReq(stmtHandle,
@@ -831,8 +819,6 @@ public class HiveStatement implements java.sql.Statement {
       throw e;
     } catch (Exception e) {
       throw new SQLException("Error when getting query log: " + e, e);
-    } finally {
-      transportLock.unlock();
     }
 
     RowSet rowSet = RowSetFactory.create(tFetchResultsResp.getResults(),

@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 create table T1(c1 string, c2 string, c3 string, c4 string, c5 string, c6 string, c7 string) 
 partitioned by (ds string);
 

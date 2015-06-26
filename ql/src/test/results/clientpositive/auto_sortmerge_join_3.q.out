@@ -581,10 +581,12 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -596,10 +598,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -850,10 +854,12 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -865,10 +871,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 2 Data size: 228 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1

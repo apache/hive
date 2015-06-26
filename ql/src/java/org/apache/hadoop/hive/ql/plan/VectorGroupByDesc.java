@@ -30,30 +30,21 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   private static long serialVersionUID = 1L;
 
-  private boolean isReduce;
-  private boolean isVectorGroupBatches;
+  private boolean isReduceMergePartial;
+
   private boolean isVectorOutput;
 
   public VectorGroupByDesc() {
-    this.isReduce = false;
-    this.isVectorGroupBatches = false;
+    this.isReduceMergePartial = false;
     this.isVectorOutput = false;
   }
 
-  public boolean isReduce() {
-    return isReduce;
+  public boolean isReduceMergePartial() {
+    return isReduceMergePartial;
   }
 
-  public void setIsReduce(boolean isReduce) {
-    this.isReduce = isReduce;
-  }
-
-  public boolean isVectorGroupBatches() {
-    return isVectorGroupBatches;
-  }
-
-  public void setVectorGroupBatches(boolean isVectorGroupBatches) {
-    this.isVectorGroupBatches = isVectorGroupBatches;
+  public void setIsReduceMergePartial(boolean isReduceMergePartial) {
+    this.isReduceMergePartial = isReduceMergePartial;
   }
 
   public boolean isVectorOutput() {

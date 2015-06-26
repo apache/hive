@@ -18,16 +18,112 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import junit.framework.Assert;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
-import org.junit.Test;
+import static org.mockito.Mockito.*;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
+import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLock;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
+@RunWith(MockitoJUnitRunner.class)
 public class TestDummyTxnManager {
+  private HiveConf conf = new HiveConf();
+  private HiveTxnManager txnMgr;
+  private Context ctx;
+  private int nextInput = 1;
+
+  @Mock
+  HiveLockManager mockLockManager;
+
+  @Mock
+  QueryPlan mockQueryPlan;
+
+  @Before
+  public void setUp() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+    conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, DummyTxnManager.class.getName());
+    SessionState.start(conf);
+    ctx = new Context(conf);
+    LogManager.getRootLogger().setLevel(Level.DEBUG);
+
+    txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    Assert.assertTrue(txnMgr instanceof DummyTxnManager);
+    // Use reflection to set LockManager since creating the object using the
+    // relection in DummyTxnManager won't take Mocked object
+    Field field = DummyTxnManager.class.getDeclaredField("lockMgr");
+    field.setAccessible(true);
+    field.set(txnMgr, mockLockManager);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (txnMgr != null) txnMgr.closeTxnManager();
+  }
+
+  /**
+   * Verifies the current database object is not locked if the table read is against different database
+   * @throws Exception
+   */
+  @Test
+  public void testSingleReadTable() throws Exception {
+    // Setup
+    SessionState.get().setCurrentDatabase("db1");
+
+    List<HiveLock> expectedLocks = new ArrayList<HiveLock>();
+    expectedLocks.add(new ZooKeeperHiveLock("default", new HiveLockObject(), HiveLockMode.SHARED));
+    expectedLocks.add(new ZooKeeperHiveLock("default.table1", new HiveLockObject(), HiveLockMode.SHARED));
+
+    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false))).thenReturn(expectedLocks);
+    doNothing().when(mockLockManager).setContext(any(HiveLockManagerCtx.class));
+    doNothing().when(mockLockManager).close();
+    ArgumentCaptor<List> lockObjsCaptor = ArgumentCaptor.forClass(List.class);
+
+    when(mockQueryPlan.getInputs()).thenReturn(createReadEntities());
+    when(mockQueryPlan.getOutputs()).thenReturn(new HashSet<WriteEntity>());
+
+    // Execute
+    txnMgr.acquireLocks(mockQueryPlan, ctx, "fred");
+
+    // Verify
+    Assert.assertEquals("db1", SessionState.get().getCurrentDatabase());
+    List<HiveLock> resultLocks = ctx.getHiveLocks();
+    Assert.assertEquals(expectedLocks.size(), resultLocks.size());
+    Assert.assertEquals(expectedLocks.get(0).getHiveLockMode(), resultLocks.get(0).getHiveLockMode());
+    Assert.assertEquals(expectedLocks.get(0).getHiveLockObject().getName(), resultLocks.get(0).getHiveLockObject().getName());
+    Assert.assertEquals(expectedLocks.get(1).getHiveLockMode(), resultLocks.get(1).getHiveLockMode());
+    Assert.assertEquals(expectedLocks.get(0).getHiveLockObject().getName(), resultLocks.get(0).getHiveLockObject().getName());
+
+    verify(mockLockManager).lock((List<HiveLockObj>)lockObjsCaptor.capture(), eq(false));
+    List<HiveLockObj> lockObjs = (List<HiveLockObj>)lockObjsCaptor.getValue();
+    Assert.assertEquals(2, lockObjs.size());
+    Assert.assertEquals("default", lockObjs.get(0).getName());
+    Assert.assertEquals(HiveLockMode.SHARED, lockObjs.get(0).mode);
+    Assert.assertEquals("default/table1", lockObjs.get(1).getName());
+    Assert.assertEquals(HiveLockMode.SHARED, lockObjs.get(1).mode);
+  }
 
   @Test
   public void testDedupLockObjects() {
@@ -74,5 +170,26 @@ public class TestDummyTxnManager {
     lockObj = lockObjs.get(1);
     Assert.assertEquals(name2, lockObj.getName());
     Assert.assertEquals(HiveLockMode.SHARED, lockObj.getMode());
+  }
+
+  private HashSet<ReadEntity> createReadEntities() {
+    HashSet<ReadEntity> readEntities = new HashSet<ReadEntity>();
+    ReadEntity re = new ReadEntity(newTable(false));
+    readEntities.add(re);
+
+    return readEntities;
+  }
+
+  private Table newTable(boolean isPartitioned) {
+    Table t = new Table("default", "table" + Integer.toString(nextInput++));
+    if (isPartitioned) {
+      FieldSchema fs = new FieldSchema();
+      fs.setName("version");
+      fs.setType("String");
+      List<FieldSchema> partCols = new ArrayList<FieldSchema>(1);
+      partCols.add(fs);
+      t.setPartCols(partCols);
+    }
+    return t;
   }
 }

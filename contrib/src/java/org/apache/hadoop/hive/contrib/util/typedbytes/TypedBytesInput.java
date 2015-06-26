@@ -43,7 +43,7 @@ public class TypedBytesInput {
 
   private static ThreadLocal tbIn = new ThreadLocal() {
     @Override
-    protected synchronized Object initialValue() {
+    protected Object initialValue() {
       return new TypedBytesInput();
     }
   };

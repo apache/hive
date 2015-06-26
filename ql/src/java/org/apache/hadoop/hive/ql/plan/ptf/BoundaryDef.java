@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 
 public abstract class BoundaryDef {
@@ -27,11 +28,46 @@ public abstract class BoundaryDef {
     return direction;
   }
 
-  public void setDirection(Direction direction) {
-    this.direction = direction;
+  /**
+   * Returns if the bound is PRECEDING.
+   * @return if the bound is PRECEDING
+   */
+  public boolean isPreceding() {
+    return false;
   }
 
+  /**
+   * Returns if the bound is FOLLOWING.
+   * @return if the bound is FOLLOWING
+   */
+  public boolean isFollowing() {
+    return false;
+  }
+
+  /**
+   * Returns if the bound is CURRENT ROW.
+   * @return if the bound is CURRENT ROW
+   */
+  public boolean isCurrentRow() {
+    return false;
+  }
+
+  /**
+   * Returns offset from XX PRECEDING/FOLLOWING.
+   *
+   * @return offset from XX PRECEDING/FOLLOWING
+   */
   public abstract int getAmt();
+  /**
+   * Returns signed offset from XX PRECEDING/FOLLOWING. Nagative for preceding.
+   *
+   * @return signed offset from XX PRECEDING/FOLLOWING
+   */
+  public abstract int getRelativeOffset();
+
+  public boolean isUnbounded() {
+    return this.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT;
+  }
 
   @Override
   public String toString() {

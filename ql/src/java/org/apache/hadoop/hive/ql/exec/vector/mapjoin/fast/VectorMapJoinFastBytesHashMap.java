@@ -54,13 +54,13 @@ public abstract class VectorMapJoinFastBytesHashMap
       slotTriples[tripleIndex] = keyStore.add(keyBytes, keyStart, keyLength);
       slotTriples[tripleIndex + 1] = hashCode;
       slotTriples[tripleIndex + 2] = valueStore.addFirst(valueBytes, 0, valueLength);
-      // LOG.info("VectorMapJoinFastBytesHashMap add first keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
+      // LOG.debug("VectorMapJoinFastBytesHashMap add first keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
       keysAssigned++;
     } else {
       // Add another value.
-      // LOG.info("VectorMapJoinFastBytesHashMap add more keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
+      // LOG.debug("VectorMapJoinFastBytesHashMap add more keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
       slotTriples[tripleIndex + 2] = valueStore.addMore(slotTriples[tripleIndex + 2], valueBytes, 0, valueLength);
-      // LOG.info("VectorMapJoinFastBytesHashMap add more new valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
+      // LOG.debug("VectorMapJoinFastBytesHashMap add more new valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
     }
   }
 
@@ -77,7 +77,7 @@ public abstract class VectorMapJoinFastBytesHashMap
     if (valueRefWord == -1) {
       joinResult = JoinUtil.JoinResult.NOMATCH;
     } else {
-      // LOG.info("VectorMapJoinFastBytesHashMap lookup hashCode " + Long.toHexString(hashCode) + " valueRefWord " + Long.toHexString(valueRefWord) + " (valueStore != null) " + (valueStore != null));
+      // LOG.debug("VectorMapJoinFastBytesHashMap lookup hashCode " + Long.toHexString(hashCode) + " valueRefWord " + Long.toHexString(valueRefWord) + " (valueStore != null) " + (valueStore != null));
 
       optimizedHashMapResult.set(valueStore, valueRefWord);
 

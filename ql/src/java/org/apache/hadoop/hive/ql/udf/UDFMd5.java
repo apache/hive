@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.BytesWritable;
@@ -39,6 +42,15 @@ import org.apache.hadoop.io.Text;
 public class UDFMd5 extends UDF {
 
   private final Text result = new Text();
+  private final MessageDigest digest;
+
+  public UDFMd5() {
+    try {
+      digest = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * Convert String to md5
@@ -48,8 +60,10 @@ public class UDFMd5 extends UDF {
       return null;
     }
 
-    String str = n.toString();
-    String md5Hex = DigestUtils.md5Hex(str);
+    digest.reset();
+    digest.update(n.getBytes(), 0, n.getLength());
+    byte[] md5Bytes = digest.digest();
+    String md5Hex = Hex.encodeHexString(md5Bytes);
 
     result.set(md5Hex);
     return result;
@@ -63,17 +77,12 @@ public class UDFMd5 extends UDF {
       return null;
     }
 
-    byte[] bytes = copyBytes(b);
-    String md5Hex = DigestUtils.md5Hex(bytes);
+    digest.reset();
+    digest.update(b.getBytes(), 0, b.getLength());
+    byte[] md5Bytes = digest.digest();
+    String md5Hex = Hex.encodeHexString(md5Bytes);
 
     result.set(md5Hex);
-    return result;
-  }
-
-  protected byte[] copyBytes(BytesWritable b) {
-    int size = b.getLength();
-    byte[] result = new byte[size];
-    System.arraycopy(b.getBytes(), 0, result, 0, size);
     return result;
   }
 }

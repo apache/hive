@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- JAVA_VERSION_SPECIFIC_OUTPUT
 -- SORT_QUERY_RESULTS
 

@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -43,7 +44,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
- * Test HiveAuthorizer api invocation
+ * Test HiveAuthorizer api invocation for filtering objects
  */
 public class TestHiveAuthorizerShowFilters {
   protected static HiveConf conf;
@@ -119,6 +120,7 @@ public class TestHiveAuthorizerShowFilters {
     conf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    UtilsForTest.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
 
     SessionState.start(conf);
     driver = new Driver(conf);
@@ -130,6 +132,8 @@ public class TestHiveAuthorizerShowFilters {
     runCmd("create database " + dbName2);
 
   }
+
+
 
   @Before
   public void setup() {

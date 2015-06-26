@@ -114,13 +114,13 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: key, value
+                    expressions: substr(key, 1, 1) (type: string), substr(value, 5) (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: substr(key, 1, 1) (type: string), substr(value, 5) (type: string)
+                      key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
-                      Map-reduce partition columns: substr(key, 1, 1) (type: string)
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       auto parallelism: false

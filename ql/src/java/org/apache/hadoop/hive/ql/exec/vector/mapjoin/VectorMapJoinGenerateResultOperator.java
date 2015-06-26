@@ -373,10 +373,8 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
    *          The big table batch.
    * @param hashMapResult
    *          The hash map results for the repeated key.
-   * @return
-   *          The new count of selected rows.
    */
-  protected int generateHashMapResultRepeatedAll(VectorizedRowBatch batch,
+  protected void generateHashMapResultRepeatedAll(VectorizedRowBatch batch,
               VectorMapJoinHashMapResult hashMapResult) throws IOException, HiveException {
 
     int[] selected = batch.selected;
@@ -400,7 +398,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
           batch.selected, 0, batch.size);
     }
 
-    return numSel;
+    batch.size = numSel;
   }
 
   //-----------------------------------------------------------------------------------------------
@@ -462,7 +460,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 //  int length = output.getLength() - offset;
     rowBytesContainer.finishRow();
 
-//  LOG.info("spillSerializeRow spilled batchIndex " + batchIndex + ", length " + length);
+//  LOG.debug("spillSerializeRow spilled batchIndex " + batchIndex + ", length " + length);
   }
 
   protected void spillHashMapBatch(VectorizedRowBatch batch,
@@ -514,14 +512,18 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         smallTable);
     needHashTableSetup = true;
 
-    LOG.info(CLASS_NAME + " reloadHashTable!");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(CLASS_NAME + " reloadHashTable!");
+    }
   }
 
   @Override
   protected void reProcessBigTable(int partitionId)
       throws HiveException {
 
-    LOG.info(CLASS_NAME + " reProcessBigTable enter...");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(CLASS_NAME + " reProcessBigTable enter...");
+    }
 
     if (spillReplayBatch == null) {
       // The process method was not called -- no big table rows.
@@ -544,14 +546,14 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         int offset = bigTable.currentOffset();
         int length = bigTable.currentLength();
 
-//      LOG.info(CLASS_NAME + " reProcessBigTable serialized row #" + rowCount + ", offset " + offset + ", length " + length);
+//      LOG.debug(CLASS_NAME + " reProcessBigTable serialized row #" + rowCount + ", offset " + offset + ", length " + length);
 
         bigTableVectorDeserializeRow.setBytes(bytes, offset, length);
         bigTableVectorDeserializeRow.deserializeByValue(spillReplayBatch, spillReplayBatch.size);
         spillReplayBatch.size++;
 
         if (spillReplayBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
-          LOG.info("reProcessBigTable going to call process with spillReplayBatch.size " + spillReplayBatch.size + " rows");
+          // LOG.debug("reProcessBigTable going to call process with spillReplayBatch.size " + spillReplayBatch.size + " rows");
           process(spillReplayBatch, posBigTable); // call process once we have a full batch
           spillReplayBatch.reset();
           batchCount++;
@@ -559,7 +561,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
       }
       // Process the row batch that has less than DEFAULT_SIZE rows
       if (spillReplayBatch.size > 0) {
-        LOG.info("reProcessBigTable going to call process with spillReplayBatch.size " + spillReplayBatch.size + " rows");
+        // LOG.debug("reProcessBigTable going to call process with spillReplayBatch.size " + spillReplayBatch.size + " rows");
         process(spillReplayBatch, posBigTable);
         spillReplayBatch.reset();
         batchCount++;
@@ -570,7 +572,9 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
       throw new HiveException(e);
     }
 
-    LOG.info(CLASS_NAME + " reProcessBigTable exit! " + rowCount + " row processed and " + batchCount + " batches processed");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(CLASS_NAME + " reProcessBigTable exit! " + rowCount + " row processed and " + batchCount + " batches processed");
+    }
   }
 
 
@@ -632,7 +636,9 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     if (!aborted && overflowBatch.size > 0) {
       forwardOverflow();
     }
-    LOG.info("VectorMapJoinInnerLongOperator closeOp " + batchCounter + " batches processed");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("VectorMapJoinInnerLongOperator closeOp " + batchCounter + " batches processed");
+    }
   }
 
   //-----------------------------------------------------------------------------------------------
@@ -640,6 +646,23 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
   /*
    * Debug.
    */
+
+  public boolean verifyMonotonicallyIncreasing(int[] selected, int size) {
+
+    if (size == 0) {
+      return true;
+    }
+    int prevBatchIndex = selected[0];
+
+    for (int i = 1; i < size; i++) {
+      int batchIndex = selected[i];
+      if (batchIndex <= prevBatchIndex) {
+        return false;
+      }
+      prevBatchIndex = batchIndex;
+    }
+    return true;
+  }
 
   public static String intArrayToRangesString(int selection[], int size) {
     if (size == 0) {

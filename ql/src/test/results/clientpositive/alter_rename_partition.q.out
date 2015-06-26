@@ -10,8 +10,10 @@ POSTHOOK: query: DROP TABLE alter_rename_partition
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 cbo_t1
 cbo_t2
@@ -137,8 +139,10 @@ POSTHOOK: Input: default@alter_rename_partition
 POSTHOOK: Output: default@alter_rename_partition
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 cbo_t1
 cbo_t2
@@ -172,8 +176,10 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:alter_rename_partition_db
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:alter_rename_partition_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:alter_rename_partition_db
 PREHOOK: query: CREATE TABLE alter_rename_partition_src (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: alter_rename_partition_db@alter_rename_partition_src

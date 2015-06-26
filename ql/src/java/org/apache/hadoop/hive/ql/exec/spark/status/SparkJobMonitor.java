@@ -62,7 +62,7 @@ abstract class SparkJobMonitor {
       return;
     }
 
-    StringBuffer reportBuffer = new StringBuffer();
+    StringBuilder reportBuffer = new StringBuilder();
     SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
     String currentDate = dt.format(new Date());
     reportBuffer.append(currentDate + "\t");

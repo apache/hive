@@ -1,0 +1,37 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:newDB
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:newDB
+#### A masked pattern was here ####
+PREHOOK: query: describe database extended newDB
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:newdb
+POSTHOOK: query: describe database extended newDB
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:newdb
+newdb		location/in/test	hive_test_user	USER	
+PREHOOK: query: use newDB
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:newdb
+POSTHOOK: query: use newDB
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:newdb
+PREHOOK: query: create table tab (name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:newdb
+PREHOOK: Output: newDB@tab
+POSTHOOK: query: create table tab (name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:newdb
+POSTHOOK: Output: newDB@tab
+PREHOOK: query: alter table tab rename to newName
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: newdb@tab
+PREHOOK: Output: newdb@tab
+POSTHOOK: query: alter table tab rename to newName
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: newdb@tab
+POSTHOOK: Output: newDB@newName
+POSTHOOK: Output: newdb@tab

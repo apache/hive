@@ -1544,8 +1544,10 @@ STAGE PLANS:
         subq1:b 
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1556,8 +1558,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1595,8 +1599,10 @@ STAGE PLANS:
         subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1607,8 +1613,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1730,8 +1738,10 @@ STAGE PLANS:
         subq1:b 
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1742,8 +1752,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1786,8 +1798,10 @@ STAGE PLANS:
         subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1798,8 +1812,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1947,8 +1963,10 @@ STAGE PLANS:
         subq2:subq1:b 
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -1959,8 +1977,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -2027,8 +2047,10 @@ STAGE PLANS:
         subq2:subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -2039,8 +2061,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -2226,8 +2250,10 @@ STAGE PLANS:
         src1:subq1:b 
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -2238,8 +2264,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -2392,8 +2420,10 @@ STAGE PLANS:
         src1:subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -2404,8 +2434,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -2490,8 +2522,10 @@ STAGE PLANS:
         src2:subq2:b 
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -2502,8 +2536,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -2546,8 +2582,10 @@ STAGE PLANS:
         src2:subq2:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -2558,8 +2596,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -2722,11 +2762,14 @@ STAGE PLANS:
         subq2:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -2737,11 +2780,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -2779,11 +2825,14 @@ STAGE PLANS:
         subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -2794,11 +2843,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -2940,8 +2992,10 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 _col0 (type: int)
@@ -2952,11 +3006,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -2994,11 +3051,14 @@ STAGE PLANS:
         subq2:subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -3009,8 +3069,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -3176,11 +3238,14 @@ STAGE PLANS:
         subq4:subq3:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -3191,11 +3256,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -3233,11 +3301,14 @@ STAGE PLANS:
         subq2:subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -3248,11 +3319,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -3408,11 +3482,14 @@ STAGE PLANS:
         subq2:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 8) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -3423,11 +3500,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 8) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -3465,11 +3545,14 @@ STAGE PLANS:
         subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 8) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -3480,11 +3563,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 8) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -3612,8 +3698,10 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 _col0 (type: int)
@@ -3624,11 +3712,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -3666,11 +3757,14 @@ STAGE PLANS:
         subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -3681,8 +3775,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -3808,11 +3904,14 @@ STAGE PLANS:
         subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 key (type: int)
@@ -3823,8 +3922,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -3862,8 +3963,10 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -3874,11 +3977,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -4015,11 +4121,14 @@ STAGE PLANS:
         subq2:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -4028,11 +4137,14 @@ STAGE PLANS:
         subq3:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -4044,11 +4156,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -4091,11 +4206,14 @@ STAGE PLANS:
         subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -4104,11 +4222,14 @@ STAGE PLANS:
         subq3:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -4120,11 +4241,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -4167,11 +4291,14 @@ STAGE PLANS:
         subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -4180,11 +4307,14 @@ STAGE PLANS:
         subq2:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -4196,11 +4326,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -4354,8 +4487,10 @@ STAGE PLANS:
         a:b 
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 _col0 (type: int)
@@ -4366,11 +4501,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -4408,11 +4546,14 @@ STAGE PLANS:
         a:subq2:subq1:a 
           TableScan
             alias: a
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -4423,8 +4564,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1

@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.vectorized.execution.enabled=true;
 set hive.auto.convert.join=true;
 set hive.mapjoin.hybridgrace.hashtable=false;

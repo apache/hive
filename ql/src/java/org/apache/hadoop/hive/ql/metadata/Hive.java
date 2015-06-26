@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -147,7 +148,7 @@ public class Hive {
 
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal<Hive>() {
     @Override
-    protected synchronized Hive initialValue() {
+    protected Hive initialValue() {
       return null;
     }
 
@@ -782,7 +783,7 @@ public class Hive {
       }
 
       org.apache.hadoop.hive.metastore.api.Table baseTbl = getTable(tableName).getTTable();
-      if (baseTbl.getTableType() == TableType.VIRTUAL_VIEW.toString()) {
+      if (TableType.VIRTUAL_VIEW.toString().equals(baseTbl.getTableType())) {
         throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
       }
       if (baseTbl.isTemporary()) {
@@ -1930,6 +1931,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         for (Path p : newFiles) {
           insertData.addToFilesAdded(p.toString());
         }
+      } else {
+        insertData.setFilesAdded(new ArrayList<String>());
       }
       FireEventRequest rqst = new FireEventRequest(true, data);
       rqst.setDbName(tbl.getDbName());
@@ -2613,6 +2616,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         } else {
           if (destIsSubDir) {
             FileStatus[] srcs = fs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
+            if (srcs.length == 0) {
+              success = true; // Nothing to move.
+            }
             for (FileStatus status : srcs) {
               success = FileUtils.copy(srcf.getFileSystem(conf), status.getPath(), destf.getFileSystem(conf), destf,
                   true,     // delete source
@@ -3007,7 +3013,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   @LimitedPrivate(value = {"Hive"})
   @Unstable
-  public IMetaStoreClient getMSC() throws MetaException {
+  public synchronized IMetaStoreClient getMSC() throws MetaException {
     if (metaStoreClient == null) {
       try {
         owner = UserGroupInformation.getCurrentUser();
@@ -3017,6 +3023,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
         throw new MetaException(msg + "\n" + StringUtils.stringifyException(e));
       }
       metaStoreClient = createMetaStoreClient();
+      String metaStoreUris = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
+      if (!org.apache.commons.lang3.StringUtils.isEmpty(metaStoreUris)) {
+        // get a synchronized wrapper if the meta store is remote.
+        metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);
+      }
     }
     return metaStoreClient;
   }

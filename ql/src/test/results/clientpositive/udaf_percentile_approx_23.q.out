@@ -524,11 +524,11 @@ STAGE PLANS:
             alias: bucket
             Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: double)
-              outputColumnNames: key
+              expressions: CASE WHEN ((key < 100.0)) THEN (NaN) ELSE (key) END (type: double)
+              outputColumnNames: _col0
               Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: percentile_approx(CASE WHEN ((key < 100.0)) THEN (UDFToDouble('NaN')) ELSE (key) END, 0.5)
+                aggregations: percentile_approx(_col0, 0.5)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -556,15 +556,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket
+PREHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) between 340.5 and 343.0 from bucket
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket
 #### A masked pattern was here ####
-POSTHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket
+POSTHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) between 340.5 and 343.0 from bucket
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket
 #### A masked pattern was here ####
-341.5
+true
 PREHOOK: query: -- with CBO
 explain
 select percentile_approx(key, 0.5) from bucket
@@ -586,10 +586,10 @@ STAGE PLANS:
             Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: double)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: percentile_approx(key, 0.5)
+                aggregations: percentile_approx(_col0, 0.5)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE

@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 CREATE TABLE x
 (
 u bigint,

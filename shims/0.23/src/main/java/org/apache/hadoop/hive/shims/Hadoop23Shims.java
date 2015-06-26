@@ -212,19 +212,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public void startPauseMonitor(Configuration conf) {
-    try {
-      Class.forName("org.apache.hadoop.util.JvmPauseMonitor");
-      org.apache.hadoop.util.JvmPauseMonitor pauseMonitor = new org.apache.hadoop.util
-          .JvmPauseMonitor(conf);
-      pauseMonitor.start();
-    } catch (Throwable t) {
-      LOG.warn("Could not initiate the JvmPauseMonitor thread." + " GCs and Pauses may not be " +
-          "warned upon.", t);
-    }
-  }
-
-  @Override
   public boolean isLocalMode(Configuration conf) {
     return "local".equals(conf.get("mapreduce.framework.name"));
   }
@@ -712,7 +699,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         aclStatus = fs.getAclStatus(file);
       } catch (Exception e) {
         LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
-                "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
+                "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+        LOG.debug("The details are: " + e, e);
       }
     }
     return new Hadoop23FileStatus(fileStatus, aclStatus);
@@ -748,7 +736,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           }
         } catch (Exception e) {
           LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
-                  "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
+                  "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+          LOG.debug("The details are: " + e, e);
         }
       } else {
         String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
@@ -1214,6 +1203,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         fullPath = path;
       } else {
         fullPath = path.getFileSystem(conf).makeQualified(path);
+      }
+      if(!"hdfs".equalsIgnoreCase(path.toUri().getScheme())) {
+        return false;
       }
       return (hdfsAdmin.getEncryptionZoneForPath(fullPath) != null);
     }

@@ -186,7 +186,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   // handles nulls in items[]
   // TODO: perhaps can be made more efficient by creating a byte[] directly
   private static byte[] join(String[] items, char separator) {
-    StringBuffer buff = new StringBuffer(100);
+    StringBuilder buff = new StringBuilder(100);
     if(items.length == 0)
       return "".getBytes();
     int i=0;

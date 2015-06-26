@@ -57,8 +57,10 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -69,8 +71,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -78,8 +82,10 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 outputColumnNames: _col0, _col5
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col0 + _col5) is not null (type: boolean)
+                  Statistics: Num rows: 138 Data size: 1465 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -144,8 +150,10 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -156,8 +164,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -165,8 +175,10 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 outputColumnNames: _col0, _col5
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col0 + _col5) is not null (type: boolean)
+                  Statistics: Num rows: 138 Data size: 1465 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -291,8 +303,10 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -303,8 +317,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -312,8 +328,10 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 outputColumnNames: _col0, _col5
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col0 + _col5) is not null (type: boolean)
+                  Statistics: Num rows: 138 Data size: 1465 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -347,10 +365,10 @@ STAGE PLANS:
         smalltable2 
           TableScan
             alias: smalltable2
-            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 (_col0 + _col5) (type: double)
@@ -403,8 +421,10 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -415,8 +435,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -424,8 +446,10 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 outputColumnNames: _col0, _col5
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col0 + _col5) is not null (type: boolean)
+                  Statistics: Num rows: 138 Data size: 1465 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:

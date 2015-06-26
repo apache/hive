@@ -8,7 +8,7 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESC FUNCTION EXTENDED decode
 POSTHOOK: type: DESCFUNCTION
 decode(bin, str) - Decode the first argument using the second argument character set
-Possible options for the character set are 'US_ASCII', 'ISO-8859-1',
+Possible options for the character set are 'US-ASCII', 'ISO-8859-1',
 'UTF-8', 'UTF-16BE', 'UTF-16LE', and 'UTF-16'. If either argument
 is null, the result will also be null
 PREHOOK: query: explain select decode(binary('TestDecode1'), 'UTF-8')
@@ -26,11 +26,11 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 'TestDecode1' (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 0 Data size: 1 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select

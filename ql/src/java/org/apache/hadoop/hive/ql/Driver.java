@@ -443,8 +443,10 @@ public class Driver implements CommandProcessor {
       // to avoid returning sensitive data
       String queryStr = HookUtils.redactLogString(conf, command);
 
+      String operationName = ctx.getExplain() ?
+        HiveOperation.EXPLAIN.getOperationName() : SessionState.get().getCommandType();
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-          SessionState.get().getCommandType());
+        operationName);
 
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
@@ -1171,6 +1173,9 @@ public class Driver implements CommandProcessor {
       if (ret != 0) {
         return createProcessorResponse(ret);
       }
+    } else {
+      // Since we're reusing the compiled plan, we need to update its start time for current run
+      plan.setQueryStartTime(perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
     }
 
     // the reason that we set the txn manager for the cxt here is because each
@@ -1317,7 +1322,9 @@ public class Driver implements CommandProcessor {
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
 
     String queryId = plan.getQueryId();
-    String queryStr = plan.getQueryStr();
+    // Get the query string from the conf file as the compileInternal() method might
+    // hide sensitive information during query redaction.
+    String queryStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING);
 
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 

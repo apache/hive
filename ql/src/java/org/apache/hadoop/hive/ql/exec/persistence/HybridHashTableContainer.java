@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -217,20 +218,20 @@ public class HybridHashTableContainer
 
   public HybridHashTableContainer(Configuration hconf, long keyCount, long memoryAvailable,
                                   long estimatedTableSize, HybridHashTableConf nwayConf)
-      throws SerDeException, IOException {
+ throws SerDeException, IOException {
     this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
-         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
-         HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
-         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ),
-         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
-         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
-         estimatedTableSize, keyCount, memoryAvailable, nwayConf);
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
+        HiveConf.getFloatVar(hconf,HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
+        HiveConf.getIntVar(hconf,HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ),
+        HiveConf.getIntVar(hconf,HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
+        HiveConf.getIntVar(hconf,HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
+        HiveConf.getIntVar(hconf,HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
+        estimatedTableSize, keyCount, memoryAvailable, nwayConf);
   }
 
   private HybridHashTableContainer(float keyCountAdj, int threshold, float loadFactor,
-                                   int memCheckFreq, int minWbSize, int minNumParts,
-                                   long estimatedTableSize, long keyCount,
-                                   long memoryAvailable, HybridHashTableConf nwayConf)
+      int memCheckFreq, int minWbSize, int maxWbSize, int minNumParts, long estimatedTableSize,
+      long keyCount, long memoryAvailable, HybridHashTableConf nwayConf)
       throws SerDeException, IOException {
     directWriteHelper = new MapJoinBytesTableContainer.DirectKeyValueWriter();
 
@@ -238,7 +239,7 @@ public class HybridHashTableContainer
         keyCountAdj, threshold, loadFactor, keyCount);
 
     memoryThreshold = memoryAvailable;
-    tableRowSize = estimatedTableSize / keyCount;
+    tableRowSize = estimatedTableSize / (keyCount != 0 ? keyCount : 1);
     memoryCheckFrequency = memCheckFreq;
 
     this.nwayConf = nwayConf;
@@ -269,8 +270,11 @@ public class HybridHashTableContainer
         writeBufferSize = (int)(memoryThreshold / numPartitions);
       }
     }
-    writeBufferSize = writeBufferSize < minWbSize ? minWbSize : writeBufferSize;
+
+    // Cap WriteBufferSize to avoid large preallocations
+    writeBufferSize = writeBufferSize < minWbSize ? minWbSize : Math.min(maxWbSize, writeBufferSize);
     LOG.info("Write buffer size: " + writeBufferSize);
+
     hashPartitions = new HashPartition[numPartitions];
     int numPartitionsSpilledOnCreation = 0;
     memoryUsed = 0;
@@ -730,6 +734,8 @@ public class HybridHashTableContainer
 
     private final ByteArrayRef uselessIndirection; // LBStruct needs ByteArrayRef
     private final LazyBinaryStruct valueStruct;
+    private final boolean needsComplexObjectFixup;
+    private final ArrayList<Object> complexObjectArrayBuffer;
 
     private int partitionId; // Current hashMap in use
 
@@ -737,8 +743,18 @@ public class HybridHashTableContainer
       if (internalValueOi != null) {
         valueStruct = (LazyBinaryStruct)
             LazyBinaryFactory.createLazyBinaryObject(internalValueOi);
+        needsComplexObjectFixup = MapJoinBytesTableContainer.hasComplexObjects(internalValueOi);
+        if (needsComplexObjectFixup) {
+          complexObjectArrayBuffer =
+              new ArrayList<Object>(
+                  Collections.nCopies(internalValueOi.getAllStructFieldRefs().size(), null));
+        } else {
+          complexObjectArrayBuffer = null;
+        }
       } else {
         valueStruct = null; // No rows?
+        needsComplexObjectFixup =  false;
+        complexObjectArrayBuffer = null;
       }
       uselessIndirection = new ByteArrayRef();
       hashMapResult = new BytesBytesMultiHashMap.Result();
@@ -833,7 +849,7 @@ public class HybridHashTableContainer
       if (byteSegmentRef == null) {
         return null;
       } else {
-        return uppack(byteSegmentRef);
+        return unpack(byteSegmentRef);
       }
 
     }
@@ -845,18 +861,29 @@ public class HybridHashTableContainer
       if (byteSegmentRef == null) {
         return null;
       } else {
-        return uppack(byteSegmentRef);
+        return unpack(byteSegmentRef);
       }
 
     }
 
-    private List<Object> uppack(WriteBuffers.ByteSegmentRef ref) throws HiveException {
+    private List<Object> unpack(WriteBuffers.ByteSegmentRef ref) throws HiveException {
       if (ref.getLength() == 0) {
         return EMPTY_LIST; // shortcut, 0 length means no fields
       }
       uselessIndirection.setData(ref.getBytes());
       valueStruct.init(uselessIndirection, (int)ref.getOffset(), ref.getLength());
-      return valueStruct.getFieldsAsList(); // TODO: should we unset bytes after that?
+      List<Object> result;
+      if (!needsComplexObjectFixup) {
+        // Good performance for common case where small table has no complex objects.
+        result = valueStruct.getFieldsAsList();
+      } else {
+        // Convert the complex LazyBinary objects to standard (Java) objects so downstream
+        // operators like FileSinkOperator can serialize complex objects in the form they expect
+        // (i.e. Java objects).
+        result = MapJoinBytesTableContainer.getComplexFieldsAsList(
+            valueStruct, complexObjectArrayBuffer, internalValueOi);
+      }
+      return result;
     }
 
     @Override

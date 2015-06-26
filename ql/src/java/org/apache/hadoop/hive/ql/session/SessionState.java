@@ -338,6 +338,9 @@ public class SessionState {
   public SessionState(HiveConf conf, String userName) {
     this.conf = conf;
     this.userName = userName;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("SessionState user: " + userName);
+    }
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
     resourceMaps = new ResourceMaps();
@@ -855,6 +858,25 @@ public class SessionState {
   }
 
   /**
+   * Update the history if set hive.session.history.enabled
+   *
+   * @param historyEnabled
+   * @param ss
+   */
+  public void updateHistory(boolean historyEnabled, SessionState ss) {
+    if (historyEnabled) {
+      // Uses a no-op proxy
+      if (ss.hiveHist.getHistFileName() == null) {
+        ss.hiveHist = new HiveHistoryImpl(ss);
+      }
+    } else {
+      if (ss.hiveHist.getHistFileName() != null) {
+        ss.hiveHist = HiveHistoryProxyHandler.getNoOpHiveHistoryProxy();
+      }
+    }
+  }
+
+  /**
    * Create a session ID. Looks like:
    *   $user_$pid@$host_$date
    * @return the unique string
@@ -903,12 +925,12 @@ public class SessionState {
       return ((ss != null) && (ss.out != null)) ? ss.out : System.out;
     }
 
-    public PrintStream getInfoStream() {
+    public static PrintStream getInfoStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.info != null)) ? ss.info : getErrStream();
     }
 
-    public PrintStream getErrStream() {
+    public static PrintStream getErrStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.err != null)) ? ss.err : System.err;
     }

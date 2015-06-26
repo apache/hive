@@ -18,19 +18,19 @@
 package org.apache.hadoop.hive.common.type;
 
 
-import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.LogUtils;
-import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Random;
 
-import com.google.code.tempusfugit.concurrency.annotations.*;
-import com.google.code.tempusfugit.concurrency.*;
-import org.junit.*;
-import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+
+import com.google.code.tempusfugit.concurrency.ConcurrentRule;
+import com.google.code.tempusfugit.concurrency.RepeatingRule;
+import com.google.code.tempusfugit.concurrency.annotations.Concurrent;
+import com.google.code.tempusfugit.concurrency.annotations.Repeating;
 
 public class TestHiveVarchar {
   @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
@@ -80,7 +80,7 @@ public class TestHiveVarchar {
     // Try with supplementary characters
     for (int idx1 = 0; idx1 < lengths.length; ++idx1) {
       // Create random test string
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       int curLen = lengths[idx1];
       for (int idx2 = 0; idx2 < curLen; ++idx2) {
         sb.appendCodePoint(getRandomCodePoint(' '));

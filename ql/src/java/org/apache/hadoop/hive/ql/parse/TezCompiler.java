@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
@@ -149,7 +150,7 @@ public class TezCompiler extends TaskCompiler {
         if (component.size() != 1) {
           LOG.info("Found cycle in operator plan...");
           cycleFree = false;
-          removeEventOperator(component);
+          removeEventOperator(component, procCtx);
           break;
         }
       }
@@ -157,7 +158,7 @@ public class TezCompiler extends TaskCompiler {
     }
   }
 
-  private void removeEventOperator(Set<Operator<?>> component) {
+  private void removeEventOperator(Set<Operator<?>> component, OptimizeTezProcContext context) {
     AppMasterEventOperator victim = null;
     for (Operator<?> o : component) {
       if (o instanceof AppMasterEventOperator) {
@@ -169,20 +170,17 @@ public class TezCompiler extends TaskCompiler {
       }
     }
 
-    Operator<?> child = victim;
-    Operator<?> curr = victim;
-
-    while (curr.getChildOperators().size() <= 1) {
-      child = curr;
-      curr = curr.getParentOperators().get(0);
+    if (victim == null ||
+        (!context.pruningOpsRemovedByPriorOpt.isEmpty() &&
+         context.pruningOpsRemovedByPriorOpt.contains(victim))) {
+      return;
     }
 
-    // at this point we've found the fork in the op pipeline that has the
-    // pruning as a child plan.
+    GenTezUtils.getUtils().removeBranch(victim);
+    // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
     LOG.info("Disabling dynamic pruning for: "
         + ((DynamicPruningEventDesc) victim.getConf()).getTableScan().toString()
         + ". Needed to break cyclic dependency");
-    curr.removeChild(child);
   }
 
   // Tarjan's algo
@@ -307,8 +305,10 @@ public class TezCompiler extends TaskCompiler {
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
+    // Rather than run the full constant folding just need to shortcut AND/OR expressions
+    // involving constant true/false values.
     if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
-      new ConstantPropagate().transform(procCtx.parseContext);
+      new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
   }
 

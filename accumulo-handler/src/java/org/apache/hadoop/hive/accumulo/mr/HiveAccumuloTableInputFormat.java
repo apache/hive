@@ -36,6 +36,7 @@ import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.mapred.AccumuloInputFormat;
 import org.apache.accumulo.core.client.mapred.AccumuloRowInputFormat;
 import org.apache.accumulo.core.client.mapred.RangeInputSplit;
+import org.apache.accumulo.core.client.mapreduce.lib.impl.ConfiguratorBase;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
@@ -49,6 +50,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.accumulo.AccumuloConnectionParameters;
 import org.apache.hadoop.hive.accumulo.AccumuloHiveRow;
+import org.apache.hadoop.hive.accumulo.HiveAccumuloHelper;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapper;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapping;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloColumnMapping;
@@ -70,6 +72,9 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +92,7 @@ public class HiveAccumuloTableInputFormat implements
   // Visible for testing
   protected AccumuloRowInputFormat accumuloInputFormat = new AccumuloRowInputFormat();
   protected AccumuloPredicateHandler predicateHandler = AccumuloPredicateHandler.getInstance();
+  protected HiveAccumuloHelper helper = new HiveAccumuloHelper();
 
   @Override
   public InputSplit[] getSplits(JobConf jobConf, int numSplits) throws IOException {
@@ -103,7 +109,22 @@ public class HiveAccumuloTableInputFormat implements
     Path[] tablePaths = FileInputFormat.getInputPaths(context);
 
     try {
-      final Connector connector = accumuloParams.getConnector(instance);
+      UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+      final Connector connector;
+
+      // Need to get a Connector so we look up the user's authorizations if not otherwise specified
+      if (accumuloParams.useSasl() && !ugi.hasKerberosCredentials()) {
+        // In a YARN/Tez job, don't have the Kerberos credentials anymore, use the delegation token
+        AuthenticationToken token = ConfiguratorBase.getAuthenticationToken(
+            AccumuloInputFormat.class, jobConf);
+        // Convert the stub from the configuration back into a normal Token
+        // More reflection to support 1.6
+        token = helper.unwrapAuthenticationToken(jobConf, token);
+        connector = instance.getConnector(accumuloParams.getAccumuloUserName(), token);
+      } else {
+        // Still in the local JVM, use the username+password or Kerberos credentials
+        connector = accumuloParams.getConnector(instance);
+      }
       final List<ColumnMapping> columnMappings = columnMapper.getColumnMappings();
       final List<IteratorSetting> iterators = predicateHandler.getIterators(jobConf, columnMapper);
       final Collection<Range> ranges = predicateHandler.getRanges(jobConf, columnMapper);
@@ -254,18 +275,50 @@ public class HiveAccumuloTableInputFormat implements
   protected void configure(JobConf conf, Instance instance, Connector connector,
       AccumuloConnectionParameters accumuloParams, ColumnMapper columnMapper,
       List<IteratorSetting> iterators, Collection<Range> ranges) throws AccumuloSecurityException,
-      AccumuloException, SerDeException {
+      AccumuloException, SerDeException, IOException {
 
     // Handle implementation of Instance and invoke appropriate InputFormat method
     if (instance instanceof MockInstance) {
       setMockInstance(conf, instance.getInstanceName());
     } else {
-      setZooKeeperInstance(conf, instance.getInstanceName(), instance.getZooKeepers());
+      setZooKeeperInstance(conf, instance.getInstanceName(), instance.getZooKeepers(),
+          accumuloParams.useSasl());
     }
 
     // Set the username/passwd for the Accumulo connection
-    setConnectorInfo(conf, accumuloParams.getAccumuloUserName(),
-        new PasswordToken(accumuloParams.getAccumuloPassword()));
+    if (accumuloParams.useSasl()) {
+      UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+
+      // If we have Kerberos credentials, we should obtain the delegation token
+      if (ugi.hasKerberosCredentials()) {
+        Connector conn = accumuloParams.getConnector();
+        AuthenticationToken token = helper.getDelegationToken(conn);
+
+        // Send the DelegationToken down to the Configuration for Accumulo to use
+        setConnectorInfo(conf, accumuloParams.getAccumuloUserName(), token);
+
+        // Convert the Accumulo token in a Hadoop token
+        Token<? extends TokenIdentifier> accumuloToken = helper.getHadoopToken(token);
+
+        log.info("Adding Hadoop Token for Accumulo to Job's Credentials");
+
+        // Add the Hadoop token to the JobConf
+        helper.mergeTokenIntoJobConf(conf, accumuloToken);
+
+        if (!ugi.addToken(accumuloToken)) {
+          throw new IOException("Failed to add Accumulo Token to UGI");
+        }
+      }
+
+      try {
+        helper.addTokenFromUserToJobConf(ugi, conf);
+      } catch (IOException e) {
+        throw new IOException("Current user did not contain necessary delegation Tokens " + ugi, e);
+      }
+    } else {
+      setConnectorInfo(conf, accumuloParams.getAccumuloUserName(),
+          new PasswordToken(accumuloParams.getAccumuloPassword()));
+    }
 
     // Read from the given Accumulo table
     setInputTableName(conf, accumuloParams.getAccumuloTableName());
@@ -312,11 +365,18 @@ public class HiveAccumuloTableInputFormat implements
   }
 
   @SuppressWarnings("deprecation")
-  protected void setZooKeeperInstance(JobConf conf, String instanceName, String zkHosts) {
+  protected void setZooKeeperInstance(JobConf conf, String instanceName, String zkHosts,
+      boolean isSasl) throws IOException {
     // To support builds against 1.5, we can't use the new 1.6 setZooKeeperInstance which
     // takes a ClientConfiguration class that only exists in 1.6
     try {
-      AccumuloInputFormat.setZooKeeperInstance(conf, instanceName, zkHosts);
+      if (isSasl) {
+        // Reflection to support Accumulo 1.5. Remove when Accumulo 1.5 support is dropped
+        // 1.6 works with the deprecated 1.5 method, but must use reflection for 1.7-only SASL support
+        helper.setZooKeeperInstance(conf, AccumuloInputFormat.class, zkHosts, instanceName, isSasl);
+      } else {
+        AccumuloInputFormat.setZooKeeperInstance(conf, instanceName, zkHosts);
+      }
     } catch (IllegalStateException ise) {
       // AccumuloInputFormat complains if you re-set an already set value. We just don't care.
       log.debug("Ignoring exception setting ZooKeeper instance of " + instanceName + " at "

@@ -213,12 +213,14 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
           if (returnVal != 0) {
             rj.killJob();
           }
-          HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
         ColumnTruncateMapper.jobClose(outputPath, success, job, console,
           work.getDynPartCtx(), null);
       } catch (Exception e) {
+	LOG.warn(e);
+      } finally {
+	HadoopJobExecHelper.runningJobs.remove(rj);
       }
     }
 

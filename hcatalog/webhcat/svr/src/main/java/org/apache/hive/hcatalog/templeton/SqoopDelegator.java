@@ -45,9 +45,10 @@ public class SqoopDelegator extends LauncherDelegator {
   }
 
   public EnqueueBean run(String user,
-               Map<String, Object> userArgs, String command, 
-               String optionsFile, String otherFiles, String statusdir, 
-               String callback, String completedUrl, boolean enablelog, String libdir)
+               Map<String, Object> userArgs, String command,
+               String optionsFile, String otherFiles, String statusdir,
+               String callback, String completedUrl, boolean enablelog,
+               Boolean enableJobReconnect, String libdir)
   throws NotAuthorizedException, BadParam, BusyException, QueueException,
   IOException, InterruptedException
   {
@@ -59,17 +60,19 @@ public class SqoopDelegator extends LauncherDelegator {
     }
     runAs = user;
     List<String> args = makeArgs(command, optionsFile, otherFiles, statusdir,
-                   completedUrl, enablelog, libdir);
+                   completedUrl, enablelog, enableJobReconnect, libdir);
 
     return enqueueController(user, userArgs, callback, args);
   }
   private List<String> makeArgs(String command, String optionsFile, String otherFiles,
-            String statusdir, String completedUrl, boolean enablelog, String libdir)
+            String statusdir, String completedUrl, boolean enablelog,
+            Boolean enableJobReconnect, String libdir)
     throws BadParam, IOException, InterruptedException
   {
     ArrayList<String> args = new ArrayList<String>();
     try {
-      args.addAll(makeBasicArgs(optionsFile, otherFiles, statusdir, completedUrl, enablelog, libdir));
+      args.addAll(makeBasicArgs(optionsFile, otherFiles, statusdir, completedUrl, enablelog,
+          enableJobReconnect, libdir));
       args.add("--");
       TempletonUtils.addCmdForWindows(args);
       args.add(appConf.sqoopPath());
@@ -112,7 +115,8 @@ public class SqoopDelegator extends LauncherDelegator {
   }
 
   private List<String> makeBasicArgs(String optionsFile, String otherFiles,
-            String statusdir, String completedUrl, boolean enablelog, String libdir)
+            String statusdir, String completedUrl, boolean enablelog,
+            Boolean enableJobReconnect, String libdir)
     throws URISyntaxException, FileNotFoundException, IOException,
                           InterruptedException
   {
@@ -152,7 +156,7 @@ public class SqoopDelegator extends LauncherDelegator {
       }
     }
     args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles,
-                enablelog, JobType.SQOOP));
+                enablelog, enableJobReconnect, JobType.SQOOP));
     if(TempletonUtils.isset(appConf.sqoopArchive())) {
       args.add("-archives");
       args.add(appConf.sqoopArchive());

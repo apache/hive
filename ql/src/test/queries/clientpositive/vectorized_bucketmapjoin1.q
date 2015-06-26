@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 create table vsmb_bucket_1(key int, value string) 
   CLUSTERED BY (key) 
   SORTED BY (key) INTO 1 BUCKETS 

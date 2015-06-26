@@ -18,19 +18,18 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-
 public class OrcFileStripeMergeRecordReader implements
     RecordReader<OrcFileKeyWrapper, OrcFileValueWrapper> {
-
   private final Reader reader;
   private final Path path;
   protected Iterator<StripeInformation> iter;
@@ -38,6 +37,7 @@ public class OrcFileStripeMergeRecordReader implements
   private int stripeIdx;
   private long start;
   private long end;
+  private boolean skipFile;
 
   public OrcFileStripeMergeRecordReader(Configuration conf, FileSplit split) throws IOException {
     path = split.getPath();
@@ -68,11 +68,23 @@ public class OrcFileStripeMergeRecordReader implements
 
   @Override
   public boolean next(OrcFileKeyWrapper key, OrcFileValueWrapper value) throws IOException {
+    if (skipFile) {
+      return false;
+    }
     return nextStripe(key, value);
   }
 
   protected boolean nextStripe(OrcFileKeyWrapper keyWrapper, OrcFileValueWrapper valueWrapper)
       throws IOException {
+    // missing stripe stats (old format). If numRows is 0 then its an empty file and no statistics
+    // is present. We have to differentiate no stats (empty file) vs missing stats (old format).
+    if ((stripeStatistics == null || stripeStatistics.isEmpty()) && reader.getNumberOfRows() > 0) {
+      keyWrapper.setInputPath(path);
+      keyWrapper.setIsIncompatFile(true);
+      skipFile = true;
+      return true;
+    }
+
     while (iter.hasNext()) {
       StripeInformation si = iter.next();
 
@@ -92,6 +104,7 @@ public class OrcFileStripeMergeRecordReader implements
         keyWrapper.setRowIndexStride(reader.getRowIndexStride());
         keyWrapper.setTypes(reader.getTypes());
       } else {
+        stripeIdx++;
         continue;
       }
       return true;

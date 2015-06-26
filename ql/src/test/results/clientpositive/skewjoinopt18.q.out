@@ -96,15 +96,15 @@ STAGE PLANS:
                 value expressions: key (type: int), val (type: string)
           TableScan
             alias: b
-            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: UDFToDouble(key) (type: double)
                 sort order: +
                 Map-reduce partition columns: UDFToDouble(key) (type: double)
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                 value expressions: key (type: string), val (type: string)
       Reduce Operator Tree:
         Join Operator

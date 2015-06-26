@@ -189,8 +189,10 @@ POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 alltypesorc
 cbo_t1
 cbo_t2
@@ -218,8 +220,10 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:alter1_db
 PREHOOK: query: SHOW TABLES alter1_db
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES alter1_db
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 PREHOOK: query: CREATE TABLE alter1_db.alter1(a INT, b INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: alter1_db@alter1

@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Mapping of operation to its required input and output privileges
  */
@@ -387,10 +389,16 @@ public class Operation2Privilege {
 (null, null));
     op2Priv.put(HiveOperationType.SHOW_ROLE_GRANT, PrivRequirement.newIOPrivRequirement
 (null, null));
-    op2Priv.put(HiveOperationType.SHOW_ROLE_PRINCIPALS, PrivRequirement.newIOPrivRequirement
-(null, null));
-
-
+    op2Priv.put(HiveOperationType.SHOW_ROLE_PRINCIPALS,
+        PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GET_CATALOGS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GET_SCHEMAS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GET_TABLES, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GET_FUNCTIONS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GET_TABLETYPES, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GET_TYPEINFO, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.GET_COLUMNS,
+        PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
 
   }
 
@@ -427,6 +435,7 @@ public class Operation2Privilege {
   public static RequiredPrivileges getRequiredPrivs(HiveOperationType hiveOpType,
       HivePrivilegeObject hObj, IOType ioType) {
     List<PrivRequirement> opPrivs = op2Priv.get(hiveOpType);
+    Preconditions.checkNotNull(opPrivs, "Privileges for " + hiveOpType + " are null");
     RequiredPrivileges reqPrivs = new RequiredPrivileges();
 
     // Find the PrivRequirements that match on IOType, ActionType, and HivePrivilegeObjectType add

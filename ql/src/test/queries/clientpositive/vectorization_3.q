@@ -1,4 +1,7 @@
 SET hive.vectorized.execution.enabled=true;
+
+-- SORT_QUERY_RESULTS
+
 SELECT STDDEV_SAMP(csmallint),
        (STDDEV_SAMP(csmallint) - 10.175),
        STDDEV_POP(ctinyint),

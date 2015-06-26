@@ -81,14 +81,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
+                        Statistics: Num rows: 6 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -97,26 +101,33 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           input vertices:
                             1 Map 5
+                          Statistics: Num rows: 6 Data size: 46 Basic stats: COMPLETE Column stats: NONE
                           HybridGraceHashJoin: true
                           Group By Operator
                             aggregations: count()
                             mode: hash
                             outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col0 (type: bigint)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: a
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
+                        Statistics: Num rows: 6 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -125,13 +136,16 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           input vertices:
                             1 Map 5
+                          Statistics: Num rows: 6 Data size: 46 Basic stats: COMPLETE Column stats: NONE
                           HybridGraceHashJoin: true
                           Group By Operator
                             aggregations: count()
                             mode: hash
                             outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col0 (type: bigint)
         Map 5 
             Map Operator Tree:
