@@ -207,11 +207,6 @@ public class OrcRecordUpdater implements RecordUpdater {
     return new OrcStruct.OrcStructInspector(fields);
   }
 
-  public static List<String> getAcidEventFields() {
-    return Lists.newArrayList("operation", "originalTransaction", "bucket", "rowId",
-        "currentTransaction", "row");
-  }
-
   OrcRecordUpdater(Path path,
                    AcidOutputFormat.Options options) throws IOException {
     this.options = options;
