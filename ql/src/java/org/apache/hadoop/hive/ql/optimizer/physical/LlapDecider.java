@@ -102,8 +102,8 @@ public class LlapDecider implements PhysicalPlanResolver {
 
   class LlapDecisionDispatcher implements Dispatcher {
 
-    private PhysicalContext pctx;
-    private HiveConf conf;
+    private final PhysicalContext pctx;
+    private final HiveConf conf;
 
     public LlapDecisionDispatcher(PhysicalContext pctx) {
       this.pctx = pctx;
@@ -291,6 +291,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("No scripts", ScriptOperator.getOperatorName() + "%"),
           new NodeProcessor() {
+          @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             return new Boolean(false);
@@ -299,6 +300,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       opRules.put(new RuleRegExp("No user code in fil",
               FilterOperator.getOperatorName() + "%"),
           new NodeProcessor() {
+          @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             ExprNodeDesc expr = ((FilterOperator)n).getConf().getPredicate();
@@ -308,6 +310,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       opRules.put(new RuleRegExp("No user code in gby",
               GroupByOperator.getOperatorName() + "%"),
           new NodeProcessor() {
+          @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             List<AggregationDesc> aggs = ((GroupByOperator)n).getConf().getAggregators();
@@ -317,6 +320,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       opRules.put(new RuleRegExp("No user code in select",
               SelectOperator.getOperatorName() + "%"),
           new NodeProcessor() {
+          @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             List<ExprNodeDesc> exprs = ((SelectOperator)n).getConf().getColList();

@@ -55,13 +55,13 @@ public class TestTezSessionPool {
   public void testGetNonDefaultSession() {
     poolManager = new TestTezSessionPoolManager();
     try {
-      TezSessionState sessionState = poolManager.getSession(null, conf, true);
-      TezSessionState sessionState1 = poolManager.getSession(sessionState, conf, true);
+      TezSessionState sessionState = poolManager.getSession(null, conf, true, false);
+      TezSessionState sessionState1 = poolManager.getSession(sessionState, conf, true, false);
       if (sessionState1 != sessionState) {
         fail();
       }
       conf.set("tez.queue.name", "nondefault");
-      TezSessionState sessionState2 = poolManager.getSession(sessionState, conf, true);
+      TezSessionState sessionState2 = poolManager.getSession(sessionState, conf, true, false);
       if (sessionState2 == sessionState) {
         fail();
       }
@@ -81,30 +81,30 @@ public class TestTezSessionPool {
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
       poolManager.startPool();
-      TezSessionState sessionState = poolManager.getSession(null, conf, true);
+      TezSessionState sessionState = poolManager.getSession(null, conf, true, false);
       if (sessionState.getQueueName().compareTo("a") != 0) {
         fail();
       }
-      poolManager.returnSession(sessionState);
+      poolManager.returnSession(sessionState, false);
 
-      sessionState = poolManager.getSession(null, conf, true);
+      sessionState = poolManager.getSession(null, conf, true, false);
       if (sessionState.getQueueName().compareTo("b") != 0) {
         fail();
       }
-      poolManager.returnSession(sessionState);
+      poolManager.returnSession(sessionState, false);
 
-      sessionState = poolManager.getSession(null, conf, true);
+      sessionState = poolManager.getSession(null, conf, true, false);
       if (sessionState.getQueueName().compareTo("c") != 0) {
         fail();
       }
-      poolManager.returnSession(sessionState);
+      poolManager.returnSession(sessionState, false);
 
-      sessionState = poolManager.getSession(null, conf, true);
+      sessionState = poolManager.getSession(null, conf, true, false);
       if (sessionState.getQueueName().compareTo("a") != 0) {
         fail();
       }
 
-      poolManager.returnSession(sessionState);
+      poolManager.returnSession(sessionState, false);
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -112,7 +112,43 @@ public class TestTezSessionPool {
     }
   }
 
+  @Test
+  public void testLlapSessionQueuing() {
+    try {
+      random = new Random(1000);
+      conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES, 2);
+      poolManager = new TestTezSessionPoolManager();
+      poolManager.setupPool(conf);
+      poolManager.startPool();
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail();
+    }
+
+    List<Thread> threadList = new ArrayList<Thread>();
+    for (int i = 0; i < 15; i++) {
+      Thread t = new Thread(new SessionThread(true));
+      threadList.add(t);
+      t.start();
+    }
+
+    for (Thread t : threadList) {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        fail();
+      }
+    }
+  }
+
   public class SessionThread implements Runnable {
+
+    private boolean llap = false;
+
+    public SessionThread(boolean llap) {
+      this.llap = llap;
+    }
 
     @Override
     public void run() {
@@ -124,9 +160,9 @@ public class TestTezSessionPool {
           tmpConf.set("tez.queue.name", "");
         }
 
-        TezSessionState session = poolManager.getSession(null, tmpConf, true);
+        TezSessionState session = poolManager.getSession(null, tmpConf, true, llap);
         Thread.sleep((random.nextInt(9) % 10) * 1000);
-        poolManager.returnSession(session);
+        poolManager.returnSession(session, llap);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -150,7 +186,8 @@ public class TestTezSessionPool {
     }
     List<Thread> threadList = new ArrayList<Thread>();
     for (int i = 0; i < 15; i++) {
-      Thread t = new Thread(new SessionThread());
+      Thread t = new Thread(new SessionThread(false));
+      threadList.add(t);
       t.start();
     }
 
