@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -942,6 +941,9 @@ public final class ConstantPropagateProcFactory {
             }
           }
           colList.set(i, newCol);
+          if (newCol instanceof ExprNodeConstantDesc && op.getSchema() != null) {
+            constants.put(op.getSchema().getSignature().get(i), newCol);
+          }
           if (columnExprMap != null) {
             columnExprMap.put(columnNames.get(i), newCol);
           }
