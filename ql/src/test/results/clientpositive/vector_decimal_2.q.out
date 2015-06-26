@@ -914,23 +914,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 3.14 (type: decimal(4,2))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 3.14 (type: decimal(3,2))
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(4,2))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(4,2))
+          expressions: 3.14 (type: decimal(4,2))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -969,23 +966,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 3.14 (type: decimal(4,2))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 3.14 (type: decimal(3,2))
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(4,2))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(4,2))
+          expressions: 3.14 (type: decimal(4,2))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1024,23 +1018,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 1355944339.1234567 (type: decimal(30,8))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 1355944339.1234567 (type: decimal(17,7))
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(30,8))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(30,8))
+          expressions: 1355944339.1234567 (type: decimal(30,8))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1079,23 +1070,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 1 (type: decimal(10,0))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 1 (type: int)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(10,0))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(10,0))
+          expressions: 1 (type: decimal(10,0))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1125,23 +1113,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 1 (type: decimal(10,0))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 1 (type: int)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(10,0))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(10,0))
+          expressions: 1 (type: decimal(10,0))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1180,23 +1165,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 3 (type: decimal(10,0))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 3 (type: int)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(10,0))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(10,0))
+          expressions: 3 (type: decimal(10,0))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1235,23 +1217,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 3 (type: decimal(10,0))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 3 (type: int)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(10,0))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(10,0))
+          expressions: 3 (type: decimal(10,0))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1290,23 +1269,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 3 (type: decimal(10,0))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 3 (type: int)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(10,0))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(10,0))
+          expressions: 3 (type: decimal(10,0))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1345,23 +1321,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 3 (type: decimal(10,0))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 3 (type: int)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(10,0))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(10,0))
+          expressions: 3 (type: decimal(10,0))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1400,23 +1373,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 1 (type: decimal(20,19))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 1 (type: int)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(20,19))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(20,19))
+          expressions: 1 (type: decimal(20,19))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1455,23 +1425,20 @@ STAGE PLANS:
             alias: decimal_2
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 0.99999999999999999999 (type: decimal(20,20))
-              outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: 0.99999999999999999999 (type: decimal(20,20))
                 sort order: +
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: _col0 (type: decimal(20,20))
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: decimal(20,20))
+          expressions: 0.99999999999999999999 (type: decimal(20,20))
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
