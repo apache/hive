@@ -1,6 +1,8 @@
 set hive.map.aggr=false;
 set hive.groupby.skewindata=true;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
 
 EXPLAIN
