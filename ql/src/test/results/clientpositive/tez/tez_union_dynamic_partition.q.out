@@ -67,7 +67,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: 1 (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), '2014' (type: string)
                       outputColumnNames: _col0, _col1
@@ -88,7 +88,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: 2 (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), '2014' (type: string)
                       outputColumnNames: _col0, _col1
