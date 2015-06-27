@@ -28,4 +28,6 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public OpTraits getTraits();
   public void setTraits(OpTraits opTraits);
   public Map<String, String> getOpProps();
+  public long getMemoryNeeded();
+  public void setMemoryNeeded(long memoryNeeded);
 }
