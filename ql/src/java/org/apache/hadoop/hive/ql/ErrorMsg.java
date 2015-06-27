@@ -18,17 +18,17 @@
 
 package org.apache.hadoop.hive.ql;
 
-import org.antlr.runtime.tree.Tree;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
-
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 
 /**
  * List of all error messages.
@@ -493,7 +493,8 @@ public enum ErrorMsg {
   ORC_CORRUPTED_READ(30018, "Corruption in ORC data encountered. To skip reading corrupted "
       + "data, set " + HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA + " to true"),
 
-
+  INVALID_FILE_FORMAT_IN_LOAD(30019, "The file that you are trying to load does not match the" +
+      " file format of the destination table.")
 
   ;
 
