@@ -30,6 +30,7 @@ public class AbstractOperatorDesc implements OperatorDesc {
   protected Statistics statistics;
   protected transient OpTraits opTraits;
   protected transient Map<String, String> opProps;
+  protected long memNeeded = 0;
 
   static {
     PTFUtils.makeTransient(AbstractOperatorDesc.class, "opProps");
@@ -59,19 +60,32 @@ public class AbstractOperatorDesc implements OperatorDesc {
     this.vectorMode = vm;
   }
 
+  @Override
   public OpTraits getTraits() {
     return opTraits;
   }
 
+  @Override
   public void setTraits(OpTraits opTraits) {
     this.opTraits = opTraits;
   }
 
+  @Override
   public Map<String, String> getOpProps() {
     return opProps;
   }
 
   public void setOpProps(Map<String, String> props) {
     this.opProps = props;
+  }
+
+  @Override
+  public long getMemoryNeeded() {
+    return memNeeded;
+  }
+
+  @Override
+  public void setMemoryNeeded(long memNeeded) {
+    this.memNeeded = memNeeded;
   }
 }
