@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -62,9 +63,8 @@ public class MetaStoreSchemaInfo {
     List<String> upgradeOrderList = new ArrayList<String>();
     String upgradeListFile = getMetaStoreScriptDir() + File.separator +
         VERSION_UPGRADE_LIST + "." + dbType;
-    try {
-      BufferedReader bfReader =
-        new BufferedReader(new FileReader(upgradeListFile));
+    try (FileReader fr = new FileReader(upgradeListFile);
+        BufferedReader bfReader = new BufferedReader(fr)) {
       String currSchemaVersion;
       while ((currSchemaVersion = bfReader.readLine()) != null) {
         upgradeOrderList.add(currSchemaVersion.trim());
