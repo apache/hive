@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -178,6 +177,18 @@ public class TestHBaseMetastoreSql extends HBaseIntegrationTests {
     driver.run("revoke select on granttbl from " + System.getProperty("user.name"));
     Assert.assertEquals(0, rsp.getResponseCode());
     driver.run("revoke grant option for select on granttbl from role3");
+    Assert.assertEquals(0, rsp.getResponseCode());
+  }
+
+  @Test
+  public void describeNonpartitionedTable() throws Exception {
+    CommandProcessorResponse rsp = driver.run("create table alter1(a int, b int)");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("describe extended alter1");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("alter table alter1 set serdeproperties('s1'='9')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("describe extended alter1");
     Assert.assertEquals(0, rsp.getResponseCode());
   }
 
