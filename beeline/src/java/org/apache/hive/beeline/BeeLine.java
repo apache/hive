@@ -88,6 +88,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
 
@@ -834,7 +835,7 @@ public class BeeLine implements Closeable {
       }
 
       if (getOpts().getScriptFile() != null) {
-        return executeFile(getOpts().getScriptFile(), false);
+        return executeFile(getOpts().getScriptFile());
       }
       try {
         info(getApplicationTitle());
@@ -853,7 +854,7 @@ public class BeeLine implements Closeable {
     if (initFile != null) {
       info("Running init script " + initFile);
       try {
-        return executeFile(initFile, false);
+        return executeFile(initFile);
       } finally {
         exit = false;
       }
@@ -888,7 +889,7 @@ public class BeeLine implements Closeable {
     return ERRNO_OK;
   }
 
-  private int executeFile(String fileName, boolean isSourceCMD) {
+  private int executeFile(String fileName) {
     FileInputStream initStream = null;
     try {
       initStream = new FileInputStream(fileName);
@@ -898,31 +899,8 @@ public class BeeLine implements Closeable {
       return ERRNO_OTHER;
     } finally {
       IOUtils.closeStream(initStream);
-      if(!isSourceCMD) {
-        consoleReader = null;
-        output("");   // dummy new line
-      }
-    }
-  }
-
-  private boolean isSourceCMD(String cmd) {
-    if (cmd == null || cmd.isEmpty())
-      return false;
-    String[] tokens = tokenizeCmd(cmd);
-    return tokens[0].equalsIgnoreCase("!source");
-  }
-
-  private boolean sourceFile(String cmd) {
-    String[] tokens = tokenizeCmd(cmd);
-    String cmd_1 = getFirstCmd(cmd, tokens[0].length());
-    File sourceFile = new File(cmd_1);
-    if (!sourceFile.isFile()) {
-      return false;
-    } else {
-      boolean ret = (executeFile(cmd_1, true) == ERRNO_OK);
-      // For source command, we should not exit even when meeting some empty line.
-      setExit(false);
-      return ret;
+      consoleReader = null;
+      output("");   // dummy new line
     }
   }
 
@@ -937,10 +915,6 @@ public class BeeLine implements Closeable {
 
         // trim line
         line = (line == null) ? null : line.trim();
-        if (!isBeeLine) {
-          line = cliToBeelineCmd(line);
-        }
-
         if (!dispatch(line) && exitOnError) {
           return ERRNO_OTHER;
         }
@@ -1047,30 +1021,6 @@ public class BeeLine implements Closeable {
   }
 
   /**
-   * Extract and clean up the first command in the input.
-   */
-  private String getFirstCmd(String cmd, int length) {
-    return cmd.substring(length).trim();
-  }
-
-  private String cliToBeelineCmd(String cmd) {
-    if (cmd == null)
-      return null;
-    String[] tokens = tokenizeCmd(cmd);
-    if (cmd.equalsIgnoreCase("quit") || cmd.equalsIgnoreCase("exit")) {
-      return null;
-    } else if (tokens[0].equalsIgnoreCase("source")) {
-      return COMMAND_PREFIX + cmd;
-    } else if (cmd.startsWith("!")) {
-      String shell_cmd = cmd.substring(1);
-      return "!sh " + shell_cmd;
-    } else { // local mode
-      // command like dfs
-      return cmd;
-    }
-  }
-
-  /**
    * Dispatch the specified line to the appropriate {@link CommandHandler}.
    *
    * @param line
@@ -1090,10 +1040,6 @@ public class BeeLine implements Closeable {
 
     if (isComment(line)) {
       return true;
-    }
-
-    if(isSourceCMD(line)){
-      return sourceFile(line);
     }
 
     line = line.trim();
@@ -2084,5 +2030,13 @@ public class BeeLine implements Closeable {
 
   protected Reflector getReflector() {
     return reflector;
+  }
+
+  public boolean isBeeLine() {
+    return isBeeLine;
+  }
+
+  public void setBeeLine(boolean isBeeLine) {
+    this.isBeeLine = isBeeLine;
   }
 }

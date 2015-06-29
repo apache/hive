@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,6 +42,10 @@ public class TestHiveCli {
 
   private final static String SOURCE_CONTEXT =
       "create table if not exists test.testSrcTbl(a string, b string);";
+  private final static String SOURCE_CONTEXT2 =
+      "create table if not exists test.testSrcTbl2(a string);";
+  private final static String SOURCE_CONTEXT3 =
+      "create table if not exists test.testSrcTbl3(a string);";
   final static String CMD =
       "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b "
           + "string);\n";
@@ -60,7 +64,7 @@ public class TestHiveCli {
         inputStream = IOUtils.toInputStream(input);
       }
       ret = cli.runWithArgs(args, inputStream);
-    } catch (IOException e) {
+    } catch (Throwable e) {
       LOG.error("Failed to execute command due to the error: " + e);
     } finally {
       if (retCode != ret) {
@@ -77,46 +81,79 @@ public class TestHiveCli {
     Assert.assertTrue(output.contains(keywords));
   }
 
-  @Test public void testInValidCmd() {
-    verifyCMD("!lss\n", "Failed to execute lss", errS, null, ERRNO_OK);
+  @Test
+  public void testInValidCmd() {
+    verifyCMD("!lss\n", "Unknown command: lss", errS, null, ERRNO_OK);
   }
 
-  @Test public void testHelp() {
+  @Test
+  public void testHelp() {
     verifyCMD(null, "usage: hive", os, new String[] { "-H" }, ERRNO_ARGS);
   }
 
-  @Test public void testInvalidDatabaseOptions() {
-    verifyCMD("\nshow tables\nquit\n", "Database does not exist: invalidDB", errS,
+  @Test
+  public void testInvalidDatabaseOptions() {
+    verifyCMD("\nshow tables;\nquit;\n", "Database does not exist: invalidDB", errS,
         new String[] { "--database", "invalidDB" }, ERRNO_OK);
   }
 
-  @Test public void testDatabaseOptions() {
+  @Test
+  public void testDatabaseOptions() {
     verifyCMD("\nshow tables;\nquit;", "testTbl", os, new String[] { "--database", "test" },
         ERRNO_OK);
   }
 
-  @Test public void testSourceCmd() {
+  @Test
+  public void testSourceCmd() {
     File f = generateTmpFile(SOURCE_CONTEXT);
-    verifyCMD("source " + f.getPath() + "\n" + "desc testSrcTbl\n" + "quit\n", "col_name", os,
+    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl;\nquit;\n", "col_name", os,
         new String[] { "--database", "test" }, ERRNO_OK);
+    f.delete();
   }
 
-  @Test public void testSqlFromCmd() {
+  @Test
+  public void testSourceCmd2() {
+    File f = generateTmpFile(SOURCE_CONTEXT3);
+    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl3;\nquit;\n", "col_name", os,
+        new String[] { "--database", "test" }, ERRNO_OK);
+    f.delete();
+  }
+
+  @Test
+  public void testSqlFromCmd() {
     verifyCMD(null, "", os, new String[] { "-e", "show databases;" }, ERRNO_OK);
   }
 
-  @Test public void testSqlFromCmdWithDBName() {
+  @Test
+  public void testSqlFromCmdWithDBName() {
     verifyCMD(null, "testTbl", os, new String[] { "-e", "show tables;", "--database", "test" },
         ERRNO_OK);
   }
 
-  @Test public void testInvalidOptions() {
+  @Test
+  public void testInvalidOptions() {
     verifyCMD(null, "The '-e' and '-f' options cannot be specified simultaneously", errS,
         new String[] { "-e", "show tables;", "-f", "path/to/file" }, ERRNO_ARGS);
   }
 
-  @Test public void testInvalidOptions2() {
+  @Test
+  public void testInvalidOptions2() {
     verifyCMD(null, "Unrecognized option: -k", errS, new String[] { "-k" }, ERRNO_ARGS);
+  }
+
+  @Test
+  public void testVariables() {
+    verifyCMD("set system:xxx=5;\nset system:yyy=${system:xxx};\nset system:yyy;", "", os, null,
+        ERRNO_OK);
+  }
+
+  @Test
+  public void testVariablesForSource() {
+    File f = generateTmpFile(SOURCE_CONTEXT2);
+    verifyCMD(
+        "set hiveconf:zzz=" + f.getAbsolutePath() + ";\nsource ${hiveconf:zzz};\ndesc testSrcTbl2;",
+        "col_name", os, new String[] { "--database", "test" }, ERRNO_OK);
+    f.delete();
   }
 
   private void redirectOutputStream() {
@@ -152,13 +189,15 @@ public class TestHiveCli {
     return file;
   }
 
-  @Before public void setup() {
+  @Before
+  public void setup() {
     cli = new HiveCli();
     redirectOutputStream();
     initFromFile();
   }
 
-  @After public void tearDown() {
+  @After
+  public void tearDown() {
     tmp.delete();
   }
 }

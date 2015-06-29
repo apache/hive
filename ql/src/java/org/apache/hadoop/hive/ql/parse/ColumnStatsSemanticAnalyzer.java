@@ -28,6 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -35,7 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-
+import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * ColumnStatsSemanticAnalyzer.
  * Handles semantic analysis and rewrite for gathering column statistics both at the level of a
@@ -325,7 +327,12 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     rewrittenQuery = rewrittenQueryBuilder.toString();
-    rewrittenQuery = new VariableSubstitution().substitute(conf, rewrittenQuery);
+    rewrittenQuery = new VariableSubstitution(new HiveVariableSource() {
+      @Override
+      public Map<String, String> getHiveVariable() {
+        return SessionState.get().getHiveVariables();
+      }
+    }).substitute(conf, rewrittenQuery);
     return rewrittenQuery;
   }
 

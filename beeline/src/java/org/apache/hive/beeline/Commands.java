@@ -22,15 +22,22 @@
  */
 package org.apache.hive.beeline;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.SystemVariables;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.io.IOUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -41,9 +48,11 @@ import java.sql.Statement;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -176,9 +185,8 @@ public class Commands {
 
 
   public boolean exportedkeys(String line) throws Exception {
-    return metadata("getExportedKeys", new String[] {
-        beeLine.getConnection().getCatalog(), null,
-        arg1(line, "table name"),});
+    return metadata("getExportedKeys",
+        new String[] { beeLine.getConnection().getCatalog(), null, arg1(line, "table name"), });
   }
 
 
@@ -666,8 +674,301 @@ public class Commands {
     return execute(line, false, false);
   }
 
+  /**
+   * This method is used for retrieving the latest configuration from hive server2.
+   * It uses the set command processor.
+   *
+   * @return
+   */
+  private Map<String, String> getHiveVariables() {
+    Map<String, String> result = new HashMap<>();
+    BufferedRows rows = getConfInternal();
+    while (rows.hasNext()) {
+      Rows.Row row = (Rows.Row) rows.next();
+      if (!row.isMeta) {
+        result.put(row.values[0], row.values[1]);
+      }
+    }
+    return result;
+  }
+
+  private HiveConf getHiveConf() {
+    HiveConf conf = new HiveConf();
+    BufferedRows rows = getConfInternal();
+    while (rows.hasNext()) {
+      addConf((Rows.Row) rows.next(), conf);
+    }
+    return conf;
+  }
+
+  private BufferedRows getConfInternal() {
+    Statement stmnt = null;
+    BufferedRows rows = null;
+    try {
+      stmnt = beeLine.createStatement();
+      boolean hasResults = stmnt.execute("set");
+      if (hasResults) {
+        ResultSet rs = stmnt.getResultSet();
+        rows = new BufferedRows(beeLine, rs);
+      }
+    } catch (SQLException e) {
+      beeLine.error(e);
+      if (stmnt != null) {
+        try {
+          stmnt.close();
+        } catch (SQLException e1) {
+          beeLine.error(e1);
+        }
+      }
+    }
+    return rows;
+  }
+
+  private void addConf(Rows.Row r, HiveConf hiveConf) {
+    if (r.isMeta) {
+      return;
+    }
+    if (r.values == null || r.values[0] == null || r.values[0].isEmpty()) {
+      return;
+    }
+    String val = r.values[0];
+    if (r.values[0].startsWith(SystemVariables.SYSTEM_PREFIX) || r.values[0]
+        .startsWith(SystemVariables.ENV_PREFIX)) {
+      return;
+    } else {
+      String[] kv = val.split("=", 2);
+      hiveConf.set(kv[0], kv[1]);
+    }
+  }
+
+  /**
+   * Extract and clean up the first command in the input.
+   */
+  private String getFirstCmd(String cmd, int length) {
+    return cmd.substring(length).trim();
+  }
+
+  private String[] tokenizeCmd(String cmd) {
+    return cmd.split("\\s+");
+  }
+
+  private boolean isSourceCMD(String cmd) {
+    if (cmd == null || cmd.isEmpty())
+      return false;
+    String[] tokens = tokenizeCmd(cmd);
+    return tokens[0].equalsIgnoreCase("!source");
+  }
+
+  private boolean sourceFile(String cmd) {
+    String[] tokens = tokenizeCmd(cmd);
+    String cmd_1 = getFirstCmd(cmd, tokens[0].length());
+
+    cmd_1 = substituteVariables(getHiveConf(), cmd_1);
+    File sourceFile = new File(cmd_1);
+    if (!sourceFile.isFile()) {
+      return false;
+    } else {
+      boolean ret;
+      try {
+        ret = sourceFileInternal(sourceFile);
+      } catch (IOException e) {
+        beeLine.error(e);
+        return false;
+      }
+      return ret;
+    }
+  }
+
+  private boolean sourceFileInternal(File sourceFile) throws IOException {
+    BufferedReader reader = null;
+    try {
+      reader = new BufferedReader(new FileReader(sourceFile));
+      String extra = reader.readLine();
+      String lines = null;
+      while (extra != null) {
+        if (beeLine.isComment(extra)) {
+          continue;
+        }
+        if (lines == null) {
+          lines = extra;
+        } else {
+          lines += "\n" + extra;
+        }
+        extra = reader.readLine();
+      }
+      String[] cmds = lines.split(";");
+      for (String c : cmds) {
+        if (!executeInternal(c, false)) {
+          return false;
+        }
+      }
+    } finally {
+      if (reader != null) {
+        reader.close();
+      }
+    }
+    return true;
+  }
+
+  private String cliToBeelineCmd(String cmd) {
+    if (cmd == null)
+      return null;
+    String[] tokens = tokenizeCmd(cmd);
+    if (tokens[0].equalsIgnoreCase("source")) {
+      return BeeLine.COMMAND_PREFIX + cmd;
+    } else if (cmd.startsWith("!")) {
+      String shell_cmd = cmd.substring(1);
+      return "!sh " + shell_cmd;
+    } else { // local mode
+      // command like dfs
+      return cmd;
+    }
+  }
+
+  // Return false only occurred error when execution the sql and the sql should follow the rules
+  // of beeline.
+  private boolean executeInternal(String sql, boolean call) {
+    if (sql == null || sql.length() == 0) {
+      return true;
+    }
+
+    if (beeLine.isComment(sql)) {
+      //skip this and rest cmds in the line
+      return true;
+    }
+
+    if (sql.startsWith(BeeLine.COMMAND_PREFIX)) {
+      sql = sql.substring(1);
+    }
+
+    String prefix = call ? "call" : "sql";
+
+    if (sql.startsWith(prefix)) {
+      sql = sql.substring(prefix.length());
+    }
+
+    // batch statements?
+    if (beeLine.getBatch() != null) {
+      beeLine.getBatch().add(sql);
+      return true;
+    }
+
+    try {
+      Statement stmnt = null;
+      boolean hasResults;
+      Thread logThread = null;
+
+      try {
+        long start = System.currentTimeMillis();
+
+        if (call) {
+          stmnt = beeLine.getDatabaseConnection().getConnection().prepareCall(sql);
+          hasResults = ((CallableStatement) stmnt).execute();
+        } else {
+          stmnt = beeLine.createStatement();
+          if (beeLine.getOpts().isSilent()) {
+            hasResults = stmnt.execute(sql);
+          } else {
+            logThread = new Thread(createLogRunnable(stmnt));
+            logThread.setDaemon(true);
+            logThread.start();
+            hasResults = stmnt.execute(sql);
+            logThread.interrupt();
+            logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+          }
+        }
+
+        beeLine.showWarnings();
+
+        if (hasResults) {
+          do {
+            ResultSet rs = stmnt.getResultSet();
+            try {
+              int count = beeLine.print(rs);
+              long end = System.currentTimeMillis();
+
+              beeLine.info(
+                  beeLine.loc("rows-selected", count) + " " + beeLine.locElapsedTime(end - start));
+            } finally {
+              if (logThread != null) {
+                logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+                showRemainingLogsIfAny(stmnt);
+                logThread = null;
+              }
+              rs.close();
+            }
+          } while (BeeLine.getMoreResults(stmnt));
+        } else {
+          int count = stmnt.getUpdateCount();
+          long end = System.currentTimeMillis();
+          beeLine.info(
+              beeLine.loc("rows-affected", count) + " " + beeLine.locElapsedTime(end - start));
+        }
+      } finally {
+        if (logThread != null) {
+          if (!logThread.isInterrupted()) {
+            logThread.interrupt();
+          }
+          logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
+          showRemainingLogsIfAny(stmnt);
+        }
+        if (stmnt != null) {
+          stmnt.close();
+        }
+      }
+    } catch (Exception e) {
+      return beeLine.error(e);
+    }
+    beeLine.showWarnings();
+    return true;
+  }
+
+  public String handleMultiLineCmd(String line) throws IOException {
+    //When using -e, console reader is not initialized and command is a single line
+    while (beeLine.getConsoleReader() != null && !(line.trim().endsWith(";")) && beeLine.getOpts()
+        .isAllowMultiLineCommand()) {
+
+      if (!beeLine.getOpts().isSilent()) {
+        StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
+        for (int i = 0; i < prompt.length() - 1; i++) {
+          if (prompt.charAt(i) != '>') {
+            prompt.setCharAt(i, i % 2 == 0 ? '.' : ' ');
+          }
+        }
+      }
+
+      String extra;
+      if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
+        extra = beeLine.getConsoleReader().readLine(null, jline.console.ConsoleReader.NULL_MASK);
+      } else {
+        extra = beeLine.getConsoleReader().readLine(beeLine.getPrompt());
+      }
+
+      if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
+        break;
+      }
+      if (!beeLine.isComment(extra)) {
+        line += "\n" + extra;
+      }
+    }
+    return line;
+  }
+
   public boolean sql(String line, boolean entireLineAsCommand) {
     return execute(line, false, entireLineAsCommand);
+  }
+
+  private String substituteVariables(HiveConf conf, String line) {
+    if (!beeLine.isBeeLine()) {
+      // Substitution is only supported in non-beeline mode.
+      return new VariableSubstitution(new HiveVariableSource() {
+        @Override
+        public Map<String, String> getHiveVariable() {
+          return getHiveVariables();
+        }
+      }).substitute(conf, line);
+    }
+    return line;
   }
 
   public boolean sh(String line) {
@@ -680,9 +981,7 @@ public class Commands {
     }
 
     line = line.substring("sh".length()).trim();
-
-    // Support variable substitution. HIVE-6791.
-    // line = new VariableSubstitution().substitute(new HiveConf(BeeLine.class), line.trim());
+    line = substituteVariables(getHiveConf(), line.trim());
 
     try {
       ShellCmdExecutor executor = new ShellCmdExecutor(line, beeLine.getOutputStream(),
@@ -695,7 +994,6 @@ public class Commands {
       return true;
     } catch (Exception e) {
       beeLine.error("Exception raised from Shell command " + e);
-      beeLine.error(e);
       return false;
     }
   }
@@ -717,33 +1015,7 @@ public class Commands {
 
     // use multiple lines for statements not terminated by ";"
     try {
-      //When using -e, console reader is not initialized and command is a single line
-      while (beeLine.getConsoleReader() != null && !(line.trim().endsWith(";"))
-        && beeLine.getOpts().isAllowMultiLineCommand()) {
-
-        if (!beeLine.getOpts().isSilent()) {
-          StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
-          for (int i = 0; i < prompt.length() - 1; i++) {
-            if (prompt.charAt(i) != '>') {
-              prompt.setCharAt(i, i % 2 == 0 ? '.' : ' ');
-            }
-          }
-        }
-
-        String extra = null;
-        if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
-          extra = beeLine.getConsoleReader().readLine(null, jline.console.ConsoleReader.NULL_MASK);
-        } else {
-          extra = beeLine.getConsoleReader().readLine(beeLine.getPrompt());
-        }
-
-        if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
-          break;
-        }
-        if (!beeLine.isComment(extra)) {
-          line += "\n" + extra;
-        }
-      }
+      line = handleMultiLineCmd(line);
     } catch (Exception e) {
       beeLine.handleException(e);
     }
@@ -772,93 +1044,23 @@ public class Commands {
     for (int i = 0; i < cmdList.size(); i++) {
       String sql = cmdList.get(i).trim();
       if (sql.length() != 0) {
-        if (beeLine.isComment(sql)) {
-          //skip this and rest cmds in the line
-          break;
-        }
-        if (sql.startsWith(BeeLine.COMMAND_PREFIX)) {
-          sql = sql.substring(1);
-        }
-
-        String prefix = call ? "call" : "sql";
-
-        if (sql.startsWith(prefix)) {
-          sql = sql.substring(prefix.length());
+        if (!beeLine.isBeeLine()) {
+          sql = cliToBeelineCmd(sql);
+          if (sql.equalsIgnoreCase("quit") || sql.equalsIgnoreCase("exit")) {
+            beeLine.setExit(true);
+            return true;
+          }
         }
 
-        // batch statements?
-        if (beeLine.getBatch() != null) {
-          beeLine.getBatch().add(sql);
+        // is source CMD
+        if (isSourceCMD(sql)) {
+          sourceFile(sql);
           continue;
         }
 
-        try {
-          Statement stmnt = null;
-          boolean hasResults;
-          Thread logThread = null;
-
-          try {
-            long start = System.currentTimeMillis();
-
-            if (call) {
-              stmnt = beeLine.getDatabaseConnection().getConnection().prepareCall(sql);
-              hasResults = ((CallableStatement) stmnt).execute();
-            } else {
-              stmnt = beeLine.createStatement();
-              if (beeLine.getOpts().isSilent()) {
-                hasResults = stmnt.execute(sql);
-              } else {
-                logThread = new Thread(createLogRunnable(stmnt));
-                logThread.setDaemon(true);
-                logThread.start();
-                hasResults = stmnt.execute(sql);
-                logThread.interrupt();
-                logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-              }
-            }
-
-            beeLine.showWarnings();
-
-            if (hasResults) {
-              do {
-                ResultSet rs = stmnt.getResultSet();
-                try {
-                  int count = beeLine.print(rs);
-                  long end = System.currentTimeMillis();
-
-                  beeLine.info(beeLine.loc("rows-selected", count) + " "
-                      + beeLine.locElapsedTime(end - start));
-                } finally {
-                  if (logThread != null) {
-                    logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-                    showRemainingLogsIfAny(stmnt);
-                    logThread = null;
-                  }
-                  rs.close();
-                }
-              } while (BeeLine.getMoreResults(stmnt));
-            } else {
-              int count = stmnt.getUpdateCount();
-              long end = System.currentTimeMillis();
-              beeLine.info(beeLine.loc("rows-affected", count)
-                  + " " + beeLine.locElapsedTime(end - start));
-            }
-          } finally {
-            if (logThread != null) {
-              if (!logThread.isInterrupted()) {
-                logThread.interrupt();
-              }
-              logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-              showRemainingLogsIfAny(stmnt);
-            }
-            if (stmnt != null) {
-              stmnt.close();
-            }
-          }
-        } catch (Exception e) {
-          return beeLine.error(e);
+        if (!executeInternal(sql, call)) {
+          return false;
         }
-        beeLine.showWarnings();
       }
     }
     return true;
