@@ -74,7 +74,7 @@ import java.util.TreeSet;
 class HBaseUtils {
 
   final static Charset ENCODING = StandardCharsets.UTF_8;
-  final static char KEY_SEPARATOR = ':';
+  final static char KEY_SEPARATOR = '\u0001';
   final static String KEY_SEPARATOR_STR = new String(new char[] {KEY_SEPARATOR});
 
   static final private Log LOG = LogFactory.getLog(HBaseUtils.class.getName());
@@ -809,7 +809,7 @@ class HBaseUtils {
 
   private static String[] deserializeKey(byte[] key) {
     String k = new String(key, ENCODING);
-    return k.split(":");
+    return k.split(KEY_SEPARATOR_STR);
   }
 
   /**
