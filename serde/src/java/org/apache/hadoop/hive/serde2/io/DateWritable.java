@@ -25,9 +25,6 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 
@@ -145,17 +142,6 @@ public class DateWritable implements WritableComparable<DateWritable> {
     long millisLocal = d.getTime();
     return millisToDays(millisLocal);
   }
-
-  public void setFromBytes(byte[] bytes, int offset, int length, VInt vInt) {
-    LazyBinaryUtils.readVInt(bytes, offset, vInt);
-    assert (length == vInt.length);
-    set(vInt.value);
-  }
-
-  public void writeToByteStream(RandomAccessOutput byteStream) {
-    LazyBinaryUtils.writeVInt(byteStream, getDays());
-  }
-
 
   @Override
   public void readFields(DataInput in) throws IOException {

@@ -250,9 +250,9 @@ public class LazyBinarySerDe extends AbstractSerDe {
    *
    * @param byteStream
    *          the byte stream storing the serialization data
-   * @param obj
+   * @param fieldData
    *          the struct object to serialize
-   * @param objInspector
+   * @param fieldOis
    *          the struct object inspector
    * @param warnedOnceNullMapKey a boolean indicating whether a warning
    *          has been issued once already when encountering null map keys
@@ -309,6 +309,11 @@ public class LazyBinarySerDe extends AbstractSerDe {
     }
 
     public boolean value;
+  }
+
+  private static void writeDateToByteStream(RandomAccessOutput byteStream,
+                                            DateWritable date) {
+    LazyBinaryUtils.writeVInt(byteStream, date.getDays());
   }
 
   /**
@@ -422,7 +427,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
 
       case DATE: {
         DateWritable d = ((DateObjectInspector) poi).getPrimitiveWritableObject(obj);
-        d.writeToByteStream(byteStream);
+        writeDateToByteStream(byteStream, d);
         return;
       }
       case TIMESTAMP: {
