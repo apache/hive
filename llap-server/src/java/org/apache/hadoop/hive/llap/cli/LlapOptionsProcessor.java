@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.llap.cli;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -34,16 +37,17 @@ import org.apache.hadoop.util.StringUtils;
 public class LlapOptionsProcessor {
 
   public class LlapOptions {
-    private int instances = 0;
-    private String directory = null;
-    private String name;
-    private int executors;
-    private long cache;
-    private long size;
-    private long xmx;
+    private final int instances;
+    private final String directory;
+    private final String name;
+    private final int executors;
+    private final long cache;
+    private final long size;
+    private final long xmx;
+    private final Properties conf;
 
     public LlapOptions(String name, int instances, String directory, int executors, long cache,
-        long size, long xmx) throws ParseException {
+        long size, long xmx, @Nonnull Properties hiveconf) throws ParseException {
       if (instances <= 0) {
         throw new ParseException("Invalid configuration: " + instances
             + " (should be greater than 0)");
@@ -55,6 +59,7 @@ public class LlapOptionsProcessor {
       this.cache = cache;
       this.size = size;
       this.xmx = xmx;
+      this.conf = hiveconf;
     }
 
     public String getName() {
@@ -83,6 +88,10 @@ public class LlapOptionsProcessor {
 
     public long getXmx() {
       return xmx;
+    }
+
+    public Properties getConfig() {
+      return conf;
     }
   }
 
@@ -125,6 +134,10 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName("xmx").withLongOpt("xmx")
         .withDescription("working memory size").create('w'));
 
+    // -hiveconf x=y
+    options.addOption(OptionBuilder.withValueSeparator().hasArgs(2).withArgName("property=value")
+        .withLongOpt("hiveconf").withDescription("Use value for given property").create());
+
     // [-H|--help]
     options.addOption(new Option("H", "help", false, "Print help information"));
   }
@@ -146,14 +159,23 @@ public class LlapOptionsProcessor {
 
     String name = commandLine.getOptionValue("name", null);
 
-    int executors = Integer.parseInt(commandLine.getOptionValue("executors", "-1"));
-    long cache = parseSuffixed(commandLine.getOptionValue("cache", "-1"));
-    long size = parseSuffixed(commandLine.getOptionValue("size", "-1"));
-    long xmx = parseSuffixed(commandLine.getOptionValue("xmx", "-1"));
+    final int executors = Integer.parseInt(commandLine.getOptionValue("executors", "-1"));
+    final long cache = parseSuffixed(commandLine.getOptionValue("cache", "-1"));
+    final long size = parseSuffixed(commandLine.getOptionValue("size", "-1"));
+    final long xmx = parseSuffixed(commandLine.getOptionValue("xmx", "-1"));
+
+    final Properties hiveconf;
+
+    if (commandLine.hasOption("hiveconf")) {
+      hiveconf = commandLine.getOptionProperties("hiveconf");
+    } else {
+      hiveconf = new Properties();
+    }
 
     // loglevel, chaosmonkey & args are parsed by the python processor
 
-    return new LlapOptions(name, instances, directory, executors, cache, size, xmx);
+    return new LlapOptions(name, instances, directory, executors, cache, size, xmx, hiveconf);
+
   }
 
   private void printUsage() {
