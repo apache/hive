@@ -42,9 +42,8 @@ if [ -z ${TEZ_VERSION} ]; then
 fi
 
 #Root of project source tree
-if [ -z ${PROJ_HOME} ]; then
-  export PROJ_HOME=/Users/${USER}/dev/hive
-fi
+current_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )"/../../../../.. && pwd )
+export PROJ_HOME=`dirname $current_dir`
 export HIVE_HOME=${PROJ_HOME}/packaging/target/apache-hive-${HIVE_VERSION}-bin/apache-hive-${HIVE_VERSION}-bin
 
 if [ -z ${HADOOP_HOME} ]; then
