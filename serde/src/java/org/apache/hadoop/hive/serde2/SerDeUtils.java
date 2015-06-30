@@ -555,6 +555,6 @@ public final class SerDeUtils {
   }
 
   public static Text transformTextFromUTF8(Text text, Charset targetCharset) {
-    return new Text(new String(text.getBytes()).getBytes(targetCharset));
+    return new Text(new String(text.getBytes(), 0, text.getLength()).getBytes(targetCharset));
   }
 }
