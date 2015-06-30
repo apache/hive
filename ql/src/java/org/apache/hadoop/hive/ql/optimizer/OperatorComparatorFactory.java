@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorLimitOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -88,6 +89,8 @@ public class OperatorComparatorFactory {
     comparatorMapping.put(SMBMapJoinOperator.class, new SMBMapJoinOperatorComparator());
     comparatorMapping.put(LimitOperator.class, new LimitOperatorComparator());
     comparatorMapping.put(SparkHashTableSinkOperator.class, new SparkHashTableSinkOperatorComparator());
+    comparatorMapping.put(VectorSparkHashTableSinkOperator.class,
+        new SparkHashTableSinkOperatorComparator());
     comparatorMapping.put(LateralViewJoinOperator.class, new LateralViewJoinOperatorComparator());
     comparatorMapping.put(VectorGroupByOperator.class, new GroupByOperatorComparator());
     comparatorMapping.put(CommonMergeJoinOperator.class, new MapJoinOperatorComparator());

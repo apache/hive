@@ -34,6 +34,7 @@ STAGE PLANS:
                         1 cint (type: int)
             Local Work:
               Map Reduce Local Work
+            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
