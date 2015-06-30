@@ -306,7 +306,7 @@ public class HiveServer2 extends CompositeService {
     HiveConf hiveConf = this.getHiveConf();
     super.stop();
     // Remove this server instance from ZooKeeper if dynamic service discovery is set
-    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY)) {
+    if (hiveConf != null && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY)) {
       try {
         removeServerInstanceFromZooKeeper();
       } catch (Exception e) {
@@ -315,7 +315,7 @@ public class HiveServer2 extends CompositeService {
     }
     // There should already be an instance of the session pool manager.
     // If not, ignoring is fine while stopping HiveServer2.
-    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+    if (hiveConf != null && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
       try {
         TezSessionPoolManager.getInstance().stop();
       } catch (Exception e) {
@@ -324,7 +324,7 @@ public class HiveServer2 extends CompositeService {
       }
     }
 
-    if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+    if (hiveConf != null && hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
       try {
         SparkSessionManagerImpl.getInstance().shutdown();
       } catch(Exception ex) {
