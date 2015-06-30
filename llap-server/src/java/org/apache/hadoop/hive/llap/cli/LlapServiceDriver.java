@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.llap.cli;
 
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -168,6 +170,10 @@ public class LlapServiceDriver {
           / (1024 * 1024));
     }
 
+    for (Entry<Object, Object> props : options.getConfig().entrySet()) {
+      conf.set((String) props.getKey(), (String) props.getValue());
+    }
+
     URL logger = conf.getResource("llap-daemon-log4j.properties");
 
     if (null == logger) {
@@ -212,6 +218,11 @@ public class LlapServiceDriver {
         FSDataOutputStream confStream = lfs.create(new Path(confPath, f));
 
         Configuration copy = resolve(conf, "llap-daemon-site.xml");
+
+        for (Entry<Object, Object> props : options.getConfig().entrySet()) {
+          // overrides
+          copy.set((String) props.getKey(), (String) props.getValue());
+        }
 
         copy.writeXml(confStream);
         confStream.close();
