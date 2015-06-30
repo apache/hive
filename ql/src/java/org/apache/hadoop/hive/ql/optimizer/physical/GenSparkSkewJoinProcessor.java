@@ -390,7 +390,7 @@ public class GenSparkSkewJoinProcessor {
         new ArrayList<Operator<? extends OperatorDesc>>();
     tableScanParents.add(tableScan);
     hashTableSinkOp.setParentOperators(tableScanParents);
-    hashTableSinkOp.setTag(tag);
+    hashTableSinkOp.getConf().setTag(tag);
   }
 
   private static void setMemUsage(MapJoinOperator mapJoinOp, Task<? extends Serializable> task,

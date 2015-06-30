@@ -41,6 +41,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -56,6 +57,7 @@ STAGE PLANS:
                         1 _col0 (type: tinyint)
             Local Work:
               Map Reduce Local Work
+            Execution mode: vectorized
 
   Stage: Stage-1
     Spark

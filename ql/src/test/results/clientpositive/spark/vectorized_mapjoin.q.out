@@ -38,6 +38,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
+            Execution mode: vectorized
 
   Stage: Stage-1
     Spark

@@ -26,10 +26,21 @@ package org.apache.hadoop.hive.ql.plan;
 public class SparkHashTableSinkDesc extends HashTableSinkDesc {
   private static final long serialVersionUID = 1L;
 
+  // The position of this table
+  private byte tag;
+
   public SparkHashTableSinkDesc() {
   }
 
   public SparkHashTableSinkDesc(MapJoinDesc clone) {
     super(clone);
+  }
+
+  public byte getTag() {
+    return tag;
+  }
+
+  public void setTag(byte tag) {
+    this.tag = tag;
   }
 }
