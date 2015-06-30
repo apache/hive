@@ -1,5 +1,8 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=minimal;
+
+-- SORT_QUERY_RESULTS
 
 -- If you look at ql/src/test/org/apache/hadoop/hive/ql/exec/vector/util/OrcFileGenerator.java
 -- which is the data generation class you'll see that those values are specified in the
@@ -303,19 +306,19 @@ EXPLAIN SELECT cint,
        ctimestamp1,
        csmallint,
        cbigint,
-       (-3728 * cbigint),
-       (-(cint)),
-       (-863.257 - cint),
-       (-(csmallint)),
-       (csmallint - (-(csmallint))),
-       ((csmallint - (-(csmallint))) + (-(csmallint))),
-       (cint / cint),
-       ((-863.257 - cint) - -26.28),
-       (-(cfloat)),
-       (cdouble * -89010),
-       (ctinyint / 988888),
-       (-(ctinyint)),
-       (79.553 / ctinyint)
+       (-3728 * cbigint) as c1,
+       (-(cint)) as c2,
+       (-863.257 - cint) as c3,
+       (-(csmallint)) as c4,
+       (csmallint - (-(csmallint))) as c5,
+       ((csmallint - (-(csmallint))) + (-(csmallint))) as c6,
+       (cint / cint) as c7,
+       ((-863.257 - cint) - -26.28) as c8,
+       (-(cfloat)) as c9,
+       (cdouble * -89010) as c10,
+       (ctinyint / 988888) as c11,
+       (-(ctinyint)) as c12,
+       (79.553 / ctinyint) as c13
 FROM   alltypesorc
 WHERE  (((cstring1 RLIKE 'a.*')
          AND (cstring2 LIKE '%ss%'))
@@ -326,7 +329,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
             AND (cfloat >= cint))
            OR ((cint < cbigint)
                AND (ctinyint > cbigint)))
-ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 50;
 
 SELECT cint,
@@ -339,19 +342,19 @@ SELECT cint,
        ctimestamp1,
        csmallint,
        cbigint,
-       (-3728 * cbigint),
-       (-(cint)),
-       (-863.257 - cint),
-       (-(csmallint)),
-       (csmallint - (-(csmallint))),
-       ((csmallint - (-(csmallint))) + (-(csmallint))),
-       (cint / cint),
-       ((-863.257 - cint) - -26.28),
-       (-(cfloat)),
-       (cdouble * -89010),
-       (ctinyint / 988888),
-       (-(ctinyint)),
-       (79.553 / ctinyint)
+       (-3728 * cbigint) as c1,
+       (-(cint)) as c2,
+       (-863.257 - cint) as c3,
+       (-(csmallint)) as c4,
+       (csmallint - (-(csmallint))) as c5,
+       ((csmallint - (-(csmallint))) + (-(csmallint))) as c6,
+       (cint / cint) as c7,
+       ((-863.257 - cint) - -26.28) as c8,
+       (-(cfloat)) as c9,
+       (cdouble * -89010) as c10,
+       (ctinyint / 988888) as c11,
+       (-(ctinyint)) as c12,
+       (79.553 / ctinyint) as c13
 FROM   alltypesorc
 WHERE  (((cstring1 RLIKE 'a.*')
          AND (cstring2 LIKE '%ss%'))
@@ -362,8 +365,9 @@ WHERE  (((cstring1 RLIKE 'a.*')
             AND (cfloat >= cint))
            OR ((cint < cbigint)
                AND (ctinyint > cbigint)))
-ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 50;
+
 
 -- TargetTypeClasses: Long, String, Double, Bool, Timestamp
 -- Functions: VarP, Var, StDev, StDevP, Max, Sum
@@ -380,21 +384,21 @@ EXPLAIN SELECT cint,
        csmallint,
        cstring2,
        cboolean2,
-       (cint / cbigint),
-       (cbigint % 79.553),
-       (-((cint / cbigint))),
-       (10.175 % cfloat),
-       (-(cfloat)),
-       (cfloat - (-(cfloat))),
-       ((cfloat - (-(cfloat))) % -6432),
-       (cdouble * csmallint),
-       (-(cdouble)),
-       (-(cbigint)),
-       (cfloat - (cint / cbigint)),
-       (-(csmallint)),
-       (3569 % cbigint),
-       (359 - cdouble),
-       (-(csmallint))
+       (cint / cbigint) as c1,
+       (cbigint % 79.553) as c2,
+       (-((cint / cbigint))) as c3,
+       (10.175 % cfloat) as c4,
+       (-(cfloat)) as c5,
+       (cfloat - (-(cfloat))) as c6,
+       ((cfloat - (-(cfloat))) % -6432) as c7,
+       (cdouble * csmallint) as c8,
+       (-(cdouble)) as c9,
+       (-(cbigint)) as c10,
+       (cfloat - (cint / cbigint)) as c11,
+       (-(csmallint)) as c12,
+       (3569 % cbigint) as c13,
+       (359 - cdouble) as c14,
+       (-(csmallint)) as c15
 FROM   alltypesorc
 WHERE  (((197 > ctinyint)
          AND (cint = cbigint))
@@ -402,7 +406,7 @@ WHERE  (((197 > ctinyint)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
                AND (cfloat <= ctinyint)))
-ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15
 LIMIT 25;
 
 SELECT cint,
@@ -415,21 +419,21 @@ SELECT cint,
        csmallint,
        cstring2,
        cboolean2,
-       (cint / cbigint),
-       (cbigint % 79.553),
-       (-((cint / cbigint))),
-       (10.175 % cfloat),
-       (-(cfloat)),
-       (cfloat - (-(cfloat))),
-       ((cfloat - (-(cfloat))) % -6432),
-       (cdouble * csmallint),
-       (-(cdouble)),
-       (-(cbigint)),
-       (cfloat - (cint / cbigint)),
-       (-(csmallint)),
-       (3569 % cbigint),
-       (359 - cdouble),
-       (-(csmallint))
+       (cint / cbigint) as c1,
+       (cbigint % 79.553) as c2,
+       (-((cint / cbigint))) as c3,
+       (10.175 % cfloat) as c4,
+       (-(cfloat)) as c5,
+       (cfloat - (-(cfloat))) as c6,
+       ((cfloat - (-(cfloat))) % -6432) as c7,
+       (cdouble * csmallint) as c8,
+       (-(cdouble)) as c9,
+       (-(cbigint)) as c10,
+       (cfloat - (cint / cbigint)) as c11,
+       (-(csmallint)) as c12,
+       (3569 % cbigint) as c13,
+       (359 - cdouble) as c14,
+       (-(csmallint)) as c15
 FROM   alltypesorc
 WHERE  (((197 > ctinyint)
          AND (cint = cbigint))
@@ -437,7 +441,7 @@ WHERE  (((197 > ctinyint)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
                AND (cfloat <= ctinyint)))
-ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15
 LIMIT 25;
 
 -- TargetTypeClasses: String, Bool, Double, Long, Timestamp
@@ -454,19 +458,19 @@ EXPLAIN SELECT   cint,
          cbigint,
          csmallint,
          cboolean1,
-         (cint + csmallint),
-         (cbigint - ctinyint),
-         (-(cbigint)),
-         (-(cfloat)),
-         ((cbigint - ctinyint) + cbigint),
-         (cdouble / cdouble),
-         (-(cdouble)),
-         ((cint + csmallint) * (-(cbigint))),
-         ((-(cdouble)) + cbigint),
-         (-1.389 / ctinyint),
-         (cbigint % cdouble),
-         (-(csmallint)),
-         (csmallint + (cint + csmallint))
+         (cint + csmallint) as c1,
+         (cbigint - ctinyint) as c2,
+         (-(cbigint)) as c3,
+         (-(cfloat)) as c4,
+         ((cbigint - ctinyint) + cbigint) as c5,
+         (cdouble / cdouble) as c6,
+         (-(cdouble)) as c7,
+         ((cint + csmallint) * (-(cbigint))) as c8,
+         ((-(cdouble)) + cbigint) as c9,
+         (-1.389 / ctinyint) as c10,
+         (cbigint % cdouble) as c11,
+         (-(csmallint)) as c12,
+         (csmallint + (cint + csmallint)) as c13
 FROM     alltypesorc
 WHERE    (((csmallint > -26.28)
            AND (cstring2 LIKE 'ss'))
@@ -476,7 +480,7 @@ WHERE    (((csmallint > -26.28)
           OR (ctinyint = -89010)
              OR ((cbigint <= cfloat)
                  AND (-26.28 <= csmallint)))
-ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble
+ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 75;
 
 SELECT   cint,
@@ -488,19 +492,19 @@ SELECT   cint,
          cbigint,
          csmallint,
          cboolean1,
-         (cint + csmallint),
-         (cbigint - ctinyint),
-         (-(cbigint)),
-         (-(cfloat)),
-         ((cbigint - ctinyint) + cbigint),
-         (cdouble / cdouble),
-         (-(cdouble)),
-         ((cint + csmallint) * (-(cbigint))),
-         ((-(cdouble)) + cbigint),
-         (-1.389 / ctinyint),
-         (cbigint % cdouble),
-         (-(csmallint)),
-         (csmallint + (cint + csmallint))
+         (cint + csmallint) as c1,
+         (cbigint - ctinyint) as c2,
+         (-(cbigint)) as c3,
+         (-(cfloat)) as c4,
+         ((cbigint - ctinyint) + cbigint) as c5,
+         (cdouble / cdouble) as c6,
+         (-(cdouble)) as c7,
+         ((cint + csmallint) * (-(cbigint))) as c8,
+         ((-(cdouble)) + cbigint) as c9,
+         (-1.389 / ctinyint) as c10,
+         (cbigint % cdouble) as c11,
+         (-(csmallint)) as c12,
+         (csmallint + (cint + csmallint)) as c13
 FROM     alltypesorc
 WHERE    (((csmallint > -26.28)
            AND (cstring2 LIKE 'ss'))
@@ -510,7 +514,7 @@ WHERE    (((csmallint > -26.28)
           OR (ctinyint = -89010)
              OR ((cbigint <= cfloat)
                  AND (-26.28 <= csmallint)))
-ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble
+ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 75;
 
 -- TargetTypeClasses: Long, String, Double, Timestamp
@@ -524,16 +528,16 @@ EXPLAIN SELECT   ctimestamp1,
          cfloat,
          cbigint,
          csmallint,
-         (cbigint / 3569),
-         (-257 - csmallint),
-         (-6432 * cfloat),
-         (-(cdouble)),
-         (cdouble * 10.175),
-         ((-6432 * cfloat) / cfloat),
-         (-(cfloat)),
-         (cint % csmallint),
-         (-(cdouble)),
-         (cdouble * (-(cdouble)))
+         (cbigint / 3569) as c1,
+         (-257 - csmallint) as c2,
+         (-6432 * cfloat) as c3,
+         (-(cdouble)) as c4,
+         (cdouble * 10.175) as c5,
+         ((-6432 * cfloat) / cfloat) as c6,
+         (-(cfloat)) as c7,
+         (cint % csmallint) as c8,
+         (-(cdouble)) as c9,
+         (cdouble * (-(cdouble))) as c10
 FROM     alltypesorc
 WHERE    (((-1.389 >= cint)
            AND ((csmallint < ctinyint)
@@ -542,7 +546,7 @@ WHERE    (((-1.389 >= cint)
               AND (cstring2 <= 'a'))
              OR ((cstring1 LIKE 'ss%')
                  AND (10.175 > cbigint)))
-ORDER BY csmallint, cstring2, cdouble
+ORDER BY csmallint, cstring2, cdouble, cfloat, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 45;
 
 SELECT   ctimestamp1,
@@ -551,16 +555,16 @@ SELECT   ctimestamp1,
          cfloat,
          cbigint,
          csmallint,
-         (cbigint / 3569),
-         (-257 - csmallint),
-         (-6432 * cfloat),
-         (-(cdouble)),
-         (cdouble * 10.175),
-         ((-6432 * cfloat) / cfloat),
-         (-(cfloat)),
-         (cint % csmallint),
-         (-(cdouble)),
-         (cdouble * (-(cdouble)))
+         (cbigint / 3569) as c1,
+         (-257 - csmallint) as c2,
+         (-6432 * cfloat) as c3,
+         (-(cdouble)) as c4,
+         (cdouble * 10.175) as c5,
+         ((-6432 * cfloat) / cfloat) as c6,
+         (-(cfloat)) as c7,
+         (cint % csmallint) as c8,
+         (-(cdouble)) as c9,
+         (cdouble * (-(cdouble))) as c10
 FROM     alltypesorc
 WHERE    (((-1.389 >= cint)
            AND ((csmallint < ctinyint)
@@ -569,7 +573,7 @@ WHERE    (((-1.389 >= cint)
               AND (cstring2 <= 'a'))
              OR ((cstring1 LIKE 'ss%')
                  AND (10.175 > cbigint)))
-ORDER BY csmallint, cstring2, cdouble
+ORDER BY csmallint, cstring2, cdouble, cfloat, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 45;
 
 -- TargetTypeClasses: Double, String, Long
@@ -578,43 +582,43 @@ LIMIT 45;
 -- FilterOps: GreaterThanOrEqual, Equal, LessThanOrEqual
 -- GroupBy: GroupBy
 EXPLAIN SELECT   csmallint,
-         (csmallint % -75),
-         STDDEV_SAMP(csmallint),
-         (-1.389 / csmallint),
-         SUM(cbigint),
-         ((csmallint % -75) / SUM(cbigint)),
-         (-((csmallint % -75))),
-         VAR_POP(ctinyint),
-         (-((-((csmallint % -75))))),
-         COUNT(*),
-         (COUNT(*) - -89010)
+         (csmallint % -75) as c1,
+         STDDEV_SAMP(csmallint) as c2,
+         (-1.389 / csmallint) as c3,
+         SUM(cbigint) as c4,
+         ((csmallint % -75) / SUM(cbigint)) as c5,
+         (-((csmallint % -75))) as c6,
+         VAR_POP(ctinyint) as c7,
+         (-((-((csmallint % -75))))) as c8,
+         COUNT(*) as c9,
+         (COUNT(*) - -89010) as c10
 FROM     alltypesorc
 WHERE    (((csmallint >= -257))
           AND ((-6432 = csmallint)
                OR ((cint >= cdouble)
                    AND (ctinyint <= cint))))
 GROUP BY csmallint
-ORDER BY csmallint
+ORDER BY csmallint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 20;
 
 SELECT   csmallint,
-         (csmallint % -75),
-         STDDEV_SAMP(csmallint),
-         (-1.389 / csmallint),
-         SUM(cbigint),
-         ((csmallint % -75) / SUM(cbigint)),
-         (-((csmallint % -75))),
-         VAR_POP(ctinyint),
-         (-((-((csmallint % -75))))),
-         COUNT(*),
-         (COUNT(*) - -89010)
+         (csmallint % -75) as c1,
+         STDDEV_SAMP(csmallint) as c2,
+         (-1.389 / csmallint) as c3,
+         SUM(cbigint) as c4,
+         ((csmallint % -75) / SUM(cbigint)) as c5,
+         (-((csmallint % -75))) as c6,
+         VAR_POP(ctinyint) as c7,
+         (-((-((csmallint % -75))))) as c8,
+         COUNT(*) as c9,
+         (COUNT(*) - -89010) as c10
 FROM     alltypesorc
 WHERE    (((csmallint >= -257))
           AND ((-6432 = csmallint)
                OR ((cint >= cdouble)
                    AND (ctinyint <= cint))))
 GROUP BY csmallint
-ORDER BY csmallint
+ORDER BY csmallint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 20;
 
 -- TargetTypeClasses: Long, Double, Timestamp
@@ -682,43 +686,43 @@ ORDER BY cdouble;
 -- GroupBy: GroupBy
 EXPLAIN SELECT   ctimestamp1,
          cstring1,
-         STDDEV_POP(cint),
-         (STDDEV_POP(cint) * 10.175),
-         (-(STDDEV_POP(cint))),
-         AVG(csmallint),
-         (-(STDDEV_POP(cint))),
-         (-26.28 - STDDEV_POP(cint)),
-         COUNT(*),
-         (-(COUNT(*))),
-         ((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))),
-         MIN(ctinyint),
-         (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*)))),
-         (-((STDDEV_POP(cint) * 10.175))),
-         VAR_SAMP(csmallint),
-         (VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))),
-         (-((-(STDDEV_POP(cint))))),
-         ((-(COUNT(*))) / STDDEV_POP(cint)),
-         VAR_POP(cfloat),
-         (10.175 / AVG(csmallint)),
-         AVG(cint),
-         VAR_SAMP(cfloat),
-         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) - (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))),
-         (-((-((STDDEV_POP(cint) * 10.175))))),
-         AVG(cfloat),
-         (((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) - (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) * 10.175),
-         (10.175 % (10.175 / AVG(csmallint))),
-         (-(MIN(ctinyint))),
-         MIN(cdouble),
-         VAR_POP(csmallint),
-         (-(((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))))),
-         ((-(STDDEV_POP(cint))) % AVG(cfloat)),
-         (-26.28 / (-(MIN(ctinyint)))),
-         STDDEV_POP(ctinyint),
-         SUM(cint),
-         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) / VAR_POP(cfloat)),
-         (-((-(COUNT(*))))),
-         COUNT(*),
-         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) % -26.28)
+         STDDEV_POP(cint) as c1,
+         (STDDEV_POP(cint) * 10.175) as c2,
+         (-(STDDEV_POP(cint))) as c3,
+         AVG(csmallint) as c4,
+         (-(STDDEV_POP(cint))) as c5,
+         (-26.28 - STDDEV_POP(cint)) as c6,
+         COUNT(*) as c7,
+         (-(COUNT(*))) as c8,
+         ((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) as c9,
+         MIN(ctinyint) as c10,
+         (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*)))) as c11,
+         (-((STDDEV_POP(cint) * 10.175))) as c12,
+         VAR_SAMP(csmallint) as c13,
+         (VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) as c14,
+         (-((-(STDDEV_POP(cint))))) as c15,
+         ((-(COUNT(*))) / STDDEV_POP(cint)) as c16,
+         VAR_POP(cfloat) as c17,
+         (10.175 / AVG(csmallint)) as c18,
+         AVG(cint) as c19,
+         VAR_SAMP(cfloat) as c20,
+         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) - (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) as c21,
+         (-((-((STDDEV_POP(cint) * 10.175))))) as c22,
+         AVG(cfloat) as c23,
+         (((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) - (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) * 10.175) as c24,
+         (10.175 % (10.175 / AVG(csmallint))) as c25,
+         (-(MIN(ctinyint))) as c26,
+         MIN(cdouble) as c27,
+         VAR_POP(csmallint) as c28,
+         (-(((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))))) as c29,
+         ((-(STDDEV_POP(cint))) % AVG(cfloat)) as c30,
+         (-26.28 / (-(MIN(ctinyint)))) as c31,
+         STDDEV_POP(ctinyint) as c32,
+         SUM(cint) as c33,
+         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) / VAR_POP(cfloat)) as c34,
+         (-((-(COUNT(*))))) as c35,
+         COUNT(*) as c36,
+         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) % -26.28) as c37
 FROM     alltypesorc
 WHERE    (((ctimestamp1 != 0))
           AND ((((-257 != ctinyint)
@@ -732,48 +736,48 @@ WHERE    (((ctimestamp1 != 0))
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
 GROUP BY ctimestamp1, cstring1
-ORDER BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37
 LIMIT 50;
 
 SELECT   ctimestamp1,
          cstring1,
-         STDDEV_POP(cint),
-         (STDDEV_POP(cint) * 10.175),
-         (-(STDDEV_POP(cint))),
-         AVG(csmallint),
-         (-(STDDEV_POP(cint))),
-         (-26.28 - STDDEV_POP(cint)),
-         COUNT(*),
-         (-(COUNT(*))),
-         ((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))),
-         MIN(ctinyint),
-         (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*)))),
-         (-((STDDEV_POP(cint) * 10.175))),
-         VAR_SAMP(csmallint),
-         (VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))),
-         (-((-(STDDEV_POP(cint))))),
-         ((-(COUNT(*))) / STDDEV_POP(cint)),
-         VAR_POP(cfloat),
-         (10.175 / AVG(csmallint)),
-         AVG(cint),
-         VAR_SAMP(cfloat),
-         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) - (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))),
-         (-((-((STDDEV_POP(cint) * 10.175))))),
-         AVG(cfloat),
-         (((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) - (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) * 10.175),
-         (10.175 % (10.175 / AVG(csmallint))),
-         (-(MIN(ctinyint))),
-         MIN(cdouble),
-         VAR_POP(csmallint),
-         (-(((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))))),
-         ((-(STDDEV_POP(cint))) % AVG(cfloat)),
-         (-26.28 / (-(MIN(ctinyint)))),
-         STDDEV_POP(ctinyint),
-         SUM(cint),
-         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) / VAR_POP(cfloat)),
-         (-((-(COUNT(*))))),
-         COUNT(*),
-         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) % -26.28)
+         STDDEV_POP(cint) as c1,
+         (STDDEV_POP(cint) * 10.175) as c2,
+         (-(STDDEV_POP(cint))) as c3,
+         AVG(csmallint) as c4,
+         (-(STDDEV_POP(cint))) as c5,
+         (-26.28 - STDDEV_POP(cint)) as c6,
+         COUNT(*) as c7,
+         (-(COUNT(*))) as c8,
+         ((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) as c9,
+         MIN(ctinyint) as c10,
+         (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*)))) as c11,
+         (-((STDDEV_POP(cint) * 10.175))) as c12,
+         VAR_SAMP(csmallint) as c13,
+         (VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) as c14,
+         (-((-(STDDEV_POP(cint))))) as c15,
+         ((-(COUNT(*))) / STDDEV_POP(cint)) as c16,
+         VAR_POP(cfloat) as c17,
+         (10.175 / AVG(csmallint)) as c18,
+         AVG(cint) as c19,
+         VAR_SAMP(cfloat) as c20,
+         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) - (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) as c21,
+         (-((-((STDDEV_POP(cint) * 10.175))))) as c22,
+         AVG(cfloat) as c23,
+         (((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) - (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) * 10.175) as c24,
+         (10.175 % (10.175 / AVG(csmallint))) as c25,
+         (-(MIN(ctinyint))) as c26,
+         MIN(cdouble) as c27,
+         VAR_POP(csmallint) as c28,
+         (-(((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))))) as c29,
+         ((-(STDDEV_POP(cint))) % AVG(cfloat)) as c30,
+         (-26.28 / (-(MIN(ctinyint)))) as c31,
+         STDDEV_POP(ctinyint) as c32,
+         SUM(cint) as c33,
+         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) / VAR_POP(cfloat)) as c34,
+         (-((-(COUNT(*))))) as c35,
+         COUNT(*) as c36,
+         ((VAR_SAMP(csmallint) + (((-26.28 - STDDEV_POP(cint)) * (-(STDDEV_POP(cint)))) * (-(COUNT(*))))) % -26.28) as c37
 FROM     alltypesorc
 WHERE    (((ctimestamp1 != 0))
           AND ((((-257 != ctinyint)
@@ -787,7 +791,7 @@ WHERE    (((ctimestamp1 != 0))
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
 GROUP BY ctimestamp1, cstring1
-ORDER BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37
 LIMIT 50;
 
 -- TargetTypeClasses: Double, Long, String, Timestamp, Bool

@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 explain
 select 'a', 100;
 select 'a', 100;

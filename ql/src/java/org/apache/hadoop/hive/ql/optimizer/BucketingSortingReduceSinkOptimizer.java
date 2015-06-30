@@ -582,6 +582,10 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
             sourceTableBucketCols.clear();
             sourceTableSortCols.clear();
 
+            if (selectDesc.getColList().size() < bucketPositions.size()) {
+             // Some columns in select are pruned. This may happen if those are constants.
+              return null;
+            }
             // Only columns can be selected for both sorted and bucketed positions
             for (int pos : bucketPositions) {
               ExprNodeDesc selectColList = selectDesc.getColList().get(pos);

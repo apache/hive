@@ -47,7 +47,7 @@ public class LoopingByteArrayInputStream extends InputStream {
   private final ThreadLocal<ByteArrayInputStream> threadLocalByteArrayInputStream =
       new ThreadLocal<ByteArrayInputStream>() {
         @Override
-        protected synchronized ByteArrayInputStream initialValue() {
+        protected ByteArrayInputStream initialValue() {
           return null;
         }
       };

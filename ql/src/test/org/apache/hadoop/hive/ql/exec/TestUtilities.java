@@ -140,4 +140,15 @@ public class TestUtilities extends TestCase {
       FileUtils.deleteQuietly(f);
     }
   }
+
+  public void testReplaceTaskId() {
+    String taskID = "000000";
+    int bucketNum = 1;
+    String newTaskID = Utilities.replaceTaskId(taskID, bucketNum);
+    Assert.assertEquals("000001", newTaskID);
+    taskID = "(ds%3D1)000001";
+    newTaskID = Utilities.replaceTaskId(taskID, 5);
+    Assert.assertEquals("(ds%3D1)000005", newTaskID);
+  }
+
 }

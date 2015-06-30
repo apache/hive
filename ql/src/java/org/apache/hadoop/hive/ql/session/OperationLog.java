@@ -77,7 +77,7 @@ public class OperationLog {
   private static final ThreadLocal<OperationLog> THREAD_LOCAL_OPERATION_LOG = new
       ThreadLocal<OperationLog>() {
     @Override
-    protected synchronized OperationLog initialValue() {
+    protected OperationLog initialValue() {
       return null;
     }
   };

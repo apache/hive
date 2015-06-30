@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,7 +49,11 @@ public class MetaStoreSchemaInfo {
   // that has a corresponding schema. eg "0.13.1" is equivalent to "0.13.0"
   private static final Map<String, String> EQUIVALENT_VERSIONS =
       ImmutableMap.of("0.13.1", "0.13.0",
-          "1.0.0", "0.14.0");
+          "1.0.0", "0.14.0",
+          "1.0.1", "1.0.0",
+          "1.1.1", "1.1.0",
+          "1.2.1", "1.2.0"
+      );
 
   public MetaStoreSchemaInfo(String hiveHome, HiveConf hiveConf, String dbType) throws HiveMetaException {
     this.hiveHome = hiveHome;
@@ -58,9 +63,8 @@ public class MetaStoreSchemaInfo {
     List<String> upgradeOrderList = new ArrayList<String>();
     String upgradeListFile = getMetaStoreScriptDir() + File.separator +
         VERSION_UPGRADE_LIST + "." + dbType;
-    try {
-      BufferedReader bfReader =
-        new BufferedReader(new FileReader(upgradeListFile));
+    try (FileReader fr = new FileReader(upgradeListFile);
+        BufferedReader bfReader = new BufferedReader(fr)) {
       String currSchemaVersion;
       while ((currSchemaVersion = bfReader.readLine()) != null) {
         upgradeOrderList.add(currSchemaVersion.trim());

@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-public class Attr implements Comparable<Attr> {
-  String name;
-  String value;
+public final class Attr implements Comparable<Attr> {
+  public final String name;
+  public final String value;
 
   public Attr(String name, String value) {
     super();

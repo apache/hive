@@ -6734,34 +6734,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       outColumnCnt += dpCtx.getNumDPCols();
     }
 
-    if (deleting()) {
-      // Figure out if we have partition columns in the list or not.  If so,
-      // add them into the mapping.  Partition columns will be located after the row id.
-      if (rowFields.size() > 1) {
-        // This means we have partition columns to deal with, so set up the mapping from the
-        // input to the partition columns.
-        dpCtx.mapInputToDP(rowFields.subList(1, rowFields.size()));
-      }
-    } else if (updating()) {
-      // In this case we expect the number of in fields to exceed the number of out fields by one
-      // (for the ROW__ID virtual column).  If there are more columns than this,
-      // then the extras are for dynamic partitioning
-      if (dynPart && dpCtx != null) {
-        dpCtx.mapInputToDP(rowFields.subList(tableFields.size() + 1, rowFields.size()));
-      }
-    } else {
-      if (inColumnCnt != outColumnCnt) {
-        String reason = "Table " + dest + " has " + outColumnCnt
-            + " columns, but query has " + inColumnCnt + " columns.";
-        throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
-            qb.getParseInfo().getDestForClause(dest), reason));
-      } else if (dynPart && dpCtx != null) {
-        // create the mapping from input ExprNode to dest table DP column
-        dpCtx.mapInputToDP(rowFields.subList(tableFields.size(), rowFields.size()));
-      }
-    }
-
-
     // Check column types
     boolean converted = false;
     int columnNumber = tableFields.size();
@@ -6844,15 +6816,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         colNames.add(name);
         colExprMap.put(name, expressions.get(i));
       }
-      Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
+      input = putOpInsertMap(OperatorFactory.getAndMakeChild(
           new SelectDesc(expressions, colNames), new RowSchema(rowResolver
               .getColumnInfos()), input), rowResolver);
-      output.setColumnExprMap(colExprMap);
-      return output;
-    } else {
-      // not converted
-      return input;
+      input.setColumnExprMap(colExprMap);
     }
+
+    rowFields = opParseCtx.get(input).getRowResolver()
+        .getColumnInfos();
+    if (deleting()) {
+      // Figure out if we have partition columns in the list or not.  If so,
+      // add them into the mapping.  Partition columns will be located after the row id.
+      if (rowFields.size() > 1) {
+        // This means we have partition columns to deal with, so set up the mapping from the
+        // input to the partition columns.
+        dpCtx.mapInputToDP(rowFields.subList(1, rowFields.size()));
+      }
+    } else if (updating()) {
+      // In this case we expect the number of in fields to exceed the number of out fields by one
+      // (for the ROW__ID virtual column).  If there are more columns than this,
+      // then the extras are for dynamic partitioning
+      if (dynPart && dpCtx != null) {
+        dpCtx.mapInputToDP(rowFields.subList(tableFields.size() + 1, rowFields.size()));
+      }
+    } else {
+      if (inColumnCnt != outColumnCnt) {
+        String reason = "Table " + dest + " has " + outColumnCnt
+            + " columns, but query has " + inColumnCnt + " columns.";
+        throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
+            qb.getParseInfo().getDestForClause(dest), reason));
+      } else if (dynPart && dpCtx != null) {
+        // create the mapping from input ExprNode to dest table DP column
+        dpCtx.mapInputToDP(rowFields.subList(tableFields.size(), rowFields.size()));
+      }
+    }
+    return input;
   }
 
   @SuppressWarnings("nls")

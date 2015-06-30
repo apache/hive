@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -47,7 +48,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -70,7 +71,6 @@ import org.apache.hadoop.util.StringUtils;
 public class SparkReduceRecordHandler extends SparkRecordHandler {
 
   private static final Log LOG = LogFactory.getLog(SparkReduceRecordHandler.class);
-  private static final String PLAN_KEY = "__REDUCE_PLAN__";
 
   // Input value serde needs to be an array to support different SerDe
   // for different tags
@@ -153,8 +153,10 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           /* vectorization only works with struct object inspectors */
           valueStructInspectors[tag] = (StructObjectInspector) valueObjectInspector[tag];
 
-          batches[tag] = VectorizedBatchUtil.constructVectorizedRowBatch(keyStructInspector,
-              valueStructInspectors[tag]);
+          ObjectPair<VectorizedRowBatch, StandardStructObjectInspector> pair = VectorizedBatchUtil.
+              constructVectorizedRowBatch(keyStructInspector,
+              valueStructInspectors[tag], gWork.getVectorScratchColumnTypeMap());
+          batches[tag] = pair.getFirst();
           final int totalColumns = keysColumnOffset
               + valueStructInspectors[tag].getAllStructFieldRefs().size();
           valueStringWriters[tag] = new ArrayList<VectorExpressionWriter>(totalColumns);
@@ -163,24 +165,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           valueStringWriters[tag].addAll(Arrays.asList(VectorExpressionWriterFactory
               .genVectorStructExpressionWritables(valueStructInspectors[tag])));
 
-          /*
-           * The row object inspector used by ReduceWork needs to be a
-           * **standard** struct object inspector, not just any struct object
-           * inspector.
-           */
-          ArrayList<String> colNames = new ArrayList<String>();
-          List<? extends StructField> fields = keyStructInspector.getAllStructFieldRefs();
-          for (StructField field : fields) {
-            colNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
-            ois.add(field.getFieldObjectInspector());
-          }
-          fields = valueStructInspectors[tag].getAllStructFieldRefs();
-          for (StructField field : fields) {
-            colNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-            ois.add(field.getFieldObjectInspector());
-          }
-          rowObjectInspector[tag] = ObjectInspectorFactory.getStandardStructObjectInspector(
-              colNames, ois);
+          rowObjectInspector[tag] = pair.getSecond();
         } else {
           ois.add(keyObjectInspector);
           ois.add(valueObjectInspector[tag]);

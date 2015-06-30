@@ -1,4 +1,7 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
+
+-- SORT_QUERY_RESULTS
 
 -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
 

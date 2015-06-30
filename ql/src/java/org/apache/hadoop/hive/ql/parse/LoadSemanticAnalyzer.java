@@ -18,6 +18,14 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
@@ -26,26 +34,23 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.FileFormatException;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.hadoop.mapred.InputFormat;
 
 /**
  * LoadSemanticAnalyzer.
@@ -60,12 +65,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
   public static FileStatus[] matchFilesOrDir(FileSystem fs, Path path)
       throws IOException {
     FileStatus[] srcs = fs.globStatus(path, new PathFilter() {
-              @Override
-              public boolean accept(Path p) {
-                String name = p.getName();
-                return name.equals("_metadata") ? true : !name.startsWith("_") && !name.startsWith(".");
-              }
-            });
+      @Override
+      public boolean accept(Path p) {
+        String name = p.getName();
+        return name.equals("_metadata") ? true : !name.startsWith("_") && !name.startsWith(".");
+      }
+    });
     if ((srcs != null) && srcs.length == 1) {
       if (srcs[0].isDir()) {
         srcs = fs.listStatus(srcs[0].getPath(), new PathFilter() {
@@ -228,6 +233,11 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // make sure the arguments make sense
     applyConstraints(fromURI, toURI, fromTree, isLocal);
+
+    // for managed tables, make sure the file formats match
+    if (TableType.MANAGED_TABLE.equals(ts.tableHandle.getTableType())) {
+      ensureFileFormatsMatch(ts, fromURI);
+    }
     inputs.add(toReadEntity(new Path(fromURI)));
     Task<? extends Serializable> rTask = null;
 
@@ -321,6 +331,26 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     else if (statTask != null) {
       childTask.addDependentTask(statTask);
+    }
+  }
+
+  private void ensureFileFormatsMatch(TableSpec ts, URI fromURI) throws SemanticException {
+    Class<? extends InputFormat> destInputFormat = ts.tableHandle.getInputFormatClass();
+    // Other file formats should do similar check to make sure file formats match
+    // when doing LOAD DATA .. INTO TABLE
+    if (OrcInputFormat.class.equals(destInputFormat)) {
+      Path inputFilePath = new Path(fromURI);
+      try {
+        FileSystem fs = FileSystem.get(fromURI, conf);
+        // just creating orc reader is going to do sanity checks to make sure its valid ORC file
+        OrcFile.createReader(fs, inputFilePath);
+      } catch (FileFormatException e) {
+        throw new SemanticException(ErrorMsg.INVALID_FILE_FORMAT_IN_LOAD.getMsg("Destination" +
+            " table is stored as ORC but the file being loaded is not a valid ORC file."));
+      } catch (IOException e) {
+        throw new SemanticException("Unable to load data to destination table." +
+            " Error: " + e.getMessage());
+      }
     }
   }
 }

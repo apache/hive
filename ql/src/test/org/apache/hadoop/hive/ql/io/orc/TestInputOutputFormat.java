@@ -23,8 +23,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Date;
@@ -68,6 +71,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitStrategy;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitStrategyKind;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -393,6 +397,97 @@ public class TestInputOutputFormat {
     conf.set("mapred.input.dir", "/a/b/c\\,d,/e/f\\,g/h");
     assertArrayEquals(new Path[]{new Path("/a/b/c,d"), new Path("/e/f,g/h")},
         OrcInputFormat.getInputPaths(conf));
+  }
+
+  private FileSystem generateMockFiles(final int count, final int size) {
+    final byte[] data = new byte[size];
+    MockFile[] files = new MockFile[count];
+    for (int i = 0; i < count; i++) {
+      files[i] = new MockFile(String.format("mock:/a/b/part-%d", i), size, data);
+    }
+    return new MockFileSystem(conf, files);
+  }
+
+  @Test
+  public void testSplitStrategySelection() throws Exception {
+
+    conf.set("mapreduce.input.fileinputformat.split.maxsize", "500");
+    conf.setLong(HiveConf.ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE.varname,
+        100);
+    final int[] counts = { 1, 10, 100, 256 };
+    final int[] sizes = { 100, 1000 };
+    final int[] numSplits = { 1, 9, 10, 11, 99, 111 };
+    final String[] strategyResults = new String[] {
+    "ETLSplitStrategy", /* 1 files x 100 size for 1 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 9 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 10 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 11 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 99 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 111 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 1 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 9 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 10 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 11 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 99 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 111 splits */
+    "BISplitStrategy", /* 10 files x 100 size for 1 splits */
+    "BISplitStrategy", /* 10 files x 100 size for 9 splits */
+    "ETLSplitStrategy", /* 10 files x 100 size for 10 splits */
+    "ETLSplitStrategy", /* 10 files x 100 size for 11 splits */
+    "ETLSplitStrategy", /* 10 files x 100 size for 99 splits */
+    "ETLSplitStrategy", /* 10 files x 100 size for 111 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 1 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 9 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 10 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 11 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 99 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 111 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 1 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 9 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 10 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 11 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 99 splits */
+    "ETLSplitStrategy", /* 100 files x 100 size for 111 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 1 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 9 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 10 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 11 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 99 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 111 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 1 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 9 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 10 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 11 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 99 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 111 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 1 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 9 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 10 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 11 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 99 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 111 splits */
+    };
+
+    int k = 0;
+
+    for (int c : counts) {
+      for (int s : sizes) {
+        final FileSystem fs = generateMockFiles(c, s);
+        for (int n : numSplits) {
+          final OrcInputFormat.Context context = new OrcInputFormat.Context(
+              conf, n);
+          OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
+              context, fs, new MockPath(fs, "mock:/a/b"), false);
+          final SplitStrategy splitStrategy = gen.call();
+          assertTrue(
+              String.format(
+                  "Split strategy for %d files x %d size for %d splits", c, s,
+                  n),
+              splitStrategy.getClass().getSimpleName()
+                  .equals(strategyResults[k++]));
+        }
+      }
+    }
   }
 
   @Test
@@ -1116,7 +1211,7 @@ public class TestInputOutputFormat {
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
     InputSplit[] splits = in.getSplits(conf, 1);
-    assertTrue(1 == splits.length);
+    assertTrue(0 == splits.length);
     assertEquals(null, serde.getSerDeStats());
   }
 

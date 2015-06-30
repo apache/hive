@@ -70,7 +70,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   private static final ThreadLocal<DateFormat> threadLocalDateFormat =
       new ThreadLocal<DateFormat>() {
         @Override
-        protected synchronized DateFormat initialValue() {
+        protected DateFormat initialValue() {
           return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         }
       };

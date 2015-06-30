@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 -- SORT_QUERY_RESULTS
 

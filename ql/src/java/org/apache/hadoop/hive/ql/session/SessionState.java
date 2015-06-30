@@ -346,6 +346,9 @@ public class SessionState {
   public SessionState(HiveConf conf, String userName) {
     this.conf = conf;
     this.userName = userName;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("SessionState user: " + userName);
+    }
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
     resourceMaps = new ResourceMaps();

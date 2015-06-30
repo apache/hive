@@ -776,7 +776,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         aclStatus = fs.getAclStatus(file);
       } catch (Exception e) {
         LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
-                "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
+                "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+        LOG.debug("The details are: " + e, e);
       }
     }
     return new Hadoop23FileStatus(fileStatus, aclStatus);
@@ -812,7 +813,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           }
         } catch (Exception e) {
           LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
-                  "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
+                  "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+          LOG.debug("The details are: " + e, e);
         }
       } else {
         String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);

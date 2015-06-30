@@ -423,11 +423,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       }
     }
 
-    if (buckNum < 0) {
-      buckNum = -1 * buckNum;
-    }
-
-    return buckNum % numBuckets;
+    // similar to hive's default partitioner, refer DefaultHivePartitioner
+    return (buckNum & Integer.MAX_VALUE) % numBuckets;
   }
 
   private void populateCachedDistributionKeys(Object row, int index) throws HiveException {

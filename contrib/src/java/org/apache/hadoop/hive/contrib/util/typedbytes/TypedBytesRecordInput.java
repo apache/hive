@@ -37,7 +37,7 @@ public class TypedBytesRecordInput {
 
   private static ThreadLocal tbIn = new ThreadLocal() {
     @Override
-    protected synchronized Object initialValue() {
+    protected Object initialValue() {
       return new TypedBytesRecordInput();
     }
   };

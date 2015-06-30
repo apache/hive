@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,22 +27,24 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Op {
-  String name;
-  String operatorId;
-  Op parent;
-  List<Op> children;
-  List<Attr> attrs;
+public final class Op {
+  public final String name;
+  //tezJsonParser
+  public final TezJsonParser parser;
+  public final String operatorId;
+  public Op parent;
+  public final List<Op> children;
+  public final List<Attr> attrs;
   // the jsonObject for this operator
-  JSONObject opObject;
+  public final JSONObject opObject;
   // the vertex that this operator belongs to
-  Vertex vertex;
+  public final Vertex vertex;
   // the vertex that this operator output to if this operator is a
   // ReduceOutputOperator
-  String outputVertexName;
+  public final String outputVertexName;
 
   public Op(String name, String id, String outputVertexName, List<Op> children, List<Attr> attrs,
-      JSONObject opObject, Vertex vertex) throws JSONException {
+      JSONObject opObject, Vertex vertex, TezJsonParser tezJsonParser) throws JSONException {
     super();
     this.name = name;
     this.operatorId = id;
@@ -52,6 +53,7 @@ public class Op {
     this.attrs = attrs;
     this.opObject = opObject;
     this.vertex = vertex;
+    this.parser = tezJsonParser;
   }
 
   private void inlineJoinOp() throws Exception {
@@ -73,7 +75,7 @@ public class Op {
           }
         }
         if (c != null) {
-          TezJsonParser.addInline(this, c);
+          parser.addInline(this, c);
         }
       }
       // update the attrs
@@ -96,14 +98,12 @@ public class Op {
       }
     }
     // inline merge join operator in a self-join
-    else if (this.name.equals("Merge Join Operator")) {
+    else {
       if (this.vertex != null) {
         for (Vertex v : this.vertex.mergeJoinDummyVertexs) {
-          TezJsonParser.addInline(this, new Connection(null, v));
+          parser.addInline(this, new Connection(null, v));
         }
       }
-    } else {
-      throw new Exception("Unknown join operator");
     }
   }
 
@@ -123,23 +123,23 @@ public class Op {
    *          operator so that we can decide the corresponding indent.
    * @throws Exception
    */
-  public void print(PrintStream out, List<Boolean> indentFlag, boolean branchOfJoinOp)
+  public void print(Printer printer, List<Boolean> indentFlag, boolean branchOfJoinOp)
       throws Exception {
     // print name
-    if (TezJsonParser.printSet.contains(this)) {
-      out.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "
+    if (parser.printSet.contains(this)) {
+      printer.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "
           + this.getNameWithOpId());
       return;
     }
-    TezJsonParser.printSet.add(this);
+    parser.printSet.add(this);
     if (!branchOfJoinOp) {
-      out.println(TezJsonParser.prefixString(indentFlag) + this.getNameWithOpId());
+      printer.println(TezJsonParser.prefixString(indentFlag) + this.getNameWithOpId());
     } else {
-      out.println(TezJsonParser.prefixString(indentFlag, "|<-") + this.getNameWithOpId());
+      printer.println(TezJsonParser.prefixString(indentFlag, "|<-") + this.getNameWithOpId());
     }
     branchOfJoinOp = false;
-    // if this operator is a join operator
-    if (this.name.contains("Join")) {
+    // if this operator is a Map Join Operator or a Merge Join Operator
+    if (this.name.equals("Map Join Operator") || this.name.equals("Merge Join Operator")) {
       inlineJoinOp();
       branchOfJoinOp = true;
     }
@@ -149,7 +149,7 @@ public class Op {
     if (this.parent == null) {
       if (this.vertex != null) {
         for (Connection connection : this.vertex.parentConnections) {
-          if (!TezJsonParser.isInline(connection.from)) {
+          if (!parser.isInline(connection.from)) {
             noninlined.add(connection);
           }
         }
@@ -167,12 +167,12 @@ public class Op {
     }
     Collections.sort(attrs);
     for (Attr attr : attrs) {
-      out.println(TezJsonParser.prefixString(attFlag) + attr.toString());
+      printer.println(TezJsonParser.prefixString(attFlag) + attr.toString());
     }
     // print inline vertex
-    if (TezJsonParser.inlineMap.containsKey(this)) {
-      for (int index = 0; index < TezJsonParser.inlineMap.get(this).size(); index++) {
-        Connection connection = TezJsonParser.inlineMap.get(this).get(index);
+    if (parser.inlineMap.containsKey(this)) {
+      for (int index = 0; index < parser.inlineMap.get(this).size(); index++) {
+        Connection connection = parser.inlineMap.get(this).get(index);
         List<Boolean> vertexFlag = new ArrayList<>();
         vertexFlag.addAll(indentFlag);
         if (branchOfJoinOp) {
@@ -185,7 +185,7 @@ public class Op {
         else {
           vertexFlag.add(false);
         }
-        connection.from.print(out, vertexFlag, connection.type, this.vertex);
+        connection.from.print(printer, vertexFlag, connection.type, this.vertex);
       }
     }
     // print parent op, i.e., where data comes from
@@ -193,7 +193,7 @@ public class Op {
       List<Boolean> parentFlag = new ArrayList<>();
       parentFlag.addAll(indentFlag);
       parentFlag.add(false);
-      this.parent.print(out, parentFlag, branchOfJoinOp);
+      this.parent.print(printer, parentFlag, branchOfJoinOp);
     }
     // print next vertex
     else {
@@ -206,7 +206,7 @@ public class Op {
         } else {
           vertexFlag.add(false);
         }
-        v.print(out, vertexFlag, noninlined.get(index).type, this.vertex);
+        v.print(printer, vertexFlag, noninlined.get(index).type, this.vertex);
       }
     }
   }

@@ -1,11 +1,18 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
 
-create table small_alltypesorc1b as select * from alltypesorc where cint is not null and ctinyint is not null limit 10;
-create table small_alltypesorc2b as select * from alltypesorc where cint is null and ctinyint is not null limit 10;
-create table small_alltypesorc3b as select * from alltypesorc where cint is not null and ctinyint is null limit 10;
-create table small_alltypesorc4b as select * from alltypesorc where cint is null and ctinyint is null limit 10;
+-- Using cint and ctinyint in test queries
+create table small_alltypesorc1b as select * from alltypesorc where cint is not null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 10;
+create table small_alltypesorc2b as select * from alltypesorc where cint is null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 10;
+create table small_alltypesorc3b as select * from alltypesorc where cint is not null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 10;
+create table small_alltypesorc4b as select * from alltypesorc where cint is null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 10;
+
+select * from small_alltypesorc1b;
+select * from small_alltypesorc2b;
+select * from small_alltypesorc3b;
+select * from small_alltypesorc4b;
 
 create table small_alltypesorc_b stored as orc as select * from 
 (select * from (select * from small_alltypesorc1b) sq1
@@ -18,6 +25,8 @@ create table small_alltypesorc_b stored as orc as select * from
 
 ANALYZE TABLE small_alltypesorc_b COMPUTE STATISTICS;
 ANALYZE TABLE small_alltypesorc_b COMPUTE STATISTICS FOR COLUMNS;
+
+select * from small_alltypesorc_b;
 
 explain
 select * 

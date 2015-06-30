@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 EXPLAIN CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0;
 CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0;
 

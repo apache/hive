@@ -614,7 +614,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       int rgCount = getRgCount(stripe, rowIndexStride);
       boolean[] rgsToRead = null;
       if (sargApp != null) {
-        rgsToRead = sargApp.pickRowGroups(stripe, metadata.get(stripeIxMod).getRowIndexes(), true);
+        OrcStripeMetadata stripeMetadata = metadata.get(stripeIxMod);
+        rgsToRead = sargApp.pickRowGroups(stripe, stripeMetadata.getRowIndexes(),
+            stripeMetadata.getBloomFilterIndexes(), true);
       }
       boolean isNone = rgsToRead == SargApplier.READ_NO_RGS,
           isAll = rgsToRead == SargApplier.READ_ALL_RGS;

@@ -116,6 +116,10 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     return rowIndex.getRowGroupIndex();
   }
 
+  public BloomFilterIndex[] getBloomFilterIndexes() {
+    return rowIndex.getBloomFilterIndex();
+  }
+
   public List<ColumnEncoding> getEncodings() {
     return encodings;
   }

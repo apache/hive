@@ -1,3 +1,5 @@
+-- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
+-- EXCLUDE_OS_WINDOWS
 -- JAVA_VERSION_SPECIFIC_OUTPUT
 
 DROP TABLE avro_timestamp_staging;

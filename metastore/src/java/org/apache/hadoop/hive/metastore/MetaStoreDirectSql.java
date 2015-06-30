@@ -128,10 +128,18 @@ class MetaStoreDirectSql {
     convertMapNullsToEmptyStrings =
         HiveConf.getBoolVar(conf, ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
 
-    this.isCompatibleDatastore = ensureDbInit() && runTestQuery();
-    if (isCompatibleDatastore) {
-      LOG.info("Using direct SQL, underlying DB is " + dbType);
+    String jdoIdFactory = HiveConf.getVar(conf, ConfVars.METASTORE_IDENTIFIER_FACTORY);
+    if (! ("datanucleus1".equalsIgnoreCase(jdoIdFactory))){
+      LOG.warn("Underlying metastore does not use 'datanuclues1' for its ORM naming scheme."
+          + " Disabling directSQL as it uses hand-hardcoded SQL with that assumption.");
+      isCompatibleDatastore = false;
+    } else {
+      isCompatibleDatastore = ensureDbInit() && runTestQuery();
+      if (isCompatibleDatastore) {
+        LOG.info("Using direct SQL, underlying DB is " + dbType);
+      }
     }
+
     isAggregateStatsCacheEnabled = HiveConf.getBoolVar(conf, ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED);
     if (isAggregateStatsCacheEnabled) {
       aggrStatsCache = AggregateStatsCache.getInstance(conf);

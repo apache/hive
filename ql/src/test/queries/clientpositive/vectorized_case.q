@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.vectorized.execution.enabled = true
 ;
 explain

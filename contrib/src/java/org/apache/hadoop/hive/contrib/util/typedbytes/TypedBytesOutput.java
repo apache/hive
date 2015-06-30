@@ -44,7 +44,7 @@ public class TypedBytesOutput {
 
   private static ThreadLocal tbOut = new ThreadLocal() {
     @Override
-    protected synchronized Object initialValue() {
+    protected Object initialValue() {
       return new TypedBytesOutput();
     }
   };

@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.optimize.sort.dynamic.partition=true;
 set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions=1000;

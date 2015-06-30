@@ -171,3 +171,5 @@ set hive.optimize.index.groupby=true;
 explain select key, count(key) from tbl group by key order by key;
 select key, count(key) from tbl group by key order by key;
 DROP TABLE tbl;
+
+reset hive.cbo.enable;

@@ -401,7 +401,7 @@ public final class Utilities {
         LOG.info("local path = " + localPath);
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
           LOG.debug("Loading plan from string: "+path.toUri().getPath());
-          String planString = conf.get(path.toUri().getPath());
+          String planString = conf.getRaw(path.toUri().getPath());
           if (planString == null) {
             LOG.info("Could not find plan string in conf");
             return null;
@@ -1084,7 +1084,7 @@ public final class Utilities {
   // Also new Kryo() is expensive, so we want to do it just once.
   public static ThreadLocal<Kryo> runtimeSerializationKryo = new ThreadLocal<Kryo>() {
     @Override
-    protected synchronized Kryo initialValue() {
+    protected Kryo initialValue() {
       Kryo kryo = new Kryo();
       kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
@@ -1127,7 +1127,7 @@ public final class Utilities {
 
   private static ThreadLocal<Kryo> cloningQueryPlanKryo = new ThreadLocal<Kryo>() {
     @Override
-    protected synchronized Kryo initialValue() {
+    protected Kryo initialValue() {
       Kryo kryo = new Kryo();
       kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
       kryo.register(CommonToken.class, new CommonTokenSerializer());
@@ -1774,8 +1774,26 @@ public final class Utilities {
     return (ret);
   }
 
-  private static String replaceTaskId(String taskId, int bucketNum) {
-    return replaceTaskId(taskId, String.valueOf(bucketNum));
+  /**
+   * Replace taskId with input bucketNum. For example, if taskId is 000000 and bucketNum is 1,
+   * return should be 000001; if taskId is (ds%3D1)000000 and bucketNum is 1, return should be
+   * (ds%3D1)000001. This method is different from the replaceTaskId(String, String) method.
+   * In this method, the pattern is in taskId.
+   * @param taskId
+   * @param bucketNum
+   * @return
+   */
+  public static String replaceTaskId(String taskId, int bucketNum) {
+    String bucketNumStr = String.valueOf(bucketNum);
+    Matcher m = PREFIXED_TASK_ID_REGEX.matcher(taskId);
+    if (!m.matches()) {
+        LOG.warn("Unable to determine bucket number from task id: " + taskId + ". Using " +
+            "task ID as bucket number.");
+        return adjustBucketNumLen(bucketNumStr, taskId);
+    } else {
+      String adjustedBucketNum = adjustBucketNumLen(bucketNumStr, m.group(2));
+      return (m.group(1) == null ? "" : m.group(1)) + adjustedBucketNum;
+    }
   }
 
   /**

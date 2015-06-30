@@ -1,3 +1,5 @@
+-- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
+-- EXCLUDE_OS_WINDOWS
 drop table partition_timestamp_1;
 
 create table partition_timestamp_1 (key string, value string) partitioned by (dt timestamp, region string);

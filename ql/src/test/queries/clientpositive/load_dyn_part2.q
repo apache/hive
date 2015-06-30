@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
 create table if not exists nzhang_part_bucket (key string, value string) 
