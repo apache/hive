@@ -199,7 +199,7 @@ public class TestLlapTaskSchedulerService {
     }
   }
 
-  @Test(timeout=5000)
+  // Flaky test disabled @Test(timeout=5000)
   public void testNodeReEnabled() throws InterruptedException {
     // Based on actual timing.
     TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper(1000l);
