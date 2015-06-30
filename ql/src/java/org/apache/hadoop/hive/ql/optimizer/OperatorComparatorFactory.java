@@ -23,6 +23,8 @@ import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.CollectOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
@@ -72,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 
 public class OperatorComparatorFactory {
   private static final Map<Class<?>, OperatorComparator> comparatorMapping = Maps.newHashMap();
+  private static final Log LOG = LogFactory.getLog(OperatorComparatorFactory.class);
 
   static {
     comparatorMapping.put(TableScanOperator.class, new TableScanOperatorComparator());
@@ -103,13 +106,15 @@ public class OperatorComparatorFactory {
     comparatorMapping.put(ListSinkOperator.class, new AlwaysTrueOperatorComparator());
     comparatorMapping.put(CollectOperator.class, new AlwaysTrueOperatorComparator());
     // do not support PTFOperator comparing now.
-    comparatorMapping.put(PTFOperator.class, new AlwaysFalseOperatorComparator());
+    comparatorMapping.put(PTFOperator.class, AlwaysFalseOperatorComparator.getInstance());
   }
 
   public static OperatorComparator getOperatorComparator(Class<? extends Operator> operatorClass) {
     OperatorComparator operatorComparator = comparatorMapping.get(operatorClass);
     if (operatorComparator == null) {
-      throw new RuntimeException("No OperatorComparator is registered for " + operatorClass.getName() + "yet.");
+      LOG.warn("No OperatorComparator is registered for " + operatorClass.getName() +
+          ". Default to always false comparator.");
+      return AlwaysFalseOperatorComparator.getInstance();
     }
 
     return operatorComparator;
@@ -130,6 +135,16 @@ public class OperatorComparatorFactory {
   }
 
   static class AlwaysFalseOperatorComparator implements OperatorComparator<Operator<?>> {
+    // the outer class is responsible for maintaining the comparator singleton
+    private AlwaysFalseOperatorComparator() {
+    }
+
+    private static final AlwaysFalseOperatorComparator instance =
+        new AlwaysFalseOperatorComparator();
+
+    public static AlwaysFalseOperatorComparator getInstance() {
+      return instance;
+    }
 
     @Override
     public boolean equals(Operator<?> op1, Operator<?> op2) {
