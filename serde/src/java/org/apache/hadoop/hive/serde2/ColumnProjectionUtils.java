@@ -24,6 +24,9 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
 /**
  * ColumnProjectionUtils.
  *
@@ -35,6 +38,7 @@ public final class ColumnProjectionUtils {
   public static final String READ_COLUMN_NAMES_CONF_STR = "hive.io.file.readcolumn.names";
   private static final String READ_COLUMN_IDS_CONF_STR_DEFAULT = "";
   private static final boolean READ_ALL_COLUMNS_DEFAULT = true;
+  private static final Joiner CSV_JOINER = Joiner.on(",").skipNulls();
 
   /**
    * @deprecated for backwards compatibility with <= 0.12, use setReadAllColumns
@@ -106,31 +110,8 @@ public final class ColumnProjectionUtils {
   public static void appendReadColumns(
       StringBuilder readColumnsBuffer, StringBuilder readColumnNamesBuffer, List<Integer> ids,
       List<String> names) {
-    appendReadColumns(readColumnsBuffer, ids);
-    appendReadColumnNames(readColumnNamesBuffer, names);
-  }
-
-  public static void appendReadColumns(StringBuilder readColumnsBuffer, List<Integer> ids) {
-    String id = toReadColumnIDString(ids);
-    String newConfStr = id;
-    if (readColumnsBuffer.length() > 0) {
-      readColumnsBuffer.append(StringUtils.COMMA_STR).append(newConfStr);
-    }
-    if (readColumnsBuffer.length() == 0) {
-      readColumnsBuffer.append(READ_COLUMN_IDS_CONF_STR_DEFAULT);
-    }
-  }
-
-  private static void appendReadColumnNames(StringBuilder readColumnNamesBuffer, List<String> cols) {
-    boolean first = readColumnNamesBuffer.length() > 0;
-    for(String col: cols) {
-      if (first) {
-        first = false;
-      } else {
-        readColumnNamesBuffer.append(',');
-      }
-      readColumnNamesBuffer.append(col);
-    }
+    CSV_JOINER.appendTo(readColumnsBuffer, ids);
+    CSV_JOINER.appendTo(readColumnNamesBuffer, names);
   }
 
   /**

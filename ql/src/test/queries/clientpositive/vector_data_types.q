@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 
 DROP TABLE over1k;
 DROP TABLE over1korc;

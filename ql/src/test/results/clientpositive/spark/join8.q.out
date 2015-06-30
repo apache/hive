@@ -102,7 +102,7 @@ STAGE PLANS:
                   predicate: _col2 is null (type: boolean)
                   Statistics: Num rows: 15 Data size: 163 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), UDFToInteger(null) (type: int), _col3 (type: string)
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), null (type: int), _col3 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 15 Data size: 163 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator

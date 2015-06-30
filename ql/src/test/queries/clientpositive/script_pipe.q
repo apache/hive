@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.exec.script.allow.partial.consumption = true;
 -- Tests exception in ScriptOperator.close() by passing to the operator a small amount of data
 EXPLAIN SELECT TRANSFORM(*) USING 'true' AS a, b, c FROM (SELECT * FROM src LIMIT 1) tmp;

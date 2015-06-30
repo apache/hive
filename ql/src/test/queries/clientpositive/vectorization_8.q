@@ -1,5 +1,8 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=minimal;
+
+-- SORT_QUERY_RESULTS
 
 EXPLAIN
 SELECT ctimestamp1,
@@ -7,15 +10,15 @@ SELECT ctimestamp1,
        cboolean1,
        cstring1,
        cfloat,
-       (-(cdouble)),
-       (-5638.15 - cdouble),
-       (cdouble * -257),
-       (cint + cfloat),
-       ((-(cdouble)) + cbigint),
-       (-(cdouble)),
-       (-1.389 - cfloat),
-       (-(cfloat)),
-       ((-5638.15 - cdouble) + (cint + cfloat))
+       (-(cdouble)) as c1,
+       (-5638.15 - cdouble) as c2,
+       (cdouble * -257) as c3,
+       (cint + cfloat) as c4,
+       ((-(cdouble)) + cbigint) as c5,
+       (-(cdouble)) as c6,
+       (-1.389 - cfloat) as c7,
+       (-(cfloat)) as c8,
+       ((-5638.15 - cdouble) + (cint + cfloat)) as c9
 FROM   alltypesorc
 WHERE  (((cstring2 IS NOT NULL)
          AND ((ctimestamp1 <= 10)
@@ -23,6 +26,7 @@ WHERE  (((cstring2 IS NOT NULL)
         OR ((cfloat < -6432)
             OR ((cboolean1 IS NOT NULL)
                 AND (cdouble = 988888))))
+ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20;
 
 SELECT ctimestamp1,
@@ -30,15 +34,15 @@ SELECT ctimestamp1,
        cboolean1,
        cstring1,
        cfloat,
-       (-(cdouble)),
-       (-5638.15 - cdouble),
-       (cdouble * -257),
-       (cint + cfloat),
-       ((-(cdouble)) + cbigint),
-       (-(cdouble)),
-       (-1.389 - cfloat),
-       (-(cfloat)),
-       ((-5638.15 - cdouble) + (cint + cfloat))
+       (-(cdouble)) as c1,
+       (-5638.15 - cdouble) as c2,
+       (cdouble * -257) as c3,
+       (cint + cfloat) as c4,
+       ((-(cdouble)) + cbigint) as c5,
+       (-(cdouble)) as c6,
+       (-1.389 - cfloat) as c7,
+       (-(cfloat)) as c8,
+       ((-5638.15 - cdouble) + (cint + cfloat)) as c9
 FROM   alltypesorc
 WHERE  (((cstring2 IS NOT NULL)
          AND ((ctimestamp1 <= 10)
@@ -46,7 +50,9 @@ WHERE  (((cstring2 IS NOT NULL)
         OR ((cfloat < -6432)
             OR ((cboolean1 IS NOT NULL)
                 AND (cdouble = 988888))))
+ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20;
+
 
 -- double compare timestamp
 EXPLAIN
@@ -55,15 +61,15 @@ SELECT ctimestamp1,
        cboolean1,
        cstring1,
        cfloat,
-       (-(cdouble)),
-       (-5638.15 - cdouble),
-       (cdouble * -257),
-       (cint + cfloat),
-       ((-(cdouble)) + cbigint),
-       (-(cdouble)),
-       (-1.389 - cfloat),
-       (-(cfloat)),
-       ((-5638.15 - cdouble) + (cint + cfloat))
+       (-(cdouble)) as c1,
+       (-5638.15 - cdouble) as c2,
+       (cdouble * -257) as c3,
+       (cint + cfloat) as c4,
+       ((-(cdouble)) + cbigint) as c5,
+       (-(cdouble)) as c6,
+       (-1.389 - cfloat) as c7,
+       (-(cfloat)) as c8,
+       ((-5638.15 - cdouble) + (cint + cfloat)) as c9
 FROM   alltypesorc
 WHERE  (((cstring2 IS NOT NULL)
          AND ((ctimestamp1 <= 12.503)
@@ -71,6 +77,7 @@ WHERE  (((cstring2 IS NOT NULL)
         OR ((cfloat < -6432)
             OR ((cboolean1 IS NOT NULL)
                 AND (cdouble = 988888))))
+ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20;
 
 SELECT ctimestamp1,
@@ -78,15 +85,15 @@ SELECT ctimestamp1,
        cboolean1,
        cstring1,
        cfloat,
-       (-(cdouble)),
-       (-5638.15 - cdouble),
-       (cdouble * -257),
-       (cint + cfloat),
-       ((-(cdouble)) + cbigint),
-       (-(cdouble)),
-       (-1.389 - cfloat),
-       (-(cfloat)),
-       ((-5638.15 - cdouble) + (cint + cfloat))
+       (-(cdouble)) as c1,
+       (-5638.15 - cdouble) as c2,
+       (cdouble * -257) as c3,
+       (cint + cfloat) as c4,
+       ((-(cdouble)) + cbigint) as c5,
+       (-(cdouble)) as c6,
+       (-1.389 - cfloat) as c7,
+       (-(cfloat)) as c8,
+       ((-5638.15 - cdouble) + (cint + cfloat)) as c9
 FROM   alltypesorc
 WHERE  (((cstring2 IS NOT NULL)
          AND ((ctimestamp1 <= 12.503)
@@ -94,4 +101,6 @@ WHERE  (((cstring2 IS NOT NULL)
         OR ((cfloat < -6432)
             OR ((cboolean1 IS NOT NULL)
                 AND (cdouble = 988888))))
+ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20;
+

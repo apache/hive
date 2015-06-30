@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.join.emit.interval=2;
 explain
 select * from src a join src1 b on a.key = b.key;

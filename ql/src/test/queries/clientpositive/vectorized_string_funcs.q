@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
 
 -- Test string functions in vectorized mode to verify end-to-end functionality.

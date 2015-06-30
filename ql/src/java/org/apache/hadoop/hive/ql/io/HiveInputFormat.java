@@ -498,25 +498,31 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return;
     }
 
-    Serializable filterObject = scanDesc.getFilterObject();
-    if (filterObject != null) {
-      jobConf.set(
-          TableScanDesc.FILTER_OBJECT_CONF_STR,
-          Utilities.serializeObject(filterObject));
+    String serializedFilterObj = scanDesc.getSerializedFilterObject();
+    String serializedFilterExpr = scanDesc.getSerializedFilterExpr();
+    boolean hasObj = serializedFilterObj != null, hasExpr = serializedFilterExpr != null;
+    if (!hasObj) {
+      Serializable filterObject = scanDesc.getFilterObject();
+      if (filterObject != null) {
+        serializedFilterObj = Utilities.serializeObject(filterObject);
+      }
     }
-
+    if (serializedFilterObj != null) {
+      jobConf.set(TableScanDesc.FILTER_OBJECT_CONF_STR, serializedFilterObj);
+    }
+    if (!hasExpr) {
+      serializedFilterExpr = Utilities.serializeExpression(filterExpr);
+    }
     String filterText = filterExpr.getExprString();
-    String filterExprSerialized = Utilities.serializeExpression(filterExpr);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Filter text = " + filterText);
-      LOG.debug("Filter expression = " + filterExprSerialized);
+      LOG.debug("Pushdown initiated with filterText = " + filterText + ", filterExpr = "
+          + filterExpr + ", serializedFilterExpr = " + serializedFilterExpr + " ("
+          + (hasExpr ? "desc" : "new") + ")" + (serializedFilterObj == null ? "" :
+            (", serializedFilterObj = " + serializedFilterObj + " (" + (hasObj ? "desc" : "new")
+                + ")")));
     }
-    jobConf.set(
-      TableScanDesc.FILTER_TEXT_CONF_STR,
-      filterText);
-    jobConf.set(
-      TableScanDesc.FILTER_EXPR_CONF_STR,
-      filterExprSerialized);
+    jobConf.set(TableScanDesc.FILTER_TEXT_CONF_STR, filterText);
+    jobConf.set(TableScanDesc.FILTER_EXPR_CONF_STR, serializedFilterExpr);
   }
 
   protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,

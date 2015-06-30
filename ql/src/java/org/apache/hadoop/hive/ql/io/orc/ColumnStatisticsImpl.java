@@ -57,9 +57,15 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     void merge(ColumnStatisticsImpl other) {
+      if (other instanceof BooleanStatisticsImpl) {
+        BooleanStatisticsImpl bkt = (BooleanStatisticsImpl) other;
+        trueCount += bkt.trueCount;
+      } else {
+        if (isStatsExists() && trueCount != 0) {
+          throw new IllegalArgumentException("Incompatible merging of boolean column statistics");
+        }
+      }
       super.merge(other);
-      BooleanStatisticsImpl bkt = (BooleanStatisticsImpl) other;
-      trueCount += bkt.trueCount;
     }
 
     @Override
@@ -149,28 +155,35 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     void merge(ColumnStatisticsImpl other) {
-      IntegerStatisticsImpl otherInt = (IntegerStatisticsImpl) other;
-      if (!hasMinimum) {
-        hasMinimum = otherInt.hasMinimum;
-        minimum = otherInt.minimum;
-        maximum = otherInt.maximum;
-      } else if (otherInt.hasMinimum) {
-        if (otherInt.minimum < minimum) {
+      if (other instanceof IntegerStatisticsImpl) {
+        IntegerStatisticsImpl otherInt = (IntegerStatisticsImpl) other;
+        if (!hasMinimum) {
+          hasMinimum = otherInt.hasMinimum;
           minimum = otherInt.minimum;
-        }
-        if (otherInt.maximum > maximum) {
           maximum = otherInt.maximum;
+        } else if (otherInt.hasMinimum) {
+          if (otherInt.minimum < minimum) {
+            minimum = otherInt.minimum;
+          }
+          if (otherInt.maximum > maximum) {
+            maximum = otherInt.maximum;
+          }
+        }
+
+        overflow |= otherInt.overflow;
+        if (!overflow) {
+          boolean wasPositive = sum >= 0;
+          sum += otherInt.sum;
+          if ((otherInt.sum >= 0) == wasPositive) {
+            overflow = (sum >= 0) != wasPositive;
+          }
+        }
+      } else {
+        if (isStatsExists() && hasMinimum) {
+          throw new IllegalArgumentException("Incompatible merging of integer column statistics");
         }
       }
       super.merge(other);
-      overflow |= otherInt.overflow;
-      if (!overflow) {
-        boolean wasPositive = sum >= 0;
-        sum += otherInt.sum;
-        if ((otherInt.sum >= 0) == wasPositive) {
-          overflow = (sum >= 0) != wasPositive;
-        }
-      }
     }
 
     @Override
@@ -276,21 +289,27 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     void merge(ColumnStatisticsImpl other) {
-      super.merge(other);
-      DoubleStatisticsImpl dbl = (DoubleStatisticsImpl) other;
-      if (!hasMinimum) {
-        hasMinimum = dbl.hasMinimum;
-        minimum = dbl.minimum;
-        maximum = dbl.maximum;
-      } else if (dbl.hasMinimum) {
-        if (dbl.minimum < minimum) {
+      if (other instanceof DoubleStatisticsImpl) {
+        DoubleStatisticsImpl dbl = (DoubleStatisticsImpl) other;
+        if (!hasMinimum) {
+          hasMinimum = dbl.hasMinimum;
           minimum = dbl.minimum;
-        }
-        if (dbl.maximum > maximum) {
           maximum = dbl.maximum;
+        } else if (dbl.hasMinimum) {
+          if (dbl.minimum < minimum) {
+            minimum = dbl.minimum;
+          }
+          if (dbl.maximum > maximum) {
+            maximum = dbl.maximum;
+          }
+        }
+        sum += dbl.sum;
+      } else {
+        if (isStatsExists() && hasMinimum) {
+          throw new IllegalArgumentException("Incompatible merging of double column statistics");
         }
       }
-      sum += dbl.sum;
+      super.merge(other);
     }
 
     @Override
@@ -382,25 +401,31 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     void merge(ColumnStatisticsImpl other) {
-      super.merge(other);
-      StringStatisticsImpl str = (StringStatisticsImpl) other;
-      if (minimum == null) {
-        if(str.minimum != null) {
-          maximum = new Text(str.getMaximum());
-          minimum = new Text(str.getMinimum());
-        } else {
+      if (other instanceof StringStatisticsImpl) {
+        StringStatisticsImpl str = (StringStatisticsImpl) other;
+        if (minimum == null) {
+          if (str.minimum != null) {
+            maximum = new Text(str.getMaximum());
+            minimum = new Text(str.getMinimum());
+          } else {
           /* both are empty */
-          maximum = minimum = null;
+            maximum = minimum = null;
+          }
+        } else if (str.minimum != null) {
+          if (minimum.compareTo(str.minimum) > 0) {
+            minimum = new Text(str.getMinimum());
+          }
+          if (maximum.compareTo(str.maximum) < 0) {
+            maximum = new Text(str.getMaximum());
+          }
         }
-      } else if (str.minimum != null) {
-        if (minimum.compareTo(str.minimum) > 0) {
-          minimum = new Text(str.getMinimum());
-        }
-        if (maximum.compareTo(str.maximum) < 0) {
-          maximum = new Text(str.getMaximum());
+        sum += str.sum;
+      } else {
+        if (isStatsExists() && minimum != null) {
+          throw new IllegalArgumentException("Incompatible merging of string column statistics");
         }
       }
-      sum += str.sum;
+      super.merge(other);
     }
 
     @Override
@@ -476,9 +501,15 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     void merge(ColumnStatisticsImpl other) {
+      if (other instanceof BinaryColumnStatistics) {
+        BinaryStatisticsImpl bin = (BinaryStatisticsImpl) other;
+        sum += bin.sum;
+      } else {
+        if (isStatsExists() && sum != 0) {
+          throw new IllegalArgumentException("Incompatible merging of binary column statistics");
+        }
+      }
       super.merge(other);
-      BinaryStatisticsImpl bin = (BinaryStatisticsImpl) other;
-      sum += bin.sum;
     }
 
     @Override
@@ -556,25 +587,31 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     void merge(ColumnStatisticsImpl other) {
-      super.merge(other);
-      DecimalStatisticsImpl dec = (DecimalStatisticsImpl) other;
-      if (minimum == null) {
-        minimum = dec.minimum;
-        maximum = dec.maximum;
-        sum = dec.sum;
-      } else if (dec.minimum != null) {
-        if (minimum.compareTo(dec.minimum) > 0) {
+      if (other instanceof DecimalStatisticsImpl) {
+        DecimalStatisticsImpl dec = (DecimalStatisticsImpl) other;
+        if (minimum == null) {
           minimum = dec.minimum;
-        }
-        if (maximum.compareTo(dec.maximum) < 0) {
           maximum = dec.maximum;
+          sum = dec.sum;
+        } else if (dec.minimum != null) {
+          if (minimum.compareTo(dec.minimum) > 0) {
+            minimum = dec.minimum;
+          }
+          if (maximum.compareTo(dec.maximum) < 0) {
+            maximum = dec.maximum;
+          }
+          if (sum == null || dec.sum == null) {
+            sum = null;
+          } else {
+            sum = sum.add(dec.sum);
+          }
         }
-        if (sum == null || dec.sum == null) {
-          sum = null;
-        } else {
-          sum = sum.add(dec.sum);
+      } else {
+        if (isStatsExists() && minimum != null) {
+          throw new IllegalArgumentException("Incompatible merging of decimal column statistics");
         }
       }
+      super.merge(other);
     }
 
     @Override
@@ -582,7 +619,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       OrcProto.ColumnStatistics.Builder result = super.serialize();
       OrcProto.DecimalStatistics.Builder dec =
           OrcProto.DecimalStatistics.newBuilder();
-      if (getNumberOfValues() != 0) {
+      if (getNumberOfValues() != 0 && minimum != null) {
         dec.setMinimum(minimum.toString());
         dec.setMaximum(maximum.toString());
       }
@@ -666,19 +703,25 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     void merge(ColumnStatisticsImpl other) {
-      super.merge(other);
-      DateStatisticsImpl dateStats = (DateStatisticsImpl) other;
-      if (minimum == null) {
-        minimum = dateStats.minimum;
-        maximum = dateStats.maximum;
-      } else if (dateStats.minimum != null) {
-        if (minimum > dateStats.minimum) {
+      if (other instanceof DateStatisticsImpl) {
+        DateStatisticsImpl dateStats = (DateStatisticsImpl) other;
+        if (minimum == null) {
           minimum = dateStats.minimum;
-        }
-        if (maximum < dateStats.maximum) {
           maximum = dateStats.maximum;
+        } else if (dateStats.minimum != null) {
+          if (minimum > dateStats.minimum) {
+            minimum = dateStats.minimum;
+          }
+          if (maximum < dateStats.maximum) {
+            maximum = dateStats.maximum;
+          }
+        }
+      } else {
+        if (isStatsExists() && minimum != null) {
+          throw new IllegalArgumentException("Incompatible merging of date column statistics");
         }
       }
+      super.merge(other);
     }
 
     @Override
@@ -686,7 +729,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       OrcProto.ColumnStatistics.Builder result = super.serialize();
       OrcProto.DateStatistics.Builder dateStats =
           OrcProto.DateStatistics.newBuilder();
-      if (getNumberOfValues() != 0) {
+      if (getNumberOfValues() != 0 && minimum != null) {
         dateStats.setMinimum(minimum);
         dateStats.setMaximum(maximum);
       }
@@ -769,19 +812,25 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     void merge(ColumnStatisticsImpl other) {
-      super.merge(other);
-      TimestampStatisticsImpl timestampStats = (TimestampStatisticsImpl) other;
-      if (minimum == null) {
-        minimum = timestampStats.minimum;
-        maximum = timestampStats.maximum;
-      } else if (timestampStats.minimum != null) {
-        if (minimum > timestampStats.minimum) {
+      if (other instanceof TimestampStatisticsImpl) {
+        TimestampStatisticsImpl timestampStats = (TimestampStatisticsImpl) other;
+        if (minimum == null) {
           minimum = timestampStats.minimum;
-        }
-        if (maximum < timestampStats.maximum) {
           maximum = timestampStats.maximum;
+        } else if (timestampStats.minimum != null) {
+          if (minimum > timestampStats.minimum) {
+            minimum = timestampStats.minimum;
+          }
+          if (maximum < timestampStats.maximum) {
+            maximum = timestampStats.maximum;
+          }
+        }
+      } else {
+        if (isStatsExists() && minimum != null) {
+          throw new IllegalArgumentException("Incompatible merging of timestamp column statistics");
         }
       }
+      super.merge(other);
     }
 
     @Override
@@ -789,7 +838,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       OrcProto.ColumnStatistics.Builder result = super.serialize();
       OrcProto.TimestampStatistics.Builder timestampStats = OrcProto.TimestampStatistics
           .newBuilder();
-      if (getNumberOfValues() != 0) {
+      if (getNumberOfValues() != 0 && minimum != null) {
         timestampStats.setMinimum(minimum);
         timestampStats.setMaximum(maximum);
       }
@@ -876,6 +925,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   void updateTimestamp(Timestamp value) {
     throw new UnsupportedOperationException("Can't update timestamp");
+  }
+
+  boolean isStatsExists() {
+    return (count > 0 || hasNull == true);
   }
 
   void merge(ColumnStatisticsImpl stats) {

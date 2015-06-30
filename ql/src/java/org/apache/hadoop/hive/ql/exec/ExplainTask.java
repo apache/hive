@@ -39,6 +39,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
@@ -49,7 +51,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
@@ -76,9 +77,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public static final String EXPL_COLUMN_NAME = "Explain";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
   private boolean isLogical = false;
+  protected final Log LOG;
 
   public ExplainTask() {
     super();
+    LOG = LogFactory.getLog(this.getClass().getName());
   }
 
   /*
@@ -288,28 +291,29 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         JSONObject jsonDependencies = getJSONDependencies(work);
         out.print(jsonDependencies);
       } else {
-        if (work.getDependency()) {
-          JSONObject jsonDependencies = getJSONDependencies(work);
-          out.print(jsonDependencies);
+        if (work.isUserLevelExplain()) {
+          // Because of the implementation of the JsonParserFactory, we are sure
+          // that we can get a TezJsonParser.
+          JsonParser jsonParser = JsonParserFactory.getParser(conf);
+          work.setFormatted(true);
+          JSONObject jsonPlan = getJSONPlan(out, work);
+          if (work.getCboInfo() != null) {
+            jsonPlan.put("cboInfo", work.getCboInfo());
+          }
+          try {
+            jsonParser.print(jsonPlan, out);
+          } catch (Exception e) {
+            // if there is anything wrong happen, we bail out.
+            LOG.error("Running explain user level has problem: " + e.toString()
+                + ". Falling back to normal explain");
+            work.setFormatted(false);
+            work.setUserLevelExplain(false);
+            jsonPlan = getJSONPlan(out, work);
+          }
         } else {
-          if (work.isUserLevelExplain()) {
-            JsonParser jsonParser = JsonParserFactory.getParser(conf);
-            if (jsonParser != null) {
-              work.setFormatted(true);
-              JSONObject jsonPlan = getJSONPlan(out, work);
-              if (work.getCboInfo() != null) {
-                jsonPlan.put("cboInfo", work.getCboInfo());
-              }
-              jsonParser.print(jsonPlan, out);
-            } else {
-              throw new SemanticException(
-                  "Hive UserLevelExplain only supports tez engine right now.");
-            }
-          } else {
-            JSONObject jsonPlan = getJSONPlan(out, work);
-            if (work.isFormatted()) {
-              out.print(jsonPlan);
-            }
+          JSONObject jsonPlan = getJSONPlan(out, work);
+          if (work.isFormatted()) {
+            out.print(jsonPlan);
           }
         }
       }

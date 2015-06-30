@@ -1,4 +1,7 @@
 SET hive.vectorized.execution.enabled=true;
+
+-- SORT_QUERY_RESULTS
+
 SELECT MAX(csmallint),
        (MAX(csmallint) * -75),
        COUNT(*),

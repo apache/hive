@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.compute.query.using.stats=true;
 
 -- SORT_QUERY_RESULTS

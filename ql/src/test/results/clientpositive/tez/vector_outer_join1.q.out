@@ -1,43 +1,92 @@
-PREHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by cint, ctinyint limit 5
+PREHOOK: query: -- Using cint and ctinyint in test queries
+create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@small_alltypesorc1a
-POSTHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by cint, ctinyint limit 5
+POSTHOOK: query: -- Using cint and ctinyint in test queries
+create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc1a
-PREHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by cint, ctinyint limit 5
+PREHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@small_alltypesorc2a
-POSTHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by cint, ctinyint limit 5
+POSTHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc2a
-PREHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by cint, ctinyint limit 5
+PREHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@small_alltypesorc3a
-POSTHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by cint, ctinyint limit 5
+POSTHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc3a
-PREHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by cint, ctinyint limit 5
+PREHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@small_alltypesorc4a
-POSTHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by cint, ctinyint limit 5
+POSTHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc4a
+PREHOOK: query: select * from small_alltypesorc1a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc1a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from small_alltypesorc1a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc1a
+#### A masked pattern was here ####
+-64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL
+-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
+-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
+-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
+-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
+PREHOOK: query: select * from small_alltypesorc2a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc2a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from small_alltypesorc2a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc2a
+#### A masked pattern was here ####
+-64	-7196	NULL	-1615920595	-64.0	-7196.0	NULL	X5rDjl	1969-12-31 16:00:11.912	1969-12-31 15:59:58.174	NULL	false
+-64	-7196	NULL	-1639157869	-64.0	-7196.0	NULL	IJ0Oj7qAiqNGsN7gn	1969-12-31 16:00:01.785	1969-12-31 15:59:58.174	NULL	false
+-64	-7196	NULL	-527203677	-64.0	-7196.0	NULL	JBE4H5RoK412Cs260I72	1969-12-31 15:59:50.184	1969-12-31 15:59:58.174	NULL	true
+-64	-7196	NULL	406535485	-64.0	-7196.0	NULL	E011i	1969-12-31 15:59:56.048	1969-12-31 15:59:58.174	NULL	false
+-64	-7196	NULL	658026952	-64.0	-7196.0	NULL	4tAur	1969-12-31 15:59:53.866	1969-12-31 15:59:58.174	NULL	true
+PREHOOK: query: select * from small_alltypesorc3a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc3a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from small_alltypesorc3a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc3a
+#### A masked pattern was here ####
+NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
+NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
+NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
+NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
+NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
+PREHOOK: query: select * from small_alltypesorc4a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc4a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from small_alltypesorc4a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc4a
+#### A masked pattern was here ####
 PREHOOK: query: create table small_alltypesorc_a stored as orc as select * from 
 (select * from (select * from small_alltypesorc1a) sq1
  union all
@@ -84,6 +133,29 @@ POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMN
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 #### A masked pattern was here ####
+PREHOOK: query: select * from small_alltypesorc_a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from small_alltypesorc_a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+#### A masked pattern was here ####
+-64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL
+-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
+-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
+-64	-7196	NULL	-1615920595	-64.0	-7196.0	NULL	X5rDjl	1969-12-31 16:00:11.912	1969-12-31 15:59:58.174	NULL	false
+-64	-7196	NULL	-1639157869	-64.0	-7196.0	NULL	IJ0Oj7qAiqNGsN7gn	1969-12-31 16:00:01.785	1969-12-31 15:59:58.174	NULL	false
+-64	-7196	NULL	-527203677	-64.0	-7196.0	NULL	JBE4H5RoK412Cs260I72	1969-12-31 15:59:50.184	1969-12-31 15:59:58.174	NULL	true
+-64	-7196	NULL	406535485	-64.0	-7196.0	NULL	E011i	1969-12-31 15:59:56.048	1969-12-31 15:59:58.174	NULL	false
+-64	-7196	NULL	658026952	-64.0	-7196.0	NULL	4tAur	1969-12-31 15:59:53.866	1969-12-31 15:59:58.174	NULL	true
+-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
+-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
+NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
+NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
+NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
+NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
+NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
 PREHOOK: query: explain
 select * 
 from small_alltypesorc_a c
@@ -111,11 +183,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 13 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                    Statistics: Num rows: 13 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -125,11 +197,11 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
                       input vertices:
                         1 Map 2
-                      Statistics: Num rows: 14 Data size: 4601 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
                       HybridGraceHashJoin: true
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 14 Data size: 4601 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -139,16 +211,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 13 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                    Statistics: Num rows: 13 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col2 (type: int)
-                      Statistics: Num rows: 13 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
             Execution mode: vectorized
 
@@ -176,21 +248,25 @@ left outer join small_alltypesorc_a cd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 #### A masked pattern was here ####
--51	NULL	-1071480828	-1401575336	-51.0	NULL	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA	1969-12-31 16:00:08.451	NULL	true	true	-51	NULL	-1071480828	-1401575336	-51.0	NULL	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA	1969-12-31 16:00:08.451	NULL	true	true
+-64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL	-64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL
+-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL	-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
+-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL	-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
+-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL	-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
+-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL	-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
+-64	-7196	NULL	-1615920595	-64.0	-7196.0	NULL	X5rDjl	1969-12-31 16:00:11.912	1969-12-31 15:59:58.174	NULL	false	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+-64	-7196	NULL	-1639157869	-64.0	-7196.0	NULL	IJ0Oj7qAiqNGsN7gn	1969-12-31 16:00:01.785	1969-12-31 15:59:58.174	NULL	false	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 -64	-7196	NULL	-527203677	-64.0	-7196.0	NULL	JBE4H5RoK412Cs260I72	1969-12-31 15:59:50.184	1969-12-31 15:59:58.174	NULL	true	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 -64	-7196	NULL	406535485	-64.0	-7196.0	NULL	E011i	1969-12-31 15:59:56.048	1969-12-31 15:59:58.174	NULL	false	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 -64	-7196	NULL	658026952	-64.0	-7196.0	NULL	4tAur	1969-12-31 15:59:53.866	1969-12-31 15:59:58.174	NULL	true	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
--64	15601	NULL	1421812187	-64.0	15601.0	NULL	12AEw	1969-12-31 16:00:05.997	1969-12-31 15:59:58.456	NULL	true	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
--64	15601	NULL	1960950366	-64.0	15601.0	NULL	c0ODOF64	1969-12-31 16:00:13.274	1969-12-31 15:59:58.456	NULL	true	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-11	NULL	-1069736047	-453772520	11.0	NULL	k17Am8uPHWk02cEf1jet	qrXLLNX1	1969-12-31 16:00:02.351	NULL	true	true	11	NULL	-1069736047	-453772520	11.0	NULL	k17Am8uPHWk02cEf1jet	qrXLLNX1	1969-12-31 16:00:02.351	NULL	true	true
-11	NULL	-1072910839	2048385991	11.0	NULL	0iqrc5	KbaDXiN85adbHRx58v	1969-12-31 16:00:02.351	NULL	false	false	11	NULL	-1072910839	2048385991	11.0	NULL	0iqrc5	KbaDXiN85adbHRx58v	1969-12-31 16:00:02.351	NULL	false	false
-11	NULL	-1073279343	-1595604468	11.0	NULL	oj1YrV5Wa	P76636jJ6qM17d7DIy	1969-12-31 16:00:02.351	NULL	true	true	11	NULL	-1073279343	-1595604468	11.0	NULL	oj1YrV5Wa	P76636jJ6qM17d7DIy	1969-12-31 16:00:02.351	NULL	true	true
-8	NULL	-1071363017	1349676361	8.0	NULL	Anj0oF	IwE1G7Qb0B1NEfV030g	1969-12-31 16:00:15.892	NULL	true	true	8	NULL	-1071363017	1349676361	8.0	NULL	Anj0oF	IwE1G7Qb0B1NEfV030g	1969-12-31 16:00:15.892	NULL	true	true
-NULL	-5470	-1072076362	1864027286	NULL	-5470.0	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:01.836	true	true	NULL	-5470	-1072076362	1864027286	NULL	-5470.0	2uLyD28144vklju213J1mr	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:01.836	true	true
-NULL	-7382	-1073051226	-1887561756	NULL	-7382.0	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:10.331	false	false	NULL	-7382	-1073051226	-1887561756	NULL	-7382.0	A34p7oRr2WvUJNf	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:10.331	false	false
-NULL	-741	-1070883071	-1645852809	NULL	-741.0	0ruyd6Y50JpdGRf6HqD	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:51.293	false	false	NULL	-741	-1070883071	-1645852809	NULL	-741.0	0ruyd6Y50JpdGRf6HqD	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:51.293	false	false
-NULL	-947	-1070551679	1864027286	NULL	-947.0	iUR3Q	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:08.058	false	true	NULL	-947	-1070551679	1864027286	NULL	-947.0	iUR3Q	4KWs6gw7lv2WYd66P	NULL	1969-12-31 16:00:08.058	false	true
-NULL	8373	-1072081801	1864027286	NULL	8373.0	dPkN74F7	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:56.465	true	true	NULL	8373	-1072081801	1864027286	NULL	8373.0	dPkN74F7	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:56.465	true	true
+-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL	-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
+-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL	-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
+-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL	-64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
+-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL	-64	-9842	253665376	NULL	-64.0	-9842.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:00.631	1969-12-31 16:00:01.781	true	NULL
+NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false	NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
+NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false	NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
+NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false	NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
+NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false	NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
+NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false	NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
 PREHOOK: query: explain
 select c.ctinyint 
 from small_alltypesorc_a c
@@ -218,11 +294,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -232,11 +308,11 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 2
-                      Statistics: Num rows: 1149 Data size: 4601 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
                       HybridGraceHashJoin: true
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1149 Data size: 4601 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -246,16 +322,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: tinyint)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: tinyint)
-                      Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
 
   Stage: Stage-0
@@ -282,7 +358,6 @@ left outer join small_alltypesorc_a hd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 #### A masked pattern was here ####
--51
 -64
 -64
 -64
@@ -308,16 +383,81 @@ POSTHOOK: Input: default@small_alltypesorc_a
 -64
 -64
 -64
-11
-11
-11
-11
-11
-11
-11
-11
-11
-8
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
+-64
 NULL
 NULL
 NULL
@@ -357,11 +497,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 522 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cint (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 522 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -371,7 +511,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 1149 Data size: 4601 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 16 Data size: 3831 Basic stats: COMPLETE Column stats: NONE
                       HybridGraceHashJoin: true
                       Map Join Operator
                         condition map:
@@ -382,7 +522,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 1263 Data size: 5061 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 17 Data size: 4214 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count(), sum(_col0)
@@ -398,33 +538,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: tinyint)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: tinyint)
-                      Statistics: Num rows: 1045 Data size: 4183 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
@@ -438,7 +579,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -470,4 +610,4 @@ left outer join small_alltypesorc_a hd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 #### A masked pattern was here ####
-41	-1544
+145	-8960

@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE;

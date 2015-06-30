@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 -- SORT_QUERY_RESULTS

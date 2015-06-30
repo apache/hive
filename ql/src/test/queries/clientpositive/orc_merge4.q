@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.merge.orcfile.stripe.level=true;
 
 DROP TABLE orcfile_merge3a;

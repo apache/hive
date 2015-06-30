@@ -34,7 +34,7 @@ STAGE PLANS:
                   alias: z
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((11.0 = 11.0) and key is not null) (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -284,7 +284,7 @@ STAGE PLANS:
                   alias: z
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((11.0 = 11.0) and key is not null) (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)

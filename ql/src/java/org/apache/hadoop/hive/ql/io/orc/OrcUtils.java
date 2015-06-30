@@ -57,6 +57,10 @@ public class OrcUtils {
       ObjectInspector inspector) {
     int numFlattenedCols = getFlattenedColumnsCount(inspector);
     boolean[] results = new boolean[numFlattenedCols];
+    if ("*".equals(selectedColumns)) {
+      Arrays.fill(results, true);
+      return results;
+    }
     if (selectedColumns != null && !selectedColumns.isEmpty()) {
       includeColumnsImpl(results, selectedColumns.toLowerCase(), allColumns, inspector);
     }

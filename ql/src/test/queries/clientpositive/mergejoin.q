@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.join.emit.interval=100000;
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=true;

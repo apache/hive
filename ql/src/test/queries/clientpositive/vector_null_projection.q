@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 

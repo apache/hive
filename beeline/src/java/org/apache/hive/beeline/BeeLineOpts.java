@@ -197,9 +197,9 @@ class BeeLineOpts implements Completer {
 
     String[] names = propertyNames();
     for (int i = 0; names != null && i < names.length; i++) {
+      Object o = beeLine.getReflector().invoke(this, "get" + names[i], new Object[0]);
       props.setProperty(PROPERTY_PREFIX + names[i],
-          beeLine.getReflector().invoke(this, "get" + names[i], new Object[0])
-              .toString());
+          o == null ? "" : o.toString());
     }
     beeLine.debug("properties: " + props.toString());
     return props;

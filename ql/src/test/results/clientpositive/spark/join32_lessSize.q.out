@@ -271,7 +271,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((11.0 = 11.0) and value is not null) (type: boolean)
+                    predicate: value is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -1246,7 +1246,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((11.0 = 11.0) and value is not null) (type: boolean)
+                    predicate: value is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -1838,7 +1838,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((11.0 = 11.0) and value is not null) (type: boolean)
+                    predicate: value is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -2222,7 +2222,7 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((11.0 = 11.0) and value is not null) (type: boolean)
+                    predicate: value is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
@@ -2466,7 +2466,7 @@ STAGE PLANS:
                   alias: y
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((11.0 = 11.0) and value is not null) (type: boolean)
+                    predicate: value is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)

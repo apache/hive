@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
@@ -71,6 +72,7 @@ import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider;
+import org.apache.hadoop.hive.ql.optimizer.physical.MemoryDecider;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
@@ -305,8 +307,10 @@ public class TezCompiler extends TaskCompiler {
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
+    // Rather than run the full constant folding just need to shortcut AND/OR expressions
+    // involving constant true/false values.
     if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
-      new ConstantPropagate().transform(procCtx.parseContext);
+      new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
   }
 
@@ -474,11 +478,15 @@ public class TezCompiler extends TaskCompiler {
       LOG.debug("Skipping stage id rearranger");
     }
 
+    if ((conf.getBoolVar(HiveConf.ConfVars.HIVE_TEZ_ENABLE_MEMORY_MANAGER))
+        && (conf.getBoolVar(HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN))) {
+      physicalCtx = new MemoryDecider().resolve(physicalCtx);
+    }
+
     if ("llap".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
       physicalCtx = new LlapDecider().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping llap decider");
     }
-    return;
   }
 }

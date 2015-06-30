@@ -837,11 +837,6 @@ public class Vectorizer implements PhysicalPlanResolver {
           LOG.debug("Vectorized ReduceWork operator " + vectorOp.getName() + " added vectorization context " + vNewContext.toString());
         }
       }
-      if (vectorOp instanceof VectorGroupByOperator) {
-        VectorGroupByOperator groupBy = (VectorGroupByOperator) vectorOp;
-        VectorGroupByDesc vectorDesc = groupBy.getConf().getVectorDesc();
-        vectorDesc.setVectorGroupBatches(true);
-      }
       if (saveRootVectorOp && op != vectorOp) {
         rootVectorOp = vectorOp;
       }
@@ -1127,42 +1122,67 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Cannot vectorize groupby key expression");
       return false;
     }
-    ret = validateAggregationDesc(desc.getAggregators(), isReduce);
-    if (!ret) {
-      LOG.info("Cannot vectorize groupby aggregate expression");
-      return false;
-    }
-    if (isReduce) {
-      if (desc.isDistinct()) {
-        LOG.info("Distinct not supported in reduce vector mode");
+
+    boolean isMergePartial = (desc.getMode() != GroupByDesc.Mode.HASH);
+
+    if (!isReduce) {
+
+      // MapWork
+
+      ret = validateHashAggregationDesc(desc.getAggregators());
+      if (!ret) {
         return false;
       }
-      // Sort-based GroupBy?
-      if (desc.getMode() != GroupByDesc.Mode.COMPLETE &&
-          desc.getMode() != GroupByDesc.Mode.PARTIAL1 &&
-          desc.getMode() != GroupByDesc.Mode.PARTIAL2 &&
-          desc.getMode() != GroupByDesc.Mode.MERGEPARTIAL) {
-        LOG.info("Reduce vector mode not supported when input for GROUP BY not sorted");
-        return false;
-      }
-      LOG.info("Reduce GROUP BY mode is " + desc.getMode().name());
-      if (!aggregatorsOutputIsPrimitive(desc.getAggregators(), isReduce)) {
-        LOG.info("Reduce vector mode only supported when aggregate outputs are primitive types");
-        return false;
-      }
-      if (desc.getKeys().size() > 0) {
-        if (op.getParentOperators().size() > 0) {
-          LOG.info("Reduce vector mode can only handle a key group GROUP BY operator when it is fed by reduce-shuffle");
+    } else {
+
+      // ReduceWork
+
+      if (isMergePartial) {
+
+        // Reduce Merge-Partial GROUP BY.
+
+        // A merge-partial GROUP BY is fed by grouping by keys from reduce-shuffle.  It is the
+        // first (or root) operator for its reduce task.
+
+        if (desc.isDistinct()) {
+          LOG.info("Vectorized Reduce MergePartial GROUP BY does not support DISTINCT");
           return false;
         }
-        LOG.info("Reduce-side GROUP BY will process key groups");
-        vectorDesc.setVectorGroupBatches(true);
+
+        boolean hasKeys = (desc.getKeys().size() > 0);
+
+        // Do we support merge-partial aggregation AND the output is primitive?
+        ret = validateReduceMergePartialAggregationDesc(desc.getAggregators(), hasKeys);
+        if (!ret) {
+          return false;
+        }
+
+        if (hasKeys) {
+          if (op.getParentOperators().size() > 0) {
+            LOG.info("Vectorized Reduce MergePartial GROUP BY keys can only handle a key group when it is fed by reduce-shuffle");
+            return false;
+          }
+
+          LOG.info("Vectorized Reduce MergePartial GROUP BY will process key groups");
+
+          // Primitive output validation above means we can output VectorizedRowBatch to the
+          // children operators.
+          vectorDesc.setVectorOutput(true);
+        } else {
+          LOG.info("Vectorized Reduce MergePartial GROUP BY will do global aggregation");
+        }
+        vectorDesc.setIsReduceMergePartial(true);
       } else {
-        LOG.info("Reduce-side GROUP BY will do global aggregation");
+
+        // Reduce Hash GROUP BY or global aggregation.
+
+        ret = validateHashAggregationDesc(desc.getAggregators());
+        if (!ret) {
+          return false;
+        }
       }
-      vectorDesc.setVectorOutput(true);
-      vectorDesc.setIsReduce(true);
     }
+
     return true;
   }
 
@@ -1185,9 +1205,18 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private boolean validateAggregationDesc(List<AggregationDesc> descs, boolean isReduce) {
+
+  private boolean validateHashAggregationDesc(List<AggregationDesc> descs) {
+    return validateAggregationDesc(descs, /* isReduceMergePartial */ false, false);
+  }
+
+  private boolean validateReduceMergePartialAggregationDesc(List<AggregationDesc> descs, boolean hasKeys) {
+    return validateAggregationDesc(descs, /* isReduceMergePartial */ true, hasKeys);
+  }
+
+  private boolean validateAggregationDesc(List<AggregationDesc> descs, boolean isReduceMergePartial, boolean hasKeys) {
     for (AggregationDesc d : descs) {
-      boolean ret = validateAggregationDesc(d, isReduce);
+      boolean ret = validateAggregationDesc(d, isReduceMergePartial, hasKeys);
       if (!ret) {
         return false;
       }
@@ -1265,7 +1294,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
   }
 
-  private boolean validateAggregationDesc(AggregationDesc aggDesc, boolean isReduce) {
+  private boolean validateAggregationIsPrimitive(VectorAggregateExpression vectorAggrExpr) {
+    ObjectInspector outputObjInspector = vectorAggrExpr.getOutputObjectInspector();
+    return (outputObjInspector.getCategory() == ObjectInspector.Category.PRIMITIVE);
+  }
+
+  private boolean validateAggregationDesc(AggregationDesc aggDesc, boolean isReduceMergePartial,
+          boolean hasKeys) {
+
     String udfName = aggDesc.getGenericUDAFName().toLowerCase();
     if (!supportedAggregationUdfs.contains(udfName)) {
       LOG.info("Cannot vectorize groupby aggregate expression: UDF " + udfName + " not supported");
@@ -1275,47 +1311,24 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Cannot vectorize groupby aggregate expression: UDF parameters not supported");
       return false;
     }
+
     // See if we can vectorize the aggregation.
-    try {
-      VectorizationContext vc = new ValidatorVectorizationContext();
-      if (vc.getAggregatorExpression(aggDesc, isReduce) == null) {
-        // TODO: this cannot happen - VectorizationContext throws in such cases.
-        LOG.info("getAggregatorExpression returned null");
-        return false;
-      }
-    } catch (Exception e) {
-      LOG.info("Failed to vectorize", e);
-      return false;
-    }
-    return true;
-  }
-
-  private boolean aggregatorsOutputIsPrimitive(List<AggregationDesc> descs, boolean isReduce) {
-    for (AggregationDesc d : descs) {
-      boolean ret = aggregatorsOutputIsPrimitive(d, isReduce);
-      if (!ret) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean aggregatorsOutputIsPrimitive(AggregationDesc aggDesc, boolean isReduce) {
     VectorizationContext vc = new ValidatorVectorizationContext();
     VectorAggregateExpression vectorAggrExpr;
     try {
-        vectorAggrExpr = vc.getAggregatorExpression(aggDesc, isReduce);
+        vectorAggrExpr = vc.getAggregatorExpression(aggDesc, isReduceMergePartial);
     } catch (Exception e) {
       // We should have already attempted to vectorize in validateAggregationDesc.
       LOG.info("Vectorization of aggreation should have succeeded ", e);
       return false;
     }
 
-    ObjectInspector outputObjInspector = vectorAggrExpr.getOutputObjectInspector();
-    if (outputObjInspector.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-      return true;
+    if (isReduceMergePartial && hasKeys && !validateAggregationIsPrimitive(vectorAggrExpr)) {
+      LOG.info("Vectorized Reduce MergePartial GROUP BY keys can only handle aggregate outputs that are primitive types");
+      return false;
     }
-    return false;
+
+    return true;
   }
 
   private boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {

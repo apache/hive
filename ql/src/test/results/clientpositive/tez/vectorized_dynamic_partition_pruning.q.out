@@ -2870,6 +2870,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
+            Execution mode: vectorized
         Reducer 8 
             Reduce Operator Tree:
               Group By Operator
@@ -2905,6 +2906,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
+            Execution mode: vectorized
         Union 6 
             Vertex: Union 6
 
@@ -3070,6 +3072,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
+            Execution mode: vectorized
         Reducer 8 
             Reduce Operator Tree:
               Group By Operator
@@ -3105,6 +3108,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
+            Execution mode: vectorized
         Union 6 
             Vertex: Union 6
 
@@ -3277,6 +3281,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 5
+            Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -3370,6 +3375,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 5
+            Execution mode: vectorized
         Union 3 
             Vertex: Union 3
         Union 9 
@@ -4962,6 +4968,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
+            Execution mode: vectorized
         Reducer 7 
             Reduce Operator Tree:
               Group By Operator
@@ -4997,6 +5004,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
+            Execution mode: vectorized
         Union 5 
             Vertex: Union 5
 

@@ -29,7 +29,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Progressable;
 import org.junit.Test;
 
-import parquet.hadoop.ParquetOutputFormat;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
 
 public class TestMapredParquetOutputFormat {
 

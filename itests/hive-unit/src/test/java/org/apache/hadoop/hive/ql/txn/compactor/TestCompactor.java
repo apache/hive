@@ -54,18 +54,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  */
 public class TestCompactor {
+  private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestCompactor.class);
-  private static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty("java.io.tmpdir") +
-    File.separator + TestCompactor.class.getCanonicalName() + "-" + System.currentTimeMillis());
-  private static final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
+  private final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty("java.io.tmpdir") +
+    File.separator + TestCompactor.class.getCanonicalName() + "-" + System.currentTimeMillis() + "_" + salt.getAndIncrement());
+  private final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
+  private final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
 
   @Rule
   public TemporaryFolder stagingFolder = new TemporaryFolder();

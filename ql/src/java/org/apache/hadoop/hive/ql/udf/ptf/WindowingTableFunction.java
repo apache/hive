@@ -865,7 +865,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
       // Use Case 4.
       if ( order == Order.DESC ) {
-        while (r >= 0 && !isGreater(rowVal, sortKey, amt) ) {
+        while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
           r--;
           if ( r >= 0 ) {
             rowVal = computeValue(p.getAt(r));
@@ -874,7 +874,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         return r + 1;
       }
       else { // Use Case 5.
-        while (r >= 0 && !isGreater(sortKey, rowVal, amt) ) {
+        while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
           r--;
           if ( r >= 0 ) {
             rowVal = computeValue(p.getAt(r));
@@ -936,7 +936,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
       // Use Case 11.
       if ( order == Order.DESC) {
-        while (r < p.size() && !isGreater(sortKey, rowVal, amt) ) {
+        while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
           r++;
           if ( r < p.size() ) {
             rowVal = computeValue(p.getAt(r));
@@ -945,7 +945,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         return r;
       }
       else { // Use Case 12.
-        while (r < p.size() && !isGreater(rowVal, sortKey, amt) ) {
+        while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
           r++;
           if ( r < p.size() ) {
             rowVal = computeValue(p.getAt(r));
@@ -1021,7 +1021,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
       // Use Case 4.
       if ( order == Order.DESC ) {
-        while (r >= 0 && !isGreater(rowVal, sortKey, amt) ) {
+        while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
           r--;
           if ( r >= 0 ) {
             rowVal = computeValue(p.getAt(r));
@@ -1030,7 +1030,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         return r + 1;
       }
       else { // Use Case 5.
-        while (r >= 0 && !isGreater(sortKey, rowVal, amt) ) {
+        while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
           r--;
           if ( r >= 0 ) {
             rowVal = computeValue(p.getAt(r));
@@ -1097,7 +1097,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
       // Use Case 11.
       if ( order == Order.DESC) {
-        while (r < p.size() && !isGreater(sortKey, rowVal, amt) ) {
+        while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
           r++;
           if ( r < p.size() ) {
             rowVal = computeValue(p.getAt(r));
@@ -1106,7 +1106,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         return r;
       }
       else { // Use Case 12.
-        while (r < p.size() && !isGreater(rowVal, sortKey, amt) ) {
+        while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
           r++;
           if ( r < p.size() ) {
             rowVal = computeValue(p.getAt(r));
@@ -1121,8 +1121,16 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       return ObjectInspectorUtils.copyToStandardObject(o, expressionDef.getOI());
     }
 
-    public abstract boolean isGreater(Object v1, Object v2, int amt);
+    /**
+     * Checks if the distance of v2 to v1 is greater than the given amt.
+     * @return True if the value of v1 - v2 is greater than amt or either value is null.
+     */
+    public abstract boolean isDistanceGreater(Object v1, Object v2, int amt);
 
+    /**
+     * Checks if the values of v1 or v2 are the same.
+     * @return True if both values are the same or both are nulls.
+     */
     public abstract boolean isEqual(Object v1, Object v2);
 
 
@@ -1160,21 +1168,29 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     @Override
-    public boolean isGreater(Object v1, Object v2, int amt) {
-      long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return (l1 -l2) > amt;
+    public boolean isDistanceGreater(Object v1, Object v2, int amt) {
+      if (v1 != null && v2 != null) {
+        long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return (l1 -l2) > amt;
+      }
+
+      return v1 != null || v2 != null; // True if only one value is null
     }
 
     @Override
     public boolean isEqual(Object v1, Object v2) {
-      long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return l1 == l2;
+      if (v1 != null && v2 != null) {
+        long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return l1 == l2;
+      }
+
+      return v1 == null && v2 == null; // True if both are null
     }
   }
 
@@ -1185,21 +1201,29 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     @Override
-    public boolean isGreater(Object v1, Object v2, int amt) {
-      double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return (d1 -d2) > amt;
+    public boolean isDistanceGreater(Object v1, Object v2, int amt) {
+      if (v1 != null && v2 != null) {
+        double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return (d1 -d2) > amt;
+      }
+
+      return v1 != null || v2 != null; // True if only one value is null
     }
 
     @Override
     public boolean isEqual(Object v1, Object v2) {
-      double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
-          (PrimitiveObjectInspector) expressionDef.getOI());
-      return d1 == d2;
+      if (v1 != null && v2 != null) {
+        double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
+            (PrimitiveObjectInspector) expressionDef.getOI());
+        return d1 == d2;
+      }
+
+      return v1 == null && v2 == null; // True if both are null
     }
   }
 
@@ -1210,15 +1234,16 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     @Override
-    public boolean isGreater(Object v1, Object v2, int amt) {
+    public boolean isDistanceGreater(Object v1, Object v2, int amt) {
       HiveDecimal d1 = PrimitiveObjectInspectorUtils.getHiveDecimal(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       HiveDecimal d2 = PrimitiveObjectInspectorUtils.getHiveDecimal(v2,
           (PrimitiveObjectInspector) expressionDef.getOI());
-      if ( d1 == null || d2 == null ) {
-        return false;
+      if ( d1 != null && d2 != null ) {
+        return d1.subtract(d2).intValue() > amt;
       }
-      return d1.subtract(d2).intValue() > amt;
+
+      return d1 != null || d2 != null; // True if only one value is null
     }
 
     @Override
@@ -1227,10 +1252,11 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
           (PrimitiveObjectInspector) expressionDef.getOI());
       HiveDecimal d2 = PrimitiveObjectInspectorUtils.getHiveDecimal(v2,
           (PrimitiveObjectInspector) expressionDef.getOI());
-      if ( d1 == null || d2 == null ) {
-        return false;
+      if ( d1 != null && d2 != null ) {
+        return d1.equals(d2);
       }
-      return d1.equals(d2);
+
+      return d1 == null && d2 == null; // True if both are null
     }
   }
 
@@ -1241,7 +1267,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     @Override
-    public boolean isGreater(Object v1, Object v2, int amt) {
+    public boolean isDistanceGreater(Object v1, Object v2, int amt) {
       Date l1 = PrimitiveObjectInspectorUtils.getDate(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       Date l2 = PrimitiveObjectInspectorUtils.getDate(v2,
@@ -1269,7 +1295,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     @Override
-    public boolean isGreater(Object v1, Object v2, int amt) {
+    public boolean isDistanceGreater(Object v1, Object v2, int amt) {
       String s1 = PrimitiveObjectInspectorUtils.getString(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       String s2 = PrimitiveObjectInspectorUtils.getString(v2,

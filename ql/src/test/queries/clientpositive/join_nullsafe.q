@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE myinput1(key int, value int);

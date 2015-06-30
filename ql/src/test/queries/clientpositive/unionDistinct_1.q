@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- union10.q
 
  

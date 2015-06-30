@@ -515,7 +515,7 @@ public class HadoopThriftAuthBridge {
         new ThreadLocal<InetAddress>() {
 
       @Override
-      protected synchronized InetAddress initialValue() {
+      protected InetAddress initialValue() {
         return null;
       }
     };
@@ -529,7 +529,7 @@ public class HadoopThriftAuthBridge {
         new ThreadLocal<AuthenticationMethod>() {
 
       @Override
-      protected synchronized AuthenticationMethod initialValue() {
+      protected AuthenticationMethod initialValue() {
         return AuthenticationMethod.TOKEN;
       }
     };
@@ -537,7 +537,7 @@ public class HadoopThriftAuthBridge {
     private static ThreadLocal<String> remoteUser = new ThreadLocal<String> () {
 
       @Override
-      protected synchronized String initialValue() {
+      protected String initialValue() {
         return null;
       }
     };
