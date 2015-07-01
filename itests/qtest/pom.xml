@@ -433,7 +433,6 @@
                   logFile="${project.build.directory}/testparseneggen.log"
                   hadoopVersion="${active.hadoop.version}"
                   logDirectory="${project.build.directory}/qfile-results/negative/"
-		  tezDirectory="${project.build.directory}/tez"
                   initScript="q_test_init.sql"
                   cleanupScript="q_test_cleanup.sql"/>
 
@@ -450,7 +449,6 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/" className="TestCliDriver"
                   logFile="${project.build.directory}/testclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-		  tezDirectory="${project.build.directory}/tez"
                   hadoopVersion="${active.hadoop.version}"
                   initScript="q_test_init.sql"
                   cleanupScript="q_test_cleanup.sql"/>
@@ -468,7 +466,6 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientnegative/" className="TestNegativeCliDriver"
                   logFile="${project.build.directory}/testnegativeclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientnegative/"
-		  tezDirectory="${project.build.directory}/tez"
                   hadoopVersion="${active.hadoop.version}"
                   initScript="q_test_init.sql"
                   cleanupScript="q_test_cleanup.sql"/>
@@ -485,7 +482,6 @@
                   className="TestCompareCliDriver"
                   logFile="${project.build.directory}/testcompareclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientcompare/"
-		  tezDirectory="${project.build.directory}/tez"
                   hadoopVersion="${active.hadoop.version}"
                   initScript="q_test_init.sql"
                   cleanupScript="q_test_cleanup.sql"/>
@@ -503,7 +499,6 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/" className="TestMinimrCliDriver"
                   logFile="${project.build.directory}/testminimrclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-		  tezDirectory="${project.build.directory}/tez"
                   hadoopVersion="${active.hadoop.version}"
                   initScript="q_test_init.sql"
                   cleanupScript="q_test_cleanup.sql"/>
@@ -525,7 +520,6 @@
                               className="TestMiniTezCliDriver"
                               logFile="${project.build.directory}/testminitezclidrivergen.log"
                               logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-			      tezDirectory="${project.build.directory}/tez"
                               hadoopVersion="${active.hadoop.version}"
                               initScript="q_test_init.sql"
                               cleanupScript="q_test_cleanup.sql"/>
@@ -548,24 +542,6 @@
                               initScript="q_test_init_for_encryption.sql"
                               cleanupScript="q_test_cleanup_for_encryption.sql"/>
 
-                    <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
-                              outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
-                              templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
-                              queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
-                              queryFile="${qfile}"
-                              includeQueryFile="${minitez.query.files},${minitez.query.files.shared}"
-                              queryFileRegex="${qfile_regex}"
-                              clusterMode="tezlocal"
-                              runDisabled="${run_disabled}"
-                              hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/tez"
-                              resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/tez" 
-                              className="TestMiniTezCliDriverLocal"
-                              logFile="${project.build.directory}/testminitezclidrivergen.log"
-                              logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-			      tezDirectory="${project.build.directory}/tez"
-                              hadoopVersion="${active.hadoop.version}"
-                              initScript="q_test_init.sql"
-                              cleanupScript="q_test_cleanup.sql"/>
                   </then>
                   <else>
                   </else>

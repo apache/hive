@@ -203,14 +203,6 @@ public class QTestGenTask extends Task {
     this.template = template;
   }
 
-  public String getTezDirectory() {
-    return tezDirectory;
-  }
-
-  public void setTezDirectory(String tezDirectory) {
-    this.tezDirectory = tezDirectory;
-  }
-
   public String getTemplate() {
     return template;
   }
@@ -377,7 +369,6 @@ public class QTestGenTask extends Task {
     File outDir = null;
     File resultsDir = null;
     File logDir = null;
-    File tezDir = null;
 
     try {
 
@@ -444,13 +435,6 @@ public class QTestGenTask extends Task {
       logDir = new File(logDirectory);
       if (!logDir.exists()) {
         throw new BuildException("Log Directory " + logDir.getCanonicalPath() + " does not exist");
-      }
-
-      if (tezDirectory != null) {
-	tezDir = new File(tezDirectory);
-	if (!tezDir.exists()) {
-	  tezDir.mkdirs();
-	}
       }
 
       if (resultsDirectory != null) {
@@ -533,7 +517,6 @@ public class QTestGenTask extends Task {
         ctx.put("resultsDir", relativePath(hiveRootDir, resultsDir));
       }
       ctx.put("logDir", relativePath(hiveRootDir, logDir));
-      ctx.put("tezDirectory", tezDir);
       ctx.put("clusterMode", clusterMode);
       if (hiveConfDir == null || hiveConfDir.isEmpty()) {
         ctx.put("hiveConfDir", "");

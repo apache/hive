@@ -231,8 +231,7 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
   @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-				      String nameNode, int numDir, boolean local,
-				      String tezDir) throws IOException {
+      String nameNode, int numDir) throws IOException {
     throw new IOException("Cannot run tez on current hadoop, Version: " + VersionInfo.getVersion());
   }
 
