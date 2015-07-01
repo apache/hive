@@ -47,19 +47,19 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
     maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
     arenaSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_SIZE);
-    maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
+    long maxSizeVal = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte")
           + " buffers; allocation sizes " + minAllocation + " - " + maxAllocation
-          + ", arena size " + arenaSize + ". total size " + maxSize);
+          + ", arena size " + arenaSize + ". total size " + maxSizeVal);
     }
 
     if (minAllocation < 8) {
       throw new AssertionError("Min allocation must be at least 8: " + minAllocation);
     }
-    if (maxSize < arenaSize || arenaSize < maxAllocation || maxAllocation < minAllocation) {
+    if (maxSizeVal < arenaSize || arenaSize < maxAllocation || maxAllocation < minAllocation) {
       throw new AssertionError("Inconsistent sizes of cache, arena and allocations: "
-          + minAllocation + ", " + maxAllocation + ", " + arenaSize + ", " + maxSize);
+          + minAllocation + ", " + maxAllocation + ", " + arenaSize + ", " + maxSizeVal);
     }
     if ((Integer.bitCount(minAllocation) != 1) || (Integer.bitCount(maxAllocation) != 1)
         || (Long.bitCount(arenaSize) != 1)) {
@@ -67,10 +67,18 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
       throw new AssertionError("Allocation and arena sizes must be powers of two: "
           + minAllocation + ", " + maxAllocation + ", " + arenaSize);
     }
-    if ((maxSize % arenaSize) > 0 || (maxSize / arenaSize) > Integer.MAX_VALUE) {
-      throw new AssertionError(
-          "Cache size not consistent with arena size: " + arenaSize + "," + maxSize);
+    if ((maxSizeVal % arenaSize) > 0) {
+      long oldMaxSize = maxSizeVal;
+      maxSizeVal = (maxSizeVal / arenaSize) * arenaSize;
+      LlapIoImpl.LOG.warn("Rounding cache size to " + maxSizeVal + " from " + oldMaxSize
+          + " to be divisible by arena size " + arenaSize);
     }
+    if ((maxSizeVal / arenaSize) > Integer.MAX_VALUE) {
+      throw new AssertionError(
+          "Too many arenas needed to allocate the cache: " + arenaSize + "," + maxSizeVal);
+    }
+    maxSize = maxSizeVal;
+    memoryManager.updateMaxSize(maxSize);
     minAllocLog2 = 31 - Integer.numberOfLeadingZeros(minAllocation);
     maxAllocLog2 = 31 - Integer.numberOfLeadingZeros(maxAllocation);
     arenaSizeLog2 = 63 - Long.numberOfLeadingZeros(arenaSize);

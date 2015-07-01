@@ -33,9 +33,9 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
  */
 public class LowLevelCacheMemoryManager implements MemoryManager {
   private final AtomicLong usedMemory;
-  protected final long maxSize;
   private final LowLevelCachePolicy evictor;
-  private LlapDaemonCacheMetrics metrics;
+  private final LlapDaemonCacheMetrics metrics;
+  private long maxSize;
 
   public LowLevelCacheMemoryManager(Configuration conf, LowLevelCachePolicy evictor,
       LlapDaemonCacheMetrics metrics) {
@@ -104,4 +104,8 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     return "cache state\n" + evictor.debugDumpForOom();
   }
 
+  @Override
+  public void updateMaxSize(long maxSize) {
+    this.maxSize = maxSize;
+  }
 }

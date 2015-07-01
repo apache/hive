@@ -74,6 +74,10 @@ public class TestOrcMetadataCache {
     public String debugDumpForOom() {
       return "";
     }
+
+    @Override
+    public void updateMaxSize(long maxSize) {
+    }
   }
 
   @Test
