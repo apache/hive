@@ -95,7 +95,7 @@ public interface HadoopShims {
       String nameNode, int numDir) throws IOException;
 
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-      String nameNode, int numDir, boolean local, String tezDir) throws IOException;
+      String nameNode, int numDir) throws IOException;
 
   public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException;

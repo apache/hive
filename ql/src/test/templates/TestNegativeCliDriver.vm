@@ -47,7 +47,7 @@ public class $className extends TestCase {
     try {
       String hadoopVer = "$hadoopVersion";
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hadoopVer,
-       initScript, cleanupScript, null);
+       initScript, cleanupScript);
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();

@@ -356,23 +356,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-    String nameNode, int numDir, boolean local, String tezDir) throws IOException {
-    if (local) {
-      conf.setBoolean("tez.local.mode", true);
-      conf.set("fs.defaultFS", "file:///");
-      conf.setBoolean("tez.runtime.optimize.local.fetch", true);
-      conf.setInt("tez.am.inline.task.execution.max-tasks", 6);
-      conf.set("tez.staging-dir", tezDir);
-      conf.setBoolean("tez.ignore.lib.uris", true);
-      conf.setInt("tez.runtime.io.sort.mb", 10);
-      conf.setInt("tez.runtime.unordered.output.buffer.size-mb", 20);
-      conf.setFloat("tez.runtime.shuffle.fetch.buffer.percent", 0.2f);
-      conf.setFloat("tez.runtime.shuffle.memory.limit.percent", 0.2f);
-      conf.setFloat("tez.runtime.task.input.post-merge.buffer.percent", 0f);
-
-      return null;
-    }
-
+    String nameNode, int numDir) throws IOException {
     return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, numDir);
   }
 
