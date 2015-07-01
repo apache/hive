@@ -404,8 +404,25 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      Table oldTable = getHBase().getTable(dbname, name);
-      getHBase().replaceTable(oldTable, newTable);
+      getHBase().replaceTable(getHBase().getTable(dbname, name), newTable);
+      if (newTable.getPartitionKeys() != null && newTable.getPartitionKeys().size() > 0
+          && !name.equals(newTable.getTableName())) {
+        // They renamed the table, so we need to change each partition as well, since it changes
+        // the key.
+        try {
+          List<Partition> oldParts = getPartitions(dbname, name, -1);
+          List<Partition> newParts = new ArrayList<>(oldParts.size());
+          for (Partition oldPart : oldParts) {
+            Partition newPart = oldPart.deepCopy();
+            newPart.setTableName(newTable.getTableName());
+            newParts.add(newPart);
+          }
+          getHBase().replacePartitions(oldParts, newParts);
+        } catch (NoSuchObjectException e) {
+          LOG.debug("No partitions found for old table so not worrying about it");
+        }
+
+      }
       commit = true;
     } catch (IOException e) {
       LOG.error("Unable to alter table " + tableNameForErrorMsg(dbname, name), e);

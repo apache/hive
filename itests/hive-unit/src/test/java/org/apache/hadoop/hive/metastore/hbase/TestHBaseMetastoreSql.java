@@ -192,5 +192,32 @@ public class TestHBaseMetastoreSql extends HBaseIntegrationTests {
     Assert.assertEquals(0, rsp.getResponseCode());
   }
 
+  @Test
+  public void alterRenamePartitioned() throws Exception {
+    driver.run("create table alterrename (c int) partitioned by (ds string)");
+    driver.run("alter table alterrename add partition (ds = 'a')");
+    CommandProcessorResponse rsp = driver.run("describe extended alterrename partition (ds='a')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("alter table alterrename rename to alter_renamed");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("describe extended alter_renamed partition (ds='a')");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("describe extended alterrename partition (ds='a')");
+    Assert.assertEquals(10001, rsp.getResponseCode());
+  }
+
+  @Test
+  public void alterRename() throws Exception {
+    driver.run("create table alterrename1 (c int)");
+    CommandProcessorResponse rsp = driver.run("describe alterrename1");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("alter table alterrename1 rename to alter_renamed1");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("describe alter_renamed1");
+    Assert.assertEquals(0, rsp.getResponseCode());
+    rsp = driver.run("describe alterrename1");
+    Assert.assertEquals(10001, rsp.getResponseCode());
+  }
+
 
 }

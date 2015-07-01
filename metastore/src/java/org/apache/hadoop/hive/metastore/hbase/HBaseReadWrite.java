@@ -541,6 +541,9 @@ class HBaseReadWrite {
     byte[][] serialized = HBaseUtils.serializePartition(newPart, hash);
     store(PART_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
     partCache.put(newPart.getDbName(), newPart.getTableName(), newPart);
+    if (!oldPart.getTableName().equals(newPart.getTableName())) {
+      deletePartition(oldPart.getDbName(), oldPart.getTableName(), oldPart.getValues());
+    }
   }
 
   /**
@@ -568,7 +571,7 @@ class HBaseReadWrite {
     if (oldParts.size() != newParts.size()) {
       throw new RuntimeException("Number of old and new partitions must match.");
     }
-    List<Put> puts = new ArrayList<Put>(newParts.size());
+    List<Put> puts = new ArrayList<>(newParts.size());
     for (int i = 0; i < newParts.size(); i++) {
       byte[] hash;
       byte[] oldHash = HBaseUtils.hashStorageDescriptor(oldParts.get(i).getSd(), md);
@@ -584,6 +587,11 @@ class HBaseReadWrite {
       p.add(CATALOG_CF, CATALOG_COL, serialized[1]);
       puts.add(p);
       partCache.put(newParts.get(i).getDbName(), newParts.get(i).getTableName(), newParts.get(i));
+      if (!newParts.get(i).getTableName().equals(oldParts.get(i).getTableName())) {
+        // We need to remove the old record as well.
+        deletePartition(oldParts.get(i).getDbName(), oldParts.get(i).getTableName(),
+            oldParts.get(i).getValues(), false);
+      }
     }
     HTableInterface htab = conn.getHBaseTable(PART_TABLE);
     htab.put(puts);
@@ -734,10 +742,17 @@ class HBaseReadWrite {
    * @throws IOException
    */
   void deletePartition(String dbName, String tableName, List<String> partVals) throws IOException {
+    deletePartition(dbName, tableName, partVals, true);
+  }
+
+  private void deletePartition(String dbName, String tableName, List<String> partVals,
+                               boolean decrementRefCnt) throws IOException {
     // Find the partition so I can get the storage descriptor and drop it
     partCache.remove(dbName, tableName, partVals);
-    Partition p = getPartition(dbName, tableName, partVals, false);
-    decrementStorageDescriptorRefCount(p.getSd());
+    if (decrementRefCnt) {
+      Partition p = getPartition(dbName, tableName, partVals, false);
+      decrementStorageDescriptorRefCount(p.getSd());
+    }
     byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
     delete(PART_TABLE, key, null, null);
   }
@@ -1287,8 +1302,10 @@ class HBaseReadWrite {
     }
     byte[][] serialized = HBaseUtils.serializeTable(newTable, hash);
     store(TABLE_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
-    tableCache.put(new ObjectPair<String, String>(newTable.getDbName(), newTable.getTableName()),
-        newTable);
+    tableCache.put(new ObjectPair<>(newTable.getDbName(), newTable.getTableName()), newTable);
+    if (!oldTable.getTableName().equals(newTable.getTableName())) {
+      deleteTable(oldTable.getDbName(), oldTable.getTableName());
+    }
   }
 
   /**
@@ -1298,10 +1315,17 @@ class HBaseReadWrite {
    * @throws IOException
    */
   void deleteTable(String dbName, String tableName) throws IOException {
+    deleteTable(dbName, tableName, true);
+  }
+
+  private void deleteTable(String dbName, String tableName, boolean decrementRefCnt)
+      throws IOException {
     tableCache.remove(new ObjectPair<String, String>(dbName, tableName));
-    // Find the table so I can get the storage descriptor and drop it
-    Table t = getTable(dbName, tableName, false);
-    decrementStorageDescriptorRefCount(t.getSd());
+    if (decrementRefCnt) {
+      // Find the table so I can get the storage descriptor and drop it
+      Table t = getTable(dbName, tableName, false);
+      decrementStorageDescriptorRefCount(t.getSd());
+    }
     byte[] key = HBaseUtils.buildKey(dbName, tableName);
     delete(TABLE_TABLE, key, null, null);
   }

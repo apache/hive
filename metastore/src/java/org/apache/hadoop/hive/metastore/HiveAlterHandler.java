@@ -17,12 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,7 +43,11 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hive.common.util.HiveStringUtils;
 
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Hive specific implementation of alter
@@ -121,8 +120,7 @@ public class HiveAlterHandler implements AlterHandler {
       // get old table
       oldt = msdb.getTable(dbname, name);
       if (oldt == null) {
-        throw new InvalidOperationException("table " + newt.getDbName() + "."
-            + newt.getTableName() + " doesn't exist");
+        throw new InvalidOperationException("table " + dbname + "." + name + " doesn't exist");
       }
 
       if (HiveConf.getBoolVar(hiveConf,
