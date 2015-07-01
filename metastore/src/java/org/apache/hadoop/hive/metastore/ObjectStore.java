@@ -23,7 +23,6 @@ import static org.apache.commons.lang.StringUtils.join;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,6 +57,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -5568,10 +5568,8 @@ public class ObjectStore implements RawStore, Configurable {
         URI locationURI = null;
         String location = mDB.getLocationUri();
         try {
-          locationURI = new URI(location);
-        } catch(URISyntaxException e) {
-          badRecords.add(location);
-        } catch (NullPointerException e) {
+          locationURI = new Path(location).toUri();
+        } catch (IllegalArgumentException e) {
           badRecords.add(location);
         }
         if (locationURI == null) {
@@ -5631,10 +5629,8 @@ public class ObjectStore implements RawStore, Configurable {
     if (parameters.containsKey(tblPropKey)) {
       String tablePropLocation = parameters.get(tblPropKey);
       try {
-        tablePropLocationURI = new URI(tablePropLocation);
-      } catch (URISyntaxException e) {
-        badRecords.add(tablePropLocation);
-      } catch (NullPointerException e) {
+        tablePropLocationURI = new Path(tablePropLocation).toUri();
+      } catch (IllegalArgumentException e) {
         badRecords.add(tablePropLocation);
       }
       // if tablePropKey that was passed in lead to a valid URI resolution, update it if
@@ -5778,10 +5774,8 @@ public class ObjectStore implements RawStore, Configurable {
         URI locationURI = null;
         String location = mSDS.getLocation();
         try {
-          locationURI = new URI(location);
-        } catch (URISyntaxException e) {
-          badRecords.add(location);
-        } catch (NullPointerException e) {
+          locationURI = new Path(location).toUri();
+        } catch (IllegalArgumentException e) {
           badRecords.add(location);
         }
         if (locationURI == null) {
@@ -5859,10 +5853,8 @@ public class ObjectStore implements RawStore, Configurable {
           String schemaLoc = mSerde.getParameters().get(serdeProp);
           URI schemaLocURI = null;
           try {
-            schemaLocURI = new URI(schemaLoc);
-          } catch (URISyntaxException e) {
-            badRecords.add(schemaLoc);
-          } catch (NullPointerException e) {
+            schemaLocURI = new Path(schemaLoc).toUri();
+          } catch (IllegalArgumentException e) {
             badRecords.add(schemaLoc);
           }
           if (schemaLocURI == null) {
