@@ -665,6 +665,8 @@ public enum ErrorMsg {
     return sb.toString();
   }
 
+  static final String LINE_SEP = System.getProperty("line.separator");
+
   public static void renderOrigin(StringBuilder sb, ASTNodeOrigin origin) {
     while (origin != null) {
       sb.append(" in definition of ");
@@ -672,9 +674,9 @@ public enum ErrorMsg {
       sb.append(" ");
       sb.append(origin.getObjectName());
       sb.append(" [");
-      sb.append(HiveUtils.LINE_SEP);
+      sb.append(LINE_SEP);
       sb.append(origin.getObjectDefinition());
-      sb.append(HiveUtils.LINE_SEP);
+      sb.append(LINE_SEP);
       sb.append("] used as ");
       sb.append(origin.getUsageAlias());
       sb.append(" at ");
