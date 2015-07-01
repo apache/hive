@@ -31,6 +31,7 @@ import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.Sort;
@@ -285,9 +286,24 @@ public class ASTConverter {
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s));
       boolean semiJoin = join instanceof SemiJoin;
-      ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond, semiJoin);
-      if (semiJoin)
+      if (join.getRight() instanceof Join) {
+        // Invert join inputs; this is done because otherwise the SemanticAnalyzer
+        // methods to merge joins will not kick in
+        JoinRelType type;
+        if (join.getJoinType() == JoinRelType.LEFT) {
+          type = JoinRelType.RIGHT;
+        } else if (join.getJoinType() == JoinRelType.RIGHT) {
+          type = JoinRelType.LEFT;
+        } else {
+          type = join.getJoinType();
+        }
+        ast = ASTBuilder.join(right.ast, left.ast, type, cond, semiJoin);
+      } else {
+        ast = ASTBuilder.join(left.ast, right.ast, join.getJoinType(), cond, semiJoin);
+      }
+      if (semiJoin) {
         s = left.schema;
+      }
     } else if (r instanceof Union) {
       RelNode leftInput = ((Union) r).getInput(0);
       RelNode rightInput = ((Union) r).getInput(1);

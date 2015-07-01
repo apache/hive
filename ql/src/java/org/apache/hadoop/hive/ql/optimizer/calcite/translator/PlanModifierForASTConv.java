@@ -242,7 +242,15 @@ public class PlanModifierForASTConv {
     boolean validParent = true;
 
     if (parent instanceof Join) {
-      if (((Join) parent).getRight() == joinNode) {
+      // In Hive AST, right child of join cannot be another join,
+      // thus we need to introduce a project on top of it.
+      // But we only need the additional project if the left child
+      // is another join too; if it is not, ASTConverter will swap
+      // the join inputs, leaving the join operator on the left.
+      // This will help triggering multijoin recognition methods that
+      // are embedded in SemanticAnalyzer.
+      if (((Join) parent).getRight() == joinNode &&
+            (((Join) parent).getLeft() instanceof Join) ) {
         validParent = false;
       }
     } else if (parent instanceof SetOp) {
@@ -255,7 +263,7 @@ public class PlanModifierForASTConv {
   private static boolean validFilterParent(RelNode filterNode, RelNode parent) {
     boolean validParent = true;
 
-    // TOODO: Verify GB having is not a seperate filter (if so we shouldn't
+    // TODO: Verify GB having is not a separate filter (if so we shouldn't
     // introduce derived table)
     if (parent instanceof Filter || parent instanceof Join
         || parent instanceof SetOp) {
