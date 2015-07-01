@@ -644,6 +644,13 @@ public class ReaderImpl implements Reader {
     for (String colName : colNames) {
       if (fieldNames.contains(colName)) {
         fieldIdx = fieldNames.indexOf(colName);
+      } else {
+        String s = "Cannot find field for: " + colName + " in ";
+        for (String fn : fieldNames) {
+          s += fn + ", ";
+        }
+        LOG.warn(s);
+        continue;
       }
 
       // a single field may span multiple columns. find start and end column
