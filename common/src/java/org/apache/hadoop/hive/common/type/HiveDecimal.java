@@ -128,8 +128,25 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return bd.scale();
   }
 
+  /**
+   * Returns the number of digits (integer and fractional) in the number, which is equivalent
+   * to SQL decimal precision. Note that this is different from BigDecimal.precision(),
+   * which returns the precision of the unscaled value (BigDecimal.valueOf(0.01).precision() = 1,
+   * whereas HiveDecimal.create("0.01").precision() = 2).
+   * If you want the BigDecimal precision, use HiveDecimal.bigDecimalValue().precision()
+   * @return
+   */
   public int precision() {
-    return bd.precision();
+    int bdPrecision = bd.precision();
+    int bdScale = bd.scale();
+
+    if (bdPrecision < bdScale) {
+      // This can happen for numbers less than 0.1
+      // For 0.001234: bdPrecision=4, bdScale=6
+      // In this case, we'll set the type to have the same precision as the scale.
+      return bdScale;
+    }
+    return bdPrecision;
   }
 
   public int intValue() {

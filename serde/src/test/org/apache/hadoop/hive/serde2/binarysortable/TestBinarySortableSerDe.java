@@ -64,7 +64,7 @@ public class TestBinarySortableSerDe extends TestCase {
     return sb.toString();
   }
 
-  private SerDe getSerDe(String fieldNames, String fieldTypes, String order)
+  public static SerDe getSerDe(String fieldNames, String fieldTypes, String order)
       throws Throwable {
     Properties schema = new Properties();
     schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
@@ -124,7 +124,7 @@ public class TestBinarySortableSerDe extends TestCase {
     }
   }
 
-  private void sort(Object[] structs, ObjectInspector oi) {
+  public static void sort(Object[] structs, ObjectInspector oi) {
     for (int i = 0; i < structs.length; i++) {
       for (int j = i + 1; j < structs.length; j++) {
         if (ObjectInspectorUtils.compare(structs[i], oi, structs[j], oi) > 0) {
