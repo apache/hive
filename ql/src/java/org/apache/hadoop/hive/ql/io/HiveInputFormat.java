@@ -264,7 +264,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
-
     HiveInputSplit hsplit = (HiveInputSplit) split;
 
     InputSplit inputSplit = hsplit.getInputSplit();

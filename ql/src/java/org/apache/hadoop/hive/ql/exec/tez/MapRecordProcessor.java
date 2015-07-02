@@ -201,7 +201,7 @@ public class MapRecordProcessor extends RecordProcessor {
             mergeMapOp.setChildren(jconf);
 
             DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
-	          mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
+            mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
 
             mergeMapOp.passExecContext(new ExecMapperContext(jconf));
             mergeMapOp.initializeLocalWork(jconf);
