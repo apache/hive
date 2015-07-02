@@ -194,6 +194,31 @@ public class TestBeeLineWithArgs {
   }
 
   /**
+   * Attempt to execute the enclosed query with the -e option to BeeLine
+   * Test for presence of an expected pattern
+   * in the output (stdout or stderr), fail if not found
+   * Print PASSED or FAILED
+   * @param expectedPattern Text to look for in command output/error
+   * @param shouldMatch true if the pattern should be found, false if it should not
+   * @throws Exception on command execution error
+   */
+  private void testCommandEnclosedQuery(String enclosedQuery, String expectedPattern,
+      boolean shouldMatch, List<String> argList) throws Throwable {
+
+    List<String> copy = new ArrayList<String>(argList);
+    copy.add("-e");
+    copy.add(enclosedQuery);
+
+    String output = testCommandLineScript(copy, null);
+    boolean matches = output.contains(expectedPattern);
+    if (shouldMatch != matches) {
+      //failed
+      fail("Output" + output + " should" +  (shouldMatch ? "" : " not") +
+          " contain " + expectedPattern);
+    }
+  }
+
+  /**
    * Test that BeeLine will read comment lines that start with whitespace
    * @throws Throwable
    */
@@ -651,5 +676,67 @@ public class TestBeeLineWithArgs {
         "select count(*) from " + tableName + ";\n";
     final String EXPECTED_PATTERN = "Parsing command";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, false, getBaseArgs(miniHS2.getBaseJdbcURL()));
+  }
+
+  @Test
+  public void testMultiCommandsInOneline() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists multiCmdTbl;create table multiCmdTbl "
+        +"(key int);show tables; --multicommands in one line";
+    final String EXPECTED_PATTERN = " multicmdtbl ";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+
+    final String SCRIPT_TEXT_DROP = "drop table multiCmdTbl;show tables;";
+    testScriptFile(SCRIPT_TEXT_DROP, EXPECTED_PATTERN, false, argList);
+  }
+
+  @Test
+  public void testMultiCommandsInOneEnclosedQuery() throws Throwable {
+    final String QUERY_TEXT = "drop table if exists multiCmdTbl;create table multiCmdTbl "
+        +"(key int);show tables; --multicommands in one line";
+    final String EXPECTED_PATTERN = " multicmdtbl ";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testCommandEnclosedQuery(QUERY_TEXT, EXPECTED_PATTERN, true, argList);
+
+    final String QUERY_TEXT_DROP = "drop table multiCmdTbl;show tables;";
+    testCommandEnclosedQuery(QUERY_TEXT_DROP, EXPECTED_PATTERN, false, argList);
+  }
+
+  @Test
+  public void testOneCommandInMultiLines() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists multiCmdTbl;create table \nmultiCmdTbl "
+        + "(key int);show tables; --one command in multiple lines";
+    final String EXPECTED_PATTERN = " multicmdtbl ";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+
+    final String SCRIPT_TEXT_DROP = "drop table\nmultiCmdTbl;show tables;";
+    testScriptFile(SCRIPT_TEXT_DROP, EXPECTED_PATTERN, false, argList);
+  }
+
+  @Test
+  public void testEscapeSemiColonInQueries() throws Throwable {
+    final String SCRIPT_TEXT = "drop table if exists multiCmdTbl;create table multiCmdTbl "
+        + "(key int, value string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\;' LINES "
+        + " TERMINATED BY '\\n';show tables; --one command in multiple lines";
+    final String EXPECTED_PATTERN = " multicmdtbl ";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+
+    final String SCRIPT_TEXT_DROP = "drop table\nmultiCmdTbl;show tables;";
+    testScriptFile(SCRIPT_TEXT_DROP, EXPECTED_PATTERN, false, argList);
+  }
+
+  @Test
+  public void testEscapeSemiColonInEnclosedQuery() throws Throwable {
+    final String QUERY_TEXT = "drop table if exists multiCmdTbl;create table multiCmdTbl "
+        + "(key int, value string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\;' LINES "
+        + " TERMINATED BY '\\n';show tables;";
+    final String EXPECTED_PATTERN = " multicmdtbl ";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testCommandEnclosedQuery(QUERY_TEXT, EXPECTED_PATTERN, true, argList);
+
+    final String QUERY_TEXT_DROP = "drop table multiCmdTbl;show tables;";
+    testCommandEnclosedQuery(QUERY_TEXT_DROP, EXPECTED_PATTERN, false, argList);
   }
 }
