@@ -242,10 +242,10 @@ Stage-0
                      outputColumnNames:["_col0"]
                      Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                      Select Operator [SEL_2]
-                        Statistics:Num rows: 1 Data size: 2527 Basic stats: PARTIAL Column stats: NONE
+                        Statistics:Num rows: 1 Data size: 2515 Basic stats: PARTIAL Column stats: NONE
                         TableScan [TS_0]
                            alias:src_orc_merge_test_part
-                           Statistics:Num rows: 1 Data size: 2527 Basic stats: PARTIAL Column stats: NONE
+                           Statistics:Num rows: 1 Data size: 2515 Basic stats: PARTIAL Column stats: NONE
 
 PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 PREHOOK: type: QUERY
@@ -280,10 +280,10 @@ Stage-0
                      Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                      Select Operator [SEL_2]
                         outputColumnNames:["_col0","_col1"]
-                        Statistics:Num rows: 24 Data size: 2527 Basic stats: COMPLETE Column stats: NONE
+                        Statistics:Num rows: 24 Data size: 2515 Basic stats: COMPLETE Column stats: NONE
                         TableScan [TS_0]
                            alias:src_orc_merge_test_part
-                           Statistics:Num rows: 24 Data size: 2527 Basic stats: COMPLETE Column stats: NONE
+                           Statistics:Num rows: 24 Data size: 2515 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: drop table src_orc_merge_test_part
 PREHOOK: type: DROPTABLE

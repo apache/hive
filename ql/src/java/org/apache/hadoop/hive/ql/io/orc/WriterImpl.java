@@ -152,6 +152,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   private final OrcFile.CompressionStrategy compressionStrategy;
   private final boolean[] bloomFilterColumns;
   private final double bloomFilterFpp;
+  private boolean writeTimeZone;
 
   WriterImpl(FileSystem fs,
       Path path,
@@ -616,6 +617,14 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     public OrcFile.Version getVersion() {
       return version;
     }
+
+    public void useWriterTimeZone(boolean val) {
+      writeTimeZone = val;
+    }
+
+    public boolean hasWriterTimeZone() {
+      return writeTimeZone;
+    }
   }
 
   /**
@@ -645,6 +654,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     private boolean foundNulls;
     private OutStream isPresentOutStream;
     private final List<StripeStatistics.Builder> stripeStatsBuilders;
+    private final StreamFactory streamFactory;
 
     /**
      * Create a tree writer.
@@ -657,6 +667,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     TreeWriter(int columnId, ObjectInspector inspector,
                StreamFactory streamFactory,
                boolean nullable) throws IOException {
+      this.streamFactory = streamFactory;
       this.isCompressed = streamFactory.isCompressed();
       this.id = columnId;
       this.inspector = inspector;
@@ -796,7 +807,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       foundNulls = false;
 
       builder.addColumns(getEncoding());
-      builder.setWriterTimezone(TimeZone.getDefault().getID());
+      if (streamFactory.hasWriterTimeZone()) {
+        builder.setWriterTimezone(TimeZone.getDefault().getID());
+      }
       if (rowIndexStream != null) {
         if (rowIndex.getEntryCount() != requiredIndexEntries) {
           throw new IllegalArgumentException("Column has wrong number of " +
@@ -1526,6 +1539,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       recordPosition(rowIndexPosition);
       // for unit tests to set different time zones
       this.base_timestamp = Timestamp.valueOf(BASE_TIMESTAMP_STRING).getTime() / MILLIS_PER_SECOND;
+      writer.useWriterTimeZone(true);
     }
 
     @Override
