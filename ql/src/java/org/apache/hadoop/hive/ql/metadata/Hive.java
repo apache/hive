@@ -194,7 +194,7 @@ public class Hive {
   /**
    * Gets hive object for the current thread. If one is not initialized then a
    * new one is created If the new configuration is different in metadata conf
-   * vars then a new one is created.
+   * vars, or the owner will be different then a new one is created.
    *
    * @param c
    *          new Hive Configuration
@@ -204,7 +204,7 @@ public class Hive {
    */
   public static Hive get(HiveConf c) throws HiveException {
     Hive db = hiveDB.get();
-    if (db == null ||
+    if (db == null || !db.isCurrentUserOwner() ||
         (db.metaStoreClient != null && !db.metaStoreClient.isCompatibleWith(c))) {
       return get(c, true);
     }
@@ -291,6 +291,9 @@ public class Hive {
     if (metaStoreClient != null) {
       metaStoreClient.close();
       metaStoreClient = null;
+    }
+    if (owner != null) {
+      owner = null;
     }
   }
 
