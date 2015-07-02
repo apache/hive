@@ -49,6 +49,7 @@ STAGE PLANS:
                         Statistics: Num rows: 228 Data size: 39491 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(25,14)), KEY.reducesinkkey1 (type: decimal(26,14)), KEY.reducesinkkey2 (type: double), KEY.reducesinkkey3 (type: double), KEY.reducesinkkey4 (type: decimal(12,10)), KEY.reducesinkkey5 (type: int), KEY.reducesinkkey6 (type: smallint), KEY.reducesinkkey7 (type: tinyint), KEY.reducesinkkey8 (type: bigint), KEY.reducesinkkey9 (type: boolean), KEY.reducesinkkey10 (type: double), KEY.reducesinkkey11 (type: float), KEY.reducesinkkey12 (type: string), KEY.reducesinkkey13 (type: timestamp)
@@ -64,7 +65,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.stats.fetch.column.stats=true;
 set hive.execution.mode=llap;
 set hive.llap.execution.mode=auto;

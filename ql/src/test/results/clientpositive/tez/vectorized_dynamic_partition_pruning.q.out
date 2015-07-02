@@ -2836,6 +2836,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -2870,8 +2871,8 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
-            Execution mode: vectorized
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -2906,7 +2907,6 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
-            Execution mode: vectorized
         Union 6 
             Vertex: Union 6
 
@@ -3038,6 +3038,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -3072,8 +3073,8 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
-            Execution mode: vectorized
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -3108,7 +3109,6 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
-            Execution mode: vectorized
         Union 6 
             Vertex: Union 6
 
@@ -3232,6 +3232,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
         Reducer 11 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -3281,7 +3282,6 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 5
-            Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -3326,6 +3326,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -3375,7 +3376,6 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 5
-            Execution mode: vectorized
         Union 3 
             Vertex: Union 3
         Union 9 
@@ -4934,6 +4934,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -4968,8 +4969,8 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
-            Execution mode: vectorized
         Reducer 7 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -5004,7 +5005,6 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                           Target column: ds
                           Target Vertex: Map 1
-            Execution mode: vectorized
         Union 5 
             Vertex: Union 5
 
