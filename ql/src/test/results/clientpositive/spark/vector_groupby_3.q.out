@@ -145,6 +145,7 @@ STAGE PLANS:
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -159,7 +160,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
