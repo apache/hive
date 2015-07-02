@@ -21,9 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
@@ -44,7 +41,7 @@ import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestTaskExecutorService {
+public class TestTaskExecutorService2 {
   private static Configuration conf;
   private static Credentials cred = new Credentials();
 
@@ -52,7 +49,7 @@ public class TestTaskExecutorService {
     private int workTime;
     private boolean canFinish;
 
-    public MockRequest(LlapDaemonProtocolProtos.SubmitWorkRequestProto requestProto,
+    public MockRequest(SubmitWorkRequestProto requestProto,
         boolean canFinish, int workTime) {
       super(requestProto, mock(QueryFragmentInfo.class), conf,
           new ExecutionContextImpl("localhost"), null, cred, 0, null, null, null,
@@ -84,7 +81,8 @@ public class TestTaskExecutorService {
     conf = new Configuration();
   }
 
-  private SubmitWorkRequestProto createRequest(int fragmentNumber, int parallelism, int attemptStartTime) {
+  private SubmitWorkRequestProto createRequest(int fragmentNumber, int parallelism, int dagStartTime,
+      int attemptStartTime) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
@@ -109,6 +107,7 @@ public class TestTaskExecutorService {
         .setFragmentRuntimeInfo(LlapDaemonProtocolProtos
             .FragmentRuntimeInfo
             .newBuilder()
+            .setDagStartTime(dagStartTime)
             .setFirstAttemptStartTime(attemptStartTime)
             .build())
         .build();
@@ -116,57 +115,101 @@ public class TestTaskExecutorService {
 
   @Test
   public void testWaitQueueComparator() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createRequest(1, 2, 100), false, 100000);
-    TaskWrapper r2 = createTaskWrapper(createRequest(2, 4, 200), false, 100000);
-    TaskWrapper r3 = createTaskWrapper(createRequest(3, 6, 300), false, 1000000);
-    TaskWrapper r4 = createTaskWrapper(createRequest(4, 8, 400), false, 1000000);
-    TaskWrapper r5 = createTaskWrapper(createRequest(5, 10, 500), false, 1000000);
+    TaskWrapper r1 = createTaskWrapper(createRequest(1, 2, 5, 100), false, 100000);
+    TaskWrapper r2 = createTaskWrapper(createRequest(2, 4, 4, 200), false, 100000);
+    TaskWrapper r3 = createTaskWrapper(createRequest(3, 6, 3, 300), false, 1000000);
+    TaskWrapper r4 = createTaskWrapper(createRequest(4, 8, 2, 400), false, 1000000);
+    TaskWrapper r5 = createTaskWrapper(createRequest(5, 10, 1, 500), false, 1000000);
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
+        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+    assertNull(queue.offer(r1));
+    assertEquals(r1, queue.peek());
+    assertNull(queue.offer(r2));
+    assertEquals(r2, queue.peek());
+    assertNull(queue.offer(r3));
+    assertEquals(r3, queue.peek());
+    assertNull(queue.offer(r4));
+    assertEquals(r4, queue.peek());
+    // this offer will be accepted and r1 evicted
+    assertEquals(r1, queue.offer(r5));
+    assertEquals(r5, queue.take());
+    assertEquals(r4, queue.take());
+    assertEquals(r3, queue.take());
+    assertEquals(r2, queue.take());
+
+    r1 = createTaskWrapper(createRequest(1, 2, 5, 100), true, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 4, 200), true, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 3, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 2, 400), true, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
+    queue = new EvictingPriorityBlockingQueue(
+        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+    assertNull(queue.offer(r1));
+    assertEquals(r1, queue.peek());
+    assertNull(queue.offer(r2));
+    assertEquals(r2, queue.peek());
+    assertNull(queue.offer(r3));
+    assertEquals(r3, queue.peek());
+    assertNull(queue.offer(r4));
+    assertEquals(r4, queue.peek());
+    // this offer will be accpeted and r1 evicted
+    assertEquals(r1, queue.offer(r5));
+    assertEquals(r5, queue.take());
+    assertEquals(r4, queue.take());
+    assertEquals(r3, queue.take());
+    assertEquals(r2, queue.take());
+
+    r1 = createTaskWrapper(createRequest(1, 1, 5, 100), true, 100000);
+    r2 = createTaskWrapper(createRequest(2, 1, 4, 200), false, 100000);
+    r3 = createTaskWrapper(createRequest(3, 1, 3, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 1, 2, 400), false, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
+    queue = new EvictingPriorityBlockingQueue(
+        new TaskExecutorService.FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
+    assertEquals(r3, queue.peek());
     assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // this offer will be rejected
-    assertEquals(r5, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r2, queue.take());
+    assertEquals(r3, queue.peek());
+    // offer accepted and r2 gets evicted
+    assertEquals(r2, queue.offer(r5));
+    assertEquals(r5, queue.take());
     assertEquals(r3, queue.take());
+    assertEquals(r1, queue.take());
     assertEquals(r4, queue.take());
 
-    r1 = createTaskWrapper(createRequest(1, 2, 100), true, 100000);
-    r2 = createTaskWrapper(createRequest(2, 4, 200), true, 100000);
-    r3 = createTaskWrapper(createRequest(3, 6, 300), true, 1000000);
-    r4 = createTaskWrapper(createRequest(4, 8, 400), true, 1000000);
-    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
+    r1 = createTaskWrapper(createRequest(1, 2, 5, 100), true, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 4, 200), false, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 3, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 2, 400), false, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
+        new TaskExecutorService.FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
+    assertEquals(r3, queue.peek());
     assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // this offer will be rejected
-    assertEquals(r5, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r2, queue.take());
+    assertEquals(r3, queue.peek());
+    // offer accepted and r2 gets evicted
+    assertEquals(r2, queue.offer(r5));
+    assertEquals(r5, queue.take());
     assertEquals(r3, queue.take());
+    assertEquals(r1, queue.take());
     assertEquals(r4, queue.take());
 
-    r1 = createTaskWrapper(createRequest(1, 1, 100), true, 100000);
-    r2 = createTaskWrapper(createRequest(2, 1, 200), false, 100000);
-    r3 = createTaskWrapper(createRequest(3, 1, 300), true, 1000000);
-    r4 = createTaskWrapper(createRequest(4, 1, 400), false, 1000000);
-    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
+    r1 = createTaskWrapper(createRequest(1, 2, 5, 100), true, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 4, 200), false, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 3, 300), false, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 2, 400), false, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
+        new TaskExecutorService.FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
@@ -175,100 +218,56 @@ public class TestTaskExecutorService {
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r4));
     assertEquals(r1, queue.peek());
-    // offer accepted and r4 gets evicted
-    assertEquals(r4, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r3, queue.take());
+    // offer accepted and r2 gets evicted
+    assertEquals(r2, queue.offer(r5));
     assertEquals(r5, queue.take());
-    assertEquals(r2, queue.take());
-
-    r1 = createTaskWrapper(createRequest(1, 2, 100), true, 100000);
-    r2 = createTaskWrapper(createRequest(2, 4, 200), false, 100000);
-    r3 = createTaskWrapper(createRequest(3, 6, 300), true, 1000000);
-    r4 = createTaskWrapper(createRequest(4, 8, 400), false, 1000000);
-    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-    assertNull(queue.offer(r1));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // offer accepted and r4 gets evicted
-    assertEquals(r4, queue.offer(r5));
     assertEquals(r1, queue.take());
-    assertEquals(r3, queue.take());
-    assertEquals(r5, queue.take());
-    assertEquals(r2, queue.take());
-
-    r1 = createTaskWrapper(createRequest(1, 2, 100), true, 100000);
-    r2 = createTaskWrapper(createRequest(2, 4, 200), false, 100000);
-    r3 = createTaskWrapper(createRequest(3, 6, 300), false, 1000000);
-    r4 = createTaskWrapper(createRequest(4, 8, 400), false, 1000000);
-    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-    assertNull(queue.offer(r1));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // offer accepted and r4 gets evicted
-    assertEquals(r4, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r5, queue.take());
-    assertEquals(r2, queue.take());
+    assertEquals(r4, queue.take());
     assertEquals(r3, queue.take());
 
-    r1 = createTaskWrapper(createRequest(1, 2, 100), false, 100000);
-    r2 = createTaskWrapper(createRequest(2, 4, 200), true, 100000);
-    r3 = createTaskWrapper(createRequest(3, 6, 300), true, 1000000);
-    r4 = createTaskWrapper(createRequest(4, 8, 400), true, 1000000);
-    r5 = createTaskWrapper(createRequest(5, 10, 500), true, 1000000);
+    r1 = createTaskWrapper(createRequest(1, 2, 5, 100), false, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 4, 200), true, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 3, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 2, 400), true, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
+        new TaskExecutorService.FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
     assertEquals(r2, queue.peek());
     assertNull(queue.offer(r3));
-    assertEquals(r2, queue.peek());
+    assertEquals(r3, queue.peek());
     assertNull(queue.offer(r4));
-    assertEquals(r2, queue.peek());
+    assertEquals(r4, queue.peek());
     // offer accepted, r1 evicted
     assertEquals(r1, queue.offer(r5));
-    assertEquals(r2, queue.take());
+    assertEquals(r5, queue.take());
+    assertEquals(r4, queue.take());
     assertEquals(r3, queue.take());
+    assertEquals(r2, queue.take());
+
+    r1 = createTaskWrapper(createRequest(1, 2, 5, 100), false, 100000);
+    r2 = createTaskWrapper(createRequest(2, 4, 4, 200), true, 100000);
+    r3 = createTaskWrapper(createRequest(3, 6, 3, 300), true, 1000000);
+    r4 = createTaskWrapper(createRequest(4, 8, 2, 400), true, 1000000);
+    r5 = createTaskWrapper(createRequest(5, 10, 2, 500), true, 1000000);
+    queue = new EvictingPriorityBlockingQueue(
+        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+    assertNull(queue.offer(r1));
+    assertEquals(r1, queue.peek());
+    assertNull(queue.offer(r2));
+    assertEquals(r2, queue.peek());
+    assertNull(queue.offer(r3));
+    assertEquals(r3, queue.peek());
+    assertNull(queue.offer(r4));
+    assertEquals(r4, queue.peek());
+    // offer accepted, r1 evicted
+    assertEquals(r1, queue.offer(r5));
     assertEquals(r4, queue.take());
     assertEquals(r5, queue.take());
-  }
-
-  @Test
-  public void testPreemptionQueueComparator() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createRequest(1, 2, 100), false, 100000);
-    TaskWrapper r2 = createTaskWrapper(createRequest(2, 4, 200), false, 100000);
-    TaskWrapper r3 = createTaskWrapper(createRequest(3, 6, 300), false, 1000000);
-    TaskWrapper r4 = createTaskWrapper(createRequest(4, 8, 400), false, 1000000);
-    BlockingQueue<TaskWrapper> queue = new PriorityBlockingQueue<>(4,
-        new TaskExecutorService.PreemptionQueueComparator());
-
-    queue.offer(r1);
-    assertEquals(r1, queue.peek());
-    queue.offer(r2);
-    assertEquals(r1, queue.peek());
-    queue.offer(r3);
-    assertEquals(r1, queue.peek());
-    queue.offer(r4);
-    assertEquals(r1, queue.take());
-    assertEquals(r2, queue.take());
     assertEquals(r3, queue.take());
-    assertEquals(r4, queue.take());
+    assertEquals(r2, queue.take());
   }
 
   private TaskWrapper createTaskWrapper(SubmitWorkRequestProto request, boolean canFinish, int workTime) {
