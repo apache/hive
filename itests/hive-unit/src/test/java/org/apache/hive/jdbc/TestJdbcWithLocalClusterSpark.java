@@ -66,6 +66,7 @@ public class TestJdbcWithLocalClusterSpark {
 
   private static HiveConf createHiveConf() {
     HiveConf conf = new HiveConf();
+    conf.set("hive.enable.spark.execution.engine", "true");
     conf.set("hive.execution.engine", "spark");
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
     conf.set("spark.master", "local-cluster[2,2,1024]");
