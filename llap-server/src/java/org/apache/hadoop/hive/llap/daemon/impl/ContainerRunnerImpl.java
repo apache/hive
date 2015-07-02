@@ -26,6 +26,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
@@ -54,10 +55,10 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezConstants;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
-
-import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 // TODO Convert this to a CompositeService
 public class ContainerRunnerImpl extends CompositeService implements ContainerRunner, FragmentCompletionHandler, QueryFailedHandler {
@@ -93,7 +94,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
     this.queryTracker = new QueryTracker(conf, localDirsBase);
     addIfService(queryTracker);
-    this.executorService = new TaskExecutorService(numExecutors, waitQueueSize, enablePreemption);
+    boolean useFairOrdering = conf.getBoolean(LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_FAIR_ORDERING,
+        LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_FAIR_ORDERING_DEFAULT);
+    this.executorService = new TaskExecutorService(numExecutors, waitQueueSize, useFairOrdering,
+        enablePreemption);
     AuxiliaryServiceHelper.setServiceDataIntoEnv(
         TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
         ByteBuffer.allocate(4).putInt(localShufflePort), localEnv);

@@ -100,9 +100,16 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
   private final Object lock = new Object();
 
-  public TaskExecutorService(int numExecutors, int waitQueueSize, boolean enablePreemption) {
+  public TaskExecutorService(int numExecutors, int waitQueueSize, boolean useFairOrdering,
+      boolean enablePreemption) {
     super(TaskExecutorService.class.getSimpleName());
-    this.waitQueue = new EvictingPriorityBlockingQueue<>(new WaitQueueComparator(), waitQueueSize);
+    final Comparator<TaskWrapper> waitQueueComparator;
+    if (useFairOrdering) {
+      waitQueueComparator = new FirstInFirstOutComparator();
+    } else {
+      waitQueueComparator = new ShortestJobFirstComparator();
+    }
+    this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
     this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
         numExecutors, // max pool size
         1, TimeUnit.MINUTES,
@@ -540,8 +547,10 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     }
   }
 
+  // if map tasks and reduce tasks are in finishable state then priority is given to the task
+  // that has less number of pending tasks (shortest job)
   @VisibleForTesting
-  public static class WaitQueueComparator implements Comparator<TaskWrapper> {
+  public static class ShortestJobFirstComparator implements Comparator<TaskWrapper> {
 
     @Override
     public int compare(TaskWrapper t1, TaskWrapper t2) {
@@ -566,6 +575,48 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       } else if (o1.getFirstAttemptStartTime() > o2.getFirstAttemptStartTime()) {
         return 1;
       }
+      return 0;
+    }
+  }
+
+  // if map tasks and reduce tasks are in finishable state then priority is given to the task in
+  // the following order
+  // 1) Dag start time
+  // 2) Attempt start time
+  // 3) Vertex parallelism
+  @VisibleForTesting
+  public static class FirstInFirstOutComparator implements Comparator<TaskWrapper> {
+
+    @Override
+    public int compare(TaskWrapper t1, TaskWrapper t2) {
+      TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
+      TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
+      boolean newCanFinish = o1.canFinish();
+      boolean oldCanFinish = o2.canFinish();
+      if (newCanFinish == true && oldCanFinish == false) {
+        return -1;
+      } else if (newCanFinish == false && oldCanFinish == true) {
+        return 1;
+      }
+
+      if (o1.getDagStartTime() < o2.getDagStartTime()) {
+        return -1;
+      } else if (o1.getDagStartTime() > o2.getDagStartTime()) {
+        return 1;
+      }
+
+      if (o1.getFirstAttemptStartTime() < o2.getFirstAttemptStartTime()) {
+        return -1;
+      } else if (o1.getFirstAttemptStartTime() > o2.getFirstAttemptStartTime()) {
+        return 1;
+      }
+
+      if (o1.getVertexParallelism() < o2.getVertexParallelism()) {
+        return -1;
+      } else if (o1.getVertexParallelism() > o2.getVertexParallelism()) {
+        return 1;
+      }
+
       return 0;
     }
   }
