@@ -187,7 +187,9 @@ public class RunLengthIntegerReaderV2 implements IntegerReader {
     long[] unpackedPatch = new long[pl];
 
     if ((pw + pgw) > 64 && !skipCorrupt) {
-      throw new IOException(ErrorMsg.ORC_CORRUPTED_READ.getMsg());
+      throw new IOException("Corruption in ORC data encountered. To skip" +
+          " reading corrupted data, set hive.exec.orc.skip.corrupt.data to" +
+          " true");
     }
     int bitSize = utils.getClosestFixedBits(pw + pgw);
     utils.readInts(unpackedPatch, 0, pl, bitSize, input);

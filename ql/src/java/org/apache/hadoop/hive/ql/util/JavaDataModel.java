@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.util;
 
-import org.apache.hadoop.hive.ql.udf.generic.NumDistinctValueEstimator;
-import org.apache.hadoop.hive.ql.udf.generic.NumericHistogram;
-
 /**
  * Estimation of memory footprint of object
  */
@@ -214,33 +211,6 @@ public enum JavaDataModel {
   // ascii string
   public int lengthFor(String string) {
     return lengthForStringOfLength(string.length());
-  }
-
-  public int lengthFor(NumericHistogram histogram) {
-    int length = object();
-    length += primitive1() * 2;       // two int
-    int numBins = histogram.getNumBins();
-    if (numBins > 0) {
-      length += arrayList();   // List<Coord>
-      length += numBins * (object() + primitive2() * 2); // Coord holds two doubles
-    }
-    length += lengthForRandom();      // Random
-    return length;
-  }
-
-  public int lengthFor(NumDistinctValueEstimator estimator) {
-    int length = object();
-    length += primitive1() * 2;       // two int
-    length += primitive2();           // one double
-    length += lengthForRandom() * 2;  // two Random
-
-    int numVector = estimator.getnumBitVectors();
-    if (numVector > 0) {
-      length += array() * 3;                    // three array
-      length += primitive1() * numVector * 2;   // two int array
-      length += (object() + array() + primitive1() + primitive2()) * numVector;   // bitset array
-    }
-    return length;
   }
 
   public int lengthForRandom() {

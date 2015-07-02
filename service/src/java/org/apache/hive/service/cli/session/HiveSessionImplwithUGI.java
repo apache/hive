@@ -61,15 +61,11 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     if (owner == null) {
       throw new HiveSQLException("No username provided for impersonation");
     }
-    if (UserGroupInformation.isSecurityEnabled()) {
-      try {
-        sessionUgi = UserGroupInformation.createProxyUser(
-            owner, UserGroupInformation.getLoginUser());
-      } catch (IOException e) {
-        throw new HiveSQLException("Couldn't setup proxy user", e);
-      }
-    } else {
-      sessionUgi = UserGroupInformation.createRemoteUser(owner);
+    try {
+      sessionUgi = UserGroupInformation.createProxyUser(
+          owner, UserGroupInformation.getLoginUser());
+    } catch (IOException e) {
+      throw new HiveSQLException("Couldn't setup proxy user", e);
     }
   }
 

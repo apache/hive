@@ -140,6 +140,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTranspos
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinPushTransitivePredicatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
@@ -265,7 +266,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // here with SemiJoins not all tables are costed in CBO, so their
             // PartitionList is not evaluated until the run phase.
             getMetaData(getQB());
-  
+
             disableJoinMerge = false;
             sinkOp = genPlan(getQB());
             LOG.info("CBO Succeeded; optimized logical plan.");
@@ -965,7 +966,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveFilter.DEFAULT_FILTER_FACTORY, Aggregate.class));
 
       // 4. Transitive inference & Partition Pruning
-      basePlan = hepPlan(basePlan, false, mdProvider, new JoinPushTransitivePredicatesRule(
+      basePlan = hepPlan(basePlan, false, mdProvider, new HiveJoinPushTransitivePredicatesRule(
           Join.class, HiveFilter.DEFAULT_FILTER_FACTORY),
           new HivePartitionPruneRule(conf));
 

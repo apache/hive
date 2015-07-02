@@ -89,6 +89,12 @@
       <optional>true</optional>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <optional>true</optional>
+      <version>3.3.2</version>
+    </dependency>
 
     <!-- test -->
     <dependency>

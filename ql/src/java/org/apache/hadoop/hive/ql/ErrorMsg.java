@@ -490,8 +490,7 @@ public enum ErrorMsg {
       "Stats type {0} is missing from stats aggregator. If you don't want the query " +
       "to fail because of this, set hive.stats.atomic=false", true),
   STATS_SKIPPING_BY_ERROR(30017, "Skipping stats aggregation by error {0}", true),
-  ORC_CORRUPTED_READ(30018, "Corruption in ORC data encountered. To skip reading corrupted "
-      + "data, set " + HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA + " to true"),
+
 
   INVALID_FILE_FORMAT_IN_LOAD(30019, "The file that you are trying to load does not match the" +
       " file format of the destination table.")
@@ -665,6 +664,8 @@ public enum ErrorMsg {
     return sb.toString();
   }
 
+  static final String LINE_SEP = System.getProperty("line.separator");
+
   public static void renderOrigin(StringBuilder sb, ASTNodeOrigin origin) {
     while (origin != null) {
       sb.append(" in definition of ");
@@ -672,9 +673,9 @@ public enum ErrorMsg {
       sb.append(" ");
       sb.append(origin.getObjectName());
       sb.append(" [");
-      sb.append(HiveUtils.LINE_SEP);
+      sb.append(LINE_SEP);
       sb.append(origin.getObjectDefinition());
-      sb.append(HiveUtils.LINE_SEP);
+      sb.append(LINE_SEP);
       sb.append("] used as ");
       sb.append(origin.getUsageAlias());
       sb.append(" at ");
