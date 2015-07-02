@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.tezplugins.Converters;
+import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.Credentials;
@@ -198,38 +199,43 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         new AtomicLong(0),
         request.getContainerIdString());
 
-    synchronized (this) {
-      if (shouldRunTask) {
-        taskRunner = new TezTaskRunner2(conf, taskUgi, fragmentInfo.getLocalDirs(),
-            taskSpec,
-            request.getAppAttemptNumber(),
-            serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
-            objectRegistry,
-            pid,
-            executionContext, memoryAvailable);
-      }
-    }
-    if (taskRunner == null) {
-      LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
-      return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
-    }
-
+    String attemptId = fragmentInfo.getFragmentIdentifierString();
+    IOContextMap.setThreadAttemptId(attemptId);
     try {
-      TaskRunner2Result result = taskRunner.run();
-      if (result.isContainerShutdownRequested()) {
-        LOG.warn("Unexpected container shutdown requested while running task. Ignoring");
+      synchronized (this) {
+        if (shouldRunTask) {
+          taskRunner = new TezTaskRunner2(conf, taskUgi, fragmentInfo.getLocalDirs(),
+              taskSpec,
+              request.getAppAttemptNumber(),
+              serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
+              objectRegistry,
+              pid,
+              executionContext, memoryAvailable);
+        }
       }
-      isCompleted.set(true);
-      return result;
+      if (taskRunner == null) {
+        LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
+        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
+      }
 
-    } finally {
-      // TODO Fix UGI and FS Handling. Closing UGI here causes some errors right now.
-      //        FileSystem.closeAllForUGI(taskUgi);
-      LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-          runtimeWatch.stop().elapsedMillis());
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
+      try {
+        TaskRunner2Result result = taskRunner.run();
+        if (result.isContainerShutdownRequested()) {
+          LOG.warn("Unexpected container shutdown requested while running task. Ignoring");
+        }
+        isCompleted.set(true);
+        return result;
+      } finally {
+        // TODO Fix UGI and FS Handling. Closing UGI here causes some errors right now.
+        //        FileSystem.closeAllForUGI(taskUgi);
+        LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
+            runtimeWatch.stop().elapsedMillis());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
+        }
       }
+    } finally {
+      IOContextMap.clearThreadAttempt(attemptId);
     }
   }
 
