@@ -156,7 +156,7 @@ public class ColumnInfo implements Serializable {
    */
   @Override
   public String toString() {
-    return internalName + ": " + objectInspector.getTypeName();
+    return internalName + ": " + typeName;
   }
 
   public void setAlias(String col_alias) {
