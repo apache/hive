@@ -209,6 +209,8 @@ public class MapRecordProcessor extends RecordProcessor {
         }
       }
 
+      ((TezContext) (MapredContext.get())).setDummyOpsMap(mapOp.getConnectedOperators());
+
       // initialize map operator
       mapOp.setConf(mapWork);
       l4j.info("Main input name is " + mapWork.getName());

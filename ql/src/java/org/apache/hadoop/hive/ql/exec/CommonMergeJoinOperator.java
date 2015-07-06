@@ -642,7 +642,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       }
     }
     super.initializeLocalWork(hconf);
-    return;
   }
 
   public boolean isBigTableWork() {
