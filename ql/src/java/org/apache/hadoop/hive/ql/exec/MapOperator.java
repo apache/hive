@@ -658,4 +658,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   public void setConnectedOperators(int tag, DummyStoreOperator dummyOp) {
     connectedOperators.put(tag, dummyOp);
   }
+
+  public Map<Integer, DummyStoreOperator> getConnectedOperators() {
+    return connectedOperators;
+  }
 }
