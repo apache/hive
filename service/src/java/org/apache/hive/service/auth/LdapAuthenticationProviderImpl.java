@@ -132,12 +132,14 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
       user  = user + "@" + ldapDomain;
     }
 
-    if (password == null || password.isEmpty() || password.getBytes()[0] == 0) {
-      throw new AuthenticationException("Error validating LDAP user:" +
-          " a null or blank password has been provided");
+    // setup the security principal
+    String bindDN;
+    if (baseDN == null) {
+      bindDN = user;
+    } else {
+      bindDN = "uid=" + user + "," + baseDN;
     }
 
-    // user being authenticated becomes the bindDN and baseDN or userDN is used to search
     env.put(Context.SECURITY_AUTHENTICATION, "simple");
     env.put(Context.SECURITY_PRINCIPAL, user);
     env.put(Context.SECURITY_CREDENTIALS, password);
