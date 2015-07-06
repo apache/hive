@@ -204,16 +204,16 @@ POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-["166"]	1
-["169"]	4
+["118"]	2
+["180"]	1
+["201"]	1
+["202"]	1
 ["238"]	2
-["258"]	1
-["306"]	1
-["384"]	3
-["392"]	1
-["435"]	1
-["455"]	1
-["468"]	4
+["273"]	3
+["282"]	2
+["419"]	1
+["432"]	1
+["467"]	1
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
@@ -222,13 +222,13 @@ POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-{"120":"val_120"}	2
-{"129":"val_129"}	2
-{"160":"val_160"}	1
-{"26":"val_26"}	2
-{"27":"val_27"}	1
-{"288":"val_288"}	2
-{"298":"val_298"}	3
-{"30":"val_30"}	1
-{"311":"val_311"}	3
-{"74":"val_74"}	1
+{"0":"val_0"}	3
+{"138":"val_138"}	4
+{"170":"val_170"}	1
+{"19":"val_19"}	1
+{"222":"val_222"}	1
+{"223":"val_223"}	2
+{"226":"val_226"}	1
+{"489":"val_489"}	4
+{"8":"val_8"}	1
+{"80":"val_80"}	1
