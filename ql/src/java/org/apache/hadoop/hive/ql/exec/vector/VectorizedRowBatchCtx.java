@@ -563,7 +563,7 @@ public class VectorizedRowBatchCtx {
         case CHAR:
         case VARCHAR: {
           BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIndex];
-          String sVal = (String) value;
+          String sVal = value.toString();
           if (sVal == null) {
             bcv.noNulls = false;
             bcv.isNull[0] = true;
