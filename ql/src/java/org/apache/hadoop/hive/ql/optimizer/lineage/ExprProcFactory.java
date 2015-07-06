@@ -203,12 +203,19 @@ public class ExprProcFactory {
       LineageCtx lctx, Operator<? extends OperatorDesc> inpOp, Predicate cond) {
     if (expr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc col = (ExprNodeColumnDesc) expr;
-      String columnName = col.getColumn();
-      ColumnInfo ci = rs.getColumnInfo(columnName);
-      String alias = ci != null ? ci.getAlias() : columnName;
-      String internalName = ci != null ? ci.getInternalName() : columnName;
+      String internalName = col.getColumn();
+      String alias = internalName;
+      String tabAlias = col.getTabAlias();
+      ColumnInfo ci = rs.getColumnInfo(internalName);
+      if (ci != null) {
+        if (ci.getAlias() != null) {
+          alias = ci.getAlias();
+        }
+        if (ci.getTabAlias() != null) {
+          tabAlias = ci.getTabAlias();
+        }
+      }
       Dependency dep = lctx.getIndex().getDependency(inpOp, internalName);
-      String tabAlias = ci != null ? ci.getTabAlias() : col.getTabAlias();
       if ((tabAlias == null || tabAlias.startsWith("_") || tabAlias.startsWith("$"))
           && (dep != null && dep.getType() == DependencyType.SIMPLE)) {
         List<BaseColumnInfo> baseCols = dep.getBaseCols();
@@ -235,8 +242,8 @@ public class ExprProcFactory {
         }
       }
       if (alias.startsWith("_")) {
-        ci = inpOp.getSchema().getColumnInfo(columnName);
-        if (ci != null) {
+        ci = inpOp.getSchema().getColumnInfo(internalName);
+        if (ci != null && ci.getAlias() != null) {
           alias = ci.getAlias();
         }
       }
