@@ -113,26 +113,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) (type: boolean)
-              Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), value (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                  tag: 0
-                  value expressions: _col1 (type: string)
-                  auto parallelism: false
-          TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
@@ -149,6 +129,26 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col1 (type: string)
+                  auto parallelism: false
+          TableScan
+            alias: b
+            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) (type: boolean)
+              Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                   tag: 1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
@@ -292,48 +292,44 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_1:a]
-        /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:$hdt$_0:$hdt$_0:b]
-        /srcpart/ds=2008-04-08/hr=12 [$hdt$_0:$hdt$_0:$hdt$_0:b]
+        /src [$hdt$_0:a]
+        /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:$hdt$_1:b]
+        /srcpart/ds=2008-04-08/hr=12 [$hdt$_1:$hdt$_1:b]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Left Outer Join0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
-          outputColumnNames: _col0, _col1, _col3, _col4
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             isSamplingPred: false
-            predicate: ((UDFToDouble(_col0) > 15.0) and (UDFToDouble(_col0) < 25.0)) (type: boolean)
+            predicate: ((UDFToDouble(_col2) > 15.0) and (UDFToDouble(_col2) < 25.0)) (type: boolean)
             Statistics: Num rows: 13 Data size: 138 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col3 (type: string), _col4 (type: string), _col0 (type: string), _col1 (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
               Statistics: Num rows: 13 Data size: 138 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
 #### A masked pattern was here ####
-                NumFilesPerFileSink: 1
-                Statistics: Num rows: 13 Data size: 138 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      columns _col0,_col1,_col2,_col3
-                      columns.types string:string:string:string
-                      escape.delim \
-                      hive.serialization.extend.additional.nesting.levels true
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                TotalFiles: 1
-                GatherStats: false
-                MultiFileSpray: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1,_col2,_col3
+                    columns.types string:string:string:string
+                    escape.delim \
+                    hive.serialization.extend.additional.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
