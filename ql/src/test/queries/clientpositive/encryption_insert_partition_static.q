@@ -31,28 +31,29 @@ insert into table encryptedTable partition
 select * from encryptedTable order by key;
 
 -- insert encrypted table from unencrypted source
-explain extended from src
-insert into table encryptedTable partition
-    (ds='yesterday')
-    select * limit 2;
+explain extended
+insert into table encryptedTable partition (ds='yesterday')
+select * from src where key in ('238', '86');
 
-from src
-insert into table encryptedTable partition
-    (ds='yesterday')
-    select * limit 2;
+insert into table encryptedTable partition (ds='yesterday')
+select * from src where key in ('238', '86');
 
 select * from encryptedTable order by key;
 
 -- insert unencrypted table from encrypted source
-explain extended from encryptedTable
-insert into table unencryptedTable partition
-    (ds='today')
-    select key, value;
+explain extended
+insert into table unencryptedTable partition (ds='today')
+select key, value from encryptedTable where ds='today';
 
-from encryptedTable
-insert into table unencryptedTable partition
-    (ds='today')
-    select key, value;
+insert into table unencryptedTable partition (ds='today')
+select key, value from encryptedTable where ds='today';
+
+explain extended
+insert into table unencryptedTable partition (ds='yesterday')
+select key, value from encryptedTable where ds='yesterday';
+
+insert into table unencryptedTable partition (ds='yesterday')
+select key, value from encryptedTable where ds='yesterday';
 
 select * from unencryptedTable order by key;
 
