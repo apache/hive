@@ -18,21 +18,11 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BLOCK_PADDING;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BLOCK_SIZE;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BUFFER_SIZE;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_COMPRESS;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_WRITE_FORMAT;
-
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -264,44 +254,44 @@ public final class OrcFile {
     private WriterCallback callback;
     private EncodingStrategy encodingStrategy;
     private CompressionStrategy compressionStrategy;
-    private float paddingTolerance;
+    private double paddingTolerance;
     private String bloomFilterColumns;
     private double bloomFilterFpp;
 
     WriterOptions(Configuration conf) {
       configuration = conf;
       memoryManagerValue = getMemoryManager(conf);
-      stripeSizeValue = HiveConf.getLongVar(conf, HIVE_ORC_DEFAULT_STRIPE_SIZE);
-      blockSizeValue = HiveConf.getLongVar(conf, HIVE_ORC_DEFAULT_BLOCK_SIZE);
-      rowIndexStrideValue = HiveConf.getIntVar(conf, HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE);
-      bufferSizeValue = HiveConf.getIntVar(conf, HIVE_ORC_DEFAULT_BUFFER_SIZE);
-      blockPaddingValue = HiveConf.getBoolVar(conf, HIVE_ORC_DEFAULT_BLOCK_PADDING);
-      compressValue = CompressionKind.valueOf(HiveConf.getVar(conf, HIVE_ORC_DEFAULT_COMPRESS));
-      String versionName = HiveConf.getVar(conf, HIVE_ORC_WRITE_FORMAT);
+      stripeSizeValue = OrcConf.STRIPE_SIZE.getLong(conf);
+      blockSizeValue = OrcConf.BLOCK_SIZE.getLong(conf);
+      rowIndexStrideValue =
+          (int) OrcConf.ROW_INDEX_STRIDE.getLong(conf);
+      bufferSizeValue = (int) OrcConf.BUFFER_SIZE.getLong(conf);
+      blockPaddingValue = OrcConf.BLOCK_PADDING.getBoolean(conf);
+      compressValue =
+          CompressionKind.valueOf(OrcConf.COMPRESS.getString(conf));
+      String versionName = OrcConf.WRITE_FORMAT.getString(conf);
       if (versionName == null) {
         versionValue = Version.CURRENT;
       } else {
         versionValue = Version.byName(versionName);
       }
-      String enString =
-          conf.get(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname);
+      String enString = OrcConf.ENCODING_STRATEGY.getString(conf);
       if (enString == null) {
         encodingStrategy = EncodingStrategy.SPEED;
       } else {
         encodingStrategy = EncodingStrategy.valueOf(enString);
       }
 
-      String compString = conf
-          .get(HiveConf.ConfVars.HIVE_ORC_COMPRESSION_STRATEGY.varname);
+      String compString = OrcConf.COMPRESSION_STRATEGY.getString(conf);
       if (compString == null) {
         compressionStrategy = CompressionStrategy.SPEED;
       } else {
         compressionStrategy = CompressionStrategy.valueOf(compString);
       }
 
-      paddingTolerance = conf.getFloat(HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.varname,
-          HiveConf.ConfVars.HIVE_ORC_BLOCK_PADDING_TOLERANCE.defaultFloatVal);
-      bloomFilterFpp = BloomFilterIO.DEFAULT_FPP;
+      paddingTolerance =
+          OrcConf.BLOCK_PADDING_TOLERANCE.getDouble(conf);
+      bloomFilterFpp = OrcConf.BLOOM_FILTER_FPP.getDouble(conf);
     }
 
     /**

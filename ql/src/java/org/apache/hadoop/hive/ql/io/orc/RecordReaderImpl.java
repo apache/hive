@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -41,7 +39,6 @@ import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
@@ -153,15 +150,15 @@ class RecordReaderImpl implements RecordReader {
   }
 
   protected RecordReaderImpl(List<StripeInformation> stripes,
-                   FileSystem fileSystem,
-                   Path path,
-                   Reader.Options options,
-                   List<OrcProto.Type> types,
-                   CompressionCodec codec,
-                   int bufferSize,
-                   long strideRate,
-                   Configuration conf
-                   ) throws IOException {
+                             FileSystem fileSystem,
+                             Path path,
+                             Reader.Options options,
+                             List<OrcProto.Type> types,
+                             CompressionCodec codec,
+                             int bufferSize,
+                             long strideRate,
+                             Configuration conf
+                             ) throws IOException {
     this.path = path;
     this.file = fileSystem.open(path);
     this.codec = codec;
@@ -192,13 +189,19 @@ class RecordReaderImpl implements RecordReader {
       }
     }
 
-    final boolean zeroCopy = (conf != null)
-        && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
+    Boolean zeroCopy = options.getUseZeroCopy();
+    if (zeroCopy == null) {
+      zeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(conf);
+    }
     zcr = zeroCopy ? RecordReaderUtils.createZeroCopyShim(file, codec, pool) : null;
 
     firstRow = skippedRows;
     totalRowCount = rows;
-    boolean skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    Boolean skipCorrupt = options.getSkipCorruptRecords();
+    if (skipCorrupt == null) {
+      skipCorrupt = OrcConf.SKIP_CORRUPT_DATA.getBoolean(conf);
+    }
+
     reader = RecordReaderFactory.createTreeReader(0, conf, types, included, skipCorrupt);
     indexes = new OrcProto.RowIndex[types.size()];
     bloomFilterIndices = new OrcProto.BloomFilterIndex[types.size()];
