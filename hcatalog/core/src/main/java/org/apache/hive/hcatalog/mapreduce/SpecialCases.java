@@ -112,13 +112,13 @@ public class SpecialCases {
         colTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getTypeString()));
       }
 
-      jobProperties.put(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(),
+      if (jobProperties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName())==null
+          || jobProperties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()).isEmpty()) {
+     
+        jobProperties.put(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(),
           AvroSerDe.getSchemaFromCols(properties, colNames, colTypes, null).toString());
-
-
-      for (String propName : jobProperties.keySet()){
-        String propVal = jobProperties.get(propName);
       }
+
 
     }
   }
