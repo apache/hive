@@ -775,7 +775,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     try {
       FsShell fsShell = new FsShell();
       fsShell.setConf(conf);
-      run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
+      //If there is no group of a file, no need to call chgrp
+      if (group != null && !group.isEmpty()) {
+        run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
+      }
 
       if (isExtendedAclEnabled(conf)) {
         //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.

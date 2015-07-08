@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.MemoryDecider;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
+import org.apache.hadoop.hive.ql.optimizer.physical.SerializeFilter;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
@@ -488,5 +489,13 @@ public class TezCompiler extends TaskCompiler {
     } else {
       LOG.debug("Skipping llap decider");
     }
+
+    //  This optimizer will serialize all filters that made it to the
+    //  table scan operator to avoid having to do it multiple times on
+    //  the backend. If you have a physical optimization that changes
+    //  table scans or filters, you have to invoke it before this one.
+    physicalCtx = new SerializeFilter().resolve(physicalCtx);
+
+    return;
   }
 }

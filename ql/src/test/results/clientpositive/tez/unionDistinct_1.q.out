@@ -6960,8 +6960,8 @@ POSTHOOK: Input: default@dst_union22_delta@ds=1
 POSTHOOK: Output: default@dst_union22@ds=2
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k1 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k1, type:string, comment:null), (dst_union22)a.FieldSchema(name:k1, type:string, comment:null), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k2 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), (dst_union22)a.FieldSchema(name:k2, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), ]
 PREHOOK: query: select * from dst_union22 where ds = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dst_union22
@@ -11471,8 +11471,8 @@ select * from (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_subq_union
-POSTHOOK: Lineage: union_subq_union.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_subq_union.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: union_subq_union.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: union_subq_union.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from union_subq_union order by key, value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_subq_union
@@ -11698,8 +11698,8 @@ select * from (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_subq_union29
-POSTHOOK: Lineage: union_subq_union29.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_subq_union29.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: union_subq_union29.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: union_subq_union29.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from union_subq_union29 order by key, value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_subq_union29
@@ -12344,8 +12344,8 @@ select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_subq_union30
-POSTHOOK: Lineage: union_subq_union30.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_subq_union30.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: union_subq_union30.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: union_subq_union30.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from union_subq_union30 order by key, value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_subq_union30
@@ -14151,7 +14151,7 @@ UNION DISTINCT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_src
-POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.null, ]
 PREHOOK: query: SELECT COUNT(*) FROM test_src
 PREHOOK: type: QUERY
@@ -14316,7 +14316,7 @@ UNION DISTINCT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_src
-POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src.value EXPRESSION [(src)src.null, (src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT COUNT(*) FROM test_src
 PREHOOK: type: QUERY

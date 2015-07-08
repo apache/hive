@@ -534,14 +534,19 @@ public final class OrcFile {
                         .rowIndexStride(rowIndexStride));
   }
 
-  private static MemoryManager memoryManager = null;
+  private static ThreadLocal<MemoryManager> memoryManager = null;
 
-  private static synchronized
-  MemoryManager getMemoryManager(Configuration conf) {
+  private static synchronized MemoryManager getMemoryManager(
+      final Configuration conf) {
     if (memoryManager == null) {
-      memoryManager = new MemoryManager(conf);
+      memoryManager = new ThreadLocal<MemoryManager>() {
+        @Override
+        protected MemoryManager initialValue() {
+          return new MemoryManager(conf);
+        }
+      };
     }
-    return memoryManager;
+    return memoryManager.get();
   }
 
 }
