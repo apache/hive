@@ -62,6 +62,10 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -207,7 +211,7 @@ public class ObjectStore implements RawStore, Configurable {
   private MetaStoreDirectSql directSql = null;
   private PartitionExpressionProxy expressionProxy = null;
   private Configuration hiveConf;
-  int openTrasactionCalls = 0;
+  private volatile int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
 
@@ -279,6 +283,17 @@ public class ObjectStore implements RawStore, Configurable {
       transactionStatus = TXN_STATUS.NO_STATE;
 
       initialize(propsFromConf);
+
+      //Add metric for number of active JDO transactions.
+      Metrics metrics = MetricsFactory.getInstance();
+      if (metrics != null) {
+        metrics.addGauge(MetricsConstant.JDO_ACTIVE_TRANSACTIONS, new MetricsVariable() {
+          @Override
+          public Object getValue() {
+            return openTrasactionCalls;
+          }
+        });
+      }
 
       String partitionValidationRegex =
           hiveConf.get(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.name());
@@ -453,6 +468,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     boolean result = currentTransaction.isActive();
     debugLog("Open transaction: count = " + openTrasactionCalls + ", isActive = " + result);
+    incrementMetricsCount(MetricsConstant.JDO_OPEN_TRANSACTIONS);
     return result;
   }
 
@@ -491,6 +507,7 @@ public class ObjectStore implements RawStore, Configurable {
       currentTransaction.commit();
     }
 
+    incrementMetricsCount(MetricsConstant.JDO_COMMIT_TRANSACTIONS);
     return true;
   }
 
@@ -528,6 +545,7 @@ public class ObjectStore implements RawStore, Configurable {
       // from reattaching in future transactions
       pm.evictAll();
     }
+    incrementMetricsCount(MetricsConstant.JDO_ROLLBACK_TRANSACTIONS);
   }
 
   @Override
@@ -7033,6 +7051,16 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void incrementMetricsCount(String name) {
+    try {
+      Metrics metrics = MetricsFactory.getInstance();
+      if (metrics != null) {
+        metrics.incrementCounter(name);
+      }
+    } catch (Exception e) {
+      LOG.warn("Error Reporting JDO operation to Metrics system", e);
+    }
+  }
 
   private void debugLog(String message) {
     if (LOG.isDebugEnabled()) {

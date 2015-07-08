@@ -39,6 +39,8 @@ import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.cli.CommonCliOptions;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -188,8 +190,11 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
@@ -819,14 +824,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.shutdown();
         } finally {
           threadLocalMS.remove();
-        }
-      }
-      if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
-        try {
-          MetricsFactory.close();
-        } catch (Exception e) {
-          LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
-            + e.getMessage(), e);
         }
       }
       logInfo("Metastore shutdown complete.");
@@ -5878,7 +5875,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void main(String[] args) throws Throwable {
     HiveConf.setLoadMetastoreConfig(true);
-    HiveConf conf = new HiveConf(HMSHandler.class);
+    final HiveConf conf = new HiveConf(HMSHandler.class);
 
     HiveMetastoreCli cli = new HiveMetastoreCli(conf);
     cli.parse(args);
@@ -5920,6 +5917,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           HMSHandler.LOG.info(shutdownMsg);
           if (isCliVerbose) {
             System.err.println(shutdownMsg);
+          }
+          if (conf.getBoolVar(ConfVars.METASTORE_METRICS)) {
+            try {
+              MetricsFactory.close();
+            } catch (Exception e) {
+              LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
+                + e.getMessage(), e);
+            }
           }
         }
       });
@@ -6057,6 +6062,42 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           .maxWorkerThreads(maxWorkerThreads);
 
       TServer tServer = new TThreadPoolServer(args);
+      TServerEventHandler tServerEventHandler = new TServerEventHandler() {
+        @Override
+        public void preServe() {
+        }
+
+        @Override
+        public ServerContext createContext(TProtocol tProtocol, TProtocol tProtocol1) {
+          try {
+            Metrics metrics = MetricsFactory.getInstance();
+            if (metrics != null) {
+              metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+            }
+          } catch (Exception e) {
+            LOG.warn("Error Reporting Metastore open connection to Metrics system", e);
+          }
+          return null;
+        }
+
+        @Override
+        public void deleteContext(ServerContext serverContext, TProtocol tProtocol, TProtocol tProtocol1) {
+          try {
+            Metrics metrics = MetricsFactory.getInstance();
+            if (metrics != null) {
+              metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+            }
+          } catch (Exception e) {
+            LOG.warn("Error Reporting Metastore close connection to Metrics system", e);
+          }
+        }
+
+        @Override
+        public void processContext(ServerContext serverContext, TTransport tTransport, TTransport tTransport1) {
+        }
+      };
+
+      tServer.setServerEventHandler(tServerEventHandler);
       HMSHandler.LOG.info("Started the new metaserver on port [" + port
           + "]...");
       HMSHandler.LOG.info("Options.minWorkerThreads = "
