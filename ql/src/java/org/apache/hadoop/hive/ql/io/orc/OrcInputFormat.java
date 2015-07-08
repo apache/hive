@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -121,9 +120,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
-
-  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  private static final String CLASS_NAME = ReaderImpl.class.getName();
 
   /**
    * When picking the hosts for a split that crosses block boundaries,
@@ -490,7 +486,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       context.numFilesCounter.incrementAndGet();
       FileInfo fileInfo = Context.footerCache.getIfPresent(file.getPath());
       if (fileInfo != null) {
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug("Info cached for path: " + file.getPath());
         }
         if (fileInfo.modificationTime == file.getModificationTime() &&
@@ -501,7 +497,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         } else {
           // Invalidate
           Context.footerCache.invalidate(file.getPath());
-          if (LOG.isDebugEnabled()) {
+          if (isDebugEnabled) {
             LOG.debug("Meta-Info for : " + file.getPath() +
                 " changed. CachedModificationTime: "
                 + fileInfo.modificationTime + ", CurrentModificationTime: "
@@ -511,7 +507,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       } else {
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug("Info not cached for path: " + file.getPath());
         }
       }
@@ -871,7 +867,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
               includeStripe[i] = (i >= stripeStats.size()) ||
                   isStripeSatisfyPredicate(stripeStats.get(i), sarg,
                       filterColumns);
-              if (LOG.isDebugEnabled() && !includeStripe[i]) {
+              if (isDebugEnabled && !includeStripe[i]) {
                 LOG.debug("Eliminating ORC stripe-" + i + " of file '" +
                     file.getPath() + "'  as it did not satisfy " +
                     "predicate condition.");
@@ -1060,9 +1056,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   @Override
   public InputSplit[] getSplits(JobConf job,
                                 int numSplits) throws IOException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
+    if (isDebugEnabled) {
+      LOG.debug("getSplits started");
+    }
     List<OrcSplit> result = generateSplitsInfo(job, numSplits);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
+    if (isDebugEnabled) {
+      LOG.debug("getSplits finished");
+    }
     return result.toArray(new InputSplit[result.size()]);
   }
 
