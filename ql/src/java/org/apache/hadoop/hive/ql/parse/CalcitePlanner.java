@@ -65,7 +65,6 @@ import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
 import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
-import org.apache.calcite.rel.rules.JoinPushTransitivePredicatesRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
@@ -139,6 +138,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransp
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinCommuteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinPushTransitivePredicatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
@@ -862,7 +862,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       calciteOptimizedPlan = hepPlanner.findBestExp();
 
-      // 4. Run rule to fix windowing issue when it is done over
+      // 4. Run rule to try to remove projects on top of join operators
+      hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
+      hepPgmBldr.addRuleInstance(HiveJoinCommuteRule.INSTANCE);
+      hepPlanner = new HepPlanner(hepPgmBldr.build());
+      hepPlanner.registerMetadataProviders(list);
+      cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+      hepPlanner.setRoot(calciteOptimizedPlan);
+      calciteOptimizedPlan = hepPlanner.findBestExp();
+
+      // 5. Run rule to fix windowing issue when it is done over
       // aggregation columns (HIVE-10627)
       hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
       hepPgmBldr.addRuleInstance(HiveWindowingFixRule.INSTANCE);
@@ -872,9 +881,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPlanner.setRoot(calciteOptimizedPlan);
       calciteOptimizedPlan = hepPlanner.findBestExp();
 
-      // 5. Run rules to aid in translation from Calcite tree to Hive tree
+      // 6. Run rules to aid in translation from Calcite tree to Hive tree
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
-        // 5.1. Merge join into multijoin operators (if possible)
+        // 6.1. Merge join into multijoin operators (if possible)
         hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
         hepPgmBldr.addRuleInstance(HiveJoinToMultiJoinRule.INSTANCE);
         hepPgmBldr = hepPgmBldr.addRuleCollection(ImmutableList.of(
@@ -894,7 +903,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY);
         calciteOptimizedPlan = fieldTrimmer.trim(calciteOptimizedPlan);
 
-        // 5.2.  Introduce exchange operators below join/multijoin operators
+        // 6.2.  Introduce exchange operators below join/multijoin operators
         hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
         hepPgmBldr.addRuleInstance(HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN);
         hepPgmBldr.addRuleInstance(HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);

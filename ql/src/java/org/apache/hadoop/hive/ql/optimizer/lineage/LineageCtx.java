@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -26,9 +27,11 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.BaseColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Dependency;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo.Predicate;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -44,11 +47,6 @@ public class LineageCtx implements NodeProcessorCtx {
   public static class Index {
 
     /**
-     * Serial Version UID.
-     */
-    private static final long serialVersionUID = 1L;
-
-    /**
      * The map contains an index from the (operator, columnInfo) to the
      * dependency vector for that tuple. This is used to generate the
      * dependency vectors during the walk of the operator tree.
@@ -57,12 +55,20 @@ public class LineageCtx implements NodeProcessorCtx {
                       LinkedHashMap<ColumnInfo, Dependency>> depMap;
 
     /**
+     * A map from operator to the conditions strings.
+     */
+    private final Map<Operator<? extends OperatorDesc>, Set<Predicate>> condMap;
+
+    private SelectOperator finalSelectOp;
+
+    /**
      * Constructor.
      */
     public Index() {
       depMap =
         new LinkedHashMap<Operator<? extends OperatorDesc>,
                           LinkedHashMap<ColumnInfo, Dependency>>();
+      condMap = new HashMap<Operator<? extends OperatorDesc>, Set<Predicate>>();
     }
 
     /**
@@ -80,6 +86,28 @@ public class LineageCtx implements NodeProcessorCtx {
       }
 
       return colMap.get(col);
+    }
+
+    /**
+     * Gets the dependency for a tuple of an operator,
+     * and a ColumnInfo with specified internal name.
+     *
+     * @param op The operator whose dependency is being inspected.
+     * @param internalName The internal name of the column info
+     * @return Dependency for that particular operator, ColumnInfo tuple.
+     *         null if no dependency is found.
+     */
+    public Dependency getDependency(
+        Operator<? extends OperatorDesc> op, String internalName) {
+      Map<ColumnInfo, Dependency> colMap = depMap.get(op);
+      if (colMap != null) {
+        for (Map.Entry<ColumnInfo, Dependency> e: colMap.entrySet()) {
+          if (e.getKey().getInternalName().equals(internalName)) {
+            return e.getValue();
+          }
+        }
+      }
+      return null;
     }
 
     /**
@@ -124,7 +152,43 @@ public class LineageCtx implements NodeProcessorCtx {
       }
     }
 
+    public Map<ColumnInfo, Dependency> getDependencies(Operator<? extends OperatorDesc> op) {
+      return depMap.get(op);
+    }
+
+    public void addPredicate(Operator<? extends OperatorDesc> op, Predicate cond) {
+      Set<Predicate> conds = condMap.get(op);
+      if (conds == null) {
+        conds = new LinkedHashSet<Predicate>();
+        condMap.put(op, conds);
+      }
+      conds.add(cond);
+    }
+
+    public void copyPredicates(Operator<? extends OperatorDesc> srcOp,
+        Operator<? extends OperatorDesc> tgtOp) {
+      Set<Predicate> conds = getPredicates(srcOp);
+      if (conds != null) {
+        for (Predicate cond: conds) {
+          addPredicate(tgtOp, cond);
+        }
+      }
+    }
+
+    public Set<Predicate> getPredicates(Operator<? extends OperatorDesc> op) {
+      return condMap.get(op);
+    }
+
+    public void setFinalSelectOp(SelectOperator sop) {
+      finalSelectOp = sop;
+    }
+
+    public SelectOperator getFinalSelectOp() {
+      return finalSelectOp;
+    }
+
     public void clear() {
+      finalSelectOp = null;
       depMap.clear();
     }
   }
@@ -145,9 +209,10 @@ public class LineageCtx implements NodeProcessorCtx {
    * Constructor.
    *
    * @param pctx The parse context that is used to get table metadata information.
+   * @param index The dependency map.
    */
-  public LineageCtx(ParseContext pctx) {
-    index = new Index();
+  public LineageCtx(ParseContext pctx, Index index) {
+    this.index = index;
     this.pctx = pctx;
   }
 

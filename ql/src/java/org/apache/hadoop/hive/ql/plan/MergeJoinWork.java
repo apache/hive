@@ -131,8 +131,8 @@ public class MergeJoinWork extends BaseWork {
   }
 
   @Override
-  public void addDummyOp(HashTableDummyOperator dummyOp) {
-    getMainWork().addDummyOp(dummyOp);
+  public List<HashTableDummyOperator> getDummyOps() {
+    return getMainWork().getDummyOps();
   }
 
   @Override
@@ -163,5 +163,9 @@ public class MergeJoinWork extends BaseWork {
   @Override
   public boolean getLlapMode() {
     return getMainWork().getLlapMode();
+  }
+  
+  public void addDummyOp(HashTableDummyOperator dummyOp) {
+    getMainWork().addDummyOp(dummyOp);
   }
 }

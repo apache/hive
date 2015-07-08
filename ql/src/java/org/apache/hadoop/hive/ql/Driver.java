@@ -448,7 +448,7 @@ public class Driver implements CommandProcessor {
       String operationName = ctx.getExplain() ?
         HiveOperation.EXPLAIN.getOperationName() : SessionState.get().getCommandType();
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-        operationName);
+        operationName, getSchema(sem, conf));
 
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 

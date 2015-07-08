@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.mapred.JobConf;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @SuppressWarnings({"serial"})
 public abstract class BaseWork extends AbstractOperatorDesc {
+  static final private Log LOG = LogFactory.getLog(BaseWork.class);
 
   // dummyOps is a reference to all the HashTableDummy operators in the
   // plan. These have to be separately initialized when we setup a task.
@@ -89,6 +92,10 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   }
 
   public void setDummyOps(List<HashTableDummyOperator> dummyOps) {
+    if (this.dummyOps != null && !this.dummyOps.isEmpty()
+        && (dummyOps == null || dummyOps.isEmpty())) {
+      LOG.info("Removing dummy operators from " + name + " " + this.getClass().getSimpleName());
+    }
     this.dummyOps = dummyOps;
   }
 

@@ -190,8 +190,8 @@ FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1@ds=2004
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2004).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2004).values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2004).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2004).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
 PREHOOK: query: desc formatted outputTbl1 partition(ds='2004')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@outputtbl1
@@ -389,8 +389,8 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@outputtbl2@ds=2008-04-08
-POSTHOOK: Lineage: outputtbl2 PARTITION(ds=2008-04-08).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: outputtbl2 PARTITION(ds=2008-04-08).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl2 PARTITION(ds=2008-04-08).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl2 PARTITION(ds=2008-04-08).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions outputTbl2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@outputtbl2
@@ -575,10 +575,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@outputtbl3@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@outputtbl3@ds=2008-04-08/hr=12
-POSTHOOK: Lineage: outputtbl3 PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: outputtbl3 PARTITION(ds=2008-04-08,hr=11).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: outputtbl3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: outputtbl3 PARTITION(ds=2008-04-08,hr=12).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl3 PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl3 PARTITION(ds=2008-04-08,hr=11).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: outputtbl3 PARTITION(ds=2008-04-08,hr=12).values EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show partitions outputTbl3
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@outputtbl3

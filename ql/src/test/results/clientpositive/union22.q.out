@@ -840,8 +840,8 @@ POSTHOOK: Input: default@dst_union22_delta@ds=1
 POSTHOOK: Output: default@dst_union22@ds=2
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k1 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k1, type:string, comment:null), (dst_union22)a.FieldSchema(name:k1, type:string, comment:null), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k2 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), (dst_union22)a.FieldSchema(name:k2, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), ]
 PREHOOK: query: select * from dst_union22 where ds = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dst_union22

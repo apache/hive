@@ -242,10 +242,10 @@ Stage-0
                      outputColumnNames:["_col0"]
                      Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                      Select Operator [SEL_2]
-                        Statistics:Num rows: 1 Data size: 2527 Basic stats: PARTIAL Column stats: NONE
+                        Statistics:Num rows: 1 Data size: 2515 Basic stats: PARTIAL Column stats: NONE
                         TableScan [TS_0]
                            alias:src_orc_merge_test_part
-                           Statistics:Num rows: 1 Data size: 2527 Basic stats: PARTIAL Column stats: NONE
+                           Statistics:Num rows: 1 Data size: 2515 Basic stats: PARTIAL Column stats: NONE
 
 PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 PREHOOK: type: QUERY
@@ -280,10 +280,10 @@ Stage-0
                      Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                      Select Operator [SEL_2]
                         outputColumnNames:["_col0","_col1"]
-                        Statistics:Num rows: 24 Data size: 2527 Basic stats: COMPLETE Column stats: NONE
+                        Statistics:Num rows: 24 Data size: 2515 Basic stats: COMPLETE Column stats: NONE
                         TableScan [TS_0]
                            alias:src_orc_merge_test_part
-                           Statistics:Num rows: 24 Data size: 2527 Basic stats: COMPLETE Column stats: NONE
+                           Statistics:Num rows: 24 Data size: 2515 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: drop table src_orc_merge_test_part
 PREHOOK: type: DROPTABLE
@@ -498,522 +498,6 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 10 <- Map 9 (SIMPLE_EDGE)
-Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-Reducer 6 <- Map 5 (SIMPLE_EDGE)
-Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-Reducer 8 <- Reducer 11 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-
-Stage-0
-   Fetch Operator
-      limit:-1
-      Stage-1
-         Reducer 4
-         File Output Operator [FS_47]
-            compressed:false
-            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
-            Select Operator [SEL_46]
-            |  outputColumnNames:["_col0","_col1","_col2"]
-            |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            |<-Reducer 3 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_45]
-                  key expressions:(UDFToLong(_col0) + _col1) (type: bigint), _col1 (type: bigint)
-                  sort order:-+
-                  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions:_col0 (type: int), _col2 (type: bigint)
-                  Group By Operator [GBY_43]
-                  |  aggregations:["count(VALUE._col0)"]
-                  |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
-                  |  outputColumnNames:["_col0","_col1","_col2"]
-                  |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  |<-Reducer 2 [SIMPLE_EDGE]
-                     Reduce Output Operator [RS_42]
-                        key expressions:_col0 (type: int), _col1 (type: bigint)
-                        Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
-                        sort order:++
-                        Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions:_col2 (type: bigint)
-                        Group By Operator [GBY_41]
-                           aggregations:["count()"]
-                           keys:_col0 (type: int), _col1 (type: bigint)
-                           outputColumnNames:["_col0","_col1","_col2"]
-                           Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                           Select Operator [SEL_37]
-                              outputColumnNames:["_col0","_col1"]
-                              Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                              Filter Operator [FIL_53]
-                                 predicate:((_col3 > 0) or (_col1 >= 0)) (type: boolean)
-                                 Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                                 Merge Join Operator [MERGEJOIN_59]
-                                 |  condition map:[{"":"Inner Join 0 to 1"}]
-                                 |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                 |  outputColumnNames:["_col1","_col3","_col4"]
-                                 |  Statistics:Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |<-Map 1 [SIMPLE_EDGE]
-                                 |  Reduce Output Operator [RS_33]
-                                 |     key expressions:_col0 (type: string)
-                                 |     Map-reduce partition columns:_col0 (type: string)
-                                 |     sort order:+
-                                 |     Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |     value expressions:_col1 (type: int)
-                                 |     Select Operator [SEL_1]
-                                 |        outputColumnNames:["_col0","_col1"]
-                                 |        Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |        Filter Operator [FIL_54]
-                                 |           predicate:key is not null (type: boolean)
-                                 |           Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |           TableScan [TS_0]
-                                 |              alias:cbo_t3
-                                 |              Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |<-Reducer 8 [SIMPLE_EDGE]
-                                    Reduce Output Operator [RS_35]
-                                       key expressions:_col0 (type: string)
-                                       Map-reduce partition columns:_col0 (type: string)
-                                       sort order:+
-                                       Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                       value expressions:_col1 (type: int), _col2 (type: bigint)
-                                       Select Operator [SEL_29]
-                                          outputColumnNames:["_col0","_col1","_col2"]
-                                          Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                          Filter Operator [FIL_55]
-                                             predicate:((_col3 + _col1) >= 0) (type: boolean)
-                                             Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                             Merge Join Operator [MERGEJOIN_58]
-                                             |  condition map:[{"":"Inner Join 0 to 1"}]
-                                             |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                             |  outputColumnNames:["_col1","_col2","_col3","_col4"]
-                                             |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |<-Reducer 11 [SIMPLE_EDGE]
-                                             |  Reduce Output Operator [RS_27]
-                                             |     key expressions:_col0 (type: string)
-                                             |     Map-reduce partition columns:_col0 (type: string)
-                                             |     sort order:+
-                                             |     Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |     value expressions:_col1 (type: int), _col2 (type: bigint)
-                                             |     Select Operator [SEL_22]
-                                             |     |  outputColumnNames:["_col0","_col1","_col2"]
-                                             |     |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |     |<-Reducer 10 [SIMPLE_EDGE]
-                                             |        Reduce Output Operator [RS_21]
-                                             |           key expressions:_col0 (type: string)
-                                             |           sort order:+
-                                             |           Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |           value expressions:_col1 (type: int), _col2 (type: bigint)
-                                             |           Select Operator [SEL_20]
-                                             |              outputColumnNames:["_col0","_col1","_col2"]
-                                             |              Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |              Group By Operator [GBY_19]
-                                             |              |  aggregations:["sum(VALUE._col0)"]
-                                             |              |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                             |              |  outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                             |              |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |              |<-Map 9 [SIMPLE_EDGE]
-                                             |                 Reduce Output Operator [RS_18]
-                                             |                    key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                             |                    Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                             |                    sort order:+++
-                                             |                    Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |                    value expressions:_col3 (type: bigint)
-                                             |                    Group By Operator [GBY_17]
-                                             |                       aggregations:["sum(_col1)"]
-                                             |                       keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                             |                       outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                             |                       Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |                       Select Operator [SEL_15]
-                                             |                          outputColumnNames:["_col0","_col1","_col2"]
-                                             |                          Statistics:Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |                          Filter Operator [FIL_57]
-                                             |                             predicate:((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and key is not null) (type: boolean)
-                                             |                             Statistics:Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |                             TableScan [TS_13]
-                                             |                                alias:cbo_t1
-                                             |                                Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |<-Reducer 7 [SIMPLE_EDGE]
-                                                Reduce Output Operator [RS_25]
-                                                   key expressions:_col0 (type: string)
-                                                   Map-reduce partition columns:_col0 (type: string)
-                                                   sort order:+
-                                                   Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                                   value expressions:_col1 (type: int)
-                                                   Select Operator [SEL_11]
-                                                   |  outputColumnNames:["_col0","_col1"]
-                                                   |  Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                                   |<-Reducer 6 [SIMPLE_EDGE]
-                                                      Reduce Output Operator [RS_10]
-                                                         key expressions:_col3 (type: double), _col2 (type: bigint)
-                                                         sort order:-+
-                                                         Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                         value expressions:_col0 (type: string), _col1 (type: int)
-                                                         Select Operator [SEL_9]
-                                                            outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                            Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                            Group By Operator [GBY_8]
-                                                            |  aggregations:["sum(VALUE._col0)"]
-                                                            |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                                            |  outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                            |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                            |<-Map 5 [SIMPLE_EDGE]
-                                                               Reduce Output Operator [RS_7]
-                                                                  key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                                  Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                                  sort order:+++
-                                                                  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                  value expressions:_col3 (type: bigint)
-                                                                  Group By Operator [GBY_6]
-                                                                     aggregations:["sum(_col1)"]
-                                                                     keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                                     outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                                     Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                     Select Operator [SEL_4]
-                                                                        outputColumnNames:["_col0","_col1","_col2"]
-                                                                        Statistics:Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                        Filter Operator [FIL_56]
-                                                                           predicate:((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and key is not null) (type: boolean)
-                                                                           Statistics:Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                           TableScan [TS_2]
-                                                                              alias:cbo_t2
-                                                                              Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-
-PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc) cbo_t1 left outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key  having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p left outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c  having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by cbo_t3.c_int % c asc, cbo_t3.c_int desc
-PREHOOK: type: QUERY
-POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc) cbo_t1 left outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key  having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p left outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c  having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by cbo_t3.c_int % c asc, cbo_t3.c_int desc
-POSTHOOK: type: QUERY
-Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-Reducer 4 <- Map 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
-Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
-Reducer 8 <- Map 7 (SIMPLE_EDGE)
-Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
-
-Stage-0
-   Fetch Operator
-      limit:-1
-      Stage-1
-         Reducer 6
-         File Output Operator [FS_45]
-            compressed:false
-            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
-            Select Operator [SEL_44]
-            |  outputColumnNames:["_col0","_col1","_col2"]
-            |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            |<-Reducer 5 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_43]
-                  key expressions:(UDFToLong(_col0) % _col1) (type: bigint), _col0 (type: int)
-                  sort order:+-
-                  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions:_col1 (type: bigint), _col2 (type: bigint)
-                  Group By Operator [GBY_41]
-                  |  aggregations:["count(VALUE._col0)"]
-                  |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
-                  |  outputColumnNames:["_col0","_col1","_col2"]
-                  |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  |<-Reducer 4 [SIMPLE_EDGE]
-                     Reduce Output Operator [RS_40]
-                        key expressions:_col0 (type: int), _col1 (type: bigint)
-                        Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
-                        sort order:++
-                        Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions:_col2 (type: bigint)
-                        Group By Operator [GBY_39]
-                           aggregations:["count()"]
-                           keys:_col0 (type: int), _col1 (type: bigint)
-                           outputColumnNames:["_col0","_col1","_col2"]
-                           Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                           Select Operator [SEL_35]
-                              outputColumnNames:["_col0","_col1"]
-                              Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                              Filter Operator [FIL_49]
-                                 predicate:((((_col6 > 0) and ((_col6 >= 1) or (_col2 >= 1))) and ((UDFToLong(_col6) + _col2) >= 0)) and ((_col1 > 0) or (_col6 >= 0))) (type: boolean)
-                                 Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                                 Merge Join Operator [MERGEJOIN_55]
-                                 |  condition map:[{"":"Left Outer Join0 to 1"}]
-                                 |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                 |  outputColumnNames:["_col1","_col2","_col6"]
-                                 |  Statistics:Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |<-Map 10 [SIMPLE_EDGE]
-                                 |  Reduce Output Operator [RS_32]
-                                 |     key expressions:_col0 (type: string)
-                                 |     Map-reduce partition columns:_col0 (type: string)
-                                 |     sort order:+
-                                 |     Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |     value expressions:_col1 (type: int)
-                                 |     Select Operator [SEL_30]
-                                 |        outputColumnNames:["_col0","_col1"]
-                                 |        Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |        TableScan [TS_29]
-                                 |           alias:cbo_t3
-                                 |           Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |<-Reducer 3 [SIMPLE_EDGE]
-                                    Reduce Output Operator [RS_31]
-                                       key expressions:_col0 (type: string)
-                                       Map-reduce partition columns:_col0 (type: string)
-                                       sort order:+
-                                       Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                       value expressions:_col1 (type: int), _col2 (type: bigint)
-                                       Select Operator [SEL_26]
-                                          outputColumnNames:["_col0","_col1","_col2"]
-                                          Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                          Filter Operator [FIL_50]
-                                             predicate:((_col3 + _col1) >= 0) (type: boolean)
-                                             Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                             Merge Join Operator [MERGEJOIN_54]
-                                             |  condition map:[{"":"Right Outer Join0 to 1"}]
-                                             |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                             |  outputColumnNames:["_col1","_col2","_col3","_col4"]
-                                             |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |<-Reducer 2 [SIMPLE_EDGE]
-                                             |  Reduce Output Operator [RS_23]
-                                             |     key expressions:_col0 (type: string)
-                                             |     Map-reduce partition columns:_col0 (type: string)
-                                             |     sort order:+
-                                             |     Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |     value expressions:_col1 (type: int)
-                                             |     Select Operator [SEL_9]
-                                             |        outputColumnNames:["_col0","_col1"]
-                                             |        Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |        Group By Operator [GBY_8]
-                                             |        |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                             |        |  outputColumnNames:["_col0","_col1","_col2"]
-                                             |        |  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |        |<-Map 1 [SIMPLE_EDGE]
-                                             |           Reduce Output Operator [RS_7]
-                                             |              key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                             |              Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                             |              sort order:+++
-                                             |              Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |              Group By Operator [GBY_6]
-                                             |                 keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                             |                 outputColumnNames:["_col0","_col1","_col2"]
-                                             |                 Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |                 Select Operator [SEL_2]
-                                             |                    outputColumnNames:["_col0","_col1","_col2"]
-                                             |                    Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |                    Filter Operator [FIL_51]
-                                             |                       predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
-                                             |                       Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |                       TableScan [TS_0]
-                                             |                          alias:cbo_t2
-                                             |                          Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                             |<-Reducer 9 [SIMPLE_EDGE]
-                                                Reduce Output Operator [RS_24]
-                                                   key expressions:_col0 (type: string)
-                                                   Map-reduce partition columns:_col0 (type: string)
-                                                   sort order:+
-                                                   Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                   value expressions:_col1 (type: int), _col2 (type: bigint)
-                                                   Select Operator [SEL_21]
-                                                   |  outputColumnNames:["_col0","_col1","_col2"]
-                                                   |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                   |<-Reducer 8 [SIMPLE_EDGE]
-                                                      Reduce Output Operator [RS_20]
-                                                         key expressions:_col3 (type: bigint), _col1 (type: int)
-                                                         sort order:+-
-                                                         Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                         value expressions:_col0 (type: string), _col2 (type: bigint)
-                                                         Select Operator [SEL_19]
-                                                            outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                            Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                            Group By Operator [GBY_18]
-                                                            |  aggregations:["sum(VALUE._col0)"]
-                                                            |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                                            |  outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                            |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                            |<-Map 7 [SIMPLE_EDGE]
-                                                               Reduce Output Operator [RS_17]
-                                                                  key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                                  Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                                  sort order:+++
-                                                                  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                  value expressions:_col3 (type: bigint)
-                                                                  Group By Operator [GBY_16]
-                                                                     aggregations:["sum(_col1)"]
-                                                                     keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                                     outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                                     Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                     Select Operator [SEL_12]
-                                                                        outputColumnNames:["_col0","_col1","_col2"]
-                                                                        Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                        Filter Operator [FIL_52]
-                                                                           predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
-                                                                           Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                           TableScan [TS_10]
-                                                                              alias:cbo_t1
-                                                                              Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-
-PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b+c, a desc) cbo_t1 right outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p right outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 2) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
-PREHOOK: type: QUERY
-POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b+c, a desc) cbo_t1 right outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p right outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 2) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
-POSTHOOK: type: QUERY
-Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
-Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
-Reducer 7 <- Map 6 (SIMPLE_EDGE)
-Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
-
-Stage-0
-   Fetch Operator
-      limit:-1
-      Stage-1
-         Reducer 5
-         File Output Operator [FS_39]
-            compressed:false
-            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
-            Group By Operator [GBY_37]
-            |  aggregations:["count(VALUE._col0)"]
-            |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
-            |  outputColumnNames:["_col0","_col1","_col2"]
-            |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            |<-Reducer 4 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_36]
-                  key expressions:_col0 (type: int), _col1 (type: bigint)
-                  Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
-                  sort order:++
-                  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions:_col2 (type: bigint)
-                  Group By Operator [GBY_35]
-                     aggregations:["count()"]
-                     keys:_col0 (type: int), _col1 (type: bigint)
-                     outputColumnNames:["_col0","_col1","_col2"]
-                     Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                     Select Operator [SEL_33]
-                        outputColumnNames:["_col0","_col1"]
-                        Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                        Filter Operator [FIL_43]
-                           predicate:(((_col1 + _col4) >= 2) and ((_col1 > 0) or (_col6 >= 0))) (type: boolean)
-                           Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                           Merge Join Operator [MERGEJOIN_48]
-                           |  condition map:[{"":"Right Outer Join0 to 1"}]
-                           |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                           |  outputColumnNames:["_col1","_col2","_col4","_col6"]
-                           |  Statistics:Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
-                           |<-Map 9 [SIMPLE_EDGE]
-                           |  Reduce Output Operator [RS_30]
-                           |     key expressions:_col0 (type: string)
-                           |     Map-reduce partition columns:_col0 (type: string)
-                           |     sort order:+
-                           |     Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
-                           |     value expressions:_col1 (type: int)
-                           |     Select Operator [SEL_28]
-                           |        outputColumnNames:["_col0","_col1"]
-                           |        Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
-                           |        TableScan [TS_27]
-                           |           alias:cbo_t3
-                           |           Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                           |<-Reducer 3 [SIMPLE_EDGE]
-                              Reduce Output Operator [RS_29]
-                                 key expressions:_col0 (type: string)
-                                 Map-reduce partition columns:_col0 (type: string)
-                                 sort order:+
-                                 Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                 value expressions:_col1 (type: int), _col2 (type: bigint), _col4 (type: int)
-                                 Select Operator [SEL_26]
-                                    outputColumnNames:["_col0","_col1","_col2","_col4"]
-                                    Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                    Merge Join Operator [MERGEJOIN_47]
-                                    |  condition map:[{"":"Left Outer Join0 to 1"}]
-                                    |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                    |  outputColumnNames:["_col1","_col2","_col3","_col4"]
-                                    |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |<-Reducer 2 [SIMPLE_EDGE]
-                                    |  Reduce Output Operator [RS_23]
-                                    |     key expressions:_col0 (type: string)
-                                    |     Map-reduce partition columns:_col0 (type: string)
-                                    |     sort order:+
-                                    |     Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |     value expressions:_col1 (type: int)
-                                    |     Select Operator [SEL_9]
-                                    |        outputColumnNames:["_col0","_col1"]
-                                    |        Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |        Group By Operator [GBY_8]
-                                    |        |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                    |        |  outputColumnNames:["_col0","_col1","_col2"]
-                                    |        |  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |        |<-Map 1 [SIMPLE_EDGE]
-                                    |           Reduce Output Operator [RS_7]
-                                    |              key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                    |              Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                    |              sort order:+++
-                                    |              Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |              Group By Operator [GBY_6]
-                                    |                 keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                    |                 outputColumnNames:["_col0","_col1","_col2"]
-                                    |                 Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |                 Select Operator [SEL_2]
-                                    |                    outputColumnNames:["_col0","_col1","_col2"]
-                                    |                    Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |                    Filter Operator [FIL_45]
-                                    |                       predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
-                                    |                       Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |                       TableScan [TS_0]
-                                    |                          alias:cbo_t2
-                                    |                          Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |<-Reducer 8 [SIMPLE_EDGE]
-                                       Reduce Output Operator [RS_24]
-                                          key expressions:_col0 (type: string)
-                                          Map-reduce partition columns:_col0 (type: string)
-                                          sort order:+
-                                          Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                          value expressions:_col1 (type: int), _col2 (type: bigint)
-                                          Select Operator [SEL_21]
-                                          |  outputColumnNames:["_col0","_col1","_col2"]
-                                          |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |<-Reducer 7 [SIMPLE_EDGE]
-                                             Reduce Output Operator [RS_20]
-                                                key expressions:_col3 (type: bigint), _col0 (type: string)
-                                                sort order:+-
-                                                Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                value expressions:_col1 (type: int), _col2 (type: bigint)
-                                                Select Operator [SEL_19]
-                                                   outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                   Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                   Group By Operator [GBY_18]
-                                                   |  aggregations:["sum(VALUE._col0)"]
-                                                   |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                                   |  outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                   |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                   |<-Map 6 [SIMPLE_EDGE]
-                                                      Reduce Output Operator [RS_17]
-                                                         key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                         Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                         sort order:+++
-                                                         Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                         value expressions:_col3 (type: bigint)
-                                                         Group By Operator [GBY_16]
-                                                            aggregations:["sum(_col1)"]
-                                                            keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                            outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                            Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                            Select Operator [SEL_12]
-                                                               outputColumnNames:["_col0","_col1","_col2"]
-                                                               Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                                               Filter Operator [FIL_46]
-                                                                  predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
-                                                                  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                  TableScan [TS_10]
-                                                                     alias:cbo_t1
-                                                                     Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-
-PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by c+a desc) cbo_t1 full outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by p+q desc, r asc) cbo_t2 on cbo_t1.a=p full outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0 order by cbo_t3.c_int
-PREHOOK: type: QUERY
-POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by c+a desc) cbo_t1 full outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by p+q desc, r asc) cbo_t2 on cbo_t1.a=p full outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0 order by cbo_t3.c_int
-POSTHOOK: type: QUERY
-Plan optimized by CBO.
-
-Vertex dependency in root stage
 Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
@@ -1028,165 +512,649 @@ Stage-0
       limit:-1
       Stage-1
          Reducer 7
-         File Output Operator [FS_46]
+         File Output Operator [FS_45]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
-            Select Operator [SEL_45]
+            Select Operator [SEL_44]
             |  outputColumnNames:["_col0","_col1","_col2"]
             |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Reducer 6 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_44]
-                  key expressions:_col0 (type: int)
-                  sort order:+
+               Reduce Output Operator [RS_43]
+                  key expressions:(UDFToLong(_col0) + _col1) (type: bigint), _col1 (type: bigint)
+                  sort order:-+
                   Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions:_col1 (type: bigint), _col2 (type: bigint)
-                  Group By Operator [GBY_42]
+                  value expressions:_col0 (type: int), _col2 (type: bigint)
+                  Group By Operator [GBY_41]
                   |  aggregations:["count(VALUE._col0)"]
                   |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
                   |  outputColumnNames:["_col0","_col1","_col2"]
                   |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   |<-Reducer 5 [SIMPLE_EDGE]
-                     Reduce Output Operator [RS_41]
+                     Reduce Output Operator [RS_40]
                         key expressions:_col0 (type: int), _col1 (type: bigint)
                         Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
                         sort order:++
                         Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col2 (type: bigint)
-                        Group By Operator [GBY_40]
+                        Group By Operator [GBY_39]
                            aggregations:["count()"]
                            keys:_col0 (type: int), _col1 (type: bigint)
                            outputColumnNames:["_col0","_col1","_col2"]
                            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                           Select Operator [SEL_36]
+                           Select Operator [SEL_37]
                               outputColumnNames:["_col0","_col1"]
-                              Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                              Filter Operator [FIL_48]
-                                 predicate:(((((_col6 > 0) and ((_col6 >= 1) or (_col2 >= 1))) and ((UDFToLong(_col6) + _col2) >= 0)) and ((_col1 + _col4) >= 0)) and ((_col1 > 0) or (_col6 >= 0))) (type: boolean)
-                                 Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                                 Merge Join Operator [MERGEJOIN_52]
-                                 |  condition map:[{"":"Outer Join 0 to 1"}]
+                              Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                              Filter Operator [FIL_36]
+                                 predicate:((_col1 > 0) or (_col6 >= 0)) (type: boolean)
+                                 Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                                 Merge Join Operator [MERGEJOIN_55]
+                                 |  condition map:[{"":"Inner Join 0 to 1"}]
                                  |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                 |  outputColumnNames:["_col1","_col2","_col4","_col6"]
-                                 |  Statistics:Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |  outputColumnNames:["_col1","_col2","_col6"]
+                                 |  Statistics:Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                                  |<-Map 11 [SIMPLE_EDGE]
-                                 |  Reduce Output Operator [RS_33]
+                                 |  Reduce Output Operator [RS_34]
                                  |     key expressions:_col0 (type: string)
                                  |     Map-reduce partition columns:_col0 (type: string)
                                  |     sort order:+
-                                 |     Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |     Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
                                  |     value expressions:_col1 (type: int)
-                                 |     Select Operator [SEL_31]
+                                 |     Select Operator [SEL_30]
                                  |        outputColumnNames:["_col0","_col1"]
-                                 |        Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
-                                 |        TableScan [TS_30]
-                                 |           alias:cbo_t3
-                                 |           Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |        Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |        Filter Operator [FIL_53]
+                                 |           predicate:key is not null (type: boolean)
+                                 |           Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |           TableScan [TS_29]
+                                 |              alias:cbo_t3
+                                 |              Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
                                  |<-Reducer 4 [SIMPLE_EDGE]
                                     Reduce Output Operator [RS_32]
                                        key expressions:_col0 (type: string)
                                        Map-reduce partition columns:_col0 (type: string)
                                        sort order:+
                                        Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                       value expressions:_col1 (type: int), _col2 (type: bigint), _col4 (type: int)
-                                       Select Operator [SEL_29]
-                                          outputColumnNames:["_col0","_col1","_col2","_col4"]
+                                       value expressions:_col1 (type: int), _col2 (type: bigint)
+                                       Select Operator [SEL_28]
+                                          outputColumnNames:["_col0","_col1","_col2"]
                                           Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                          Merge Join Operator [MERGEJOIN_51]
-                                          |  condition map:[{"":"Outer Join 0 to 1"}]
-                                          |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                          |  outputColumnNames:["_col1","_col2","_col3","_col4"]
-                                          |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |<-Reducer 10 [SIMPLE_EDGE]
-                                          |  Reduce Output Operator [RS_27]
-                                          |     key expressions:_col0 (type: string)
-                                          |     Map-reduce partition columns:_col0 (type: string)
-                                          |     sort order:+
-                                          |     Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |     value expressions:_col1 (type: int), _col2 (type: bigint)
-                                          |     Select Operator [SEL_24]
-                                          |     |  outputColumnNames:["_col0","_col1","_col2"]
-                                          |     |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |     |<-Reducer 9 [SIMPLE_EDGE]
-                                          |        Reduce Output Operator [RS_23]
-                                          |           key expressions:_col3 (type: double)
-                                          |           sort order:-
-                                          |           Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |           value expressions:_col0 (type: string), _col1 (type: int), _col2 (type: bigint)
-                                          |           Select Operator [SEL_22]
-                                          |              outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                          |              Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |              Group By Operator [GBY_21]
-                                          |              |  aggregations:["sum(VALUE._col0)"]
-                                          |              |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                          |              |  outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                          |              |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |              |<-Map 8 [SIMPLE_EDGE]
-                                          |                 Reduce Output Operator [RS_20]
-                                          |                    key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                          |                    Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                          |                    sort order:+++
-                                          |                    Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |                    value expressions:_col3 (type: bigint)
-                                          |                    Group By Operator [GBY_19]
-                                          |                       aggregations:["sum(_col1)"]
-                                          |                       keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                          |                       outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                          |                       Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |                       Select Operator [SEL_15]
-                                          |                          outputColumnNames:["_col0","_col1","_col2"]
-                                          |                          Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |                          Filter Operator [FIL_50]
-                                          |                             predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
-                                          |                             Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |                             TableScan [TS_13]
-                                          |                                alias:cbo_t1
-                                          |                                Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                          |<-Reducer 3 [SIMPLE_EDGE]
-                                             Reduce Output Operator [RS_26]
-                                                key expressions:_col0 (type: string)
-                                                Map-reduce partition columns:_col0 (type: string)
-                                                sort order:+
-                                                Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                                value expressions:_col1 (type: int)
-                                                Select Operator [SEL_11]
-                                                |  outputColumnNames:["_col0","_col1"]
-                                                |  Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |<-Reducer 2 [SIMPLE_EDGE]
-                                                   Reduce Output Operator [RS_10]
-                                                      key expressions:_col3 (type: double), _col2 (type: bigint)
-                                                      sort order:-+
-                                                      Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                      value expressions:_col0 (type: string), _col1 (type: int)
-                                                      Select Operator [SEL_9]
-                                                         outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                         Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                         Group By Operator [GBY_8]
-                                                         |  aggregations:["sum(VALUE._col0)"]
-                                                         |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                                         |  outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                         |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                         |<-Map 1 [SIMPLE_EDGE]
-                                                            Reduce Output Operator [RS_7]
-                                                               key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                               Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                               sort order:+++
-                                                               Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                               value expressions:_col3 (type: bigint)
-                                                               Group By Operator [GBY_6]
-                                                                  aggregations:["sum(_col1)"]
-                                                                  keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                                  outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                          Filter Operator [FIL_27]
+                                             predicate:((_col1 + _col4) >= 0) (type: boolean)
+                                             Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             Merge Join Operator [MERGEJOIN_54]
+                                             |  condition map:[{"":"Inner Join 0 to 1"}]
+                                             |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                             |  outputColumnNames:["_col0","_col1","_col2","_col4"]
+                                             |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |<-Reducer 10 [SIMPLE_EDGE]
+                                             |  Reduce Output Operator [RS_25]
+                                             |     key expressions:_col0 (type: string)
+                                             |     Map-reduce partition columns:_col0 (type: string)
+                                             |     sort order:+
+                                             |     Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |     value expressions:_col1 (type: int)
+                                             |     Select Operator [SEL_20]
+                                             |     |  outputColumnNames:["_col0","_col1"]
+                                             |     |  Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |     |<-Reducer 9 [SIMPLE_EDGE]
+                                             |        Reduce Output Operator [RS_19]
+                                             |           key expressions:_col3 (type: double), _col2 (type: bigint)
+                                             |           sort order:-+
+                                             |           Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |           value expressions:_col0 (type: string), _col1 (type: int)
+                                             |           Select Operator [SEL_18]
+                                             |              outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                             |              Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |              Group By Operator [GBY_17]
+                                             |              |  aggregations:["sum(VALUE._col0)"]
+                                             |              |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
+                                             |              |  outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                             |              |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |              |<-Map 8 [SIMPLE_EDGE]
+                                             |                 Reduce Output Operator [RS_16]
+                                             |                    key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                             |                    Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                             |                    sort order:+++
+                                             |                    Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |                    value expressions:_col3 (type: bigint)
+                                             |                    Group By Operator [GBY_15]
+                                             |                       aggregations:["sum(_col1)"]
+                                             |                       keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                             |                       outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                             |                       Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |                       Select Operator [SEL_13]
+                                             |                          outputColumnNames:["_col0","_col1","_col2"]
+                                             |                          Statistics:Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |                          Filter Operator [FIL_52]
+                                             |                             predicate:((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and key is not null) (type: boolean)
+                                             |                             Statistics:Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |                             TableScan [TS_11]
+                                             |                                alias:cbo_t2
+                                             |                                Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |<-Reducer 3 [SIMPLE_EDGE]
+                                                Reduce Output Operator [RS_23]
+                                                   key expressions:_col0 (type: string)
+                                                   Map-reduce partition columns:_col0 (type: string)
+                                                   sort order:+
+                                                   Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                   value expressions:_col1 (type: int), _col2 (type: bigint)
+                                                   Select Operator [SEL_9]
+                                                   |  outputColumnNames:["_col0","_col1","_col2"]
+                                                   |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                   |<-Reducer 2 [SIMPLE_EDGE]
+                                                      Reduce Output Operator [RS_8]
+                                                         key expressions:_col0 (type: string)
+                                                         sort order:+
+                                                         Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                         value expressions:_col1 (type: int), _col2 (type: bigint)
+                                                         Select Operator [SEL_7]
+                                                            outputColumnNames:["_col0","_col1","_col2"]
+                                                            Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                            Group By Operator [GBY_6]
+                                                            |  aggregations:["sum(VALUE._col0)"]
+                                                            |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
+                                                            |  outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                                            |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                                            |<-Map 1 [SIMPLE_EDGE]
+                                                               Reduce Output Operator [RS_5]
+                                                                  key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                                  Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                                  sort order:+++
                                                                   Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                  Select Operator [SEL_2]
-                                                                     outputColumnNames:["_col0","_col1","_col2"]
+                                                                  value expressions:_col3 (type: bigint)
+                                                                  Group By Operator [GBY_4]
+                                                                     aggregations:["sum(_col1)"]
+                                                                     keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                                     outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                                                     Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                                                     Select Operator [SEL_2]
+                                                                        outputColumnNames:["_col0","_col1","_col2"]
+                                                                        Statistics:Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                                                                        Filter Operator [FIL_51]
+                                                                           predicate:((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and key is not null) (type: boolean)
+                                                                           Statistics:Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                                                                           TableScan [TS_0]
+                                                                              alias:cbo_t1
+                                                                              Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+
+PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc) cbo_t1 left outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key  having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p left outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c  having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by cbo_t3.c_int % c asc, cbo_t3.c_int desc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b % c asc, b desc) cbo_t1 left outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key  having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p left outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c  having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0  order by cbo_t3.c_int % c asc, cbo_t3.c_int desc
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+Reducer 5 <- Map 10 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+Reducer 9 <- Map 8 (SIMPLE_EDGE)
+
+Stage-0
+   Fetch Operator
+      limit:-1
+      Stage-1
+         Reducer 7
+         File Output Operator [FS_44]
+            compressed:false
+            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            Select Operator [SEL_43]
+            |  outputColumnNames:["_col0","_col1","_col2"]
+            |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            |<-Reducer 6 [SIMPLE_EDGE]
+               Reduce Output Operator [RS_42]
+                  key expressions:(UDFToLong(_col0) % _col1) (type: bigint), _col0 (type: int)
+                  sort order:+-
+                  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions:_col1 (type: bigint), _col2 (type: bigint)
+                  Group By Operator [GBY_40]
+                  |  aggregations:["count(VALUE._col0)"]
+                  |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
+                  |  outputColumnNames:["_col0","_col1","_col2"]
+                  |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  |<-Reducer 5 [SIMPLE_EDGE]
+                     Reduce Output Operator [RS_39]
+                        key expressions:_col0 (type: int), _col1 (type: bigint)
+                        Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
+                        sort order:++
+                        Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions:_col2 (type: bigint)
+                        Group By Operator [GBY_38]
+                           aggregations:["count()"]
+                           keys:_col0 (type: int), _col1 (type: bigint)
+                           outputColumnNames:["_col0","_col1","_col2"]
+                           Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                           Select Operator [SEL_34]
+                              outputColumnNames:["_col0","_col1"]
+                              Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                              Filter Operator [FIL_48]
+                                 predicate:((((_col6 > 0) and ((_col6 >= 1) or (_col2 >= 1))) and ((UDFToLong(_col6) + _col2) >= 0)) and ((_col1 > 0) or (_col6 >= 0))) (type: boolean)
+                                 Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                                 Merge Join Operator [MERGEJOIN_53]
+                                 |  condition map:[{"":"Left Outer Join0 to 1"}]
+                                 |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                 |  outputColumnNames:["_col1","_col2","_col6"]
+                                 |  Statistics:Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |<-Map 10 [SIMPLE_EDGE]
+                                 |  Reduce Output Operator [RS_31]
+                                 |     key expressions:_col0 (type: string)
+                                 |     Map-reduce partition columns:_col0 (type: string)
+                                 |     sort order:+
+                                 |     Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |     value expressions:_col1 (type: int)
+                                 |     Select Operator [SEL_29]
+                                 |        outputColumnNames:["_col0","_col1"]
+                                 |        Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |        TableScan [TS_28]
+                                 |           alias:cbo_t3
+                                 |           Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |<-Reducer 4 [SIMPLE_EDGE]
+                                    Reduce Output Operator [RS_30]
+                                       key expressions:_col0 (type: string)
+                                       Map-reduce partition columns:_col0 (type: string)
+                                       sort order:+
+                                       Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                       value expressions:_col1 (type: int), _col2 (type: bigint)
+                                       Select Operator [SEL_27]
+                                          outputColumnNames:["_col0","_col1","_col2"]
+                                          Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                          Filter Operator [FIL_26]
+                                             predicate:((_col1 + _col4) >= 0) (type: boolean)
+                                             Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             Merge Join Operator [MERGEJOIN_52]
+                                             |  condition map:[{"":"Left Outer Join0 to 1"}]
+                                             |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                             |  outputColumnNames:["_col0","_col1","_col2","_col4"]
+                                             |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |<-Reducer 3 [SIMPLE_EDGE]
+                                             |  Reduce Output Operator [RS_23]
+                                             |     key expressions:_col0 (type: string)
+                                             |     Map-reduce partition columns:_col0 (type: string)
+                                             |     sort order:+
+                                             |     Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |     value expressions:_col1 (type: int), _col2 (type: bigint)
+                                             |     Select Operator [SEL_11]
+                                             |     |  outputColumnNames:["_col0","_col1","_col2"]
+                                             |     |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |     |<-Reducer 2 [SIMPLE_EDGE]
+                                             |        Reduce Output Operator [RS_10]
+                                             |           key expressions:_col3 (type: bigint), _col1 (type: int)
+                                             |           sort order:+-
+                                             |           Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |           value expressions:_col0 (type: string), _col2 (type: bigint)
+                                             |           Select Operator [SEL_9]
+                                             |              outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                             |              Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |              Group By Operator [GBY_8]
+                                             |              |  aggregations:["sum(VALUE._col0)"]
+                                             |              |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
+                                             |              |  outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                             |              |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |              |<-Map 1 [SIMPLE_EDGE]
+                                             |                 Reduce Output Operator [RS_7]
+                                             |                    key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                             |                    Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                             |                    sort order:+++
+                                             |                    Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |                    value expressions:_col3 (type: bigint)
+                                             |                    Group By Operator [GBY_6]
+                                             |                       aggregations:["sum(_col1)"]
+                                             |                       keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                             |                       outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                             |                       Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |                       Select Operator [SEL_2]
+                                             |                          outputColumnNames:["_col0","_col1","_col2"]
+                                             |                          Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |                          Filter Operator [FIL_49]
+                                             |                             predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
+                                             |                             Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |                             TableScan [TS_0]
+                                             |                                alias:cbo_t1
+                                             |                                Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                                             |<-Reducer 9 [SIMPLE_EDGE]
+                                                Reduce Output Operator [RS_24]
+                                                   key expressions:_col0 (type: string)
+                                                   Map-reduce partition columns:_col0 (type: string)
+                                                   sort order:+
+                                                   Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                                   value expressions:_col1 (type: int)
+                                                   Select Operator [SEL_22]
+                                                      outputColumnNames:["_col0","_col1"]
+                                                      Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                                      Group By Operator [GBY_21]
+                                                      |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
+                                                      |  outputColumnNames:["_col0","_col1","_col2"]
+                                                      |  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                      |<-Map 8 [SIMPLE_EDGE]
+                                                         Reduce Output Operator [RS_20]
+                                                            key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                            Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                            sort order:+++
+                                                            Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                            Group By Operator [GBY_19]
+                                                               keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                               outputColumnNames:["_col0","_col1","_col2"]
+                                                               Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                               Select Operator [SEL_15]
+                                                                  outputColumnNames:["_col0","_col1","_col2"]
+                                                                  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                                  Filter Operator [FIL_50]
+                                                                     predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
                                                                      Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                     Filter Operator [FIL_49]
-                                                                        predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
-                                                                        Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                        TableScan [TS_0]
-                                                                           alias:cbo_t2
-                                                                           Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                                                                     TableScan [TS_13]
+                                                                        alias:cbo_t2
+                                                                        Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+
+PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b+c, a desc) cbo_t1 right outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p right outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 2) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by b+c, a desc) cbo_t1 right outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p right outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 2) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 8 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 7 <- Map 6 (SIMPLE_EDGE)
+
+Stage-0
+   Fetch Operator
+      limit:-1
+      Stage-1
+         Reducer 5
+         File Output Operator [FS_36]
+            compressed:false
+            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            Group By Operator [GBY_34]
+            |  aggregations:["count(VALUE._col0)"]
+            |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
+            |  outputColumnNames:["_col0","_col1","_col2"]
+            |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            |<-Reducer 4 [SIMPLE_EDGE]
+               Reduce Output Operator [RS_33]
+                  key expressions:_col0 (type: int), _col1 (type: bigint)
+                  Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
+                  sort order:++
+                  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions:_col2 (type: bigint)
+                  Group By Operator [GBY_32]
+                     aggregations:["count()"]
+                     keys:_col0 (type: int), _col1 (type: bigint)
+                     outputColumnNames:["_col0","_col1","_col2"]
+                     Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                     Select Operator [SEL_30]
+                        outputColumnNames:["_col0","_col1"]
+                        Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        Filter Operator [FIL_29]
+                           predicate:(((_col1 + _col4) >= 2) and ((_col1 > 0) or (_col6 >= 0))) (type: boolean)
+                           Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                           Merge Join Operator [MERGEJOIN_41]
+                           |  condition map:[{"":"Right Outer Join0 to 1"},{"":"Right Outer Join0 to 2"}]
+                           |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                           |  outputColumnNames:["_col1","_col2","_col4","_col6"]
+                           |  Statistics:Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                           |<-Map 8 [SIMPLE_EDGE]
+                           |  Reduce Output Operator [RS_27]
+                           |     key expressions:_col0 (type: string)
+                           |     Map-reduce partition columns:_col0 (type: string)
+                           |     sort order:+
+                           |     Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                           |     value expressions:_col1 (type: int)
+                           |     Select Operator [SEL_24]
+                           |        outputColumnNames:["_col0","_col1"]
+                           |        Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                           |        TableScan [TS_23]
+                           |           alias:cbo_t3
+                           |           Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                           |<-Reducer 3 [SIMPLE_EDGE]
+                           |  Reduce Output Operator [RS_25]
+                           |     key expressions:_col0 (type: string)
+                           |     Map-reduce partition columns:_col0 (type: string)
+                           |     sort order:+
+                           |     Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                           |     value expressions:_col1 (type: int), _col2 (type: bigint)
+                           |     Select Operator [SEL_11]
+                           |     |  outputColumnNames:["_col0","_col1","_col2"]
+                           |     |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                           |     |<-Reducer 2 [SIMPLE_EDGE]
+                           |        Reduce Output Operator [RS_10]
+                           |           key expressions:_col3 (type: bigint), _col0 (type: string)
+                           |           sort order:+-
+                           |           Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                           |           value expressions:_col1 (type: int), _col2 (type: bigint)
+                           |           Select Operator [SEL_9]
+                           |              outputColumnNames:["_col0","_col1","_col2","_col3"]
+                           |              Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                           |              Group By Operator [GBY_8]
+                           |              |  aggregations:["sum(VALUE._col0)"]
+                           |              |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
+                           |              |  outputColumnNames:["_col0","_col1","_col2","_col3"]
+                           |              |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                           |              |<-Map 1 [SIMPLE_EDGE]
+                           |                 Reduce Output Operator [RS_7]
+                           |                    key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                           |                    Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                           |                    sort order:+++
+                           |                    Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                           |                    value expressions:_col3 (type: bigint)
+                           |                    Group By Operator [GBY_6]
+                           |                       aggregations:["sum(_col1)"]
+                           |                       keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                           |                       outputColumnNames:["_col0","_col1","_col2","_col3"]
+                           |                       Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                           |                       Select Operator [SEL_2]
+                           |                          outputColumnNames:["_col0","_col1","_col2"]
+                           |                          Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                           |                          Filter Operator [FIL_39]
+                           |                             predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
+                           |                             Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                           |                             TableScan [TS_0]
+                           |                                alias:cbo_t1
+                           |                                Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                           |<-Reducer 7 [SIMPLE_EDGE]
+                              Reduce Output Operator [RS_26]
+                                 key expressions:_col0 (type: string)
+                                 Map-reduce partition columns:_col0 (type: string)
+                                 sort order:+
+                                 Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                 value expressions:_col1 (type: int)
+                                 Select Operator [SEL_22]
+                                    outputColumnNames:["_col0","_col1"]
+                                    Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                    Group By Operator [GBY_21]
+                                    |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
+                                    |  outputColumnNames:["_col0","_col1","_col2"]
+                                    |  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                    |<-Map 6 [SIMPLE_EDGE]
+                                       Reduce Output Operator [RS_20]
+                                          key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                          Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                          sort order:+++
+                                          Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                          Group By Operator [GBY_19]
+                                             keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                             outputColumnNames:["_col0","_col1","_col2"]
+                                             Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                             Select Operator [SEL_15]
+                                                outputColumnNames:["_col0","_col1","_col2"]
+                                                Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                Filter Operator [FIL_40]
+                                                   predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
+                                                   Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                   TableScan [TS_13]
+                                                      alias:cbo_t2
+                                                      Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+
+PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by c+a desc) cbo_t1 full outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by p+q desc, r asc) cbo_t2 on cbo_t1.a=p full outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0 order by cbo_t3.c_int
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by c+a desc) cbo_t1 full outer join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0 order by p+q desc, r asc) cbo_t2 on cbo_t1.a=p full outer join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c having cbo_t3.c_int > 0 and (c_int >=1 or c >= 1) and (c_int + c) >= 0 order by cbo_t3.c_int
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+Reducer 8 <- Map 7 (SIMPLE_EDGE)
+Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+
+Stage-0
+   Fetch Operator
+      limit:-1
+      Stage-1
+         Reducer 6
+         File Output Operator [FS_43]
+            compressed:false
+            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            Select Operator [SEL_42]
+            |  outputColumnNames:["_col0","_col1","_col2"]
+            |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            |<-Reducer 5 [SIMPLE_EDGE]
+               Reduce Output Operator [RS_41]
+                  key expressions:_col0 (type: int)
+                  sort order:+
+                  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions:_col1 (type: bigint), _col2 (type: bigint)
+                  Group By Operator [GBY_39]
+                  |  aggregations:["count(VALUE._col0)"]
+                  |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
+                  |  outputColumnNames:["_col0","_col1","_col2"]
+                  |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  |<-Reducer 4 [SIMPLE_EDGE]
+                     Reduce Output Operator [RS_38]
+                        key expressions:_col0 (type: int), _col1 (type: bigint)
+                        Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
+                        sort order:++
+                        Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions:_col2 (type: bigint)
+                        Group By Operator [GBY_37]
+                           aggregations:["count()"]
+                           keys:_col0 (type: int), _col1 (type: bigint)
+                           outputColumnNames:["_col0","_col1","_col2"]
+                           Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                           Select Operator [SEL_33]
+                              outputColumnNames:["_col0","_col1"]
+                              Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                              Filter Operator [FIL_45]
+                                 predicate:(((((_col6 > 0) and ((_col6 >= 1) or (_col2 >= 1))) and ((UDFToLong(_col6) + _col2) >= 0)) and ((_col1 + _col4) >= 0)) and ((_col1 > 0) or (_col6 >= 0))) (type: boolean)
+                                 Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                                 Merge Join Operator [MERGEJOIN_48]
+                                 |  condition map:[{"":"Outer Join 0 to 1"},{"":"Outer Join 0 to 2"}]
+                                 |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                 |  outputColumnNames:["_col1","_col2","_col4","_col6"]
+                                 |  Statistics:Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |<-Map 10 [SIMPLE_EDGE]
+                                 |  Reduce Output Operator [RS_30]
+                                 |     key expressions:_col0 (type: string)
+                                 |     Map-reduce partition columns:_col0 (type: string)
+                                 |     sort order:+
+                                 |     Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |     value expressions:_col1 (type: int)
+                                 |     Select Operator [SEL_27]
+                                 |        outputColumnNames:["_col0","_col1"]
+                                 |        Statistics:Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |        TableScan [TS_26]
+                                 |           alias:cbo_t3
+                                 |           Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |<-Reducer 3 [SIMPLE_EDGE]
+                                 |  Reduce Output Operator [RS_28]
+                                 |     key expressions:_col0 (type: string)
+                                 |     Map-reduce partition columns:_col0 (type: string)
+                                 |     sort order:+
+                                 |     Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |     value expressions:_col1 (type: int), _col2 (type: bigint)
+                                 |     Select Operator [SEL_11]
+                                 |     |  outputColumnNames:["_col0","_col1","_col2"]
+                                 |     |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |     |<-Reducer 2 [SIMPLE_EDGE]
+                                 |        Reduce Output Operator [RS_10]
+                                 |           key expressions:_col3 (type: double)
+                                 |           sort order:-
+                                 |           Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |           value expressions:_col0 (type: string), _col1 (type: int), _col2 (type: bigint)
+                                 |           Select Operator [SEL_9]
+                                 |              outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                 |              Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |              Group By Operator [GBY_8]
+                                 |              |  aggregations:["sum(VALUE._col0)"]
+                                 |              |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
+                                 |              |  outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                 |              |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |              |<-Map 1 [SIMPLE_EDGE]
+                                 |                 Reduce Output Operator [RS_7]
+                                 |                    key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                 |                    Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                 |                    sort order:+++
+                                 |                    Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |                    value expressions:_col3 (type: bigint)
+                                 |                    Group By Operator [GBY_6]
+                                 |                       aggregations:["sum(_col1)"]
+                                 |                       keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                 |                       outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                 |                       Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |                       Select Operator [SEL_2]
+                                 |                          outputColumnNames:["_col0","_col1","_col2"]
+                                 |                          Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |                          Filter Operator [FIL_46]
+                                 |                             predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
+                                 |                             Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |                             TableScan [TS_0]
+                                 |                                alias:cbo_t1
+                                 |                                Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |<-Reducer 9 [SIMPLE_EDGE]
+                                    Reduce Output Operator [RS_29]
+                                       key expressions:_col0 (type: string)
+                                       Map-reduce partition columns:_col0 (type: string)
+                                       sort order:+
+                                       Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                       value expressions:_col1 (type: int)
+                                       Select Operator [SEL_24]
+                                       |  outputColumnNames:["_col0","_col1"]
+                                       |  Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                       |<-Reducer 8 [SIMPLE_EDGE]
+                                          Reduce Output Operator [RS_23]
+                                             key expressions:_col3 (type: double), _col2 (type: bigint)
+                                             sort order:-+
+                                             Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                             value expressions:_col0 (type: string), _col1 (type: int)
+                                             Select Operator [SEL_22]
+                                                outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                                Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                                Group By Operator [GBY_21]
+                                                |  aggregations:["sum(VALUE._col0)"]
+                                                |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
+                                                |  outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                                |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                                |<-Map 7 [SIMPLE_EDGE]
+                                                   Reduce Output Operator [RS_20]
+                                                      key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                      Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                      sort order:+++
+                                                      Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                                      value expressions:_col3 (type: bigint)
+                                                      Group By Operator [GBY_19]
+                                                         aggregations:["sum(_col1)"]
+                                                         keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
+                                                         outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                                         Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                                         Select Operator [SEL_15]
+                                                            outputColumnNames:["_col0","_col1","_col2"]
+                                                            Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                            Filter Operator [FIL_47]
+                                                               predicate:((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) (type: boolean)
+                                                               Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                               TableScan [TS_13]
+                                                                  alias:cbo_t2
+                                                                  Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
 
 PREHOOK: query: explain select cbo_t3.c_int, c, count(*) from (select key as a, c_int+1 as b, sum(c_int) as c from cbo_t1 where (cbo_t1.c_int + 1 >= 0) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)  group by c_float, cbo_t1.c_int, key having cbo_t1.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t1 join (select key as p, c_int+1 as q, sum(c_int) as r from cbo_t2 where (cbo_t2.c_int + 1 >= 0) and (cbo_t2.c_int > 0 or cbo_t2.c_float >= 0)  group by c_float, cbo_t2.c_int, key having cbo_t2.c_float > 0 and (c_int >=1 or c_float >= 1) and (c_int + c_float) >= 0) cbo_t2 on cbo_t1.a=p join cbo_t3 on cbo_t1.a=key where (b + cbo_t2.q >= 0) and (b > 0 or c_int >= 0) group by cbo_t3.c_int, c
 PREHOOK: type: QUERY
@@ -1195,34 +1163,34 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 5 <- Map 4 (SIMPLE_EDGE)
-Reducer 6 <- Reducer 5 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
-Reducer 8 <- Map 7 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 4 <- Map 8 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 7 <- Map 6 (SIMPLE_EDGE)
 
 Stage-0
    Fetch Operator
       limit:-1
       Stage-1
-         Reducer 3
-         File Output Operator [FS_43]
+         Reducer 5
+         File Output Operator [FS_41]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
-            Group By Operator [GBY_41]
+            Group By Operator [GBY_39]
             |  aggregations:["count(VALUE._col0)"]
             |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
             |  outputColumnNames:["_col0","_col1","_col2"]
             |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            |<-Reducer 2 [SIMPLE_EDGE]
-               Reduce Output Operator [RS_40]
+            |<-Reducer 4 [SIMPLE_EDGE]
+               Reduce Output Operator [RS_38]
                   key expressions:_col0 (type: int), _col1 (type: bigint)
                   Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
                   sort order:++
                   Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions:_col2 (type: bigint)
-                  Group By Operator [GBY_39]
+                  Group By Operator [GBY_37]
                      aggregations:["count()"]
                      keys:_col0 (type: int), _col1 (type: bigint)
                      outputColumnNames:["_col0","_col1","_col2"]
@@ -1230,116 +1198,116 @@ Stage-0
                      Select Operator [SEL_35]
                         outputColumnNames:["_col0","_col1"]
                         Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                        Filter Operator [FIL_49]
-                           predicate:((_col3 > 0) or (_col1 >= 0)) (type: boolean)
+                        Filter Operator [FIL_34]
+                           predicate:((_col1 > 0) or (_col6 >= 0)) (type: boolean)
                            Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                           Merge Join Operator [MERGEJOIN_55]
+                           Merge Join Operator [MERGEJOIN_51]
                            |  condition map:[{"":"Inner Join 0 to 1"}]
                            |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                           |  outputColumnNames:["_col1","_col3","_col4"]
+                           |  outputColumnNames:["_col1","_col2","_col6"]
                            |  Statistics:Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                           |<-Map 1 [SIMPLE_EDGE]
-                           |  Reduce Output Operator [RS_31]
+                           |<-Map 8 [SIMPLE_EDGE]
+                           |  Reduce Output Operator [RS_32]
                            |     key expressions:_col0 (type: string)
                            |     Map-reduce partition columns:_col0 (type: string)
                            |     sort order:+
                            |     Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
                            |     value expressions:_col1 (type: int)
-                           |     Select Operator [SEL_1]
+                           |     Select Operator [SEL_28]
                            |        outputColumnNames:["_col0","_col1"]
                            |        Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
-                           |        Filter Operator [FIL_50]
+                           |        Filter Operator [FIL_49]
                            |           predicate:key is not null (type: boolean)
                            |           Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
-                           |           TableScan [TS_0]
+                           |           TableScan [TS_27]
                            |              alias:cbo_t3
                            |              Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                           |<-Reducer 6 [SIMPLE_EDGE]
-                              Reduce Output Operator [RS_33]
+                           |<-Reducer 3 [SIMPLE_EDGE]
+                              Reduce Output Operator [RS_30]
                                  key expressions:_col0 (type: string)
                                  Map-reduce partition columns:_col0 (type: string)
                                  sort order:+
-                                 Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                 Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                  value expressions:_col1 (type: int), _col2 (type: bigint)
-                                 Select Operator [SEL_27]
+                                 Select Operator [SEL_26]
                                     outputColumnNames:["_col0","_col1","_col2"]
-                                    Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                    Filter Operator [FIL_51]
-                                       predicate:((_col3 + _col1) >= 0) (type: boolean)
+                                    Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                    Filter Operator [FIL_25]
+                                       predicate:((_col1 + _col4) >= 0) (type: boolean)
                                        Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                       Merge Join Operator [MERGEJOIN_54]
+                                       Merge Join Operator [MERGEJOIN_50]
                                        |  condition map:[{"":"Inner Join 0 to 1"}]
                                        |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                       |  outputColumnNames:["_col1","_col2","_col3","_col4"]
+                                       |  outputColumnNames:["_col0","_col1","_col2","_col4"]
                                        |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |<-Reducer 5 [SIMPLE_EDGE]
-                                       |  Reduce Output Operator [RS_23]
+                                       |<-Reducer 2 [SIMPLE_EDGE]
+                                       |  Reduce Output Operator [RS_21]
                                        |     key expressions:_col0 (type: string)
                                        |     Map-reduce partition columns:_col0 (type: string)
                                        |     sort order:+
-                                       |     Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |     value expressions:_col1 (type: int)
-                                       |     Select Operator [SEL_11]
-                                       |        outputColumnNames:["_col0","_col1"]
-                                       |        Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |        Group By Operator [GBY_10]
+                                       |     Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                       |     value expressions:_col1 (type: int), _col2 (type: bigint)
+                                       |     Select Operator [SEL_9]
+                                       |        outputColumnNames:["_col0","_col1","_col2"]
+                                       |        Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                       |        Group By Operator [GBY_8]
+                                       |        |  aggregations:["sum(VALUE._col0)"]
                                        |        |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                       |        |  outputColumnNames:["_col0","_col1","_col2"]
-                                       |        |  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |        |<-Map 4 [SIMPLE_EDGE]
-                                       |           Reduce Output Operator [RS_9]
+                                       |        |  outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                       |        |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                       |        |<-Map 1 [SIMPLE_EDGE]
+                                       |           Reduce Output Operator [RS_7]
                                        |              key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                        |              Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                        |              sort order:+++
-                                       |              Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |              Group By Operator [GBY_8]
+                                       |              Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                       |              value expressions:_col3 (type: bigint)
+                                       |              Group By Operator [GBY_6]
+                                       |                 aggregations:["sum(_col1)"]
                                        |                 keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                       |                 outputColumnNames:["_col0","_col1","_col2"]
-                                       |                 Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |                 Select Operator [SEL_4]
+                                       |                 outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                       |                 Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                       |                 Select Operator [SEL_2]
                                        |                    outputColumnNames:["_col0","_col1","_col2"]
                                        |                    Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |                    Filter Operator [FIL_52]
+                                       |                    Filter Operator [FIL_47]
                                        |                       predicate:(((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) and key is not null) (type: boolean)
                                        |                       Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |                       TableScan [TS_2]
-                                       |                          alias:cbo_t2
+                                       |                       TableScan [TS_0]
+                                       |                          alias:cbo_t1
                                        |                          Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |<-Reducer 8 [SIMPLE_EDGE]
-                                          Reduce Output Operator [RS_25]
+                                       |<-Reducer 7 [SIMPLE_EDGE]
+                                          Reduce Output Operator [RS_23]
                                              key expressions:_col0 (type: string)
                                              Map-reduce partition columns:_col0 (type: string)
                                              sort order:+
-                                             Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                             value expressions:_col1 (type: int), _col2 (type: bigint)
-                                             Select Operator [SEL_21]
-                                                outputColumnNames:["_col0","_col1","_col2"]
-                                                Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                Group By Operator [GBY_20]
-                                                |  aggregations:["sum(VALUE._col0)"]
+                                             Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                             value expressions:_col1 (type: int)
+                                             Select Operator [SEL_19]
+                                                outputColumnNames:["_col0","_col1"]
+                                                Statistics:Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                                                Group By Operator [GBY_18]
                                                 |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
-                                                |  outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |<-Map 7 [SIMPLE_EDGE]
-                                                   Reduce Output Operator [RS_19]
+                                                |  outputColumnNames:["_col0","_col1","_col2"]
+                                                |  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                |<-Map 6 [SIMPLE_EDGE]
+                                                   Reduce Output Operator [RS_17]
                                                       key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                                       Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                                       sort order:+++
-                                                      Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                      value expressions:_col3 (type: bigint)
-                                                      Group By Operator [GBY_18]
-                                                         aggregations:["sum(_col1)"]
+                                                      Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                      Group By Operator [GBY_16]
                                                          keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
-                                                         outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                         Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                         Select Operator [SEL_14]
+                                                         outputColumnNames:["_col0","_col1","_col2"]
+                                                         Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                                                         Select Operator [SEL_12]
                                                             outputColumnNames:["_col0","_col1","_col2"]
                                                             Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                                            Filter Operator [FIL_53]
+                                                            Filter Operator [FIL_48]
                                                                predicate:(((((((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) and (c_float > 0.0)) and ((c_int >= 1) or (c_float >= 1.0))) and ((UDFToFloat(c_int) + c_float) >= 0.0)) and key is not null) (type: boolean)
                                                                Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                                                               TableScan [TS_12]
-                                                                  alias:cbo_t1
+                                                               TableScan [TS_10]
+                                                                  alias:cbo_t2
                                                                   Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
 
 PREHOOK: query: explain select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
@@ -2387,49 +2355,49 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 10 <- Map 9 (SIMPLE_EDGE)
-Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-Reducer 6 <- Map 5 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Map 11 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-Reducer 8 <- Reducer 11 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 9 <- Map 8 (SIMPLE_EDGE)
 
 Stage-0
    Fetch Operator
       limit:5
       Stage-1
-         Reducer 4
-         File Output Operator [FS_50]
+         Reducer 7
+         File Output Operator [FS_48]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
-            Limit [LIM_49]
+            Limit [LIM_47]
                Number of rows:5
                Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-               Select Operator [SEL_48]
+               Select Operator [SEL_46]
                |  outputColumnNames:["_col0","_col1","_col2"]
                |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-               |<-Reducer 3 [SIMPLE_EDGE]
-                  Reduce Output Operator [RS_47]
+               |<-Reducer 6 [SIMPLE_EDGE]
+                  Reduce Output Operator [RS_45]
                      key expressions:(UDFToLong(_col0) + _col1) (type: bigint), _col1 (type: bigint)
                      sort order:-+
                      Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                      value expressions:_col0 (type: int), _col2 (type: bigint)
-                     Group By Operator [GBY_45]
+                     Group By Operator [GBY_43]
                      |  aggregations:["count(VALUE._col0)"]
                      |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
                      |  outputColumnNames:["_col0","_col1","_col2"]
                      |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                     |<-Reducer 2 [SIMPLE_EDGE]
-                        Reduce Output Operator [RS_44]
+                     |<-Reducer 5 [SIMPLE_EDGE]
+                        Reduce Output Operator [RS_42]
                            key expressions:_col0 (type: int), _col1 (type: bigint)
                            Map-reduce partition columns:_col0 (type: int), _col1 (type: bigint)
                            sort order:++
                            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                            value expressions:_col2 (type: bigint)
-                           Group By Operator [GBY_43]
+                           Group By Operator [GBY_41]
                               aggregations:["count()"]
                               keys:_col0 (type: int), _col1 (type: bigint)
                               outputColumnNames:["_col0","_col1","_col2"]
@@ -2437,149 +2405,149 @@ Stage-0
                               Select Operator [SEL_39]
                                  outputColumnNames:["_col0","_col1"]
                                  Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                                 Filter Operator [FIL_56]
-                                    predicate:((_col3 > 0) or (_col1 >= 0)) (type: boolean)
+                                 Filter Operator [FIL_38]
+                                    predicate:((_col1 > 0) or (_col6 >= 0)) (type: boolean)
                                     Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                                    Merge Join Operator [MERGEJOIN_64]
+                                    Merge Join Operator [MERGEJOIN_60]
                                     |  condition map:[{"":"Inner Join 0 to 1"}]
                                     |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                    |  outputColumnNames:["_col1","_col3","_col4"]
+                                    |  outputColumnNames:["_col1","_col2","_col6"]
                                     |  Statistics:Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |<-Map 1 [SIMPLE_EDGE]
-                                    |  Reduce Output Operator [RS_35]
+                                    |<-Map 11 [SIMPLE_EDGE]
+                                    |  Reduce Output Operator [RS_36]
                                     |     key expressions:_col0 (type: string)
                                     |     Map-reduce partition columns:_col0 (type: string)
                                     |     sort order:+
                                     |     Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
                                     |     value expressions:_col1 (type: int)
-                                    |     Select Operator [SEL_1]
+                                    |     Select Operator [SEL_32]
                                     |        outputColumnNames:["_col0","_col1"]
                                     |        Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |        Filter Operator [FIL_57]
+                                    |        Filter Operator [FIL_58]
                                     |           predicate:key is not null (type: boolean)
                                     |           Statistics:Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |           TableScan [TS_0]
+                                    |           TableScan [TS_31]
                                     |              alias:cbo_t3
                                     |              Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                    |<-Reducer 8 [SIMPLE_EDGE]
-                                       Reduce Output Operator [RS_37]
+                                    |<-Reducer 4 [SIMPLE_EDGE]
+                                       Reduce Output Operator [RS_34]
                                           key expressions:_col0 (type: string)
                                           Map-reduce partition columns:_col0 (type: string)
                                           sort order:+
-                                          Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                          Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                           value expressions:_col1 (type: int), _col2 (type: bigint)
-                                          Select Operator [SEL_31]
+                                          Select Operator [SEL_30]
                                              outputColumnNames:["_col0","_col1","_col2"]
-                                             Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                             Filter Operator [FIL_58]
-                                                predicate:((_col3 + _col1) >= 0) (type: boolean)
+                                             Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                                             Filter Operator [FIL_29]
+                                                predicate:((_col1 + _col4) >= 0) (type: boolean)
                                                 Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                Merge Join Operator [MERGEJOIN_63]
+                                                Merge Join Operator [MERGEJOIN_59]
                                                 |  condition map:[{"":"Inner Join 0 to 1"}]
                                                 |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
-                                                |  outputColumnNames:["_col1","_col2","_col3","_col4"]
+                                                |  outputColumnNames:["_col0","_col1","_col2","_col4"]
                                                 |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |<-Reducer 11 [SIMPLE_EDGE]
-                                                |  Reduce Output Operator [RS_29]
+                                                |<-Reducer 10 [SIMPLE_EDGE]
+                                                |  Reduce Output Operator [RS_27]
                                                 |     key expressions:_col0 (type: string)
                                                 |     Map-reduce partition columns:_col0 (type: string)
                                                 |     sort order:+
-                                                |     Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |     value expressions:_col1 (type: int), _col2 (type: bigint)
-                                                |     Filter Operator [FIL_61]
+                                                |     Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                                |     value expressions:_col1 (type: int)
+                                                |     Filter Operator [FIL_56]
                                                 |        predicate:_col0 is not null (type: boolean)
-                                                |        Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |        Limit [LIM_24]
+                                                |        Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                                |        Limit [LIM_22]
                                                 |           Number of rows:5
-                                                |           Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |           Select Operator [SEL_23]
-                                                |           |  outputColumnNames:["_col0","_col1","_col2"]
-                                                |           |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |           |<-Reducer 10 [SIMPLE_EDGE]
-                                                |              Reduce Output Operator [RS_22]
-                                                |                 key expressions:_col0 (type: string)
-                                                |                 sort order:+
-                                                |                 Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |                 value expressions:_col1 (type: int), _col2 (type: bigint)
-                                                |                 Select Operator [SEL_21]
-                                                |                    outputColumnNames:["_col0","_col1","_col2"]
-                                                |                    Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |                    Group By Operator [GBY_20]
+                                                |           Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                                |           Select Operator [SEL_21]
+                                                |           |  outputColumnNames:["_col0","_col1"]
+                                                |           |  Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                                |           |<-Reducer 9 [SIMPLE_EDGE]
+                                                |              Reduce Output Operator [RS_20]
+                                                |                 key expressions:_col3 (type: double), _col2 (type: bigint)
+                                                |                 sort order:-+
+                                                |                 Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                                |                 value expressions:_col0 (type: string), _col1 (type: int)
+                                                |                 Select Operator [SEL_19]
+                                                |                    outputColumnNames:["_col0","_col1","_col2","_col3"]
+                                                |                    Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                                                |                    Group By Operator [GBY_18]
                                                 |                    |  aggregations:["sum(VALUE._col0)"]
                                                 |                    |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
                                                 |                    |  outputColumnNames:["_col0","_col1","_col2","_col3"]
                                                 |                    |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |                    |<-Map 9 [SIMPLE_EDGE]
-                                                |                       Reduce Output Operator [RS_19]
+                                                |                    |<-Map 8 [SIMPLE_EDGE]
+                                                |                       Reduce Output Operator [RS_17]
                                                 |                          key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                                 |                          Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                                 |                          sort order:+++
                                                 |                          Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                                 |                          value expressions:_col3 (type: bigint)
-                                                |                          Group By Operator [GBY_18]
+                                                |                          Group By Operator [GBY_16]
                                                 |                             aggregations:["sum(_col1)"]
                                                 |                             keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                                 |                             outputColumnNames:["_col0","_col1","_col2","_col3"]
                                                 |                             Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |                             Select Operator [SEL_16]
+                                                |                             Select Operator [SEL_14]
                                                 |                                outputColumnNames:["_col0","_col1","_col2"]
                                                 |                                Statistics:Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |                                Filter Operator [FIL_62]
+                                                |                                Filter Operator [FIL_57]
                                                 |                                   predicate:(((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) (type: boolean)
                                                 |                                   Statistics:Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |                                   TableScan [TS_14]
-                                                |                                      alias:cbo_t1
+                                                |                                   TableScan [TS_12]
+                                                |                                      alias:cbo_t2
                                                 |                                      Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
-                                                |<-Reducer 7 [SIMPLE_EDGE]
-                                                   Reduce Output Operator [RS_27]
+                                                |<-Reducer 3 [SIMPLE_EDGE]
+                                                   Reduce Output Operator [RS_25]
                                                       key expressions:_col0 (type: string)
                                                       Map-reduce partition columns:_col0 (type: string)
                                                       sort order:+
-                                                      Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                      value expressions:_col1 (type: int)
-                                                      Filter Operator [FIL_59]
+                                                      Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                      value expressions:_col1 (type: int), _col2 (type: bigint)
+                                                      Filter Operator [FIL_54]
                                                          predicate:_col0 is not null (type: boolean)
-                                                         Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                         Limit [LIM_12]
+                                                         Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                         Limit [LIM_10]
                                                             Number of rows:5
-                                                            Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                            Select Operator [SEL_11]
-                                                            |  outputColumnNames:["_col0","_col1"]
-                                                            |  Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                            |<-Reducer 6 [SIMPLE_EDGE]
-                                                               Reduce Output Operator [RS_10]
-                                                                  key expressions:_col3 (type: double), _col2 (type: bigint)
-                                                                  sort order:-+
-                                                                  Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                  value expressions:_col0 (type: string), _col1 (type: int)
-                                                                  Select Operator [SEL_9]
-                                                                     outputColumnNames:["_col0","_col1","_col2","_col3"]
-                                                                     Statistics:Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                     Group By Operator [GBY_8]
+                                                            Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                            Select Operator [SEL_9]
+                                                            |  outputColumnNames:["_col0","_col1","_col2"]
+                                                            |  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                            |<-Reducer 2 [SIMPLE_EDGE]
+                                                               Reduce Output Operator [RS_8]
+                                                                  key expressions:_col0 (type: string)
+                                                                  sort order:+
+                                                                  Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                                  value expressions:_col1 (type: int), _col2 (type: bigint)
+                                                                  Select Operator [SEL_7]
+                                                                     outputColumnNames:["_col0","_col1","_col2"]
+                                                                     Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
+                                                                     Group By Operator [GBY_6]
                                                                      |  aggregations:["sum(VALUE._col0)"]
                                                                      |  keys:KEY._col0 (type: float), KEY._col1 (type: int), KEY._col2 (type: string)
                                                                      |  outputColumnNames:["_col0","_col1","_col2","_col3"]
                                                                      |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                     |<-Map 5 [SIMPLE_EDGE]
-                                                                        Reduce Output Operator [RS_7]
+                                                                     |<-Map 1 [SIMPLE_EDGE]
+                                                                        Reduce Output Operator [RS_5]
                                                                            key expressions:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                                                            Map-reduce partition columns:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                                                            sort order:+++
                                                                            Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                                                            value expressions:_col3 (type: bigint)
-                                                                           Group By Operator [GBY_6]
+                                                                           Group By Operator [GBY_4]
                                                                               aggregations:["sum(_col1)"]
                                                                               keys:_col0 (type: float), _col1 (type: int), _col2 (type: string)
                                                                               outputColumnNames:["_col0","_col1","_col2","_col3"]
                                                                               Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                              Select Operator [SEL_4]
+                                                                              Select Operator [SEL_2]
                                                                                  outputColumnNames:["_col0","_col1","_col2"]
                                                                                  Statistics:Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                                 Filter Operator [FIL_60]
+                                                                                 Filter Operator [FIL_55]
                                                                                     predicate:(((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0.0))) (type: boolean)
                                                                                     Statistics:Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
-                                                                                    TableScan [TS_2]
-                                                                                       alias:cbo_t2
+                                                                                    TableScan [TS_0]
+                                                                                       alias:cbo_t1
                                                                                        Statistics:Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
 
 PREHOOK: query: explain select cbo_t1.c_int           from cbo_t1 left semi join   cbo_t2 on cbo_t1.key=cbo_t2.key where (cbo_t1.c_int + 1 == 2) and (cbo_t1.c_int > 0 or cbo_t1.c_float >= 0)

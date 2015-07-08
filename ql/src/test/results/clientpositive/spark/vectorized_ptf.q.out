@@ -269,7 +269,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -289,7 +289,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -604,7 +604,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -624,7 +624,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -671,7 +671,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -691,7 +691,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -947,7 +947,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -967,7 +967,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -1219,7 +1219,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1239,7 +1239,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -1552,7 +1552,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1572,7 +1572,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -1896,7 +1896,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1916,7 +1916,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -2210,7 +2210,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2230,7 +2230,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -2277,7 +2277,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2297,7 +2297,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -2533,7 +2533,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2553,7 +2553,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -2597,7 +2597,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2617,7 +2617,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -2877,7 +2877,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2897,7 +2897,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -3199,7 +3199,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3219,7 +3219,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -3524,7 +3524,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3544,7 +3544,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -3858,7 +3858,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3878,7 +3878,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -4272,7 +4272,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4292,7 +4292,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -4695,7 +4695,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4715,7 +4715,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -4762,7 +4762,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4782,7 +4782,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -5079,7 +5079,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -5099,7 +5099,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -5371,7 +5371,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -5391,7 +5391,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -5850,7 +5850,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -5870,7 +5870,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -6208,20 +6208,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_orc
 POSTHOOK: Output: default@part_4
 POSTHOOK: Output: default@part_5
-POSTHOOK: Lineage: part_4.dr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.p_mfgr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.p_name SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.p_size SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.r SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.s SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.cud SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.dr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.fv1 SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.p_mfgr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.p_name SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.p_size SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.r SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.s2 SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.dr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_4.p_mfgr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_4.p_name SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_4.p_size SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_4.r SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_4.s SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_5.cud SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_5.dr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_5.fv1 SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_5.p_mfgr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_5.p_name SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_5.p_size SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_5.r SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_5.s2 SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), ]
 PREHOOK: query: select * from part_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_4
@@ -6482,7 +6482,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -6502,7 +6502,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -6934,7 +6934,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -6954,7 +6954,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -7367,7 +7367,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -7387,7 +7387,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -7790,7 +7790,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -7810,7 +7810,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -8283,7 +8283,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -8303,7 +8303,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc
@@ -8720,7 +8720,7 @@ STAGE PLANS:
                     serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2655
+                    totalSize 2639
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -8740,7 +8740,7 @@ STAGE PLANS:
                       serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2655
+                      totalSize 2639
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.part_orc

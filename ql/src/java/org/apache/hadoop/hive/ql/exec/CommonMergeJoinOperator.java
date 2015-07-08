@@ -35,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.exec.tez.RecordSource;
+import org.apache.hadoop.hive.ql.exec.tez.ReduceRecordSource;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
@@ -197,15 +198,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     List<Object> value = getFilteredValue(alias, row);
     // compute keys and values as StandardObjects
     List<Object> key = mergeJoinComputeKeys(row, alias);
-    if (!firstFetchHappened) {
-      firstFetchHappened = true;
-      // fetch the first group for all small table aliases
-      for (byte pos = 0; pos < order.length; pos++) {
-        if (pos != posBigTable) {
-          fetchNextGroup(pos);
-        }
-      }
-    }
+    // Fetch the first group for all small table aliases.
+    doFirstFetchIfNeeded();
 
     //have we reached a new key group?
     boolean nextKeyGroup = processKey(alias, key);
@@ -391,6 +385,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     super.closeOp(abort);
 
     // clean up
+    LOG.debug("Cleaning up the operator state");
     for (int pos = 0; pos < order.length; pos++) {
       if (pos != posBigTable) {
         fetchDone[pos] = false;
@@ -401,7 +396,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   private void fetchOneRow(byte tag) throws HiveException {
     try {
-      fetchDone[tag] = !sources[tag].pushRecord();
+      boolean hasMore = sources[tag].pushRecord();
+      if (fetchDone[tag] && hasMore) {
+        LOG.warn("fetchDone[" + tag + "] was set to true (by a recursive call) and will be reset");
+      }// TODO: "else {"? This happened in the past due to a bug, see HIVE-11016.
+        fetchDone[tag] = !hasMore;
       if (sources[tag].isGrouped()) {
         // instead of maintaining complex state for the fetch of the next group,
         // we know for sure that at the end of all the values for a given key,
@@ -428,31 +427,20 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     while (!allFetchDone) {
       List<Byte> ret = joinOneGroup();
-      for (int i = 0; i < fetchDone.length; i++) {
-        // if the fetch is not completed for the big table
-        if (i == posBigTable) {
-          // if we are in close op phase, we have definitely exhausted the big table input
-          fetchDone[i] = true;
-          continue;
-        }
-
-        // in case of outer joins, we need to pull in records from the sides we still
-        // need to produce output for apart from the big table. for e.g. full outer join
-        if ((fetchInputAtClose.contains(i)) && (fetchDone[i] == false)) {
-          // if we have never fetched, we need to fetch before we can do the join
-          if (firstFetchHappened == false) {
-            // we need to fetch all the needed ones at least once to ensure bootstrapping
-            if (i == (fetchDone.length - 1)) {
-              firstFetchHappened = true;
-            }
-            // This is a bootstrap. The joinOneGroup automatically fetches the next rows.
-            fetchNextGroup((byte) i);
-          }
-          // Do the join. It does fetching of next row groups itself.
-          if (i == (fetchDone.length - 1)) {
-            ret = joinOneGroup();
-          }
-        }
+      // if we are in close op phase, we have definitely exhausted the big table input
+      fetchDone[posBigTable] = true;
+      // First, handle the condition where the first fetch was never done (big table is empty).
+      doFirstFetchIfNeeded();
+      // in case of outer joins, we need to pull in records from the sides we still
+      // need to produce output for apart from the big table. for e.g. full outer join
+      // TODO: this reproduces the logic of the loop that was here before, assuming
+      // firstFetchHappened == true. In reality it almost always calls joinOneGroup. Fix it?
+      int lastPos = (fetchDone.length - 1);
+      if (posBigTable != lastPos
+          && (fetchInputAtClose.contains(lastPos)) && (fetchDone[lastPos] == false)) {
+        // Do the join. It does fetching of next row groups itself.
+        LOG.debug("Calling joinOneGroup once again");
+        ret = joinOneGroup();
       }
 
       if (ret == null || ret.size() == 0) {
@@ -485,15 +473,21 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     }
   }
 
-  private boolean allFetchDone() {
-    boolean allFetchDone = true;
+  private void doFirstFetchIfNeeded() throws HiveException {
+    if (firstFetchHappened) return;
+    firstFetchHappened = true;
     for (byte pos = 0; pos < order.length; pos++) {
-      if (pos == posBigTable) {
-        continue;
+      if (pos != posBigTable) {
+        fetchNextGroup(pos);
       }
-      allFetchDone = allFetchDone && fetchDone[pos];
     }
-    return allFetchDone;
+  }
+
+  private boolean allFetchDone() {
+    for (byte pos = 0; pos < order.length; pos++) {
+      if (pos != posBigTable && !fetchDone[pos]) return false;
+    }
+    return true;
   }
 
   private void promoteNextGroupToCandidate(Byte t) throws HiveException {

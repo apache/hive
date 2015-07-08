@@ -147,11 +147,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
   }
 
   public void setFilterExpr(ExprNodeGenericFuncDesc filterExpr) {
-    // TODO: we could avoid serialization if it's the same expr. Check?
     this.filterExpr = filterExpr;
-    if (filterExpr != null) {
-      serializedFilterExpr = Utilities.serializeExpression(filterExpr);
-    }
   }
 
   public Serializable getFilterObject() {
@@ -160,9 +156,6 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setFilterObject(Serializable filterObject) {
     this.filterObject = filterObject;
-    if (filterObject != null) {
-      serializedFilterObject = Utilities.serializeObject(filterObject);
-    }
   }
 
   public void setNeededColumnIDs(List<Integer> neededColumnIDs) {
@@ -296,7 +289,15 @@ public class TableScanDesc extends AbstractOperatorDesc {
     return serializedFilterExpr;
   }
 
+  public void setSerializedFilterExpr(String serializedFilterExpr) {
+    this.serializedFilterExpr = serializedFilterExpr;
+  }
+
   public String getSerializedFilterObject() {
     return serializedFilterObject;
+  }
+
+  public void setSerializedFilterObject(String serializedFilterObject) {
+    this.serializedFilterObject = serializedFilterObject;
   }
 }
