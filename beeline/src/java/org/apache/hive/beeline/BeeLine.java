@@ -787,7 +787,7 @@ public class BeeLine implements Closeable {
     FileInputStream initStream = null;
     try {
       initStream = new FileInputStream(fileName);
-      return execute(getConsoleReader(initStream), true);
+      return execute(getConsoleReader(initStream), !getOpts().getForce());
     } catch (Throwable t) {
       handleException(t);
       return ERRNO_OTHER;
