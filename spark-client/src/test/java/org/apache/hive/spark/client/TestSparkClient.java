@@ -317,7 +317,7 @@ public class TestSparkClient {
       JavaFutureAction<?> future = jc.monitor(rdd.foreachAsync(new VoidFunction<Integer>() {
         @Override
         public void call(Integer l) throws Exception {
-
+          Thread.sleep(1);
         }
       }), null, null);
 

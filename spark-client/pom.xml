@@ -96,6 +96,11 @@
                   <artifactId>guava</artifactId>
                   <version>14.0.1</version>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>com.sun.jersey</groupId>
+                  <artifactId>jersey-server</artifactId>
+                  <version>1.9</version>
+                </artifactItem>
               </artifactItems>
             </configuration>
           </execution>
@@ -108,9 +113,11 @@
           <additionalClasspathElements>
             <!-- Note: wildcards don't work. Thankfully there's just one jar we care about. -->
             <additionalClasspathElement>${project.build.directory}/dependency/guava-14.0.1.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.build.directory}/dependency/jersey-server-1.9.jar</additionalClasspathElement>
           </additionalClasspathElements>
           <classpathDependencyExcludes>
             <classpathDependencyExclude>com.google.guava:guava</classpathDependencyExclude>
+            <classpathDependencyExclude>com.sun.jersey:jersey-server</classpathDependencyExclude>
           </classpathDependencyExcludes>
           <systemPropertyVariables>
             <java.awt.headless>true</java.awt.headless>
