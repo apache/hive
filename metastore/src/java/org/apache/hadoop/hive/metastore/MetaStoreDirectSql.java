@@ -178,31 +178,55 @@ class MetaStoreDirectSql {
 
   private boolean ensureDbInit() {
     Transaction tx = pm.currentTransaction();
+    Query dbQuery = null, tblColumnQuery = null, partColumnQuery = null;
     try {
       // Force the underlying db to initialize.
-      pm.newQuery(MDatabase.class, "name == ''").execute();
-      pm.newQuery(MTableColumnStatistics.class, "dbName == ''").execute();
-      pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''").execute();
+      dbQuery = pm.newQuery(MDatabase.class, "name == ''");
+      dbQuery.execute();
+
+      tblColumnQuery = pm.newQuery(MTableColumnStatistics.class, "dbName == ''");
+      tblColumnQuery.execute();
+
+      partColumnQuery = pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''");
+      partColumnQuery.execute();
+
       return true;
     } catch (Exception ex) {
       LOG.warn("Database initialization failed; direct SQL is disabled", ex);
       tx.rollback();
       return false;
+    } finally {
+      if (dbQuery != null) {
+        dbQuery.closeAll();
+      }
+      if (tblColumnQuery != null) {
+        tblColumnQuery.closeAll();
+      }
+      if (partColumnQuery != null) {
+        partColumnQuery.closeAll();
+      }
     }
   }
 
   private boolean runTestQuery() {
     Transaction tx = pm.currentTransaction();
+    Query query = null;
     // Run a self-test query. If it doesn't work, we will self-disable. What a PITA...
     String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
     try {
-      pm.newQuery("javax.jdo.query.SQL", selfTestQuery).execute();
+      query = pm.newQuery("javax.jdo.query.SQL", selfTestQuery);
+      query.execute();
       tx.commit();
       return true;
     } catch (Exception ex) {
       LOG.warn("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", ex);
       tx.rollback();
       return false;
+    }
+    finally {
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -393,14 +417,21 @@ class MetaStoreDirectSql {
   }
 
   private boolean isViewTable(String dbName, String tblName) throws MetaException {
-    String queryText = "select \"TBL_TYPE\" from \"TBLS\"" +
-        " inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" " +
-        " where \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ?";
-    Object[] params = new Object[] { tblName, dbName };
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    query.setUnique(true);
-    Object result = executeWithArray(query, params, queryText);
-    return (result != null) && result.toString().equals(TableType.VIRTUAL_VIEW.toString());
+    Query query = null;
+    try {
+      String queryText = "select \"TBL_TYPE\" from \"TBLS\"" +
+          " inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" " +
+          " where \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ?";
+      Object[] params = new Object[] { tblName, dbName };
+      query = pm.newQuery("javax.jdo.query.SQL", queryText);
+      query.setUnique(true);
+      Object result = executeWithArray(query, params, queryText);
+      return (result != null) && result.toString().equals(TableType.VIRTUAL_VIEW.toString());
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
   }
 
   /**
@@ -1190,6 +1221,7 @@ class MetaStoreDirectSql {
         partsFound++;
       }
     }
+    query.closeAll();
     return partsFound;
   }
 
