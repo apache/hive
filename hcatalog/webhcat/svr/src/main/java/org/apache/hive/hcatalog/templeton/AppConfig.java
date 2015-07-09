@@ -239,8 +239,24 @@ public class AppConfig extends Configuration {
   private String dumpEnvironent() {
     StringBuilder sb = TempletonUtils.dumpPropMap("========WebHCat System.getenv()========", System.getenv());
     sb.append("START========WebHCat AppConfig.iterator()========: \n");
-    Iterator<Map.Entry<String, String>> configIter = this.iterator();
-    List<Map.Entry<String, String>> configVals = new ArrayList<Map.Entry<String, String>>();
+    dumpConfig(this, sb);
+    sb.append("END========WebHCat AppConfig.iterator()========: \n");
+
+    sb.append(TempletonUtils.dumpPropMap("========WebHCat System.getProperties()========", System.getProperties()));
+
+    sb.append("START========\"new HiveConf()\"========\n");
+    HiveConf c = new HiveConf();
+    sb.append("hiveDefaultUrl=").append(c.getHiveDefaultLocation()).append('\n');
+    sb.append("hiveSiteURL=").append(HiveConf.getHiveSiteLocation()).append('\n');
+    sb.append("hiveServer2SiteUrl=").append(HiveConf.getHiveServer2SiteLocation()).append('\n');
+    sb.append("hivemetastoreSiteUrl=").append(HiveConf.getMetastoreSiteLocation()).append('\n');
+    dumpConfig(c, sb);
+    sb.append("END========\"new HiveConf()\"========\n");
+    return sb.toString();
+  }
+  private static void dumpConfig(Configuration conf, StringBuilder sb) {
+    Iterator<Map.Entry<String, String>> configIter = conf.iterator();
+    List<Map.Entry<String, String>>configVals = new ArrayList<>();
     while(configIter.hasNext()) {
       configVals.add(configIter.next());
     }
@@ -253,20 +269,18 @@ public class AppConfig extends Configuration {
     for(Map.Entry<String, String> entry : configVals) {
       //use get() to make sure variable substitution works
       if(entry.getKey().toLowerCase().contains("path")) {
-        StringTokenizer st = new StringTokenizer(get(entry.getKey()), File.pathSeparator);
+        StringTokenizer st = new StringTokenizer(conf.get(entry.getKey()), File.pathSeparator);
         sb.append(entry.getKey()).append("=\n");
         while(st.hasMoreTokens()) {
           sb.append("    ").append(st.nextToken()).append(File.pathSeparator).append('\n');
         }
       }
       else {
-        sb.append(entry.getKey()).append('=').append(get(entry.getKey())).append('\n');
+        sb.append(entry.getKey()).append('=').append(conf.get(entry.getKey())).append('\n');
       }
     }
-    sb.append("END========WebHCat AppConfig.iterator()========: \n");
-    sb.append(TempletonUtils.dumpPropMap("========WebHCat System.getProperties()========", System.getProperties()));
-    return sb.toString();
   }
+
   public void startCleanup() {
     JobState.getStorageInstance(this).startCleanup(this);
   }
