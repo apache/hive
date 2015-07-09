@@ -26,10 +26,12 @@ import java.lang.reflect.Constructor;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -97,11 +99,12 @@ public class MapJoinTableContainerSerDe {
    * Loads the table container from a folder. Only used on Spark path.
    * @param fs FileSystem of the folder.
    * @param folder The folder to load table container.
+   * @param hconf The hive configuration
    * @return Loaded table.
    */
   @SuppressWarnings("unchecked")
-  public MapJoinPersistableTableContainer load(
-      FileSystem fs, Path folder) throws HiveException {
+  public MapJoinTableContainer load(
+      FileSystem fs, Path folder, Configuration hconf) throws HiveException {
     try {
       if (!fs.isDirectory(folder)) {
         throw new HiveException("Error, not a directory: " + folder);
@@ -116,7 +119,10 @@ public class MapJoinTableContainerSerDe {
       Writable keyContainer = keySerDe.getSerializedClass().newInstance();
       Writable valueContainer = valueSerDe.getSerializedClass().newInstance();
 
-      MapJoinPersistableTableContainer tableContainer = null;
+      MapJoinTableContainer tableContainer = null;
+
+      boolean useOptimizedContainer = HiveConf.getBoolVar(
+          hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
 
       for (FileStatus fileStatus: fileStatuses) {
         Path filePath = fileStatus.getPath();
@@ -131,18 +137,16 @@ public class MapJoinTableContainerSerDe {
           String name = in.readUTF();
           Map<String, String> metaData = (Map<String, String>) in.readObject();
           if (tableContainer == null) {
-            tableContainer = create(name, metaData);
+            tableContainer = useOptimizedContainer ?
+                new MapJoinBytesTableContainer(hconf, valueContext, -1, 0) :
+                create(name, metaData);
           }
-          int numKeys = in.readInt();
-          for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
-            MapJoinKeyObject key = new MapJoinKeyObject();
-            key.read(keyContext, in, keyContainer);
-            if (tableContainer.get(key) == null) {
-              tableContainer.put(key, new MapJoinEagerRowContainer());
-            }
-            MapJoinEagerRowContainer values = (MapJoinEagerRowContainer) tableContainer.get(key);
-            values.read(valueContext, in, valueContainer);
-            tableContainer.put(key, values);
+          if (useOptimizedContainer) {
+            loadOptimized((MapJoinBytesTableContainer) tableContainer,
+                in, keyContainer, valueContainer);
+          } else {
+            loadNormal((MapJoinPersistableTableContainer) tableContainer,
+                in, keyContainer, valueContainer);
           }
         } finally {
           if (in != null) {
@@ -152,11 +156,42 @@ public class MapJoinTableContainerSerDe {
           }
         }
       }
+      if (tableContainer != null) {
+        tableContainer.seal();
+      }
       return tableContainer;
     } catch (IOException e) {
       throw new HiveException("IO error while trying to create table container", e);
     } catch (Exception e) {
       throw new HiveException("Error while trying to create table container", e);
+    }
+  }
+
+  private void loadNormal(MapJoinPersistableTableContainer container,
+      ObjectInputStream in, Writable keyContainer, Writable valueContainer) throws Exception {
+    int numKeys = in.readInt();
+    for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
+      MapJoinKeyObject key = new MapJoinKeyObject();
+      key.read(keyContext, in, keyContainer);
+      if (container.get(key) == null) {
+        container.put(key, new MapJoinEagerRowContainer());
+      }
+      MapJoinEagerRowContainer values = (MapJoinEagerRowContainer) container.get(key);
+      values.read(valueContext, in, valueContainer);
+      container.put(key, values);
+    }
+  }
+
+  private void loadOptimized(MapJoinBytesTableContainer container, ObjectInputStream in,
+      Writable key, Writable value) throws Exception {
+    int numKeys = in.readInt();
+    for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
+      key.readFields(in);
+      long numRows = in.readLong();
+      for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
+        value.readFields(in);
+        container.putRow(keyContext, key, valueContext, value);
+      }
     }
   }
 
