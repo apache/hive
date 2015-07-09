@@ -335,7 +335,17 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void ensureFileFormatsMatch(TableSpec ts, URI fromURI) throws SemanticException {
-    Class<? extends InputFormat> destInputFormat = ts.tableHandle.getInputFormatClass();
+    final Class<? extends InputFormat> destInputFormat;
+    try {
+      if (ts.getPartSpec() == null || ts.getPartSpec().isEmpty()) {
+        destInputFormat = ts.tableHandle.getInputFormatClass();
+      } else {
+        destInputFormat = ts.partHandle.getInputFormatClass();
+      }
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
+
     // Other file formats should do similar check to make sure file formats match
     // when doing LOAD DATA .. INTO TABLE
     if (OrcInputFormat.class.equals(destInputFormat)) {
