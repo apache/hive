@@ -37,6 +37,9 @@ import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 @LimitedPrivate(value = { "" })
 @Evolving
 public class HiveAuthorizerImpl implements HiveAuthorizer {
+
+  public static final String METASTORE_FILTER_HOOK_V2_DEFAULT =
+      "org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook";
   HiveAccessController accessController;
   HiveAuthorizationValidator authValidator;
 
