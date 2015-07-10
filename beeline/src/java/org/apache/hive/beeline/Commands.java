@@ -682,7 +682,7 @@ public class Commands {
    */
   private Map<String, String> getHiveVariables() {
     Map<String, String> result = new HashMap<>();
-    BufferedRows rows = getConfInternal();
+    BufferedRows rows = getConfInternal(true);
     while (rows.hasNext()) {
       Rows.Row row = (Rows.Row) rows.next();
       if (!row.isMeta) {
@@ -692,27 +692,45 @@ public class Commands {
     return result;
   }
 
-  private HiveConf getHiveConf() {
+  /**
+   * This method should only be used in CLI mode.
+   *
+   * @return the hive configuration from server side
+   */
+  public HiveConf getHiveConf(boolean call) {
     HiveConf conf = new HiveConf();
-    BufferedRows rows = getConfInternal();
-    while (rows.hasNext()) {
+    BufferedRows rows = getConfInternal(call);
+    while (rows != null && rows.hasNext()) {
       addConf((Rows.Row) rows.next(), conf);
     }
     return conf;
   }
 
-  private BufferedRows getConfInternal() {
+  /**
+   * Use call statement to retrieve the configurations for substitution and sql for the substitution.
+   *
+   * @param call
+   * @return
+   */
+  private BufferedRows getConfInternal(boolean call) {
     Statement stmnt = null;
     BufferedRows rows = null;
     try {
-      stmnt = beeLine.createStatement();
-      boolean hasResults = stmnt.execute("set");
+      boolean hasResults;
+      if (call) {
+        stmnt = beeLine.getDatabaseConnection().getConnection().prepareCall("set");
+        hasResults = ((CallableStatement) stmnt).execute();
+      } else {
+        stmnt = beeLine.createStatement();
+        hasResults = stmnt.execute("set");
+      }
       if (hasResults) {
         ResultSet rs = stmnt.getResultSet();
         rows = new BufferedRows(beeLine, rs);
       }
     } catch (SQLException e) {
       beeLine.error(e);
+    } finally {
       if (stmnt != null) {
         try {
           stmnt.close();
@@ -763,7 +781,7 @@ public class Commands {
     String[] tokens = tokenizeCmd(cmd);
     String cmd_1 = getFirstCmd(cmd, tokens[0].length());
 
-    cmd_1 = substituteVariables(getHiveConf(), cmd_1);
+    cmd_1 = substituteVariables(getHiveConf(false), cmd_1);
     File sourceFile = new File(cmd_1);
     if (!sourceFile.isFile()) {
       return false;
@@ -981,7 +999,7 @@ public class Commands {
     }
 
     line = line.substring("sh".length()).trim();
-    line = substituteVariables(getHiveConf(), line.trim());
+    line = substituteVariables(getHiveConf(false), line.trim());
 
     try {
       ShellCmdExecutor executor = new ShellCmdExecutor(line, beeLine.getOutputStream(),

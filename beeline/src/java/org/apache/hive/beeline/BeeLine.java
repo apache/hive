@@ -88,7 +88,6 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
 
@@ -401,10 +400,8 @@ public class BeeLine implements Closeable {
   String getApplicationTitle() {
     Package pack = BeeLine.class.getPackage();
 
-    return loc("app-introduction", new Object[] {
-        "Beeline",
-        pack.getImplementationVersion() == null ? "???"
-            : pack.getImplementationVersion(),
+    return loc("app-introduction", new Object[] { "Beeline",
+        pack.getImplementationVersion() == null ? "???" : pack.getImplementationVersion(),
         "Apache Hive",
         // getManifestAttribute ("Specification-Title"),
         // getManifestAttribute ("Implementation-Version"),
@@ -830,8 +827,10 @@ public class BeeLine implements Closeable {
       } else {
         int code = initArgsFromCliVars(args);
         defaultConnect(false);
-        if (code != 0)
+        if (code != 0){
           return code;
+        }
+        getOpts().updateBeeLineOptsFromConf();
       }
 
       if (getOpts().getScriptFile() != null) {
@@ -1081,8 +1080,32 @@ public class BeeLine implements Closeable {
       return cmdMap.values().iterator().next()
           .execute(line);
     } else {
-      return commands.sql(line, getOpts().getEntireLineAsCommand());
+      boolean needsUpdate = isConfNeedsUpdate(line);
+      boolean res = commands.sql(line, getOpts().getEntireLineAsCommand());
+      if (needsUpdate) {
+        getOpts().setHiveConf(getCommands().getHiveConf(true));
+      }
+      return res;
     }
+  }
+
+  /**
+   * Update the configurations for the CLI mode in the client side
+   *
+   * @param line
+   */
+  private boolean isConfNeedsUpdate(String line) {
+    if (isBeeLine) {
+      return false;
+    }
+    String[] cmds = line.split(";");
+    boolean containsSetCMD = false;
+    for (String s : cmds) {
+      if (s.toLowerCase().startsWith("set")) {
+        return true;
+      }
+    }
+    return containsSetCMD;
   }
 
   /**

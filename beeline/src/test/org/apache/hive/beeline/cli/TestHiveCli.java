@@ -78,7 +78,8 @@ public class TestHiveCli {
       int retCode) {
     executeCMD(options, CMD, retCode);
     String output = os.toString();
-    Assert.assertTrue(output.contains(keywords));
+    Assert.assertTrue("The expected keyword doesn't occur in the output: " + output,
+        output.contains(keywords));
   }
 
   @Test

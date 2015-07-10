@@ -42,6 +42,7 @@ import jline.Terminal;
 import jline.TerminalFactory;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_WIDTH = 80;
@@ -78,6 +79,8 @@ class BeeLineOpts implements Completer {
   int timeout = -1;
   private String isolation = DEFAULT_ISOLATION_LEVEL;
   private String outputFormat = "table";
+  // This configuration is used only for client side configuration.
+  private HiveConf conf;
   private boolean trimScripts = true;
   private boolean allowMultiLineCommand = true;
 
@@ -217,6 +220,22 @@ class BeeLineOpts implements Completer {
     Properties p = new Properties();
     p.load(fin);
     loadProperties(p);
+  }
+
+  /**
+   * Update the options after connection is established in CLI mode.
+   */
+  public void updateBeeLineOptsFromConf() {
+    if (!beeLine.isBeeLine()) {
+      if (conf == null) {
+        conf = beeLine.getCommands().getHiveConf(true);
+      }
+      setForce(HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS));
+    }
+  }
+
+  public void setHiveConf(HiveConf conf) {
+    this.conf = conf;
   }
 
   public void loadProperties(Properties props) {
