@@ -41,6 +41,7 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -51,7 +52,7 @@ import com.google.common.collect.ImmutableList;
 
 //TODO: Should we convert MultiJoin to be a child of HiveJoin
 public class HiveJoin extends Join implements HiveRelNode {
-  
+
   public static final JoinFactory HIVE_JOIN_FACTORY = new HiveJoinFactoryImpl();
 
   public enum MapJoinStreamingRelation {
@@ -71,14 +72,14 @@ public class HiveJoin extends Join implements HiveRelNode {
       HiveJoin join = new HiveJoin(cluster, null, left, right, condition, joinType, variablesStopped,
               DefaultJoinAlgorithm.INSTANCE, leftSemiJoin);
       return join;
-    } catch (InvalidRelException e) {
+    } catch (InvalidRelException | CalciteSemanticException e) {
       throw new RuntimeException(e);
     }
   }
 
   protected HiveJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, Set<String> variablesStopped,
-      JoinAlgorithm joinAlgo, boolean leftSemiJoin) throws InvalidRelException {
+      JoinAlgorithm joinAlgo, boolean leftSemiJoin) throws InvalidRelException, CalciteSemanticException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), left, right, condition, joinType,
         variablesStopped);
     this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
@@ -97,7 +98,7 @@ public class HiveJoin extends Join implements HiveRelNode {
       Set<String> variablesStopped = Collections.emptySet();
       return new HiveJoin(getCluster(), traitSet, left, right, conditionExpr, joinType,
           variablesStopped, joinAlgorithm, leftSemiJoin);
-    } catch (InvalidRelException e) {
+    } catch (InvalidRelException | CalciteSemanticException e) {
       // Semantic error not possible. Must be a bug. Convert to
       // internal error.
       throw new AssertionError(e);
@@ -170,7 +171,7 @@ public class HiveJoin extends Join implements HiveRelNode {
     return smallInput;
   }
 
-  public ImmutableBitSet getSortedInputs() {
+  public ImmutableBitSet getSortedInputs() throws CalciteSemanticException {
     ImmutableBitSet.Builder sortedInputsBuilder = new ImmutableBitSet.Builder();
     JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
             constructJoinPredicateInfo(this);

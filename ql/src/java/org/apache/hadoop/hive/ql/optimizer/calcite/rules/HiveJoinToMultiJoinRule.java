@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
@@ -35,6 +34,9 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
@@ -56,6 +58,7 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
 
   private final ProjectFactory projectFactory;
 
+  private static transient final Log LOG = LogFactory.getLog(HiveJoinToMultiJoinRule.class);
 
   //~ Constructors -----------------------------------------------------------
 
@@ -142,8 +145,14 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
         leftJoinTypes = hmj.getJoinTypes();
       }
 
-      boolean combinable = isCombinablePredicate(join, join.getCondition(),
-              leftCondition);
+      boolean combinable;
+      try {
+        combinable = isCombinablePredicate(join, join.getCondition(),
+                leftCondition);
+      } catch (CalciteSemanticException e) {
+        LOG.trace("Failed to merge joins", e);
+        combinable = false;
+      }
       if (combinable) {
         newJoinFilters.add(leftCondition);
         for (int i = 0; i < leftJoinInputs.size(); i++) {
@@ -172,8 +181,14 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
     for (int i=0; i<newInputs.size(); i++) {
       joinKeyExprs.add(new ArrayList<RexNode>());
     }
-    RexNode otherCondition = HiveRelOptUtil.splitJoinCondition(systemFieldList, newInputs, join.getCondition(),
-        joinKeyExprs, filterNulls, null);
+    RexNode otherCondition;
+    try {
+      otherCondition = HiveRelOptUtil.splitHiveJoinCondition(systemFieldList, newInputs, join.getCondition(),
+          joinKeyExprs, filterNulls, null);
+    } catch (CalciteSemanticException e) {
+        LOG.trace("Failed to merge joins", e);
+        return null;
+    }
     // If there are remaining parts in the condition, we bail out
     if (!otherCondition.isAlwaysTrue()) {
       return null;
@@ -221,7 +236,7 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
   }
 
   private static boolean isCombinablePredicate(Join join,
-          RexNode condition, RexNode otherCondition) {
+          RexNode condition, RexNode otherCondition) throws CalciteSemanticException {
     final JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
             constructJoinPredicateInfo(join, condition);
     final JoinPredicateInfo otherJoinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
@@ -236,41 +251,4 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
     }
     return true;
   }
-
-  /**
-   * Shifts a filter originating from the right child of the LogicalJoin to the
-   * right, to reflect the filter now being applied on the resulting
-   * MultiJoin.
-   *
-   * @param joinRel     the original LogicalJoin
-   * @param left        the left child of the LogicalJoin
-   * @param right       the right child of the LogicalJoin
-   * @param rightFilter the filter originating from the right child
-   * @return the adjusted right filter
-   */
-  private static RexNode shiftRightFilter(
-      Join joinRel,
-      RelNode left,
-      RelNode right,
-      RexNode rightFilter) {
-    if (rightFilter == null) {
-      return null;
-    }
-
-    int nFieldsOnLeft = left.getRowType().getFieldList().size();
-    int nFieldsOnRight = right.getRowType().getFieldList().size();
-    int[] adjustments = new int[nFieldsOnRight];
-    for (int i = 0; i < nFieldsOnRight; i++) {
-      adjustments[i] = nFieldsOnLeft;
-    }
-    rightFilter =
-        rightFilter.accept(
-            new RelOptUtil.RexInputConverter(
-                joinRel.getCluster().getRexBuilder(),
-                right.getRowType().getFieldList(),
-                joinRel.getRowType().getFieldList(),
-                adjustments));
-    return rightFilter;
-  }
-
 }

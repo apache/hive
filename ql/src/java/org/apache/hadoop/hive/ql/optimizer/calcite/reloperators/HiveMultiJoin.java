@@ -31,6 +31,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -60,7 +61,7 @@ public final class HiveMultiJoin extends AbstractRelNode {
    * @param inputs                inputs into this multi-join
    * @param condition            join filter applicable to this join node
    * @param rowType               row type of the join result of this node
-   * @param joinInputs            
+   * @param joinInputs
    * @param joinTypes             the join type corresponding to each input; if
    *                              an input is null-generating in a left or right
    *                              outer join, the entry indicates the type of
@@ -84,7 +85,11 @@ public final class HiveMultiJoin extends AbstractRelNode {
     this.joinTypes = ImmutableList.copyOf(joinTypes);
     this.outerJoin = containsOuter();
 
-    this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
+    try {
+      this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
+    } catch (CalciteSemanticException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 
@@ -105,6 +110,7 @@ public final class HiveMultiJoin extends AbstractRelNode {
         joinTypes);
   }
 
+  @Override
   public RelWriter explainTerms(RelWriter pw) {
     List<String> joinsString = new ArrayList<String>();
     for (int i = 0; i < joinInputs.size(); i++) {
@@ -122,10 +128,12 @@ public final class HiveMultiJoin extends AbstractRelNode {
         .item("joinsDescription", joinsString);
   }
 
+  @Override
   public RelDataType deriveRowType() {
     return rowType;
   }
 
+  @Override
   public List<RelNode> getInputs() {
     return inputs;
   }
@@ -134,6 +142,7 @@ public final class HiveMultiJoin extends AbstractRelNode {
     return ImmutableList.of(condition);
   }
 
+  @Override
   public RelNode accept(RexShuttle shuttle) {
     RexNode joinFilter = shuttle.apply(this.condition);
 
