@@ -906,22 +906,11 @@ public class HiveOpConverter {
       // 3. We populate the filters structure
       List<ExprNodeDesc> filtersForInput = new ArrayList<ExprNodeDesc>();
       for (ExprNodeDesc expr : filterExpressions[pos]) {
-        if (expr instanceof ExprNodeGenericFuncDesc) {
-          ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
-          List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
-          for (ExprNodeDesc functionChild : func.getChildren()) {
-            if (functionChild instanceof ExprNodeColumnDesc) {
-              newChildren.add(colExprMap.get(functionChild.getExprString()));
-            } else {
-              newChildren.add(functionChild);
-            }
-          }
-          func.setChildren(newChildren);
-          filtersForInput.add(expr);
-        }
-        else {
-          filtersForInput.add(expr);
-        }
+        // We need to update the exprNode, as currently 
+        // they refer to columns in the output of the join;
+        // they should refer to the columns output by the RS
+        updateExprNode(expr, colExprMap);
+        filtersForInput.add(expr);
       }
       filters.put(tag, filtersForInput);
     }
@@ -929,11 +918,6 @@ public class HiveOpConverter {
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, noOuterJoin, joinCondns,
             filters, joinExpressions);
     desc.setReversedExprs(reversedExprs);
-
-    // 4. Create and populate filter map
-    int[][] filterMap = new int[joinExpressions.length][];
-
-    desc.setFilterMap(filterMap);
 
     JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(desc, new RowSchema(
         outputColumns), childOps);
@@ -945,6 +929,31 @@ public class HiveOpConverter {
     }
 
     return joinOp;
+  }
+
+  /*
+   * This method updates the input expr, changing all the
+   * ExprNodeColumnDesc in it to refer to columns given by the
+   * colExprMap.
+   * 
+   * For instance, "col_0 = 1" would become "VALUE.col_0 = 1";
+   * the execution engine expects filters in the Join operators
+   * to be expressed that way.
+   */
+  private static void updateExprNode(ExprNodeDesc expr, Map<String, ExprNodeDesc> colExprMap) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
+      List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
+      for (ExprNodeDesc functionChild : func.getChildren()) {
+        if (functionChild instanceof ExprNodeColumnDesc) {
+          newChildren.add(colExprMap.get(functionChild.getExprString()));
+        } else {
+          updateExprNode(functionChild, colExprMap);
+          newChildren.add(functionChild);
+        }
+      }
+      func.setChildren(newChildren);
+    }
   }
 
   private static JoinType extractJoinType(HiveJoin join) {
