@@ -211,7 +211,7 @@ public class HiveOpConverter {
     Map<Integer, ColumnInfo> posToNonPartColInfo = ht.getNonPartColInfoMap();
     List<Integer> neededColIndxsFrmReloptHT = scanRel.getNeededColIndxsFrmReloptHT();
     List<String> scanColNames = scanRel.getRowType().getFieldNames();
-    String tableAlias = scanRel.getTableAlias();
+    String tableAlias = scanRel.getConcatQbIDAlias();
 
     String colName;
     ColumnInfo colInfo;
@@ -251,7 +251,7 @@ public class HiveOpConverter {
     // 2. Setup TableScan
     TableScanOperator ts = (TableScanOperator) OperatorFactory.get(tsd, new RowSchema(colInfos));
 
-    topOps.put(scanRel.getConcatQbIDAlias(), ts);
+    topOps.put(tableAlias, ts);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generated " + ts + " with row schema: [" + ts.getSchema() + "]");
