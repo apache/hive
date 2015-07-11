@@ -270,7 +270,7 @@ public class TestStreaming {
     Assert.assertNotNull("Did not find added partition", p);
   }
 
-  @Test
+//@Test
   public void testTransactionBatchEmptyCommit() throws Exception {
     // 1)  to partitioned table
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
