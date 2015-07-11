@@ -550,7 +550,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           }
           // Create new key object to reuse for gets; we've used the old one to put in cache.
           stripeKey = new OrcBatchKey(fileId, 0, 0);
-        } else {
+        }
+        // We might have got an old value from cache; recheck it has indexes.
+        if (!value.hasAllIndexes(globalInc)) {
           if (DebugUtils.isTraceOrcEnabled()) {
             LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
                 + " metadata for includes: " + DebugUtils.toString(globalInc));

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -705,9 +706,16 @@ public class RecordReaderImpl implements RecordReader {
       boolean hasSelected = false, hasSkipped = false;
       for (int rowGroup = 0; rowGroup < result.length; ++rowGroup) {
         for (int pred = 0; pred < leafValues.length; ++pred) {
-          if (filterColumns[pred] != -1) {
-            OrcProto.ColumnStatistics stats =
-                indexes[filterColumns[pred]].getEntry(rowGroup).getStatistics();
+          int columnIx = filterColumns[pred];
+          if (columnIx != -1) {
+            if (indexes[columnIx] == null) {
+              throw new AssertionError("Index is not populated for " + columnIx);
+            }
+            RowIndexEntry entry = indexes[columnIx].getEntry(rowGroup);
+            if (entry == null) {
+              throw new AssertionError("RG is not populated for " + columnIx + " rg " + rowGroup);
+            }
+            OrcProto.ColumnStatistics stats = entry.getStatistics();
             OrcProto.BloomFilter bf = null;
             if (bloomFilterIndices != null && bloomFilterIndices[filterColumns[pred]] != null) {
               bf = bloomFilterIndices[filterColumns[pred]].getBloomFilter(rowGroup);
@@ -715,8 +723,7 @@ public class RecordReaderImpl implements RecordReader {
             leafValues[pred] = evaluatePredicateProto(stats, sargLeaves.get(pred), bf);
             if (LOG.isTraceEnabled()) {
               LOG.trace("Stats = " + stats);
-              LOG.trace("Setting " + sargLeaves.get(pred) + " to " +
-                  leafValues[pred]);
+              LOG.trace("Setting " + sargLeaves.get(pred) + " to " + leafValues[pred]);
             }
           } else {
             // the column is a virtual column
