@@ -2581,7 +2581,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         pathCreated = wh.renameDir(sourcePath, destPath);
         success = ms.commitTransaction();
       } finally {
-        if (!success) {
+        if (!success || !pathCreated) {
           ms.rollbackTransaction();
           if (pathCreated) {
             wh.renameDir(destPath, sourcePath);
