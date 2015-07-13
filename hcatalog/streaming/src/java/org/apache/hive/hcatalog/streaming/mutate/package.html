@@ -421,7 +421,7 @@ automatically (say on a hourly basis). In such cases requiring the Hive
 admin to pre-create the necessary partitions may not be reasonable.
 Consequently the API allows coordinators to create partitions as needed
 (see:
-<code>MutatorClientBuilder.addTable(String, String, boolean)</code>
+<code>MutatorClientBuilder.addSinkTable(String, String, boolean)</code>
 ). Partition creation being an atomic action, multiple coordinators can
 race to create the partition, but only one would succeed, so
 coordinators clients need not synchronize when creating a partition. The
@@ -440,14 +440,14 @@ consistent manner requires the following:
 <ol>
 <li>Obtaining a valid transaction list from the meta store (<code>ValidTxnList</code>).
 </li>
-<li>Acquiring a read-lock with the meta store and issuing
-heartbeats (<code>LockImpl</code> can help with this).
+<li>Acquiring a lock with the meta store and issuing heartbeats (<code>LockImpl</code>
+can help with this).
 </li>
 <li>Configuring the <code>OrcInputFormat</code> and then reading
 the data. Make sure that you also pull in the <code>ROW__ID</code>
 values. See: <code>AcidRecordReader.getRecordIdentifier</code>.
 </li>
-<li>Releasing the read-lock.</li>
+<li>Releasing the lock.</li>
 </ol>
 </p>
 

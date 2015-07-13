@@ -2,6 +2,7 @@ package org.apache.hive.hcatalog.streaming.mutate.client.lock;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +36,8 @@ public class Lock {
   private final IMetaStoreClient metaStoreClient;
   private final HeartbeatFactory heartbeatFactory;
   private final LockFailureListener listener;
-  private final Collection<Table> tableDescriptors;
+  private final Collection<Table> sinks;
+  private final Collection<Table> tables = new HashSet<>();
   private final int lockRetries;
   private final int retryWaitSeconds;
   private final String user;
@@ -46,22 +48,25 @@ public class Lock {
   private Long transactionId;
 
   public Lock(IMetaStoreClient metaStoreClient, Options options) {
-    this(metaStoreClient, new HeartbeatFactory(), options.hiveConf, options.listener, options.user,
-        options.descriptors, options.lockRetries, options.retryWaitSeconds);
+    this(metaStoreClient, new HeartbeatFactory(), options.hiveConf, options.listener, options.user, options.sources,
+        options.sinks, options.lockRetries, options.retryWaitSeconds);
   }
 
   /** Visible for testing only. */
   Lock(IMetaStoreClient metaStoreClient, HeartbeatFactory heartbeatFactory, HiveConf hiveConf,
-      LockFailureListener listener, String user, Collection<Table> tableDescriptors, int lockRetries,
+      LockFailureListener listener, String user, Collection<Table> sources, Collection<Table> sinks, int lockRetries,
       int retryWaitSeconds) {
     this.metaStoreClient = metaStoreClient;
     this.heartbeatFactory = heartbeatFactory;
     this.hiveConf = hiveConf;
     this.user = user;
-    this.tableDescriptors = tableDescriptors;
     this.listener = listener;
     this.lockRetries = lockRetries;
     this.retryWaitSeconds = retryWaitSeconds;
+
+    this.sinks = sinks;
+    tables.addAll(sources);
+    tables.addAll(sinks);
 
     if (LockFailureListener.NULL_LISTENER.equals(listener)) {
       LOG.warn("No {} supplied. Data quality and availability cannot be assured.",
@@ -77,6 +82,9 @@ public class Lock {
 
   /** Attempts to acquire a read lock on the table, returns if successful, throws exception otherwise. */
   public void acquire(long transactionId) throws LockException {
+    if (transactionId <= 0) {
+      throw new IllegalArgumentException("Invalid transaction id: " + transactionId);
+    }
     lockId = internalAcquire(transactionId);
     this.transactionId = transactionId;
     initiateHeartbeat();
@@ -96,19 +104,18 @@ public class Lock {
 
   @Override
   public String toString() {
-    return "Lock [metaStoreClient=" + metaStoreClient + ", lockId=" + lockId + ", transactionId=" + transactionId
-        + "]";
+    return "Lock [metaStoreClient=" + metaStoreClient + ", lockId=" + lockId + ", transactionId=" + transactionId + "]";
   }
 
   private long internalAcquire(Long transactionId) throws LockException {
     int attempts = 0;
-    LockRequest request = buildSharedLockRequest(transactionId);
+    LockRequest request = buildLockRequest(transactionId);
     do {
       LockResponse response = null;
       try {
         response = metaStoreClient.lock(request);
       } catch (TException e) {
-        throw new LockException("Unable to acquire lock for tables: [" + join(tableDescriptors) + "]", e);
+        throw new LockException("Unable to acquire lock for tables: [" + join(tables) + "]", e);
       }
       if (response != null) {
         LockState state = response.getState();
@@ -129,7 +136,7 @@ public class Lock {
       }
       attempts++;
     } while (attempts < lockRetries);
-    throw new LockException("Could not acquire lock on tables: [" + join(tableDescriptors) + "]");
+    throw new LockException("Could not acquire lock on tables: [" + join(tables) + "]");
   }
 
   private void internalRelease() {
@@ -142,18 +149,24 @@ public class Lock {
       }
     } catch (TException e) {
       LOG.error("Lock " + lockId + " failed.", e);
-      listener.lockFailed(lockId, transactionId, asStrings(tableDescriptors), e);
+      listener.lockFailed(lockId, transactionId, asStrings(tables), e);
     }
   }
 
-  private LockRequest buildSharedLockRequest(Long transactionId) {
+  private LockRequest buildLockRequest(Long transactionId) {
+    if (transactionId == null && !sinks.isEmpty()) {
+      throw new IllegalArgumentException("Cannot sink to tables outside of a transaction: sinks=" + asStrings(sinks));
+    }
     LockRequestBuilder requestBuilder = new LockRequestBuilder();
-    for (Table descriptor : tableDescriptors) {
-      LockComponent component = new LockComponentBuilder()
-          .setDbName(descriptor.getDbName())
-          .setTableName(descriptor.getTableName())
-          .setShared()
-          .build();
+    for (Table table : tables) {
+      LockComponentBuilder componentBuilder = new LockComponentBuilder().setDbName(table.getDbName()).setTableName(
+          table.getTableName());
+      if (sinks.contains(table)) {
+        componentBuilder.setSemiShared();
+      } else {
+        componentBuilder.setShared();
+      }
+      LockComponent component = componentBuilder.build();
       requestBuilder.addLockComponent(component);
     }
     if (transactionId != null) {
@@ -166,8 +179,7 @@ public class Lock {
   private void initiateHeartbeat() {
     int heartbeatPeriod = getHeartbeatPeriod();
     LOG.debug("Heartbeat period {}s", heartbeatPeriod);
-    heartbeat = heartbeatFactory.newInstance(metaStoreClient, listener, transactionId, tableDescriptors, lockId,
-        heartbeatPeriod);
+    heartbeat = heartbeatFactory.newInstance(metaStoreClient, listener, transactionId, tables, lockId, heartbeatPeriod);
   }
 
   private int getHeartbeatPeriod() {
@@ -210,22 +222,33 @@ public class Lock {
 
   /** Constructs a lock options for a set of Hive ACID tables from which we wish to read. */
   public static final class Options {
-    Set<Table> descriptors = new LinkedHashSet<>();
+    Set<Table> sources = new LinkedHashSet<>();
+    Set<Table> sinks = new LinkedHashSet<>();
     LockFailureListener listener = LockFailureListener.NULL_LISTENER;
     int lockRetries = 5;
     int retryWaitSeconds = 30;
     String user;
     HiveConf hiveConf;
 
-    /** Adds a table for which a shared read lock will be requested. */
-    public Options addTable(String databaseName, String tableName) {
+    /** Adds a table for which a shared lock will be requested. */
+    public Options addSourceTable(String databaseName, String tableName) {
+      addTable(databaseName, tableName, sources);
+      return this;
+    }
+
+    /** Adds a table for which a semi-shared lock will be requested. */
+    public Options addSinkTable(String databaseName, String tableName) {
+      addTable(databaseName, tableName, sinks);
+      return this;
+    }
+
+    private void addTable(String databaseName, String tableName, Set<Table> tables) {
       checkNotNullOrEmpty(databaseName);
       checkNotNullOrEmpty(tableName);
       Table table = new Table();
       table.setDbName(databaseName);
       table.setTableName(tableName);
-      descriptors.add(table);
-      return this;
+      tables.add(table);
     }
 
     public Options user(String user) {

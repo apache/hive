@@ -42,7 +42,16 @@ public class MutatorClient implements Closeable {
         .lockFailureListener(lockFailureListener == null ? LockFailureListener.NULL_LISTENER : lockFailureListener)
         .user(user);
     for (AcidTable table : tables) {
-      lockOptions.addTable(table.getDatabaseName(), table.getTableName());
+      switch (table.getTableType()) {
+      case SOURCE:
+        lockOptions.addSourceTable(table.getDatabaseName(), table.getTableName());
+        break;
+      case SINK:
+        lockOptions.addSinkTable(table.getDatabaseName(), table.getTableName());
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown TableType: " + table.getTableType());
+      }
     }
   }
 
