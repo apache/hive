@@ -136,6 +136,37 @@ public class TestBuddyAllocator {
     }
   }
 
+  @Test
+  public void testMTTArenas() {
+    final int min = 3, max = 4, maxAlloc = 1 << max, minAllocCount = 2048, threadCount = 4;
+    Configuration conf = createConf(1 << min, maxAlloc, maxAlloc, (1 << min) * minAllocCount);
+    final BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"));
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+    final CountDownLatch cdlIn = new CountDownLatch(threadCount), cdlOut = new CountDownLatch(1);
+    Callable<Void> testCallable = new Callable<Void>() {
+      public Void call() throws Exception {
+        syncThreadStart(cdlIn, cdlOut);
+        allocSameSize(a, minAllocCount / threadCount, min);
+        return null;
+      }
+    };
+    @SuppressWarnings("unchecked")
+    FutureTask<Void>[] allocTasks = new FutureTask[threadCount];
+    for (int i = 0; i < threadCount; ++i) {
+      allocTasks[i] = new FutureTask<>(testCallable);
+      executor.execute(allocTasks[i]);
+    }
+    try {
+      cdlIn.await(); // Wait for all threads to be ready.
+      cdlOut.countDown(); // Release them at the same time.
+      for (int i = 0; i < threadCount; ++i) {
+        allocTasks[i].get();
+      }
+    } catch (Throwable t) {
+      throw new RuntimeException(t);
+    }
+  }
   private void syncThreadStart(final CountDownLatch cdlIn, final CountDownLatch cdlOut) {
     cdlIn.countDown();
     try {
