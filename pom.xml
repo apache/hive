@@ -826,9 +826,8 @@
             <exclude>**/ql/exec/vector/udf/legacy/*.java</exclude>
             <exclude>**/ql/exec/vector/udf/generic/*.java</exclude>
             <exclude>**/TestHiveServer2Concurrency.java</exclude>
-            <exclude>**/TestHiveMetaStore.java</exclude>
             <exclude>${test.excludes.additional}</exclude>
-            <exclude>%regex[${skip.spark.files}]</exclude>
+            <exclude>${skip.spark.files}</exclude>
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -1219,7 +1218,9 @@
 	</property>
       </activation>
       <properties>
-        <skip.spark.files>.*[TestSparkSessionManagerImpl|TestMultiSessionsHS2WithLocalClusterSpark|TestJdbcWithLocalClusterSpark].class</skip.spark.files>
+        <skip.spark.files>
+          **/ql/exec/spark/session/TestSparkSessionManagerImpl.java,**/TestMultiSessionsHS2WithLocalClusterSpark.java,**/TestJdbcWithLocalClusterSpark.java
+        </skip.spark.files>
       </properties>
     </profile>
   </profiles>
