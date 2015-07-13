@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.serde2;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -34,7 +36,7 @@ import com.google.common.base.Charsets;
  * transform data from UTF-8 to specified charset during deserialize.
  */
 public abstract class AbstractEncodingAwareSerDe extends AbstractSerDe {
-
+  private static final Log LOG = LogFactory.getLog(AbstractEncodingAwareSerDe.class);
   protected Charset charset;
 
   @Override
@@ -42,6 +44,9 @@ public abstract class AbstractEncodingAwareSerDe extends AbstractSerDe {
   public void initialize(Configuration conf, Properties tbl)
       throws SerDeException {
     charset = Charset.forName(tbl.getProperty(serdeConstants.SERIALIZATION_ENCODING, "UTF-8"));
+    if (this.charset.equals(Charsets.ISO_8859_1) || this.charset.equals(Charsets.US_ASCII)) {
+      LOG.warn("The data may not be properly converted to target charset " + charset);
+    }
   }
 
   @Override
