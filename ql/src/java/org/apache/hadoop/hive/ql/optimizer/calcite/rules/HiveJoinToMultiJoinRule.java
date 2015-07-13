@@ -124,25 +124,29 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
 
     // We check whether the join can be combined with any of its children
     final List<RelNode> newInputs = Lists.newArrayList();
-    final List<RexNode> newJoinFilters = Lists.newArrayList();
-    newJoinFilters.add(join.getCondition());
-    final List<Pair<Pair<Integer,Integer>, JoinRelType>> joinSpecs = Lists.newArrayList();
+    final List<RexNode> newJoinCondition = Lists.newArrayList();
+    final List<Pair<Integer,Integer>> joinInputs = Lists.newArrayList();
+    final List<JoinRelType> joinTypes = Lists.newArrayList();
+    final List<RexNode> joinFilters = Lists.newArrayList();
 
     // Left child
-    if (left instanceof Join || left instanceof HiveMultiJoin) {
+    if (left instanceof HiveJoin || left instanceof HiveMultiJoin) {
       final RexNode leftCondition;
       final List<Pair<Integer,Integer>> leftJoinInputs;
       final List<JoinRelType> leftJoinTypes;
-      if (left instanceof Join) {
-        Join hj = (Join) left;
+      final List<RexNode> leftJoinFilters;
+      if (left instanceof HiveJoin) {
+        HiveJoin hj = (HiveJoin) left;
         leftCondition = hj.getCondition();
         leftJoinInputs = ImmutableList.of(Pair.of(0, 1));
         leftJoinTypes = ImmutableList.of(hj.getJoinType());
+        leftJoinFilters = ImmutableList.of(hj.getJoinFilter());
       } else {
         HiveMultiJoin hmj = (HiveMultiJoin) left;
         leftCondition = hmj.getCondition();
         leftJoinInputs = hmj.getJoinInputs();
         leftJoinTypes = hmj.getJoinTypes();
+        leftJoinFilters = hmj.getJoinFilters();
       }
 
       boolean combinable;
@@ -154,9 +158,11 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
         combinable = false;
       }
       if (combinable) {
-        newJoinFilters.add(leftCondition);
+        newJoinCondition.add(leftCondition);
         for (int i = 0; i < leftJoinInputs.size(); i++) {
-          joinSpecs.add(Pair.of(leftJoinInputs.get(i), leftJoinTypes.get(i)));
+          joinInputs.add(leftJoinInputs.get(i));
+          joinTypes.add(leftJoinTypes.get(i));
+          joinFilters.add(leftJoinFilters.get(i));
         }
         newInputs.addAll(left.getInputs());
       } else { // The join operation in the child is not on the same keys
@@ -171,7 +177,8 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
     newInputs.add(right);
 
     // If we cannot combine any of the children, we bail out
-    if (newJoinFilters.size() == 1) {
+    newJoinCondition.add(join.getCondition());
+    if (newJoinCondition.size() == 1) {
       return null;
     }
 
@@ -181,17 +188,13 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
     for (int i=0; i<newInputs.size(); i++) {
       joinKeyExprs.add(new ArrayList<RexNode>());
     }
-    RexNode otherCondition;
+    RexNode filters;
     try {
-      otherCondition = HiveRelOptUtil.splitHiveJoinCondition(systemFieldList, newInputs, join.getCondition(),
-          joinKeyExprs, filterNulls, null);
+      filters = HiveRelOptUtil.splitHiveJoinCondition(systemFieldList, newInputs,
+          join.getCondition(), joinKeyExprs, filterNulls, null);
     } catch (CalciteSemanticException e) {
         LOG.trace("Failed to merge joins", e);
         return null;
-    }
-    // If there are remaining parts in the condition, we bail out
-    if (!otherCondition.isAlwaysTrue()) {
-      return null;
     }
     ImmutableBitSet.Builder keysInInputsBuilder = ImmutableBitSet.builder();
     for (int i=0; i<newInputs.size(); i++) {
@@ -214,25 +217,30 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
     if (join.getJoinType() != JoinRelType.INNER) {
       int leftInput = keysInInputs.nextSetBit(0);
       int rightInput = keysInInputs.nextSetBit(numberLeftInputs);
-      joinSpecs.add(Pair.of(Pair.of(leftInput, rightInput), join.getJoinType()));
+      joinInputs.add(Pair.of(leftInput, rightInput));
+      joinTypes.add(join.getJoinType());
+      joinFilters.add(filters);
     } else {
       for (int i : leftReferencedInputs) {
         for (int j : rightReferencedInputs) {
-          joinSpecs.add(Pair.of(Pair.of(i, j), join.getJoinType()));
+          joinInputs.add(Pair.of(i, j));
+          joinTypes.add(join.getJoinType());
+          joinFilters.add(filters);
         }
       }
     }
 
     // We can now create a multijoin operator
     RexNode newCondition = RexUtil.flatten(rexBuilder,
-            RexUtil.composeConjunction(rexBuilder, newJoinFilters, false));
+            RexUtil.composeConjunction(rexBuilder, newJoinCondition, false));
     return new HiveMultiJoin(
             join.getCluster(),
             newInputs,
             newCondition,
             join.getRowType(),
-            Pair.left(joinSpecs),
-            Pair.right(joinSpecs));
+            joinInputs,
+            joinTypes,
+            joinFilters);
   }
 
   private static boolean isCombinablePredicate(Join join,

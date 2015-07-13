@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistribution.Type;
@@ -55,8 +56,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -98,6 +97,7 @@ import org.apache.hadoop.hive.ql.plan.UnionDesc;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 public class HiveOpConverter {
 
@@ -352,13 +352,6 @@ public class HiveOpConverter {
           + " with row type: [" + joinRel.getRowType() + "]");
     }
 
-    JoinPredicateInfo joinPredInfo;
-    if (joinRel instanceof HiveJoin) {
-      joinPredInfo = ((HiveJoin)joinRel).getJoinPredicateInfo();
-    } else {
-      joinPredInfo = ((HiveMultiJoin)joinRel).getJoinPredicateInfo();
-    }
-
     // 4. Extract join key expressions from HiveSortExchange
     ExprNodeDesc[][] joinExpressions = new ExprNodeDesc[inputs.length][];
     for (int i = 0; i < inputs.length; i++) {
@@ -368,23 +361,22 @@ public class HiveOpConverter {
     // 5. Extract rest of join predicate info. We infer the rest of join condition
     //    that will be added to the filters (join conditions that are not part of
     //    the join key)
-    ExprNodeDesc[][] filterExpressions = new ExprNodeDesc[inputs.length][];
-    for (int i = 0; i< inputs.length; i++) {
+    List<RexNode> joinFilters;
+    if (joinRel instanceof HiveJoin) {
+      joinFilters = ImmutableList.of(((HiveJoin)joinRel).getJoinFilter());
+    } else {
+      joinFilters = ((HiveMultiJoin)joinRel).getJoinFilters();
+    }
+    List<List<ExprNodeDesc>> filterExpressions = Lists.newArrayList();
+    for (int i = 0; i< joinFilters.size(); i++) {
       List<ExprNodeDesc> filterExpressionsForInput = new ArrayList<ExprNodeDesc>();
-      Set<String> keySet = new HashSet<String>();
-      for (int j = 0; j < joinPredInfo.getNonEquiJoinPredicateElements().size(); j++) {
-        JoinLeafPredicateInfo joinLeafPredInfo = joinPredInfo.
-            getNonEquiJoinPredicateElements().get(j);
-        for (RexNode joinExprNode : joinLeafPredInfo.getJoinExprs(i)) {
-          if (keySet.add(joinExprNode.toString())) {
-            ExprNodeDesc expr = convertToExprNode(joinExprNode, joinRel,
-                    null, newVcolsInCalcite);
-            filterExpressionsForInput.add(expr);
-          }
+      if (joinFilters.get(i) != null) {
+        for (RexNode conj : RelOptUtil.conjunctions(joinFilters.get(i))) {
+          ExprNodeDesc expr = convertToExprNode(conj, joinRel, null, newVcolsInCalcite);
+          filterExpressionsForInput.add(expr);
         }
       }
-      filterExpressions[i] = filterExpressionsForInput.toArray(
-              new ExprNodeDesc[filterExpressionsForInput.size()]);
+      filterExpressions.add(filterExpressionsForInput);
     }
 
     // 6. Generate Join operator
@@ -822,7 +814,7 @@ public class HiveOpConverter {
   }
 
   private static JoinOperator genJoin(RelNode join, ExprNodeDesc[][] joinExpressions,
-      ExprNodeDesc[][] filterExpressions, List<Operator<?>> children,
+      List<List<ExprNodeDesc>> filterExpressions, List<Operator<?>> children,
       String[] baseSrc, String tabAlias) throws SemanticException {
 
     // 1. Extract join type
@@ -849,6 +841,7 @@ public class HiveOpConverter {
               && joinType != JoinType.RIGHTOUTER;
     }
 
+    // 2. We create the join aux structures
     ArrayList<ColumnInfo> outputColumns = new ArrayList<ColumnInfo>();
     ArrayList<String> outputColumnNames = new ArrayList<String>(join.getRowType()
         .getFieldNames());
@@ -862,7 +855,7 @@ public class HiveOpConverter {
 
     int outputPos = 0;
     for (int pos = 0; pos < children.size(); pos++) {
-      // 2. Backtracking from RS
+      // 2.1. Backtracking from RS
       ReduceSinkOperator inputRS = (ReduceSinkOperator) children.get(pos);
       if (inputRS.getNumParent() != 1) {
         throw new SemanticException("RS should have single parent");
@@ -874,7 +867,7 @@ public class HiveOpConverter {
 
       Byte tag = (byte) rsDesc.getTag();
 
-      // 2.1. If semijoin...
+      // 2.1.1. If semijoin...
       if (semiJoin && pos != 0) {
         exprMap.put(tag, new ArrayList<ExprNodeDesc>());
         childOps[pos] = inputRS;
@@ -902,22 +895,52 @@ public class HiveOpConverter {
       exprMap.put(tag, new ArrayList<ExprNodeDesc>(descriptors.values()));
       colExprMap.putAll(descriptors);
       childOps[pos] = inputRS;
+    }
 
-      // 3. We populate the filters structure
-      List<ExprNodeDesc> filtersForInput = new ArrayList<ExprNodeDesc>();
-      for (ExprNodeDesc expr : filterExpressions[pos]) {
+    // 3. We populate the filters and filterMap structure needed in the join descriptor
+    List<List<ExprNodeDesc>> filtersPerInput = Lists.newArrayList();
+    int[][] filterMap = new int[children.size()][];
+    for (int i=0; i<children.size(); i++) {
+      filtersPerInput.add(new ArrayList<ExprNodeDesc>());
+    }
+    // 3. We populate the filters structure
+    for (int i=0; i<filterExpressions.size(); i++) {
+      int leftPos = joinCondns[i].getLeft();
+      int rightPos = joinCondns[i].getRight();
+
+      for (ExprNodeDesc expr : filterExpressions.get(i)) {
         // We need to update the exprNode, as currently 
         // they refer to columns in the output of the join;
         // they should refer to the columns output by the RS
-        updateExprNode(expr, colExprMap);
-        filtersForInput.add(expr);
+        int inputPos = updateExprNode(expr, reversedExprs, colExprMap);
+        if (inputPos == -1) {
+          inputPos = leftPos;
+        }
+        filtersPerInput.get(inputPos).add(expr);
+
+        if (joinCondns[i].getType() == JoinDesc.FULL_OUTER_JOIN ||
+                joinCondns[i].getType() == JoinDesc.LEFT_OUTER_JOIN ||
+                joinCondns[i].getType() == JoinDesc.RIGHT_OUTER_JOIN) {
+          if (inputPos == leftPos) {
+            updateFilterMap(filterMap, leftPos, rightPos);          
+          } else {
+            updateFilterMap(filterMap, rightPos, leftPos);          
+          }
+        }
       }
-      filters.put(tag, filtersForInput);
+    }
+    for (int pos = 0; pos < children.size(); pos++) {
+      ReduceSinkOperator inputRS = (ReduceSinkOperator) children.get(pos);
+      ReduceSinkDesc rsDesc = inputRS.getConf();
+      Byte tag = (byte) rsDesc.getTag();
+      filters.put(tag, filtersPerInput.get(pos));
     }
 
+    // 4. We create the join operator with its descriptor
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, noOuterJoin, joinCondns,
             filters, joinExpressions);
     desc.setReversedExprs(reversedExprs);
+    desc.setFilterMap(filterMap);
 
     JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(desc, new RowSchema(
         outputColumns), childOps);
@@ -940,19 +963,48 @@ public class HiveOpConverter {
    * the execution engine expects filters in the Join operators
    * to be expressed that way.
    */
-  private static void updateExprNode(ExprNodeDesc expr, Map<String, ExprNodeDesc> colExprMap) {
+  private static int updateExprNode(ExprNodeDesc expr, final Map<String, Byte> reversedExprs,
+          final Map<String, ExprNodeDesc> colExprMap) {
+    int inputPos = -1;
     if (expr instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
       List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
       for (ExprNodeDesc functionChild : func.getChildren()) {
         if (functionChild instanceof ExprNodeColumnDesc) {
-          newChildren.add(colExprMap.get(functionChild.getExprString()));
+          String colRef = functionChild.getExprString();
+          inputPos = reversedExprs.get(colRef);
+          newChildren.add(colExprMap.get(colRef));
         } else {
-          updateExprNode(functionChild, colExprMap);
+          inputPos = updateExprNode(functionChild, reversedExprs, colExprMap);
           newChildren.add(functionChild);
         }
       }
       func.setChildren(newChildren);
+    }
+    return inputPos;
+  }
+
+  private static void updateFilterMap(int[][] filterMap, int inputPos, int joinPos) {
+    int[] map = filterMap[inputPos];
+    if (map == null) {
+      filterMap[inputPos] = new int[2];
+      filterMap[inputPos][0] = joinPos;
+      filterMap[inputPos][1]++;
+    } else {
+      boolean inserted = false;
+      for (int j=0; j<map.length/2 && !inserted; j++) {
+        if (map[j*2] == joinPos) {
+          map[j*2+1]++;
+          inserted = true;
+        }
+      }
+      if (!inserted) {
+        int[] newMap = new int[map.length + 2];
+        System.arraycopy(map, 0, newMap, 0, map.length);
+        newMap[map.length] = joinPos;
+        newMap[map.length+1]++;
+        filterMap[inputPos] = newMap;
+      }
     }
   }
 

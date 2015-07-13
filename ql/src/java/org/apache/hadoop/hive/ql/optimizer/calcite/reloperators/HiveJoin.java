@@ -43,6 +43,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
@@ -60,6 +61,7 @@ public class HiveJoin extends Join implements HiveRelNode {
   }
 
   private final boolean leftSemiJoin;
+  private final RexNode joinFilter;
   private final JoinPredicateInfo joinPredInfo;
   private JoinAlgorithm joinAlgorithm;
   private RelOptCost joinCost;
@@ -82,6 +84,14 @@ public class HiveJoin extends Join implements HiveRelNode {
       JoinAlgorithm joinAlgo, boolean leftSemiJoin) throws InvalidRelException, CalciteSemanticException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), left, right, condition, joinType,
         variablesStopped);
+    final List<RelDataTypeField> systemFieldList = ImmutableList.of();
+    List<List<RexNode>> joinKeyExprs = new ArrayList<List<RexNode>>();
+    List<Integer> filterNulls = new ArrayList<Integer>();
+    for (int i=0; i<this.getInputs().size(); i++) {
+      joinKeyExprs.add(new ArrayList<RexNode>());
+    }
+    this.joinFilter = HiveRelOptUtil.splitHiveJoinCondition(systemFieldList, this.getInputs(),
+            this.getCondition(), joinKeyExprs, filterNulls, null);
     this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
     this.joinAlgorithm = joinAlgo;
     this.leftSemiJoin = leftSemiJoin;
@@ -103,6 +113,10 @@ public class HiveJoin extends Join implements HiveRelNode {
       // internal error.
       throw new AssertionError(e);
     }
+  }
+
+  public RexNode getJoinFilter() {
+    return joinFilter;
   }
 
   public JoinPredicateInfo getJoinPredicateInfo() {

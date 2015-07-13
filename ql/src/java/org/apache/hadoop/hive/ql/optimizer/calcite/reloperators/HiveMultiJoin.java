@@ -49,6 +49,7 @@ public final class HiveMultiJoin extends AbstractRelNode {
   private final RelDataType rowType;
   private final ImmutableList<Pair<Integer,Integer>> joinInputs;
   private final ImmutableList<JoinRelType> joinTypes;
+  private final ImmutableList<RexNode> filters;
 
   private final boolean outerJoin;
   private final JoinPredicateInfo joinPredInfo;
@@ -59,30 +60,34 @@ public final class HiveMultiJoin extends AbstractRelNode {
    *
    * @param cluster               cluster that join belongs to
    * @param inputs                inputs into this multi-join
-   * @param condition            join filter applicable to this join node
+   * @param condition             join filter applicable to this join node
    * @param rowType               row type of the join result of this node
-   * @param joinInputs
+   * @param joinInputs            
    * @param joinTypes             the join type corresponding to each input; if
    *                              an input is null-generating in a left or right
    *                              outer join, the entry indicates the type of
    *                              outer join; otherwise, the entry is set to
    *                              INNER
+   * @param filters               filters associated with each join
+   *                              input
    */
   public HiveMultiJoin(
       RelOptCluster cluster,
       List<RelNode> inputs,
-      RexNode joinFilter,
+      RexNode condition,
       RelDataType rowType,
       List<Pair<Integer,Integer>> joinInputs,
-      List<JoinRelType> joinTypes) {
+      List<JoinRelType> joinTypes,
+      List<RexNode> filters) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster));
     this.inputs = Lists.newArrayList(inputs);
-    this.condition = joinFilter;
+    this.condition = condition;
     this.rowType = rowType;
 
     assert joinInputs.size() == joinTypes.size();
     this.joinInputs = ImmutableList.copyOf(joinInputs);
     this.joinTypes = ImmutableList.copyOf(joinTypes);
+    this.filters = ImmutableList.copyOf(filters);
     this.outerJoin = containsOuter();
 
     try {
@@ -107,7 +112,8 @@ public final class HiveMultiJoin extends AbstractRelNode {
         condition,
         rowType,
         joinInputs,
-        joinTypes);
+        joinTypes,
+        filters);
   }
 
   @Override
@@ -156,7 +162,8 @@ public final class HiveMultiJoin extends AbstractRelNode {
         joinFilter,
         rowType,
         joinInputs,
-        joinTypes);
+        joinTypes,
+        filters);
   }
 
   /**
@@ -185,6 +192,13 @@ public final class HiveMultiJoin extends AbstractRelNode {
    */
   public List<JoinRelType> getJoinTypes() {
     return joinTypes;
+  }
+
+  /**
+   * @return join conditions filters
+   */
+  public List<RexNode> getJoinFilters() {
+    return filters;
   }
 
   /**
