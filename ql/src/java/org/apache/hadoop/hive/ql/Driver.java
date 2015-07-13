@@ -986,6 +986,7 @@ public class Driver implements CommandProcessor {
         if (acidSinks != null) {
           for (FileSinkDesc desc : acidSinks) {
             desc.setTransactionId(txnId);
+            desc.setStatementId(txnMgr.getStatementId());
           }
         }
 

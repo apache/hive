@@ -443,13 +443,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final FileStatus file;
     private final FileInfo fileInfo;
     private final boolean isOriginal;
-    private final List<Long> deltas;
+    private final List<DeltaMetaData> deltas;
     private final boolean hasBase;
 
     SplitInfo(Context context, FileSystem fs,
         FileStatus file, FileInfo fileInfo,
         boolean isOriginal,
-        List<Long> deltas,
+        List<DeltaMetaData> deltas,
         boolean hasBase, Path dir, boolean[] covered) throws IOException {
       super(dir, context.numBuckets, deltas, covered);
       this.context = context;
@@ -471,12 +471,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     FileSystem fs;
     List<FileStatus> files;
     boolean isOriginal;
-    List<Long> deltas;
+    List<DeltaMetaData> deltas;
     Path dir;
     boolean[] covered;
 
     public ETLSplitStrategy(Context context, FileSystem fs, Path dir, List<FileStatus> children,
-        boolean isOriginal, List<Long> deltas, boolean[] covered) {
+        boolean isOriginal, List<DeltaMetaData> deltas, boolean[] covered) {
       this.context = context;
       this.dir = dir;
       this.fs = fs;
@@ -547,14 +547,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   static final class BISplitStrategy extends ACIDSplitStrategy {
     List<FileStatus> fileStatuses;
     boolean isOriginal;
-    List<Long> deltas;
+    List<DeltaMetaData> deltas;
     FileSystem fs;
     Context context;
     Path dir;
 
     public BISplitStrategy(Context context, FileSystem fs,
         Path dir, List<FileStatus> fileStatuses, boolean isOriginal,
-        List<Long> deltas, boolean[] covered) {
+        List<DeltaMetaData> deltas, boolean[] covered) {
       super(dir, context.numBuckets, deltas, covered);
       this.context = context;
       this.fileStatuses = fileStatuses;
@@ -591,11 +591,11 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    */
   static class ACIDSplitStrategy implements SplitStrategy<OrcSplit> {
     Path dir;
-    List<Long> deltas;
+    List<DeltaMetaData> deltas;
     boolean[] covered;
     int numBuckets;
 
-    public ACIDSplitStrategy(Path dir, int numBuckets, List<Long> deltas, boolean[] covered) {
+    public ACIDSplitStrategy(Path dir, int numBuckets, List<DeltaMetaData> deltas, boolean[] covered) {
       this.dir = dir;
       this.numBuckets = numBuckets;
       this.deltas = deltas;
@@ -644,7 +644,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       final SplitStrategy splitStrategy;
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir,
           context.conf, context.transactionList);
-      List<Long> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
+      List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
       Path base = dirInfo.getBaseDirectory();
       List<FileStatus> original = dirInfo.getOriginalFiles();
       boolean[] covered = new boolean[context.numBuckets];
@@ -722,7 +722,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private Metadata metadata;
     private List<OrcProto.Type> types;
     private final boolean isOriginal;
-    private final List<Long> deltas;
+    private final List<DeltaMetaData> deltas;
     private final boolean hasBase;
     private OrcFile.WriterVersion writerVersion;
     private long projColsUncompressedSize;

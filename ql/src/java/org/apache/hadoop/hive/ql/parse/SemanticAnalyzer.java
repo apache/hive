@@ -6605,7 +6605,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rsCtx.getNumFiles(),
       rsCtx.getTotalFiles(),
       rsCtx.getPartnCols(),
-      dpCtx);
+      dpCtx,
+      dest_path);
 
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.

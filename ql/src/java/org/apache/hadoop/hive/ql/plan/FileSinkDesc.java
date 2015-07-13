@@ -92,16 +92,21 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   // Record what type of write this is.  Default is non-ACID (ie old style).
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
   private long txnId = 0;  // transaction id for this operation
+  private int statementId = -1;
 
   private transient Table table;
+  private Path destPath;
 
   public FileSinkDesc() {
   }
 
+  /**
+   * @param destPath - the final destination for data
+   */
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
       final boolean canBeMerged, final int numFiles, final int totalFiles,
-      final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx) {
+      final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
@@ -114,6 +119,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.partitionCols = partitionCols;
     this.dpCtx = dpCtx;
     this.dpSortState = DPSortState.NONE;
+    this.destPath = destPath;
   }
 
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
@@ -135,7 +141,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
         destTableId, multiFileSpray, canBeMerged, numFiles, totalFiles,
-        partitionCols, dpCtx);
+        partitionCols, dpCtx, destPath);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
     ret.setGatherStats(gatherStats);
@@ -231,9 +237,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     return temporary;
   }
 
-  /**
-   * @param totalFiles the totalFiles to set
-   */
   public void setTemporary(boolean temporary) {
     this.temporary = temporary;
   }
@@ -438,9 +441,21 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public void setTransactionId(long id) {
     txnId = id;
   }
-
   public long getTransactionId() {
     return txnId;
+  }
+
+  public void setStatementId(int id) {
+    statementId = id;
+  }
+  /**
+   * See {@link org.apache.hadoop.hive.ql.io.AcidOutputFormat.Options#statementId(int)}
+   */
+  public int getStatementId() {
+    return statementId;
+  }
+  public Path getDestPath() {
+    return destPath;
   }
 
   public Table getTable() {
