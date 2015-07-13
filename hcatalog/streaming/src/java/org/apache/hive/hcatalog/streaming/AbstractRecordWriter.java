@@ -143,7 +143,9 @@ abstract class AbstractRecordWriter implements RecordWriter {
                       .inspector(getSerde().getObjectInspector())
                       .bucket(bucketId)
                       .minimumTransactionId(minTxnId)
-                      .maximumTransactionId(maxTxnID));
+                      .maximumTransactionId(maxTxnID)
+                      .statementId(-1)
+                      .finalDestination(partitionPath));
     } catch (SerDeException e) {
       throw new SerializationError("Failed to get object inspector from Serde "
               + getSerde().getClass().getName(), e);

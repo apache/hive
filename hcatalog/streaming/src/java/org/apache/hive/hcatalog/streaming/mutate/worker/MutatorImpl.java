@@ -78,7 +78,9 @@ public class MutatorImpl implements Mutator {
             .bucket(bucketId)
             .minimumTransactionId(transactionId)
             .maximumTransactionId(transactionId)
-            .recordIdColumn(recordIdColumn));
+            .recordIdColumn(recordIdColumn)
+            .finalDestination(partitionPath)
+            .statementId(-1));
   }
 
 }

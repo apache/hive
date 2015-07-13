@@ -127,4 +127,7 @@ public interface HiveTxnManager {
    * @return true if this transaction manager does ACID
    */
   boolean supportsAcid();
+
+  int getStatementId();
+
 }

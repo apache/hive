@@ -39,7 +39,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
   /**
    * Options to control how the files are written
    */
-  public static class Options {
+  public static class Options implements Cloneable {
     private final Configuration configuration;
     private FileSystem fs;
     private ObjectInspector inspector;
@@ -53,7 +53,9 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private PrintStream dummyStream = null;
     private boolean oldStyle = false;
     private int recIdCol = -1;  // Column the record identifier is in, -1 indicates no record id
-
+    //unique within a transaction
+    private int statementId = 0;
+    private Path finalDestination;
     /**
      * Create the options object.
      * @param conf Use the given configuration
@@ -62,6 +64,18 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       this.configuration = conf;
     }
 
+    /**
+     * shallow clone
+     */
+    @Override
+    public Options clone() {
+      try {
+        return (Options)super.clone();
+      }
+      catch(CloneNotSupportedException ex) {
+        throw new RuntimeException("clone() not properly implemented: " + ex.getMessage(), ex);
+      }
+    }
     /**
      * Use the given ObjectInspector for each record written.
      * @param inspector the inspector to use.
@@ -185,6 +199,31 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       return this;
     }
 
+    /**
+     * @since 1.3.0
+     * This can be set to -1 to make the system generate old style (delta_xxxx_yyyy) file names.
+     * This is primarily needed for testing to make sure 1.3 code can still read files created
+     * by older code.  Also used by Comactor.
+     */
+    public Options statementId(int id) {
+      if(id >= AcidUtils.MAX_STATEMENTS_PER_TXN) {
+        throw new RuntimeException("Too many statements for transactionId: " + maximumTransactionId);
+      }
+      if(id < -1) {
+        throw new IllegalArgumentException("Illegal statementId value: " + id);
+      }
+      this.statementId = id;
+      return this;
+    }
+    /**
+     * @param p where the data for this operation will eventually end up;
+     *          basically table or partition directory in FS
+     */
+    public Options finalDestination(Path p) {
+      this.finalDestination = p;
+      return this;
+    }
+    
     public Configuration getConfiguration() {
       return configuration;
     }
@@ -235,6 +274,12 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
 
     boolean getOldStyle() {
       return oldStyle;
+    }
+    public int getStatementId() {
+      return statementId;
+    }
+    public Path getFinalDestination() {
+      return finalDestination;
     }
   }
 
