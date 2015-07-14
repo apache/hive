@@ -741,6 +741,15 @@ public class Commands {
    * @return the hive configuration from server side
    */
   public HiveConf getHiveConf(boolean call) {
+    HiveConf hiveConf = beeLine.getOpts().getConf();
+    if (hiveConf != null && call) {
+      return hiveConf;
+    } else {
+      return getHiveConfHelper(call);
+    }
+  }
+
+  public HiveConf getHiveConfHelper(boolean call) {
     HiveConf conf = new HiveConf();
     BufferedRows rows = getConfInternal(call);
     while (rows != null && rows.hasNext()) {
@@ -1019,7 +1028,7 @@ public class Commands {
     return execute(line, false, entireLineAsCommand);
   }
 
-  private String substituteVariables(HiveConf conf, String line) {
+  public String substituteVariables(HiveConf conf, String line) {
     if (!beeLine.isBeeLine()) {
       // Substitution is only supported in non-beeline mode.
       return new VariableSubstitution(new HiveVariableSource() {

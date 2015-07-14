@@ -118,7 +118,7 @@ class BeeLineOpts implements Completer {
 
   public String[] possibleSettingValues() {
     List<String> vals = new LinkedList<String>();
-    vals.addAll(Arrays.asList(new String[] {"yes", "no"}));
+    vals.addAll(Arrays.asList(new String[] { "yes", "no" }));
     return vals.toArray(new String[vals.size()]);
   }
 
@@ -546,6 +546,10 @@ class BeeLineOpts implements Completer {
 
   public boolean isHelpAsked() {
     return helpAsked;
+  }
+
+  public HiveConf getConf() {
+    return conf;
   }
 }
 

@@ -87,6 +87,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
 import org.apache.thrift.transport.TTransportException;
@@ -1128,7 +1129,7 @@ public class BeeLine implements Closeable {
       boolean needsUpdate = isConfNeedsUpdate(line);
       boolean res = commands.sql(line, getOpts().getEntireLineAsCommand());
       if (needsUpdate) {
-        getOpts().setHiveConf(getCommands().getHiveConf(true));
+        getOpts().setHiveConf(getCommands().getHiveConf(false));
       }
       return res;
     }
@@ -1400,19 +1401,35 @@ public class BeeLine implements Closeable {
     }
   }
 
-
   String getPrompt() {
+    if (isBeeLine) {
+      return getPromptForBeeline();
+    } else {
+      return getPromptForCli();
+    }
+  }
+
+  String getPromptForCli() {
+    String prompt;
+    // read prompt configuration and substitute variables.
+    HiveConf conf = getCommands().getHiveConf(true);
+    prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
+    prompt = getCommands().substituteVariables(conf, prompt);
+    return prompt + "> ";
+  }
+
+  String getPromptForBeeline() {
     if (getDatabaseConnection() == null || getDatabaseConnection().getUrl() == null) {
       return "beeline> ";
     } else {
       String printClosed = getDatabaseConnection().isClosed() ? " (closed)" : "";
-      return getPrompt(getDatabaseConnections().getIndex()
+      return getPromptForBeeline(getDatabaseConnections().getIndex()
           + ": " + getDatabaseConnection().getUrl()) + printClosed + "> ";
     }
   }
 
 
-  static String getPrompt(String url) {
+  static String getPromptForBeeline(String url) {
     if (url == null || url.length() == 0) {
       url = "beeline";
     }

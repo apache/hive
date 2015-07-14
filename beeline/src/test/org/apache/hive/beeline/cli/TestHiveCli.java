@@ -78,13 +78,19 @@ public class TestHiveCli {
       int retCode) {
     executeCMD(options, CMD, retCode);
     String output = os.toString();
-    Assert.assertTrue("The expected keyword doesn't occur in the output: " + output,
+    LOG.debug(output);
+    Assert.assertTrue("The expected keyword " + keywords + "doesn't occur in the output: " + output,
         output.contains(keywords));
   }
 
   @Test
   public void testInValidCmd() {
     verifyCMD("!lss\n", "Unknown command: lss", errS, null, ERRNO_OK);
+  }
+
+  @Test
+  public void testSetPromptValue() {
+    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", os, null, ERRNO_OK);
   }
 
   @Test
