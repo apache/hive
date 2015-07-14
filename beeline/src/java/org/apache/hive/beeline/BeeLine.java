@@ -873,6 +873,9 @@ public class BeeLine implements Closeable {
           return code;
         }
         getOpts().updateBeeLineOptsFromConf();
+        getOpts().setShowHeader(false);
+        getOpts().setOutputFormat("dsv");
+        getOpts().setDelimiterForDSV(' ');
       }
 
       if (getOpts().isHelpAsked()) {

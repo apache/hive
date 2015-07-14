@@ -41,11 +41,11 @@ public class TestHiveCli {
   private static final int ERRNO_OTHER = 2;
 
   private final static String SOURCE_CONTEXT =
-      "create table if not exists test.testSrcTbl(a string, b string);";
+      "create table if not exists test.testSrcTbl(sc1 string);";
   private final static String SOURCE_CONTEXT2 =
-      "create table if not exists test.testSrcTbl2(a string);";
+      "create table if not exists test.testSrcTbl2(sc2 string);";
   private final static String SOURCE_CONTEXT3 =
-      "create table if not exists test.testSrcTbl3(a string);";
+      "create table if not exists test.testSrcTbl3(sc3 string);";
   final static String CMD =
       "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b "
           + "string);\n";
@@ -113,7 +113,7 @@ public class TestHiveCli {
   @Test
   public void testSourceCmd() {
     File f = generateTmpFile(SOURCE_CONTEXT);
-    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl;\nquit;\n", "col_name", os,
+    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl;\nquit;\n", "sc1", os,
         new String[] { "--database", "test" }, ERRNO_OK);
     f.delete();
   }
@@ -121,7 +121,7 @@ public class TestHiveCli {
   @Test
   public void testSourceCmd2() {
     File f = generateTmpFile(SOURCE_CONTEXT3);
-    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl3;\nquit;\n", "col_name", os,
+    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl3;\nquit;\n", "sc3", os,
         new String[] { "--database", "test" }, ERRNO_OK);
     f.delete();
   }
@@ -159,7 +159,7 @@ public class TestHiveCli {
     File f = generateTmpFile(SOURCE_CONTEXT2);
     verifyCMD(
         "set hiveconf:zzz=" + f.getAbsolutePath() + ";\nsource ${hiveconf:zzz};\ndesc testSrcTbl2;",
-        "col_name", os, new String[] { "--database", "test" }, ERRNO_OK);
+        "sc2", os, new String[] { "--database", "test" }, ERRNO_OK);
     f.delete();
   }
 
