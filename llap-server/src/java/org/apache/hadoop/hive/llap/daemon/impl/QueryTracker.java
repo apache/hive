@@ -20,6 +20,7 @@ import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.service.CompositeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +69,10 @@ public class QueryTracker extends CompositeService {
   // Tracks various maps for dagCompletions. This is setup here since stateChange messages
   // may be processed by a thread which ends up executing before a task.
   private final ConcurrentMap<String, ConcurrentMap<String, SourceStateProto>> sourceCompletionMap = new ConcurrentHashMap<>();
+
+  // Tracks queryId by dagName. This can only be set when config is parsed in TezProcessor,
+  // all the other existing code passes queryId equal to 0 everywhere.
+  private final ConcurrentHashMap<String, String> dagNameToQueryId = new ConcurrentHashMap<>();
 
   public QueryTracker(Configuration conf, String[] localDirsBase) {
     super("QueryTracker");
@@ -158,7 +163,6 @@ public class QueryTracker extends CompositeService {
       completedDagMap.add(dagName);
       LOG.info("Processing queryComplete for dagName={} with deleteDelay={} seconds", dagName,
           deleteDelay);
-      completedDagMap.add(dagName);
       QueryInfo queryInfo = queryInfoMap.remove(dagName);
       if (queryInfo == null) {
         LOG.warn("Ignoring query complete for unknown dag: {}", dagName);
@@ -176,10 +180,13 @@ public class QueryTracker extends CompositeService {
       // and the structures are cleaned up once all tasks complete. New requests, however, should not
       // be allowed after a query complete is received.
       sourceCompletionMap.remove(dagName);
+      String savedQueryId = dagNameToQueryId.remove(dagName);
+      queryId = queryId == null ? savedQueryId : queryId;
       dagSpecificLocks.remove(dagName);
+      if (queryId != null) {
+        ObjectCacheFactory.removeLlapQueryCache(queryId);
+      }
       return queryInfo.getRegisteredFragments();
-      // TODO HIVE-10762 Issue a kill message to all running fragments for this container.
-      // TODO HIVE-10535 Cleanup map join cache
     } finally {
       dagLock.writeLock().unlock();
     }
@@ -226,5 +233,10 @@ public class QueryTracker extends CompositeService {
       dagMap = (old != null) ? old : dagMap;
     }
     return dagMap;
+  }
+
+  public void registerDagQueryId(String dagName, String queryId) {
+    if (queryId == null) return;
+    dagNameToQueryId.putIfAbsent(dagName, queryId);
   }
 }

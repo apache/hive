@@ -92,14 +92,14 @@ public class MergeFileRecordProcessor extends RecordProcessor {
           .initialize();
     }
 
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
     org.apache.hadoop.hive.ql.exec.ObjectCache cache = ObjectCacheFactory
-      .getCache(jconf);
+      .getCache(jconf, queryId);
 
     try {
       execContext.setJc(jconf);
 
-      String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-      cacheKey = queryId + MAP_PLAN_KEY;
+      cacheKey = MAP_PLAN_KEY;
 
       MapWork mapWork = (MapWork) cache.retrieve(cacheKey, new Callable<Object>() {
         @Override

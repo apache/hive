@@ -52,17 +52,14 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   private static ExecutorService staticPool = Executors.newCachedThreadPool();
 
-  private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
   private static final boolean isLogInfoEnabled = LOG.isInfoEnabled();
-
-  public LlapObjectCache() {
-  }
 
   @Override
   public void release(String key) {
     // nothing to do, soft references will clean themselves up
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
 
