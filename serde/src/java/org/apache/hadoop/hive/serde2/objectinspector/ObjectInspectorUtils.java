@@ -722,12 +722,26 @@ public final class ObjectInspectorUtils {
       case FLOAT: {
         float v1 = ((FloatObjectInspector) poi1).get(o1);
         float v2 = ((FloatObjectInspector) poi2).get(o2);
-        return Float.compare(v1, v2);
+
+        // The IEEE 754 floating point spec specifies that signed -0.0 and 0.0 should be treated as equal.
+        if (v1 == 0.0f && v2 == 0.0f) {
+          return 0;
+        } else {
+          // Float.compare() treats -0.0 and 0.0 as different
+          return Float.compare(v1, v2);
+        }
       }
       case DOUBLE: {
         double v1 = ((DoubleObjectInspector) poi1).get(o1);
         double v2 = ((DoubleObjectInspector) poi2).get(o2);
-        return Double.compare(v1, v2);
+
+        // The IEEE 754 floating point spec specifies that signed -0.0 and 0.0 should be treated as equal.
+        if (v1 == 0.0d && v2 == 0.0d) {
+          return 0;
+        } else {
+          // Double.compare() treats -0.0 and 0.0 as different
+          return Double.compare(v1, v2);
+        }
       }
       case STRING: {
         if (poi1.preferWritable() || poi2.preferWritable()) {
