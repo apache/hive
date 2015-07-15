@@ -203,8 +203,9 @@ public class AMReporter extends AbstractService {
       amNodeInfo = knownAppMasters.get(amNodeId);
       if (amNodeInfo == null) {
         LOG.info(("Ignoring duplicate unregisterRequest for am at: " + amLocation + ":" + port));
+      } else {
+        amNodeInfo.decrementAndGetTaskCount();
       }
-      amNodeInfo.decrementAndGetTaskCount();
       // Not removing this here. Will be removed when taken off the queue and discovered to have 0
       // pending tasks.
     }
