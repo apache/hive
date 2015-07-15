@@ -34,6 +34,7 @@ import org.apache.tez.common.TezUtils;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.AbstractLogicalIOProcessor;
 import org.apache.tez.runtime.api.Event;
+import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
@@ -45,7 +46,13 @@ import org.apache.tez.runtime.library.api.KeyValueWriter;
  */
 public class TezProcessor extends AbstractLogicalIOProcessor {
 
-
+  /**
+   * This provides the ability to pass things into TezProcessor, which is normally impossible
+   * because of how Tez APIs are structured. Piggyback on ExecutionContext.
+   */
+  public static interface Hook {
+    void initializeHook(TezProcessor source);
+  }
 
   private static final Log LOG = LogFactory.getLog(TezProcessor.class);
   protected boolean isMap = false;
@@ -92,6 +99,10 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     Configuration conf = TezUtils.createConfFromUserPayload(getContext().getUserPayload());
     this.jobConf = new JobConf(conf);
     this.processorContext = getContext();
+    ExecutionContext execCtx = processorContext.getExecutionContext();
+    if (execCtx instanceof Hook) {
+      ((Hook)execCtx).initializeHook(this);
+    }
     setupMRLegacyConfigs(processorContext);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
   }
@@ -216,5 +227,9 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     public void collect(Object key, Object value) throws IOException {
       writer.write(key, value);
     }
+  }
+
+  public JobConf getConf() {
+    return jobConf;
   }
 }

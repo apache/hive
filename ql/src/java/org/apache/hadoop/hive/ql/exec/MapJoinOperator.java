@@ -132,10 +132,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     // On Tez only: The hash map might already be cached in the container we run
     // the task in. On MR: The cache is a no-op.
-    cacheKey = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID)
-      + "__HASH_MAP_"+this.getOperatorId()+"_container";
+    String queryId = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID);
+    cacheKey = "HASH_MAP_" + this.getOperatorId() + "_container";
 
-    cache = ObjectCacheFactory.getCache(hconf);
+    cache = ObjectCacheFactory.getCache(hconf, queryId);
     loader = getHashTableLoader(hconf);
 
     hashMapRowGetters = null;

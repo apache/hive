@@ -263,6 +263,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       maxShuffleThreads = 2 * Runtime.getRuntime().availableProcessors();
     }
 
+    // TODO: this is never used
     localDirs = conf.getTrimmedStrings(SHUFFLE_HANDLER_LOCAL_DIRS);
 
     shuffleBufferSize = conf.getInt(SHUFFLE_BUFFER_SIZE,

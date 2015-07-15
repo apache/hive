@@ -708,7 +708,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           if (!filter.accept(filterPath)) continue;
         }
         LocatedFileStatus lfs = next.makeQualifiedLocated(fsUri, p);
-        result.add(new HdfsFileStatusWithIdImpl(lfs, next.getFileId())); // TODO#: here
+        result.add(new HdfsFileStatusWithIdImpl(lfs, next.getFileId()));
       }
       current = current.hasMore() ? dfsc.listPaths(src, current.getLastName(), true) : null;
     }

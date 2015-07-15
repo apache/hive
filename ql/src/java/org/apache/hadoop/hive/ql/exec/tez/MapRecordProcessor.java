@@ -94,10 +94,11 @@ public class MapRecordProcessor extends RecordProcessor {
 
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
     if (LlapIoProxy.isDaemon()) { // do not cache plan
       cache = new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
     } else {
-      cache = ObjectCacheFactory.getCache(jconf);
+      cache = ObjectCacheFactory.getCache(jconf, queryId);
     }
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
@@ -111,8 +112,8 @@ public class MapRecordProcessor extends RecordProcessor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(mrReporter, inputs, outputs);
 
-    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    String key = queryId + processorContext.getTaskVertexName() + MAP_PLAN_KEY;
+
+    String key = processorContext.getTaskVertexName() + MAP_PLAN_KEY;
     cacheKeys.add(key);
 
     // create map and fetch operators
@@ -133,7 +134,7 @@ public class MapRecordProcessor extends RecordProcessor {
           continue;
         }
 
-        key = queryId + processorContext.getTaskVertexName() + prefix;
+        key = processorContext.getTaskVertexName() + prefix;
         cacheKeys.add(key);
 
         mergeWorkList.add(

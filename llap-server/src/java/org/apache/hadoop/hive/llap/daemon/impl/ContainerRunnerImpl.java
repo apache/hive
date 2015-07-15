@@ -26,6 +26,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.hive.ql.exec.tez.TezProcessor;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.token.Token;
@@ -185,14 +187,13 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
 
-      // TODO Unregistering does not happen at the moment, since there's no signals on when an app completes.
       LOG.info("DEBUG: Registering request with the ShuffleHandler");
       ShuffleHandler.get()
           .registerDag(request.getApplicationIdString(), dagIdentifier, jobToken,
               request.getUser(), localDirs);
 
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, new Configuration(getConfig()),
-          new ExecutionContextImpl(localAddress.get().getHostName()), env,
+          new LlapExecutionContext(localAddress.get().getHostName(), queryTracker), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
           this);
       try {
@@ -206,6 +207,21 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       metrics.incrExecutorNumQueuedRequests();
     } finally {
       NDC.pop();
+    }
+  }
+
+  private static class LlapExecutionContext extends ExecutionContextImpl
+      implements TezProcessor.Hook {
+    private final QueryTracker queryTracker;
+    public LlapExecutionContext(String hostname, QueryTracker queryTracker) {
+      super(hostname);
+      this.queryTracker = queryTracker;
+    }
+
+    @Override
+    public void initializeHook(TezProcessor source) {
+      queryTracker.registerDagQueryId(source.getContext().getDAGName(),
+          HiveConf.getVar(source.getConf(), HiveConf.ConfVars.HIVEQUERYID));
     }
   }
 
@@ -307,7 +323,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   public void queryFailed(String queryId, String dagName) {
     LOG.info("Processing query failed notification for {}", dagName);
     List<QueryFragmentInfo> knownFragments =
-        queryTracker.queryComplete(null, dagName, -1);
+        queryTracker.queryComplete(queryId, dagName, -1);
     LOG.info("DBG: Pending fragment count for failed query {} = {}", dagName,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {

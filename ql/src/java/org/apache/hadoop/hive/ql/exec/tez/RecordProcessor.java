@@ -131,7 +131,7 @@ public abstract class RecordProcessor  {
           continue;
         }
 
-        key = queryId + prefix;
+        key = prefix;
         cacheKeys.add(key);
 
         mergeWorkList.add((BaseWork) cache.retrieve(key, new Callable<Object>() {
