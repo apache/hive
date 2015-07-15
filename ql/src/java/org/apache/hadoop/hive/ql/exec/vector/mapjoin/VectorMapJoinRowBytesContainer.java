@@ -305,9 +305,12 @@ public class VectorMapJoinRowBytesContainer {
       }
       fileOutputStream = null;
     }
-    try {
-      FileUtil.fullyDelete(parentFile);
-    } catch (Throwable ignored) {
+
+    if (parentFile != null) {
+      try {
+        FileUtil.fullyDelete(parentFile);
+      } catch (Throwable ignored) {
+      }
     }
     parentFile = null;
     tmpFile = null;
