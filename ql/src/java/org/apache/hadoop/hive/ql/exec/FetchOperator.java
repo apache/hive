@@ -293,8 +293,9 @@ public class FetchOperator implements Serializable {
     for (int i = 0; i < partKeys.length; i++) {
       String key = partKeys[i];
       partNames.add(key);    
-      ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
-          TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
+      ObjectInspector oi = PrimitiveObjectInspectorFactory
+              .getPrimitiveWritableObjectInspector(TypeInfoFactory
+                      .getPrimitiveTypeInfo(partKeyTypes[i]));
       partObjectInspectors.add(oi);
     }
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
