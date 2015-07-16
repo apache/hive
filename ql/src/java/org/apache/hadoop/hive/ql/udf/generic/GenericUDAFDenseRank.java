@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 
@@ -38,8 +36,6 @@ import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
   impliesOrder = true
 )
 public class GenericUDAFDenseRank extends GenericUDAFRank {
-
-  static final Log LOG = LogFactory.getLog(GenericUDAFDenseRank.class.getName());
 
   @Override
   protected GenericUDAFAbstractRankEvaluator createEvaluator() {
