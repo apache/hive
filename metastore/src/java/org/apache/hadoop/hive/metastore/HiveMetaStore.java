@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
+
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -182,6 +183,7 @@ import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -206,6 +208,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 import javax.jdo.JDOException;
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -1804,9 +1807,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     /**
      * Gets multiple tables from the hive metastore.
      *
-     * @param dbname
+     * @param dbName
      *          The name of the database in which the tables reside
-     * @param names
+     * @param tableNames
      *          The names of the tables to get.
      *
      * @return A list of tables whose names are in the the list "names" and
@@ -1818,21 +1821,44 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws UnknownDBException
      */
     @Override
-    public List<Table> get_table_objects_by_name(final String dbname, final List<String> names)
+    public List<Table> get_table_objects_by_name(final String dbName, final List<String> tableNames)
         throws MetaException, InvalidOperationException, UnknownDBException {
-      List<Table> tables = null;
-      startMultiTableFunction("get_multi_table", dbname, names);
+      List<Table> tables = new ArrayList<Table>();
+      startMultiTableFunction("get_multi_table", dbName, tableNames);
       Exception ex = null;
-      try {
+      int tableBatchSize = HiveConf.getIntVar(hiveConf,
+          ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
 
-        if (dbname == null || dbname.isEmpty()) {
+      try {
+        if (dbName == null || dbName.isEmpty()) {
           throw new UnknownDBException("DB name is null or empty");
         }
-        if (names == null)
+        if (tableNames == null)
         {
-          throw new InvalidOperationException(dbname + " cannot find null tables");
+          throw new InvalidOperationException(dbName + " cannot find null tables");
         }
-        tables = getMS().getTableObjectsByName(dbname, names);
+
+        // The list of table names could contain duplicates. RawStore.getTableObjectsByName()
+        // only guarantees returning no duplicate table objects in one batch. If we need
+        // to break into multiple batches, remove duplicates first.
+        List<String> distinctTableNames = tableNames;
+        if (distinctTableNames.size() > tableBatchSize) {
+          List<String> lowercaseTableNames = new ArrayList<String>();
+          for (String tableName : tableNames) {
+            lowercaseTableNames.add(HiveStringUtils.normalizeIdentifier(tableName));
+          }
+          distinctTableNames = new ArrayList<String>(new HashSet<String>(lowercaseTableNames));
+        }
+
+        RawStore ms = getMS();
+        int startIndex = 0;
+        // Retrieve the tables from the metastore in batches. Some databases like
+        // Oracle cannot have over 1000 expressions in a in-list
+        while (startIndex < distinctTableNames.size()) {
+          int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
+          tables.addAll(ms.getTableObjectsByName(dbName, distinctTableNames.subList(startIndex, endIndex)));
+          startIndex = endIndex;
+        }
       } catch (Exception e) {
         ex = e;
         if (e instanceof MetaException) {
@@ -1845,7 +1871,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw newMetaException(e);
         }
       } finally {
-        endFunction("get_multi_table", tables != null, ex, join(names, ","));
+        endFunction("get_multi_table", tables != null, ex, join(tableNames, ","));
       }
       return tables;
     }
