@@ -436,7 +436,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setDate(int parameterIndex, Date x) throws SQLException {
-    this.parameters.put(parameterIndex, x.toString());
+    this.parameters.put(parameterIndex, "'" + x.toString() + "'");
   }
 
   /*
