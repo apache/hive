@@ -92,11 +92,11 @@ public class OperatorComparatorFactory {
     comparatorMapping.put(VectorSparkHashTableSinkOperator.class,
         new SparkHashTableSinkOperatorComparator());
     comparatorMapping.put(LateralViewJoinOperator.class, new LateralViewJoinOperatorComparator());
-    comparatorMapping.put(VectorGroupByOperator.class, new GroupByOperatorComparator());
+    comparatorMapping.put(VectorGroupByOperator.class, new VectorGroupByOperatorComparator());
     comparatorMapping.put(CommonMergeJoinOperator.class, new MapJoinOperatorComparator());
     comparatorMapping.put(VectorFilterOperator.class, new FilterOperatorComparator());
     comparatorMapping.put(UDTFOperator.class, new UDTFOperatorComparator());
-    comparatorMapping.put(VectorSelectOperator.class, new SelectOperatorComparator());
+    comparatorMapping.put(VectorSelectOperator.class, new VectorSelectOperatorComparator());
     comparatorMapping.put(VectorLimitOperator.class, new LimitOperatorComparator());
     comparatorMapping.put(ScriptOperator.class, new ScriptOperatorComparator());
     comparatorMapping.put(TemporaryHashSinkOperator.class, new HashTableSinkOperatorComparator());
@@ -196,6 +196,25 @@ public class OperatorComparatorFactory {
     }
   }
 
+  static class VectorSelectOperatorComparator implements OperatorComparator<VectorSelectOperator> {
+
+    @Override
+    public boolean equals(VectorSelectOperator op1, VectorSelectOperator op2) {
+      Preconditions.checkNotNull(op1);
+      Preconditions.checkNotNull(op2);
+      SelectDesc op1Conf = op1.getConf();
+      SelectDesc op2Conf = op2.getConf();
+
+      if (compareString(op1Conf.getColListString(), op2Conf.getColListString()) &&
+        compareObject(op1Conf.getOutputColumnNames(), op2Conf.getOutputColumnNames()) &&
+        compareString(op1Conf.explainNoCompute(), op2Conf.explainNoCompute())) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
   static class FilterOperatorComparator implements OperatorComparator<FilterOperator> {
 
     @Override
@@ -236,6 +255,29 @@ public class OperatorComparatorFactory {
       }
     }
   }
+
+  static class VectorGroupByOperatorComparator implements OperatorComparator<VectorGroupByOperator> {
+
+    @Override
+    public boolean equals(VectorGroupByOperator op1, VectorGroupByOperator op2) {
+      Preconditions.checkNotNull(op1);
+      Preconditions.checkNotNull(op2);
+      GroupByDesc op1Conf = op1.getConf();
+      GroupByDesc op2Conf = op2.getConf();
+
+      if (compareString(op1Conf.getModeString(), op2Conf.getModeString()) &&
+        compareString(op1Conf.getKeyString(), op2Conf.getKeyString()) &&
+        compareObject(op1Conf.getOutputColumnNames(), op2Conf.getOutputColumnNames()) &&
+        op1Conf.pruneGroupingSetId() == op2Conf.pruneGroupingSetId() &&
+        compareObject(op1Conf.getAggregatorStrings(), op2Conf.getAggregatorStrings()) &&
+        op1Conf.getBucketGroup() == op2Conf.getBucketGroup()) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
 
   static class ReduceSinkOperatorComparator implements OperatorComparator<ReduceSinkOperator> {
 

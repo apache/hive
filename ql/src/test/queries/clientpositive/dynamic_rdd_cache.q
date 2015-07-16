@@ -97,6 +97,13 @@ ORDER BY inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
         ,inv2.d_moy,inv2.mean, inv2.cov
 ;
 
+EXPLAIN
+WITH test AS
+(SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory
+  UNION ALL
+ SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory)
+SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM test SORT BY inv_quantity_on_hand;
+
 DROP TABLE inv;
 DROP TABLE inventory;
 DROP TABLE item;
