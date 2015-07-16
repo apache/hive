@@ -1644,7 +1644,16 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitLabel(HplsqlParser.LabelContext ctx) { 
-    exec.labels.push(ctx.L_ID().toString()); 
+    if (ctx.L_ID() != null) {
+      exec.labels.push(ctx.L_ID().toString());
+    }
+    else {
+      String label = ctx.L_LABEL().getText();
+      if (label.endsWith(":")) {
+        label = label.substring(0, label.length() - 1);
+      }
+      exec.labels.push(label);
+    }
     return 0;
   }
   

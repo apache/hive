@@ -1,0 +1,6 @@
+Ln:1 PRINT
+Correct
+Ln:2 WHILE - ENTERED
+Ln:3 FETCH
+Ln:3 Cursor not found: cur
+Ln:2 WHILE - LEFT

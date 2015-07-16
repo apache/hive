@@ -1,0 +1,12 @@
+Ln:1 PRINT
+Correct
+Ln:8 PRINT
+Correct
+Ln:14 PRINT
+Correct
+Ln:19 PRINT
+Correct
+Ln:26 PRINT
+Correct
+Ln:32 PRINT
+Correct
