@@ -16,10 +16,10 @@ STAGE PLANS:
             Lateral View Forward
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 172000 Basic stats: COMPLETE Column stats: COMPLETE
                 Lateral View Join Operator
                   outputColumnNames: _col5
-                  Statistics: Num rows: 1000 Data size: 24000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: (1 + assert_true((_col5 < 2))) (type: double)
                     outputColumnNames: _col0
@@ -43,7 +43,7 @@ STAGE PLANS:
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col5
-                    Statistics: Num rows: 1000 Data size: 24000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (1 + assert_true((_col5 < 2))) (type: double)
                       outputColumnNames: _col0

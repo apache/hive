@@ -69,6 +69,7 @@ class BeeLineOpts implements Completer {
   private boolean showWarnings = false;
   private boolean showNestedErrs = false;
   private boolean showElapsedTime = true;
+  private boolean entireLineAsCommand = false;
   private String numberFormat = "default";
   private final Terminal terminal = TerminalFactory.get();
   private int maxWidth = DEFAULT_MAX_WIDTH;
@@ -196,9 +197,9 @@ class BeeLineOpts implements Completer {
 
     String[] names = propertyNames();
     for (int i = 0; names != null && i < names.length; i++) {
+      Object o = beeLine.getReflector().invoke(this, "get" + names[i], new Object[0]);
       props.setProperty(PROPERTY_PREFIX + names[i],
-          beeLine.getReflector().invoke(this, "get" + names[i], new Object[0])
-              .toString());
+          o == null ? "" : o.toString());
     }
     beeLine.debug("properties: " + props.toString());
     return props;
@@ -343,6 +344,14 @@ class BeeLineOpts implements Completer {
 
   public String getIsolation() {
     return isolation;
+  }
+
+  public void setEntireLineAsCommand(boolean entireLineAsCommand) {
+    this.entireLineAsCommand = entireLineAsCommand;
+  }
+
+  public boolean getEntireLineAsCommand() {
+    return entireLineAsCommand;
   }
 
   public void setHistoryFile(String historyFile) {

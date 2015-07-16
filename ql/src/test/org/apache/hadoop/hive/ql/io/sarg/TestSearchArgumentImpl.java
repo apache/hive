@@ -27,9 +27,10 @@ import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionBuilder;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionTree;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.PredicateLeafImpl;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.junit.Test;
@@ -37,11 +38,13 @@ import org.junit.Test;
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
-import parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
 
 /**
  * These test the SARG implementation.
@@ -781,7 +784,7 @@ public class TestSearchArgumentImpl {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String[] conditions = new String[]{
       "eq(first_name, Binary{\"john\"})",    /* first_name = 'john' */
       "not(lteq(first_name, Binary{\"greg\"}))", /* 'greg' < first_name */
@@ -1073,7 +1076,7 @@ public class TestSearchArgumentImpl {
       "lteq(id, 4)"                         /* id <= 4             */
     };
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected = String.format("or(or(or(%1$s, %2$s), %3$s), %4$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1503,7 +1506,7 @@ public class TestSearchArgumentImpl {
       "eq(last_name, Binary{\"smith\"})"    /* 'smith' = last_name  */
     };
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected = String.format("and(and(and(%1$s, %2$s), %3$s), %4$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1724,7 +1727,7 @@ public class TestSearchArgumentImpl {
       "or(eq(id, 34), eq(id, 50))" /* id in (34,50) */
     };
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected = String.format("and(and(%1$s, %2$s), %3$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1983,7 +1986,7 @@ public class TestSearchArgumentImpl {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected =
       "and(lt(first_name, Binary{\"greg\"}), not(lteq(first_name, Binary{\"david\"})))";
     assertEquals(p.toString(), expected);
@@ -2463,7 +2466,7 @@ public class TestSearchArgumentImpl {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected = "and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(" +
       "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 13)), lt(id, 16)), " +
       "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 13)), lt(id, 16))), " +
@@ -2619,7 +2622,7 @@ public class TestSearchArgumentImpl {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     assertNull(p);
 
     assertEquals("YES_NO_NULL",
@@ -2874,7 +2877,7 @@ public class TestSearchArgumentImpl {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected = "and(not(lt(id, 10)), not(lt(id, 10)))";
     assertEquals(expected, p.toString());
 
@@ -2931,7 +2934,7 @@ public class TestSearchArgumentImpl {
         "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected =
       "and(and(and(not(eq(x, null)), not(and(lt(y, 20), not(lteq(y, 10))))), not(or(or(eq(z, 1), " +
         "eq(z, 2)), eq(z, 3)))), not(eq(a, Binary{\"stinger\"})))";
@@ -2952,7 +2955,8 @@ public class TestSearchArgumentImpl {
         "leaf-1 = (LESS_THAN_EQUALS y hi)\n" +
         "leaf-2 = (EQUALS z 1)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
-    assertEquals("lteq(y, Binary{\"hi\"})", sarg.toFilterPredicate().toString());
+    assertEquals("lteq(y, Binary{\"hi\"})",
+        ParquetRecordReaderWrapper.toFilterPredicate(sarg).toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -2970,7 +2974,7 @@ public class TestSearchArgumentImpl {
         "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected = "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
         "not(eq(a, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
@@ -2990,7 +2994,8 @@ public class TestSearchArgumentImpl {
         "leaf-1 = (LESS_THAN_EQUALS y hi)\n" +
         "leaf-2 = (EQUALS z 1.0)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
-    assertEquals("lteq(y, Binary{\"hi\"})", sarg.toFilterPredicate().toString());
+    assertEquals("lteq(y, Binary{\"hi\"})",
+        ParquetRecordReaderWrapper.toFilterPredicate(sarg).toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -3008,7 +3013,7 @@ public class TestSearchArgumentImpl {
         "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected = "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
         "not(eq(a, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
@@ -3033,9 +3038,33 @@ public class TestSearchArgumentImpl {
         "leaf-4 = (EQUALS z1 0.22)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2 leaf-3 leaf-4)", sarg.toString());
 
-    FilterPredicate p = sarg.toFilterPredicate();
+    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
     String expected = "and(and(and(and(lt(x, 22), lt(x1, 22)), lteq(y, Binary{\"hi\"})), eq(z, " +
         "0.22)), eq(z1, 0.22))";
     assertEquals(expected, p.toString());
+  }
+
+  @Test
+  public void testTimestampSerialization() throws Exception {
+    // There is a kryo which after serialize/deserialize,
+    // Timestamp becomes Date. We get around this issue in
+    // SearchArgumentImpl.getLiteral. Once kryo fixed the issue
+    // We can simplify SearchArgumentImpl.getLiteral
+    Timestamp now = new Timestamp(new java.util.Date().getTime());
+    SearchArgument sarg =
+      SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("x", now)
+        .end()
+        .build();
+
+    String serializedSarg = sarg.toKryo();
+    SearchArgument sarg2 = SearchArgumentImpl.fromKryo(serializedSarg);
+
+    Field literalField = PredicateLeafImpl.class.getDeclaredField("literal");
+    literalField.setAccessible(true);
+    assertTrue(literalField.get(sarg2.getLeaves().get(0)) instanceof java.util.Date);
+    Timestamp ts = (Timestamp)sarg2.getLeaves().get(0).getLiteral();
+    assertEquals(ts, now);
   }
 }

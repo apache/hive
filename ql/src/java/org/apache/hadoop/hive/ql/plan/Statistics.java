@@ -176,7 +176,7 @@ public class Statistics implements Serializable {
         ColStatistics updatedCS = null;
         if (cs != null) {
 
-          String key = cs.getFullyQualifiedColName();
+          String key = cs.getColumnName();
           // if column statistics for a column is already found then merge the statistics
           if (columnStats.containsKey(key) && columnStats.get(key) != null) {
             updatedCS = columnStats.get(key);
@@ -230,13 +230,6 @@ public class Statistics implements Serializable {
     return dataSize;
   }
 
-  public ColStatistics getColumnStatisticsFromFQColName(String fqColName) {
-    if (columnStats != null) {
-      return columnStats.get(fqColName);
-    }
-    return null;
-  }
-
   public ColStatistics getColumnStatisticsFromColName(String colName) {
     if (columnStats == null) {
       return null;
@@ -249,16 +242,10 @@ public class Statistics implements Serializable {
     return null;
   }
 
-  public ColStatistics getColumnStatisticsForColumn(String tabAlias, String colName) {
-    String fqColName = StatsUtils.getFullyQualifiedColumnName(tabAlias, colName);
-    return getColumnStatisticsFromFQColName(fqColName);
-  }
-
   public List<ColStatistics> getColumnStats() {
     if (columnStats != null) {
       return Lists.newArrayList(columnStats.values());
     }
     return null;
   }
-
 }

@@ -18,30 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
-import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
-import static org.apache.hadoop.hive.serde.serdeConstants.FIELD_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
-import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -59,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -121,7 +99,29 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
-import com.google.common.collect.Sets;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
+import static org.apache.hadoop.hive.serde.serdeConstants.FIELD_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 
 /**
@@ -147,7 +147,7 @@ public class Hive {
 
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal<Hive>() {
     @Override
-    protected synchronized Hive initialValue() {
+    protected Hive initialValue() {
       return null;
     }
 
@@ -193,7 +193,7 @@ public class Hive {
   /**
    * Gets hive object for the current thread. If one is not initialized then a
    * new one is created If the new configuration is different in metadata conf
-   * vars then a new one is created.
+   * vars, or the owner will be different then a new one is created.
    *
    * @param c
    *          new Hive Configuration
@@ -203,7 +203,7 @@ public class Hive {
    */
   public static Hive get(HiveConf c) throws HiveException {
     Hive db = hiveDB.get();
-    if (db == null ||
+    if (db == null || !db.isCurrentUserOwner() ||
         (db.metaStoreClient != null && !db.metaStoreClient.isCompatibleWith(c))) {
       return get(c, true);
     }
@@ -290,6 +290,9 @@ public class Hive {
     if (metaStoreClient != null) {
       metaStoreClient.close();
       metaStoreClient = null;
+    }
+    if (owner != null) {
+      owner = null;
     }
   }
 
@@ -1975,19 +1978,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
-      boolean deleteData, boolean ignoreProtection, boolean ifExists) throws HiveException {
+      boolean deleteData, boolean ifExists) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
-    return dropPartitions(
-        names[0], names[1], partSpecs, deleteData, ignoreProtection, ifExists);
+    return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData, boolean ignoreProtection,
+      List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData,
       boolean ifExists) throws HiveException {
     return dropPartitions(dbName, tblName, partSpecs,
                           PartitionDropOptions.instance()
                                               .deleteData(deleteData)
-                                              .ignoreProtection(ignoreProtection)
                                               .ifExists(ifExists));
   }
 
@@ -2615,6 +2616,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         } else {
           if (destIsSubDir) {
             FileStatus[] srcs = fs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
+            if (srcs.length == 0) {
+              success = true; // Nothing to move.
+            }
             for (FileStatus status : srcs) {
               success = FileUtils.copy(srcf.getFileSystem(conf), status.getPath(), destf.getFileSystem(conf), destf,
                   true,     // delete source
@@ -3009,7 +3013,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   @LimitedPrivate(value = {"Hive"})
   @Unstable
-  public IMetaStoreClient getMSC() throws MetaException {
+  public synchronized IMetaStoreClient getMSC() throws MetaException {
     if (metaStoreClient == null) {
       try {
         owner = UserGroupInformation.getCurrentUser();
@@ -3019,6 +3023,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
         throw new MetaException(msg + "\n" + StringUtils.stringifyException(e));
       }
       metaStoreClient = createMetaStoreClient();
+      String metaStoreUris = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
+      if (!org.apache.commons.lang3.StringUtils.isEmpty(metaStoreUris)) {
+        // get a synchronized wrapper if the meta store is remote.
+        metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);
+      }
     }
     return metaStoreClient;
   }

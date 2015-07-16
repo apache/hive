@@ -48,7 +48,6 @@ No rows selected
 'Owner:              ','!!{user.name}!!                ',''
 'CreateTime:         ','!!TIMESTAMP!!',''
 'LastAccessTime:     ','UNKNOWN             ',''
-'Protect Mode:       ','None                ',''
 'Retention:          ','0                   ',''
 'Location:           ','!!{hive.metastore.warehouse.dir}!!/stats9.db/analyze_srcbucket',''
 'Table Type:         ','MANAGED_TABLE       ',''

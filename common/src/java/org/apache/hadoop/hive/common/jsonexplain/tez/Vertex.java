@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,28 +28,30 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Vertex {
-  public String name;
+public final class Vertex implements Comparable<Vertex>{
+  public final String name;
+  //tezJsonParser
+  public final TezJsonParser parser;
   // vertex's parent connections.
-  public List<Connection> parentConnections;
+  public final List<Connection> parentConnections = new ArrayList<>();
   // vertex's children vertex.
-  public List<Vertex> children;
+  public final List<Vertex> children = new ArrayList<>();
   // the jsonObject for this vertex
-  public JSONObject vertexObject;
+  public final JSONObject vertexObject;
   // whether this vertex is a union vertex
   public boolean union;
   // whether this vertex is dummy (which does not really exists but is created),
   // e.g., a dummy vertex for a mergejoin branch
   public boolean dummy;
   // the rootOps in this vertex
-  public List<Op> rootOps;
+  public final List<Op> rootOps = new ArrayList<>();
   // we create a dummy vertex for a mergejoin branch for a self join if this
   // vertex is a mergejoin
-  public List<Vertex> mergeJoinDummyVertexs;
+  public final List<Vertex> mergeJoinDummyVertexs = new ArrayList<>();
   // whether this vertex has multiple reduce operators
-  boolean hasMultiReduceOp;
+  public boolean hasMultiReduceOp = false;
 
-  public Vertex(String name, JSONObject vertexObject) {
+  public Vertex(String name, JSONObject vertexObject, TezJsonParser tezJsonParser) {
     super();
     this.name = name;
     if (this.name != null && this.name.contains("Union")) {
@@ -60,11 +61,7 @@ public class Vertex {
     }
     this.dummy = false;
     this.vertexObject = vertexObject;
-    this.parentConnections = new ArrayList<>();
-    this.children = new ArrayList<>();
-    this.rootOps = new ArrayList<>();
-    this.mergeJoinDummyVertexs = new ArrayList<>();
-    this.hasMultiReduceOp = false;
+    parser = tezJsonParser;
   }
 
   public void addDependency(Connection connection) throws JSONException {
@@ -88,20 +85,26 @@ public class Vertex {
           extractOp(vertexObject.getJSONArray(key).getJSONObject(0));
         } else if (key.equals("Reduce Operator Tree:") || key.equals("Processor Tree:")) {
           extractOp(vertexObject.getJSONObject(key));
-        }
-        // this is the case when we have a map-side SMB join
-        // one input of the join is treated as a dummy vertex
-        else if (key.equals("Join:")) {
+        } else if (key.equals("Join:")) {
+          // this is the case when we have a map-side SMB join
+          // one input of the join is treated as a dummy vertex
           JSONArray array = vertexObject.getJSONArray(key);
           for (int index = 0; index < array.length(); index++) {
             JSONObject mpOpTree = array.getJSONObject(index);
-            Vertex v = new Vertex("", mpOpTree);
+            Vertex v = new Vertex("", mpOpTree, parser);
             v.extractOpTree();
             v.dummy = true;
             mergeJoinDummyVertexs.add(v);
           }
+        } else if (key.equals("Merge File Operator")) {
+          JSONObject opTree = vertexObject.getJSONObject(key);
+          if (opTree.has("Map Operator Tree:")) {
+            extractOp(opTree.getJSONArray("Map Operator Tree:").getJSONObject(0));
+          } else {
+            throw new Exception("Merge File Operator does not have a Map Operator Tree");
+          }
         } else {
-          throw new Exception("unsupported operator tree in vertex " + this.name);
+          throw new Exception("Unsupported operator tree in vertex " + this.name);
         }
       }
     }
@@ -159,7 +162,7 @@ public class Vertex {
           }
         }
       }
-      Op op = new Op(opName, id, outputVertexName, children, attrs, operator, this);
+      Op op = new Op(opName, id, outputVertexName, children, attrs, operator, this, parser);
       if (!children.isEmpty()) {
         for (Op child : children) {
           child.parent = op;
@@ -171,24 +174,24 @@ public class Vertex {
     }
   }
 
-  public void print(PrintStream out, List<Boolean> indentFlag, String type, Vertex callingVertex)
+  public void print(Printer printer, List<Boolean> indentFlag, String type, Vertex callingVertex)
       throws JSONException, Exception {
     // print vertexname
-    if (TezJsonParser.printSet.contains(this) && !hasMultiReduceOp) {
+    if (parser.printSet.contains(this) && !hasMultiReduceOp) {
       if (type != null) {
-        out.println(TezJsonParser.prefixString(indentFlag, "|<-")
+        printer.println(TezJsonParser.prefixString(indentFlag, "|<-")
             + " Please refer to the previous " + this.name + " [" + type + "]");
       } else {
-        out.println(TezJsonParser.prefixString(indentFlag, "|<-")
+        printer.println(TezJsonParser.prefixString(indentFlag, "|<-")
             + " Please refer to the previous " + this.name);
       }
       return;
     }
-    TezJsonParser.printSet.add(this);
+    parser.printSet.add(this);
     if (type != null) {
-      out.println(TezJsonParser.prefixString(indentFlag, "|<-") + this.name + " [" + type + "]");
+      printer.println(TezJsonParser.prefixString(indentFlag, "|<-") + this.name + " [" + type + "]");
     } else if (this.name != null) {
-      out.println(TezJsonParser.prefixString(indentFlag) + this.name);
+      printer.println(TezJsonParser.prefixString(indentFlag) + this.name);
     }
     // print operators
     if (hasMultiReduceOp && !callingVertex.union) {
@@ -200,7 +203,7 @@ public class Vertex {
         }
       }
       if (choose != null) {
-        choose.print(out, indentFlag, false);
+        choose.print(printer, indentFlag, false);
       } else {
         throw new Exception("Can not find the right reduce output operator for vertex " + this.name);
       }
@@ -208,9 +211,9 @@ public class Vertex {
       for (Op op : this.rootOps) {
         // dummy vertex is treated as a branch of a join operator
         if (this.dummy) {
-          op.print(out, indentFlag, true);
+          op.print(printer, indentFlag, true);
         } else {
-          op.print(out, indentFlag, false);
+          op.print(printer, indentFlag, false);
         }
       }
     }
@@ -225,7 +228,7 @@ public class Vertex {
         } else {
           unionFlag.add(false);
         }
-        connection.from.print(out, unionFlag, connection.type, this);
+        connection.from.print(printer, unionFlag, connection.type, this);
       }
     }
   }
@@ -244,5 +247,11 @@ public class Vertex {
         return;
     }
     this.hasMultiReduceOp = true;
+  }
+
+  //The following code should be gone after HIVE-11075 using topological order
+  @Override
+  public int compareTo(Vertex o) {
+    return this.name.compareTo(o.name);
   }
 }

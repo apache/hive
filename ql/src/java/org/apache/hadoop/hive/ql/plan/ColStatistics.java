@@ -23,10 +23,8 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 public class ColStatistics {
 
-  private String tabAlias;
   private String colName;
   private String colType;
-  private String fqColName;
   private long countDistint;
   private long numNulls;
   private double avgColLen;
@@ -35,16 +33,14 @@ public class ColStatistics {
   private Range range;
   private boolean isPrimaryKey;
 
-  public ColStatistics(String tabAlias, String colName, String colType) {
-    this.setTableAlias(tabAlias);
+  public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
     this.setColumnType(colType);
-    this.setFullyQualifiedColName(StatsUtils.getFullyQualifiedColumnName(tabAlias, colName));
     this.setPrimaryKey(false);
   }
 
   public ColStatistics() {
-    this(null, null, null);
+    this(null, null);
   }
 
   public String getColumnName() {
@@ -53,7 +49,6 @@ public class ColStatistics {
 
   public void setColumnName(String colName) {
     this.colName = colName;
-    this.fqColName = StatsUtils.getFullyQualifiedColumnName(tabAlias, colName);
   }
 
   public String getColumnType() {
@@ -88,23 +83,6 @@ public class ColStatistics {
     this.avgColLen = avgColLen;
   }
 
-  public String getFullyQualifiedColName() {
-    return fqColName;
-  }
-
-  public void setFullyQualifiedColName(String fqColName) {
-    this.fqColName = fqColName;
-  }
-
-  public String getTableAlias() {
-    return tabAlias;
-  }
-
-  public void setTableAlias(String tabName) {
-    this.tabAlias = tabName;
-    this.fqColName = StatsUtils.getFullyQualifiedColumnName(tabName, colName);
-  }
-
   public long getNumTrues() {
     return numTrues;
   }
@@ -136,8 +114,6 @@ public class ColStatistics {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append(" fqColName: ");
-    sb.append(fqColName);
     sb.append(" colName: ");
     sb.append(colName);
     sb.append(" colType: ");
@@ -163,8 +139,7 @@ public class ColStatistics {
 
   @Override
   public ColStatistics clone() throws CloneNotSupportedException {
-    ColStatistics clone = new ColStatistics(tabAlias, colName, colType);
-    clone.setFullyQualifiedColName(fqColName);
+    ColStatistics clone = new ColStatistics(colName, colType);
     clone.setAvgColLen(avgColLen);
     clone.setCountDistint(countDistint);
     clone.setNumNulls(numNulls);
@@ -189,7 +164,7 @@ public class ColStatistics {
     public final Number minValue;
     public final Number maxValue;
 
-    Range(Number minValue, Number maxValue) {
+    public Range(Number minValue, Number maxValue) {
       super();
       this.minValue = minValue;
       this.maxValue = maxValue;

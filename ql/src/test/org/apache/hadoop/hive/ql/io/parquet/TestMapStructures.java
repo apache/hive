@@ -27,12 +27,12 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
 import org.junit.Test;
-import parquet.io.api.Binary;
-import parquet.io.api.RecordConsumer;
-import parquet.schema.Types;
+import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.io.api.RecordConsumer;
+import org.apache.parquet.schema.Types;
 
-import static parquet.schema.OriginalType.*;
-import static parquet.schema.PrimitiveType.PrimitiveTypeName.*;
+import static org.apache.parquet.schema.OriginalType.*;
+import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.*;
 
 public class TestMapStructures extends AbstractTestParquetDirect {
 

@@ -134,6 +134,9 @@ public class SetProcessor implements CommandProcessor {
       hive.setMetaConf(propName, new VariableSubstitution().substitute(ss.getConf(), varvalue));
     } else {
       setConf(varname, varname, varvalue, true);
+      if (varname.equals(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED.toString())) {
+        SessionState.get().updateHistory(Boolean.parseBoolean(varvalue), ss);
+      }
     }
     return 0;
   }

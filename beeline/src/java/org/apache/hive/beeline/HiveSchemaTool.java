@@ -350,6 +350,9 @@ public class HiveSchemaTool {
     }
     beeLine.getOpts().setAllowMultiLineCommand(false);
     beeLine.getOpts().setIsolation("TRANSACTION_READ_COMMITTED");
+    // We can be pretty sure that an entire line can be processed as a single command since
+    // we always add a line separator at the end while calling dbCommandParser.buildCommand.
+    beeLine.getOpts().setEntireLineAsCommand(true);
     int status = beeLine.begin(argList.toArray(new String[0]), null);
     if (status != 0) {
       throw new IOException("Schema script failed, errorcode " + status);

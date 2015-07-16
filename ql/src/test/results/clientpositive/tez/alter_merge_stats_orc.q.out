@@ -48,9 +48,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:7581
-maxFileSize:2527
-minFileSize:2527
+totalFileSize:7545
+maxFileSize:2515
+minFileSize:2515
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended src_orc_merge_test_stat
@@ -85,7 +85,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -94,7 +93,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7581                
+	totalSize           	7545                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -137,7 +136,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -146,7 +144,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7234                
+	totalSize           	7198                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -216,9 +214,9 @@ columns:struct columns { i32 key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds}
 totalNumberFiles:3
-totalFileSize:7581
-maxFileSize:2527
-minFileSize:2527
+totalFileSize:7545
+maxFileSize:2515
+minFileSize:2515
 #### A masked pattern was here ####
 
 PREHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
@@ -242,14 +240,12 @@ Partition Value:    	[2011]
 Database:           	default             	 
 Table:              	src_orc_merge_test_part_stat	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7581                
+	totalSize           	7545                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -293,14 +289,12 @@ Partition Value:    	[2011]
 Database:           	default             	 
 Table:              	src_orc_merge_test_part_stat	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7581                
+	totalSize           	7545                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -352,14 +346,12 @@ Partition Value:    	[2011]
 Database:           	default             	 
 Table:              	src_orc_merge_test_part_stat	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7234                
+	totalSize           	7198                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

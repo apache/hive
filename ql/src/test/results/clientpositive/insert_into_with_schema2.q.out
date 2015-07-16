@@ -1,0 +1,135 @@
+PREHOOK: query: create table studenttab10k (age2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k
+POSTHOOK: query: create table studenttab10k (age2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k
+PREHOOK: query: insert into studenttab10k values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@studenttab10k
+POSTHOOK: query: insert into studenttab10k values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@studenttab10k
+POSTHOOK: Lineage: studenttab10k.age2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: create table student_acid (age int, grade int)
+ clustered by (age) into 1 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: create table student_acid (age int, grade int)
+ clustered by (age) into 1 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@student_acid
+PREHOOK: query: insert into student_acid(age) select * from studenttab10k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: insert into student_acid(age) select * from studenttab10k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Output: default@student_acid
+POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k)studenttab10k.FieldSchema(name:age2, type:int, comment:null), ]
+POSTHOOK: Lineage: student_acid.grade EXPRESSION []
+PREHOOK: query: select * from student_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from student_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+1	NULL
+PREHOOK: query: insert into student_acid(grade, age) select 3 g, * from studenttab10k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: insert into student_acid(grade, age) select 3 g, * from studenttab10k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Output: default@student_acid
+POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k)studenttab10k.FieldSchema(name:age2, type:int, comment:null), ]
+POSTHOOK: Lineage: student_acid.grade SIMPLE []
+PREHOOK: query: select * from student_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from student_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+1	3
+1	NULL
+PREHOOK: query: insert into student_acid(grade, age) values(20, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: insert into student_acid(grade, age) values(20, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@student_acid
+POSTHOOK: Lineage: student_acid.age EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: student_acid.grade EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into student_acid(age) values(22)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: insert into student_acid(age) values(22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@student_acid
+POSTHOOK: Lineage: student_acid.age EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: student_acid.grade EXPRESSION []
+PREHOOK: query: select * from student_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from student_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+1	3
+1	NULL
+2	20
+22	NULL
+PREHOOK: query: drop table if exists acid_partitioned
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists acid_partitioned
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table acid_partitioned (a int, c string)
+  partitioned by (p int)
+  clustered by (a) into 1 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_partitioned
+POSTHOOK: query: create table acid_partitioned (a int, c string)
+  partitioned by (p int)
+  clustered by (a) into 1 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_partitioned
+PREHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@acid_partitioned
+POSTHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@acid_partitioned@p=2
+POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).c SIMPLE []
+PREHOOK: query: select * from acid_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_partitioned
+PREHOOK: Input: default@acid_partitioned@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_partitioned
+POSTHOOK: Input: default@acid_partitioned@p=2
+#### A masked pattern was here ####
+1	NULL	2

@@ -207,7 +207,7 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
 
     Map<Byte, List<ExprNodeDesc>> keyExprMap = mapJoinOp.getConf().getKeys();
     List<ExprNodeDesc> keyCols = keyExprMap.get(Byte.valueOf((byte) 0));
-    StringBuffer keyOrder = new StringBuffer();
+    StringBuilder keyOrder = new StringBuilder();
     for (int i = 0; i < keyCols.size(); i++) {
       keyOrder.append("+");
     }

@@ -20,6 +20,10 @@ package org.apache.hive.jdbc;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.sql.Array;
@@ -176,7 +180,6 @@ public class HiveConnection implements java.sql.Connection {
       // set up the client
       client = new TCLIService.Client(new TBinaryProtocol(transport));
     }
-
     // add supported protocols
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2);
@@ -189,6 +192,9 @@ public class HiveConnection implements java.sql.Connection {
 
     // open client session
     openSession();
+
+    // Wrap the client with a thread-safe proxy to serialize the RPC calls
+    client = newSynchronizedClient(client);
   }
 
   private void openTransport() throws SQLException {
@@ -225,6 +231,8 @@ public class HiveConnection implements java.sql.Connection {
           port = connParams.getPort();
           LOG.info("Will retry opening client transport");
         } else {
+          LOG.info("Transport Used for JDBC connection: " +
+            sessConfMap.get(JdbcConnectionParams.TRANSPORT_MODE));
           throw new SQLException("Could not open client transport with JDBC Uri: " + jdbcUriString
               + ": " + e.getMessage(), " 08S01", e);
         }
@@ -265,6 +273,9 @@ public class HiveConnection implements java.sql.Connection {
       }
     }
     catch (TException e) {
+      LOG.info("JDBC Connection Parameters used : useSSL = " + useSsl + " , httpPath  = " +
+        sessConfMap.get(JdbcConnectionParams.HTTP_PATH) + " Authentication type = " +
+        sessConfMap.get(JdbcConnectionParams.AUTH_TYPE));
       String msg =  "Could not create http connection to " +
           jdbcUriString + ". " + e.getMessage();
       throw new TTransportException(msg, e);
@@ -380,8 +391,9 @@ public class HiveConnection implements java.sql.Connection {
         } else {
           // Pick trust store config from the given path
           sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
-          sslTrustStore.load(new FileInputStream(sslTrustStorePath),
-            sslTrustStorePassword.toCharArray());
+          try (FileInputStream fis = new FileInputStream(sslTrustStorePath)) {
+            sslTrustStore.load(fis, sslTrustStorePassword.toCharArray());
+          }
           socketFactory = new SSLSocketFactory(sslTrustStore);
         }
         socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
@@ -501,8 +513,9 @@ public class HiveConnection implements java.sql.Connection {
         throw new IllegalArgumentException(JdbcConnectionParams.SSL_KEY_STORE
         + " Not configured for 2 way SSL connection, keyStorePath param is empty");
       }
-      sslKeyStore.load(new FileInputStream(keyStorePath),
-        keyStorePassword.toCharArray());
+      try (FileInputStream fis = new FileInputStream(keyStorePath)) {
+        sslKeyStore.load(fis, keyStorePassword.toCharArray());
+      }
       keyManagerFactory.init(sslKeyStore, keyStorePassword.toCharArray());
 
       TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
@@ -516,8 +529,9 @@ public class HiveConnection implements java.sql.Connection {
         throw new IllegalArgumentException(JdbcConnectionParams.SSL_TRUST_STORE
         + " Not configured for 2 way SSL connection");
       }
-      sslTrustStore.load(new FileInputStream(trustStorePath),
-        trustStorePassword.toCharArray());
+      try (FileInputStream fis = new FileInputStream(trustStorePath)) {
+        sslTrustStore.load(fis, trustStorePassword.toCharArray());
+      }
       trustManagerFactory.init(sslTrustStore);
       SSLContext context = SSLContext.getInstance("TLS");
       context.init(keyManagerFactory.getKeyManagers(),
@@ -1351,5 +1365,42 @@ public class HiveConnection implements java.sql.Connection {
 
   public TProtocolVersion getProtocol() {
     return protocol;
+  }
+
+  public static TCLIService.Iface newSynchronizedClient(
+      TCLIService.Iface client) {
+    return (TCLIService.Iface) Proxy.newProxyInstance(
+        HiveConnection.class.getClassLoader(),
+      new Class [] { TCLIService.Iface.class },
+      new SynchronizedHandler(client));
+  }
+
+  private static class SynchronizedHandler implements InvocationHandler {
+    private final TCLIService.Iface client;
+
+    SynchronizedHandler(TCLIService.Iface client) {
+      this.client = client;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object [] args)
+        throws Throwable {
+      try {
+        synchronized (client) {
+          return method.invoke(client, args);
+        }
+      } catch (InvocationTargetException e) {
+        // all IFace APIs throw TException
+        if (e.getTargetException() instanceof TException) {
+          throw (TException)e.getTargetException();
+        } else {
+          // should not happen
+          throw new TException("Error in calling method " + method.getName(),
+              e.getTargetException());
+        }
+      } catch (Exception e) {
+        throw new TException("Error in calling method " + method.getName(), e);
+      }
+    }
   }
 }

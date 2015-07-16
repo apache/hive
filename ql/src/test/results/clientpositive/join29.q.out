@@ -106,11 +106,14 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col1, _col2, _col3
+              Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col2 (type: string), UDFToInteger(_col3) (type: int), UDFToInteger(_col1) (type: int)
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -157,11 +160,14 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col1, _col2, _col3
+              Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col2 (type: string), UDFToInteger(_col3) (type: int), UDFToInteger(_col1) (type: int)
                 outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

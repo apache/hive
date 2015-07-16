@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-public class Connection {
-  public String type;
-  public Vertex from;
+public final class Connection {
+  public final String type;
+  public final Vertex from;
 
   public Connection(String type, Vertex from) {
     super();

@@ -1,6 +1,10 @@
-PREHOOK: query: drop table partition_timestamp2_1
+PREHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
+-- EXCLUDE_OS_WINDOWS
+drop table partition_timestamp2_1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table partition_timestamp2_1
+POSTHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
+-- EXCLUDE_OS_WINDOWS
+drop table partition_timestamp2_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partition_timestamp2_1 (key string, value string) partitioned by (dt timestamp, region int)
 PREHOOK: type: CREATETABLE

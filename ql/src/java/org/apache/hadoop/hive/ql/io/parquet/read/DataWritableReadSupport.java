@@ -32,14 +32,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
 import org.apache.hadoop.util.StringUtils;
 
-import parquet.hadoop.api.InitContext;
-import parquet.hadoop.api.ReadSupport;
-import parquet.io.api.RecordMaterializer;
-import parquet.schema.GroupType;
-import parquet.schema.MessageType;
-import parquet.schema.Type;
-import parquet.schema.Types;
-import parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.hadoop.api.InitContext;
+import org.apache.parquet.hadoop.api.ReadSupport;
+import org.apache.parquet.io.api.RecordMaterializer;
+import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.Type;
+import org.apache.parquet.schema.Types;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 
 /**
  *
@@ -196,7 +196,7 @@ public class DataWritableReadSupport extends ReadSupport<ObjectArrayWritable> {
    * @return the parquet ReadContext
    */
   @Override
-  public parquet.hadoop.api.ReadSupport.ReadContext init(InitContext context) {
+  public org.apache.parquet.hadoop.api.ReadSupport.ReadContext init(InitContext context) {
     Configuration configuration = context.getConfiguration();
     MessageType fileSchema = context.getFileSchema();
     String columnNames = configuration.get(IOConstants.COLUMNS);
@@ -248,7 +248,7 @@ public class DataWritableReadSupport extends ReadSupport<ObjectArrayWritable> {
   @Override
   public RecordMaterializer<ObjectArrayWritable> prepareForRead(final Configuration configuration,
       final Map<String, String> keyValueMetaData, final MessageType fileSchema,
-          final parquet.hadoop.api.ReadSupport.ReadContext readContext) {
+          final org.apache.parquet.hadoop.api.ReadSupport.ReadContext readContext) {
     final Map<String, String> metadata = readContext.getReadSupportMetadata();
     if (metadata == null) {
       throw new IllegalStateException("ReadContext not initialized properly. " +

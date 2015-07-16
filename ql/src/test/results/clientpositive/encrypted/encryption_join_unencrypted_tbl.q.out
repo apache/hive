@@ -1,10 +1,10 @@
 PREHOOK: query: --SORT_QUERY_RESULTS
 
-DROP TABLE IF EXISTS encrypted_table
+DROP TABLE IF EXISTS encrypted_table PURGE
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: --SORT_QUERY_RESULTS
 
-DROP TABLE IF EXISTS encrypted_table
+DROP TABLE IF EXISTS encrypted_table PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -628,13 +628,13 @@ STAGE PLANS:
               columns.types int:string
 #### A masked pattern was here ####
               name default.encrypted_table
-              numFiles 0
+              numFiles 1
               numRows 0
               rawDataSize 0
               serialization.ddl struct encrypted_table { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 0
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -648,13 +648,13 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.encrypted_table
-                numFiles 0
+                numFiles 1
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct encrypted_table { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.encrypted_table
@@ -752,11 +752,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table encrypted_table
+PREHOOK: query: drop table encrypted_table PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: drop table encrypted_table
+POSTHOOK: query: drop table encrypted_table PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Output: default@encrypted_table

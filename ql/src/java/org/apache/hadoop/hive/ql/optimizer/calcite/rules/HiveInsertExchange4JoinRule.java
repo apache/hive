@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -28,18 +29,20 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Exchange;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rex.RexNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 /** Not an optimization rule.
  * Rule to aid in translation from Calcite tree -> Hive tree.
@@ -57,7 +60,7 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
 
   /** Rule that creates Exchange operators under a MultiJoin operator. */
   public static final HiveInsertExchange4JoinRule EXCHANGE_BELOW_MULTIJOIN =
-      new HiveInsertExchange4JoinRule(MultiJoin.class);
+      new HiveInsertExchange4JoinRule(HiveMultiJoin.class);
 
   /** Rule that creates Exchange operators under a Join operator. */
   public static final HiveInsertExchange4JoinRule EXCHANGE_BELOW_JOIN =
@@ -71,12 +74,20 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
   @Override
   public void onMatch(RelOptRuleCall call) {
     JoinPredicateInfo joinPredInfo;
-    if (call.rel(0) instanceof MultiJoin) {
-      MultiJoin multiJoin = call.rel(0);
-      joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(multiJoin);
+    if (call.rel(0) instanceof HiveMultiJoin) {
+      HiveMultiJoin multiJoin = call.rel(0);
+      try {
+        joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(multiJoin);
+      } catch (CalciteSemanticException e) {
+        throw new RuntimeException(e);
+      }
     } else if (call.rel(0) instanceof Join) {
       Join join = call.rel(0);
-      joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(join);
+      try {
+        joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(join);
+      } catch (CalciteSemanticException e) {
+        throw new RuntimeException(e);
+      }
     } else {
       return;
     }
@@ -87,35 +98,40 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
       }
     }
 
-    // get key columns from inputs. Those are the columns on which we will distribute on.
+    // Get key columns from inputs. Those are the columns on which we will distribute on.
     // It is also the columns we will sort on.
     List<RelNode> newInputs = new ArrayList<RelNode>();
     for (int i=0; i<call.rel(0).getInputs().size(); i++) {
       List<Integer> joinKeyPositions = new ArrayList<Integer>();
-      ImmutableList.Builder<RexNode> keyListBuilder = new ImmutableList.Builder<RexNode>();
+      ImmutableList.Builder<RexNode> joinExprsBuilder = new ImmutableList.Builder<RexNode>();
+      Set<String> keySet = Sets.newHashSet();
       ImmutableList.Builder<RelFieldCollation> collationListBuilder =
               new ImmutableList.Builder<RelFieldCollation>();
       for (int j = 0; j < joinPredInfo.getEquiJoinPredicateElements().size(); j++) {
         JoinLeafPredicateInfo joinLeafPredInfo = joinPredInfo.
             getEquiJoinPredicateElements().get(j);
+        for (RexNode joinExprNode : joinLeafPredInfo.getJoinExprs(i)) {
+          if (keySet.add(joinExprNode.toString())) {
+            joinExprsBuilder.add(joinExprNode);
+          }
+        }
         for (int pos : joinLeafPredInfo.getProjsJoinKeysInChildSchema(i)) {
           if (!joinKeyPositions.contains(pos)) {
             joinKeyPositions.add(pos);
             collationListBuilder.add(new RelFieldCollation(pos));
-            keyListBuilder.add(joinLeafPredInfo.getJoinKeyExprs(i).get(0));
           }
         }
       }
       HiveSortExchange exchange = HiveSortExchange.create(call.rel(0).getInput(i),
               new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, joinKeyPositions),
               new HiveRelCollation(collationListBuilder.build()),
-              keyListBuilder.build());
+              joinExprsBuilder.build());
       newInputs.add(exchange);
     }
 
     RelNode newOp;
-    if (call.rel(0) instanceof MultiJoin) {
-      MultiJoin multiJoin = call.rel(0);
+    if (call.rel(0) instanceof HiveMultiJoin) {
+      HiveMultiJoin multiJoin = call.rel(0);
       newOp = multiJoin.copy(multiJoin.getTraitSet(), newInputs);
     } else if (call.rel(0) instanceof Join) {
       Join join = call.rel(0);

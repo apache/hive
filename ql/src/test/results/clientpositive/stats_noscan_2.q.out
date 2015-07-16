@@ -47,17 +47,16 @@ a                   	int
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	EXTERNAL            	TRUE                
-	numFiles            	0                   
+	numFiles            	1                   
 	numRows             	-1                  
 	rawDataSize         	-1                  
-	totalSize           	0                   
+	totalSize           	11                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -91,17 +90,16 @@ a                   	int
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	EXTERNAL            	TRUE                
-	numFiles            	0                   
+	numFiles            	1                   
 	numRows             	6                   
 	rawDataSize         	6                   
-	totalSize           	0                   
+	totalSize           	11                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -231,8 +229,6 @@ Partition Value:    	[2008-01-01]
 Database:           	default             	 
 Table:              	anaylyze_external   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -283,8 +279,6 @@ insertdate          	string
 Partition Value:    	[2008-01-01]        	 
 Database:           	default             	 
 Table:              	anaylyze_external   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

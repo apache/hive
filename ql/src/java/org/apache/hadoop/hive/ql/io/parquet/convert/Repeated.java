@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
-import parquet.column.Dictionary;
-import parquet.io.api.Binary;
-import parquet.io.api.Converter;
-import parquet.io.api.PrimitiveConverter;
-import parquet.schema.GroupType;
-import parquet.schema.PrimitiveType;
+import org.apache.parquet.column.Dictionary;
+import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.io.api.Converter;
+import org.apache.parquet.io.api.PrimitiveConverter;
+import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.PrimitiveType;
 
 /**
  * Converters for repeated fields need to know when the parent field starts and

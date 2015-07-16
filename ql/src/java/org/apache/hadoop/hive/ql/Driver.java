@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -125,12 +126,11 @@ public class Driver implements CommandProcessor {
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
 
-  private static final Object compileMonitor = new Object();
-
   private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
 
-  private HiveConf conf;
+  private final HiveConf conf;
+  private final boolean isParallelEnabled;
   private DataInput resStream;
   private Context ctx;
   private DriverContext driverCxt;
@@ -193,7 +193,7 @@ public class Driver implements CommandProcessor {
   /**
    * Get a Schema with fields represented with native Hive types
    */
-  public static Schema getSchema(BaseSemanticAnalyzer sem, HiveConf conf) {
+  private static Schema getSchema(BaseSemanticAnalyzer sem, HiveConf conf) {
     Schema schema = null;
 
     // If we have a plan, prefer its logical result schema if it's
@@ -284,6 +284,8 @@ public class Driver implements CommandProcessor {
    */
   public Driver(HiveConf conf) {
     this.conf = conf;
+    isParallelEnabled = (conf != null)
+        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
   }
 
   public Driver(HiveConf conf, String userName) {
@@ -292,9 +294,9 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver() {
-    if (SessionState.get() != null) {
-      conf = SessionState.get().getConf();
-    }
+    conf = (SessionState.get() != null) ? SessionState.get().getConf() : null;
+    isParallelEnabled = (conf != null)
+        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
   }
 
   /**
@@ -443,8 +445,10 @@ public class Driver implements CommandProcessor {
       // to avoid returning sensitive data
       String queryStr = HookUtils.redactLogString(conf, command);
 
+      String operationName = ctx.getExplain() ?
+        HiveOperation.EXPLAIN.getOperationName() : SessionState.get().getCommandType();
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-          SessionState.get().getCommandType());
+        operationName, getSchema(sem, conf));
 
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
@@ -984,6 +988,7 @@ public class Driver implements CommandProcessor {
         if (acidSinks != null) {
           for (FileSinkDesc desc : acidSinks) {
             desc.setTransactionId(txnId);
+            desc.setStatementId(txnMgr.getStatementId());
           }
         }
 
@@ -1116,10 +1121,23 @@ public class Driver implements CommandProcessor {
     return createProcessorResponse(compileInternal(command));
   }
 
+  private static final ReentrantLock globalCompileLock = new ReentrantLock();
   private int compileInternal(String command) {
+    boolean isParallelEnabled = SessionState.get().isHiveServerQuery() && this.isParallelEnabled;
     int ret;
-    synchronized (compileMonitor) {
+    final ReentrantLock compileLock = isParallelEnabled
+        ? SessionState.get().getCompileLock() : globalCompileLock;
+    compileLock.lock();
+    try {
+      if (isParallelEnabled && LOG.isDebugEnabled()) {
+        LOG.debug("Entering compile: " + command);
+      }
       ret = compile(command);
+      if (isParallelEnabled && LOG.isDebugEnabled()) {
+        LOG.debug("Done with compile: " + command);
+      }
+    } finally {
+      compileLock.unlock();
     }
     if (ret != 0) {
       try {
@@ -1171,6 +1189,9 @@ public class Driver implements CommandProcessor {
       if (ret != 0) {
         return createProcessorResponse(ret);
       }
+    } else {
+      // Since we're reusing the compiled plan, we need to update its start time for current run
+      plan.setQueryStartTime(perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
     }
 
     // the reason that we set the txn manager for the cxt here is because each

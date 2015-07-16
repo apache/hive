@@ -45,14 +45,6 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public final class HiveUtils {
 
-  public static final char QUOTE = '"';
-  public static final char COLON = ':';
-  public static final String LBRACKET = "[";
-  public static final String RBRACKET = "]";
-  public static final String LBRACE = "{";
-  public static final String RBRACE = "}";
-  public static final String LINE_SEP = System.getProperty("line.separator");
-
   public static String escapeString(String str) {
     int length = str.length();
     StringBuilder escape = new StringBuilder(length + 16);

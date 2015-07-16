@@ -18,15 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +28,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -64,6 +54,15 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -846,52 +845,6 @@ public class Table implements Serializable {
     return getProperty(
       org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)
       != null;
-  }
-
-  /**
-   * @param protectMode
-   */
-  public void setProtectMode(ProtectMode protectMode){
-    Map<String, String> parameters = tTable.getParameters();
-    String pm = protectMode.toString();
-    if (pm != null) {
-      parameters.put(ProtectMode.PARAMETER_NAME, pm);
-    } else {
-      parameters.remove(ProtectMode.PARAMETER_NAME);
-    }
-    tTable.setParameters(parameters);
-  }
-
-  /**
-   * @return protect mode
-   */
-  public ProtectMode getProtectMode(){
-    return MetaStoreUtils.getProtectMode(tTable);
-  }
-
-  /**
-   * @return True protect mode indicates the table if offline.
-   */
-  public boolean isOffline(){
-    return getProtectMode().offline;
-  }
-
-  /**
-   * @return True if protect mode attribute of the partition indicate
-   * that it is OK to drop the partition
-   */
-  public boolean canDrop() {
-    ProtectMode mode = getProtectMode();
-    return (!mode.noDrop && !mode.offline && !mode.readOnly && !mode.noDropCascade);
-  }
-
-  /**
-   * @return True if protect mode attribute of the table indicate
-   * that it is OK to write the table
-   */
-  public boolean canWrite() {
-    ProtectMode mode = getProtectMode();
-    return (!mode.offline && !mode.readOnly);
   }
 
   /**

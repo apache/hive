@@ -10,18 +10,24 @@ POSTHOOK: Output: Default@Temp_Table_Names
 POSTHOOK: Output: database:default
 PREHOOK: query: show tables 'Temp_Table*'
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: show tables 'Temp_Table*'
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 temp_table_names
 PREHOOK: query: show tables in default 'temp_table_names'
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: show tables in default 'temp_table_names'
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 temp_table_names
 PREHOOK: query: show tables in DEFAULT 'TEMP_TABLE_NAMES'
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: show tables in DEFAULT 'TEMP_TABLE_NAMES'
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
 temp_table_names
 PREHOOK: query: select c1 from default.temp_table_names
 PREHOOK: type: QUERY
@@ -49,5 +55,7 @@ POSTHOOK: Input: default@temp_table_names
 POSTHOOK: Output: default@temp_table_names
 PREHOOK: query: show tables 'temp_table_names'
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
 POSTHOOK: query: show tables 'temp_table_names'
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default

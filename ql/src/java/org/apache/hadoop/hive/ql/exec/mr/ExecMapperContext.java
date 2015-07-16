@@ -22,8 +22,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOContext;
+import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -63,11 +63,11 @@ public class ExecMapperContext {
 
   public ExecMapperContext(JobConf jc) {
     this.jc = jc;
-    ioCxt = IOContext.get(jc);
+    ioCxt = IOContextMap.get(jc);
   }
 
   public void clear() {
-    IOContext.clear();
+    IOContextMap.clear();
     ioCxt = null;
   }
 
@@ -150,9 +150,5 @@ public class ExecMapperContext {
 
   public IOContext getIoCxt() {
     return ioCxt;
-  }
-
-  public void setIoCxt(IOContext ioCxt) {
-    this.ioCxt = ioCxt;
   }
 }

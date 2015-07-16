@@ -1,6 +1,10 @@
-PREHOOK: query: drop table ss
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table ss
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table ss
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table ss_orc
 PREHOOK: type: DROPTABLE
@@ -193,8 +197,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -223,17 +225,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_part
 POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
 #### A masked pattern was here ####
+10022.63	3952.8	2452617
+1765.07	-4648.8	2452617
 2.1	-2026.3	2452617
 2.99	-11.32	2452617
-85.8	25.61	2452617
-552.96	-1363.84	2452617
-565.92	196.48	2452617
-879.07	-2185.76	2452617
-1765.07	-4648.8	2452617
 3423.95	-3164.07	2452617
 5362.01	-600.28	2452617
+552.96	-1363.84	2452617
+565.92	196.48	2452617
 7412.83	2071.68	2452617
-10022.63	3952.8	2452617
+85.8	25.61	2452617
+879.07	-2185.76	2452617
 PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part
@@ -254,8 +256,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part             	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -286,18 +286,18 @@ POSTHOOK: Input: default@ss_part
 POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
 #### A masked pattern was here ####
 0.15	-241.22	2452638
-150.39	-162.12	2452638
-156.67	-4626.56	2452638
-181.03	-207.24	2452638
-267.01	-3266.36	2452638
-317.87	-3775.38	2452638
+10171.1	660.48	2452638
 1327.08	57.97	2452638
 1413.19	178.08	2452638
+150.39	-162.12	2452638
 1524.33	494.37	2452638
+156.67	-4626.56	2452638
+181.03	-207.24	2452638
 1971.35	-488.25	2452638
+267.01	-3266.36	2452638
+317.87	-3775.38	2452638
 4133.98	-775.72	2452638
 4329.49	-4000.51	2452638
-10171.1	660.48	2452638
 PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
@@ -424,8 +424,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -455,16 +453,16 @@ POSTHOOK: Input: default@ss_part
 POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
 #### A masked pattern was here ####
 10022.63	3952.8	2452617
+1765.07	-4648.8	2452617
+2.1	-2026.3	2452617
 2.99	-11.32	2452617
 3423.95	-3164.07	2452617
 5362.01	-600.28	2452617
-565.92	196.48	2452617
-85.8	25.61	2452617
-7412.83	2071.68	2452617
-879.07	-2185.76	2452617
-1765.07	-4648.8	2452617
 552.96	-1363.84	2452617
-2.1	-2026.3	2452617
+565.92	196.48	2452617
+7412.83	2071.68	2452617
+85.8	25.61	2452617
+879.07	-2185.76	2452617
 PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part
@@ -485,8 +483,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part             	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -516,19 +512,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_part
 POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
 #### A masked pattern was here ####
-4329.49	-4000.51	2452638
+0.15	-241.22	2452638
+10171.1	660.48	2452638
+1327.08	57.97	2452638
 1413.19	178.08	2452638
 150.39	-162.12	2452638
 1524.33	494.37	2452638
-0.15	-241.22	2452638
-267.01	-3266.36	2452638
+156.67	-4626.56	2452638
 181.03	-207.24	2452638
 1971.35	-488.25	2452638
-1327.08	57.97	2452638
-156.67	-4626.56	2452638
+267.01	-3266.36	2452638
 317.87	-3775.38	2452638
-10171.1	660.48	2452638
 4133.98	-775.72	2452638
+4329.49	-4000.51	2452638
 PREHOOK: query: -- SORT DYNAMIC PARTITION DISABLED
 
 explain insert overwrite table ss_part partition (ss_sold_date_sk)
@@ -676,8 +672,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -706,17 +700,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_part
 POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
 #### A masked pattern was here ####
+10022.63	3952.8	2452617
+1765.07	-4648.8	2452617
 2.1	-2026.3	2452617
 2.99	-11.32	2452617
-85.8	25.61	2452617
-552.96	-1363.84	2452617
-565.92	196.48	2452617
-879.07	-2185.76	2452617
-1765.07	-4648.8	2452617
 3423.95	-3164.07	2452617
 5362.01	-600.28	2452617
+552.96	-1363.84	2452617
+565.92	196.48	2452617
 7412.83	2071.68	2452617
-10022.63	3952.8	2452617
+85.8	25.61	2452617
+879.07	-2185.76	2452617
 PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part
@@ -737,8 +731,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part             	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -769,18 +761,18 @@ POSTHOOK: Input: default@ss_part
 POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
 #### A masked pattern was here ####
 0.15	-241.22	2452638
-150.39	-162.12	2452638
-156.67	-4626.56	2452638
-181.03	-207.24	2452638
-267.01	-3266.36	2452638
-317.87	-3775.38	2452638
+10171.1	660.48	2452638
 1327.08	57.97	2452638
 1413.19	178.08	2452638
+150.39	-162.12	2452638
 1524.33	494.37	2452638
+156.67	-4626.56	2452638
+181.03	-207.24	2452638
 1971.35	-488.25	2452638
+267.01	-3266.36	2452638
+317.87	-3775.38	2452638
 4133.98	-775.72	2452638
 4329.49	-4000.51	2452638
-10171.1	660.48	2452638
 PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
@@ -906,8 +898,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -936,17 +926,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_part
 POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452617
 #### A masked pattern was here ####
+10022.63	3952.8	2452617
+1765.07	-4648.8	2452617
+2.1	-2026.3	2452617
+2.99	-11.32	2452617
 3423.95	-3164.07	2452617
 5362.01	-600.28	2452617
-565.92	196.48	2452617
-85.8	25.61	2452617
-7412.83	2071.68	2452617
-879.07	-2185.76	2452617
-1765.07	-4648.8	2452617
 552.96	-1363.84	2452617
-2.1	-2026.3	2452617
-10022.63	3952.8	2452617
-2.99	-11.32	2452617
+565.92	196.48	2452617
+7412.83	2071.68	2452617
+85.8	25.61	2452617
+879.07	-2185.76	2452617
 PREHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part
@@ -967,8 +957,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part             	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -998,19 +986,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_part
 POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
 #### A masked pattern was here ####
-4329.49	-4000.51	2452638
+0.15	-241.22	2452638
+10171.1	660.48	2452638
+1327.08	57.97	2452638
 1413.19	178.08	2452638
 150.39	-162.12	2452638
 1524.33	494.37	2452638
-0.15	-241.22	2452638
-267.01	-3266.36	2452638
+156.67	-4626.56	2452638
 181.03	-207.24	2452638
 1971.35	-488.25	2452638
-1327.08	57.97	2452638
-156.67	-4626.56	2452638
+267.01	-3266.36	2452638
 317.87	-3775.38	2452638
-10171.1	660.48	2452638
 4133.98	-775.72	2452638
+4329.49	-4000.51	2452638
 PREHOOK: query: -- VECTORIZATION IS ENABLED
 
 create table ss_orc (
@@ -1215,14 +1203,12 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	88                  
-	totalSize           	445                 
+	totalSize           	433                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1245,17 +1231,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_part_orc
 POSTHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452617
 #### A masked pattern was here ####
+10022.63	3952.8	2452617
+1765.07	-4648.8	2452617
 2.1	-2026.3	2452617
 2.99	-11.32	2452617
-85.8	25.61	2452617
-552.96	-1363.84	2452617
-565.92	196.48	2452617
-879.07	-2185.76	2452617
-1765.07	-4648.8	2452617
 3423.95	-3164.07	2452617
 5362.01	-600.28	2452617
+552.96	-1363.84	2452617
+565.92	196.48	2452617
 7412.83	2071.68	2452617
-10022.63	3952.8	2452617
+85.8	25.61	2452617
+879.07	-2185.76	2452617
 PREHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452638)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part_orc
@@ -1277,14 +1263,12 @@ Partition Value:    	[2452638]
 Database:           	default             	 
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	104                 
-	totalSize           	468                 
+	totalSize           	456                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1308,18 +1292,18 @@ POSTHOOK: Input: default@ss_part_orc
 POSTHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452638
 #### A masked pattern was here ####
 0.15	-241.22	2452638
-150.39	-162.12	2452638
-156.67	-4626.56	2452638
-181.03	-207.24	2452638
-267.01	-3266.36	2452638
-317.87	-3775.38	2452638
+10171.1	660.48	2452638
 1327.08	57.97	2452638
 1413.19	178.08	2452638
+150.39	-162.12	2452638
 1524.33	494.37	2452638
+156.67	-4626.56	2452638
+181.03	-207.24	2452638
 1971.35	-488.25	2452638
+267.01	-3266.36	2452638
+317.87	-3775.38	2452638
 4133.98	-775.72	2452638
 4329.49	-4000.51	2452638
-10171.1	660.48	2452638
 PREHOOK: query: explain insert overwrite table ss_part_orc partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
@@ -1447,14 +1431,12 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	88                  
-	totalSize           	445                 
+	totalSize           	433                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1477,17 +1459,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_part_orc
 POSTHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452617
 #### A masked pattern was here ####
+10022.63	3952.8	2452617
+1765.07	-4648.8	2452617
+2.1	-2026.3	2452617
+2.99	-11.32	2452617
 3423.95	-3164.07	2452617
 5362.01	-600.28	2452617
-565.92	196.48	2452617
-85.8	25.61	2452617
-7412.83	2071.68	2452617
-879.07	-2185.76	2452617
-1765.07	-4648.8	2452617
 552.96	-1363.84	2452617
-2.1	-2026.3	2452617
-10022.63	3952.8	2452617
-2.99	-11.32	2452617
+565.92	196.48	2452617
+7412.83	2071.68	2452617
+85.8	25.61	2452617
+879.07	-2185.76	2452617
 PREHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452638)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ss_part_orc
@@ -1509,14 +1491,12 @@ Partition Value:    	[2452638]
 Database:           	default             	 
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	104                 
-	totalSize           	468                 
+	totalSize           	456                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1539,19 +1519,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_part_orc
 POSTHOOK: Input: default@ss_part_orc@ss_sold_date_sk=2452638
 #### A masked pattern was here ####
-4329.49	-4000.51	2452638
+0.15	-241.22	2452638
+10171.1	660.48	2452638
+1327.08	57.97	2452638
 1413.19	178.08	2452638
 150.39	-162.12	2452638
 1524.33	494.37	2452638
-0.15	-241.22	2452638
-267.01	-3266.36	2452638
+156.67	-4626.56	2452638
 181.03	-207.24	2452638
 1971.35	-488.25	2452638
-1327.08	57.97	2452638
-156.67	-4626.56	2452638
+267.01	-3266.36	2452638
 317.87	-3775.38	2452638
-10171.1	660.48	2452638
 4133.98	-775.72	2452638
+4329.49	-4000.51	2452638
 PREHOOK: query: drop table ss_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ss_orc
@@ -1702,21 +1682,21 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hive13_dp1@day=day
 POSTHOOK: Lineage: hive13_dp1 PARTITION(day=day).k1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hive13_dp1 PARTITION(day=day).k2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from hive13_dp1 limit 5
+PREHOOK: query: select * from hive13_dp1 order by k1, k2 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive13_dp1
 PREHOOK: Input: default@hive13_dp1@day=day
 #### A masked pattern was here ####
-POSTHOOK: query: select * from hive13_dp1 limit 5
+POSTHOOK: query: select * from hive13_dp1 order by k1, k2 limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive13_dp1
 POSTHOOK: Input: default@hive13_dp1@day=day
 #### A masked pattern was here ####
 0	3	day
-10	1	day
-100	2	day
-103	2	day
-104	2	day
+2	1	day
+4	1	day
+5	3	day
+8	1	day
 PREHOOK: query: explain insert overwrite table `hive13_dp1` partition(`day`)
 select
     key k1,
@@ -1829,21 +1809,21 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hive13_dp1@day=day
 POSTHOOK: Lineage: hive13_dp1 PARTITION(day=day).k1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hive13_dp1 PARTITION(day=day).k2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from hive13_dp1 limit 5
+PREHOOK: query: select * from hive13_dp1 order by k1, k2 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive13_dp1
 PREHOOK: Input: default@hive13_dp1@day=day
 #### A masked pattern was here ####
-POSTHOOK: query: select * from hive13_dp1 limit 5
+POSTHOOK: query: select * from hive13_dp1 order by k1, k2 limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive13_dp1
 POSTHOOK: Input: default@hive13_dp1@day=day
 #### A masked pattern was here ####
 0	3	day
-10	1	day
-100	2	day
-103	2	day
-104	2	day
+2	1	day
+4	1	day
+5	3	day
+8	1	day
 PREHOOK: query: drop table hive13_dp1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive13_dp1

@@ -823,6 +823,7 @@ STAGE PLANS:
                 TableScan
                   alias: agg_01
                   filterExpr: dim_shops_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -832,14 +833,18 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col5
                     input vertices:
                       1 Map 3
+                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                     HybridGraceHashJoin: true
                     Filter Operator
                       predicate: (_col1 = _col5) (type: boolean)
+                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: decimal(10,0))
                         outputColumnNames: _col0
+                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
+                          Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -878,6 +883,7 @@ STAGE PLANS:
                 TableScan
                   alias: agg_01
                   filterExpr: dim_shops_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -887,14 +893,18 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col5
                     input vertices:
                       1 Map 5
+                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                     HybridGraceHashJoin: true
                     Filter Operator
                       predicate: (_col1 = _col5) (type: boolean)
+                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: decimal(10,0))
                         outputColumnNames: _col0
+                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
+                          Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -158,7 +158,7 @@ if not exist %HIVE_LIB%\hive-cli-*.jar (
 	exit /b 1
 )
 
-set CLASSPATH=%CLASSPATH%;%HIVE_LIB%\*
+set CLASSPATH=%CLASSPATH%;%HIVE_LIB%\*;%HIVE_HOME%\hcatalog\share\hcatalog\*;
 
 @rem maybe we should just make users set HADOOP_HOME env variable as a prereq
 @rem in the next iteration, use "where" command to find directory of hadoop install from path

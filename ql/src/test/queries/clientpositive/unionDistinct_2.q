@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE u1 as select key, value from src order by key limit 5;
 
 CREATE TABLE u2 as select key, value from src order by key limit 3;

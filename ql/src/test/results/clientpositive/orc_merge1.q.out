@@ -1,6 +1,10 @@
-PREHOOK: query: DROP TABLE orcfile_merge1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orcfile_merge1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+DROP TABLE orcfile_merge1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE orcfile_merge1b
 PREHOOK: type: DROPTABLE

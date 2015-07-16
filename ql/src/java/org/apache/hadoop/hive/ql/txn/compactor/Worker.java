@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -137,7 +136,7 @@ public class Worker extends CompactorThread {
         final ValidTxnList txns =
             CompactionTxnHandler.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
         LOG.debug("ValidCompactTxnList: " + txns.writeToString());
-        final StringBuffer jobName = new StringBuffer(name);
+        final StringBuilder jobName = new StringBuilder(name);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());
 

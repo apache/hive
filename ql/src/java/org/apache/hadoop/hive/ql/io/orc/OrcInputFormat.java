@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -121,9 +120,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
-
-  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  private static final String CLASS_NAME = ReaderImpl.class.getName();
 
   /**
    * When picking the hosts for a split that crosses block boundaries,
@@ -374,6 +370,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final int numBuckets;
     private final long maxSize;
     private final long minSize;
+    private final int minSplits;
     private final boolean footerInSplits;
     private final boolean cacheStripeDetails;
     private final AtomicInteger cacheHitCounter = new AtomicInteger(0);
@@ -382,6 +379,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private SplitStrategyKind splitStrategyKind;
 
     Context(Configuration conf) {
+      this(conf, 1);
+    }
+
+    Context(Configuration conf, final int minSplits) {
       this.conf = conf;
       minSize = conf.getLong(MIN_SPLIT_SIZE, DEFAULT_MIN_SPLIT_SIZE);
       maxSize = conf.getLong(MAX_SPLIT_SIZE, DEFAULT_MAX_SPLIT_SIZE);
@@ -403,6 +404,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           ConfVars.HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS);
 
       cacheStripeDetails = (cacheStripeDetailsSize > 0);
+
+      this.minSplits = Math.min(cacheStripeDetailsSize, minSplits);
 
       synchronized (Context.class) {
         if (threadPool == null) {
@@ -436,13 +439,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final FileStatus file;
     private final FileInfo fileInfo;
     private final boolean isOriginal;
-    private final List<Long> deltas;
+    private final List<DeltaMetaData> deltas;
     private final boolean hasBase;
 
     SplitInfo(Context context, FileSystem fs,
         FileStatus file, FileInfo fileInfo,
         boolean isOriginal,
-        List<Long> deltas,
+        List<DeltaMetaData> deltas,
         boolean hasBase, Path dir, boolean[] covered) throws IOException {
       super(dir, context.numBuckets, deltas, covered);
       this.context = context;
@@ -464,12 +467,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     FileSystem fs;
     List<FileStatus> files;
     boolean isOriginal;
-    List<Long> deltas;
+    List<DeltaMetaData> deltas;
     Path dir;
     boolean[] covered;
 
     public ETLSplitStrategy(Context context, FileSystem fs, Path dir, List<FileStatus> children,
-        boolean isOriginal, List<Long> deltas, boolean[] covered) {
+        boolean isOriginal, List<DeltaMetaData> deltas, boolean[] covered) {
       this.context = context;
       this.dir = dir;
       this.fs = fs;
@@ -483,7 +486,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       context.numFilesCounter.incrementAndGet();
       FileInfo fileInfo = Context.footerCache.getIfPresent(file.getPath());
       if (fileInfo != null) {
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug("Info cached for path: " + file.getPath());
         }
         if (fileInfo.modificationTime == file.getModificationTime() &&
@@ -494,7 +497,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         } else {
           // Invalidate
           Context.footerCache.invalidate(file.getPath());
-          if (LOG.isDebugEnabled()) {
+          if (isDebugEnabled) {
             LOG.debug("Meta-Info for : " + file.getPath() +
                 " changed. CachedModificationTime: "
                 + fileInfo.modificationTime + ", CurrentModificationTime: "
@@ -504,7 +507,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       } else {
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug("Info not cached for path: " + file.getPath());
         }
       }
@@ -540,14 +543,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   static final class BISplitStrategy extends ACIDSplitStrategy {
     List<FileStatus> fileStatuses;
     boolean isOriginal;
-    List<Long> deltas;
+    List<DeltaMetaData> deltas;
     FileSystem fs;
     Context context;
     Path dir;
 
     public BISplitStrategy(Context context, FileSystem fs,
         Path dir, List<FileStatus> fileStatuses, boolean isOriginal,
-        List<Long> deltas, boolean[] covered) {
+        List<DeltaMetaData> deltas, boolean[] covered) {
       super(dir, context.numBuckets, deltas, covered);
       this.context = context;
       this.fileStatuses = fileStatuses;
@@ -584,11 +587,11 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    */
   static class ACIDSplitStrategy implements SplitStrategy<OrcSplit> {
     Path dir;
-    List<Long> deltas;
+    List<DeltaMetaData> deltas;
     boolean[] covered;
     int numBuckets;
 
-    public ACIDSplitStrategy(Path dir, int numBuckets, List<Long> deltas, boolean[] covered) {
+    public ACIDSplitStrategy(Path dir, int numBuckets, List<DeltaMetaData> deltas, boolean[] covered) {
       this.dir = dir;
       this.numBuckets = numBuckets;
       this.deltas = deltas;
@@ -637,7 +640,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       final SplitStrategy splitStrategy;
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir,
           context.conf, context.transactionList);
-      List<Long> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
+      List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
       Path base = dirInfo.getBaseDirectory();
       List<FileStatus> original = dirInfo.getOriginalFiles();
       boolean[] covered = new boolean[context.numBuckets];
@@ -681,7 +684,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             break;
           default:
             // HYBRID strategy
-            if (avgFileSize > context.maxSize) {
+            if (avgFileSize > context.maxSize || numFiles <= context.minSplits) {
               splitStrategy = new ETLSplitStrategy(context, fs, dir, children, isOriginal, deltas,
                   covered);
             } else {
@@ -715,7 +718,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private Metadata metadata;
     private List<OrcProto.Type> types;
     private final boolean isOriginal;
-    private final List<Long> deltas;
+    private final List<DeltaMetaData> deltas;
     private final boolean hasBase;
     private OrcFile.WriterVersion writerVersion;
     private long projColsUncompressedSize;
@@ -864,7 +867,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
               includeStripe[i] = (i >= stripeStats.size()) ||
                   isStripeSatisfyPredicate(stripeStats.get(i), sarg,
                       filterColumns);
-              if (LOG.isDebugEnabled() && !includeStripe[i]) {
+              if (isDebugEnabled && !includeStripe[i]) {
                 LOG.debug("Eliminating ORC stripe-" + i + " of file '" +
                     file.getPath() + "'  as it did not satisfy " +
                     "predicate condition.");
@@ -928,7 +931,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       Reader orcReader = OrcFile.createReader(file.getPath(),
           OrcFile.readerOptions(context.conf).filesystem(fs));
       List<String> projCols = ColumnProjectionUtils.getReadColumnNames(context.conf);
-      projColsUncompressedSize = orcReader.getRawDataSizeOfColumns(projCols);
+      // TODO: produce projColsUncompressedSize from projCols
       if (fileInfo != null) {
         stripes = fileInfo.stripeInfos;
         fileMetaInfo = fileInfo.fileMetaInfo;
@@ -983,8 +986,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
   static List<OrcSplit> generateSplitsInfo(Configuration conf)
       throws IOException {
+    return generateSplitsInfo(conf, -1);
+  }
+
+  static List<OrcSplit> generateSplitsInfo(Configuration conf, int numSplits)
+      throws IOException {
     // use threads to resolve directories into splits
-    Context context = new Context(conf);
+    Context context = new Context(conf, numSplits);
     List<OrcSplit> splits = Lists.newArrayList();
     List<Future<?>> pathFutures = Lists.newArrayList();
     List<Future<?>> splitFutures = Lists.newArrayList();
@@ -1048,9 +1056,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   @Override
   public InputSplit[] getSplits(JobConf job,
                                 int numSplits) throws IOException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
-    List<OrcSplit> result = generateSplitsInfo(job);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
+    if (isDebugEnabled) {
+      LOG.debug("getSplits started");
+    }
+    List<OrcSplit> result = generateSplitsInfo(job, numSplits);
+    if (isDebugEnabled) {
+      LOG.debug("getSplits finished");
+    }
     return result.toArray(new InputSplit[result.size()]);
   }
 

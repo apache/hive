@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
 -- Turning on vectorization has been temporarily moved after filling the test table
 -- due to bug HIVE-8197.
@@ -7,9 +8,10 @@ CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORE
 
 INSERT OVERWRITE TABLE alltypesorc_string
 SELECT
-  to_utc_timestamp(ctimestamp1, 'America/Los_Angeles'),
-  CAST(to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS STRING)
+  to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS toutc,
+  CAST(to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS STRING) as cst
 FROM alltypesorc
+ORDER BY toutc, cst
 LIMIT 40;
 
 SET hive.vectorized.execution.enabled = true;

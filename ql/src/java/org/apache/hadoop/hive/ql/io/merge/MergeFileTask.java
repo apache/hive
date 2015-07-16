@@ -176,7 +176,6 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
           if (returnVal != 0) {
             rj.killJob();
           }
-          HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
         }
         // get the list of Dynamic partition paths
@@ -189,7 +188,8 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
           }
         }
       } catch (Exception e) {
-        // jobClose needs to execute successfully otherwise fail task
+	// jobClose needs to execute successfully otherwise fail task
+	LOG.warn(e);
         if (success) {
           success = false;
           returnVal = 3;
@@ -198,6 +198,8 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
           console.printError(mesg, "\n" +
               org.apache.hadoop.util.StringUtils.stringifyException(e));
         }
+      } finally {
+	HadoopJobExecHelper.runningJobs.remove(rj);
       }
     }
 

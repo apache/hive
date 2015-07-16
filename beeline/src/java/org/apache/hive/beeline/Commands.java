@@ -43,6 +43,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -605,6 +606,7 @@ public class Commands {
             "" + beeLine.getReflector().invoke(beeLine.getDatabaseMetaData(),
                 m[i], new Object[0])));
       } catch (Exception e) {
+        beeLine.output(beeLine.getColorBuffer().pad(m[i], padlen), false);
         beeLine.handleException(e);
       }
     }
@@ -706,7 +708,11 @@ public class Commands {
   }
 
   public boolean sql(String line) {
-    return execute(line, false);
+    return execute(line, false, false);
+  }
+
+  public boolean sql(String line, boolean entireLineAsCommand) {
+    return execute(line, false, entireLineAsCommand);
   }
 
   public boolean sh(String line) {
@@ -740,10 +746,10 @@ public class Commands {
   }
 
   public boolean call(String line) {
-    return execute(line, true);
+    return execute(line, true, false);
   }
 
-  private boolean execute(String line, boolean call) {
+  private boolean execute(String line, boolean call, boolean entireLineAsCommand) {
     if (line == null || line.length() == 0) {
       return false; // ???
     }
@@ -792,9 +798,24 @@ public class Commands {
     }
 
     line = line.trim();
-    String[] cmds = line.split(";");
-    for (int i = 0; i < cmds.length; i++) {
-      String sql = cmds[i].trim();
+    List<String> cmdList = new ArrayList<String>();
+    if (entireLineAsCommand) {
+      cmdList.add(line);
+    } else {
+      StringBuffer command = new StringBuffer();
+      for (String cmdpart: line.split(";")) {
+        if (cmdpart.endsWith("\\")) {
+          command.append(cmdpart.substring(0, cmdpart.length() -1)).append(";");
+          continue;
+        } else {
+          command.append(cmdpart);
+        }
+        cmdList.add(command.toString());
+        command.setLength(0);
+      }
+    }
+    for (int i = 0; i < cmdList.size(); i++) {
+      String sql = cmdList.get(i).trim();
       if (sql.length() != 0) {
         if (beeLine.isComment(sql)) {
           //skip this and rest cmds in the line

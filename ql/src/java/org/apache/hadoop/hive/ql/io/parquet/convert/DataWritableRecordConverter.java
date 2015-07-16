@@ -14,10 +14,10 @@
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
-import parquet.io.api.GroupConverter;
-import parquet.io.api.RecordMaterializer;
-import parquet.schema.GroupType;
-import parquet.schema.MessageType;
+import org.apache.parquet.io.api.GroupConverter;
+import org.apache.parquet.io.api.RecordMaterializer;
+import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.MessageType;
 
 import java.util.Map;
 

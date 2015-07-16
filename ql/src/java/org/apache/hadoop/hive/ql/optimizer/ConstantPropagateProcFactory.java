@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -192,11 +193,9 @@ public final class ConstantPropagateProcFactory {
     }
     return evaluateFunction(funcDesc.getGenericUDF(),funcDesc.getChildren(), funcDesc.getChildren());
   }
+
   /**
    * Fold input expression desc.
-   *
-   * If desc is a UDF and all parameters are constants, evaluate it. If desc is a column expression,
-   * find it from propagated constants, and if there is, replace it with constant.
    *
    * @param desc folding expression
    * @param constants current propagated constant map
@@ -209,15 +208,32 @@ public final class ConstantPropagateProcFactory {
   private static ExprNodeDesc foldExpr(ExprNodeDesc desc, Map<ColumnInfo, ExprNodeDesc> constants,
       ConstantPropagateProcCtx cppCtx, Operator<? extends Serializable> op, int tag,
       boolean propagate) throws UDFArgumentException {
+    if (cppCtx.getConstantPropagateOption() == ConstantPropagateOption.SHORTCUT) {
+      return foldExprShortcut(desc, constants, cppCtx, op, tag, propagate);
+    }
+    return foldExprFull(desc, constants, cppCtx, op, tag, propagate);
+  }
+
+  /**
+   * Fold input expression desc, only performing short-cutting.
+   *
+   * Unnecessary AND/OR operations involving a constant true/false value will be eliminated.
+   *
+   * @param desc folding expression
+   * @param constants current propagated constant map
+   * @param cppCtx
+   * @param op processing operator
+   * @param propagate if true, assignment expressions will be added to constants.
+   * @return fold expression
+   * @throws UDFArgumentException
+   */
+  private static ExprNodeDesc foldExprShortcut(ExprNodeDesc desc, Map<ColumnInfo, ExprNodeDesc> constants,
+      ConstantPropagateProcCtx cppCtx, Operator<? extends Serializable> op, int tag,
+      boolean propagate) throws UDFArgumentException {
     if (desc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) desc;
 
-      // The function must be deterministic, or we can't fold it.
       GenericUDF udf = funcDesc.getGenericUDF();
-      if (!isDeterministicUdf(udf)) {
-        LOG.debug("Function " + udf.getClass() + " undeterministic, quit folding.");
-        return desc;
-      }
 
       boolean propagateNext = propagate && propagatableUdfs.contains(udf.getClass());
       List<ExprNodeDesc> newExprs = new ArrayList<ExprNodeDesc>();
@@ -225,27 +241,83 @@ public final class ConstantPropagateProcFactory {
         newExprs.add(foldExpr(childExpr, constants, cppCtx, op, tag, propagateNext));
       }
 
-      // If all child expressions are constants, evaluate UDF immediately
-      ExprNodeDesc constant = evaluateFunction(udf, newExprs, desc.getChildren());
-      if (constant != null) {
-        LOG.debug("Folding expression:" + desc + " -> " + constant);
-        return constant;
-      } else {
-
-        // Check if the function can be short cut.
-        ExprNodeDesc shortcut = shortcutFunction(udf, newExprs);
-        if (shortcut != null) {
-          LOG.debug("Folding expression:" + desc + " -> " + shortcut);
-          return shortcut;
-        }
+      // Don't evalulate nondeterministic function since the value can only calculate during runtime.
+      if (!isDeterministicUdf(udf)) {
+        LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evalulating immediately.");
         ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
+        return desc;
       }
 
-      // If in some selected binary operators (=, is null, etc), one of the
-      // expressions are
-      // constant, add them to colToConstatns as half-deterministic columns.
-      if (propagate) {
-        propagate(udf, newExprs, op.getSchema(), constants);
+      // Check if the function can be short cut.
+      ExprNodeDesc shortcut = shortcutFunction(udf, newExprs, op);
+      if (shortcut != null) {
+        LOG.debug("Folding expression:" + desc + " -> " + shortcut);
+        return shortcut;
+      }
+      ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
+    }
+    return desc;
+  }
+
+  /**
+   * Fold input expression desc.
+   *
+   * This function recursively checks if any subexpression of a specified expression
+   * can be evaluated to be constant and replaces such subexpression with the constant.
+   * If the expression is a derterministic UDF and all the subexpressions are constants,
+   * the value will be calculated immediately (during compilation time vs. runtime).
+   * e.g.:
+   *   concat(year, month) => 200112 for year=2001, month=12 since concat is deterministic UDF
+   *   unix_timestamp(time) => unix_timestamp(123) for time=123 since unix_timestamp is nonderministic UDF
+   * @param desc folding expression
+   * @param constants current propagated constant map
+   * @param cppCtx
+   * @param op processing operator
+   * @param propagate if true, assignment expressions will be added to constants.
+   * @return fold expression
+   * @throws UDFArgumentException
+   */
+  private static ExprNodeDesc foldExprFull(ExprNodeDesc desc, Map<ColumnInfo, ExprNodeDesc> constants,
+      ConstantPropagateProcCtx cppCtx, Operator<? extends Serializable> op, int tag,
+      boolean propagate) throws UDFArgumentException {
+    if (desc instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) desc;
+
+      GenericUDF udf = funcDesc.getGenericUDF();
+
+      boolean propagateNext = propagate && propagatableUdfs.contains(udf.getClass());
+      List<ExprNodeDesc> newExprs = new ArrayList<ExprNodeDesc>();
+      for (ExprNodeDesc childExpr : desc.getChildren()) {
+        newExprs.add(foldExpr(childExpr, constants, cppCtx, op, tag, propagateNext));
+      }
+
+      // Don't evalulate nondeterministic function since the value can only calculate during runtime.
+      if (!isDeterministicUdf(udf)) {
+        LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evalulating immediately.");
+        ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
+        return desc;
+      } else {
+        // If all child expressions of deterministic function are constants, evaluate such UDF immediately
+        ExprNodeDesc constant = evaluateFunction(udf, newExprs, desc.getChildren());
+        if (constant != null) {
+          LOG.debug("Folding expression:" + desc + " -> " + constant);
+          return constant;
+        } else {
+          // Check if the function can be short cut.
+          ExprNodeDesc shortcut = shortcutFunction(udf, newExprs, op);
+          if (shortcut != null) {
+            LOG.debug("Folding expression:" + desc + " -> " + shortcut);
+            return shortcut;
+          }
+          ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
+        }
+
+        // If in some selected binary operators (=, is null, etc), one of the
+        // expressions are
+        // constant, add them to colToConstants as half-deterministic columns.
+        if (propagate) {
+          propagate(udf, newExprs, op.getSchema(), constants);
+        }
       }
 
       return desc;
@@ -362,7 +434,8 @@ public final class ConstantPropagateProcFactory {
     return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
   }
 
-  private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs) throws UDFArgumentException {
+  private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs,
+    Operator<? extends Serializable> op) throws UDFArgumentException {
 
     if (udf instanceof GenericUDFOPEqual) {
      assert newExprs.size() == 2;
@@ -486,7 +559,20 @@ public final class ConstantPropagateProcFactory {
         Object thenVal = constThen.getValue();
         Object elseVal = constElse.getValue();
         if (thenVal == null) {
-          return elseVal == null ? thenExpr : null;
+          if (elseVal == null) {
+            // both branches are null.
+            return thenExpr;
+          } else if (op instanceof FilterOperator) {
+            // we can still fold, since here null is equivalent to false.
+            return Boolean.TRUE.equals(elseVal) ?
+              ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), newExprs.subList(0, 1)) : Boolean.FALSE.equals(elseVal) ?
+              elseExpr : null;
+          } else {
+            // can't do much, expression is not in context of filter, so we can't treat null as equivalent to false here.
+            return null;
+          }
+        } else if (elseVal == null && op instanceof FilterOperator) {
+          return Boolean.TRUE.equals(thenVal) ? whenExpr : Boolean.FALSE.equals(thenVal) ? thenExpr : null;
         } else if(thenVal.equals(elseVal)){
           return thenExpr;
         } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
@@ -516,7 +602,17 @@ public final class ConstantPropagateProcFactory {
         Object thenVal = constThen.getValue();
         Object elseVal = constElse.getValue();
         if (thenVal == null) {
-          return elseVal == null ? thenExpr : null;
+          if (null == elseVal) {
+            return thenExpr;
+          } else if (op instanceof FilterOperator) {
+            return Boolean.TRUE.equals(elseVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNotEqual(), newExprs.subList(0, 2)) :
+              Boolean.FALSE.equals(elseVal) ? elseExpr : null;
+          } else {
+            return null;
+          }
+        } else if (null == elseVal && op instanceof FilterOperator) {
+            return Boolean.TRUE.equals(thenVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(), newExprs.subList(0, 2)) :
+              Boolean.FALSE.equals(thenVal) ? thenExpr : null;
         } else if(thenVal.equals(elseVal)){
           return thenExpr;
         } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
@@ -845,6 +941,9 @@ public final class ConstantPropagateProcFactory {
             }
           }
           colList.set(i, newCol);
+          if (newCol instanceof ExprNodeConstantDesc && op.getSchema() != null) {
+            constants.put(op.getSchema().getSignature().get(i), newCol);
+          }
           if (columnExprMap != null) {
             columnExprMap.put(columnNames.get(i), newCol);
           }

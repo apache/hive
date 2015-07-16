@@ -5,8 +5,8 @@ set hive.enforce.bucketing=true;
 -- SORT_QUERY_RESULTS
 
 -- init
-drop table IF EXISTS encryptedTable;
-drop table IF EXISTS unencryptedTable;
+drop table IF EXISTS encryptedTable PURGE;
+drop table IF EXISTS unencryptedTable PURGE;
 
 create table encryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
@@ -18,11 +18,6 @@ create table unencryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
 -- insert encrypted table from values
-explain extended insert into table encryptedTable partition
-    (ds='today') values
-    ('501', 'val_501'),
-    ('502', 'val_502');
-
 insert into table encryptedTable partition
     (ds='today') values
     ('501', 'val_501'),
@@ -31,32 +26,21 @@ insert into table encryptedTable partition
 select * from encryptedTable order by key;
 
 -- insert encrypted table from unencrypted source
-explain extended from src
-insert into table encryptedTable partition
-    (ds='yesterday')
-    select * limit 2;
-
-from src
-insert into table encryptedTable partition
-    (ds='yesterday')
-    select * limit 2;
+insert into table encryptedTable partition (ds='yesterday')
+select * from src where key in ('238', '86');
 
 select * from encryptedTable order by key;
 
 -- insert unencrypted table from encrypted source
-explain extended from encryptedTable
-insert into table unencryptedTable partition
-    (ds='today')
-    select key, value;
+insert into table unencryptedTable partition (ds='today')
+select key, value from encryptedTable where ds='today';
 
-from encryptedTable
-insert into table unencryptedTable partition
-    (ds='today')
-    select key, value;
+insert into table unencryptedTable partition (ds='yesterday')
+select key, value from encryptedTable where ds='yesterday';
 
 select * from unencryptedTable order by key;
 
 -- clean up
-drop table encryptedTable;
+drop table encryptedTable PURGE;
 CRYPTO DELETE_KEY --keyName key_1;
-drop table unencryptedTable;
+drop table unencryptedTable PURGE;

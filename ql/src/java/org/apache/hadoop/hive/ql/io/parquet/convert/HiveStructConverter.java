@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.io.ObjectArrayWritable;
-import parquet.io.api.Converter;
-import parquet.schema.GroupType;
-import parquet.schema.Type;
+import org.apache.parquet.io.api.Converter;
+import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.Type;
 
 /**
  *

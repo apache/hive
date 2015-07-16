@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
+import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -59,8 +61,11 @@ public class Generator implements Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
+    Index index = SessionState.get() != null ?
+      SessionState.get().getLineageState().getIndex() : new Index();
+
     // Create the lineage context
-    LineageCtx lCtx = new LineageCtx(pctx);
+    LineageCtx lCtx = new LineageCtx(pctx, index);
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%"),
@@ -83,7 +88,9 @@ public class Generator implements Transform {
     opRules.put(new RuleRegExp("R9", LateralViewJoinOperator.getOperatorName() + "%"),
       OpProcFactory.getLateralViewJoinProc());
     opRules.put(new RuleRegExp("R10", PTFOperator.getOperatorName() + "%"),
-        OpProcFactory.getTransformProc());
+      OpProcFactory.getTransformProc());
+    opRules.put(new RuleRegExp("R11", FilterOperator.getOperatorName() + "%"),
+      OpProcFactory.getFilterProc());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(OpProcFactory.getDefaultProc(), opRules, lCtx);
@@ -93,11 +100,6 @@ public class Generator implements Transform {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
-
-    // Transfer the index from the lineage context to the session state.
-    if (SessionState.get() != null) {
-      SessionState.get().getLineageState().setIndex(lCtx.getIndex());
-    }
 
     return pctx;
   }

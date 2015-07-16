@@ -1,4 +1,6 @@
-PREHOOK: query: SELECT SUM(cint),
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+SELECT SUM(cint),
        (SUM(cint) * -563),
        (-3728 + SUM(cint)),
        STDDEV_POP(cdouble),
@@ -22,7 +24,9 @@ WHERE  (((csmallint >= cint)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT SUM(cint),
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+SELECT SUM(cint),
        (SUM(cint) * -563),
        (-3728 + SUM(cint)),
        STDDEV_POP(cdouble),

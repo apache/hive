@@ -131,7 +131,7 @@ public class TestHCatClient {
   public static void startMetaStoreServer() throws Exception {
 
     hcatConf = new HiveConf(TestHCatClient.class);
-    String metastoreUri = System.getProperty(HiveConf.ConfVars.METASTOREURIS.varname);
+    String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTOREURIS.varname);
     if (metastoreUri != null) {
       hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
       useExternalMS = true;

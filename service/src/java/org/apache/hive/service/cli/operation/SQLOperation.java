@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
@@ -186,7 +185,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       final SessionState parentSessionState = SessionState.get();
       // ThreadLocal Hive object needs to be set in background thread.
       // The metastore client in Hive is associated with right user.
-      final Hive parentHive = getSessionHive();
+      final Hive parentHive = parentSession.getSessionHive();
       // Current UGI will get used by metastore when metsatore is in embedded mode
       // So this needs to get passed to the new background thread
       final UserGroupInformation currentUGI = getCurrentUGI(opConfig);
@@ -258,19 +257,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       return Utils.getUGI();
     } catch (Exception e) {
       throw new HiveSQLException("Unable to get current user", e);
-    }
-  }
-
-  /**
-   * Returns the ThreadLocal Hive for the current thread
-   * @return Hive
-   * @throws HiveSQLException
-   */
-  private Hive getSessionHive() throws HiveSQLException {
-    try {
-      return Hive.get();
-    } catch (HiveException e) {
-      throw new HiveSQLException("Failed to get ThreadLocal Hive object", e);
     }
   }
 

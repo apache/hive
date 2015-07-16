@@ -20,7 +20,12 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Class to keep information on a set of typed vector columns.  Used by
@@ -117,28 +122,41 @@ public class VectorColumnSetInfo {
 
   protected void addKey(String outputType) throws HiveException {
     indexLookup[addIndex] = new KeyLookupHelper();
-    if (VectorizationContext.isIntFamily(outputType) ||
-        VectorizationContext.isDatetimeFamily(outputType)) {
+
+    String typeName = VectorizationContext.mapTypeNameSynonyms(outputType);
+
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+    Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+
+    switch (columnVectorType) {
+    case LONG:
       longIndices[longIndicesIndex] = addIndex;
       indexLookup[addIndex].setLong(longIndicesIndex);
       ++longIndicesIndex;
-    } else if (VectorizationContext.isFloatFamily(outputType)) {
+      break;
+
+    case DOUBLE:
       doubleIndices[doubleIndicesIndex] = addIndex;
       indexLookup[addIndex].setDouble(doubleIndicesIndex);
       ++doubleIndicesIndex;
-    } else if (VectorizationContext.isStringFamily(outputType) ||
-        outputType.equalsIgnoreCase("binary")) {
+      break;
+
+    case BYTES:
       stringIndices[stringIndicesIndex]= addIndex;
       indexLookup[addIndex].setString(stringIndicesIndex);
       ++stringIndicesIndex;
-    } else if (VectorizationContext.isDecimalFamily(outputType)) {
-        decimalIndices[decimalIndicesIndex]= addIndex;
-        indexLookup[addIndex].setDecimal(decimalIndicesIndex);
-        ++decimalIndicesIndex;
+      break;
+
+    case DECIMAL:
+      decimalIndices[decimalIndicesIndex]= addIndex;
+      indexLookup[addIndex].setDecimal(decimalIndicesIndex);
+      ++decimalIndicesIndex;
+      break;
+
+    default:
+      throw new HiveException("Unexpected column vector type " + columnVectorType);
     }
-    else {
-      throw new HiveException("Unsuported vector output type: " + outputType);
-    }
+
     addIndex++;
   }
 

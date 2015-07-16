@@ -1,0 +1,72 @@
+Ln:1 DECLARE count INT = 7
+Ln:3 WHILE - ENTERED
+Ln:4 PRINT
+7
+Ln:5 SET count = 6
+Ln:4 PRINT
+6
+Ln:5 SET count = 5
+Ln:4 PRINT
+5
+Ln:5 SET count = 4
+Ln:4 PRINT
+4
+Ln:5 SET count = 3
+Ln:4 PRINT
+3
+Ln:5 SET count = 2
+Ln:4 PRINT
+2
+Ln:5 SET count = 1
+Ln:4 PRINT
+1
+Ln:5 SET count = 0
+Ln:3 WHILE - LEFT
+Ln:8 SET count = 7
+Ln:10 WHILE - ENTERED
+Ln:11 PRINT
+7
+Ln:12 SET count = 6
+Ln:11 PRINT
+6
+Ln:12 SET count = 5
+Ln:11 PRINT
+5
+Ln:12 SET count = 4
+Ln:11 PRINT
+4
+Ln:12 SET count = 3
+Ln:11 PRINT
+3
+Ln:12 SET count = 2
+Ln:11 PRINT
+2
+Ln:12 SET count = 1
+Ln:11 PRINT
+1
+Ln:12 SET count = 0
+Ln:10 WHILE - LEFT
+Ln:15 SET count = 7
+Ln:17 WHILE - ENTERED
+Ln:18 PRINT
+7
+Ln:19 SET count = 6
+Ln:18 PRINT
+6
+Ln:19 SET count = 5
+Ln:18 PRINT
+5
+Ln:19 SET count = 4
+Ln:18 PRINT
+4
+Ln:19 SET count = 3
+Ln:18 PRINT
+3
+Ln:19 SET count = 2
+Ln:18 PRINT
+2
+Ln:19 SET count = 1
+Ln:18 PRINT
+1
+Ln:19 SET count = 0
+Ln:17 WHILE - LEFT

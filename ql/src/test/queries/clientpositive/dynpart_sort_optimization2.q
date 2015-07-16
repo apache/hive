@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.optimize.sort.dynamic.partition=true;
 set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions=1000;
@@ -7,6 +8,8 @@ set hive.enforce.bucketing=false;
 set hive.enforce.sorting=false;
 set hive.exec.submitviachild=true;
 set hive.exec.submit.local.task.via.child=true;
+
+-- SORT_QUERY_RESULTS
 
 drop table ss;
 drop table ss_orc;
@@ -223,7 +226,7 @@ select
     "day" `day`
 from src
 group by "day", key;
-select * from hive13_dp1 limit 5;
+select * from hive13_dp1 order by k1, k2 limit 5;
 
 set hive.optimize.sort.dynamic.partition=true;
 explain insert overwrite table `hive13_dp1` partition(`day`)
@@ -241,6 +244,7 @@ select
     "day" `day`
 from src
 group by "day", key;
-select * from hive13_dp1 limit 5;
+
+select * from hive13_dp1 order by k1, k2 limit 5;
 
 drop table hive13_dp1;

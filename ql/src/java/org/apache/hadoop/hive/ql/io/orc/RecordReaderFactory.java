@@ -72,9 +72,14 @@ public class RecordReaderFactory {
     }
   }
 
+  static List<String> getAcidEventFields() {
+    return Lists.newArrayList("operation", "originalTransaction", "bucket",
+        "rowId", "currentTransaction", "row");
+  }
+
   private static boolean checkAcidSchema(List<OrcProto.Type> fileSchema) {
     if (fileSchema.get(0).getKind().equals(OrcProto.Type.Kind.STRUCT)) {
-      List<String> acidFields = OrcRecordUpdater.getAcidEventFields();
+      List<String> acidFields = getAcidEventFields();
       List<String> rootFields = fileSchema.get(0).getFieldNamesList();
       if (acidFields.equals(rootFields)) {
         return true;

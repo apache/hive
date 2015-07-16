@@ -73,8 +73,6 @@ public interface HiveSessionBase {
 
   SessionHandle getSessionHandle();
 
-  String getUsername();
-
   String getPassword();
 
   HiveConf getHiveConf();

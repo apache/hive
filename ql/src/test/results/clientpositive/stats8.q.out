@@ -47,7 +47,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: analyze_srcpart
-            Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 23248 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
     Stats-Aggr Operator
@@ -85,8 +85,6 @@ hr                  	string
 Partition Value:    	[2008-04-08, 11]    	 
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -126,7 +124,6 @@ hr                  	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -195,8 +192,6 @@ hr                  	string
 Partition Value:    	[2008-04-08, 12]    	 
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -269,8 +264,6 @@ Partition Value:    	[2008-04-09, 11]
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -341,8 +334,6 @@ hr                  	string
 Partition Value:    	[2008-04-09, 12]    	 
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -427,8 +418,6 @@ Partition Value:    	[2008-04-08, 11]
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -468,8 +457,6 @@ hr                  	string
 Partition Value:    	[2008-04-08, 12]    	 
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -511,8 +498,6 @@ Partition Value:    	[2008-04-09, 11]
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -553,8 +538,6 @@ Partition Value:    	[2008-04-09, 12]
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -593,7 +576,6 @@ hr                  	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 

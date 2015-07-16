@@ -1,0 +1,10 @@
+Ln:1 CREATE FUNCTION hello2
+Ln:10 PRINT
+Ln:10 EXEC FUNCTION hello2
+Ln:10 SET PARAM text = world
+Ln:4 PRINT
+Start
+Ln:5 RETURN
+Hello, world!
+Ln:11 PRINT
+End of script

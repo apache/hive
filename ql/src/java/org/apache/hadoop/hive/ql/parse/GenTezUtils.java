@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -60,42 +61,27 @@ import com.google.common.collect.HashBiMap;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
 
 /**
- * GenTezUtils is a collection of shared helper methods to produce
- * TezWork
+ * GenTezUtils is a collection of shared helper methods to produce TezWork.
+ * All the methods in this class should be static, but some aren't; this is to facilitate testing.
+ * Methods are made non-static on as needed basis.
  */
 public class GenTezUtils {
+  static final private Log LOG = LogFactory.getLog(GenTezUtils.class);
 
-  static final private Log LOG = LogFactory.getLog(GenTezUtils.class.getName());
-
-  // sequence number is used to name vertices (e.g.: Map 1, Reduce 14, ...)
-  private int sequenceNumber = 0;
-
-  // singleton
-  private static GenTezUtils utils;
-
-  public static GenTezUtils getUtils() {
-    if (utils == null) {
-      utils = new GenTezUtils();
-    }
-    return utils;
+  public GenTezUtils() {
   }
 
-  protected GenTezUtils() {
-  }
-
-  public void resetSequenceNumber() {
-    sequenceNumber = 0;
-  }
-
-  public UnionWork createUnionWork(GenTezProcContext context, Operator<?> root, Operator<?> leaf, TezWork tezWork) {
-    UnionWork unionWork = new UnionWork("Union "+ (++sequenceNumber));
+  public static UnionWork createUnionWork(
+      GenTezProcContext context, Operator<?> root, Operator<?> leaf, TezWork tezWork) {
+    UnionWork unionWork = new UnionWork("Union "+ context.nextSequenceNumber());
     context.rootUnionWorkMap.put(root, unionWork);
     context.unionWorkMap.put(leaf, unionWork);
     tezWork.add(unionWork);
     return unionWork;
   }
 
-  public ReduceWork createReduceWork(GenTezProcContext context, Operator<?> root, TezWork tezWork) {
+  public static ReduceWork createReduceWork(
+      GenTezProcContext context, Operator<?> root, TezWork tezWork) {
     assert !root.getParentOperators().isEmpty();
 
     boolean isAutoReduceParallelism =
@@ -106,7 +92,7 @@ public class GenTezUtils {
     float minPartitionFactor = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR);
     long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
 
-    ReduceWork reduceWork = new ReduceWork(Utilities.REDUCENAME + (++sequenceNumber));
+    ReduceWork reduceWork = new ReduceWork(Utilities.REDUCENAME + context.nextSequenceNumber());
     LOG.debug("Adding reduce work (" + reduceWork.getName() + ") for " + root);
     reduceWork.setReducer(root);
     reduceWork.setNeedsTagging(GenMapRedUtils.needsTagging(reduceWork));
@@ -160,8 +146,8 @@ public class GenTezUtils {
     return reduceWork;
   }
 
-  protected void setupReduceSink(GenTezProcContext context, ReduceWork reduceWork,
-      ReduceSinkOperator reduceSink) {
+  private static void setupReduceSink(
+      GenTezProcContext context, ReduceWork reduceWork, ReduceSinkOperator reduceSink) {
 
     LOG.debug("Setting up reduce sink: " + reduceSink
         + " with following reduce work: " + reduceWork.getName());
@@ -181,7 +167,7 @@ public class GenTezUtils {
   public MapWork createMapWork(GenTezProcContext context, Operator<?> root,
       TezWork tezWork, PrunedPartitionList partitions) throws SemanticException {
     assert root.getParentOperators().isEmpty();
-    MapWork mapWork = new MapWork(Utilities.MAPNAME + (++sequenceNumber));
+    MapWork mapWork = new MapWork(Utilities.MAPNAME + context.nextSequenceNumber());
     LOG.debug("Adding map work (" + mapWork.getName() + ") for " + root);
 
     // map work starts with table scan operators
@@ -212,7 +198,7 @@ public class GenTezUtils {
   }
 
   // removes any union operator and clones the plan
-  public void removeUnionOperators(Configuration conf, GenTezProcContext context,
+  public static void removeUnionOperators(Configuration conf, GenTezProcContext context,
       BaseWork work)
     throws SemanticException {
 
@@ -238,6 +224,11 @@ public class GenTezUtils {
 
     Iterator<Operator<?>> it = newRoots.iterator();
     for (Operator<?> orig: roots) {
+      Set<FileSinkOperator> fsOpSet = OperatorUtils.findOperators(orig, FileSinkOperator.class);
+      for (FileSinkOperator fsOp : fsOpSet) {
+        context.fileSinkSet.remove(fsOp);
+      }
+
       Operator<?> newRoot = it.next();
 
       replacementMap.put(orig, newRoot);
@@ -301,6 +292,8 @@ public class GenTezUtils {
         linked.add(desc);
 
         desc.setDirName(new Path(path, ""+linked.size()));
+        desc.setLinkedFileSink(true);
+        desc.setParentDir(path);
         desc.setLinkedFileSinkDesc(linked);
       }
 
@@ -346,7 +339,7 @@ public class GenTezUtils {
     work.replaceRoots(replacementMap);
   }
 
-  public void processFileSink(GenTezProcContext context, FileSinkOperator fileSink)
+  public static void processFileSink(GenTezProcContext context, FileSinkOperator fileSink)
       throws SemanticException {
 
     ParseContext parseContext = context.parseContext;
@@ -385,8 +378,8 @@ public class GenTezUtils {
    * @param procCtx
    * @param event
    */
-  public void processAppMasterEvent(GenTezProcContext procCtx, AppMasterEventOperator event) {
-
+  public static void processAppMasterEvent(
+      GenTezProcContext procCtx, AppMasterEventOperator event) {
     if (procCtx.abandonedEventOperatorSet.contains(event)) {
       // don't need this anymore
       return;
@@ -436,7 +429,7 @@ public class GenTezUtils {
   /**
    * getEncosingWork finds the BaseWork any given operator belongs to.
    */
-  public BaseWork getEnclosingWork(Operator<?> op, GenTezProcContext procCtx) {
+  public static BaseWork getEnclosingWork(Operator<?> op, GenTezProcContext procCtx) {
     List<Operator<?>> ops = new ArrayList<Operator<?>>();
     findRoots(op, ops);
     for (Operator<?> r : ops) {
@@ -451,7 +444,7 @@ public class GenTezUtils {
   /*
    * findRoots returns all root operators (in ops) that result in operator op
    */
-  private void findRoots(Operator<?> op, List<Operator<?>> ops) {
+  private static void findRoots(Operator<?> op, List<Operator<?>> ops) {
     List<Operator<?>> parents = op.getParentOperators();
     if (parents == null || parents.isEmpty()) {
       ops.add(op);
@@ -466,7 +459,7 @@ public class GenTezUtils {
    * Remove an operator branch. When we see a fork, we know it's time to do the removal.
    * @param event the leaf node of which branch to be removed
    */
-  public void removeBranch(AppMasterEventOperator event) {
+  public static void removeBranch(AppMasterEventOperator event) {
     Operator<?> child = event;
     Operator<?> curr = event;
 

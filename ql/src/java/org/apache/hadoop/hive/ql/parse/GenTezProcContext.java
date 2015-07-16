@@ -82,6 +82,9 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // walk.
   public Operator<? extends OperatorDesc> parentOfRoot;
 
+  // sequence number is used to name vertices (e.g.: Map 1, Reduce 14, ...)
+  private int sequenceNumber = 0;
+
   // tez task we're currently processing
   public TezTask currentTask;
 
@@ -187,5 +190,10 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.currentMergeJoinOperator = null;
 
     rootTasks.add(currentTask);
+  }
+
+  /** Not thread-safe. */
+  public int nextSequenceNumber() {
+     return ++sequenceNumber;
   }
 }

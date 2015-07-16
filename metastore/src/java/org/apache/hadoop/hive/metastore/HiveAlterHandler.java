@@ -59,20 +59,24 @@ public class HiveAlterHandler implements AlterHandler {
   private static final Log LOG = LogFactory.getLog(HiveAlterHandler.class
       .getName());
 
+  @Override
   public Configuration getConf() {
     return hiveConf;
   }
 
+  @Override
   @SuppressWarnings("nls")
   public void setConf(Configuration conf) {
     hiveConf = conf;
   }
 
+  @Override
   public void alterTable(RawStore msdb, Warehouse wh, String dbname,
       String name, Table newt) throws InvalidOperationException, MetaException {
     alterTable(msdb, wh, dbname, name, newt, false);
   }
 
+  @Override
   public void alterTable(RawStore msdb, Warehouse wh, String dbname,
       String name, Table newt, boolean cascade) throws InvalidOperationException, MetaException {
     if (newt == null) {
@@ -200,8 +204,6 @@ public class HiveAlterHandler implements AlterHandler {
                 + " already exists : " + destPath);
           }
         } catch (IOException e) {
-          Warehouse.closeFs(srcFs);
-          Warehouse.closeFs(destFs);
           throw new InvalidOperationException("Unable to access new location "
               + destPath + " for table " + newt.getDbName() + "."
               + newt.getTableName());
@@ -316,6 +318,7 @@ public class HiveAlterHandler implements AlterHandler {
     }
     return ex.getMessage();
   }
+  @Override
   public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
       final String name, final List<String> part_vals, final Partition new_part)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
@@ -430,8 +433,6 @@ public class HiveAlterHandler implements AlterHandler {
                 + " already exists : " + destPath);
             }
           } catch (IOException e) {
-            Warehouse.closeFs(srcFs);
-            Warehouse.closeFs(destFs);
             throw new InvalidOperationException("Unable to access new location "
               + destPath + " for partition " + tbl.getDbName() + "."
               + tbl.getTableName() + " " + new_part.getValues());
@@ -491,6 +492,7 @@ public class HiveAlterHandler implements AlterHandler {
     return oldPart;
   }
 
+  @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
       final String name, final List<Partition> new_parts)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,

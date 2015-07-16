@@ -1,20 +1,3 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
@@ -24,7 +7,6 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -34,54 +16,18 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Util;
-
-import com.google.common.collect.ImmutableList;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 
 public class HiveRelOptUtil extends RelOptUtil {
 
-  /**
-   * Splits out the equi-join (and optionally, a single non-equi) components
-   * of a join condition, and returns what's left. Projection might be
-   * required by the caller to provide join keys that are not direct field
-   * references.
-   *
-   * @param sysFieldList  list of system fields
-   * @param leftRel       left join input
-   * @param rightRel      right join input
-   * @param condition     join condition
-   * @param leftJoinKeys  The join keys from the left input which are equi-join
-   *                      keys
-   * @param rightJoinKeys The join keys from the right input which are
-   *                      equi-join keys
-   * @param filterNulls   The join key positions for which null values will not
-   *                      match. null values only match for the "is not distinct
-   *                      from" condition.
-   * @param rangeOp       if null, only locate equi-joins; otherwise, locate a
-   *                      single non-equi join predicate and return its operator
-   *                      in this list; join keys associated with the non-equi
-   *                      join predicate are at the end of the key lists
-   *                      returned
-   * @return What's left, never null
-   */
-  public static RexNode splitJoinCondition(
-      List<RelDataTypeField> sysFieldList,
-      RelNode leftRel,
-      RelNode rightRel,
-      RexNode condition,
-      List<RexNode> leftJoinKeys,
-      List<RexNode> rightJoinKeys,
-      List<Integer> filterNulls,
-      List<SqlOperator> rangeOp) {
-    return splitJoinCondition(
-        sysFieldList,
-        ImmutableList.of(leftRel, rightRel),
-        condition,
-        ImmutableList.of(leftJoinKeys, rightJoinKeys),
-        filterNulls,
-        rangeOp);
-  }
+  private static final Log LOG = LogFactory.getLog(HiveRelOptUtil.class);
+
 
   /**
    * Splits out the equi-join (and optionally, a single non-equi) components
@@ -103,14 +49,15 @@ public class HiveRelOptUtil extends RelOptUtil {
    *                      join predicate are at the end of the key lists
    *                      returned
    * @return What's left, never null
+   * @throws CalciteSemanticException
    */
-  public static RexNode splitJoinCondition(
+  public static RexNode splitHiveJoinCondition(
       List<RelDataTypeField> sysFieldList,
       List<RelNode> inputs,
       RexNode condition,
       List<List<RexNode>> joinKeys,
       List<Integer> filterNulls,
-      List<SqlOperator> rangeOp) {
+      List<SqlOperator> rangeOp) throws CalciteSemanticException {
     final List<RexNode> nonEquiList = new ArrayList<>();
 
     splitJoinCondition(
@@ -134,27 +81,25 @@ public class HiveRelOptUtil extends RelOptUtil {
       List<List<RexNode>> joinKeys,
       List<Integer> filterNulls,
       List<SqlOperator> rangeOp,
-      List<RexNode> nonEquiList) {
+      List<RexNode> nonEquiList) throws CalciteSemanticException {
     final int sysFieldCount = sysFieldList.size();
     final RelOptCluster cluster = inputs.get(0).getCluster();
     final RexBuilder rexBuilder = cluster.getRexBuilder();
-    final RelDataTypeFactory typeFactory = cluster.getTypeFactory();
 
-    int[] firstFieldInputs = new int[inputs.size()];
+    final ImmutableBitSet[] inputsRange = new ImmutableBitSet[inputs.size()];
     int totalFieldCount = 0;
     for (int i = 0; i < inputs.size(); i++) {
-      firstFieldInputs[i] = totalFieldCount + sysFieldCount;
-      totalFieldCount += sysFieldCount
-              + inputs.get(i).getRowType().getFieldCount();
+      final int firstField = totalFieldCount + sysFieldCount;
+      totalFieldCount = firstField + inputs.get(i).getRowType().getFieldCount();
+      inputsRange[i] = ImmutableBitSet.range(firstField, totalFieldCount);
     }
 
     // adjustment array
     int[] adjustments = new int[totalFieldCount];
     for (int i = 0; i < inputs.size(); i++) {
-      int limit = i == inputs.size() - 1
-              ? totalFieldCount : firstFieldInputs[i + 1];
-      for (int j = firstFieldInputs[i]; j < limit; j++) {
-        adjustments[j] = -firstFieldInputs[i];
+      final int adjustment = inputsRange[i].nextSetBit(0);
+      for (int j = adjustment; j < inputsRange[i].length(); j++) {
+        adjustments[j] = -adjustment;
       }
     }
 
@@ -203,13 +148,8 @@ public class HiveRelOptUtil extends RelOptUtil {
 
         boolean foundBothInputs = false;
         for (int i = 0; i < inputs.size() && !foundBothInputs; i++) {
-          final int lowerLimit = firstFieldInputs[i];
-          final int upperLimit = i == inputs.size() - 1
-                  ? totalFieldCount : firstFieldInputs[i + 1];
-          if (projRefs0.nextSetBit(lowerLimit) != -1
-                  && projRefs0.nextSetBit(upperLimit) == -1
-                  && projRefs0.nextSetBit(0) == projRefs0.nextSetBit(lowerLimit)
-                  && projRefs0.nextSetBit(lowerLimit) < upperLimit) {
+          if (projRefs0.intersects(inputsRange[i])
+                  && projRefs0.union(inputsRange[i]).equals(inputsRange[i])) {
             if (leftKey == null) {
               leftKey = op0;
               leftInput = i;
@@ -221,10 +161,8 @@ public class HiveRelOptUtil extends RelOptUtil {
               reverse = true;
               foundBothInputs = true;
             }
-          } else if (projRefs1.nextSetBit(lowerLimit) != -1
-                  && projRefs1.nextSetBit(upperLimit) == -1
-                  && projRefs1.nextSetBit(0) == projRefs1.nextSetBit(lowerLimit)
-                  && projRefs1.nextSetBit(lowerLimit) < upperLimit) {
+          } else if (projRefs1.intersects(inputsRange[i])
+                  && projRefs1.union(inputsRange[i]).equals(inputsRange[i])) {
             if (leftKey == null) {
               leftKey = op1;
               leftInput = i;
@@ -262,65 +200,28 @@ public class HiveRelOptUtil extends RelOptUtil {
           RelDataType rightKeyType = rightKey.getType();
 
           if (leftKeyType != rightKeyType) {
-            // perform casting
-            RelDataType targetKeyType =
-                typeFactory.leastRestrictive(
-                    ImmutableList.of(leftKeyType, rightKeyType));
+            // perform casting using Hive rules
+            TypeInfo rType = TypeConverter.convert(rightKeyType);
+            TypeInfo lType = TypeConverter.convert(leftKeyType);
+            TypeInfo tgtType = FunctionRegistry.getCommonClassForComparison(lType, rType);
 
-            if (targetKeyType == null) {
-              throw Util.newInternal(
+            if (tgtType == null) {
+              throw new CalciteSemanticException(
                   "Cannot find common type for join keys "
-                  + leftKey + " (type " + leftKeyType + ") and "
-                  + rightKey + " (type " + rightKeyType + ")");
+                      + leftKey + " (type " + leftKeyType + ") and "
+                      + rightKey + " (type " + rightKeyType + ")");
             }
+            RelDataType targetKeyType = TypeConverter.convert(tgtType, rexBuilder.getTypeFactory());
 
-            if (leftKeyType != targetKeyType) {
+            if (leftKeyType != targetKeyType && TypeInfoUtils.isConversionRequiredForComparison(tgtType, lType)) {
               leftKey =
                   rexBuilder.makeCast(targetKeyType, leftKey);
             }
 
-            if (rightKeyType != targetKeyType) {
+            if (rightKeyType != targetKeyType && TypeInfoUtils.isConversionRequiredForComparison(tgtType, rType)) {
               rightKey =
                   rexBuilder.makeCast(targetKeyType, rightKey);
             }
-          }
-        }
-      }
-
-      if ((rangeOp == null)
-          && ((leftKey == null) || (rightKey == null))) {
-        // no equality join keys found yet:
-        // try transforming the condition to
-        // equality "join" conditions, e.g.
-        //     f(LHS) > 0 ===> ( f(LHS) > 0 ) = TRUE,
-        // and make the RHS produce TRUE, but only if we're strictly
-        // looking for equi-joins
-        final ImmutableBitSet projRefs = InputFinder.bits(condition);
-        leftKey = null;
-        rightKey = null;
-
-        boolean foundInput = false;
-        for (int i = 0; i < inputs.size() && !foundInput; i++) {
-          final int lowerLimit = firstFieldInputs[i];
-          final int upperLimit = i == inputs.size() - 1
-                  ? totalFieldCount : firstFieldInputs[i + 1];
-          if (projRefs.nextSetBit(lowerLimit) < upperLimit) {
-            leftInput = i;
-            leftFields = inputs.get(leftInput).getRowType().getFieldList();
-
-            leftKey = condition.accept(
-                new RelOptUtil.RexInputConverter(
-                    rexBuilder,
-                    leftFields,
-                    leftFields,
-                    adjustments));
-
-            rightKey = rexBuilder.makeLiteral(true);
-
-            // effectively performing an equality comparison
-            kind = SqlKind.EQUALS;
-
-            foundInput = true;
           }
         }
       }
@@ -410,5 +311,6 @@ public class HiveRelOptUtil extends RelOptUtil {
       joinKeyList.add(key);
     }
   }
+
 
 }

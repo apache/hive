@@ -713,5 +713,9 @@ public class TestInitiator extends CompactorTest {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(0, compacts.size());
   }
+  @Override
+  boolean useHive130DeltaDirName() {
+    return false;
+  }
 
 }

@@ -60,6 +60,7 @@ public class TestHiveAuthorizerCheckInvocation {
   protected static Driver driver;
   private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Table";
+  private static final String inDbTableName = tableName + "_in_db";
   private static final String acidTableName = tableName + "_acid";
   private static final String dbName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Db";
@@ -96,6 +97,7 @@ public class TestHiveAuthorizerCheckInvocation {
     runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create database " + dbName);
+    runCmd("create table " + dbName + "." + inDbTableName + "(i int)");
     // Need a separate table for ACID testing since it has to be bucketed and it has to be Acid
     runCmd("create table " + acidTableName + " (i int, j int, k int) clustered by (k) into 2 buckets " +
         "stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -111,7 +113,8 @@ public class TestHiveAuthorizerCheckInvocation {
     // Drop the tables when we're done.  This makes the test work inside an IDE
     runCmd("drop table if exists " + acidTableName);
     runCmd("drop table if exists " + tableName);
-    runCmd("drop database if exists " + dbName);
+    runCmd("drop table if exists " + dbName + "." + inDbTableName);
+    runCmd("drop database if exists " + dbName );
     driver.close();
   }
 
@@ -313,6 +316,35 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals(1, tableObj.getColumns().size());
     assertEquals("j", tableObj.getColumns().get(0));
   }
+
+  @Test
+  public void testShowTables() throws HiveAuthzPluginException,
+      HiveAccessControlException, CommandNeedRetryException {
+    reset(mockedAuthorizer);
+    int status = driver.compile("show tables");
+    assertEquals(0, status);
+
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size());
+    HivePrivilegeObject dbObj = inputs.get(0);
+    assertEquals("default", dbObj.getDbname().toLowerCase());
+  }
+
+  @Test
+  public void testDescDatabase() throws HiveAuthzPluginException,
+      HiveAccessControlException, CommandNeedRetryException {
+    reset(mockedAuthorizer);
+    int status = driver.compile("describe database " + dbName);
+    assertEquals(0, status);
+
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size());
+    HivePrivilegeObject dbObj = inputs.get(0);
+    assertEquals(dbName.toLowerCase(), dbObj.getDbname().toLowerCase());
+  }
+
 
   private void checkSingleTableInput(List<HivePrivilegeObject> inputs) {
     assertEquals("number of inputs", 1, inputs.size());

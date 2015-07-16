@@ -110,6 +110,33 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   }
 
   /**
+   * Creates the list of internal column names(these names are used in the
+   * RowResolver and are different from the external column names) that are
+   * needed in the subtree. These columns eventually have to be selected from
+   * the table scan.
+   *
+   * @param curOp
+   *          The root of the operator subtree.
+   * @param child
+   *          The consumer.
+   * @return List<String> of the internal column names.
+   * @throws SemanticException
+   */
+  public List<String> genColLists(Operator<? extends OperatorDesc> curOp,
+          Operator<? extends OperatorDesc> child)
+      throws SemanticException {
+    if (curOp.getChildOperators() == null) {
+      return null;
+    }
+    if (child instanceof CommonJoinOperator) {
+      int tag = child.getParentOperators().indexOf(curOp);
+      return joinPrunedColLists.get(child).get((byte) tag);
+    } else {
+      return prunedColLists.get(child);
+    }
+  }
+
+  /**
    * Creates the list of internal column names from select expressions in a
    * select operator. This function is used for the select operator instead of
    * the genColLists function (which is used by the rest of the operators).

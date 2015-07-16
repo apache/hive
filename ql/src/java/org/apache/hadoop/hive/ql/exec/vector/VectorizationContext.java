@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
@@ -2044,6 +2045,51 @@ public class VectorizationContext {
     }
   }
 
+  public static String mapTypeNameSynonyms(String typeName) {
+    typeName = typeName.toLowerCase();
+    if (typeName.equals("long")) {
+      return "bigint";
+    } else if (typeName.equals("string_family")) {
+      return "string";
+    } else {
+      return typeName;
+    }
+  }
+
+  public static ColumnVector.Type getColumnVectorTypeFromTypeInfo(TypeInfo typeInfo) throws HiveException {
+    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+    PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
+
+    switch (primitiveCategory) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case DATE:
+    case TIMESTAMP:
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      return ColumnVector.Type.LONG;
+
+    case FLOAT:
+    case DOUBLE:
+      return ColumnVector.Type.DOUBLE;
+
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+    case BINARY:
+      return ColumnVector.Type.BYTES;
+
+    case DECIMAL:
+      return ColumnVector.Type.DECIMAL;
+
+    default:
+      throw new HiveException("Unexpected primitive type category " + primitiveCategory);
+    }
+  }
+
   // TODO: When we support vectorized STRUCTs and can handle more in the reduce-side (MERGEPARTIAL):
   // TODO:   Write reduce-side versions of AVG. Currently, only map-side (HASH) versions are in table.
   // TODO:   And, investigate if different reduce-side versions are needed for var* and std*, or if map-side aggregate can be used..  Right now they are conservatively
@@ -2092,7 +2138,7 @@ public class VectorizationContext {
     add(new AggregateDefinition("stddev_samp", VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFStdSampDecimal.class));
   }};
 
-  public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc, boolean isReduce)
+  public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc, boolean isReduceMergePartial)
       throws HiveException {
 
     ArrayList<ExprNodeDesc> paramDescList = desc.getParameters();
@@ -2120,11 +2166,11 @@ public class VectorizationContext {
            inputType == VectorExpressionDescriptor.ArgumentType.NONE) ||
           (aggDef.getType().isSameTypeOrFamily(inputType)))) {
 
-    	if (aggDef.getMode() == GroupByDesc.Mode.HASH && isReduce) {
-    	  continue;
-    	} else if (aggDef.getMode() == GroupByDesc.Mode.MERGEPARTIAL && !isReduce) {
-    	  continue;
-    	}
+        if (aggDef.getMode() == GroupByDesc.Mode.HASH && isReduceMergePartial) {
+          continue;
+        } else if (aggDef.getMode() == GroupByDesc.Mode.MERGEPARTIAL && !isReduceMergePartial) {
+          continue;
+        }
 
         Class<? extends VectorAggregateExpression> aggClass = aggDef.getAggClass();
         try
@@ -2143,7 +2189,7 @@ public class VectorizationContext {
     }
 
     throw new HiveException("Vector aggregate not implemented: \"" + aggregateName +
-        "\" for type: \"" + inputType.name() + " (reduce-side = " + isReduce + ")");
+        "\" for type: \"" + inputType.name() + " (reduce-merge-partial = " + isReduceMergePartial + ")");
   }
 
   public int firstOutputColumnIndex() {

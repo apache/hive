@@ -1,0 +1,42 @@
+Ln:1 DECLARE count INT = 3
+Ln:3 WHILE - ENTERED
+Ln:4 PRINT
+Start of while block
+Ln:5 PRINT
+3
+Ln:6 SET count = 2
+Ln:7 EXIT
+Ln:8 PRINT
+End of while block
+Ln:4 PRINT
+Start of while block
+Ln:5 PRINT
+2
+Ln:6 SET count = 1
+Ln:7 EXIT
+Ln:8 PRINT
+End of while block
+Ln:4 PRINT
+Start of while block
+Ln:5 PRINT
+1
+Ln:6 SET count = 0
+Ln:7 EXIT
+Ln:3 WHILE - LEFT
+Ln:11 SET count = 3
+Ln:14 WHILE - ENTERED
+Ln:15 PRINT
+Start of outer while block
+Ln:17 WHILE - ENTERED
+Ln:18 PRINT
+Start of 1st inner while block
+Ln:19 EXIT
+Ln:17 WHILE - LEFT
+Ln:24 WHILE - ENTERED
+Ln:25 PRINT
+Start of 2nd inner while block
+Ln:26 EXIT
+Ln:24 WHILE - LEFT
+Ln:14 WHILE - LEFT
+Ln:31 PRINT
+End of script

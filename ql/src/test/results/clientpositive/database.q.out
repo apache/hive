@@ -145,8 +145,10 @@ POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@test_table
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 test_table
 PREHOOK: query: -- DESCRIBE table in non-default DB
 DESCRIBE test_table
@@ -180,8 +182,10 @@ POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@test_table_like
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 test_table
 test_table_like
 PREHOOK: query: DESCRIBE EXTENDED test_table_like
@@ -231,8 +235,10 @@ POSTHOOK: Input: test_db@test_table
 POSTHOOK: Output: test_db@test_table
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 test_table_like
 PREHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -244,8 +250,10 @@ POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@test_table
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 test_table
 test_table_like
 PREHOOK: query: SELECT * FROM test_table
@@ -274,8 +282,10 @@ POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@src
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 src
 test_table
 test_table_like
@@ -345,8 +355,10 @@ POSTHOOK: Input: test_db@test_table_like
 POSTHOOK: Output: test_db@test_table_like
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
