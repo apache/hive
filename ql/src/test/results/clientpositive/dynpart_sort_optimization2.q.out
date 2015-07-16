@@ -187,8 +187,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -248,8 +246,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part             	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -408,8 +404,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -469,8 +463,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part             	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -650,8 +642,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -711,8 +701,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part             	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -870,8 +858,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -931,8 +917,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part             	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1168,8 +1152,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1229,8 +1211,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part_orc         	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1389,8 +1369,6 @@ Partition Value:    	[2452617]
 Database:           	default             	 
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1450,8 +1428,6 @@ ss_sold_date_sk     	int
 Partition Value:    	[2452638]           	 
 Database:           	default             	 
 Table:              	ss_part_orc         	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

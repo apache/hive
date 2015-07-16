@@ -23,7 +23,6 @@ No rows affected
 'Table:              ','mytbl               ',''
 'CreateTime:         ','!!TIMESTAMP!!',''
 'LastAccessTime:     ','UNKNOWN             ',''
-'Protect Mode:       ','None                ',''
 'Location:           ','!!{hive.metastore.warehouse.dir}!!/part_inherit_tbl_props_empty.db/mytbl/c2=v1',''
 'Partition Parameters:','',''
 '','transient_lastDdlTime','!!UNIXTIME!!          '

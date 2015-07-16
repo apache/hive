@@ -2283,7 +2283,6 @@ No rows selected
 'Owner:              ','!!{user.name}!!                ',''
 'CreateTime:         ','!!TIMESTAMP!!',''
 'LastAccessTime:     ','UNKNOWN             ',''
-'Protect Mode:       ','None                ',''
 'Retention:          ','0                   ',''
 'Location:           ','!!{hive.metastore.warehouse.dir}!!/merge3.db/merge_src2',''
 'Table Type:         ','MANAGED_TABLE       ',''

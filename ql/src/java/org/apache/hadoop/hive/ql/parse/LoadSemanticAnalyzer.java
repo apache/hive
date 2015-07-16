@@ -206,12 +206,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // initialize destination table/partition
     TableSpec ts = new TableSpec(db, conf, (ASTNode) tableTree);
 
-    if (ts.tableHandle.isOffline()){
-      throw new SemanticException(
-          ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(":Table " + ts.tableName));
-    }
-
-    if (ts.tableHandle.isView()) {
+   if (ts.tableHandle.isView()) {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
     }
     if (ts.tableHandle.isNonNative()) {
@@ -255,10 +250,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       try{
         Partition part = Hive.get().getPartition(ts.tableHandle, partSpec, false);
         if (part != null) {
-          if (part.isOffline()) {
-            throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
-                getMsg(ts.tableName + ":" + part.getName()));
-          }
           if (isOverWrite){
             outputs.add(new WriteEntity(part, WriteEntity.WriteType.INSERT_OVERWRITE));
           } else {

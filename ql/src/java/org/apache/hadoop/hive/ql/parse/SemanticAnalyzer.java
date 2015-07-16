@@ -1601,19 +1601,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, tab_name);
         }
 
-        // We check offline of the table, as if people only select from an
-        // non-existing partition of an offline table, the partition won't
-        // be added to inputs and validate() won't have the information to
-        // check the table's offline status.
-        // TODO: Modify the code to remove the checking here and consolidate
-        // it in validate()
-        //
-        if (tab.isOffline()) {
-          throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
-              getMsg("Table " + getUnescapedName(qb.getParseInfo().getSrcForAlias(alias))));
-        }
-
-        if (tab.isView()) {
+       if (tab.isView()) {
           if (qb.getParseInfo().isAnalyzeCommand()) {
             throw new SemanticException(ErrorMsg.ANALYZE_VIEW.getMsg());
           }
@@ -10569,20 +10557,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Table tbl = readEntity.getTable();
       Partition p = readEntity.getPartition();
-
-
-      if (tbl.isOffline()) {
-        throw new SemanticException(
-            ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-                "Table " + tbl.getTableName()));
-      }
-
-      if (type == ReadEntity.Type.PARTITION && p != null && p.isOffline()) {
-        throw new SemanticException(
-            ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-                "Table " + tbl.getTableName() +
-                    " Partition " + p.getName()));
-      }
     }
 
     for (WriteEntity writeEntity : getOutputs()) {
@@ -10636,24 +10610,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (HiveException e) {
           throw new SemanticException(e);
         }
-
-        if (type == WriteEntity.Type.PARTITION && p != null && p.isOffline()) {
-          throw new SemanticException(
-              ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-                  " Table " + tbl.getTableName() +
-                      " Partition " + p.getName()));
-        }
-
       }
       else {
         LOG.debug("Not a partition.");
         tbl = writeEntity.getTable();
-      }
-
-      if (tbl.isOffline()) {
-        throw new SemanticException(
-            ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-                "Table " + tbl.getTableName()));
       }
     }
 

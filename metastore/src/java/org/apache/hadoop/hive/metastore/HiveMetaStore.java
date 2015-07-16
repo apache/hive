@@ -230,7 +230,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.*;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
 /**
  * TODO:pc remove application logic to a separate interface.
@@ -2774,10 +2776,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         for (Partition part : parts) {
-          if (!ignoreProtection && !MetaStoreUtils.canDropPartition(tbl, part)) {
-            throw new MetaException("Table " + tbl.getTableName()
-                + " Partition " + part + " is protected from being dropped");
-          }
+
+          // TODO - we need to speed this up for the normal path where all partitions are under
+          // the table and we don't have to stat every partition
 
           firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
           if (colNames != null) {

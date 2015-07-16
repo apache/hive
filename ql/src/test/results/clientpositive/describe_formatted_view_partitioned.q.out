@@ -55,8 +55,6 @@ Partition Value:    	[val_86]
 Database:           	default             	 
 Table:              	view_partitioned    	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DROP VIEW view_partitioned

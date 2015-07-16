@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -3210,17 +3209,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return builder;
   }
 
-  private void setAlterProtectMode(boolean protectModeEnable,
-      AlterTableDesc.ProtectModeType protectMode,
-      ProtectMode mode) {
-    if (protectMode == AlterTableDesc.ProtectModeType.OFFLINE) {
-      mode.offline = protectModeEnable;
-    } else if (protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
-      mode.noDrop = protectModeEnable;
-    } else if (protectMode == AlterTableDesc.ProtectModeType.NO_DROP_CASCADE) {
-      mode.noDropCascade = protectModeEnable;
-    }
-  }
   /**
    * Alter a given table.
    *
@@ -3453,20 +3441,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTbl.getSerdeName() != null) {
         sd.getSerdeInfo().setSerializationLib(alterTbl.getSerdeName());
       }
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
-      boolean protectModeEnable = alterTbl.isProtectModeEnable();
-      AlterTableDesc.ProtectModeType protectMode = alterTbl.getProtectModeType();
-
-      ProtectMode mode = null;
-      if (part != null) {
-        mode = part.getProtectMode();
-        setAlterProtectMode(protectModeEnable, protectMode, mode);
-        part.setProtectMode(mode);
-      } else {
-        mode = tbl.getProtectMode();
-        setAlterProtectMode(protectModeEnable,protectMode, mode);
-        tbl.setProtectMode(mode);
-      }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       // validate sort columns and bucket columns
@@ -3635,7 +3609,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                             dropTbl.getPartSpecs(),
                             PartitionDropOptions.instance()
                                                 .deleteData(true)
-                                                .ignoreProtection(dropTbl.getIgnoreProtection())
                                                 .ifExists(true)
                                                 .purgeData(dropTbl.getIfPurge()));
     for (Partition partition : droppedParts) {
@@ -3664,11 +3637,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               "Cannot drop a base table with DROP VIEW");
         }
       }
-    }
-
-    if (tbl != null && !tbl.canDrop()) {
-      throw new HiveException("Table " + tbl.getTableName() +
-          " is protected from being dropped");
     }
 
     ReplicationSpec replicationSpec = dropTbl.getReplicationSpec();
@@ -3713,24 +3681,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     int partitionBatchSize = HiveConf.getIntVar(conf,
         ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
-
-    // We should check that all the partitions of the table can be dropped
-    if (tbl != null && tbl.isPartitioned()) {
-      List<String> partitionNames = db.getPartitionNames(tbl.getDbName(), tbl.getTableName(), (short)-1);
-
-      for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
-        List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
-            partitionNames.size()));
-        List<Partition> listPartitions = db.getPartitionsByNames(tbl, partNames);
-        for (Partition p: listPartitions) {
-          if (!p.canDrop()) {
-            throw new HiveException("Table " + tbl.getTableName() +
-                " Partition" + p.getName() +
-                " is protected from being dropped");
-          }
-        }
-      }
-    }
 
     // drop the table
     db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());

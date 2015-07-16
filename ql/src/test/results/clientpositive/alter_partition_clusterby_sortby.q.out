@@ -47,8 +47,6 @@ Partition Value:    	[abc]
 Database:           	default             	 
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
@@ -101,8 +99,6 @@ c                   	string
 Partition Value:    	[abc]               	 
 Database:           	default             	 
 Table:              	alter_table_partition_clusterby_sortby	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
@@ -157,8 +153,6 @@ Partition Value:    	[abc]
 Database:           	default             	 
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
@@ -201,7 +195,6 @@ c                   	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 

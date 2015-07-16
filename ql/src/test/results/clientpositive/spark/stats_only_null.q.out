@@ -229,8 +229,6 @@ Partition Value:    	[2010]
 Database:           	default             	 
 Table:              	stats_null_part     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -271,8 +269,6 @@ dt                  	string
 Partition Value:    	[2011]              	 
 Database:           	default             	 
 Table:              	stats_null_part     	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

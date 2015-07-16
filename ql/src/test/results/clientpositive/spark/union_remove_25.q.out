@@ -218,8 +218,6 @@ Partition Value:    	[2004]
 Database:           	default             	 
 Table:              	outputtbl1          	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 	numFiles            	4                   
@@ -429,8 +427,6 @@ Partition Value:    	[2008-04-08]
 Database:           	default             	 
 Table:              	outputtbl2          	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 	numFiles            	2                   
@@ -623,8 +619,6 @@ hr                  	string
 Partition Value:    	[2008-04-08, 11]    	 
 Database:           	default             	 
 Table:              	outputtbl3          	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
