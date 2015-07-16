@@ -288,9 +288,6 @@ public class SparkPlan {
    * @param child
    */
   public void connect(SparkTran parent, SparkTran child) {
-    if (getChildren(parent).contains(child)) {
-      throw new IllegalStateException("Connection already exists");
-    }
     rootTrans.remove(child);
     leafTrans.remove(parent);
     if (transGraph.get(parent) == null) {

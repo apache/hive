@@ -210,16 +210,6 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
         return false;
       }
 
-      // If these two Works share the same child, we can not combine them as SparkPlan does not
-      // support multi edge between two Works.
-      List<BaseWork> firstChildren = sparkWork.getChildren(first);
-      List<BaseWork> secondChildren = sparkWork.getChildren(second);
-      for (BaseWork child : firstChildren) {
-        if (secondChildren.contains(child)) {
-          return false;
-        }
-      }
-
       Set<Operator<?>> firstRootOperators = first.getAllRootOperators();
       Set<Operator<?>> secondRootOperators = second.getAllRootOperators();
       if (firstRootOperators.size() != secondRootOperators.size()) {
