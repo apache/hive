@@ -155,7 +155,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1
@@ -1084,7 +1084,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1

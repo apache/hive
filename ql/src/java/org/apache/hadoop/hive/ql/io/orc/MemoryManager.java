@@ -24,10 +24,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 
+import com.google.common.base.Preconditions;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Implements a memory manager that keeps a global context of how many ORC
@@ -35,9 +38,9 @@ import java.util.Map;
  * dynamic partitions, it is easy to end up with many writers in the same task.
  * By managing the size of each allocation, we try to cut down the size of each
  * allocation and keep the task from running out of memory.
- *
- * This class is thread safe and uses synchronization around the shared state
- * to prevent race conditions.
+ * 
+ * This class is not thread safe, but is re-entrant - ensure creation and all
+ * invocations are triggered from the same thread.
  */
 class MemoryManager {
 
@@ -54,6 +57,14 @@ class MemoryManager {
   private long totalAllocation = 0;
   private double currentScale = 1;
   private int rowsAddedSinceCheck = 0;
+  private final OwnedLock ownerLock = new OwnedLock();
+
+  @SuppressWarnings("serial")
+  private static class OwnedLock extends ReentrantLock {
+    public Thread getOwner() {
+      return super.getOwner();
+    }
+  }
 
   private static class WriterInfo {
     long allocation;
@@ -84,6 +95,17 @@ class MemoryManager {
     double maxLoad = conf.getFloat(poolVar.varname, poolVar.defaultFloatVal);
     totalMemoryPool = Math.round(ManagementFactory.getMemoryMXBean().
         getHeapMemoryUsage().getMax() * maxLoad);
+    ownerLock.lock();
+  }
+
+  /**
+   * Light weight thread-safety check for multi-threaded access patterns
+   */
+  private void checkOwner() {
+    Preconditions.checkArgument(ownerLock.isHeldByCurrentThread(),
+        "Owner thread expected %s, got %s",
+        ownerLock.getOwner(),
+        Thread.currentThread());
   }
 
   /**
@@ -92,8 +114,9 @@ class MemoryManager {
    * @param path the file that is being written
    * @param requestedAllocation the requested buffer size
    */
-  synchronized void addWriter(Path path, long requestedAllocation,
+  void addWriter(Path path, long requestedAllocation,
                               Callback callback) throws IOException {
+    checkOwner();
     WriterInfo oldVal = writerList.get(path);
     // this should always be null, but we handle the case where the memory
     // manager wasn't told that a writer wasn't still in use and the task
@@ -115,7 +138,8 @@ class MemoryManager {
    * Remove the given writer from the pool.
    * @param path the file that has been closed
    */
-  synchronized void removeWriter(Path path) throws IOException {
+  void removeWriter(Path path) throws IOException {
+    checkOwner();
     WriterInfo val = writerList.get(path);
     if (val != null) {
       writerList.remove(path);
@@ -144,7 +168,7 @@ class MemoryManager {
    * @return a fraction between 0.0 and 1.0 of the requested size that is
    * available for each writer.
    */
-  synchronized double getAllocationScale() {
+  double getAllocationScale() {
     return currentScale;
   }
 
@@ -152,7 +176,7 @@ class MemoryManager {
    * Give the memory manager an opportunity for doing a memory check.
    * @throws IOException
    */
-  synchronized void addedRow() throws IOException {
+  void addedRow() throws IOException {
     if (++rowsAddedSinceCheck >= ROWS_BETWEEN_CHECKS) {
       notifyWriters();
     }
@@ -163,6 +187,7 @@ class MemoryManager {
    * @throws IOException
    */
   void notifyWriters() throws IOException {
+    checkOwner();
     LOG.debug("Notifying writers after " + rowsAddedSinceCheck);
     for(WriterInfo writer: writerList.values()) {
       boolean flushed = writer.callback.checkMemory(currentScale);

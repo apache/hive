@@ -19,9 +19,12 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
@@ -194,6 +197,38 @@ public class HiveLockObject {
 
   public HiveLockObject(DummyPartition par, HiveLockObjectData lockData) {
     this(new String[] {par.getName()}, lockData);
+  }
+
+  /**
+   * Creates a locking object for a table (when partition spec is not provided)
+   * or a table partition
+   * @param hiveDB    an object to communicate with the metastore
+   * @param tableName the table to create the locking object on
+   * @param partSpec  the spec of a partition to create the locking object on
+   * @return  the locking object
+   * @throws HiveException
+   */
+  public static HiveLockObject createFrom(Hive hiveDB, String tableName,
+      Map<String, String> partSpec) throws HiveException {
+    Table  tbl = hiveDB.getTable(tableName);
+    if (tbl == null) {
+      throw new HiveException("Table " + tableName + " does not exist ");
+    }
+
+    HiveLockObject obj = null;
+
+    if  (partSpec == null) {
+      obj = new HiveLockObject(tbl, null);
+    }
+    else {
+      Partition par = hiveDB.getPartition(tbl, partSpec, false);
+      if (par == null) {
+        throw new HiveException("Partition " + partSpec + " for table " +
+            tableName + " does not exist");
+      }
+      obj = new HiveLockObject(par, null);
+    }
+    return obj;
   }
 
   public String[] getPaths() {

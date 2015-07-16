@@ -142,8 +142,6 @@ Partition Value:    	[1]
 Database:           	default             	 
 Table:              	fact_daily          	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####

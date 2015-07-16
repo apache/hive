@@ -1,0 +1,9 @@
+PREHOOK: query: create table orc_test (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_test
+POSTHOOK: query: create table orc_test (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_test
+FAILED: SemanticException [Error 30019]: The file that you are trying to load does not match the file format of the destination table. Destination table is stored as ORC but the file being loaded is not a valid ORC file.

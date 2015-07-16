@@ -34,6 +34,28 @@ import org.apache.hadoop.hive.serde2.thrift.test.IntString;
  */
 public class TestObjectInspectorUtils extends TestCase {
 
+  public void testCompareFloatingNumberSignedZero() {
+    PrimitiveObjectInspector doubleOI = PrimitiveObjectInspectorFactory
+        .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.DOUBLE);
+
+    Double d1 = Double.valueOf("0.0");
+    Double d2 = Double.valueOf("-0.0");
+    assertEquals(0, ObjectInspectorUtils.compare(d1, doubleOI, d2, doubleOI));
+    assertEquals(0, ObjectInspectorUtils.compare(d2, doubleOI, d1, doubleOI));
+    assertEquals(0, ObjectInspectorUtils.compare(d1, doubleOI, d1, doubleOI));
+    assertEquals(0, ObjectInspectorUtils.compare(d2, doubleOI, d2, doubleOI));
+
+    PrimitiveObjectInspector floatOI = PrimitiveObjectInspectorFactory
+        .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.FLOAT);
+
+    Float f1 = Float.valueOf("0.0");
+    Float f2 = Float.valueOf("-0.0");
+    assertEquals(0, ObjectInspectorUtils.compare(f1, floatOI, f2, floatOI));
+    assertEquals(0, ObjectInspectorUtils.compare(f2, floatOI, f1, floatOI));
+    assertEquals(0, ObjectInspectorUtils.compare(f1, floatOI, f1, floatOI));
+    assertEquals(0, ObjectInspectorUtils.compare(f2, floatOI, f2, floatOI));
+  }
+
   public void testObjectInspectorUtils() throws Throwable {
     try {
       ObjectInspector oi1 = ObjectInspectorFactory

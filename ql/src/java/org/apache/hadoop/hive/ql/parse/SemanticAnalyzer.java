@@ -114,8 +114,11 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
+import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
+import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
@@ -206,7 +209,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
@@ -1599,19 +1601,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, tab_name);
         }
 
-        // We check offline of the table, as if people only select from an
-        // non-existing partition of an offline table, the partition won't
-        // be added to inputs and validate() won't have the information to
-        // check the table's offline status.
-        // TODO: Modify the code to remove the checking here and consolidate
-        // it in validate()
-        //
-        if (tab.isOffline()) {
-          throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
-              getMsg("Table " + getUnescapedName(qb.getParseInfo().getSrcForAlias(alias))));
-        }
-
-        if (tab.isView()) {
+       if (tab.isView()) {
           if (qb.getParseInfo().isAnalyzeCommand()) {
             throw new SemanticException(ErrorMsg.ANALYZE_VIEW.getMsg());
           }
@@ -2886,8 +2876,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return input;
     }
 
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new FilterDesc(filterPred, false),
+    FilterDesc filterDesc = new FilterDesc(filterPred, false);
+    filterDesc.setGenerated(true);
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(filterDesc,
         new RowSchema(inputRR.getColumnInfos()), input), inputRR);
 
     if (LOG.isDebugEnabled()) {
@@ -5394,6 +5385,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       OpParseContext inputCtx = opParseCtx.get(input);
       RowResolver inputRR = inputCtx.getRowResolver();
       FilterDesc orFilterDesc = new FilterDesc(previous, false);
+      orFilterDesc.setGenerated(true);
 
       selectInput = putOpInsertMap(OperatorFactory.getAndMakeChild(
           orFilterDesc, new RowSchema(
@@ -6601,7 +6593,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rsCtx.getNumFiles(),
       rsCtx.getTotalFiles(),
       rsCtx.getPartnCols(),
-      dpCtx);
+      dpCtx,
+      dest_path);
 
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
@@ -9459,9 +9452,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         LOG.info("No need for sample filter");
         ExprNodeDesc samplePredicate = genSamplePredicate(ts, tabBucketCols,
             colsEqual, alias, rwsch, qb.getMetaData(), null);
-        op = OperatorFactory.getAndMakeChild(new FilterDesc(
-            samplePredicate, true, new SampleDesc(ts.getNumerator(), ts
-                .getDenominator(), tabBucketCols, true)),
+        FilterDesc filterDesc = new FilterDesc(
+          samplePredicate, true, new SampleDesc(ts.getNumerator(),
+            ts.getDenominator(), tabBucketCols, true));
+        filterDesc.setGenerated(true);
+        op = OperatorFactory.getAndMakeChild(filterDesc,
             new RowSchema(rwsch.getColumnInfos()), top);
       } else {
         // need to add filter
@@ -9469,8 +9464,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         LOG.info("Need sample filter");
         ExprNodeDesc samplePredicate = genSamplePredicate(ts, tabBucketCols,
             colsEqual, alias, rwsch, qb.getMetaData(), null);
-        op = OperatorFactory.getAndMakeChild(new FilterDesc(
-            samplePredicate, true),
+        FilterDesc filterDesc = new FilterDesc(samplePredicate, true);
+        filterDesc.setGenerated(true);
+        op = OperatorFactory.getAndMakeChild(filterDesc,
             new RowSchema(rwsch.getColumnInfos()), top);
       }
     } else {
@@ -9499,11 +9495,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qb.getParseInfo().setTabSample(alias, tsSample);
             ExprNodeDesc samplePred = genSamplePredicate(tsSample, tab
                 .getBucketCols(), true, alias, rwsch, qb.getMetaData(), null);
-            op = OperatorFactory
-                .getAndMakeChild(new FilterDesc(samplePred, true,
-                    new SampleDesc(tsSample.getNumerator(), tsSample
-                        .getDenominator(), tab.getBucketCols(), true)),
-                    new RowSchema(rwsch.getColumnInfos()), top);
+            FilterDesc filterDesc = new FilterDesc(samplePred, true,
+              new SampleDesc(tsSample.getNumerator(), tsSample
+                .getDenominator(), tab.getBucketCols(), true));
+            filterDesc.setGenerated(true);
+            op = OperatorFactory.getAndMakeChild(filterDesc,
+              new RowSchema(rwsch.getColumnInfos()), top);
             LOG.info("No need for sample filter");
           } else {
             // The table is not bucketed, add a dummy filter :: rand()
@@ -9517,8 +9514,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                     .valueOf(460476415)));
             ExprNodeDesc samplePred = genSamplePredicate(tsSample, null, false,
                 alias, rwsch, qb.getMetaData(), randFunc);
-            op = OperatorFactory.getAndMakeChild(new FilterDesc(
-                samplePred, true),
+            FilterDesc filterDesc = new FilterDesc(samplePred, true);
+            filterDesc.setGenerated(true);
+            op = OperatorFactory.getAndMakeChild(filterDesc,
                 new RowSchema(rwsch.getColumnInfos()), top);
           }
         }
@@ -10150,6 +10148,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } catch (HiveException e) {
         throw new SemanticException(e);
       }
+
+      // Generate lineage info for create view statements
+      // if LineageLogger hook is configured.
+      if (HiveConf.getVar(conf, HiveConf.ConfVars.POSTEXECHOOKS).contains(
+          "org.apache.hadoop.hive.ql.hooks.LineageLogger")) {
+        ArrayList<Transform> transformations = new ArrayList<Transform>();
+        transformations.add(new HiveOpConverterPostProc());
+        transformations.add(new Generator());
+        for (Transform t : transformations) {
+          pCtx = t.transform(pCtx);
+        }
+      }
       return;
     }
 
@@ -10547,20 +10557,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Table tbl = readEntity.getTable();
       Partition p = readEntity.getPartition();
-
-
-      if (tbl.isOffline()) {
-        throw new SemanticException(
-            ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-                "Table " + tbl.getTableName()));
-      }
-
-      if (type == ReadEntity.Type.PARTITION && p != null && p.isOffline()) {
-        throw new SemanticException(
-            ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-                "Table " + tbl.getTableName() +
-                    " Partition " + p.getName()));
-      }
     }
 
     for (WriteEntity writeEntity : getOutputs()) {
@@ -10614,24 +10610,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (HiveException e) {
           throw new SemanticException(e);
         }
-
-        if (type == WriteEntity.Type.PARTITION && p != null && p.isOffline()) {
-          throw new SemanticException(
-              ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-                  " Table " + tbl.getTableName() +
-                      " Partition " + p.getName()));
-        }
-
       }
       else {
         LOG.debug("Not a partition.");
         tbl = writeEntity.getTable();
-      }
-
-      if (tbl.isOffline()) {
-        throw new SemanticException(
-            ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-                "Table " + tbl.getTableName()));
       }
     }
 

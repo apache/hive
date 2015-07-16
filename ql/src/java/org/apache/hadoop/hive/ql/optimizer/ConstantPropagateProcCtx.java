@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -53,7 +53,7 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
       .getLog(ConstantPropagateProcCtx.class);
 
   private final Map<Operator<? extends Serializable>, Map<ColumnInfo, ExprNodeDesc>> opToConstantExprs;
-  private final List<Operator<? extends Serializable>> opToDelete;
+  private final Set<Operator<? extends Serializable>> opToDelete;
   private ConstantPropagateOption constantPropagateOption = ConstantPropagateOption.FULL;
 
   public ConstantPropagateProcCtx() {
@@ -63,7 +63,7 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
   public ConstantPropagateProcCtx(ConstantPropagateOption option) {
     opToConstantExprs =
         new HashMap<Operator<? extends Serializable>, Map<ColumnInfo, ExprNodeDesc>>();
-    opToDelete = new ArrayList<Operator<? extends Serializable>>();
+    opToDelete = new HashSet<Operator<? extends Serializable>>();
     this.constantPropagateOption = option;
   }
 
@@ -193,7 +193,7 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
     opToDelete.add(op);
   }
 
-  public List<Operator<? extends Serializable>> getOpToDelete() {
+  public Set<Operator<? extends Serializable>> getOpToDelete() {
     return opToDelete;
   }
 

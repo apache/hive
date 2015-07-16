@@ -61,12 +61,8 @@ public class GenTezWork implements NodeProcessor {
 
   static final private Log LOG = LogFactory.getLog(GenTezWork.class.getName());
 
-  // instance of shared utils
-  private GenTezUtils utils = null;
+  private final GenTezUtils utils;
 
-  /**
-   * Constructor takes utils as parameter to facilitate testing
-   */
   public GenTezWork(GenTezUtils utils) {
     this.utils = utils;
   }
@@ -130,7 +126,7 @@ public class GenTezWork implements NodeProcessor {
       if (context.preceedingWork == null) {
         work = utils.createMapWork(context, root, tezWork, null);
       } else {
-        work = utils.createReduceWork(context, root, tezWork);
+        work = GenTezUtils.createReduceWork(context, root, tezWork);
       }
       context.rootToWorkMap.put(root, work);
     }
@@ -295,7 +291,7 @@ public class GenTezWork implements NodeProcessor {
           // if unionWork is null, it means it is the first time. we need to
           // create a union work object and add this work to it. Subsequent 
           // work should reference the union and not the actual work.
-          unionWork = utils.createUnionWork(context, root, operator, tezWork);
+          unionWork = GenTezUtils.createUnionWork(context, root, operator, tezWork);
           // finally connect the union work with work
           connectUnionWorkWithWork(unionWork, work, tezWork, context);
         }

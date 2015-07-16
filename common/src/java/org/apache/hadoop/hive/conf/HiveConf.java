@@ -1725,8 +1725,8 @@ public class HiveConf extends Configuration {
         "Hive metrics subsystem implementation class."),
     HIVE_METRICS_REPORTER("hive.service.metrics.reporter", "JSON_FILE, JMX",
         "Reporter type for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics, comma separated list of JMX, CONSOLE, JSON_FILE"),
-    HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "file:///tmp/report.json",
-        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of JSON metrics file.  " +
+    HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "/tmp/report.json",
+        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of local JSON metrics file.  " +
         "This file will get overwritten at every interval."),
     HIVE_METRICS_JSON_FILE_INTERVAL("hive.service.metrics.file.frequency", "5s",
         new TimeValidator(TimeUnit.MILLISECONDS),
@@ -1789,6 +1789,8 @@ public class HiveConf extends Configuration {
         "Transport mode of HiveServer2."),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
         "Bind host on which to run the HiveServer2 Thrift service."),
+    HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
+        "enable parallel compilation between sessions on HiveServer2. The default is false."),
 
     // http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001,
@@ -2216,7 +2218,11 @@ public class HiveConf extends Configuration {
         new StringSet("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
        "directories that are partition-like but contain unsupported characters. 'throw' (an " +
        "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
-       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)");
+       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
+    HIVE_TEZ_ENABLE_MEMORY_MANAGER("hive.tez.enable.memory.manager", true,
+        "Enable memory manager for tez"),
+    HIVE_HASH_TABLE_INFLATION_FACTOR("hive.hash.table.inflation.factor", (float) 2.0,
+	"Expected inflation factor between disk/in memory representation of hash tables");
 
 
     public final String varname;

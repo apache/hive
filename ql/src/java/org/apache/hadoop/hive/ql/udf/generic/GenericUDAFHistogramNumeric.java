@@ -238,7 +238,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
       NumericHistogram histogram; // the histogram object
       @Override
       public int estimate() {
-        return JavaDataModel.get().lengthFor(histogram);
+        return histogram.lengthFor(JavaDataModel.get());
       }
     };
 

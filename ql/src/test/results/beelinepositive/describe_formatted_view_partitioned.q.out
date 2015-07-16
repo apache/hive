@@ -33,7 +33,6 @@ No rows affected
 'Table:              ','view_partitioned    ',''
 'CreateTime:         ','!!TIMESTAMP!!',''
 'LastAccessTime:     ','UNKNOWN             ',''
-'Protect Mode:       ','None                ',''
 'Location:           ','null                ',''
 'Partition Parameters:','',''
 '','transient_lastDdlTime','!!UNIXTIME!!          '

@@ -46,6 +46,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -609,6 +610,7 @@ public class Commands {
             "" + beeLine.getReflector().invoke(beeLine.getDatabaseMetaData(),
                 m[i], new Object[0])));
       } catch (Exception e) {
+        beeLine.output(beeLine.getColorBuffer().pad(m[i], padlen), false);
         beeLine.handleException(e);
       }
     }
@@ -1091,15 +1093,24 @@ public class Commands {
     }
 
     line = line.trim();
-    String[] cmds;
+    List<String> cmdList = new ArrayList<String>();
     if (entireLineAsCommand) {
-      cmds = new String[1];
-      cmds[0] = line;
+      cmdList.add(line);
     } else {
-      cmds = line.split(";");
+      StringBuffer command = new StringBuffer();
+      for (String cmdpart: line.split(";")) {
+        if (cmdpart.endsWith("\\")) {
+          command.append(cmdpart.substring(0, cmdpart.length() -1)).append(";");
+          continue;
+        } else {
+          command.append(cmdpart);
+        }
+        cmdList.add(command.toString());
+        command.setLength(0);
+      }
     }
-    for (int i = 0; i < cmds.length; i++) {
-      String sql = cmds[i].trim();
+    for (int i = 0; i < cmdList.size(); i++) {
+      String sql = cmdList.get(i).trim();
       if (sql.length() != 0) {
         if (!beeLine.isBeeLine()) {
           sql = cliToBeelineCmd(sql);

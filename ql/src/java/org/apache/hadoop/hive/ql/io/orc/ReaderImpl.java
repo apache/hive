@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -36,14 +34,14 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.FileFormatException;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -232,7 +230,7 @@ public class ReaderImpl implements Reader {
                                       ByteBuffer buffer) throws IOException {
     int len = OrcFile.MAGIC.length();
     if (psLen < len + 1) {
-      throw new IOException("Malformed ORC file " + path +
+      throw new FileFormatException("Malformed ORC file " + path +
           ". Invalid postscript length " + psLen);
     }
     int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - 1
@@ -247,7 +245,7 @@ public class ReaderImpl implements Reader {
       in.readFully(header, 0, len);
       // if it isn't there, this isn't an ORC file
       if (!Text.decode(header, 0 , len).equals(OrcFile.MAGIC)) {
-        throw new IOException("Malformed ORC file " + path +
+        throw new FileFormatException("Malformed ORC file " + path +
             ". Invalid postscript.");
       }
     }
@@ -644,6 +642,13 @@ public class ReaderImpl implements Reader {
     for (String colName : colNames) {
       if (fieldNames.contains(colName)) {
         fieldIdx = fieldNames.indexOf(colName);
+      } else {
+        String s = "Cannot find field for: " + colName + " in ";
+        for (String fn : fieldNames) {
+          s += fn + ", ";
+        }
+        LOG.warn(s);
+        continue;
       }
 
       // a single field may span multiple columns. find start and end column

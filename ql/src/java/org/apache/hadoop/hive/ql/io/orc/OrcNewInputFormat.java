@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -37,8 +37,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 /** An InputFormat for ORC files. Keys are meaningless,
  * value is the OrcStruct object */
 public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
-  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  private static final String CLASS_NAME = ReaderImpl.class.getName();
+
+  private static final Log LOG = LogFactory.getLog(OrcNewInputFormat.class);
 
   @Override
   public RecordReader<NullWritable, OrcStruct> createRecordReader(
@@ -117,7 +117,9 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
   @Override
   public List<InputSplit> getSplits(JobContext jobContext)
       throws IOException, InterruptedException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("getSplits started");
+    }
     List<OrcSplit> splits =
         OrcInputFormat.generateSplitsInfo(ShimLoader.getHadoopShims()
         .getConfiguration(jobContext));
@@ -125,7 +127,9 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
     for(OrcSplit split: splits) {
       result.add(new OrcNewSplit(split));
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("getSplits finished");
+    }
     return result;
   }
 

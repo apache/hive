@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common.metrics;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 import java.io.IOException;
@@ -162,11 +163,11 @@ public class LegacyMetrics implements Metrics {
     mbs.registerMBean(metrics, oname);
   }
 
-  public Long incrementCounter(String name) throws IOException{
+  public Long incrementCounter(String name) throws IOException {
     return incrementCounter(name,Long.valueOf(1));
   }
 
-  public Long incrementCounter(String name, long increment) throws IOException{
+  public Long incrementCounter(String name, long increment) throws IOException {
     Long value;
     synchronized(metrics) {
       if (!metrics.hasKey(name)) {
@@ -178,6 +179,29 @@ public class LegacyMetrics implements Metrics {
       }
     }
     return value;
+  }
+
+  public Long decrementCounter(String name) throws IOException{
+    return decrementCounter(name, Long.valueOf(1));
+  }
+
+  public Long decrementCounter(String name, long decrement) throws IOException {
+    Long value;
+    synchronized(metrics) {
+      if (!metrics.hasKey(name)) {
+        value = Long.valueOf(decrement);
+        set(name, -value);
+      } else {
+        value = ((Long)get(name)) - decrement;
+        set(name, value);
+      }
+    }
+    return value;
+  }
+
+  @Override
+  public void addGauge(String name, MetricsVariable variable) {
+    //Not implemented.
   }
 
   public void set(String name, Object value) throws IOException{
@@ -209,6 +233,8 @@ public class LegacyMetrics implements Metrics {
       threadLocalScopes.get().get(name).close();
     }
   }
+
+
 
   /**
    * Resets the static context state to initial.

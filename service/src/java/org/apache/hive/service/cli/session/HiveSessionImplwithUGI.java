@@ -24,6 +24,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.Utils;
@@ -35,13 +37,14 @@ import org.apache.hive.service.cli.thrift.TProtocolVersion;
 /**
  *
  * HiveSessionImplwithUGI.
- * HiveSession with connecting user's UGI and delegation token if required
+ * HiveSession with connecting user's UGI and delegation token if required.
+ * Note: this object may be shared between threads in HS2.
  */
 public class HiveSessionImplwithUGI extends HiveSessionImpl {
   public static final String HS2TOKEN = "HiveServer2ImpersonationToken";
 
   private UserGroupInformation sessionUgi = null;
-  private String delegationTokenStr = null;
+  private String hmsDelegationTokenStr = null;
   private HiveSession proxySession = null;
   static final Log LOG = LogFactory.getLog(HiveSessionImplwithUGI.class);
 
@@ -57,15 +60,11 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     if (owner == null) {
       throw new HiveSQLException("No username provided for impersonation");
     }
-    if (UserGroupInformation.isSecurityEnabled()) {
-      try {
-        sessionUgi = UserGroupInformation.createProxyUser(
-            owner, UserGroupInformation.getLoginUser());
-      } catch (IOException e) {
-        throw new HiveSQLException("Couldn't setup proxy user", e);
-      }
-    } else {
-      sessionUgi = UserGroupInformation.createRemoteUser(owner);
+    try {
+      sessionUgi = UserGroupInformation.createProxyUser(
+          owner, UserGroupInformation.getLoginUser());
+    } catch (IOException e) {
+      throw new HiveSQLException("Couldn't setup proxy user", e);
     }
   }
 
@@ -74,7 +73,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   }
 
   public String getDelegationToken () {
-    return this.delegationTokenStr;
+    return this.hmsDelegationTokenStr;
   }
 
   /**
@@ -107,25 +106,51 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
    * @throws HiveException
    * @throws IOException
    */
-  private void setDelegationToken(String delegationTokenStr) throws HiveSQLException {
-    this.delegationTokenStr = delegationTokenStr;
-    if (delegationTokenStr != null) {
+  private void setDelegationToken(String hmsDelegationTokenStr) throws HiveSQLException {
+    this.hmsDelegationTokenStr = hmsDelegationTokenStr;
+    if (hmsDelegationTokenStr != null) {
       getHiveConf().set("hive.metastore.token.signature", HS2TOKEN);
       try {
-        Utils.setTokenStr(sessionUgi, delegationTokenStr, HS2TOKEN);
+        Utils.setTokenStr(sessionUgi, hmsDelegationTokenStr, HS2TOKEN);
       } catch (IOException e) {
-        throw new HiveSQLException("Couldn't setup delegation token in the ugi", e);
+        throw new HiveSQLException("Couldn't setup delegation token in the ugi: " + e, e);
       }
     }
   }
 
   // If the session has a delegation token obtained from the metastore, then cancel it
   private void cancelDelegationToken() throws HiveSQLException {
-    if (delegationTokenStr != null) {
+    if (hmsDelegationTokenStr != null) {
       try {
-        Hive.get(getHiveConf()).cancelDelegationToken(delegationTokenStr);
+        Hive.get(getHiveConf()).cancelDelegationToken(hmsDelegationTokenStr);
       } catch (HiveException e) {
         throw new HiveSQLException("Couldn't cancel delegation token", e);
+      }
+    }
+  }
+
+  @Override
+  public IMetaStoreClient getMetaStoreClient() throws HiveSQLException {
+    return getMetaStoreClient(true);
+  }
+
+  private IMetaStoreClient getMetaStoreClient(boolean retryInCaseOfTokenExpiration) throws HiveSQLException {
+    try {
+      return Hive.get(getHiveConf()).getMSC();
+    } catch (HiveException e) {
+      throw new HiveSQLException("Failed to get metastore connection: " + e, e);
+    } catch(MetaException e1) {
+      if (hmsDelegationTokenStr != null && retryInCaseOfTokenExpiration) {
+        LOG.info("Retrying failed metastore connection: " + e1, e1);
+        Hive.closeCurrent();
+        try {
+          setDelegationToken(Hive.get(getHiveConf()).getDelegationToken(sessionUgi.getUserName(), getUserName()));
+        } catch (HiveException e2) {
+          throw new HiveSQLException("Error connect metastore to setup impersonation: " + e2, e2);
+        }
+        return getMetaStoreClient(false);
+      } else {
+        throw new HiveSQLException("Failed to get metastore connection: " + e1, e1);
       }
     }
   }

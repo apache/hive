@@ -391,8 +391,9 @@ public class HiveConnection implements java.sql.Connection {
         } else {
           // Pick trust store config from the given path
           sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
-          sslTrustStore.load(new FileInputStream(sslTrustStorePath),
-            sslTrustStorePassword.toCharArray());
+          try (FileInputStream fis = new FileInputStream(sslTrustStorePath)) {
+            sslTrustStore.load(fis, sslTrustStorePassword.toCharArray());
+          }
           socketFactory = new SSLSocketFactory(sslTrustStore);
         }
         socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
@@ -512,8 +513,9 @@ public class HiveConnection implements java.sql.Connection {
         throw new IllegalArgumentException(JdbcConnectionParams.SSL_KEY_STORE
         + " Not configured for 2 way SSL connection, keyStorePath param is empty");
       }
-      sslKeyStore.load(new FileInputStream(keyStorePath),
-        keyStorePassword.toCharArray());
+      try (FileInputStream fis = new FileInputStream(keyStorePath)) {
+        sslKeyStore.load(fis, keyStorePassword.toCharArray());
+      }
       keyManagerFactory.init(sslKeyStore, keyStorePassword.toCharArray());
 
       TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
@@ -527,8 +529,9 @@ public class HiveConnection implements java.sql.Connection {
         throw new IllegalArgumentException(JdbcConnectionParams.SSL_TRUST_STORE
         + " Not configured for 2 way SSL connection");
       }
-      sslTrustStore.load(new FileInputStream(trustStorePath),
-        trustStorePassword.toCharArray());
+      try (FileInputStream fis = new FileInputStream(trustStorePath)) {
+        sslTrustStore.load(fis, trustStorePassword.toCharArray());
+      }
       trustManagerFactory.init(sslTrustStore);
       SSLContext context = SSLContext.getInstance("TLS");
       context.init(keyManagerFactory.getKeyManagers(),

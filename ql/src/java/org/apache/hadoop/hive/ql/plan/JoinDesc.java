@@ -309,6 +309,10 @@ public class JoinDesc extends AbstractOperatorDesc {
     return l;
   }
 
+  public ExprNodeDesc [][] getJoinKeys() {
+    return joinKeys;
+  }
+
   public JoinCondDesc[] getConds() {
     return conds;
   }

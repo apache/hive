@@ -339,25 +339,25 @@ public class HiveCalciteUtil {
       return this.mapOfProjIndxInJoinSchemaToLeafPInfo;
     }
 
-    public static JoinPredicateInfo constructJoinPredicateInfo(Join j) {
+    public static JoinPredicateInfo constructJoinPredicateInfo(Join j) throws CalciteSemanticException {
       return constructJoinPredicateInfo(j, j.getCondition());
     }
 
-    public static JoinPredicateInfo constructJoinPredicateInfo(HiveMultiJoin mj) {
+    public static JoinPredicateInfo constructJoinPredicateInfo(HiveMultiJoin mj) throws CalciteSemanticException {
       return constructJoinPredicateInfo(mj, mj.getCondition());
     }
 
-    public static JoinPredicateInfo constructJoinPredicateInfo(Join j, RexNode predicate) {
+    public static JoinPredicateInfo constructJoinPredicateInfo(Join j, RexNode predicate) throws CalciteSemanticException {
       return constructJoinPredicateInfo(j.getInputs(), j.getSystemFieldList(), predicate);
     }
 
-    public static JoinPredicateInfo constructJoinPredicateInfo(HiveMultiJoin mj, RexNode predicate) {
+    public static JoinPredicateInfo constructJoinPredicateInfo(HiveMultiJoin mj, RexNode predicate) throws CalciteSemanticException {
       final List<RelDataTypeField> systemFieldList = ImmutableList.of();
       return constructJoinPredicateInfo(mj.getInputs(), systemFieldList, predicate);
     }
 
     public static JoinPredicateInfo constructJoinPredicateInfo(List<RelNode> inputs,
-            List<RelDataTypeField> systemFieldList, RexNode predicate) {
+            List<RelDataTypeField> systemFieldList, RexNode predicate) throws CalciteSemanticException {
       JoinPredicateInfo jpi = null;
       JoinLeafPredicateInfo jlpi = null;
       List<JoinLeafPredicateInfo> equiLPIList = new ArrayList<JoinLeafPredicateInfo>();
@@ -504,7 +504,7 @@ public class HiveCalciteUtil {
     // split accordingly. If the join condition is not part of the equi-join predicate,
     // the returned object will be typed as SQLKind.OTHER.
     private static JoinLeafPredicateInfo constructJoinLeafPredicateInfo(List<RelNode> inputs,
-            List<RelDataTypeField> systemFieldList, RexNode pe) {
+            List<RelDataTypeField> systemFieldList, RexNode pe) throws CalciteSemanticException {
       JoinLeafPredicateInfo jlpi = null;
       List<Integer> filterNulls = new ArrayList<Integer>();
       List<List<RexNode>> joinExprs = new ArrayList<List<RexNode>>();
@@ -513,7 +513,7 @@ public class HiveCalciteUtil {
       }
 
       // 1. Split leaf join predicate to expressions from left, right
-      RexNode otherConditions = HiveRelOptUtil.splitJoinCondition(systemFieldList, inputs, pe,
+      RexNode otherConditions = HiveRelOptUtil.splitHiveJoinCondition(systemFieldList, inputs, pe,
           joinExprs, filterNulls, null);
 
       if (otherConditions.isAlwaysTrue()) {
@@ -689,7 +689,7 @@ public class HiveCalciteUtil {
   public static ImmutableList<RexNode> getInputRef(List<Integer> inputRefs, RelNode inputRel) {
     ImmutableList.Builder<RexNode> bldr = ImmutableList.<RexNode> builder();
     for (int i : inputRefs) {
-      bldr.add(new RexInputRef(i, (RelDataType) inputRel.getRowType().getFieldList().get(i).getType()));
+      bldr.add(new RexInputRef(i, inputRel.getRowType().getFieldList().get(i).getType()));
     }
     return bldr.build();
   }
@@ -697,7 +697,7 @@ public class HiveCalciteUtil {
   public static ExprNodeDesc getExprNode(Integer inputRefIndx, RelNode inputRel,
       ExprNodeConverter exprConv) {
     ExprNodeDesc exprNode = null;
-    RexNode rexInputRef = new RexInputRef(inputRefIndx, (RelDataType) inputRel.getRowType()
+    RexNode rexInputRef = new RexInputRef(inputRefIndx, inputRel.getRowType()
         .getFieldList().get(inputRefIndx).getType());
     exprNode = rexInputRef.accept(exprConv);
 
@@ -723,9 +723,9 @@ public class HiveCalciteUtil {
     for (Integer iRef : inputRefs) {
       fieldNames.add(schemaNames.get(iRef));
     }
-    
+
     return fieldNames;
-  }  
+  }
 
   /**
    * Walks over an expression and determines whether it is constant.
@@ -789,12 +789,13 @@ public class HiveCalciteUtil {
 
   private static class InputRefsCollector extends RexVisitorImpl<Void> {
 
-    private Set<Integer> inputRefSet = new HashSet<Integer>();
+    private final Set<Integer> inputRefSet = new HashSet<Integer>();
 
     private InputRefsCollector(boolean deep) {
       super(deep);
     }
 
+    @Override
     public Void visitInputRef(RexInputRef inputRef) {
       inputRefSet.add(inputRef.getIndex());
       return null;

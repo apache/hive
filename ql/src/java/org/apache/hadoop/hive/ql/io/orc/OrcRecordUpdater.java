@@ -89,6 +89,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   private final IntWritable bucket = new IntWritable();
   private final LongWritable rowId = new LongWritable();
   private long insertedRows = 0;
+  private long rowIdOffset = 0;
   // This records how many rows have been inserted or deleted.  It is separate from insertedRows
   // because that is monotonically increasing to give new unique row ids.
   private long rowCountDelta = 0;
@@ -206,11 +207,6 @@ public class OrcRecordUpdater implements RecordUpdater {
     return new OrcStruct.OrcStructInspector(fields);
   }
 
-  public static List<String> getAcidEventFields() {
-    return Lists.newArrayList("operation", "originalTransaction", "bucket", "rowId",
-        "currentTransaction", "row");
-  }
-
   OrcRecordUpdater(Path path,
                    AcidOutputFormat.Options options) throws IOException {
     this.options = options;
@@ -263,6 +259,41 @@ public class OrcRecordUpdater implements RecordUpdater {
     item.setFieldValue(ROW_ID, rowId);
   }
 
+  /**
+   * To handle multiple INSERT... statements in a single transaction, we want to make sure
+   * to generate unique {@code rowId} for all inserted rows of the transaction.
+   * @return largest rowId created by previous statements (maybe 0)
+   * @throws IOException
+   */
+  private long findRowIdOffsetForInsert() throws IOException {
+    /*
+    * 1. need to know bucket we are writing to
+    * 2. need to know which delta dir it's in
+    * Then,
+    * 1. find the same bucket file in previous delta dir for this txn
+    * 2. read the footer and get AcidStats which has insert count
+     * 2.1 if AcidStats.inserts>0 done
+     *  else go to previous delta file
+     *  For example, consider insert/update/insert case...*/
+    if(options.getStatementId() <= 0) {
+      return 0;//there is only 1 statement in this transaction (so far)
+    }
+    for(int pastStmt = options.getStatementId() - 1; pastStmt >= 0; pastStmt--) {
+      Path matchingBucket = AcidUtils.createFilename(options.getFinalDestination(), options.clone().statementId(pastStmt));
+      if(!fs.exists(matchingBucket)) {
+        continue;
+      }
+      Reader reader = OrcFile.createReader(matchingBucket, OrcFile.readerOptions(options.getConfiguration()));
+      //no close() on Reader?!
+      AcidStats acidStats = parseAcidStats(reader);
+      if(acidStats.inserts > 0) {
+        return acidStats.inserts;
+      }
+    }
+    //if we got here, we looked at all delta files in this txn, prior to current statement and didn't 
+    //find any inserts...
+    return 0;
+  }
   // Find the record identifier column (if there) and return a possibly new ObjectInspector that
   // will strain out the record id for the underlying writer.
   private ObjectInspector findRecId(ObjectInspector inspector, int rowIdColNum) {
@@ -304,6 +335,9 @@ public class OrcRecordUpdater implements RecordUpdater {
           recIdInspector.getStructFieldData(rowIdValue, originalTxnField));
       rowId = rowIdInspector.get(recIdInspector.getStructFieldData(rowIdValue, rowIdField));
     }
+    else if(operation == INSERT_OPERATION) {
+      rowId += rowIdOffset;
+    }
     this.rowId.set(rowId);
     this.originalTransaction.set(originalTransaction);
     item.setFieldValue(OrcRecordUpdater.ROW, (operation == DELETE_OPERATION ? null : row));
@@ -315,6 +349,9 @@ public class OrcRecordUpdater implements RecordUpdater {
   public void insert(long currentTransaction, Object row) throws IOException {
     if (this.currentTransaction.get() != currentTransaction) {
       insertedRows = 0;
+      //this method is almost no-op in hcatalog.streaming case since statementId == 0 is
+      //always true in that case
+      rowIdOffset = findRowIdOffsetForInsert();
     }
     addEvent(INSERT_OPERATION, currentTransaction, insertedRows++, row);
     rowCountDelta++;
@@ -406,6 +443,22 @@ public class OrcRecordUpdater implements RecordUpdater {
       }
     }
     return result;
+  }
+  /**
+   * {@link KeyIndexBuilder} creates these
+   */
+  static AcidStats parseAcidStats(Reader reader) {
+    String statsSerialized;
+    try {
+      ByteBuffer val =
+        reader.getMetadataValue(OrcRecordUpdater.ACID_STATS)
+          .duplicate();
+      statsSerialized = utf8Decoder.decode(val).toString();
+    } catch (CharacterCodingException e) {
+      throw new IllegalArgumentException("Bad string encoding for " +
+        OrcRecordUpdater.ACID_STATS, e);
+    }
+    return new AcidStats(statsSerialized);
   }
 
   static class KeyIndexBuilder implements OrcFile.WriterCallback {

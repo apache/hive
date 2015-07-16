@@ -842,7 +842,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     rps.setExprs(exprs);
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
     req.setDeleteData(options.deleteData);
-    req.setIgnoreProtection(options.ignoreProtection);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
     if (options.purgeData) {
@@ -854,13 +853,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists, boolean needResult) throws NoSuchObjectException, MetaException, TException {
 
     return dropPartitions(dbName, tblName, partExprs,
                           PartitionDropOptions.instance()
                                               .deleteData(deleteData)
-                                              .ignoreProtection(ignoreProtection)
                                               .ifExists(ifExists)
                                               .returnResults(needResult));
 
@@ -868,13 +866,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists) throws NoSuchObjectException, MetaException, TException {
     // By default, we need the results from dropPartitions();
     return dropPartitions(dbName, tblName, partExprs,
                           PartitionDropOptions.instance()
                                               .deleteData(deleteData)
-                                              .ignoreProtection(ignoreProtection)
                                               .ifExists(ifExists));
   }
 

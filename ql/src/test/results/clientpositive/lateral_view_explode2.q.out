@@ -22,10 +22,10 @@ STAGE PLANS:
             Lateral View Forward
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 172000 Basic stats: COMPLETE Column stats: COMPLETE
                 Lateral View Join Operator
                   outputColumnNames: _col5, _col6
-                  Statistics: Num rows: 1000 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1000 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col5 (type: int), _col6 (type: int)
                     mode: hash
@@ -45,7 +45,7 @@ STAGE PLANS:
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col5, _col6
-                    Statistics: Num rows: 1000 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1000 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col5 (type: int), _col6 (type: int)
                       mode: hash
