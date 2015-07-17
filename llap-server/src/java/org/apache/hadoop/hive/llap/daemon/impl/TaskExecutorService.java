@@ -95,8 +95,10 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
   private final ThreadPoolExecutor threadPoolExecutor;
   private final AtomicInteger numSlotsAvailable;
 
+
+  @VisibleForTesting
   // Tracks known tasks.
-  private final ConcurrentMap<String, TaskWrapper> knownTasks = new ConcurrentHashMap<>();
+  final ConcurrentMap<String, TaskWrapper> knownTasks = new ConcurrentHashMap<>();
 
   private final Object lock = new Object();
 
@@ -219,9 +221,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
             if (task.getTaskRunnerCallable().canFinish()) {
               if (isDebugEnabled) {
                 LOG.debug(
-                    "Attempting to schedule task {}, canFinish={}. Current state: preemptionQueueSize={}, numSlotsAvailable={}",
+                    "Attempting to schedule task {}, canFinish={}. Current state: preemptionQueueSize={}, numSlotsAvailable={}, waitQueueSize={}",
                     task.getRequestId(), task.getTaskRunnerCallable().canFinish(),
-                    preemptionQueue.size(), numSlotsAvailable.get());
+                    preemptionQueue.size(), numSlotsAvailable.get(), waitQueue.size());
               }
               if (numSlotsAvailable.get() == 0 && preemptionQueue.isEmpty()) {
                 shouldWait = true;
@@ -294,12 +296,23 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
   public void schedule(TaskRunnerCallable task) throws RejectedExecutionException {
     TaskWrapper taskWrapper = new TaskWrapper(task, this);
     knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
+
+    // Register for state change notifications so that the waitQueue can be re-ordered correctly
+    // if the fragment moves in or out of the finishable state.
+    boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
+    // It's safe to register outside of the lock since the stateChangeTracker ensures that updates
+    // and registrations are mutually exclusive.
+    taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
+
     TaskWrapper evictedTask;
     try {
-      // Don't need a lock. Not subscribed for notifications yet, and marked as inWaitQueue
-      evictedTask = waitQueue.offer(taskWrapper);
+      synchronized (lock) {
+        evictedTask = waitQueue.offer(taskWrapper);
+        taskWrapper.setIsInWaitQueue(true);
+      }
     } catch (RejectedExecutionException e) {
       knownTasks.remove(taskWrapper.getRequestId());
+      taskWrapper.maybeUnregisterForFinishedStateNotifications();
       throw e;
     }
     if (isInfoEnabled) {
@@ -310,6 +323,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     }
     if (evictedTask != null) {
       evictedTask.maybeUnregisterForFinishedStateNotifications();
+      evictedTask.setIsInWaitQueue(false);
       evictedTask.getTaskRunnerCallable().killTask();
       if (isInfoEnabled) {
         LOG.info("{} evicted from wait queue in favor of {} because of lower priority",
@@ -353,15 +367,11 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
     boolean scheduled = false;
     try {
-
-      boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
-      // It's safe to register outside of the lock since the stateChangeTracker ensures that updates
-      // and registrations are mutually exclusive.
-      boolean stateChanged = !taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
       synchronized (lock) {
+        boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
         ListenableFuture<TaskRunner2Result> future = executorService.submit(taskWrapper.getTaskRunnerCallable());
         taskWrapper.setIsInWaitQueue(false);
-        FutureCallback<TaskRunner2Result> wrappedCallback = new InternalCompletionListener(taskWrapper);
+        FutureCallback<TaskRunner2Result> wrappedCallback = createInternalCompletionListener(taskWrapper);
         // Callback on a separate thread so that when a task completes, the thread in the main queue
         // is actually available for execution and will not potentially result in a RejectedExecution
         Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
@@ -373,9 +383,10 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
         // to the tasks are not ready yet, the task is eligible for pre-emptable.
         if (enablePreemption) {
-          if ((!canFinish && !stateChanged) || (canFinish && stateChanged)) {
+          if (!canFinish) {
             if (isInfoEnabled) {
-              LOG.info("{} is not finishable. Adding it to pre-emption queue", taskWrapper.getRequestId());
+              LOG.info("{} is not finishable. Adding it to pre-emption queue",
+                  taskWrapper.getRequestId());
             }
             addToPreemptionQueue(taskWrapper);
           }
@@ -422,7 +433,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         LOG.info("DEBUG: Re-ordering the wait queue since {} finishable state moved to {}",
             taskWrapper.getRequestId(), newFinishableState);
         if (waitQueue.remove(taskWrapper)) {
-          // Put element back onlt if it existed.
+          // Put element back only if it existed.
           waitQueue.offer(taskWrapper);
         } else {
           LOG.warn("Failed to remove {} from waitQueue",
@@ -462,7 +473,13 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     return taskWrapper;
   }
 
-  private final class InternalCompletionListener implements
+  @VisibleForTesting
+  InternalCompletionListener createInternalCompletionListener(TaskWrapper taskWrapper) {
+    return new InternalCompletionListener(taskWrapper);
+  }
+
+  @VisibleForTesting
+  class InternalCompletionListener implements
       FutureCallback<TaskRunner2Result> {
     private final TaskWrapper taskWrapper;
 
@@ -640,7 +657,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
   public static class TaskWrapper implements FinishableStateUpdateHandler {
     private final TaskRunnerCallable taskRunnerCallable;
-    private boolean inWaitQueue = true;
+    private boolean inWaitQueue = false;
     private boolean inPreemptionQueue = false;
     private boolean registeredForNotifications = false;
     private final TaskExecutorService taskExecutorService;
@@ -709,6 +726,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
           ", inWaitQueue=" + inWaitQueue +
           ", inPreemptionQueue=" + inPreemptionQueue +
           ", registeredForNotifications=" + registeredForNotifications +
+          ", canFinish=" + taskRunnerCallable.canFinish() +
+          ", firstAttemptStartTime=" + taskRunnerCallable.getFirstAttemptStartTime() +
+          ", vertexParallelism=" + taskRunnerCallable.getVertexParallelism() +
           '}';
     }
 
