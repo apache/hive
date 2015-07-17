@@ -417,8 +417,8 @@ public interface IMetaStoreClient {
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
   /**
-   * @param tblName
    * @param dbName
+   * @param tblName
    * @param partVals
    * @return the partition object
    * @throws MetaException
@@ -426,7 +426,7 @@ public interface IMetaStoreClient {
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_partition(java.lang.String,
    *      java.lang.String, java.util.List)
    */
-  Partition getPartition(String tblName, String dbName,
+  Partition getPartition(String dbName, String tblName,
       List<String> partVals) throws NoSuchObjectException, MetaException, TException;
 
   /**
