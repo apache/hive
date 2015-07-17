@@ -87,6 +87,8 @@ public class MapWork extends BaseWork {
 
   private Path tmpHDFSPath;
 
+  private Path tmpPathForPartitionPruning;
+
   private String inputformat;
 
   private String indexIntermediateFile;
@@ -453,6 +455,14 @@ public class MapWork extends BaseWork {
 
   public void setTmpHDFSPath(Path tmpHDFSPath) {
     this.tmpHDFSPath = tmpHDFSPath;
+  }
+
+  public Path getTmpPathForPartitionPruning() {
+    return this.tmpPathForPartitionPruning;
+  }
+
+  public void setTmpPathForPartitionPruning(Path tmpPathForPartitionPruning) {
+    this.tmpPathForPartitionPruning = tmpPathForPartitionPruning;
   }
 
   public void mergingInto(MapWork mapWork) {

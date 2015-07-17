@@ -60,6 +60,7 @@ enum OperatorType {
   ORCFILEMERGE,
   RCFILEMERGE,
   MERGEJOIN,
+  SPARKPRUNINGSINK,
 }
 
 struct Operator {

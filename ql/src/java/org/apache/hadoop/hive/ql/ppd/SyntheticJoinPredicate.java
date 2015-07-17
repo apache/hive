@@ -67,8 +67,18 @@ public class SyntheticJoinPredicate implements Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
-    if (!pctx.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
-        || !pctx.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
+    boolean enabled = false;
+    String queryEngine = pctx.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE);
+
+    if (queryEngine.equals("tez")
+        && pctx.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
+      enabled = true;
+    } else if ((queryEngine.equals("spark")
+        && pctx.getConf().getBoolVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING))) {
+      enabled = true;
+    }
+
+    if (!enabled) {
       return pctx;
     }
 

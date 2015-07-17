@@ -919,6 +919,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case FILESINK:
       case LIMIT:
       case EVENT:
+      case SPARKPRUNINGSINK:
         ret = true;
         break;
       case HASHTABLESINK:
@@ -965,6 +966,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
       case LIMIT:
       case EVENT:
+      case SPARKPRUNINGSINK:
         ret = true;
         break;
       case HASHTABLESINK:
