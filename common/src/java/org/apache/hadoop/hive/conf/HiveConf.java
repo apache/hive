@@ -18,25 +18,7 @@
 
 package org.apache.hadoop.hive.conf;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.security.auth.login.LoginException;
-
+import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,7 +36,23 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
 
-import com.google.common.base.Joiner;
+import javax.security.auth.login.LoginException;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Hive Configuration.
@@ -417,6 +415,11 @@ public class HiveConf extends Configuration {
     METASTORE_HBASE_CONNECTION_CLASS("hive.metastore.hbase.connection.class",
         "org.apache.hadoop.hive.metastore.hbase.VanillaHBaseConnection",
         "Class used to connection to HBase"),
+    METASTORE_HBASE_STATS_CACHE_OBJECTS("hive.metastore.hbase.stats.cache.objects",
+        10000, "How many in stats objects to cache in memory"),
+    METASTORE_HBASE_STATS_CACHE_TTL("hive.metastore.hbase.stats.cache.ttl", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds stats objects live in memory after they are read from HBase."),
 
     METASTORETHRIFTCONNECTIONRETRIES("hive.metastore.connect.retries", 3,
         "Number of retries while opening a connection to metastore"),

@@ -23,11 +23,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Decimal;
@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.thrift.TFieldIdEnum;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -96,6 +95,11 @@ class HBaseUtils {
     String protoKey = StringUtils.join(components, KEY_SEPARATOR);
     if (trailingSeparator) protoKey += KEY_SEPARATOR;
     return protoKey.getBytes(ENCODING);
+  }
+
+  static String[] parseKey(byte[] serialized) {
+    String munged = new String(serialized, ENCODING);
+    return munged.split(KEY_SEPARATOR_STR);
   }
 
   private static HbaseMetastoreProto.Parameters buildParameters(Map<String, String> params) {
@@ -902,14 +906,41 @@ class HBaseUtils {
     return sdParts;
   }
 
-  static byte[] serializeStatsForOneColumn(ColumnStatistics partitionColumnStats, ColumnStatisticsObj colStats)
+  static byte[] serializeBloomFilter(String dbName, String tableName,
+                                     AggrStatsInvalidatorFilter.BloomFilter bloom) {
+    long[] bitSet = bloom.getBitSet();
+    List<Long> bits = new ArrayList<>(bitSet.length);
+    for (int i = 0; i < bitSet.length; i++) bits.add(bitSet[i]);
+    HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter protoBloom =
+        HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.newBuilder()
+        .setNumBits(bloom.getBitSize())
+        .setNumFuncs(bloom.getNumHashFunctions())
+        .addAllBits(bits)
+        .build();
+
+    HbaseMetastoreProto.AggrStatsBloomFilter proto =
+        HbaseMetastoreProto.AggrStatsBloomFilter.newBuilder()
+            .setDbName(ByteString.copyFrom(dbName.getBytes(ENCODING)))
+            .setTableName(ByteString.copyFrom(tableName.getBytes(ENCODING)))
+            .setBloomFilter(protoBloom)
+            .setAggregatedAt(System.currentTimeMillis())
+            .build();
+
+    return proto.toByteArray();
+  }
+
+  private static HbaseMetastoreProto.ColumnStats
+  protoBufStatsForOneColumn(ColumnStatistics partitionColumnStats, ColumnStatisticsObj colStats)
       throws IOException {
     HbaseMetastoreProto.ColumnStats.Builder builder = HbaseMetastoreProto.ColumnStats.newBuilder();
-    builder.setLastAnalyzed(partitionColumnStats.getStatsDesc().getLastAnalyzed());
-    if (colStats.getColType() == null) {
-      throw new RuntimeException("Column type must be set");
+    if (partitionColumnStats != null) {
+      builder.setLastAnalyzed(partitionColumnStats.getStatsDesc().getLastAnalyzed());
     }
+    assert colStats.getColType() != null;
     builder.setColumnType(colStats.getColType());
+    assert colStats.getColName() != null;
+    builder.setColumnName(colStats.getColName());
+
     ColumnStatisticsData colData = colStats.getStatsData();
     switch (colData.getSetField()) {
       case BOOLEAN_STATS:
@@ -987,12 +1018,23 @@ class HBaseUtils {
       default:
         throw new RuntimeException("Woh, bad.  Unknown stats type!");
     }
-    return builder.build().toByteArray();
+    return builder.build();
+  }
+
+  static byte[] serializeStatsForOneColumn(ColumnStatistics partitionColumnStats,
+                                           ColumnStatisticsObj colStats) throws IOException {
+    return protoBufStatsForOneColumn(partitionColumnStats, colStats).toByteArray();
   }
 
   static ColumnStatisticsObj deserializeStatsForOneColumn(ColumnStatistics partitionColumnStats,
       byte[] bytes) throws IOException {
     HbaseMetastoreProto.ColumnStats proto = HbaseMetastoreProto.ColumnStats.parseFrom(bytes);
+    return statsForOneColumnFromProtoBuf(partitionColumnStats, proto);
+  }
+
+  private static ColumnStatisticsObj
+  statsForOneColumnFromProtoBuf(ColumnStatistics partitionColumnStats,
+                                HbaseMetastoreProto.ColumnStats proto) throws IOException {
     ColumnStatisticsObj colStats = new ColumnStatisticsObj();
     long lastAnalyzed = proto.getLastAnalyzed();
     if (partitionColumnStats != null) {
@@ -1000,6 +1042,7 @@ class HBaseUtils {
           Math.max(lastAnalyzed, partitionColumnStats.getStatsDesc().getLastAnalyzed()));
     }
     colStats.setColType(proto.getColumnType());
+    colStats.setColName(proto.getColumnName());
 
     ColumnStatisticsData colData = new ColumnStatisticsData();
     if (proto.hasBoolStats()) {
@@ -1065,6 +1108,30 @@ class HBaseUtils {
     }
     colStats.setStatsData(colData);
     return colStats;
+  }
+
+  static byte[] serializeAggrStats(AggrStats aggrStats) throws IOException {
+    List<HbaseMetastoreProto.ColumnStats> protoColStats =
+        new ArrayList<>(aggrStats.getColStatsSize());
+    for (ColumnStatisticsObj cso : aggrStats.getColStats()) {
+      protoColStats.add(protoBufStatsForOneColumn(null, cso));
+    }
+    return HbaseMetastoreProto.AggrStats.newBuilder()
+        .setPartsFound(aggrStats.getPartsFound())
+        .addAllColStats(protoColStats)
+        .build()
+        .toByteArray();
+  }
+
+  static AggrStats deserializeAggrStats(byte[] serialized) throws IOException {
+    HbaseMetastoreProto.AggrStats protoAggrStats =
+        HbaseMetastoreProto.AggrStats.parseFrom(serialized);
+    AggrStats aggrStats = new AggrStats();
+    aggrStats.setPartsFound(protoAggrStats.getPartsFound());
+    for (HbaseMetastoreProto.ColumnStats protoCS : protoAggrStats.getColStatsList()) {
+      aggrStats.addToColStats(statsForOneColumnFromProtoBuf(null, protoCS));
+    }
+    return aggrStats;
   }
 
   /**

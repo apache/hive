@@ -37,9 +37,7 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hive.common.ObjectPair;
-import org.apache.hive.common.util.BloomFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.AggregateStatsCache;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -53,8 +51,6 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.hbase.stats.ColumnStatsAggregator;
-import org.apache.hadoop.hive.metastore.hbase.stats.ColumnStatsAggregatorFactory;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -62,6 +58,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -75,6 +72,7 @@ import java.util.Set;
  */
 class HBaseReadWrite {
 
+  @VisibleForTesting final static String AGGR_STATS_TABLE = "HBMS_AGGR_STATS";
   @VisibleForTesting final static String DB_TABLE = "HBMS_DBS";
   @VisibleForTesting final static String FUNC_TABLE = "HBMS_FUNCS";
   @VisibleForTesting final static String GLOBAL_PRIVS_TABLE = "HBMS_GLOBAL_PRIVS";
@@ -89,12 +87,14 @@ class HBaseReadWrite {
   /**
    * List of tables in HBase
    */
-  final static String[] tableNames = { DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE, PART_TABLE,
-                                       USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE, TABLE_TABLE  };
+  final static String[] tableNames = { AGGR_STATS_TABLE, DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE,
+                                       PART_TABLE, USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE,
+                                       TABLE_TABLE  };
   final static Map<String, List<byte[]>> columnFamilies =
       new HashMap<String, List<byte[]>> (tableNames.length);
 
   static {
+    columnFamilies.put(AGGR_STATS_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(DB_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(FUNC_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(GLOBAL_PRIVS_TABLE, Arrays.asList(CATALOG_CF));
@@ -105,11 +105,21 @@ class HBaseReadWrite {
     columnFamilies.put(TABLE_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
   }
 
-  private final static byte[] CATALOG_COL = "cat".getBytes(HBaseUtils.ENCODING);
+  /**
+   * Stores the bloom filter for the aggregated stats, to determine what partitions are in this
+   * aggregate.
+   */
+  final static byte[] AGGR_STATS_BLOOM_COL = "b".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] CATALOG_COL = "c".getBytes(HBaseUtils.ENCODING);
   private final static byte[] ROLES_COL = "roles".getBytes(HBaseUtils.ENCODING);
   private final static byte[] REF_COUNT_COL = "ref".getBytes(HBaseUtils.ENCODING);
-  private final static byte[] GLOBAL_PRIVS_KEY = "globalprivs".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] AGGR_STATS_STATS_COL = "s".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] GLOBAL_PRIVS_KEY = "gp".getBytes(HBaseUtils.ENCODING);
   private final static int TABLES_TO_CACHE = 10;
+  // False positives are very bad here because they cause us to invalidate entries we shouldn't.
+  // Space used and # of hash functions grows in proportion to ln of num bits so a 10x increase
+  // in accuracy doubles the required space and number of hash functions.
+  private final static double STATS_BF_ERROR_RATE = 0.001;
 
   @VisibleForTesting final static String TEST_CONN = "test_connection";
   private static HBaseConnection testConn;
@@ -135,7 +145,7 @@ class HBaseReadWrite {
   private ObjectCache<ObjectPair<String, String>, Table> tableCache;
   private ObjectCache<ByteArrayWrapper, StorageDescriptor> sdCache;
   private PartitionCache partCache;
-  private AggregateStatsCache aggrStatsCache;
+  private StatsCache statsCache;
   private Counter tableHits;
   private Counter tableMisses;
   private Counter tableOverflows;
@@ -239,8 +249,8 @@ class HBaseReadWrite {
       sdCache = new ObjectCache<ByteArrayWrapper, StorageDescriptor>(sdsCacheSize, sdHits,
           sdMisses, sdOverflows);
       partCache = new PartitionCache(totalCatalogObjectsToCache, partHits, partMisses, partOverflows);
-      aggrStatsCache = AggregateStatsCache.getInstance(conf);
     }
+    statsCache = StatsCache.getInstance(conf);
     roleCache = new HashMap<String, HbaseMetastoreProto.RoleGrantInfoList>();
     entireRoleTableInCache = false;
   }
@@ -252,14 +262,6 @@ class HBaseReadWrite {
         if (self.get().conn.getHBaseTable(name, true) == null) {
           List<byte[]> families = columnFamilies.get(name);
           self.get().conn.createHBaseTable(name, families);
-          /*
-          List<byte[]> columnFamilies = new ArrayList<byte[]>();
-          columnFamilies.add(CATALOG_CF);
-          if (TABLE_TABLE.equals(name) || PART_TABLE.equals(name)) {
-            columnFamilies.add(STATS_CF);
-          }
-          self.get().conn.createHBaseTable(name, columnFamilies);
-          */
         }
       }
       tablesCreated = true;
@@ -1465,13 +1467,12 @@ class HBaseReadWrite {
    *
    * @param dbName database the table is in
    * @param tableName table to update statistics for
-   * @param partName name of the partition, can be null if these are table level statistics.
    * @param partVals partition values that define partition to update statistics for. If this is
    *          null, then these will be assumed to be table level statistics
    * @param stats Stats object with stats for one or more columns
    * @throws IOException
    */
-  void updateStatistics(String dbName, String tableName, String partName, List<String> partVals,
+  void updateStatistics(String dbName, String tableName, List<String> partVals,
       ColumnStatistics stats) throws IOException {
     byte[] key = getStatisticsKey(dbName, tableName, partVals);
     String hbaseTable = getStatisticsTable(partVals);
@@ -1534,171 +1535,155 @@ class HBaseReadWrite {
    *          to translate from partName to partVals
    * @param colNames column names to fetch stats for. These columns will be fetched for all
    *          requested partitions
-   * @return list of ColumnStats, one for each partition. The values will be in the same order as
-   *         the partNames list that was passed in
+   * @return list of ColumnStats, one for each partition for which we found at least one column's
+   * stats.
    * @throws IOException
    */
   List<ColumnStatistics> getPartitionStatistics(String dbName, String tblName,
       List<String> partNames, List<List<String>> partVals, List<String> colNames)
       throws IOException {
-    List<ColumnStatistics> statsList = new ArrayList<ColumnStatistics>(partNames.size());
-    ColumnStatistics partitionStats;
-    ColumnStatisticsDesc statsDesc;
-    byte[][] colKeys = new byte[colNames.size()][];
-    List<Get> gets = new ArrayList<Get>();
-    // Initialize the list and build the Gets
-    for (int pOff = 0; pOff < partNames.size(); pOff++) {
-      // Add an entry for this partition in the stats list
-      partitionStats = new ColumnStatistics();
-      statsDesc = new ColumnStatisticsDesc();
-      statsDesc.setIsTblLevel(false);
-      statsDesc.setDbName(dbName);
-      statsDesc.setTableName(tblName);
-      statsDesc.setPartName(partNames.get(pOff));
-      partitionStats.setStatsDesc(statsDesc);
-      statsList.add(partitionStats);
-      // Build the list of Gets
-      for (int i = 0; i < colKeys.length; i++) {
-        colKeys[i] = HBaseUtils.buildKey(colNames.get(i));
-      }
-      byte[] partKey = HBaseUtils.buildPartitionKey(dbName, tblName, partVals.get(pOff));
+    List<ColumnStatistics> statsList = new ArrayList<>(partNames.size());
+    Map<List<String>, String> valToPartMap = new HashMap<>(partNames.size());
+    List<Get> gets = new ArrayList<>(partNames.size() * colNames.size());
+    assert partNames.size() == partVals.size();
+
+    byte[][] colNameBytes = new byte[colNames.size()][];
+    for (int i = 0; i < colNames.size(); i++) {
+      colNameBytes[i] = HBaseUtils.buildKey(colNames.get(i));
+    }
+
+    for (int i = 0; i < partNames.size(); i++) {
+      valToPartMap.put(partVals.get(i), partNames.get(i));
+      byte[] partKey = HBaseUtils.buildPartitionKey(dbName, tblName, partVals.get(i));
       Get get = new Get(partKey);
-      for (byte[] colName : colKeys) {
+      for (byte[] colName : colNameBytes) {
         get.addColumn(STATS_CF, colName);
       }
       gets.add(get);
     }
 
     HTableInterface htab = conn.getHBaseTable(PART_TABLE);
-    // Get results from HBase
     Result[] results = htab.get(gets);
-    // Deserialize the stats objects and add to stats list
-    for (int pOff = 0; pOff < results.length; pOff++) {
-      for (int cOff = 0; cOff < colNames.size(); cOff++) {
-        byte[] serializedColStats = results[pOff].getValue(STATS_CF, colKeys[cOff]);
-        if (serializedColStats == null) {
-          // There were no stats for this column, so skip it
-          continue;
+    for (int i = 0; i < results.length; i++) {
+      ColumnStatistics colStats = null;
+      for (int j = 0; j < colNameBytes.length; j++) {
+        byte[] serializedColStats = results[i].getValue(STATS_CF, colNameBytes[j]);
+        if (serializedColStats != null) {
+          if (colStats == null) {
+            // We initialize this late so that we don't create extras in the case of
+            // partitions with no stats
+            colStats = new ColumnStatistics();
+            statsList.add(colStats);
+            ColumnStatisticsDesc csd = new ColumnStatisticsDesc();
+
+            // We need to figure out which partition these call stats are from.  To do that we
+            // recontruct the key.  We have to pull the dbName and tableName out of the key to
+            // find the partition values.
+            byte[] key = results[i].getRow();
+            String[] reconstructedKey = HBaseUtils.parseKey(key);
+            List<String> reconstructedPartVals =
+                Arrays.asList(reconstructedKey).subList(2, reconstructedKey.length);
+            String partName = valToPartMap.get(reconstructedPartVals);
+            assert partName != null;
+            csd.setIsTblLevel(false);
+            csd.setDbName(dbName);
+            csd.setTableName(tblName);
+            csd.setPartName(partName);
+            colStats.setStatsDesc(csd);
+          }
+          ColumnStatisticsObj cso =
+              HBaseUtils.deserializeStatsForOneColumn(colStats, serializedColStats);
+          cso.setColName(colNames.get(j));
+          colStats.addToStatsObj(cso);
         }
-        partitionStats = statsList.get(pOff);
-        ColumnStatisticsObj colStats =
-            HBaseUtils.deserializeStatsForOneColumn(partitionStats, serializedColStats);
-        colStats.setColName(colNames.get(cOff));
-        partitionStats.addToStatsObj(colStats);
       }
     }
+
     return statsList;
   }
 
   /**
-   * Get aggregate stats for a column from the DB and populate the bloom filter if it's not null
-   * @param dbName
-   * @param tblName
-   * @param partNames
-   * @param partVals
-   * @param colNames
-   * @return
-   * @throws IOException
+   * Get a reference to the stats cache.
+   * @return the stats cache.
    */
-  AggrStats getAggrStats(String dbName, String tblName, List<String> partNames,
-      List<List<String>> partVals, List<String> colNames) throws IOException {
-    // One ColumnStatisticsObj per column
-    List<ColumnStatisticsObj> colStatsList = new ArrayList<ColumnStatisticsObj>();
-    AggregateStatsCache.AggrColStats colStatsAggrCached;
-    ColumnStatisticsObj colStatsAggr;
-    int maxPartitionsPerCacheNode = aggrStatsCache.getMaxPartsPerCacheNode();
-    float falsePositiveProbability = aggrStatsCache.getFalsePositiveProbability();
-    int partitionsRequested = partNames.size();
-    // TODO: Steal extrapolation logic from current MetaStoreDirectSql code
-    // Right now doing nothing and keeping partitionsFound == partitionsRequested
-    int partitionsFound = partitionsRequested;
-    for (String colName : colNames) {
-      if (partitionsRequested > maxPartitionsPerCacheNode) {
-        // Read from HBase but don't add to cache since it doesn't qualify the criteria
-        colStatsAggr = getAggrStatsFromDB(dbName, tblName, colName, partNames, partVals, null);
-        colStatsList.add(colStatsAggr);
-      } else {
-        // Check the cache first
-        colStatsAggrCached = aggrStatsCache.get(dbName, tblName, colName, partNames);
-        if (colStatsAggrCached != null) {
-          colStatsList.add(colStatsAggrCached.getColStats());
-        } else {
-          // Bloom filter for the new node that we will eventually add to the cache
-          BloomFilter bloomFilter =
-              new BloomFilter(maxPartitionsPerCacheNode, falsePositiveProbability);
-          colStatsAggr =
-              getAggrStatsFromDB(dbName, tblName, colName, partNames, partVals, bloomFilter);
-          colStatsList.add(colStatsAggr);
-          // Update the cache to add this new aggregate node
-          aggrStatsCache.add(dbName, tblName, colName, partitionsFound, colStatsAggr, bloomFilter);
-        }
-      }
-    }
-    return new AggrStats(colStatsList, partitionsFound);
+  StatsCache getStatsCache() {
+    return statsCache;
   }
 
   /**
-   *
-   * @param dbName
-   * @param tblName
-   * @param partNames
-   * @param partVals
-   * @param colName
-   * @param bloomFilter
-   * @return
+   * Get aggregated stats.  Only intended for use by
+   * {@link org.apache.hadoop.hive.metastore.hbase.StatsCache}.  Others should not call directly
+   * but should call StatsCache.get instead.
+   * @param key The md5 hash associated with this partition set
+   * @return stats if hbase has them, else null
+   * @throws IOException
    */
-  private ColumnStatisticsObj getAggrStatsFromDB(String dbName, String tblName, String colName,
-      List<String> partNames, List<List<String>> partVals, BloomFilter bloomFilter)
+  AggrStats getAggregatedStats(byte[] key) throws IOException{
+    byte[] serialized = read(AGGR_STATS_TABLE, key, CATALOG_CF, AGGR_STATS_STATS_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.deserializeAggrStats(serialized);
+  }
+
+  /**
+   * Put aggregated stats  Only intended for use by
+   * {@link org.apache.hadoop.hive.metastore.hbase.StatsCache}.  Others should not call directly
+   * but should call StatsCache.put instead.
+   * @param key The md5 hash associated with this partition set
+   * @param dbName Database these partitions are in
+   * @param tableName Table these partitions are in
+   * @param partNames Partition names
+   * @param colName Column stats are for
+   * @param stats Stats
+   * @throws IOException
+   */
+  void putAggregatedStats(byte[] key, String dbName, String tableName, List<String> partNames,
+                          String colName, AggrStats stats) throws IOException {
+    // Serialize the part names
+    List<String> protoNames = new ArrayList<>(partNames.size() + 3);
+    protoNames.add(dbName);
+    protoNames.add(tableName);
+    protoNames.add(colName);
+    protoNames.addAll(partNames);
+    // Build a bloom Filter for these partitions
+    AggrStatsInvalidatorFilter.BloomFilter bloom = new AggrStatsInvalidatorFilter.BloomFilter
+        (partNames.size(), STATS_BF_ERROR_RATE);
+    for (String partName : partNames) {
+      bloom.add(partName.getBytes(HBaseUtils.ENCODING));
+    }
+    byte[] serializedFilter = HBaseUtils.serializeBloomFilter(dbName, tableName, bloom);
+
+    byte[] serializedStats = HBaseUtils.serializeAggrStats(stats);
+    store(AGGR_STATS_TABLE, key, CATALOG_CF,
+        new byte[][]{AGGR_STATS_BLOOM_COL, AGGR_STATS_STATS_COL},
+        new byte[][]{serializedFilter, serializedStats});
+  }
+
+  // TODO - We shouldn't remove an entry from the cache as soon as a single partition is deleted.
+  // TODO - Instead we should keep track of how many partitions have been deleted and only remove
+  // TODO - an entry once it passes a certain threshold, like 5%, of partitions have been removed.
+  // TODO - That requires moving this from a filter to a co-processor.
+  /**
+   * Invalidate stats associated with the listed partitions.  This method is intended for use
+   * only by {@link org.apache.hadoop.hive.metastore.hbase.StatsCache}.
+   * @param filter serialized version of the filter to pass
+   * @return List of md5 hash keys for the partition stat sets that were removed.
+   * @throws IOException
+   */
+  List<StatsCache.StatsCacheKey>
+  invalidateAggregatedStats(HbaseMetastoreProto.AggrStatsInvalidatorFilter filter)
       throws IOException {
-    ColumnStatisticsObj colStatsAggr = new ColumnStatisticsObj();
-    boolean colStatsAggrInited = false;
-    ColumnStatsAggregator colStatsAggregator = null;
-    List<Get> gets = new ArrayList<Get>();
-    byte[] colKey = HBaseUtils.buildKey(colName);
-    // Build a list of Gets, one per partition
-    for (int pOff = 0; pOff < partNames.size(); pOff++) {
-      byte[] partKey = HBaseUtils.buildPartitionKey(dbName, tblName, partVals.get(pOff));
-      Get get = new Get(partKey);
-      get.addColumn(STATS_CF, colKey);
-      gets.add(get);
+    Iterator<Result> results = scan(AGGR_STATS_TABLE, new AggrStatsInvalidatorFilter(filter));
+    if (!results.hasNext()) return Collections.emptyList();
+    List<Delete> deletes = new ArrayList<>();
+    List<StatsCache.StatsCacheKey> keys = new ArrayList<>();
+    while (results.hasNext()) {
+      Result result = results.next();
+      deletes.add(new Delete(result.getRow()));
+      keys.add(new StatsCache.StatsCacheKey(result.getRow()));
     }
-    HTableInterface htab = conn.getHBaseTable(PART_TABLE);
-    // Get results from HBase
-    Result[] results = htab.get(gets);
-    // Iterate through the results
-    // The results size and order is the same as the number and order of the Gets
-    // If the column is not present in a partition, the Result object will be empty
-    for (int pOff = 0; pOff < partNames.size(); pOff++) {
-      if (results[pOff].isEmpty()) {
-        // There were no stats for this column, so skip it
-        continue;
-      }
-      byte[] serializedColStats = results[pOff].getValue(STATS_CF, colKey);
-      if (serializedColStats == null) {
-        // There were no stats for this column, so skip it
-        continue;
-      }
-      ColumnStatisticsObj colStats =
-          HBaseUtils.deserializeStatsForOneColumn(null, serializedColStats);
-      if (!colStatsAggrInited) {
-        // This is the 1st column stats object we got
-        colStatsAggr.setColName(colName);
-        colStatsAggr.setColType(colStats.getColType());
-        colStatsAggr.setStatsData(colStats.getStatsData());
-        colStatsAggregator =
-            ColumnStatsAggregatorFactory.getColumnStatsAggregator(colStats.getStatsData()
-                .getSetField());
-        colStatsAggrInited = true;
-      } else {
-        // Perform aggregation with whatever we've already aggregated
-        colStatsAggregator.aggregate(colStatsAggr, colStats);
-      }
-      // Add partition to the bloom filter if it's requested
-      if (bloomFilter != null) {
-        bloomFilter.add(partNames.get(pOff).getBytes());
-      }
-    }
-    return colStatsAggr;
+    HTableInterface htab = conn.getHBaseTable(AGGR_STATS_TABLE);
+    htab.delete(deletes);
+    return keys;
   }
 
   private byte[] getStatisticsKey(String dbName, String tableName, List<String> partVals) {
@@ -1718,9 +1703,12 @@ class HBaseReadWrite {
    * This should be called whenever a new query is started.
    */
   void flushCatalogCache() {
-    for (Counter counter : counters) {
-      LOG.debug(counter.dump());
-      counter.clear();
+    if (LOG.isDebugEnabled()) {
+      for (Counter counter : counters) {
+        LOG.debug(counter.dump());
+        counter.clear();
+      }
+      statsCache.dumpCounters();
     }
     tableCache.flush();
     sdCache.flush();
@@ -1794,6 +1782,10 @@ class HBaseReadWrite {
     return scan(table, null, null, colFam, colName, filter);
   }
 
+  private Iterator<Result> scan(String table, Filter filter) throws IOException {
+    return scan(table, null, null, null, null, filter);
+  }
+
   private Iterator<Result> scan(String table, byte[] keyStart, byte[] keyEnd, byte[] colFam,
                                           byte[] colName, Filter filter) throws IOException {
     HTableInterface htab = conn.getHBaseTable(table);
@@ -1804,7 +1796,9 @@ class HBaseReadWrite {
     if (keyEnd != null) {
       s.setStopRow(keyEnd);
     }
-    s.addColumn(colFam, colName);
+    if (colFam != null && colName != null) {
+      s.addColumn(colFam, colName);
+    }
     if (filter != null) {
       s.setFilter(filter);
     }

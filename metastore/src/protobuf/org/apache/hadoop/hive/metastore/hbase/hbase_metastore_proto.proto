@@ -22,6 +22,35 @@ enum PrincipalType {
     ROLE = 1;
 }
 
+message AggrStats {
+  required int64 parts_found = 1;
+  repeated ColumnStats col_stats = 2;
+}
+
+message AggrStatsBloomFilter {
+  message BloomFilter {
+    required int32 num_bits = 1;
+    required int32 num_funcs = 2;
+    repeated int64 bits = 3;
+  }
+  required bytes db_name = 1;
+  required bytes table_name = 2;
+  required BloomFilter bloom_filter = 3;
+  required int64 aggregated_at = 4;
+}
+
+message AggrStatsInvalidatorFilter {
+  message Entry {
+    required bytes db_name = 1;
+    required bytes table_name = 2;
+    required bytes part_name = 3;
+  }
+
+  repeated Entry to_invalidate = 1;
+  required int64 run_every = 2;
+  required int64 max_cache_entry_life = 3;
+}
+
 message ColumnStats {
 
   message BooleanStats {
@@ -63,6 +92,7 @@ message ColumnStats {
   optional StringStats string_stats = 8;
   optional StringStats binary_stats = 9;
   optional DecimalStats decimal_stats = 10;
+  optional string column_name = 11;
 }
 
 message Database {

@@ -18,6 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * A simple metric to count how many times something occurs.
  */
@@ -42,6 +44,10 @@ class Counter {
     StringBuilder bldr = new StringBuilder("Dumping metric: ");
     bldr.append(name).append(' ').append(cnt);
     return bldr.toString();
+  }
+
+  @VisibleForTesting long getCnt() {
+    return cnt;
   }
 
 }

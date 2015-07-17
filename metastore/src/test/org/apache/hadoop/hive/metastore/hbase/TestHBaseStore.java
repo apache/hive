@@ -124,7 +124,7 @@ public class TestHBaseStore {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   @Mock HTableInterface htable;
-  SortedMap<String, Cell> rows = new TreeMap<String, Cell>();
+  SortedMap<String, Cell> rows = new TreeMap<>();
   HBaseStore store;
 
 

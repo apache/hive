@@ -19,7 +19,15 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats;
 
+import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 
 public class ColumnStatsAggregatorFactory {
 
@@ -43,6 +51,49 @@ public class ColumnStatsAggregatorFactory {
     default:
       throw new RuntimeException("Woh, bad.  Unknown stats type!");
     }
+  }
+
+  public static ColumnStatisticsObj newColumnStaticsObj(String colName, _Fields type) {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    ColumnStatisticsData csd = new ColumnStatisticsData();
+    cso.setColName(colName);
+    switch (type) {
+    case BOOLEAN_STATS:
+      csd.setBooleanStats(new BooleanColumnStatsData());
+      cso.setColType("boolean");
+      break;
+
+    case LONG_STATS:
+      csd.setLongStats(new LongColumnStatsData());
+      cso.setColType("long");
+      break;
+
+    case DOUBLE_STATS:
+      csd.setDoubleStats(new DoubleColumnStatsData());
+      cso.setColType("double");
+      break;
+
+    case STRING_STATS:
+      csd.setStringStats(new StringColumnStatsData());
+      cso.setColType("string");
+      break;
+
+    case BINARY_STATS:
+      csd.setBinaryStats(new BinaryColumnStatsData());
+      cso.setColType("binary");
+      break;
+
+    case DECIMAL_STATS:
+      csd.setDecimalStats(new DecimalColumnStatsData());
+      cso.setColType("decimal");
+      break;
+
+    default:
+      throw new RuntimeException("Woh, bad.  Unknown stats type!");
+    }
+
+    cso.setStatsData(csd);
+    return cso;
   }
 
 }
