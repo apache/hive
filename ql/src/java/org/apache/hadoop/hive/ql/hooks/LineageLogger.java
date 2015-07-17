@@ -137,9 +137,7 @@ public class LineageLogger implements ExecuteWithHookContext {
       try {
         StringBuilderWriter out = new StringBuilderWriter(1024);
         JsonWriter writer = new JsonWriter(out);
-        writer.setIndent("  ");
 
-        out.append("POSTHOOK: LINEAGE: ");
         String queryStr = plan.getQueryStr().trim();
         writer.beginObject();
         writer.name("version").value(FORMAT_VERSION);
@@ -182,7 +180,7 @@ public class LineageLogger implements ExecuteWithHookContext {
           // Log to console
           log(lineage);
         } else {
-          // In none test mode, emit to a log file,
+          // In non-test mode, emit to a log file,
           // which can be different from the normal hive.log.
           // For example, using NoDeleteRollingFileAppender to
           // log to some file with different rolling policy.
