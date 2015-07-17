@@ -295,8 +295,32 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
   @Override
   public void schedule(TaskRunnerCallable task) throws RejectedExecutionException {
     TaskWrapper taskWrapper = new TaskWrapper(task, this);
-    knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
 
+    TaskWrapper evictedTask;
+    synchronized (lock) {
+      // If the queue does not have capacity, it does not throw a Rejection. Instead it will
+      // return the task with the lowest priority, which could be the task which is currently being processed.
+      evictedTask = waitQueue.offer(taskWrapper);
+      if (evictedTask != taskWrapper) {
+        knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
+        taskWrapper.setIsInWaitQueue(true);
+        if (isInfoEnabled) {
+          LOG.info("{} added to wait queue. Current wait queue size={}", task.getRequestId(),
+              waitQueue.size());
+        }
+      } else {
+        if (isInfoEnabled) {
+          LOG.info("wait queue full, size={}. {} not added", waitQueue.size(), task.getRequestId());
+        }
+        evictedTask.getTaskRunnerCallable().killTask();
+        throw new RejectedExecutionException("Wait queue full");
+      }
+    }
+
+    // At this point, the task has been added into the queue. It may have caused an eviction for
+    // some other task.
+
+    // This registration has to be done after knownTasks has been populated.
     // Register for state change notifications so that the waitQueue can be re-ordered correctly
     // if the fragment moves in or out of the finishable state.
     boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
@@ -304,24 +328,11 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     // and registrations are mutually exclusive.
     taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
 
-    TaskWrapper evictedTask;
-    try {
-      synchronized (lock) {
-        evictedTask = waitQueue.offer(taskWrapper);
-        taskWrapper.setIsInWaitQueue(true);
-      }
-    } catch (RejectedExecutionException e) {
-      knownTasks.remove(taskWrapper.getRequestId());
-      taskWrapper.maybeUnregisterForFinishedStateNotifications();
-      throw e;
-    }
-    if (isInfoEnabled) {
-      LOG.info("{} added to wait queue. Current wait queue size={}", task.getRequestId(), waitQueue.size());
-    }
     if (isDebugEnabled) {
       LOG.debug("Wait Queue: {}", waitQueue);
     }
     if (evictedTask != null) {
+      knownTasks.remove(evictedTask.getRequestId());
       evictedTask.maybeUnregisterForFinishedStateNotifications();
       evictedTask.setIsInWaitQueue(false);
       evictedTask.getTaskRunnerCallable().killTask();

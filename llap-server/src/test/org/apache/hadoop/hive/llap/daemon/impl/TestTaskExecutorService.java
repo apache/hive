@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -42,7 +44,6 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentS
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.security.Credentials;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezTaskAttemptID;
@@ -259,6 +260,87 @@ public class TestTaskExecutorService {
     }
   }
 
+  @Test(timeout = 10000)
+  public void testWaitQueuePreemption() throws InterruptedException {
+    MockRequest r1 = createMockRequest(1, 1, 100, true, 20000l);
+    MockRequest r2 = createMockRequest(2, 1, 200, false, 20000l);
+    MockRequest r3 = createMockRequest(3, 1, 300, false, 20000l);
+    MockRequest r4 = createMockRequest(4, 1, 400, false, 20000l);
+    MockRequest r5 = createMockRequest(5, 1, 500, true, 20000l);
+
+    TaskExecutorServiceForTest taskExecutorService =
+        new TaskExecutorServiceForTest(1, 2, false, true);
+    taskExecutorService.init(conf);
+    taskExecutorService.start();
+
+    try {
+      taskExecutorService.schedule(r1);
+      r1.awaitStart();
+      try {
+        taskExecutorService.schedule(r2);
+      } catch (RejectedExecutionException e) {
+        fail("Unexpected rejection with space available in queue");
+      }
+      try {
+        taskExecutorService.schedule(r3);
+      } catch (RejectedExecutionException e) {
+        fail("Unexpected rejection with space available in queue");
+      }
+
+      try {
+        taskExecutorService.schedule(r4);
+        fail("Expecting a Rejection for non finishable task with a full queue");
+      } catch (RejectedExecutionException e) {
+      }
+
+      try {
+        taskExecutorService.schedule(r5);
+      } catch (RejectedExecutionException e) {
+        fail("Unexpected rejection for a finishable task");
+      }
+
+      // Ensure the correct task was preempted.
+      assertEquals(true, r3.wasPreempted());
+
+      TaskExecutorServiceForTest.InternalCompletionListenerForTest icl1 =
+          taskExecutorService.getInternalCompletionListenerForTest(r1.getRequestId());
+
+      // Currently 3 known tasks. 1, 2, 5
+      assertEquals(3, taskExecutorService.knownTasks.size());
+      assertTrue(taskExecutorService.knownTasks.containsKey(r1.getRequestId()));
+      assertTrue(taskExecutorService.knownTasks.containsKey(r2.getRequestId()));
+      assertTrue(taskExecutorService.knownTasks.containsKey(r5.getRequestId()));
+
+      r1.complete();
+      icl1.awaitCompletion();
+
+      // Two known tasks left. r2 and r5. (r1 complete, r3 evicted, r4 rejected)
+      assertEquals(2, taskExecutorService.knownTasks.size());
+      assertTrue(taskExecutorService.knownTasks.containsKey(r2.getRequestId()));
+      assertTrue(taskExecutorService.knownTasks.containsKey(r5.getRequestId()));
+
+      r5.awaitStart();
+      TaskExecutorServiceForTest.InternalCompletionListenerForTest icl5 =
+          taskExecutorService.getInternalCompletionListenerForTest(r5.getRequestId());
+      r5.complete();
+      icl5.awaitCompletion();
+
+      // 1 Pending task which is not finishable
+      assertEquals(1, taskExecutorService.knownTasks.size());
+      assertTrue(taskExecutorService.knownTasks.containsKey(r2.getRequestId()));
+
+      r2.awaitStart();
+      TaskExecutorServiceForTest.InternalCompletionListenerForTest icl2 =
+          taskExecutorService.getInternalCompletionListenerForTest(r2.getRequestId());
+      r2.complete();
+      icl2.awaitCompletion();
+      // 0 Pending task which is not finishable
+      assertEquals(0, taskExecutorService.knownTasks.size());
+    } finally {
+      taskExecutorService.shutDown(false);
+    }
+  }
+
 
   // ----------- Helper classes and methods go after this point. Tests above this -----------
 
@@ -446,6 +528,7 @@ public class TestTaskExecutorService {
 
     private ConcurrentMap<String, InternalCompletionListenerForTest> completionListeners = new ConcurrentHashMap<>();
 
+    @Override
     InternalCompletionListener createInternalCompletionListener(TaskWrapper taskWrapper) {
       InternalCompletionListenerForTest icl = new InternalCompletionListenerForTest(taskWrapper);
       completionListeners.put(taskWrapper.getRequestId(), icl);
@@ -455,7 +538,6 @@ public class TestTaskExecutorService {
     InternalCompletionListenerForTest getInternalCompletionListenerForTest(String requestId) {
       return completionListeners.get(requestId);
     }
-
 
     private class InternalCompletionListenerForTest extends TaskExecutorService.InternalCompletionListener {
 
