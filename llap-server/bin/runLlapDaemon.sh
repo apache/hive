@@ -25,6 +25,7 @@ set -x
 #   LLAP_DAEMON_OPTS - additional options
 #   LLAP_DAEMON_LOGGER - default is INFO,console
 #   LLAP_DAEMON_LOG_DIR - defaults to /tmp
+#   LLAP_DAEMON_TMP_DIR - defaults to /tmp
 #   LLAP_DAEMON_LOG_FILE - 
 #   LLAP_DAEMON_CONF_DIR
 
@@ -114,6 +115,10 @@ then
   LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -XX:+UseParallelGC"
 fi
 
+# In general, avoid using the OS temporary directory
+if [ -n "$LLAP_DAEMON_TMP_DIR" ]; then
+  export LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Djava.io.tmpdir=$LLAP_DAEMON_TMP_DIR"
+fi
 
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dlog4j.configuration=llap-daemon-log4j.properties"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.dir=${LLAP_DAEMON_LOG_DIR}"

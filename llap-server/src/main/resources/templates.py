@@ -73,6 +73,7 @@ appConfig = """
     "java_home": "%(java_home)s",
     "site.global.app_user": "yarn",
     "site.global.app_root": "${AGENT_WORK_ROOT}/app/install/",
+    "site.global.app_tmp_dir": "${AGENT_WORK_ROOT}/tmp/",
     "site.global.app_log_level": "%(daemon_loglevel)s,RFA",
     "site.global.additional_cp": "%(hadoop_home)s",
     "site.global.daemon_args": "%(daemon_args)s",

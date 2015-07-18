@@ -23,6 +23,7 @@ import os
 import subprocess
 from resource_management import *
 from os.path import dirname
+from os.path import join as join_path
 
 class Llap(Script):
   def install(self, env):
@@ -39,6 +40,7 @@ class Llap(Script):
     os.environ['JAVA_HOME'] = format('{java64_home}')
     # this is the same as TEZ_PREFIX
     os.environ['LLAP_DAEMON_HOME'] = format('{app_root}')
+    os.environ['LLAP_DAEMON_TMP_DIR'] = format('{app_tmp_dir}')
     # this is the location where we have the llap server components (shell scripts)
     os.environ['LLAP_DAEMON_BIN_HOME'] = format('{app_root}/bin')
     # location containing llap-daemon-site.xml, tez and yarn configuration xmls as well.
@@ -69,3 +71,5 @@ class Llap(Script):
 
 if __name__ == "__main__":
   Llap().execute()
+
+# vim: tabstop=24 expandtab shiftwidth=4 softtabstop=4
