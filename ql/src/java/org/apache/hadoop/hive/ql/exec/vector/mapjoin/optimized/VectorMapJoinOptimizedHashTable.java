@@ -92,4 +92,8 @@ public abstract class VectorMapJoinOptimizedHashTable implements VectorMapJoinHa
     adapatorDirectAccess = (ReusableGetAdaptorDirectAccess) hashMapRowGetter;
   }
 
+  @Override
+  public int size() {
+    return originalTableContainer.size();
+  }
 }
