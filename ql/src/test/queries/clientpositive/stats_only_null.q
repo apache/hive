@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.stats.dbclass=fs;
 set hive.compute.query.using.stats=true;
 set hive.stats.autogather=true;

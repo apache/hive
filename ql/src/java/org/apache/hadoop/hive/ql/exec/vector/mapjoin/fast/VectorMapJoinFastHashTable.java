@@ -65,4 +65,9 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
     this.loadFactor = loadFactor;
     this.writeBuffersSize = writeBuffersSize;
   }
+
+  @Override
+  public int size() {
+    return keysAssigned;
+  }
 }

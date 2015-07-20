@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
 
 -- TODO: add more stuff here after HIVE-5918 is fixed, such as cbigint and constants

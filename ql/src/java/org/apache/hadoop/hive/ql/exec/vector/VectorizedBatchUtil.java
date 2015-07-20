@@ -24,13 +24,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -192,21 +195,35 @@ public class VectorizedBatchUtil {
 
   /**
    * Create VectorizedRowBatch from key and value object inspectors
-   *
+   * The row object inspector used by ReduceWork needs to be a **standard**
+   * struct object inspector, not just any struct object inspector.
    * @param keyInspector
    * @param valueInspector
-   * @return VectorizedRowBatch
+   * @param vectorScratchColumnTypeMap
+   * @return VectorizedRowBatch, OI
    * @throws HiveException
    */
-  public static VectorizedRowBatch constructVectorizedRowBatch(
-      StructObjectInspector keyInspector, StructObjectInspector valueInspector)
+  public static ObjectPair<VectorizedRowBatch, StandardStructObjectInspector> constructVectorizedRowBatch(
+      StructObjectInspector keyInspector, StructObjectInspector valueInspector, Map<Integer, String> vectorScratchColumnTypeMap)
           throws HiveException {
-    final List<ColumnVector> cvList = new LinkedList<ColumnVector>();
-    allocateColumnVector(keyInspector, cvList);
-    allocateColumnVector(valueInspector, cvList);
-    final VectorizedRowBatch result = new VectorizedRowBatch(cvList.size());
-    result.cols = cvList.toArray(result.cols);
-    return result;
+
+    ArrayList<String> colNames = new ArrayList<String>();
+    ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
+    List<? extends StructField> fields = keyInspector.getAllStructFieldRefs();
+    for (StructField field: fields) {
+      colNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
+      ois.add(field.getFieldObjectInspector());
+    }
+    fields = valueInspector.getAllStructFieldRefs();
+    for (StructField field: fields) {
+      colNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
+      ois.add(field.getFieldObjectInspector());
+    }
+    StandardStructObjectInspector rowObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(colNames, ois);
+
+    VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
+    batchContext.init(vectorScratchColumnTypeMap, rowObjectInspector);
+    return new ObjectPair<>(batchContext.createVectorizedRowBatch(), rowObjectInspector);
   }
 
   /**
@@ -559,7 +576,7 @@ public class VectorizedBatchUtil {
     for(StructField field : fields) {
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
           field.getFieldObjectInspector().getTypeName());
-      ObjectInspector standardWritableObjectInspector = 
+      ObjectInspector standardWritableObjectInspector =
               TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
       oids.add(standardWritableObjectInspector);
       columnNames.add(field.getFieldName());
@@ -634,7 +651,7 @@ public class VectorizedBatchUtil {
     for (int i = start; i < start + length; i++) {
       char ch = (char) bytes[i];
       if (ch < ' ' || ch > '~') {
-        sb.append(String.format("\\%03d", (int) (bytes[i] & 0xff)));
+        sb.append(String.format("\\%03d", bytes[i] & 0xff));
       } else {
         sb.append(ch);
       }

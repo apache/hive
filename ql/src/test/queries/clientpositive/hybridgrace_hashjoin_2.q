@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 -- Hybrid Grace Hash Join
 -- Test n-way join
 SELECT 1;

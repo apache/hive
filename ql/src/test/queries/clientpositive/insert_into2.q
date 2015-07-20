@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.compute.query.using.stats=true;
 DROP TABLE insert_into2;
 CREATE TABLE insert_into2 (key int, value string) 

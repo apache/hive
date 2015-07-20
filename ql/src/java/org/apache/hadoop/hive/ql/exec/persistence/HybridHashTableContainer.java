@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -109,6 +110,7 @@ public class HybridHashTableContainer
     int threshold;                          // Used to create an empty BytesBytesMultiHashMap
     float loadFactor;                       // Same as above
     int wbSize;                             // Same as above
+    int rowsOnDisk;                         // How many rows saved to the on-disk hashmap (if on disk)
 
     /* It may happen that there's not enough memory to instantiate a hashmap for the partition.
      * In that case, we don't create the hashmap, but pretend the hashmap is directly "spilled".
@@ -147,6 +149,10 @@ public class HybridHashTableContainer
         if (initialCapacity > 0) {
           restoredHashMap.expandAndRehashToTarget(initialCapacity);
         }
+
+        // some bookkeeping
+        rowsOnDisk = 0;
+        hashMapOnDisk = false;
 
         input.close();
         inputStream.close();
@@ -196,6 +202,8 @@ public class HybridHashTableContainer
         } catch (Throwable ignored) {
         }
         hashMapLocalPath = null;
+        rowsOnDisk = 0;
+        hashMapOnDisk = false;
       }
 
       if (sidefileKVContainer != null) {
@@ -211,6 +219,16 @@ public class HybridHashTableContainer
       if (matchfileRowBytesContainer != null) {
         matchfileRowBytesContainer.clear();
         matchfileRowBytesContainer = null;
+      }
+    }
+
+    public int size() {
+      if (isHashMapOnDisk()) {
+        // Rows are in a combination of the on-disk hashmap and the sidefile
+        return rowsOnDisk + (sidefileKVContainer != null ? sidefileKVContainer.size() : 0);
+      } else {
+        // All rows should be in the in-memory hashmap
+        return hashMap.size();
       }
     }
   }
@@ -506,6 +524,7 @@ public class HybridHashTableContainer
     memoryUsed -= memFreed;
     LOG.info("Memory usage after spilling: " + memoryUsed);
 
+    partition.rowsOnDisk = inMemRowCount;
     totalInMemRowCount -= inMemRowCount;
     partition.hashMap.clear();
     return memFreed;
@@ -733,6 +752,8 @@ public class HybridHashTableContainer
 
     private final ByteArrayRef uselessIndirection; // LBStruct needs ByteArrayRef
     private final LazyBinaryStruct valueStruct;
+    private final boolean needsComplexObjectFixup;
+    private final ArrayList<Object> complexObjectArrayBuffer;
 
     private int partitionId; // Current hashMap in use
 
@@ -740,8 +761,18 @@ public class HybridHashTableContainer
       if (internalValueOi != null) {
         valueStruct = (LazyBinaryStruct)
             LazyBinaryFactory.createLazyBinaryObject(internalValueOi);
+        needsComplexObjectFixup = MapJoinBytesTableContainer.hasComplexObjects(internalValueOi);
+        if (needsComplexObjectFixup) {
+          complexObjectArrayBuffer =
+              new ArrayList<Object>(
+                  Collections.nCopies(internalValueOi.getAllStructFieldRefs().size(), null));
+        } else {
+          complexObjectArrayBuffer = null;
+        }
       } else {
         valueStruct = null; // No rows?
+        needsComplexObjectFixup =  false;
+        complexObjectArrayBuffer = null;
       }
       uselessIndirection = new ByteArrayRef();
       hashMapResult = new BytesBytesMultiHashMap.Result();
@@ -836,7 +867,7 @@ public class HybridHashTableContainer
       if (byteSegmentRef == null) {
         return null;
       } else {
-        return uppack(byteSegmentRef);
+        return unpack(byteSegmentRef);
       }
 
     }
@@ -848,18 +879,29 @@ public class HybridHashTableContainer
       if (byteSegmentRef == null) {
         return null;
       } else {
-        return uppack(byteSegmentRef);
+        return unpack(byteSegmentRef);
       }
 
     }
 
-    private List<Object> uppack(WriteBuffers.ByteSegmentRef ref) throws HiveException {
+    private List<Object> unpack(WriteBuffers.ByteSegmentRef ref) throws HiveException {
       if (ref.getLength() == 0) {
         return EMPTY_LIST; // shortcut, 0 length means no fields
       }
       uselessIndirection.setData(ref.getBytes());
       valueStruct.init(uselessIndirection, (int)ref.getOffset(), ref.getLength());
-      return valueStruct.getFieldsAsList(); // TODO: should we unset bytes after that?
+      List<Object> result;
+      if (!needsComplexObjectFixup) {
+        // Good performance for common case where small table has no complex objects.
+        result = valueStruct.getFieldsAsList();
+      } else {
+        // Convert the complex LazyBinary objects to standard (Java) objects so downstream
+        // operators like FileSinkOperator can serialize complex objects in the form they expect
+        // (i.e. Java objects).
+        result = MapJoinBytesTableContainer.getComplexFieldsAsList(
+            valueStruct, complexObjectArrayBuffer, internalValueOi);
+      }
+      return result;
     }
 
     @Override
@@ -934,5 +976,14 @@ public class HybridHashTableContainer
     LOG.info("In memory partitions have been processed successfully: " +
         numPartitionsInMem + " partitions in memory have been processed; " +
         numPartitionsOnDisk + " partitions have been spilled to disk and will be processed next.");
+  }
+
+  @Override
+  public int size() {
+    int totalSize = 0;
+    for (HashPartition hashPartition : hashPartitions) {
+      totalSize += hashPartition.size();
+    }
+    return totalSize;
   }
 }

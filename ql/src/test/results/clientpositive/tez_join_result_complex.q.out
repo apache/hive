@@ -1,0 +1,1337 @@
+PREHOOK: query: create table service_request_clean(
+cnctevn_id          	string              ,
+svcrqst_id          	string              ,
+svcrqst_crt_dts     	string              ,
+subject_seq_no      	int                 ,
+plan_component      	string              ,
+cust_segment        	string              ,
+cnctyp_cd           	string              ,
+cnctmd_cd           	string              ,
+cnctevs_cd          	string              ,
+svcrtyp_cd          	string              ,
+svrstyp_cd          	string              ,
+cmpltyp_cd          	string              ,
+catsrsn_cd          	string              ,
+apealvl_cd          	string              ,
+cnstnty_cd          	string              ,
+svcrqst_asrqst_ind  	string              ,
+svcrqst_rtnorig_in  	string              ,
+svcrqst_vwasof_dt   	string              ,
+sum_reason_cd       	string              ,
+sum_reason          	string              ,
+crsr_master_claim_index	string              ,
+svcrqct_cds         	array<string>       ,
+svcrqst_lupdt       	string              ,
+crsr_lupdt          	timestamp           ,
+cntevsds_lupdt      	string              ,
+ignore_me           	int                 ,
+notes               	array<string>       )
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY  '\t' LINES TERMINATED BY '\n' 
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@service_request_clean
+POSTHOOK: query: create table service_request_clean(
+cnctevn_id          	string              ,
+svcrqst_id          	string              ,
+svcrqst_crt_dts     	string              ,
+subject_seq_no      	int                 ,
+plan_component      	string              ,
+cust_segment        	string              ,
+cnctyp_cd           	string              ,
+cnctmd_cd           	string              ,
+cnctevs_cd          	string              ,
+svcrtyp_cd          	string              ,
+svrstyp_cd          	string              ,
+cmpltyp_cd          	string              ,
+catsrsn_cd          	string              ,
+apealvl_cd          	string              ,
+cnstnty_cd          	string              ,
+svcrqst_asrqst_ind  	string              ,
+svcrqst_rtnorig_in  	string              ,
+svcrqst_vwasof_dt   	string              ,
+sum_reason_cd       	string              ,
+sum_reason          	string              ,
+crsr_master_claim_index	string              ,
+svcrqct_cds         	array<string>       ,
+svcrqst_lupdt       	string              ,
+crsr_lupdt          	timestamp           ,
+cntevsds_lupdt      	string              ,
+ignore_me           	int                 ,
+notes               	array<string>       )
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY  '\t' LINES TERMINATED BY '\n' 
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@service_request_clean
+PREHOOK: query: load data local inpath '../../data/files/service_request_clean.txt' into table service_request_clean
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@service_request_clean
+POSTHOOK: query: load data local inpath '../../data/files/service_request_clean.txt' into table service_request_clean
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@service_request_clean
+PREHOOK: query: create table ct_events_clean(
+contact_event_id    	string              ,
+ce_create_dt        	string              ,
+ce_end_dt           	string              ,
+contact_type        	string              ,
+cnctevs_cd          	string              ,
+contact_mode        	string              ,
+cntvnst_stts_cd     	string              ,
+total_transfers     	int                 ,
+ce_notes            	array<string>       )
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY  '\t' LINES TERMINATED BY '\n' 
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct_events_clean
+POSTHOOK: query: create table ct_events_clean(
+contact_event_id    	string              ,
+ce_create_dt        	string              ,
+ce_end_dt           	string              ,
+contact_type        	string              ,
+cnctevs_cd          	string              ,
+contact_mode        	string              ,
+cntvnst_stts_cd     	string              ,
+total_transfers     	int                 ,
+ce_notes            	array<string>       )
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY  '\t' LINES TERMINATED BY '\n' 
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct_events_clean
+PREHOOK: query: load data local inpath '../../data/files/ct_events_clean.txt' into table ct_events_clean
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@ct_events_clean
+POSTHOOK: query: load data local inpath '../../data/files/ct_events_clean.txt' into table ct_events_clean
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ct_events_clean
+PREHOOK: query: describe service_request_clean
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@service_request_clean
+POSTHOOK: query: describe service_request_clean
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@service_request_clean
+cnctevn_id          	string              	                    
+svcrqst_id          	string              	                    
+svcrqst_crt_dts     	string              	                    
+subject_seq_no      	int                 	                    
+plan_component      	string              	                    
+cust_segment        	string              	                    
+cnctyp_cd           	string              	                    
+cnctmd_cd           	string              	                    
+cnctevs_cd          	string              	                    
+svcrtyp_cd          	string              	                    
+svrstyp_cd          	string              	                    
+cmpltyp_cd          	string              	                    
+catsrsn_cd          	string              	                    
+apealvl_cd          	string              	                    
+cnstnty_cd          	string              	                    
+svcrqst_asrqst_ind  	string              	                    
+svcrqst_rtnorig_in  	string              	                    
+svcrqst_vwasof_dt   	string              	                    
+sum_reason_cd       	string              	                    
+sum_reason          	string              	                    
+crsr_master_claim_index	string              	                    
+svcrqct_cds         	array<string>       	                    
+svcrqst_lupdt       	string              	                    
+crsr_lupdt          	timestamp           	                    
+cntevsds_lupdt      	string              	                    
+ignore_me           	int                 	                    
+notes               	array<string>       	                    
+PREHOOK: query: select * from service_request_clean
+PREHOOK: type: QUERY
+PREHOOK: Input: default@service_request_clean
+#### A masked pattern was here ####
+POSTHOOK: query: select * from service_request_clean
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@service_request_clean
+#### A masked pattern was here ####
+002246948195	0000003629537980	2015-04-24 12:48:37.859683	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-24 12:48:37.859683	NULL	2015-04-24 12:48:40.499238	1	["NULL"]
+002248196142	0000003631128809	2015-04-26 14:19:35.002766	1	HMOM1     	RM 	001	D02	007	648	001	 	        	 	001	N	N	null	12	Pharmacy_Inquiry	NULL	["NULL"]	2015-04-26 14:19:35.002766	NULL	2015-04-26 14:19:38.159742	1	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	0000003631128809	2015-04-26 14:19:35.002766	1	HMOM1     	RM 	001	D02	007	648	001	 	        	 	001	N	N	null	12	Pharmacy_Inquiry	NULL	["NULL"]	2015-04-26 14:19:35.002766	NULL	2015-04-26 14:19:38.159742	1	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002283483949	0000003680733027	2015-05-28 11:27:54.600648	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-28 11:27:54.600648	NULL	2015-05-28 11:27:57.007121	1	["NULL"]
+002283483949	0000003680733027	2015-05-28 11:27:54.600648	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-28 11:27:54.600648	NULL	2015-05-28 11:27:57.007121	1	["NULL"]
+002283483949	0000003680733027	2015-05-28 11:27:54.600648	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-28 11:27:54.600648	NULL	2015-05-28 11:27:57.007121	1	["NULL"]
+002283483949	0000003680733027	2015-05-28 11:27:54.600648	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-28 11:27:54.600648	NULL	2015-05-28 11:27:57.007121	1	["NULL"]
+002239795904	0000003619841753	2015-04-20 13:30:15.011249	2	HMOM1     	RM 	001	D02	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-20 13:31:12.458513	NULL	2015-04-20 13:30:17.82283	1	["NULL"]
+002245333855	0000003627296864	2015-04-23 12:20:37.180286	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-23 12:20:37.95428	NULL	2015-04-23 12:20:42.064108	1	["NULL"]
+002220195330	0000003589889320	2015-03-27 16:03:54.412005	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-03-27 16:03:54.412005	NULL	2015-03-27 16:03:57.349136	1	["NULL"]
+002237527045	0000003616212332	2015-04-16 12:22:10.0135	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-16 22:17:05.239032	NULL	2015-04-16 12:22:14.686573	1	["NULL"]
+002246948195	0000003629552417	2015-04-24 12:53:42.626144	1	HMOM1     	RM 	001	D02	007	311	001	 	        	 	001	N	N	null	2	Benefit_Inquiry	NULL	["NULL"]	2015-04-24 12:53:42.626144	NULL	2015-04-24 12:53:43.811111	1	["[\"transferred mm to correct dept pharmacy\"]"]
+002219988144	0000003589680227	2015-03-27 15:02:02.445509	1	HMOM1     	RM 	001	D02	007	648	H51	 	        	 	001	N	N	null	NULL	NULL	NULL	["NULL"]	2015-03-27 15:02:02.445509	NULL	2015-03-27 15:02:03.890719	1	["[\"Mbr got a call stating his phcy phcy will no longer par as of 03/31/15 and wanted to know why. Transferred to Network Pharmacy Assistance Line: spoke to adv mbr wanted to know why he cannot go to the phcy anymore. Adv mbr may want to speak to part d after regarding a med that phcy can only get for him.\"]"]
+002237527045	0000003616216229	2015-04-16 12:23:15.264709	1	HMOM1     	RM 	001	D02	007	357	511	 	        	 	001	N	N	null	10	Health_Care_Access_Inquiry	NULL	["NULL"]	2015-04-16 22:17:05.239032	NULL	2015-04-16 12:23:17.268762	1	["[\"advised memthat he needs referrals\"]"]
+002247005359	0000003629627672	2015-04-24 13:21:31.741349	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-24 22:26:24.070143	NULL	2015-04-24 13:21:33.10773	1	["NULL"]
+002248196142	0000003631128825	2015-04-26 14:19:54.917599	1	HMOM1     	RM 	001	D02	007	648	389	 	        	 	001	N	N	null	12	Pharmacy_Inquiry	NULL	["[\"   \"]"]	2015-04-26 14:19:54.917599	NULL	2015-04-26 14:20:00.0232	1	["NULL"]
+002248196142	0000003631128825	2015-04-26 14:19:54.917599	1	HMOM1     	RM 	001	D02	007	648	389	 	        	 	001	N	N	null	12	Pharmacy_Inquiry	NULL	["[\"   \"]"]	2015-04-26 14:19:54.917599	NULL	2015-04-26 14:20:00.0232	1	["NULL"]
+002237527045	0000003616212506	2015-04-16 12:22:12.913755	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-16 22:17:05.239032	NULL	2015-04-16 12:22:14.803557	1	["NULL"]
+002245467256	0000003627505176	2015-04-23 13:31:59.591838	1	HMOM1     	RM 	001	D01	007	648	389	 	        	 	001	Y	N	null	12	Pharmacy_Inquiry	NULL	["[\"   \"]"]	2015-04-23 13:31:59.591838	NULL	2015-04-23 13:32:03.630355	1	["NULL"]
+002273726300	0000003666781031	2015-05-18 15:44:00.459007	1	HMOM1     	RM 	001	D01	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-18 15:44:00.459007	NULL	2015-05-18 15:44:03.180889	1	["NULL"]
+002219988144	0000003589600435	2015-03-27 14:39:19.290181	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-03-27 14:39:19.290181	NULL	2015-03-27 14:39:21.981441	1	["NULL"]
+002273726300	0000003666810982	2015-05-18 15:52:30.865779	1	HMOM1     	RM 	001	D01	007	311	008	 	        	 	001	Y	N	null	2	Benefit_Inquiry	NULL	["[\"   \"]"]	2015-05-18 15:52:30.865779	NULL	2015-05-18 15:52:35.677654	1	["NULL"]
+002245243791	0000003627158688	2015-04-23 11:37:15.024552	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-23 22:23:09.553824	NULL	2015-04-23 11:37:20.417	1	["NULL"]
+002247005359	0000003629633814	2015-04-24 13:23:41.76024	1	HMOM1     	RM 	001	D02	007	311	001	 	        	 	001	N	N	null	2	Benefit_Inquiry	NULL	["NULL"]	2015-04-24 22:26:24.070143	NULL	2015-04-24 13:23:43.825964	1	["[\"mm is calling about advised mm that i will get him to part d.\"]"]
+002245243791	0000003627159160	2015-04-23 11:37:23.404577	1	HMOM1     	RM 	001	D02	007	365	164	 	        	 	001	Y	N	null	11	Mbr_plan_info_upd_Inquiry	NULL	["[\"   \"]"]	2015-04-23 22:23:09.553824	NULL	2015-04-23 11:37:26.54188	1	["NULL"]
+002245243791	0000003627158875	2015-04-23 11:37:18.418903	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-23 22:23:09.553824	NULL	2015-04-23 11:37:20.945151	1	["NULL"]
+002245282386	0000003627217469	2015-04-23 11:54:42.446098	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-23 22:14:01.288132	NULL	2015-04-23 11:54:46.190323	1	["NULL"]
+002248196142	0000003631128067	2015-04-26 14:09:56.995915	1	HMOM1     	RM 	001	D02	007	354	001	 	        	 	001	Y	N	null	14	Provider_Inquiry	NULL	["[\"   \"]"]	2015-04-26 14:14:25.299544	NULL	2015-04-26 14:10:01.261951	1	["NULL"]
+002248196142	0000003631128067	2015-04-26 14:09:56.995915	1	HMOM1     	RM 	001	D02	007	354	001	 	        	 	001	Y	N	null	14	Provider_Inquiry	NULL	["[\"   \"]"]	2015-04-26 14:14:25.299544	NULL	2015-04-26 14:10:01.261951	1	["NULL"]
+002235599616	0000003613165874	2015-04-14 15:03:14.605977	1	HMOM1     	RM 	001	D02	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-14 15:03:14.605977	NULL	2015-04-14 15:03:16.452358	1	["NULL"]
+002245467256	0000003627503418	2015-04-23 13:31:23.776941	1	HMOM1     	RM 	001	D01	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-23 13:31:23.776941	NULL	2015-04-23 13:31:25.966957	1	["NULL"]
+002246948195	0000003629538117	2015-04-24 12:48:40.945176	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-24 12:48:40.945176	NULL	2015-04-24 12:48:45.466891	1	["NULL"]
+002245467256	0000003627527570	2015-04-23 13:39:49.295025	1	HMOM1     	RM 	001	D01	007	648	369	 	        	 	001	N	N	null	12	Pharmacy_Inquiry	NULL	["NULL"]	2015-04-23 13:39:49.295025	NULL	2015-04-23 13:39:54.922156	1	["[\"mm called about pharm not being in network, offered other pharmaces from . gave if pharm wants to be contracted\"]"]
+002247005359	0000003629627781	2015-04-24 13:21:34.419178	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-24 22:26:24.070143	NULL	2015-04-24 13:21:38.070006	1	["NULL"]
+002245282386	0000003627217646	2015-04-23 11:54:45.519105	1	HMOM1     	RM 	001	D02	007	648	389	 	        	 	001	Y	N	null	12	Pharmacy_Inquiry	NULL	["[\"   \"]"]	2015-04-23 22:14:01.288132	NULL	2015-04-23 11:54:51.129791	1	["NULL"]
+002219988144	0000003589629166	2015-03-27 14:47:25.274287	1	HMOM1     	RM 	001	D02	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-03-27 14:47:25.274287	NULL	2015-03-27 14:47:27.516359	1	["NULL"]
+002239795904	0000003619821056	2015-04-20 13:18:56.254823	2	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-20 13:18:56.254823	NULL	2015-04-20 13:19:00.855129	1	["NULL"]
+002245333855	0000003627301940	2015-04-23 12:22:19.858639	1	HMOM1     	RM 	001	D02	007	648	A05	 	        	 	001	N	N	null	12	Pharmacy_Inquiry	NULL	["NULL"]	2015-04-23 12:22:19.858639	NULL	2015-04-23 12:22:21.917581	1	["[\"the mm wanted to verify his meds will be covered now I warm transfered to pharmacy\"]"]
+002248196142	0000003631127944	2015-04-26 14:08:18.509816	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-26 14:08:18.509816	NULL	2015-04-26 14:08:23.945992	1	["NULL"]
+002248196142	0000003631127944	2015-04-26 14:08:18.509816	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-26 14:08:18.509816	NULL	2015-04-26 14:08:23.945992	1	["NULL"]
+002267582534	0000003657794733	2015-05-12 11:21:14.976263	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-12 11:21:14.976263	NULL	2015-05-12 11:21:20.583068	1	["NULL"]
+002283483949	0000003680775536	2015-05-28 11:41:14.196351	1	HMOM1     	RM 	001	D02	007	311	008	 	        	 	001	Y	N	null	2	Benefit_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:41:14.196351	NULL	2015-05-28 11:41:15.923476	1	["NULL"]
+002283483949	0000003680775536	2015-05-28 11:41:14.196351	1	HMOM1     	RM 	001	D02	007	311	008	 	        	 	001	Y	N	null	2	Benefit_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:41:14.196351	NULL	2015-05-28 11:41:15.923476	1	["NULL"]
+002283483949	0000003680775536	2015-05-28 11:41:14.196351	1	HMOM1     	RM 	001	D02	007	311	008	 	        	 	001	Y	N	null	2	Benefit_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:41:14.196351	NULL	2015-05-28 11:41:15.923476	1	["NULL"]
+002283483949	0000003680775536	2015-05-28 11:41:14.196351	1	HMOM1     	RM 	001	D02	007	311	008	 	        	 	001	Y	N	null	2	Benefit_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:41:14.196351	NULL	2015-05-28 11:41:15.923476	1	["NULL"]
+002283483949	0000003680776473	2015-05-28 11:41:31.095227	1	HMOM1     	RM 	001	D02	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-28 11:42:48.527989	NULL	2015-05-28 11:41:32.922456	1	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	0000003680776473	2015-05-28 11:41:31.095227	1	HMOM1     	RM 	001	D02	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-28 11:42:48.527989	NULL	2015-05-28 11:41:32.922456	1	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	0000003680776473	2015-05-28 11:41:31.095227	1	HMOM1     	RM 	001	D02	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-28 11:42:48.527989	NULL	2015-05-28 11:41:32.922456	1	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	0000003680776473	2015-05-28 11:41:31.095227	1	HMOM1     	RM 	001	D02	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-05-28 11:42:48.527989	NULL	2015-05-28 11:41:32.922456	1	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002246948195	0000003629543953	2015-04-24 12:50:43.478244	1	HMOM1     	RM 	001	D02	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-24 12:50:43.478244	NULL	2015-04-24 12:50:45.758653	1	["NULL"]
+002283483949	0000003680733396	2015-05-28 11:28:01.627319	1	HMOM1     	RM 	001	D02	007	365	164	 	        	 	001	Y	N	null	11	Mbr_plan_info_upd_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:28:01.627319	NULL	2015-05-28 11:28:08.008998	1	["NULL"]
+002283483949	0000003680733396	2015-05-28 11:28:01.627319	1	HMOM1     	RM 	001	D02	007	365	164	 	        	 	001	Y	N	null	11	Mbr_plan_info_upd_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:28:01.627319	NULL	2015-05-28 11:28:08.008998	1	["NULL"]
+002283483949	0000003680733396	2015-05-28 11:28:01.627319	1	HMOM1     	RM 	001	D02	007	365	164	 	        	 	001	Y	N	null	11	Mbr_plan_info_upd_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:28:01.627319	NULL	2015-05-28 11:28:08.008998	1	["NULL"]
+002283483949	0000003680733396	2015-05-28 11:28:01.627319	1	HMOM1     	RM 	001	D02	007	365	164	 	        	 	001	Y	N	null	11	Mbr_plan_info_upd_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:28:01.627319	NULL	2015-05-28 11:28:08.008998	1	["NULL"]
+002283483949	0000003680776462	2015-05-28 11:41:30.938091	1	HMOM1     	RM 	001	D02	007	722	339	 	        	 	001	Y	N	null	13	Premium_Rates_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:41:30.938091	NULL	2015-05-28 11:41:32.918427	1	["NULL"]
+002283483949	0000003680776462	2015-05-28 11:41:30.938091	1	HMOM1     	RM 	001	D02	007	722	339	 	        	 	001	Y	N	null	13	Premium_Rates_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:41:30.938091	NULL	2015-05-28 11:41:32.918427	1	["NULL"]
+002283483949	0000003680776462	2015-05-28 11:41:30.938091	1	HMOM1     	RM 	001	D02	007	722	339	 	        	 	001	Y	N	null	13	Premium_Rates_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:41:30.938091	NULL	2015-05-28 11:41:32.918427	1	["NULL"]
+002283483949	0000003680776462	2015-05-28 11:41:30.938091	1	HMOM1     	RM 	001	D02	007	722	339	 	        	 	001	Y	N	null	13	Premium_Rates_Inquiry	NULL	["[\"   \"]"]	2015-05-28 11:41:30.938091	NULL	2015-05-28 11:41:32.918427	1	["NULL"]
+002245282386	0000003627217285	2015-04-23 11:54:39.238357	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-23 22:14:01.288132	NULL	2015-04-23 11:54:40.740061	1	["NULL"]
+002239795904	0000003619862034	2015-04-20 13:41:28.340287	2	HMOM1     	RM 	001	D02	007	311	008	 	        	 	001	Y	N	null	2	Benefit_Inquiry	NULL	["[\"   \"]"]	2015-04-20 13:44:03.799492	NULL	2015-04-20 13:41:32.079266	1	["[\"provided ent for possible ear wax removal. mem also inquired on  pharmacy. advised nonpar.\"]"]
+002248196142	0000003631127951	2015-04-26 14:08:22.388518	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-26 14:08:22.388518	NULL	2015-04-26 14:08:25.542505	1	["NULL"]
+002248196142	0000003631127951	2015-04-26 14:08:22.388518	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-26 14:08:22.388518	NULL	2015-04-26 14:08:25.542505	1	["NULL"]
+002237527045	0000003616233351	2015-04-16 12:28:01.05885	1	HMOM1     	RM 	001	D02	007	354	160	 	        	 	001	N	N	null	14	Provider_Inquiry	NULL	["NULL"]	2015-04-16 22:17:05.239032	NULL	2015-04-16 12:28:06.079121	1	["[\"S MD   Specialties: Gastroenterology     Specialties: Gastroenterology   Specialties: Gastroenterology\"]"]
+002267582534	0000003657813303	2015-05-12 11:26:20.219803	1	HMOM1     	RM 	001	D02	007	354	513	 	        	 	001	N	N	null	14	Provider_Inquiry	NULL	["NULL"]	2015-05-12 11:26:20.219803	NULL	2015-05-12 11:26:22.063375	1	["[\"CAP Diagnostics is not a participating provider mm has recieved a bill from them, adv mm that the bill will be his responsibility due to them being out of network\"]"]
+002245243791	0000003627159428	2015-04-23 11:37:27.837731	1	HMOM1     	RM 	001	D02	007	647	341	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-23 22:23:09.553824	NULL	2015-04-23 11:37:32.071077	1	["NULL"]
+002239795904	0000003619820988	2015-04-20 13:18:53.730938	2	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-20 13:18:53.730938	NULL	2015-04-20 13:18:55.909942	1	["NULL"]
+002235599616	0000003613165501	2015-04-14 15:03:01.303044	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-14 15:03:01.303044	NULL	2015-04-14 15:03:05.38129	1	["NULL"]
+002245333855	0000003627296700	2015-04-23 12:20:33.941065	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-23 12:20:33.941065	NULL	2015-04-23 12:20:36.544049	1	["NULL"]
+002273726300	0000003666815979	2015-05-18 15:53:57.882281	1	HMOM1     	RM 	001	D01	007	354	001	 	        	 	001	N	N	null	14	Provider_Inquiry	NULL	["NULL"]	2015-05-18 15:53:57.882281	NULL	2015-05-18 15:54:03.911377	1	["[\"the mm said he has a appt tomorrow  to see a hearing specialist but forgot the drs name and phone # he does have the address which is Encino, CA 91436  I looked this up in gave him names of providers at this address\"]"]
+002250650385	0000003634483681	2015-04-28 11:12:49.588126	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-28 11:12:49.588126	NULL	2015-04-28 11:12:55.024475	1	["NULL"]
+002235599616	0000003613177879	2015-04-14 15:09:54.738286	1	HMOM1     	RM 	001	D02	007	311	001	 	        	 	001	N	N	null	2	Benefit_Inquiry	NULL	["NULL"]	2015-04-14 15:09:54.738286	NULL	2015-04-14 15:10:00.32106	1	["[\"let mm knw pharmacy is not par\"]"]
+002250650385	0000003634483847	2015-04-28 11:12:52.641296	1	HMOM1     	RM 	001	D02	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-28 11:12:52.641296	NULL	2015-04-28 11:12:55.503579	1	["NULL"]
+002207463467	0000003572242068	2015-03-18 11:14:47.621016	1	HMOM1     	RM 	001	D02	007	335	088	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-03-18 11:14:47.621016	NULL	2015-03-18 11:14:52.904626	1	["NULL"]
+002245467256	0000003627505090	2015-04-23 13:31:57.531953	1	HMOM1     	RM 	001	D01	007	722	832	 	        	 	001	Y	N	null	98	Exclude	NULL	["[\"   \"]"]	2015-04-23 13:31:57.531953	NULL	2015-04-23 13:31:58.697025	1	["NULL"]
+002245467256	0000003627503551	2015-04-23 13:31:26.62283	1	HMOM1     	RM 	001	D01	007	738	000	 	        	 	001	Y	N	null	98	Exclude	NULL	["NULL"]	2015-04-23 13:31:26.62283	NULL	2015-04-23 13:31:30.861259	1	["NULL"]
+002207463467	0000003572246347	2015-03-18 11:16:02.920442	1	HMOM1     	RM 	001	D02	007	776	016	 	        	 	001	N	N	null	9	General_Admin_Inquiry	NULL	["NULL"]	2015-03-18 11:16:02.920442	NULL	2015-03-18 11:16:08.901477	1	["[\"calling about Health Assessment letter.. advised it is optional\"]"]
+PREHOOK: query: describe ct_events_clean
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ct_events_clean
+POSTHOOK: query: describe ct_events_clean
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ct_events_clean
+contact_event_id    	string              	                    
+ce_create_dt        	string              	                    
+ce_end_dt           	string              	                    
+contact_type        	string              	                    
+cnctevs_cd          	string              	                    
+contact_mode        	string              	                    
+cntvnst_stts_cd     	string              	                    
+total_transfers     	int                 	                    
+ce_notes            	array<string>       	                    
+PREHOOK: query: select * from ct_events_clean
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ct_events_clean
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ct_events_clean
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ct_events_clean
+#### A masked pattern was here ####
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]
+002220195330	2015-03-27 16:02:46.0	2015-03-27 16:08:58.852168	001	007	CALL IN	100	1	["[\"Network Pharmacy Assistance Line: 2663.\"]"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his coverage and getting it from pharmacy, xfered to part D\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his coverage and getting it from pharmacy, xfered to part D\"]"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002267582534	2015-05-12 11:19:51.0	2015-05-12 11:26:26.922031	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his oxycodone coverage and getting it from pharmacy, xfered to part D\"]"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]
+002267582534	2015-05-12 11:19:51.0	2015-05-12 11:26:26.922031	001	007	CALL IN	100	1	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]
+002250650385	2015-04-28 11:12:30.0	2015-04-28 11:19:52.499187	001	007	CALL IN	100	1	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]
+002250650385	2015-04-28 11:12:30.0	2015-04-28 11:19:52.499187	001	007	CALL IN	100	1	["NULL"]
+002207463467	2015-03-18 11:14:28.0	2015-03-18 11:17:31.458612	001	007	CALL IN	100	1	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]
+002207463467	2015-03-18 11:14:28.0	2015-03-18 11:17:31.458612	001	007	CALL IN	100	1	["NULL"]
+PREHOOK: query: drop table ct_events1_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ct_events1_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: explain extended
+create table ct_events1_test
+as select  a.*,
+b.svcrqst_id,
+b.svcrqct_cds,
+b.svcrtyp_cd,
+b.cmpltyp_cd,
+b.sum_reason_cd as src,
+b.cnctmd_cd,
+b.notes
+from ct_events_clean a
+inner join
+service_request_clean b
+on a.contact_event_id = b.cnctevn_id
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: explain extended
+create table ct_events1_test
+as select  a.*,
+b.svcrqst_id,
+b.svcrqct_cds,
+b.svcrtyp_cd,
+b.cmpltyp_cd,
+b.sum_reason_cd as src,
+b.cnctmd_cd,
+b.notes
+from ct_events_clean a
+inner join
+service_request_clean b
+on a.contact_event_id = b.cnctevn_id
+POSTHOOK: type: CREATETABLE_AS_SELECT
+ABSTRACT SYNTAX TREE:
+  
+TOK_CREATETABLE
+   TOK_TABNAME
+      ct_events1_test
+   TOK_LIKETABLE
+   TOK_QUERY
+      TOK_FROM
+         TOK_JOIN
+            TOK_TABREF
+               TOK_TABNAME
+                  ct_events_clean
+               a
+            TOK_TABREF
+               TOK_TABNAME
+                  service_request_clean
+               b
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     a
+                  contact_event_id
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  cnctevn_id
+      TOK_INSERT
+         TOK_DESTINATION
+            TOK_DIR
+               TOK_TMP_FILE
+         TOK_SELECT
+            TOK_SELEXPR
+               TOK_ALLCOLREF
+                  TOK_TABNAME
+                     a
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  svcrqst_id
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  svcrqct_cds
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  svcrtyp_cd
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  cmpltyp_cd
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  sum_reason_cd
+               src
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  cnctmd_cd
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     b
+                  notes
+
+
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-4 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-4
+  Stage-6 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-6
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 2 Data size: 7501 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: contact_event_id is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 3750 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 contact_event_id (type: string)
+                  1 cnctevn_id (type: string)
+                Position of Big Table: 1
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: b
+            Statistics: Num rows: 4 Data size: 18162 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: cnctevn_id is not null (type: boolean)
+              Statistics: Num rows: 2 Data size: 9081 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 contact_event_id (type: string)
+                  1 cnctevn_id (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col13, _col19, _col21, _col23, _col30, _col33, _col38
+                Position of Big Table: 1
+                Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: int), _col8 (type: array<string>), _col13 (type: string), _col33 (type: array<string>), _col21 (type: string), _col23 (type: string), _col30 (type: string), _col19 (type: string), _col38 (type: array<string>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                  Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 2 Data size: 9989 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes,svcrqst_id,svcrqct_cds,svcrtyp_cd,cmpltyp_cd,src,cnctmd_cd,notes
+                          columns.types string:string:string:string:string:string:string:int:array<string>:string:array<string>:string:string:string:string:array<string>
+                          name default.ct_events1_test
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.ct_events1_test
+                    TotalFiles: 1
+                    GatherStats: true
+                    MultiFileSpray: false
+      Local Work:
+        Map Reduce Local Work
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: ct_events_clean
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes
+              columns.comments 
+              columns.types string:string:string:string:string:string:string:int:array<string>
+              field.delim 	
+#### A masked pattern was here ####
+              line.delim 
+
+#### A masked pattern was here ####
+              name default.ct_events_clean
+              numFiles 1
+              serialization.ddl struct ct_events_clean { string contact_event_id, string ce_create_dt, string ce_end_dt, string contact_type, string cnctevs_cd, string contact_mode, string cntvnst_stts_cd, i32 total_transfers, list<string> ce_notes}
+              serialization.format 	
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 7501
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes
+                columns.comments 
+                columns.types string:string:string:string:string:string:string:int:array<string>
+                field.delim 	
+#### A masked pattern was here ####
+                line.delim 
+
+#### A masked pattern was here ####
+                name default.ct_events_clean
+                numFiles 1
+                serialization.ddl struct ct_events_clean { string contact_event_id, string ce_create_dt, string ce_end_dt, string contact_type, string cnctevs_cd, string contact_mode, string cntvnst_stts_cd, i32 total_transfers, list<string> ce_notes}
+                serialization.format 	
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 7501
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ct_events_clean
+            name: default.ct_events_clean
+#### A masked pattern was here ####
+          Partition
+            base file name: service_request_clean
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns cnctevn_id,svcrqst_id,svcrqst_crt_dts,subject_seq_no,plan_component,cust_segment,cnctyp_cd,cnctmd_cd,cnctevs_cd,svcrtyp_cd,svrstyp_cd,cmpltyp_cd,catsrsn_cd,apealvl_cd,cnstnty_cd,svcrqst_asrqst_ind,svcrqst_rtnorig_in,svcrqst_vwasof_dt,sum_reason_cd,sum_reason,crsr_master_claim_index,svcrqct_cds,svcrqst_lupdt,crsr_lupdt,cntevsds_lupdt,ignore_me,notes
+              columns.comments 
+              columns.types string:string:string:int:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:array<string>:string:timestamp:string:int:array<string>
+              field.delim 	
+#### A masked pattern was here ####
+              line.delim 
+
+#### A masked pattern was here ####
+              name default.service_request_clean
+              numFiles 1
+              serialization.ddl struct service_request_clean { string cnctevn_id, string svcrqst_id, string svcrqst_crt_dts, i32 subject_seq_no, string plan_component, string cust_segment, string cnctyp_cd, string cnctmd_cd, string cnctevs_cd, string svcrtyp_cd, string svrstyp_cd, string cmpltyp_cd, string catsrsn_cd, string apealvl_cd, string cnstnty_cd, string svcrqst_asrqst_ind, string svcrqst_rtnorig_in, string svcrqst_vwasof_dt, string sum_reason_cd, string sum_reason, string crsr_master_claim_index, list<string> svcrqct_cds, string svcrqst_lupdt, timestamp crsr_lupdt, string cntevsds_lupdt, i32 ignore_me, list<string> notes}
+              serialization.format 	
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 18162
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns cnctevn_id,svcrqst_id,svcrqst_crt_dts,subject_seq_no,plan_component,cust_segment,cnctyp_cd,cnctmd_cd,cnctevs_cd,svcrtyp_cd,svrstyp_cd,cmpltyp_cd,catsrsn_cd,apealvl_cd,cnstnty_cd,svcrqst_asrqst_ind,svcrqst_rtnorig_in,svcrqst_vwasof_dt,sum_reason_cd,sum_reason,crsr_master_claim_index,svcrqct_cds,svcrqst_lupdt,crsr_lupdt,cntevsds_lupdt,ignore_me,notes
+                columns.comments 
+                columns.types string:string:string:int:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:array<string>:string:timestamp:string:int:array<string>
+                field.delim 	
+#### A masked pattern was here ####
+                line.delim 
+
+#### A masked pattern was here ####
+                name default.service_request_clean
+                numFiles 1
+                serialization.ddl struct service_request_clean { string cnctevn_id, string svcrqst_id, string svcrqst_crt_dts, i32 subject_seq_no, string plan_component, string cust_segment, string cnctyp_cd, string cnctmd_cd, string cnctevs_cd, string svcrtyp_cd, string svrstyp_cd, string cmpltyp_cd, string catsrsn_cd, string apealvl_cd, string cnstnty_cd, string svcrqst_asrqst_ind, string svcrqst_rtnorig_in, string svcrqst_vwasof_dt, string sum_reason_cd, string sum_reason, string crsr_master_claim_index, list<string> svcrqct_cds, string svcrqst_lupdt, timestamp crsr_lupdt, string cntevsds_lupdt, i32 ignore_me, list<string> notes}
+                serialization.format 	
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 18162
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.service_request_clean
+            name: default.service_request_clean
+      Truncated Path -> Alias:
+        /service_request_clean [b]
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-6
+      Create Table Operator:
+        Create Table
+          columns: contact_event_id string, ce_create_dt string, ce_end_dt string, contact_type string, cnctevs_cd string, contact_mode string, cntvnst_stts_cd string, total_transfers int, ce_notes array<string>, svcrqst_id string, svcrqct_cds array<string>, svcrtyp_cd string, cmpltyp_cd string, src string, cnctmd_cd string, notes array<string>
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: default.ct_events1_test
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+#### A masked pattern was here ####
+
+PREHOOK: query: create table ct_events1_test
+as select  a.*,
+b.svcrqst_id,
+b.svcrqct_cds,
+b.svcrtyp_cd,
+b.cmpltyp_cd,
+b.sum_reason_cd as src,
+b.cnctmd_cd,
+b.notes
+from ct_events_clean a
+inner join
+service_request_clean b
+on a.contact_event_id = b.cnctevn_id
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ct_events_clean
+PREHOOK: Input: default@service_request_clean
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ct_events1_test
+POSTHOOK: query: create table ct_events1_test
+as select  a.*,
+b.svcrqst_id,
+b.svcrqct_cds,
+b.svcrtyp_cd,
+b.cmpltyp_cd,
+b.sum_reason_cd as src,
+b.cnctmd_cd,
+b.notes
+from ct_events_clean a
+inner join
+service_request_clean b
+on a.contact_event_id = b.cnctevn_id
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ct_events_clean
+POSTHOOK: Input: default@service_request_clean
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ct_events1_test
+PREHOOK: query: select * from ct_events1_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ct_events1_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ct_events1_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ct_events1_test
+#### A masked pattern was here ####
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629537980	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629537980	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629537980	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629537980	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128809	["NULL"]	648	 	12	D02	["[\"the mm is calling in regards to pharmacy is par with aetna. adv the mm i am unable to find them in the system.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733027	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619841753	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619841753	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619841753	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619841753	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627296864	["NULL"]	738	 	98	D02	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627296864	["NULL"]	738	 	98	D02	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627296864	["NULL"]	738	 	98	D02	["NULL"]
+002220195330	2015-03-27 16:02:46.0	2015-03-27 16:08:58.852168	001	007	CALL IN	100	1	["[\"Network Pharmacy Assistance Line: 2663.\"]"]	0000003589889320	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616212332	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616212332	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616212332	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616212332	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629552417	["NULL"]	311	 	2	D02	["[\"transferred mm to correct dept pharmacy\"]"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629552417	["NULL"]	311	 	2	D02	["[\"transferred mm to correct dept pharmacy\"]"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629552417	["NULL"]	311	 	2	D02	["[\"transferred mm to correct dept pharmacy\"]"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629552417	["NULL"]	311	 	2	D02	["[\"transferred mm to correct dept pharmacy\"]"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589680227	["NULL"]	648	 	NULL	D02	["[\"Mbr got a call stating his phcy phcy will no longer par as of 03/31/15 and wanted to know why. Transferred to Network Pharmacy Assistance Line: spoke to adv mbr wanted to know why he cannot go to the phcy anymore. Adv mbr may want to speak to part d after regarding a med that phcy can only get for him.\"]"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589680227	["NULL"]	648	 	NULL	D02	["[\"Mbr got a call stating his phcy phcy will no longer par as of 03/31/15 and wanted to know why. Transferred to Network Pharmacy Assistance Line: spoke to adv mbr wanted to know why he cannot go to the phcy anymore. Adv mbr may want to speak to part d after regarding a med that phcy can only get for him.\"]"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589680227	["NULL"]	648	 	NULL	D02	["[\"Mbr got a call stating his phcy phcy will no longer par as of 03/31/15 and wanted to know why. Transferred to Network Pharmacy Assistance Line: spoke to adv mbr wanted to know why he cannot go to the phcy anymore. Adv mbr may want to speak to part d after regarding a med that phcy can only get for him.\"]"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616216229	["NULL"]	357	 	10	D02	["[\"advised memthat he needs referrals\"]"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616216229	["NULL"]	357	 	10	D02	["[\"advised memthat he needs referrals\"]"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616216229	["NULL"]	357	 	10	D02	["[\"advised memthat he needs referrals\"]"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616216229	["NULL"]	357	 	10	D02	["[\"advised memthat he needs referrals\"]"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629627672	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629627672	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629627672	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128825	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616212506	["NULL"]	738	 	98	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616212506	["NULL"]	738	 	98	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616212506	["NULL"]	738	 	98	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616212506	["NULL"]	738	 	98	D02	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505176	["[\"   \"]"]	648	 	12	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505176	["[\"   \"]"]	648	 	12	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505176	["[\"   \"]"]	648	 	12	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505176	["[\"   \"]"]	648	 	12	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505176	["[\"   \"]"]	648	 	12	D01	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666781031	["[\"   \"]"]	335	 	98	D01	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666781031	["[\"   \"]"]	335	 	98	D01	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666781031	["[\"   \"]"]	335	 	98	D01	["NULL"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589600435	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589600435	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589600435	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666810982	["[\"   \"]"]	311	 	2	D01	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666810982	["[\"   \"]"]	311	 	2	D01	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666810982	["[\"   \"]"]	311	 	2	D01	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627158688	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627158688	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627158688	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627158688	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629633814	["NULL"]	311	 	2	D02	["[\"mm is calling about advised mm that i will get him to part d.\"]"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629633814	["NULL"]	311	 	2	D02	["[\"mm is calling about advised mm that i will get him to part d.\"]"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629633814	["NULL"]	311	 	2	D02	["[\"mm is calling about advised mm that i will get him to part d.\"]"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627159160	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627159160	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627159160	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627159160	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627158875	["NULL"]	738	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627158875	["NULL"]	738	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627158875	["NULL"]	738	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627158875	["NULL"]	738	 	98	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217469	["NULL"]	738	 	98	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217469	["NULL"]	738	 	98	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his oxycodone coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217469	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631128067	["[\"   \"]"]	354	 	14	D02	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613165874	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613165874	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613165874	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503418	["[\"   \"]"]	335	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503418	["[\"   \"]"]	335	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503418	["[\"   \"]"]	335	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503418	["[\"   \"]"]	335	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503418	["[\"   \"]"]	335	 	98	D01	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629538117	["NULL"]	738	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629538117	["NULL"]	738	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629538117	["NULL"]	738	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629538117	["NULL"]	738	 	98	D02	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627527570	["NULL"]	648	 	12	D01	["[\"mm called about pharm not being in network, offered other pharmaces from . gave if pharm wants to be contracted\"]"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627527570	["NULL"]	648	 	12	D01	["[\"mm called about pharm not being in network, offered other pharmaces from . gave if pharm wants to be contracted\"]"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627527570	["NULL"]	648	 	12	D01	["[\"mm called about pharm not being in network, offered other pharmaces from . gave if pharm wants to be contracted\"]"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627527570	["NULL"]	648	 	12	D01	["[\"mm called about pharm not being in network, offered other pharmaces from . gave if pharm wants to be contracted\"]"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627527570	["NULL"]	648	 	12	D01	["[\"mm called about pharm not being in network, offered other pharmaces from . gave if pharm wants to be contracted\"]"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629627781	["NULL"]	738	 	98	D02	["NULL"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629627781	["NULL"]	738	 	98	D02	["NULL"]
+002247005359	2015-04-24 13:19:44.0	2015-04-24 22:26:24.070143	001	007	CALL IN	100	1	["[\"medication questions\"]"]	0000003629627781	["NULL"]	738	 	98	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217646	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217646	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his oxycodone coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217646	["[\"   \"]"]	648	 	12	D02	["NULL"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589629166	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589629166	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002219988144	2015-03-27 14:38:45.0	2015-03-27 15:03:00.478091	001	007	CALL IN	100	1	["NULL"]	0000003589629166	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619821056	["NULL"]	738	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619821056	["NULL"]	738	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619821056	["NULL"]	738	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619821056	["NULL"]	738	 	98	D02	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627301940	["NULL"]	648	 	12	D02	["[\"the mm wanted to verify his meds will be covered now I warm transfered to pharmacy\"]"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627301940	["NULL"]	648	 	12	D02	["[\"the mm wanted to verify his meds will be covered now I warm transfered to pharmacy\"]"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627301940	["NULL"]	648	 	12	D02	["[\"the mm wanted to verify his meds will be covered now I warm transfered to pharmacy\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127944	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002267582534	2015-05-12 11:19:51.0	2015-05-12 11:26:26.922031	001	007	CALL IN	100	1	["NULL"]	0000003657794733	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002267582534	2015-05-12 11:19:51.0	2015-05-12 11:26:26.922031	001	007	CALL IN	100	1	["NULL"]	0000003657794733	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680775536	["[\"   \"]"]	311	 	2	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776473	["[\"   \"]"]	722	 	98	D02	["[\"did adv mm with lis he has sep to do plan change he inq on having medical copays, did offer oral grievance.\"]"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629543953	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629543953	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629543953	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002246948195	2015-04-24 12:48:01.0	2015-04-24 12:53:46.874198	001	007	CALL IN	100	1	["NULL"]	0000003629543953	["[\"   \"]"]	722	 	98	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680733396	["[\"   \"]"]	365	 	11	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002283483949	2015-05-28 11:26:51.0	2015-05-28 11:45:43.043173	001	007	CALL IN	100	1	["NULL"]	0000003680776462	["[\"   \"]"]	722	 	13	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217285	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217285	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245282386	2015-04-23 11:53:52.0	2015-04-23 22:14:01.288132	001	007	CALL IN	100	1	["[\"questions about his oxycodone coverage and getting it from pharmacy, xfered to part D\"]"]	0000003627217285	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619862034	["[\"   \"]"]	311	 	2	D02	["[\"provided ent for possible ear wax removal. mem also inquired on  pharmacy. advised nonpar.\"]"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619862034	["[\"   \"]"]	311	 	2	D02	["[\"provided ent for possible ear wax removal. mem also inquired on  pharmacy. advised nonpar.\"]"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619862034	["[\"   \"]"]	311	 	2	D02	["[\"provided ent for possible ear wax removal. mem also inquired on  pharmacy. advised nonpar.\"]"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619862034	["[\"   \"]"]	311	 	2	D02	["[\"provided ent for possible ear wax removal. mem also inquired on  pharmacy. advised nonpar.\"]"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002248196142	2015-04-26 14:06:57.0	2015-04-26 14:20:57.615901	001	007	CALL IN	100	1	["NULL"]	0000003631127951	["NULL"]	738	 	98	D02	["NULL"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616233351	["NULL"]	354	 	14	D02	["[\"S MD   Specialties: Gastroenterology     Specialties: Gastroenterology   Specialties: Gastroenterology\"]"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616233351	["NULL"]	354	 	14	D02	["[\"S MD   Specialties: Gastroenterology     Specialties: Gastroenterology   Specialties: Gastroenterology\"]"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616233351	["NULL"]	354	 	14	D02	["[\"S MD   Specialties: Gastroenterology     Specialties: Gastroenterology   Specialties: Gastroenterology\"]"]
+002237527045	2015-04-16 12:21:45.0	2015-04-16 22:17:05.239032	001	007	CALL IN	100	1	["[\"trans to part d\"]"]	0000003616233351	["NULL"]	354	 	14	D02	["[\"S MD   Specialties: Gastroenterology     Specialties: Gastroenterology   Specialties: Gastroenterology\"]"]
+002267582534	2015-05-12 11:19:51.0	2015-05-12 11:26:26.922031	001	007	CALL IN	100	1	["NULL"]	0000003657813303	["NULL"]	354	 	14	D02	["[\"CAP Diagnostics is not a participating provider mm has recieved a bill from them, adv mm that the bill will be his responsibility due to them being out of network\"]"]
+002267582534	2015-05-12 11:19:51.0	2015-05-12 11:26:26.922031	001	007	CALL IN	100	1	["NULL"]	0000003657813303	["NULL"]	354	 	14	D02	["[\"CAP Diagnostics is not a participating provider mm has recieved a bill from them, adv mm that the bill will be his responsibility due to them being out of network\"]"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627159428	["NULL"]	647	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627159428	["NULL"]	647	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627159428	["NULL"]	647	 	98	D02	["NULL"]
+002245243791	2015-04-23 11:36:25.0	2015-04-23 22:23:09.553824	001	007	CALL IN	100	1	["[\"mm was warm transf to specialty pharmacy also provided mm with the number spoke to isa\"]"]	0000003627159428	["NULL"]	647	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619820988	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619820988	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619820988	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002239795904	2015-04-20 13:17:40.0	2015-04-20 13:44:06.408995	001	007	CALL IN	100	1	["NULL"]	0000003619820988	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613165501	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613165501	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613165501	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627296700	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627296700	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245333855	2015-04-23 12:20:08.0	2015-04-23 12:22:22.953697	001	007	CALL IN	100	1	["NULL"]	0000003627296700	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666815979	["NULL"]	354	 	14	D01	["[\"the mm said he has a appt tomorrow  to see a hearing specialist but forgot the drs name and phone # he does have the address which is Encino, CA 91436  I looked this up in gave him names of providers at this address\"]"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666815979	["NULL"]	354	 	14	D01	["[\"the mm said he has a appt tomorrow  to see a hearing specialist but forgot the drs name and phone # he does have the address which is Encino, CA 91436  I looked this up in gave him names of providers at this address\"]"]
+002273726300	2015-05-18 15:41:52.0	2015-05-18 15:54:01.747478	001	007	CALL IN	100	1	["NULL"]	0000003666815979	["NULL"]	354	 	14	D01	["[\"the mm said he has a appt tomorrow  to see a hearing specialist but forgot the drs name and phone # he does have the address which is Encino, CA 91436  I looked this up in gave him names of providers at this address\"]"]
+002250650385	2015-04-28 11:12:30.0	2015-04-28 11:19:52.499187	001	007	CALL IN	100	1	["NULL"]	0000003634483681	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002250650385	2015-04-28 11:12:30.0	2015-04-28 11:19:52.499187	001	007	CALL IN	100	1	["NULL"]	0000003634483681	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613177879	["NULL"]	311	 	2	D02	["[\"let mm knw pharmacy is not par\"]"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613177879	["NULL"]	311	 	2	D02	["[\"let mm knw pharmacy is not par\"]"]
+002235599616	2015-04-14 15:02:09.0	2015-04-14 15:10:01.223941	001	007	CALL IN	100	1	["NULL"]	0000003613177879	["NULL"]	311	 	2	D02	["[\"let mm knw pharmacy is not par\"]"]
+002250650385	2015-04-28 11:12:30.0	2015-04-28 11:19:52.499187	001	007	CALL IN	100	1	["NULL"]	0000003634483847	["NULL"]	738	 	98	D02	["NULL"]
+002250650385	2015-04-28 11:12:30.0	2015-04-28 11:19:52.499187	001	007	CALL IN	100	1	["NULL"]	0000003634483847	["NULL"]	738	 	98	D02	["NULL"]
+002207463467	2015-03-18 11:14:28.0	2015-03-18 11:17:31.458612	001	007	CALL IN	100	1	["NULL"]	0000003572242068	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002207463467	2015-03-18 11:14:28.0	2015-03-18 11:17:31.458612	001	007	CALL IN	100	1	["NULL"]	0000003572242068	["[\"   \"]"]	335	 	98	D02	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505090	["[\"   \"]"]	722	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505090	["[\"   \"]"]	722	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505090	["[\"   \"]"]	722	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505090	["[\"   \"]"]	722	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627505090	["[\"   \"]"]	722	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503551	["NULL"]	738	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503551	["NULL"]	738	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503551	["NULL"]	738	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503551	["NULL"]	738	 	98	D01	["NULL"]
+002245467256	2015-04-23 13:31:03.0	2015-04-23 13:39:54.686797	001	007	CALL IN	100	1	["NULL"]	0000003627503551	["NULL"]	738	 	98	D01	["NULL"]
+002207463467	2015-03-18 11:14:28.0	2015-03-18 11:17:31.458612	001	007	CALL IN	100	1	["NULL"]	0000003572246347	["NULL"]	776	 	9	D02	["[\"calling about Health Assessment letter.. advised it is optional\"]"]
+002207463467	2015-03-18 11:14:28.0	2015-03-18 11:17:31.458612	001	007	CALL IN	100	1	["NULL"]	0000003572246347	["NULL"]	776	 	9	D02	["[\"calling about Health Assessment letter.. advised it is optional\"]"]

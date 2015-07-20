@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.exec.dynamic.partition.mode=nonstrict;
 
 -- CTAS

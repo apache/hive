@@ -20,13 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 
@@ -60,8 +54,6 @@ public class VectorizedRowBatch implements Writable {
    * one VectorizedRowBatch to fit in cache.
    */
   public static final int DEFAULT_SIZE = 1024;
-
-  public VectorExpressionWriter[] valueWriters = null;
 
   /**
    * Return a batch with the specified number of columns.
@@ -112,7 +104,7 @@ public class VectorizedRowBatch implements Writable {
     return size;
   }
 
-  private String toUTF8(Object o) {
+  private static String toUTF8(Object o) {
     if(o == null || o instanceof NullWritable) {
       return "\\N"; /* as found in LazySimpleSerDe's nullSequence */
     }
@@ -125,47 +117,39 @@ public class VectorizedRowBatch implements Writable {
       return "";
     }
     StringBuilder b = new StringBuilder();
-    try {
-      if (this.selectedInUse) {
-        for (int j = 0; j < size; j++) {
-          int i = selected[j];
-          for (int k = 0; k < projectionSize; k++) {
-            int projIndex = projectedColumns[k];
-            ColumnVector cv = cols[projIndex];
-            if (k > 0) {
-              b.append('\u0001');
-            }
-            if (cv.isRepeating) {
-              b.append(toUTF8(valueWriters[k].writeValue(cv, 0)));
-            } else {
-              b.append(toUTF8(valueWriters[k].writeValue(cv, i)));
-            }
+    if (this.selectedInUse) {
+      for (int j = 0; j < size; j++) {
+        int i = selected[j];
+        b.append('[');
+        for (int k = 0; k < projectionSize; k++) {
+          int projIndex = projectedColumns[k];
+          ColumnVector cv = cols[projIndex];
+          if (k > 0) {
+            b.append(", ");
           }
-          if (j < size - 1) {
-            b.append('\n');
-          }
+          cv.stringifyValue(b, i);
         }
-      } else {
-        for (int i = 0; i < size; i++) {
-          for (int k = 0; k < projectionSize; k++) {
-            int projIndex = projectedColumns[k];
-            ColumnVector cv = cols[projIndex];
-            if (k > 0) {
-              b.append('\u0001');
-            }
-            if (cv.isRepeating) {
-              b.append(toUTF8(valueWriters[k].writeValue(cv, 0)));
-            } else {
-              b.append(toUTF8(valueWriters[k].writeValue(cv, i)));
-            }
-          }
-          if (i < size - 1) {
-            b.append('\n');
-          }
+        b.append(']');
+        if (j < size - 1) {
+          b.append('\n');
         }
       }
-    } catch (HiveException ex) {
-      throw new RuntimeException(ex);
+    } else {
+      for (int i = 0; i < size; i++) {
+        b.append('[');
+        for (int k = 0; k < projectionSize; k++) {
+          int projIndex = projectedColumns[k];
+          ColumnVector cv = cols[projIndex];
+          if (k > 0) {
+            b.append(", ");
+          }
+          cv.stringifyValue(b, i);
+        }
+        b.append(']');
+        if (i < size - 1) {
+          b.append('\n');
+        }
+      }
     }
     return b.toString();
   }
@@ -178,10 +162,6 @@ public class VectorizedRowBatch implements Writable {
   @Override
   public void write(DataOutput arg0) throws IOException {
     throw new UnsupportedOperationException("Don't call me");
-  }
-
-  public void setValueWriters(VectorExpressionWriter[] valueWriters) {
-    this.valueWriters = valueWriters;
   }
 
   /**

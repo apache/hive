@@ -95,14 +95,14 @@ public class TSetIpAddressProcessor<I extends Iface> extends TCLIService.Process
 
   private static final ThreadLocal<String> THREAD_LOCAL_IP_ADDRESS = new ThreadLocal<String>() {
     @Override
-    protected synchronized String initialValue() {
+    protected String initialValue() {
       return null;
     }
   };
 
   private static final ThreadLocal<String> THREAD_LOCAL_USER_NAME = new ThreadLocal<String>() {
     @Override
-    protected synchronized String initialValue() {
+    protected String initialValue() {
       return null;
     }
   };

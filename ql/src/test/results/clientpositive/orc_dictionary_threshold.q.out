@@ -149,7 +149,7 @@ SELECT CONCAT("k", key) AS key FROM src_thousand
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thousand
 POSTHOOK: Output: default@test_orc
-POSTHOOK: Lineage: test_orc.key EXPRESSION [(src_thousand)src_thousand.FieldSchema(name:key, type:string, comment:null), (src_thousand)src_thousand.FieldSchema(name:key, type:string, comment:null), (src_thousand)src_thousand.FieldSchema(name:key, type:string, comment:null), (src_thousand)src_thousand.FieldSchema(name:key, type:string, comment:null), (src_thousand)src_thousand.FieldSchema(name:key, type:string, comment:null), (src_thousand)src_thousand.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: test_orc.key EXPRESSION [(src_thousand)src_thousand.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: SELECT SUM(HASH(key)) FROM test_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_orc

@@ -40,8 +40,6 @@ Partition Value:    	[2010-04-08, 13]
 Database:           	default             	 
 Table:              	stats_part          	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -94,8 +92,6 @@ Partition Value:    	[2010-04-08, 13]
 Database:           	default             	 
 Table:              	stats_part          	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -147,8 +143,6 @@ hr                  	string
 Partition Value:    	[2010-04-08, 13]    	 
 Database:           	default             	 
 Table:              	stats_part          	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -206,8 +200,6 @@ Partition Value:    	[2010-04-08, 13]
 Database:           	default             	 
 Table:              	stats_part          	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -260,8 +252,6 @@ Partition Value:    	[2010-04-08, 13]
 Database:           	default             	 
 Table:              	stats_part          	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -313,8 +303,6 @@ hr                  	string
 Partition Value:    	[2010-04-08, 13]    	 
 Database:           	default             	 
 Table:              	stats_part          	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

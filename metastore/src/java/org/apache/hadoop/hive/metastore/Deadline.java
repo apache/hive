@@ -54,7 +54,7 @@ public class Deadline {
   private static final ThreadLocal<Deadline> DEADLINE_THREAD_LOCAL = new
       ThreadLocal<Deadline>() {
         @Override
-        protected synchronized Deadline initialValue() {
+        protected Deadline initialValue() {
           return null;
         }
       };

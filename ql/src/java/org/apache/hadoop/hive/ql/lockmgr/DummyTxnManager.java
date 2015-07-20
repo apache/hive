@@ -54,6 +54,10 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public int getStatementId() {
+    return 0;
+  }
+  @Override
   public HiveLockManager getLockManager() throws LockException {
     if (lockMgr == null) {
       boolean supportConcurrency =

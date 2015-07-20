@@ -41,10 +41,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_partition_change_col0
 POSTHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 POSTHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
-POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), (alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), ]
-POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c2 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), (alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), (alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), ]
-POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=abc,p2=123).c2 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), (alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c2 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_partition_change_col1 PARTITION(p1=abc,p2=123).c2 EXPRESSION [(alter_partition_change_col0)alter_partition_change_col0.FieldSchema(name:c2, type:string, comment:null), ]
 PREHOOK: query: show partitions alter_partition_change_col1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter_partition_change_col1

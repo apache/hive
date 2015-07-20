@@ -1,5 +1,8 @@
+set hive.explain.user=false;
 set hive.fetch.task.conversion=minimal;
 
+-- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
+-- EXCLUDE_OS_WINDOWS
 
 -- Check if vectorization code is handling partitioning on DATE and the other data types.
 

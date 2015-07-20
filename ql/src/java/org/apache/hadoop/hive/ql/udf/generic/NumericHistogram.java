@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Random;
 
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 
@@ -310,5 +311,18 @@ public class NumericHistogram {
 
   public int getNumBins() {
     return bins == null ? 0 : bins.size();
+  }
+
+  public int lengthFor(JavaDataModel model) {
+    int length = model.object();
+    length += model.primitive1() * 2;       // two int
+    int numBins = getNumBins();
+    if (numBins > 0) {
+      length += model.arrayList();   // List<Coord>
+      // Coord holds two doubles
+      length += numBins * (model.object() + model.primitive2() * 2);
+    }
+    length += model.lengthForRandom();      // Random
+    return length;
   }
 }

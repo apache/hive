@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 
 EXPLAIN SELECT (ctinyint % 2) + 1, cstring1, cint, elt((ctinyint % 2) + 1, cstring1, cint) 

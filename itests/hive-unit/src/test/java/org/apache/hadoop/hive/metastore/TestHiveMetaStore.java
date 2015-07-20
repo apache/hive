@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -99,6 +100,8 @@ public abstract class TestHiveMetaStore extends TestCase {
     hiveConf.set("hive.key2", "http://www.example.com");
     hiveConf.set("hive.key3", "");
     hiveConf.set("hive.key4", "0");
+
+    hiveConf.setIntVar(ConfVars.METASTORE_BATCH_RETRIEVE_MAX, 2);
   }
 
   public void testNameMethods() {
@@ -1330,7 +1333,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       tableNames.add(tblName2);
       List<Table> foundTables = client.getTableObjectsByName(dbName, tableNames);
 
-      assertEquals(foundTables.size(), 2);
+      assertEquals(2, foundTables.size());
       for (Table t: foundTables) {
         if (t.getTableName().equals(tblName2)) {
           assertEquals(t.getSd().getLocation(), tbl2.getSd().getLocation());
@@ -2700,6 +2703,26 @@ public abstract class TestHiveMetaStore extends TestCase {
     return typ1;
   }
 
+  /**
+   * Creates a simple table under specified database
+   * @param dbName    the database name that the table will be created under
+   * @param tableName the table name to be created
+   * @throws Exception
+   */
+  private void createTable(String dbName, String tableName)
+      throws Exception {
+    List<FieldSchema> columns = new ArrayList<FieldSchema>();
+    columns.add(new FieldSchema("foo", "string", ""));
+    columns.add(new FieldSchema("bar", "string", ""));
+
+    Map<String, String> serdParams = new HashMap<String, String>();
+    serdParams.put(serdeConstants.SERIALIZATION_FORMAT, "1");
+
+    StorageDescriptor sd =  createStorageDescriptor(tableName, columns, null, serdParams);
+
+    createTable(dbName, tableName, null, null, null, sd, 0);
+  }
+
   private Table createTable(String dbName, String tblName, String owner,
       Map<String,String> tableParams, Map<String, String> partitionKeys,
       StorageDescriptor sd, int lastAccessTime) throws Exception {
@@ -2850,6 +2873,38 @@ public abstract class TestHiveMetaStore extends TestCase {
     client.alterDatabase(dbName, db);
     checkDbOwnerType(dbName, role1, PrincipalType.ROLE);
 
+  }
+
+  /**
+   * Test table objects can be retrieved in batches
+   * @throws Exception
+   */
+  @Test
+  public void testGetTableObjects() throws Exception {
+    String dbName = "db";
+    List<String> tableNames = Arrays.asList("table1", "table2", "table3", "table4", "table5");
+
+    // Setup
+    silentDropDatabase(dbName);
+
+    Database db = new Database();
+    db.setName(dbName);
+    client.createDatabase(db);
+    for (String tableName : tableNames) {
+      createTable(dbName, tableName);
+    }
+
+    // Test
+    List<Table> tableObjs = client.getTableObjectsByName(dbName, tableNames);
+
+    // Verify
+    assertEquals(tableNames.size(), tableObjs.size());
+    for(Table table : tableObjs) {
+      assertTrue(tableNames.contains(table.getTableName().toLowerCase()));
+    }
+
+    // Cleanup
+    client.dropDatabase(dbName, true, true, true);
   }
 
   private void checkDbOwnerType(String dbName, String ownerName, PrincipalType ownerType)

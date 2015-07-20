@@ -39,6 +39,7 @@
     <module>contrib</module>
     <module>hbase-handler</module>
     <module>hcatalog</module>
+    <module>hplsql</module>
     <module>hwi</module>
     <module>jdbc</module>
     <module>metastore</module>
@@ -152,7 +153,7 @@
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.23.Final</netty.version>
-    <parquet.version>1.6.0</parquet.version>
+    <parquet.version>1.7.0</parquet.version>
     <pig.version>0.12.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
@@ -173,6 +174,7 @@
     <felix.version>2.4.0</felix.version>
     <curator.version>2.6.0</curator.version>
     <jsr305.version>3.0.0</jsr305.version>
+    <gson.version>2.2.4</gson.version>
   </properties>
 
   <repositories>
@@ -267,12 +269,12 @@
         <version>${bonecp.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.twitter</groupId>
-        <artifactId>parquet-hadoop-bundle</artifactId>
+        <groupId>org.apache.parquet</groupId>
+        <artifactId>parquet</artifactId>
         <version>${parquet.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.twitter</groupId>
+        <groupId>org.apache.parquet</groupId>
         <artifactId>parquet-column</artifactId>
         <version>${parquet.version}</version>
         <classifier>tests</classifier>
@@ -834,9 +836,8 @@
             <exclude>**/ql/exec/vector/udf/legacy/*.java</exclude>
             <exclude>**/ql/exec/vector/udf/generic/*.java</exclude>
             <exclude>**/TestHiveServer2Concurrency.java</exclude>
-            <exclude>**/TestHiveMetaStore.java</exclude>
             <exclude>${test.excludes.additional}</exclude>
-            <exclude>%regex[${skip.spark.files}]</exclude>
+            <exclude>${skip.spark.files}</exclude>
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -1227,7 +1228,9 @@
 	</property>
       </activation>
       <properties>
-        <skip.spark.files>.*[TestSparkSessionManagerImpl|TestMultiSessionsHS2WithLocalClusterSpark|TestJdbcWithLocalClusterSpark].class</skip.spark.files>
+        <skip.spark.files>
+          **/ql/exec/spark/session/TestSparkSessionManagerImpl.java,**/TestMultiSessionsHS2WithLocalClusterSpark.java,**/TestJdbcWithLocalClusterSpark.java
+        </skip.spark.files>
       </properties>
     </profile>
   </profiles>

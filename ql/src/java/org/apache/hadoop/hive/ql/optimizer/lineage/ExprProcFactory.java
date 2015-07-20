@@ -26,14 +26,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.BaseColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Dependency;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo.DependencyType;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo.Predicate;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo.TableAliasInfo;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -43,6 +48,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -160,6 +166,98 @@ public class ExprProcFactory {
 
   public static NodeProcessor getColumnProcessor() {
     return new ColumnExprProcessor();
+  }
+
+  private static boolean findSourceColumn(
+      LineageCtx lctx, Predicate cond, String tabAlias, String alias) {
+    for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap: lctx
+        .getParseCtx().getTopOps().entrySet()) {
+      Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
+      if (topOp instanceof TableScanOperator) {
+        TableScanOperator tableScanOp = (TableScanOperator) topOp;
+        Table tbl = tableScanOp.getConf().getTableMetadata();
+        if (tbl.getTableName().equals(tabAlias)
+            || tabAlias.equals(tableScanOp.getConf().getAlias())) {
+          for (FieldSchema column: tbl.getCols()) {
+            if (column.getName().equals(alias)) {
+              TableAliasInfo table = new TableAliasInfo();
+              table.setTable(tbl.getTTable());
+              table.setAlias(tabAlias);
+              BaseColumnInfo colInfo = new BaseColumnInfo();
+              colInfo.setColumn(column);
+              colInfo.setTabAlias(table);
+              cond.getBaseCols().add(colInfo);
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Get the expression string of an expression node.
+   */
+  public static String getExprString(RowSchema rs, ExprNodeDesc expr,
+      LineageCtx lctx, Operator<? extends OperatorDesc> inpOp, Predicate cond) {
+    if (expr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc col = (ExprNodeColumnDesc) expr;
+      String internalName = col.getColumn();
+      String alias = internalName;
+      String tabAlias = col.getTabAlias();
+      ColumnInfo ci = rs.getColumnInfo(internalName);
+      if (ci != null) {
+        if (ci.getAlias() != null) {
+          alias = ci.getAlias();
+        }
+        if (ci.getTabAlias() != null) {
+          tabAlias = ci.getTabAlias();
+        }
+      }
+      Dependency dep = lctx.getIndex().getDependency(inpOp, internalName);
+      if ((tabAlias == null || tabAlias.startsWith("_") || tabAlias.startsWith("$"))
+          && (dep != null && dep.getType() == DependencyType.SIMPLE)) {
+        List<BaseColumnInfo> baseCols = dep.getBaseCols();
+        if (baseCols != null && !baseCols.isEmpty()) {
+          BaseColumnInfo baseCol = baseCols.get(0);
+          tabAlias = baseCol.getTabAlias().getAlias();
+          alias = baseCol.getColumn().getName();
+        }
+      }
+      if (tabAlias != null && tabAlias.length() > 0
+          && !tabAlias.startsWith("_") && !tabAlias.startsWith("$")) {
+        if (cond != null && !findSourceColumn(lctx, cond, tabAlias, alias) && dep != null) {
+          cond.getBaseCols().addAll(dep.getBaseCols());
+        }
+        return tabAlias + "." + alias;
+      }
+
+      if (dep != null) {
+        if (cond != null) {
+          cond.getBaseCols().addAll(dep.getBaseCols());
+        }
+        if (dep.getExpr() != null) {
+          return dep.getExpr();
+        }
+      }
+      if (alias.startsWith("_")) {
+        ci = inpOp.getSchema().getColumnInfo(internalName);
+        if (ci != null && ci.getAlias() != null) {
+          alias = ci.getAlias();
+        }
+      }
+      return alias;
+    } else if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
+      List<ExprNodeDesc> children = func.getChildren();
+      String[] childrenExprStrings = new String[children.size()];
+      for (int i = 0; i < childrenExprStrings.length; i++) {
+        childrenExprStrings[i] = getExprString(rs, children.get(i), lctx, inpOp, cond);
+      }
+      return func.getGenericUDF().getDisplayString(childrenExprStrings);
+    }
+    return expr.getExprString();
   }
 
   /**

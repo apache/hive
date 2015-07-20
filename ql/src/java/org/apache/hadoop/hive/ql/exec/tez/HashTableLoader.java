@@ -81,17 +81,22 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
     boolean useHybridGraceHashJoin = desc.isHybridHashJoin();
     boolean isFirstKey = true;
-    // TODO remove this after memory manager is in
-    long noConditionalTaskThreshold = HiveConf.getLongVar(
+
+    // Get the total available memory from memory manager
+    long totalMapJoinMemory = desc.getMemoryNeeded();
+    if (totalMapJoinMemory <= 0) {
+      totalMapJoinMemory = HiveConf.getLongVar(
         hconf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+    }
+
     long processMaxMemory = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
-    if (noConditionalTaskThreshold > processMaxMemory) {
+    if (totalMapJoinMemory > processMaxMemory) {
       float hashtableMemoryUsage = HiveConf.getFloatVar(
           hconf, HiveConf.ConfVars.HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE);
-      LOG.warn("noConditionalTaskThreshold value of " + noConditionalTaskThreshold +
+      LOG.warn("totalMapJoinMemory value of " + totalMapJoinMemory +
           " is greater than the max memory size of " + processMaxMemory);
       // Don't want to attempt to grab more memory than we have available .. percentage is a bit arbitrary
-      noConditionalTaskThreshold = (long) (processMaxMemory * hashtableMemoryUsage);
+      totalMapJoinMemory = (long) (processMaxMemory * hashtableMemoryUsage);
     }
 
     // Only applicable to n-way Hybrid Grace Hash Join
@@ -118,7 +123,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       }
 
       tableMemorySizes = divideHybridHashTableMemory(mapJoinTables, desc,
-          totalSize, noConditionalTaskThreshold);
+          totalSize, totalMapJoinMemory);
       // Using biggest small table, calculate number of partitions to create for each small table
       long memory = tableMemorySizes.get(biggest);
       int numPartitions = 0;
@@ -176,7 +181,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           if (mapJoinTables.length > 2) {
             memory = tableMemorySizes.get(pos);
           } else {  // binary join
-            memory = noConditionalTaskThreshold;
+            memory = totalMapJoinMemory;
           }
         }
 

@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.map.aggr = true;
 
 -- SORT_QUERY_RESULTS

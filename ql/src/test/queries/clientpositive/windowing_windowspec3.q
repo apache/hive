@@ -10,6 +10,7 @@ create table emp(empno smallint,
            hirets timestamp,
            salary double,
            bonus double,
+           stock decimal(10,2),
            deptno tinyint)
        row format delimited
        fields terminated by '|';
@@ -48,4 +49,14 @@ select deptno, empno, bonus,
     avg(bonus) over (partition by deptno order by bonus range between 100 following and 200 following),
     avg(bonus) over (partition by deptno order by bonus range between 200 following and unbounded following),
     avg(bonus) over (partition by deptno order by bonus range between unbounded preceding and 200 following)
+from emp;
+
+-- Support Decimal datatype
+select deptno, empno, stock, salary,
+    avg(salary) over (partition by deptno order by stock range 200 preceding),
+    avg(salary) over (partition by deptno order by stock range between 200 preceding and 200 following),
+    avg(salary) over (partition by deptno order by stock range between 200 preceding and 100 preceding),
+    avg(salary) over (partition by deptno order by stock range between 100 following and 200 following),
+    avg(salary) over (partition by deptno order by stock range between 200 following and unbounded following),
+    avg(salary) over (partition by deptno order by stock range between unbounded preceding and 200 following)
 from emp;
