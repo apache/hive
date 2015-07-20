@@ -736,4 +736,9 @@ public class MapJoinBytesTableContainer
   public boolean hasSpill() {
     return false;
   }
+
+  @Override
+  public int size() {
+    return hashMap.size();
+  }
 }
