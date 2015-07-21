@@ -118,6 +118,7 @@ public class SparkTask extends Task<SparkWork> {
           LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
           logSparkStatistic(sparkStatistics);
         }
+        LOG.info("Execution completed successfully");
       } else if (rc == 2) { // Cancel job if the monitor found job submission timeout.
         jobRef.cancelJob();
       }
