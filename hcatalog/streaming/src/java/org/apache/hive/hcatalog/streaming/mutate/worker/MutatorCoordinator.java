@@ -11,7 +11,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -40,13 +39,12 @@ public class MutatorCoordinator implements Closeable, Flushable {
 
   private static final Logger LOG = LoggerFactory.getLogger(MutatorCoordinator.class);
 
-  private final IMetaStoreClient metaStoreClient;
   private final MutatorFactory mutatorFactory;
   private final GroupingValidator groupingValidator;
   private final SequenceValidator sequenceValidator;
   private final AcidTable table;
   private final RecordInspector recordInspector;
-  private final CreatePartitionHelper partitionHelper;
+  private final PartitionHelper partitionHelper;
   private final AcidOutputFormat<?, ?> outputFormat;
   private final BucketIdResolver bucketIdResolver;
   private final HiveConf configuration;
@@ -57,18 +55,16 @@ public class MutatorCoordinator implements Closeable, Flushable {
   private Path partitionPath;
   private Mutator mutator;
 
-  MutatorCoordinator(IMetaStoreClient metaStoreClient, HiveConf configuration, MutatorFactory mutatorFactory,
+  MutatorCoordinator(HiveConf configuration, MutatorFactory mutatorFactory, PartitionHelper partitionHelper,
       AcidTable table, boolean deleteDeltaIfExists) throws WorkerException {
-    this(metaStoreClient, configuration, mutatorFactory, new CreatePartitionHelper(metaStoreClient,
-        table.getDatabaseName(), table.getTableName()), new GroupingValidator(), new SequenceValidator(), table,
+    this(configuration, mutatorFactory, partitionHelper, new GroupingValidator(), new SequenceValidator(), table,
         deleteDeltaIfExists);
   }
 
   /** Visible for testing only. */
-  MutatorCoordinator(IMetaStoreClient metaStoreClient, HiveConf configuration, MutatorFactory mutatorFactory,
-      CreatePartitionHelper partitionHelper, GroupingValidator groupingValidator, SequenceValidator sequenceValidator,
-      AcidTable table, boolean deleteDeltaIfExists) throws WorkerException {
-    this.metaStoreClient = metaStoreClient;
+  MutatorCoordinator(HiveConf configuration, MutatorFactory mutatorFactory, PartitionHelper partitionHelper,
+      GroupingValidator groupingValidator, SequenceValidator sequenceValidator, AcidTable table,
+      boolean deleteDeltaIfExists) throws WorkerException {
     this.configuration = configuration;
     this.mutatorFactory = mutatorFactory;
     this.partitionHelper = partitionHelper;
@@ -156,7 +152,7 @@ public class MutatorCoordinator implements Closeable, Flushable {
         mutator.close();
       }
     } finally {
-      metaStoreClient.close();
+      partitionHelper.close();
     }
   }
 
@@ -178,7 +174,7 @@ public class MutatorCoordinator implements Closeable, Flushable {
 
     try {
       if (partitionHasChanged(newPartitionValues)) {
-        if (table.createPartitions()) {
+        if (table.createPartitions() && operationType == OperationType.INSERT) {
           partitionHelper.createPartitionIfNotExists(newPartitionValues);
         }
         Path newPartitionPath = partitionHelper.getPathForPartition(newPartitionValues);
@@ -265,6 +261,7 @@ public class MutatorCoordinator implements Closeable, Flushable {
     }
   }
 
+  /* A delta may be present from a previous failed task attempt. */
   private void deleteDeltaIfExists(Path partitionPath, long transactionId, int bucketId) throws IOException {
     Path deltaPath = AcidUtils.createFilename(partitionPath,
         new AcidOutputFormat.Options(configuration)

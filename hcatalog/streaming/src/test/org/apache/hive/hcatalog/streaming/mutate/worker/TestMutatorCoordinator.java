@@ -2,8 +2,10 @@ package org.apache.hive.hcatalog.streaming.mutate.worker;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -15,7 +17,6 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hive.hcatalog.streaming.mutate.client.AcidTable;
@@ -42,11 +43,9 @@ public class TestMutatorCoordinator {
   private static final RecordIdentifier ROW__ID_INSERT = new RecordIdentifier(-1L, BUCKET_ID, -1L);
 
   @Mock
-  private IMetaStoreClient mockMetaStoreClient;
-  @Mock
   private MutatorFactory mockMutatorFactory;
   @Mock
-  private CreatePartitionHelper mockPartitionHelper;
+  private PartitionHelper mockPartitionHelper;
   @Mock
   private GroupingValidator mockGroupingValidator;
   @Mock
@@ -79,8 +78,8 @@ public class TestMutatorCoordinator {
     when(mockSequenceValidator.isInSequence(any(RecordIdentifier.class))).thenReturn(true);
     when(mockGroupingValidator.isInSequence(any(List.class), anyInt())).thenReturn(true);
 
-    coordinator = new MutatorCoordinator(mockMetaStoreClient, configuration, mockMutatorFactory, mockPartitionHelper,
-        mockGroupingValidator, mockSequenceValidator, mockAcidTable, false);
+    coordinator = new MutatorCoordinator(configuration, mockMutatorFactory, mockPartitionHelper, mockGroupingValidator,
+        mockSequenceValidator, mockAcidTable, false);
   }
 
   @Test
@@ -127,7 +126,6 @@ public class TestMutatorCoordinator {
     coordinator.update(UNPARTITIONED, RECORD);
     coordinator.delete(UNPARTITIONED, RECORD);
 
-    verify(mockPartitionHelper).createPartitionIfNotExists(UNPARTITIONED);
     verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
     verify(mockMutatorFactory)
         .newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID + 1));
@@ -145,12 +143,11 @@ public class TestMutatorCoordinator {
     when(mockPartitionHelper.getPathForPartition(PARTITION_A)).thenReturn(PATH_A);
     when(mockPartitionHelper.getPathForPartition(PARTITION_B)).thenReturn(PATH_B);
 
-    coordinator.update(PARTITION_A, RECORD);
-    coordinator.delete(PARTITION_B, RECORD);
-    coordinator.update(PARTITION_B, RECORD);
-    coordinator.insert(PARTITION_B, RECORD);
+    coordinator.update(PARTITION_A, RECORD); /* PaB0 */
+    coordinator.insert(PARTITION_B, RECORD); /* PbB0 */
+    coordinator.delete(PARTITION_B, RECORD); /* PbB0 */
+    coordinator.update(PARTITION_B, RECORD); /* PbB1 */
 
-    verify(mockPartitionHelper).createPartitionIfNotExists(PARTITION_A);
     verify(mockPartitionHelper).createPartitionIfNotExists(PARTITION_B);
     verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
     verify(mockMutatorFactory, times(2)).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_B),
@@ -161,6 +158,18 @@ public class TestMutatorCoordinator {
     verify(mockMutator).delete(RECORD);
     verify(mockMutator).insert(RECORD);
     verify(mockSequenceValidator, times(4)).reset();
+  }
+
+  @Test
+  public void partitionThenBucketChangesNoCreateAsPartitionEstablished() throws Exception {
+    when(mockRecordInspector.extractRecordIdentifier(RECORD)).thenReturn(ROW__ID_B0_R0, ROW__ID_INSERT);
+    when(mockBucketIdResolver.computeBucketId(RECORD)).thenReturn(0, 0);
+    when(mockPartitionHelper.getPathForPartition(PARTITION_B)).thenReturn(PATH_B);
+
+    coordinator.delete(PARTITION_B, RECORD); /* PbB0 */
+    coordinator.insert(PARTITION_B, RECORD); /* PbB0 */
+
+    verify(mockPartitionHelper, never()).createPartitionIfNotExists(anyList());
   }
 
   @Test(expected = RecordSequenceException.class)
@@ -175,14 +184,14 @@ public class TestMutatorCoordinator {
     verify(mockMutator).update(RECORD);
     verify(mockMutator).delete(RECORD);
   }
-  
+
   @Test(expected = GroupRevisitedException.class)
   public void revisitGroup() throws Exception {
     when(mockGroupingValidator.isInSequence(any(List.class), anyInt())).thenReturn(false);
-    
+
     coordinator.update(UNPARTITIONED, RECORD);
     coordinator.delete(UNPARTITIONED, RECORD);
-    
+
     verify(mockPartitionHelper).createPartitionIfNotExists(UNPARTITIONED);
     verify(mockMutatorFactory).newMutator(any(OrcOutputFormat.class), eq(TRANSACTION_ID), eq(PATH_A), eq(BUCKET_ID));
     verify(mockMutator).update(RECORD);
@@ -230,5 +239,6 @@ public class TestMutatorCoordinator {
     coordinator.close();
 
     verify(mockMutator).close();
+    verify(mockPartitionHelper).close();
   }
 }

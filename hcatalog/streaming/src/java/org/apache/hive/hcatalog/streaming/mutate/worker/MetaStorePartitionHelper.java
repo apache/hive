@@ -1,5 +1,6 @@
 package org.apache.hive.hcatalog.streaming.mutate.worker;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
@@ -14,42 +15,55 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Utility class that can create new table partitions within the {@link IMetaStoreClient meta store}. */
-class CreatePartitionHelper {
+/**
+ * A {@link PartitionHelper} implementation that uses the {@link IMetaStoreClient meta store} to both create partitions
+ * and obtain information concerning partitions. Exercise care when using this from within workers that are running in a
+ * cluster as it may overwhelm the meta store database instance. As an alternative, consider using the
+ * {@link WarehousePartitionHelper}, collecting the affected partitions as an output of your merge job, and then
+ * retrospectively adding partitions in your client.
+ */
+class MetaStorePartitionHelper implements PartitionHelper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CreatePartitionHelper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MetaStorePartitionHelper.class);
 
   private final IMetaStoreClient metaStoreClient;
   private final String databaseName;
   private final String tableName;
+  private final Path tablePath;
 
-  CreatePartitionHelper(IMetaStoreClient metaStoreClient, String databaseName, String tableName) {
+  MetaStorePartitionHelper(IMetaStoreClient metaStoreClient, String databaseName, String tableName, Path tablePath) {
     this.metaStoreClient = metaStoreClient;
+    this.tablePath = tablePath;
     this.databaseName = databaseName;
     this.tableName = tableName;
   }
 
   /** Returns the expected {@link Path} for a given partition value. */
-  Path getPathForPartition(List<String> newPartitionValues) throws WorkerException {
-    try {
-      String location;
-      if (newPartitionValues.isEmpty()) {
-        location = metaStoreClient.getTable(databaseName, tableName).getSd().getLocation();
-      } else {
-        location = metaStoreClient.getPartition(databaseName, tableName, newPartitionValues).getSd().getLocation();
+  @Override
+  public Path getPathForPartition(List<String> newPartitionValues) throws WorkerException {
+    if (newPartitionValues.isEmpty()) {
+      LOG.debug("Using path {} for unpartitioned table {}.{}", tablePath, databaseName, tableName);
+      return tablePath;
+    } else {
+      try {
+        String location = metaStoreClient
+            .getPartition(databaseName, tableName, newPartitionValues)
+            .getSd()
+            .getLocation();
+        LOG.debug("Found path {} for partition {}", location, newPartitionValues);
+        return new Path(location);
+      } catch (NoSuchObjectException e) {
+        throw new WorkerException("Table not found '" + databaseName + "." + tableName + "'.", e);
+      } catch (TException e) {
+        throw new WorkerException("Failed to get path for partitions '" + newPartitionValues + "' on table '"
+            + databaseName + "." + tableName + "' with meta store: " + metaStoreClient, e);
       }
-      LOG.debug("Found path {} for partition {}", location, newPartitionValues);
-      return new Path(location);
-    } catch (NoSuchObjectException e) {
-      throw new WorkerException("Table not found '" + databaseName + "." + tableName + "'.", e);
-    } catch (TException e) {
-      throw new WorkerException("Failed to get path for partitions '" + newPartitionValues + "' on table '"
-          + databaseName + "." + tableName + "' with meta store: " + metaStoreClient, e);
     }
   }
 
   /** Creates the specified partition if it does not already exist. Does nothing if the table is unpartitioned. */
-  void createPartitionIfNotExists(List<String> newPartitionValues) throws WorkerException {
+  @Override
+  public void createPartitionIfNotExists(List<String> newPartitionValues) throws WorkerException {
     if (newPartitionValues.isEmpty()) {
       return;
     }
@@ -78,6 +92,11 @@ class CreatePartitionHelper {
       throw new PartitionCreationException("Failed to create partition '" + newPartitionValues + "' on table '"
           + databaseName + "." + tableName + "'", e);
     }
+  }
+
+  @Override
+  public void close() throws IOException {
+    metaStoreClient.close();
   }
 
 }
