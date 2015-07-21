@@ -45,4 +45,8 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
   public int getBigTablePosition() {
     return mapJoinConversionPos;
   }
+
+  public void setBigTablePosition(int pos) {
+    mapJoinConversionPos = pos;
+  }
 }

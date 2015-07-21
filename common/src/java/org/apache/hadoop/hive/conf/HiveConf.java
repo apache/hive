@@ -1046,6 +1046,9 @@ public class HiveConf extends Configuration {
         "job, process those skewed keys. The same key need not be skewed for all the tables, and so,\n" +
         "the follow-up map-reduce job (for the skewed keys) would be much faster, since it would be a\n" +
         "map-join."),
+    HIVEDYNAMICPARTITIONHASHJOIN("hive.optimize.dynamic.partition.hashjoin", false,
+        "Whether to enable dynamically partitioned hash join optimization. \n" +
+        "This setting is also dependent on enabling hive.auto.convert.join"),
     HIVECONVERTJOIN("hive.auto.convert.join", true,
         "Whether Hive enables the optimization about converting common join into mapjoin based on the input file size"),
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true,

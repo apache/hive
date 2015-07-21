@@ -1354,4 +1354,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return childOperators;
     }
   }
+
+  public void removeParents() {
+    for (Operator<?> parent : new ArrayList<Operator<?>>(getParentOperators())) {
+      removeParent(parent);
+    }
+  }
 }

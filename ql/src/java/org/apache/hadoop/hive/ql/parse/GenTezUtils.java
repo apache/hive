@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -130,12 +131,13 @@ public class GenTezUtils {
     tezWork.add(reduceWork);
 
     TezEdgeProperty edgeProp;
+    EdgeType edgeType = determineEdgeType(context.preceedingWork, reduceWork);
     if (reduceWork.isAutoReduceParallelism()) {
       edgeProp =
-          new TezEdgeProperty(context.conf, EdgeType.SIMPLE_EDGE, true,
+          new TezEdgeProperty(context.conf, edgeType, true,
               reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer);
     } else {
-      edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+      edgeProp = new TezEdgeProperty(edgeType);
     }
 
     tezWork.connect(
@@ -469,5 +471,22 @@ public class GenTezUtils {
     }
 
     curr.removeChild(child);
+  }
+
+  public static EdgeType determineEdgeType(BaseWork preceedingWork, BaseWork followingWork) {
+    if (followingWork instanceof ReduceWork) {
+      // Ideally there should be a better way to determine that the followingWork contains
+      // a dynamic partitioned hash join, but in some cases (createReduceWork()) it looks like
+      // the work must be created/connected first, before the GenTezProcContext can be updated
+      // with the mapjoin/work relationship.
+      ReduceWork reduceWork = (ReduceWork) followingWork;
+      if (reduceWork.getReducer() instanceof MapJoinOperator) {
+        MapJoinOperator joinOp = (MapJoinOperator) reduceWork.getReducer();
+        if (joinOp.getConf().isDynamicPartitionHashJoin()) {
+          return EdgeType.CUSTOM_SIMPLE_EDGE;
+        }
+      }
+    }
+    return EdgeType.SIMPLE_EDGE;
   }
 }
