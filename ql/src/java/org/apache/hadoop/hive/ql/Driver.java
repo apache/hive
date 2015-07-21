@@ -482,7 +482,7 @@ public class Driver implements CommandProcessor {
       }
 
       if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
-        String explainOutput = getExplainOutput(sem, plan, tree.dump());
+        String explainOutput = getExplainOutput(sem, plan, tree);
         if (explainOutput != null) {
           LOG.info("EXPLAIN output for queryid " + queryId + " : "
               + explainOutput);
@@ -533,7 +533,7 @@ public class Driver implements CommandProcessor {
    * @throws java.io.IOException
    */
   private String getExplainOutput(BaseSemanticAnalyzer sem, QueryPlan plan,
-      String astStringTree) throws IOException {
+      ASTNode astTree) throws IOException {
     String ret = null;
     ExplainTask task = new ExplainTask();
     task.initialize(conf, plan, null);
@@ -541,7 +541,7 @@ public class Driver implements CommandProcessor {
     PrintStream ps = new PrintStream(baos);
     try {
       List<Task<?>> rootTasks = sem.getRootTasks();
-      task.getJSONPlan(ps, astStringTree, rootTasks, sem.getFetchTask(), false, true, true);
+      task.getJSONPlan(ps, astTree, rootTasks, sem.getFetchTask(), false, true, true);
       ret = baos.toString();
     } catch (Exception e) {
       LOG.warn("Exception generating explain output: " + e, e);
