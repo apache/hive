@@ -478,10 +478,6 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
     // we always want to read all of the deltas
     eventOptions.range(0, Long.MAX_VALUE);
-    // Turn off the sarg before pushing it to delta.  We never want to push a sarg to a delta as
-    // it can produce wrong results (if the latest valid version of the record is filtered out by
-    // the sarg) or ArrayOutOfBounds errors (when the sarg is applied to a delete record)
-    eventOptions.searchArgument(null, null);
     if (deltaDirectory != null) {
       for(Path delta: deltaDirectory) {
         ReaderKey key = new ReaderKey();
@@ -492,8 +488,20 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         if (length != -1 && fs.exists(deltaFile)) {
           Reader deltaReader = OrcFile.createReader(deltaFile,
               OrcFile.readerOptions(conf).maxLength(length));
-          ReaderPair deltaPair = new ReaderPair(key, deltaReader, bucket, minKey,
-            maxKey, eventOptions, deltaDir.getStatementId());
+          Reader.Options deltaEventOptions = null;
+          if(eventOptions.getSearchArgument() != null) {
+            // Turn off the sarg before pushing it to delta.  We never want to push a sarg to a delta as
+            // it can produce wrong results (if the latest valid version of the record is filtered out by
+            // the sarg) or ArrayOutOfBounds errors (when the sarg is applied to a delete record)
+            // unless the delta only has insert events
+            OrcRecordUpdater.AcidStats acidStats = OrcRecordUpdater.parseAcidStats(deltaReader);
+            if(acidStats.deletes > 0 || acidStats.updates > 0) {
+              deltaEventOptions = eventOptions.clone().searchArgument(null, null);
+            }
+          }
+          ReaderPair deltaPair;
+          deltaPair = new ReaderPair(key, deltaReader, bucket, minKey,
+            maxKey, deltaEventOptions != null ? deltaEventOptions : eventOptions, deltaDir.getStatementId());
           if (deltaPair.nextRecord != null) {
             readers.put(key, deltaPair);
           }
