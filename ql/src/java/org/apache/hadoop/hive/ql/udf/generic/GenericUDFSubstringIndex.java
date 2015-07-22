@@ -137,7 +137,7 @@ public class GenericUDFSubstringIndex extends GenericUDF {
     } else {
       int idx = StringUtils.lastOrdinalIndexOf(str, delim, -count);
       if (idx != -1) {
-        res = str.substring(idx + 1);
+        res = str.substring(idx + delim.length());
       } else {
         res = str;
       }

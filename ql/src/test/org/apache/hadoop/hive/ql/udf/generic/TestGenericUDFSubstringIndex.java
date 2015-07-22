@@ -55,6 +55,7 @@ public class TestGenericUDFSubstringIndex extends TestCase {
     runAndVerify("www.apache.org", "-", 2, "www.apache.org", udf);
     // delim is 2 chars
     runAndVerify("www||apache||org", "||", 2, "www||apache", udf);
+    runAndVerify("www||apache||org", "||", -2, "apache||org", udf);
 
     // null
     runAndVerify(null, ".", 2, null, udf);
