@@ -97,6 +97,14 @@ public class RowResolver implements Serializable{
 
   public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {
     if (!addMappingOnly(tab_alias, col_alias, colInfo)) {
+      //Make sure that the table alias and column alias are stored
+      //in the column info
+      if (tab_alias != null) {
+        colInfo.setTabAlias(tab_alias.toLowerCase());
+      }
+      if (col_alias != null) {
+        colInfo.setAlias(col_alias.toLowerCase());
+      }
       rowSchema.getSignature().add(colInfo);
     }
   }
