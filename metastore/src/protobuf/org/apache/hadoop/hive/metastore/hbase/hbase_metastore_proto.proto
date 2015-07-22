@@ -104,6 +104,10 @@ message Database {
   optional PrincipalType owner_type = 6;
 }
 
+message DelegationToken {
+  required string token_str = 1;
+}
+
 message FieldSchema {
   required string name = 1;
   required string type = 2;
@@ -131,6 +135,10 @@ message Function {
   optional sint64 create_time = 4;
   optional FunctionType function_type = 5;
   repeated ResourceUri resource_uris = 6;
+}
+
+message MasterKey {
+  required string master_key = 1;
 }
 
 message ParameterEntry {
@@ -247,8 +255,3 @@ message Table {
   optional PrincipalPrivilegeSet privileges = 13;
   optional bool is_temporary = 14;
 }
-
-
-
-
-   

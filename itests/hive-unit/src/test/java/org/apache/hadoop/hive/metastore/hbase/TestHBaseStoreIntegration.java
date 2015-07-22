@@ -1747,4 +1747,48 @@ public class TestHBaseStoreIntegration extends HBaseIntegrationTests {
           statsList.get(i).getStatsObj().get(1).getStatsData().getStringStats().getNumDVs());
     }
   }
+
+  @Test
+  public void delegationToken() throws Exception {
+    store.addToken("abc", "def");
+    store.addToken("ghi", "jkl");
+
+    Assert.assertEquals("def", store.getToken("abc"));
+    Assert.assertEquals("jkl", store.getToken("ghi"));
+    Assert.assertNull(store.getToken("wabawaba"));
+    String[] allToks = store.getAllTokenIdentifiers().toArray(new String[2]);
+    Arrays.sort(allToks);
+    Assert.assertArrayEquals(new String[]{"abc", "ghi"}, allToks);
+
+    store.removeToken("abc");
+    store.removeToken("wabawaba");
+
+    Assert.assertNull(store.getToken("abc"));
+    Assert.assertEquals("jkl", store.getToken("ghi"));
+    allToks = store.getAllTokenIdentifiers().toArray(new String[1]);
+    Assert.assertArrayEquals(new String[]{"ghi"}, allToks);
+  }
+
+  @Test
+  public void masterKey() throws Exception {
+    Assert.assertEquals(0, store.addMasterKey("k1"));
+    Assert.assertEquals(1, store.addMasterKey("k2"));
+
+    String[] keys = store.getMasterKeys();
+    Arrays.sort(keys);
+    Assert.assertArrayEquals(new String[]{"k1", "k2"}, keys);
+
+    store.updateMasterKey(0, "k3");
+    keys = store.getMasterKeys();
+    Arrays.sort(keys);
+    Assert.assertArrayEquals(new String[]{"k2", "k3"}, keys);
+
+    store.removeMasterKey(1);
+    keys = store.getMasterKeys();
+    Assert.assertArrayEquals(new String[]{"k3"}, keys);
+
+    thrown.expect(NoSuchObjectException.class);
+    store.updateMasterKey(72, "whatever");
+  }
+
 }

@@ -1613,43 +1613,128 @@ public class HBaseStore implements RawStore {
 
   @Override
   public boolean addToken(String tokenIdentifier, String delegationToken) {
-    throw new UnsupportedOperationException();
+    boolean commit = false;
+    openTransaction();
+    try {
+      getHBase().putDelegationToken(tokenIdentifier, delegationToken);
+      commit = true;
+      return commit; // See HIVE-11302, for now always returning true
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
   public boolean removeToken(String tokenIdentifier) {
-    throw new UnsupportedOperationException();
+    boolean commit = false;
+    openTransaction();
+    try {
+      getHBase().deleteDelegationToken(tokenIdentifier);
+      commit = true;
+      return commit; // See HIVE-11302, for now always returning true
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
   public String getToken(String tokenIdentifier) {
-    throw new UnsupportedOperationException();
+    boolean commit = false;
+    openTransaction();
+    try {
+      String token = getHBase().getDelegationToken(tokenIdentifier);
+      commit = true;
+      return token;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
   public List<String> getAllTokenIdentifiers() {
-    throw new UnsupportedOperationException();
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<String> ids = getHBase().scanDelegationTokenIdentifiers();
+      commit = true;
+      return ids;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
   public int addMasterKey(String key) throws MetaException {
-    throw new UnsupportedOperationException();
+    boolean commit = false;
+    openTransaction();
+    try {
+      long seq = getHBase().getNextSequence(HBaseReadWrite.MASTER_KEY_SEQUENCE);
+      getHBase().putMasterKey((int) seq, key);
+      commit = true;
+      return (int)seq;
+    } catch (IOException e) {
+      LOG.error("Unable to add master key", e);
+      throw new MetaException("Failed adding master key, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
   public void updateMasterKey(Integer seqNo, String key) throws NoSuchObjectException,
       MetaException {
-    throw new UnsupportedOperationException();
+    boolean commit = false;
+    openTransaction();
+    try {
+      if (getHBase().getMasterKey(seqNo) == null) {
+        throw new NoSuchObjectException("No key found with keyId: " + seqNo);
+      }
+      getHBase().putMasterKey(seqNo, key);
+      commit = true;
+    } catch (IOException e) {
+      LOG.error("Unable to update master key", e);
+      throw new MetaException("Failed updating master key, " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
   public boolean removeMasterKey(Integer keySeq) {
-    throw new UnsupportedOperationException();
+    boolean commit = false;
+    openTransaction();
+    try {
+      getHBase().deleteMasterKey(keySeq);
+      commit = true;
+      return true;  // See HIVE-11302, for now always returning true
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
   public String[] getMasterKeys() {
-    throw new UnsupportedOperationException();
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<String> keys = getHBase().scanMasterKeys();
+      commit = true;
+      return keys.toArray(new String[keys.size()]);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override

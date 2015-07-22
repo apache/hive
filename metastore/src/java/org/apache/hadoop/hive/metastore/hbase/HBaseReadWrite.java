@@ -80,6 +80,8 @@ class HBaseReadWrite {
   @VisibleForTesting final static String PART_TABLE = "HBMS_PARTITIONS";
   @VisibleForTesting final static String ROLE_TABLE = "HBMS_ROLES";
   @VisibleForTesting final static String SD_TABLE = "HBMS_SDS";
+  @VisibleForTesting final static String SECURITY_TABLE = "HBMS_SECURITY";
+  @VisibleForTesting final static String SEQUENCES_TABLE = "HBMS_SEQUENCES";
   @VisibleForTesting final static String TABLE_TABLE = "HBMS_TBLS";
   @VisibleForTesting final static String USER_TO_ROLE_TABLE = "HBMS_USER_TO_ROLE";
   @VisibleForTesting final static byte[] CATALOG_CF = "c".getBytes(HBaseUtils.ENCODING);
@@ -90,7 +92,7 @@ class HBaseReadWrite {
    */
   final static String[] tableNames = { AGGR_STATS_TABLE, DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE,
                                        PART_TABLE, USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE,
-                                       TABLE_TABLE  };
+                                       SECURITY_TABLE, SEQUENCES_TABLE, TABLE_TABLE};
   final static Map<String, List<byte[]>> columnFamilies =
       new HashMap<String, List<byte[]>> (tableNames.length);
 
@@ -103,6 +105,8 @@ class HBaseReadWrite {
     columnFamilies.put(USER_TO_ROLE_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(ROLE_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(SD_TABLE, Arrays.asList(CATALOG_CF));
+    columnFamilies.put(SECURITY_TABLE, Arrays.asList(CATALOG_CF));
+    columnFamilies.put(SEQUENCES_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(TABLE_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
   }
 
@@ -110,12 +114,16 @@ class HBaseReadWrite {
    * Stores the bloom filter for the aggregated stats, to determine what partitions are in this
    * aggregate.
    */
+  final static byte[] MASTER_KEY_SEQUENCE = "mk".getBytes(HBaseUtils.ENCODING);
   final static byte[] AGGR_STATS_BLOOM_COL = "b".getBytes(HBaseUtils.ENCODING);
   private final static byte[] CATALOG_COL = "c".getBytes(HBaseUtils.ENCODING);
   private final static byte[] ROLES_COL = "roles".getBytes(HBaseUtils.ENCODING);
   private final static byte[] REF_COUNT_COL = "ref".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] DELEGATION_TOKEN_COL = "dt".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] MASTER_KEY_COL = "mk".getBytes(HBaseUtils.ENCODING);
   private final static byte[] AGGR_STATS_STATS_COL = "s".getBytes(HBaseUtils.ENCODING);
   private final static byte[] GLOBAL_PRIVS_KEY = "gp".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] SEQUENCES_KEY = "seq".getBytes(HBaseUtils.ENCODING);
   private final static int TABLES_TO_CACHE = 10;
   // False positives are very bad here because they cause us to invalidate entries we shouldn't.
   // Space used and # of hash functions grows in proportion to ln of num bits so a 10x increase
@@ -226,7 +234,7 @@ class HBaseReadWrite {
     sdHits = new Counter("storage descriptor cache hits");
     sdMisses = new Counter("storage descriptor cache misses");
     sdOverflows = new Counter("storage descriptor cache overflows");
-    counters = new ArrayList<Counter>();
+    counters = new ArrayList<>();
     counters.add(tableHits);
     counters.add(tableMisses);
     counters.add(tableOverflows);
@@ -241,18 +249,16 @@ class HBaseReadWrite {
     // (storage descriptors are shared, so 99% should be the same for a given table)
     int sdsCacheSize = totalCatalogObjectsToCache / 100;
     if (conf.getBoolean(NO_CACHE_CONF, false)) {
-      tableCache = new BogusObjectCache<ObjectPair<String, String>, Table>();
-      sdCache = new BogusObjectCache<ByteArrayWrapper, StorageDescriptor>();
+      tableCache = new BogusObjectCache<>();
+      sdCache = new BogusObjectCache<>();
       partCache = new BogusPartitionCache();
     } else {
-      tableCache = new ObjectCache<ObjectPair<String, String>, Table>(TABLES_TO_CACHE, tableHits,
-          tableMisses, tableOverflows);
-      sdCache = new ObjectCache<ByteArrayWrapper, StorageDescriptor>(sdsCacheSize, sdHits,
-          sdMisses, sdOverflows);
+      tableCache = new ObjectCache<>(TABLES_TO_CACHE, tableHits, tableMisses, tableOverflows);
+      sdCache = new ObjectCache<>(sdsCacheSize, sdHits, sdMisses, sdOverflows);
       partCache = new PartitionCache(totalCatalogObjectsToCache, partHits, partMisses, partOverflows);
     }
     statsCache = StatsCache.getInstance(conf);
-    roleCache = new HashMap<String, HbaseMetastoreProto.RoleGrantInfoList>();
+    roleCache = new HashMap<>();
     entireRoleTableInCache = false;
   }
 
@@ -338,7 +344,7 @@ class HBaseReadWrite {
     }
     Iterator<Result> iter =
         scan(DB_TABLE, CATALOG_CF, CATALOG_COL, filter);
-    List<Database> databases = new ArrayList<Database>();
+    List<Database> databases = new ArrayList<>();
     while (iter.hasNext()) {
       Result result = iter.next();
       databases.add(HBaseUtils.deserializeDatabase(result.getRow(),
@@ -404,7 +410,7 @@ class HBaseReadWrite {
     }
     Iterator<Result> iter =
         scan(FUNC_TABLE, keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), CATALOG_CF, CATALOG_COL, filter);
-    List<Function> functions = new ArrayList<Function>();
+    List<Function> functions = new ArrayList<>();
     while (iter.hasNext()) {
       Result result = iter.next();
       functions.add(HBaseUtils.deserializeFunction(result.getRow(),
@@ -489,8 +495,8 @@ class HBaseReadWrite {
    */
    List<Partition> getPartitions(String dbName, String tableName, List<List<String>> partValLists)
        throws IOException {
-     List<Partition> parts = new ArrayList<Partition>(partValLists.size());
-     List<Get> gets = new ArrayList<Get>(partValLists.size());
+     List<Partition> parts = new ArrayList<>(partValLists.size());
+     List<Get> gets = new ArrayList<>(partValLists.size());
      for (List<String> partVals : partValLists) {
        byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
        Get get = new Get(key);
@@ -556,7 +562,7 @@ class HBaseReadWrite {
    * @throws IOException
    */
   void putPartitions(List<Partition> partitions) throws IOException {
-    List<Put> puts = new ArrayList<Put>(partitions.size());
+    List<Put> puts = new ArrayList<>(partitions.size());
     for (Partition partition : partitions) {
       byte[] hash = putStorageDescriptor(partition.getSd());
       byte[][] serialized = HBaseUtils.serializePartition(partition, hash);
@@ -615,8 +621,8 @@ class HBaseReadWrite {
     Collection<Partition> cached = partCache.getAllForTable(dbName, tableName);
     if (cached != null) {
       return maxPartitions < cached.size()
-          ? new ArrayList<Partition>(cached).subList(0, maxPartitions)
-          : new ArrayList<Partition>(cached);
+          ? new ArrayList<>(cached).subList(0, maxPartitions)
+          : new ArrayList<>(cached);
     }
     byte[] keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName, tableName);
     List<Partition> parts = scanPartitionsWithFilter(keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), -1, null);
@@ -645,7 +651,7 @@ class HBaseReadWrite {
   List<Partition> scanPartitions(String dbName, String tableName, List<String> partVals,
                                  int maxPartitions) throws IOException, NoSuchObjectException {
     // First, build as much of the key as we can so that we make the scan as tight as possible.
-    List<String> keyElements = new ArrayList<String>();
+    List<String> keyElements = new ArrayList<>();
     keyElements.add(dbName);
     keyElements.add(tableName);
 
@@ -712,7 +718,7 @@ class HBaseReadWrite {
 
   List<Partition> scanPartitions(String dbName, String tableName, byte[] keyStart, byte[] keyEnd,
       Filter filter, int maxPartitions) throws IOException, NoSuchObjectException {
-    List<String> keyElements = new ArrayList<String>();
+    List<String> keyElements = new ArrayList<>();
     keyElements.add(dbName);
     keyElements.add(tableName);
 
@@ -780,7 +786,7 @@ class HBaseReadWrite {
       throws IOException {
     Iterator<Result> iter =
         scan(PART_TABLE, startRow, endRow, CATALOG_CF, CATALOG_COL, filter);
-    List<Partition> parts = new ArrayList<Partition>();
+    List<Partition> parts = new ArrayList<>();
     int numToFetch = maxResults < 0 ? Integer.MAX_VALUE : maxResults;
     for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
       Result result = iter.next();
@@ -821,7 +827,7 @@ class HBaseReadWrite {
       throws IOException {
     buildRoleCache();
 
-    Set<String> rolesFound = new HashSet<String>();
+    Set<String> rolesFound = new HashSet<>();
     for (Map.Entry<String, HbaseMetastoreProto.RoleGrantInfoList> e : roleCache.entrySet()) {
       for (HbaseMetastoreProto.RoleGrantInfo giw : e.getValue().getGrantInfoList()) {
         if (HBaseUtils.convertPrincipalTypes(giw.getPrincipalType()) == type &&
@@ -831,8 +837,8 @@ class HBaseReadWrite {
         }
       }
     }
-    List<Role> directRoles = new ArrayList<Role>(rolesFound.size());
-    List<Get> gets = new ArrayList<Get>();
+    List<Role> directRoles = new ArrayList<>(rolesFound.size());
+    List<Get> gets = new ArrayList<>();
     HTableInterface htab = conn.getHBaseTable(ROLE_TABLE);
     for (String roleFound : rolesFound) {
       byte[] key = HBaseUtils.buildKey(roleFound);
@@ -880,7 +886,7 @@ class HBaseReadWrite {
    */
   Set<String> findAllUsersInRole(String roleName) throws IOException {
     // Walk the userToRole table and collect every user that matches this role.
-    Set<String> users = new HashSet<String>();
+    Set<String> users = new HashSet<>();
     Iterator<Result> iter = scan(USER_TO_ROLE_TABLE, CATALOG_CF, CATALOG_COL);
     while (iter.hasNext()) {
       Result result = iter.next();
@@ -907,8 +913,7 @@ class HBaseReadWrite {
   void addPrincipalToRole(String roleName, HbaseMetastoreProto.RoleGrantInfo grantInfo)
       throws IOException, NoSuchObjectException {
     HbaseMetastoreProto.RoleGrantInfoList proto = getRolePrincipals(roleName);
-    List<HbaseMetastoreProto.RoleGrantInfo> rolePrincipals =
-        new ArrayList<HbaseMetastoreProto.RoleGrantInfo>();
+    List<HbaseMetastoreProto.RoleGrantInfo> rolePrincipals = new ArrayList<>();
     if (proto != null) {
       rolePrincipals.addAll(proto.getGrantInfoList());
     }
@@ -937,8 +942,7 @@ class HBaseReadWrite {
       throws NoSuchObjectException, IOException {
     HbaseMetastoreProto.RoleGrantInfoList proto = getRolePrincipals(roleName);
     if (proto == null) return;
-    List<HbaseMetastoreProto.RoleGrantInfo> rolePrincipals =
-        new ArrayList<HbaseMetastoreProto.RoleGrantInfo>();
+    List<HbaseMetastoreProto.RoleGrantInfo> rolePrincipals = new ArrayList<>();
     rolePrincipals.addAll(proto.getGrantInfoList());
 
     for (int i = 0; i < rolePrincipals.size(); i++) {
@@ -976,8 +980,8 @@ class HBaseReadWrite {
     LOG.debug("Building role map for " + userName);
 
     // Second, find every role the user participates in directly.
-    Set<String> rolesToAdd = new HashSet<String>();
-    Set<String> rolesToCheckNext = new HashSet<String>();
+    Set<String> rolesToAdd = new HashSet<>();
+    Set<String> rolesToCheckNext = new HashSet<>();
     for (Map.Entry<String, HbaseMetastoreProto.RoleGrantInfoList> e : roleCache.entrySet()) {
       for (HbaseMetastoreProto.RoleGrantInfo grantInfo : e.getValue().getGrantInfoList()) {
         if (HBaseUtils.convertPrincipalTypes(grantInfo.getPrincipalType()) == PrincipalType.USER &&
@@ -993,7 +997,7 @@ class HBaseReadWrite {
     // Third, find every role the user participates in indirectly (that is, they have been
     // granted into role X and role Y has been granted into role X).
     while (rolesToCheckNext.size() > 0) {
-      Set<String> tmpRolesToCheckNext = new HashSet<String>();
+      Set<String> tmpRolesToCheckNext = new HashSet<>();
       for (String roleName : rolesToCheckNext) {
         HbaseMetastoreProto.RoleGrantInfoList grantInfos = roleCache.get(roleName);
         if (grantInfos == null) continue;  // happens when a role contains no grants
@@ -1010,7 +1014,7 @@ class HBaseReadWrite {
     }
 
     byte[] key = HBaseUtils.buildKey(userName);
-    byte[] serialized = HBaseUtils.serializeRoleList(new ArrayList<String>(rolesToAdd));
+    byte[] serialized = HBaseUtils.serializeRoleList(new ArrayList<>(rolesToAdd));
     store(USER_TO_ROLE_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
   }
 
@@ -1022,12 +1026,11 @@ class HBaseReadWrite {
   void removeRoleGrants(String roleName) throws IOException {
     buildRoleCache();
 
-    List<Put> puts = new ArrayList<Put>();
+    List<Put> puts = new ArrayList<>();
     // First, walk the role table and remove any references to this role
     for (Map.Entry<String, HbaseMetastoreProto.RoleGrantInfoList> e : roleCache.entrySet()) {
       boolean madeAChange = false;
-      List<HbaseMetastoreProto.RoleGrantInfo> rgil =
-          new ArrayList<HbaseMetastoreProto.RoleGrantInfo>();
+      List<HbaseMetastoreProto.RoleGrantInfo> rgil = new ArrayList<>();
       rgil.addAll(e.getValue().getGrantInfoList());
       for (int i = 0; i < rgil.size(); i++) {
         if (HBaseUtils.convertPrincipalTypes(rgil.get(i).getPrincipalType()) == PrincipalType.ROLE &&
@@ -1066,7 +1069,7 @@ class HBaseReadWrite {
     // Now, walk the db table
     puts.clear();
     List<Database> dbs = scanDatabases(null);
-    if (dbs == null) dbs = new ArrayList<Database>(); // rare, but can happen
+    if (dbs == null) dbs = new ArrayList<>(); // rare, but can happen
     for (Database db : dbs) {
       if (db.getPrivileges() != null &&
           db.getPrivileges().getRolePrivileges() != null &&
@@ -1130,7 +1133,7 @@ class HBaseReadWrite {
    */
   List<Role> scanRoles() throws IOException {
     Iterator<Result> iter = scan(ROLE_TABLE, CATALOG_CF, CATALOG_COL);
-    List<Role> roles = new ArrayList<Role>();
+    List<Role> roles = new ArrayList<>();
     while (iter.hasNext()) {
       Result result = iter.next();
       roles.add(HBaseUtils.deserializeRole(result.getRow(),
@@ -1199,11 +1202,11 @@ class HBaseReadWrite {
   List<Table> getTables(String dbName, List<String> tableNames) throws IOException {
     // I could implement getTable in terms of this method.  But it is such a core function
     // that I don't want to slow it down for the much less common fetching of multiple tables.
-    List<Table> results = new ArrayList<Table>(tableNames.size());
+    List<Table> results = new ArrayList<>(tableNames.size());
     ObjectPair<String, String>[] hashKeys = new ObjectPair[tableNames.size()];
     boolean atLeastOneMissing = false;
     for (int i = 0; i < tableNames.size(); i++) {
-      hashKeys[i] = new ObjectPair<String, String>(dbName, tableNames.get(i));
+      hashKeys[i] = new ObjectPair<>(dbName, tableNames.get(i));
       // The result may be null, but we still want to add it so that we have a slot in the list
       // for it.
       results.add(tableCache.get(hashKeys[i]));
@@ -1212,7 +1215,7 @@ class HBaseReadWrite {
     if (!atLeastOneMissing) return results;
 
     // Now build a single get that will fetch the remaining tables
-    List<Get> gets = new ArrayList<Get>();
+    List<Get> gets = new ArrayList<>();
     HTableInterface htab = conn.getHBaseTable(TABLE_TABLE);
     for (int i = 0; i < tableNames.size(); i++) {
       if (results.get(i) != null) continue;
@@ -1261,7 +1264,7 @@ class HBaseReadWrite {
     Iterator<Result> iter =
         scan(TABLE_TABLE, keyPrefix, HBaseUtils.getEndPrefix(keyPrefix),
             CATALOG_CF, CATALOG_COL, filter);
-    List<Table> tables = new ArrayList<Table>();
+    List<Table> tables = new ArrayList<>();
     while (iter.hasNext()) {
       Result result = iter.next();
       HBaseUtils.StorageDescriptorParts sdParts =
@@ -1284,7 +1287,7 @@ class HBaseReadWrite {
     byte[] hash = putStorageDescriptor(table.getSd());
     byte[][] serialized = HBaseUtils.serializeTable(table, hash);
     store(TABLE_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
-    tableCache.put(new ObjectPair<String, String>(table.getDbName(), table.getTableName()), table);
+    tableCache.put(new ObjectPair<>(table.getDbName(), table.getTableName()), table);
   }
 
   /**
@@ -1323,7 +1326,7 @@ class HBaseReadWrite {
 
   private void deleteTable(String dbName, String tableName, boolean decrementRefCnt)
       throws IOException {
-    tableCache.remove(new ObjectPair<String, String>(dbName, tableName));
+    tableCache.remove(new ObjectPair<>(dbName, tableName));
     if (decrementRefCnt) {
       // Find the table so I can get the storage descriptor and drop it
       Table t = getTable(dbName, tableName, false);
@@ -1335,7 +1338,7 @@ class HBaseReadWrite {
 
   private Table getTable(String dbName, String tableName, boolean populateCache)
       throws IOException {
-    ObjectPair<String, String> hashKey = new ObjectPair<String, String>(dbName, tableName);
+    ObjectPair<String, String> hashKey = new ObjectPair<>(dbName, tableName);
     Table cached = tableCache.get(hashKey);
     if (cached != null) return cached;
     byte[] key = HBaseUtils.buildKey(dbName, tableName);
@@ -1623,6 +1626,7 @@ class HBaseReadWrite {
     byte[] serialized = read(AGGR_STATS_TABLE, key, CATALOG_CF, AGGR_STATS_STATS_COL);
     if (serialized == null) return null;
     return HBaseUtils.deserializeAggrStats(serialized);
+
   }
 
   /**
@@ -1693,6 +1697,134 @@ class HBaseReadWrite {
 
   private String getStatisticsTable(List<String> partVals) {
     return partVals == null ? TABLE_TABLE : PART_TABLE;
+  }
+
+  /**********************************************************************************************
+   * Security related methods
+   *********************************************************************************************/
+
+  /**
+   * Fetch a delegation token
+   * @param tokId identifier of the token to fetch
+   * @return the delegation token, or null if there is no such delegation token
+   * @throws IOException
+   */
+  String getDelegationToken(String tokId) throws IOException {
+    byte[] key = HBaseUtils.buildKey(tokId);
+    byte[] serialized = read(SECURITY_TABLE, key, CATALOG_CF, DELEGATION_TOKEN_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.deserializeDelegationToken(serialized);
+  }
+
+  /**
+   * Get all delegation token ids
+   * @return list of all delegation token identifiers
+   * @throws IOException
+   */
+  List<String> scanDelegationTokenIdentifiers() throws IOException {
+    Iterator<Result> iter = scan(SECURITY_TABLE, CATALOG_CF, DELEGATION_TOKEN_COL);
+    List<String> ids = new ArrayList<>();
+    while (iter.hasNext()) {
+      Result result = iter.next();
+      byte[] serialized = result.getValue(CATALOG_CF, DELEGATION_TOKEN_COL);
+      if (serialized != null) {
+        // Don't deserialize the value, as what we're after is the key.  We just had to check the
+        // value wasn't null in order to check this is a record with a delegation token and not a
+        // master key.
+        ids.add(new String(result.getRow(), HBaseUtils.ENCODING));
+
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Store a delegation token
+   * @param tokId token id
+   * @param token delegation token to store
+   * @throws IOException
+   */
+  void putDelegationToken(String tokId, String token) throws IOException {
+    byte[][] serialized = HBaseUtils.serializeDelegationToken(tokId, token);
+    store(SECURITY_TABLE, serialized[0], CATALOG_CF, DELEGATION_TOKEN_COL, serialized[1]);
+  }
+
+  /**
+   * Delete a delegation token
+   * @param tokId identifier of token to drop
+   * @throws IOException
+   */
+  void deleteDelegationToken(String tokId) throws IOException {
+    byte[] key = HBaseUtils.buildKey(tokId);
+    delete(SECURITY_TABLE, key, CATALOG_CF, DELEGATION_TOKEN_COL);
+  }
+
+  /**
+   * Fetch a master key
+   * @param seqNo sequence number of the master key
+   * @return the master key, or null if there is no such master key
+   * @throws IOException
+   */
+  String getMasterKey(Integer seqNo) throws IOException {
+    byte[] key = HBaseUtils.buildKey(seqNo.toString());
+    byte[] serialized = read(SECURITY_TABLE, key, CATALOG_CF, MASTER_KEY_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.deserializeMasterKey(serialized);
+  }
+
+  /**
+   * Get all master keys
+   * @return list of all master keys
+   * @throws IOException
+   */
+  List<String> scanMasterKeys() throws IOException {
+    Iterator<Result> iter = scan(SECURITY_TABLE, CATALOG_CF, MASTER_KEY_COL);
+    List<String> keys = new ArrayList<>();
+    while (iter.hasNext()) {
+      Result result = iter.next();
+      byte[] serialized = result.getValue(CATALOG_CF, MASTER_KEY_COL);
+      if (serialized != null) {
+        keys.add(HBaseUtils.deserializeMasterKey(serialized));
+
+      }
+    }
+    return keys;
+  }
+
+  /**
+   * Store a master key
+   * @param seqNo sequence number
+   * @param key master key to store
+   * @throws IOException
+   */
+  void putMasterKey(Integer seqNo, String key) throws IOException {
+    byte[][] serialized = HBaseUtils.serializeMasterKey(seqNo, key);
+    store(SECURITY_TABLE, serialized[0], CATALOG_CF, MASTER_KEY_COL, serialized[1]);
+  }
+
+  /**
+   * Delete a master key
+   * @param seqNo sequence number of master key to delete
+   * @throws IOException
+   */
+  void deleteMasterKey(Integer seqNo) throws IOException {
+    byte[] key = HBaseUtils.buildKey(seqNo.toString());
+    delete(SECURITY_TABLE, key, CATALOG_CF, MASTER_KEY_COL);
+  }
+
+  /**********************************************************************************************
+   * Sequence methods
+   *********************************************************************************************/
+
+  long getNextSequence(byte[] sequence) throws IOException {
+    byte[] serialized = read(SEQUENCES_TABLE, SEQUENCES_KEY, CATALOG_CF, sequence);
+    long val = 0;
+    if (serialized != null) {
+      val = Long.valueOf(new String(serialized, HBaseUtils.ENCODING));
+    }
+    byte[] incrSerialized = new Long(val + 1).toString().getBytes(HBaseUtils.ENCODING);
+    store(SEQUENCES_TABLE, SEQUENCES_KEY, CATALOG_CF, sequence, incrSerialized);
+    return val;
   }
 
   /**********************************************************************************************
@@ -1772,8 +1904,7 @@ class HBaseReadWrite {
     htab.delete(d);
   }
 
-  private Iterator<Result> scan(String table, byte[] colFam,
-      byte[] colName) throws IOException {
+  private Iterator<Result> scan(String table, byte[] colFam, byte[] colName) throws IOException {
     return scan(table, null, null, colFam, colName, null);
   }
 

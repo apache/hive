@@ -10222,6 +10222,485 @@ public final class HbaseMetastoreProto {
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.Database)
   }
 
+  public interface DelegationTokenOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string token_str = 1;
+    /**
+     * <code>required string token_str = 1;</code>
+     */
+    boolean hasTokenStr();
+    /**
+     * <code>required string token_str = 1;</code>
+     */
+    java.lang.String getTokenStr();
+    /**
+     * <code>required string token_str = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getTokenStrBytes();
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.DelegationToken}
+   */
+  public static final class DelegationToken extends
+      com.google.protobuf.GeneratedMessage
+      implements DelegationTokenOrBuilder {
+    // Use DelegationToken.newBuilder() to construct.
+    private DelegationToken(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private DelegationToken(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final DelegationToken defaultInstance;
+    public static DelegationToken getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public DelegationToken getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private DelegationToken(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              tokenStr_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<DelegationToken> PARSER =
+        new com.google.protobuf.AbstractParser<DelegationToken>() {
+      public DelegationToken parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new DelegationToken(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<DelegationToken> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required string token_str = 1;
+    public static final int TOKEN_STR_FIELD_NUMBER = 1;
+    private java.lang.Object tokenStr_;
+    /**
+     * <code>required string token_str = 1;</code>
+     */
+    public boolean hasTokenStr() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string token_str = 1;</code>
+     */
+    public java.lang.String getTokenStr() {
+      java.lang.Object ref = tokenStr_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          tokenStr_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string token_str = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTokenStrBytes() {
+      java.lang.Object ref = tokenStr_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        tokenStr_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      tokenStr_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasTokenStr()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getTokenStrBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getTokenStrBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.DelegationToken}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationTokenOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        tokenStr_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.tokenStr_ = tokenStr_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken.getDefaultInstance()) return this;
+        if (other.hasTokenStr()) {
+          bitField0_ |= 0x00000001;
+          tokenStr_ = other.tokenStr_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasTokenStr()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.DelegationToken) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string token_str = 1;
+      private java.lang.Object tokenStr_ = "";
+      /**
+       * <code>required string token_str = 1;</code>
+       */
+      public boolean hasTokenStr() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string token_str = 1;</code>
+       */
+      public java.lang.String getTokenStr() {
+        java.lang.Object ref = tokenStr_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          tokenStr_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string token_str = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTokenStrBytes() {
+        java.lang.Object ref = tokenStr_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          tokenStr_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string token_str = 1;</code>
+       */
+      public Builder setTokenStr(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        tokenStr_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string token_str = 1;</code>
+       */
+      public Builder clearTokenStr() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        tokenStr_ = getDefaultInstance().getTokenStr();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string token_str = 1;</code>
+       */
+      public Builder setTokenStrBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        tokenStr_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.DelegationToken)
+    }
+
+    static {
+      defaultInstance = new DelegationToken(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.DelegationToken)
+  }
+
   public interface FieldSchemaOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -13022,6 +13501,485 @@ public final class HbaseMetastoreProto {
     }
 
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.Function)
+  }
+
+  public interface MasterKeyOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string master_key = 1;
+    /**
+     * <code>required string master_key = 1;</code>
+     */
+    boolean hasMasterKey();
+    /**
+     * <code>required string master_key = 1;</code>
+     */
+    java.lang.String getMasterKey();
+    /**
+     * <code>required string master_key = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getMasterKeyBytes();
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.MasterKey}
+   */
+  public static final class MasterKey extends
+      com.google.protobuf.GeneratedMessage
+      implements MasterKeyOrBuilder {
+    // Use MasterKey.newBuilder() to construct.
+    private MasterKey(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private MasterKey(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final MasterKey defaultInstance;
+    public static MasterKey getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public MasterKey getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private MasterKey(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              masterKey_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<MasterKey> PARSER =
+        new com.google.protobuf.AbstractParser<MasterKey>() {
+      public MasterKey parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new MasterKey(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<MasterKey> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required string master_key = 1;
+    public static final int MASTER_KEY_FIELD_NUMBER = 1;
+    private java.lang.Object masterKey_;
+    /**
+     * <code>required string master_key = 1;</code>
+     */
+    public boolean hasMasterKey() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string master_key = 1;</code>
+     */
+    public java.lang.String getMasterKey() {
+      java.lang.Object ref = masterKey_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          masterKey_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string master_key = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getMasterKeyBytes() {
+      java.lang.Object ref = masterKey_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        masterKey_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      masterKey_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasMasterKey()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getMasterKeyBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getMasterKeyBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.MasterKey}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKeyOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        masterKey_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.masterKey_ = masterKey_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey.getDefaultInstance()) return this;
+        if (other.hasMasterKey()) {
+          bitField0_ |= 0x00000001;
+          masterKey_ = other.masterKey_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasMasterKey()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.MasterKey) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string master_key = 1;
+      private java.lang.Object masterKey_ = "";
+      /**
+       * <code>required string master_key = 1;</code>
+       */
+      public boolean hasMasterKey() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string master_key = 1;</code>
+       */
+      public java.lang.String getMasterKey() {
+        java.lang.Object ref = masterKey_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          masterKey_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string master_key = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getMasterKeyBytes() {
+        java.lang.Object ref = masterKey_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          masterKey_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string master_key = 1;</code>
+       */
+      public Builder setMasterKey(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        masterKey_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string master_key = 1;</code>
+       */
+      public Builder clearMasterKey() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        masterKey_ = getDefaultInstance().getMasterKey();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string master_key = 1;</code>
+       */
+      public Builder setMasterKeyBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        masterKey_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.MasterKey)
+    }
+
+    static {
+      defaultInstance = new MasterKey(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.MasterKey)
   }
 
   public interface ParameterEntryOrBuilder
@@ -29725,6 +30683,11 @@ public final class HbaseMetastoreProto {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_metastore_hbase_Database_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -29739,6 +30702,11 @@ public final class HbaseMetastoreProto {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor;
   private static
@@ -29885,95 +30853,97 @@ public final class HbaseMetastoreProto {
       "base.PrincipalPrivilegeSet\022\022\n\nowner_name",
       "\030\005 \001(\t\022I\n\nowner_type\030\006 \001(\01625.org.apache." +
       "hadoop.hive.metastore.hbase.PrincipalTyp" +
-      "e\":\n\013FieldSchema\022\014\n\004name\030\001 \002(\t\022\014\n\004type\030\002" +
-      " \002(\t\022\017\n\007comment\030\003 \001(\t\"\206\004\n\010Function\022\022\n\ncl" +
-      "ass_name\030\001 \001(\t\022\022\n\nowner_name\030\002 \001(\t\022I\n\now" +
-      "ner_type\030\003 \001(\01625.org.apache.hadoop.hive." +
-      "metastore.hbase.PrincipalType\022\023\n\013create_" +
-      "time\030\004 \001(\022\022T\n\rfunction_type\030\005 \001(\0162=.org." +
-      "apache.hadoop.hive.metastore.hbase.Funct" +
-      "ion.FunctionType\022S\n\rresource_uris\030\006 \003(\0132",
-      "<.org.apache.hadoop.hive.metastore.hbase" +
-      ".Function.ResourceUri\032\254\001\n\013ResourceUri\022`\n" +
-      "\rresource_type\030\001 \002(\0162I.org.apache.hadoop" +
-      ".hive.metastore.hbase.Function.ResourceU" +
-      "ri.ResourceType\022\013\n\003uri\030\002 \002(\t\".\n\014Resource" +
-      "Type\022\007\n\003JAR\020\001\022\010\n\004FILE\020\002\022\013\n\007ARCHIVE\020\003\"\030\n\014" +
-      "FunctionType\022\010\n\004JAVA\020\001\",\n\016ParameterEntry" +
-      "\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"W\n\nParamete" +
-      "rs\022I\n\tparameter\030\001 \003(\01326.org.apache.hadoo" +
-      "p.hive.metastore.hbase.ParameterEntry\"\360\001",
-      "\n\tPartition\022\023\n\013create_time\030\001 \001(\003\022\030\n\020last" +
-      "_access_time\030\002 \001(\003\022\020\n\010location\030\003 \001(\t\022I\n\r" +
-      "sd_parameters\030\004 \001(\01322.org.apache.hadoop." +
-      "hive.metastore.hbase.Parameters\022\017\n\007sd_ha" +
-      "sh\030\005 \002(\014\022F\n\nparameters\030\006 \001(\01322.org.apach" +
-      "e.hadoop.hive.metastore.hbase.Parameters" +
-      "\"\204\001\n\032PrincipalPrivilegeSetEntry\022\026\n\016princ" +
-      "ipal_name\030\001 \002(\t\022N\n\nprivileges\030\002 \003(\0132:.or" +
+      "e\"$\n\017DelegationToken\022\021\n\ttoken_str\030\001 \002(\t\"" +
+      ":\n\013FieldSchema\022\014\n\004name\030\001 \002(\t\022\014\n\004type\030\002 \002" +
+      "(\t\022\017\n\007comment\030\003 \001(\t\"\206\004\n\010Function\022\022\n\nclas" +
+      "s_name\030\001 \001(\t\022\022\n\nowner_name\030\002 \001(\t\022I\n\nowne" +
+      "r_type\030\003 \001(\01625.org.apache.hadoop.hive.me" +
+      "tastore.hbase.PrincipalType\022\023\n\013create_ti" +
+      "me\030\004 \001(\022\022T\n\rfunction_type\030\005 \001(\0162=.org.ap" +
+      "ache.hadoop.hive.metastore.hbase.Functio",
+      "n.FunctionType\022S\n\rresource_uris\030\006 \003(\0132<." +
+      "org.apache.hadoop.hive.metastore.hbase.F" +
+      "unction.ResourceUri\032\254\001\n\013ResourceUri\022`\n\rr" +
+      "esource_type\030\001 \002(\0162I.org.apache.hadoop.h" +
+      "ive.metastore.hbase.Function.ResourceUri" +
+      ".ResourceType\022\013\n\003uri\030\002 \002(\t\".\n\014ResourceTy" +
+      "pe\022\007\n\003JAR\020\001\022\010\n\004FILE\020\002\022\013\n\007ARCHIVE\020\003\"\030\n\014Fu" +
+      "nctionType\022\010\n\004JAVA\020\001\"\037\n\tMasterKey\022\022\n\nmas" +
+      "ter_key\030\001 \002(\t\",\n\016ParameterEntry\022\013\n\003key\030\001" +
+      " \002(\t\022\r\n\005value\030\002 \002(\t\"W\n\nParameters\022I\n\tpar",
+      "ameter\030\001 \003(\01326.org.apache.hadoop.hive.me" +
+      "tastore.hbase.ParameterEntry\"\360\001\n\tPartiti" +
+      "on\022\023\n\013create_time\030\001 \001(\003\022\030\n\020last_access_t" +
+      "ime\030\002 \001(\003\022\020\n\010location\030\003 \001(\t\022I\n\rsd_parame" +
+      "ters\030\004 \001(\01322.org.apache.hadoop.hive.meta" +
+      "store.hbase.Parameters\022\017\n\007sd_hash\030\005 \002(\014\022" +
+      "F\n\nparameters\030\006 \001(\01322.org.apache.hadoop." +
+      "hive.metastore.hbase.Parameters\"\204\001\n\032Prin" +
+      "cipalPrivilegeSetEntry\022\026\n\016principal_name" +
+      "\030\001 \002(\t\022N\n\nprivileges\030\002 \003(\0132:.org.apache.",
+      "hadoop.hive.metastore.hbase.PrivilegeGra" +
+      "ntInfo\"\275\001\n\025PrincipalPrivilegeSet\022Q\n\005user" +
+      "s\030\001 \003(\0132B.org.apache.hadoop.hive.metasto" +
+      "re.hbase.PrincipalPrivilegeSetEntry\022Q\n\005r" +
+      "oles\030\002 \003(\0132B.org.apache.hadoop.hive.meta" +
+      "store.hbase.PrincipalPrivilegeSetEntry\"\260" +
+      "\001\n\022PrivilegeGrantInfo\022\021\n\tprivilege\030\001 \001(\t" +
+      "\022\023\n\013create_time\030\002 \001(\003\022\017\n\007grantor\030\003 \001(\t\022K" +
+      "\n\014grantor_type\030\004 \001(\01625.org.apache.hadoop" +
+      ".hive.metastore.hbase.PrincipalType\022\024\n\014g",
+      "rant_option\030\005 \001(\010\"\374\001\n\rRoleGrantInfo\022\026\n\016p" +
+      "rincipal_name\030\001 \002(\t\022M\n\016principal_type\030\002 " +
+      "\002(\01625.org.apache.hadoop.hive.metastore.h" +
+      "base.PrincipalType\022\020\n\010add_time\030\003 \001(\003\022\017\n\007" +
+      "grantor\030\004 \001(\t\022K\n\014grantor_type\030\005 \001(\01625.or" +
       "g.apache.hadoop.hive.metastore.hbase.Pri" +
-      "vilegeGrantInfo\"\275\001\n\025PrincipalPrivilegeSe",
-      "t\022Q\n\005users\030\001 \003(\0132B.org.apache.hadoop.hiv" +
-      "e.metastore.hbase.PrincipalPrivilegeSetE" +
-      "ntry\022Q\n\005roles\030\002 \003(\0132B.org.apache.hadoop." +
-      "hive.metastore.hbase.PrincipalPrivilegeS" +
-      "etEntry\"\260\001\n\022PrivilegeGrantInfo\022\021\n\tprivil" +
-      "ege\030\001 \001(\t\022\023\n\013create_time\030\002 \001(\003\022\017\n\007granto" +
-      "r\030\003 \001(\t\022K\n\014grantor_type\030\004 \001(\01625.org.apac" +
-      "he.hadoop.hive.metastore.hbase.Principal" +
-      "Type\022\024\n\014grant_option\030\005 \001(\010\"\374\001\n\rRoleGrant" +
-      "Info\022\026\n\016principal_name\030\001 \002(\t\022M\n\016principa",
-      "l_type\030\002 \002(\01625.org.apache.hadoop.hive.me" +
-      "tastore.hbase.PrincipalType\022\020\n\010add_time\030" +
-      "\003 \001(\003\022\017\n\007grantor\030\004 \001(\t\022K\n\014grantor_type\030\005" +
-      " \001(\01625.org.apache.hadoop.hive.metastore." +
-      "hbase.PrincipalType\022\024\n\014grant_option\030\006 \001(" +
-      "\010\"^\n\021RoleGrantInfoList\022I\n\ngrant_info\030\001 \003" +
-      "(\01325.org.apache.hadoop.hive.metastore.hb" +
-      "ase.RoleGrantInfo\"\030\n\010RoleList\022\014\n\004role\030\001 " +
-      "\003(\t\"/\n\004Role\022\023\n\013create_time\030\001 \001(\003\022\022\n\nowne" +
-      "r_name\030\002 \001(\t\"\254\010\n\021StorageDescriptor\022A\n\004co",
-      "ls\030\001 \003(\01323.org.apache.hadoop.hive.metast" +
-      "ore.hbase.FieldSchema\022\024\n\014input_format\030\002 " +
-      "\001(\t\022\025\n\routput_format\030\003 \001(\t\022\025\n\ris_compres" +
-      "sed\030\004 \001(\010\022\023\n\013num_buckets\030\005 \001(\021\022W\n\nserde_" +
-      "info\030\006 \001(\0132C.org.apache.hadoop.hive.meta" +
-      "store.hbase.StorageDescriptor.SerDeInfo\022" +
-      "\023\n\013bucket_cols\030\007 \003(\t\022R\n\tsort_cols\030\010 \003(\0132" +
-      "?.org.apache.hadoop.hive.metastore.hbase" +
-      ".StorageDescriptor.Order\022Y\n\013skewed_info\030" +
-      "\t \001(\0132D.org.apache.hadoop.hive.metastore",
-      ".hbase.StorageDescriptor.SkewedInfo\022!\n\031s" +
-      "tored_as_sub_directories\030\n \001(\010\032.\n\005Order\022" +
-      "\023\n\013column_name\030\001 \002(\t\022\020\n\005order\030\002 \001(\021:\0011\032|" +
-      "\n\tSerDeInfo\022\014\n\004name\030\001 \001(\t\022\031\n\021serializati" +
-      "on_lib\030\002 \001(\t\022F\n\nparameters\030\003 \001(\01322.org.a" +
-      "pache.hadoop.hive.metastore.hbase.Parame" +
-      "ters\032\214\003\n\nSkewedInfo\022\030\n\020skewed_col_names\030" +
-      "\001 \003(\t\022r\n\021skewed_col_values\030\002 \003(\0132W.org.a" +
-      "pache.hadoop.hive.metastore.hbase.Storag" +
-      "eDescriptor.SkewedInfo.SkewedColValueLis",
-      "t\022\206\001\n\036skewed_col_value_location_maps\030\003 \003" +
-      "(\0132^.org.apache.hadoop.hive.metastore.hb" +
-      "ase.StorageDescriptor.SkewedInfo.SkewedC" +
-      "olValueLocationMap\032.\n\022SkewedColValueList" +
-      "\022\030\n\020skewed_col_value\030\001 \003(\t\0327\n\031SkewedColV" +
-      "alueLocationMap\022\013\n\003key\030\001 \003(\t\022\r\n\005value\030\002 " +
-      "\002(\t\"\220\004\n\005Table\022\r\n\005owner\030\001 \001(\t\022\023\n\013create_t" +
-      "ime\030\002 \001(\003\022\030\n\020last_access_time\030\003 \001(\003\022\021\n\tr" +
-      "etention\030\004 \001(\003\022\020\n\010location\030\005 \001(\t\022I\n\rsd_p" +
-      "arameters\030\006 \001(\01322.org.apache.hadoop.hive",
-      ".metastore.hbase.Parameters\022\017\n\007sd_hash\030\007" +
-      " \002(\014\022K\n\016partition_keys\030\010 \003(\01323.org.apach" +
-      "e.hadoop.hive.metastore.hbase.FieldSchem" +
-      "a\022F\n\nparameters\030\t \001(\01322.org.apache.hadoo" +
-      "p.hive.metastore.hbase.Parameters\022\032\n\022vie" +
-      "w_original_text\030\n \001(\t\022\032\n\022view_expanded_t" +
-      "ext\030\013 \001(\t\022\022\n\ntable_type\030\014 \001(\t\022Q\n\nprivile" +
-      "ges\030\r \001(\0132=.org.apache.hadoop.hive.metas" +
-      "tore.hbase.PrincipalPrivilegeSet\022\024\n\014is_t" +
-      "emporary\030\016 \001(\010*#\n\rPrincipalType\022\010\n\004USER\020",
-      "\000\022\010\n\004ROLE\020\001"
+      "ncipalType\022\024\n\014grant_option\030\006 \001(\010\"^\n\021Role" +
+      "GrantInfoList\022I\n\ngrant_info\030\001 \003(\01325.org." +
+      "apache.hadoop.hive.metastore.hbase.RoleG" +
+      "rantInfo\"\030\n\010RoleList\022\014\n\004role\030\001 \003(\t\"/\n\004Ro",
+      "le\022\023\n\013create_time\030\001 \001(\003\022\022\n\nowner_name\030\002 " +
+      "\001(\t\"\254\010\n\021StorageDescriptor\022A\n\004cols\030\001 \003(\0132" +
+      "3.org.apache.hadoop.hive.metastore.hbase" +
+      ".FieldSchema\022\024\n\014input_format\030\002 \001(\t\022\025\n\rou" +
+      "tput_format\030\003 \001(\t\022\025\n\ris_compressed\030\004 \001(\010" +
+      "\022\023\n\013num_buckets\030\005 \001(\021\022W\n\nserde_info\030\006 \001(" +
+      "\0132C.org.apache.hadoop.hive.metastore.hba" +
+      "se.StorageDescriptor.SerDeInfo\022\023\n\013bucket" +
+      "_cols\030\007 \003(\t\022R\n\tsort_cols\030\010 \003(\0132?.org.apa" +
+      "che.hadoop.hive.metastore.hbase.StorageD",
+      "escriptor.Order\022Y\n\013skewed_info\030\t \001(\0132D.o" +
+      "rg.apache.hadoop.hive.metastore.hbase.St" +
+      "orageDescriptor.SkewedInfo\022!\n\031stored_as_" +
+      "sub_directories\030\n \001(\010\032.\n\005Order\022\023\n\013column" +
+      "_name\030\001 \002(\t\022\020\n\005order\030\002 \001(\021:\0011\032|\n\tSerDeIn" +
+      "fo\022\014\n\004name\030\001 \001(\t\022\031\n\021serialization_lib\030\002 " +
+      "\001(\t\022F\n\nparameters\030\003 \001(\01322.org.apache.had" +
+      "oop.hive.metastore.hbase.Parameters\032\214\003\n\n" +
+      "SkewedInfo\022\030\n\020skewed_col_names\030\001 \003(\t\022r\n\021" +
+      "skewed_col_values\030\002 \003(\0132W.org.apache.had",
+      "oop.hive.metastore.hbase.StorageDescript" +
+      "or.SkewedInfo.SkewedColValueList\022\206\001\n\036ske" +
+      "wed_col_value_location_maps\030\003 \003(\0132^.org." +
+      "apache.hadoop.hive.metastore.hbase.Stora" +
+      "geDescriptor.SkewedInfo.SkewedColValueLo" +
+      "cationMap\032.\n\022SkewedColValueList\022\030\n\020skewe" +
+      "d_col_value\030\001 \003(\t\0327\n\031SkewedColValueLocat" +
+      "ionMap\022\013\n\003key\030\001 \003(\t\022\r\n\005value\030\002 \002(\t\"\220\004\n\005T" +
+      "able\022\r\n\005owner\030\001 \001(\t\022\023\n\013create_time\030\002 \001(\003" +
+      "\022\030\n\020last_access_time\030\003 \001(\003\022\021\n\tretention\030",
+      "\004 \001(\003\022\020\n\010location\030\005 \001(\t\022I\n\rsd_parameters" +
+      "\030\006 \001(\01322.org.apache.hadoop.hive.metastor" +
+      "e.hbase.Parameters\022\017\n\007sd_hash\030\007 \002(\014\022K\n\016p" +
+      "artition_keys\030\010 \003(\01323.org.apache.hadoop." +
+      "hive.metastore.hbase.FieldSchema\022F\n\npara" +
+      "meters\030\t \001(\01322.org.apache.hadoop.hive.me" +
+      "tastore.hbase.Parameters\022\032\n\022view_origina" +
+      "l_text\030\n \001(\t\022\032\n\022view_expanded_text\030\013 \001(\t" +
+      "\022\022\n\ntable_type\030\014 \001(\t\022Q\n\nprivileges\030\r \001(\013" +
+      "2=.org.apache.hadoop.hive.metastore.hbas",
+      "e.PrincipalPrivilegeSet\022\024\n\014is_temporary\030" +
+      "\016 \001(\010*#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE" +
+      "\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -30058,14 +31028,20 @@ public final class HbaseMetastoreProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Database_descriptor,
               new java.lang.String[] { "Description", "Uri", "Parameters", "Privileges", "OwnerName", "OwnerType", });
-          internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_descriptor =
+          internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_descriptor =
             getDescriptor().getMessageTypes().get(5);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_DelegationToken_descriptor,
+              new java.lang.String[] { "TokenStr", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_descriptor =
+            getDescriptor().getMessageTypes().get(6);
           internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_descriptor,
               new java.lang.String[] { "Name", "Type", "Comment", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor =
-            getDescriptor().getMessageTypes().get(6);
+            getDescriptor().getMessageTypes().get(7);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Function_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor,
@@ -30076,68 +31052,74 @@ public final class HbaseMetastoreProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_descriptor,
               new java.lang.String[] { "ResourceType", "Uri", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_descriptor =
+            getDescriptor().getMessageTypes().get(8);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_MasterKey_descriptor,
+              new java.lang.String[] { "MasterKey", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor =
-            getDescriptor().getMessageTypes().get(7);
+            getDescriptor().getMessageTypes().get(9);
           internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor,
               new java.lang.String[] { "Key", "Value", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_descriptor =
-            getDescriptor().getMessageTypes().get(8);
+            getDescriptor().getMessageTypes().get(10);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_descriptor,
               new java.lang.String[] { "Parameter", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_descriptor =
-            getDescriptor().getMessageTypes().get(9);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_descriptor,
               new java.lang.String[] { "CreateTime", "LastAccessTime", "Location", "SdParameters", "SdHash", "Parameters", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(12);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_descriptor,
               new java.lang.String[] { "PrincipalName", "Privileges", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(13);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_descriptor,
               new java.lang.String[] { "Users", "Roles", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(14);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_descriptor,
               new java.lang.String[] { "Privilege", "CreateTime", "Grantor", "GrantorType", "GrantOption", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_descriptor,
               new java.lang.String[] { "PrincipalName", "PrincipalType", "AddTime", "Grantor", "GrantorType", "GrantOption", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(16);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_descriptor,
               new java.lang.String[] { "GrantInfo", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_descriptor,
               new java.lang.String[] { "Role", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Role_descriptor =
-            getDescriptor().getMessageTypes().get(16);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Role_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Role_descriptor,
               new java.lang.String[] { "CreateTime", "OwnerName", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_descriptor =
-            getDescriptor().getMessageTypes().get(17);
+            getDescriptor().getMessageTypes().get(19);
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_descriptor,
@@ -30173,7 +31155,7 @@ public final class HbaseMetastoreProto {
               internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_SkewedInfo_SkewedColValueLocationMap_descriptor,
               new java.lang.String[] { "Key", "Value", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor =
-            getDescriptor().getMessageTypes().get(18);
+            getDescriptor().getMessageTypes().get(20);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Table_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor,

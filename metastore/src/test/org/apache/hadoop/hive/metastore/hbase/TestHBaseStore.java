@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -1244,56 +1243,6 @@ public class TestHBaseStore {
     Assert.assertEquals(decimalData.getLowValue(), decimalDataFromDB.getLowValue());
     Assert.assertEquals(decimalData.getNumNulls(), decimalDataFromDB.getNumNulls());
     Assert.assertEquals(decimalData.getNumDVs(), decimalDataFromDB.getNumDVs());
-  }
-
-  // TODO: Activate this test, when we are able to mock the HBaseReadWrite.NO_CACHE_CONF set to false
-  // Right now, I have tested this by using aggrStatsCache despite NO_CACHE_CONF set to true
-  // Also need to add tests for other data types + refactor a lot of duplicate code in stats testing
-  //@Test
-  public void AggrStats() throws Exception {
-    int numParts = 3;
-    ColumnStatistics stats;
-    ColumnStatisticsDesc desc;
-    ColumnStatisticsObj obj;
-    List<String> partNames = new ArrayList<String>();
-    List<String> colNames = new ArrayList<String>();
-    colNames.add(BOOLEAN_COL);
-    // Add boolean col stats to DB for numParts partitions:
-    // PART_VALS(0), PART_VALS(1) & PART_VALS(2) for PART_KEYS(0)
-    for (int i = 0; i < numParts; i++) {
-      stats = new ColumnStatistics();
-      // Get a default ColumnStatisticsDesc for partition level stats
-      desc = getMockPartColStatsDesc(0, i);
-      stats.setStatsDesc(desc);
-      partNames.add(desc.getPartName());
-      // Get one of the pre-created ColumnStatisticsObj
-      obj = booleanColStatsObjs.get(i);
-      stats.addToStatsObj(obj);
-      // Add to DB
-      List<String> parVals = new ArrayList<String>();
-      parVals.add(PART_VALS.get(i));
-      store.updatePartitionColumnStatistics(stats, parVals);
-    }
-    // Read aggregate stats
-    AggrStats aggrStatsFromDB = store.get_aggr_stats_for(DB, TBL, partNames, colNames);
-    // Verify
-    Assert.assertEquals(1, aggrStatsFromDB.getColStatsSize());
-    ColumnStatisticsObj objFromDB = aggrStatsFromDB.getColStats().get(0);
-    Assert.assertNotNull(objFromDB);
-    // Aggregate our mock values
-    long numTrues = 0, numFalses = 0, numNulls = 0;
-    BooleanColumnStatsData boolData;;
-    for (int i = 0; i < numParts; i++) {
-      boolData = booleanColStatsObjs.get(i).getStatsData().getBooleanStats();
-      numTrues = numTrues + boolData.getNumTrues();
-      numFalses = numFalses + boolData.getNumFalses();
-      numNulls = numNulls + boolData.getNumNulls();
-    }
-    // Compare with what we got from the method call
-    BooleanColumnStatsData boolDataFromDB = objFromDB.getStatsData().getBooleanStats();
-    Assert.assertEquals(numTrues, boolDataFromDB.getNumTrues());
-    Assert.assertEquals(numFalses, boolDataFromDB.getNumFalses());
-    Assert.assertEquals(numNulls, boolDataFromDB.getNumNulls());
   }
 
   /**

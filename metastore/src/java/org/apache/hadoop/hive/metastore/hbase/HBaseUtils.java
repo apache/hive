@@ -104,8 +104,7 @@ class HBaseUtils {
   }
 
   private static HbaseMetastoreProto.Parameters buildParameters(Map<String, String> params) {
-    List<HbaseMetastoreProto.ParameterEntry> entries =
-        new ArrayList<HbaseMetastoreProto.ParameterEntry>();
+    List<HbaseMetastoreProto.ParameterEntry> entries = new ArrayList<>();
     for (Map.Entry<String, String> e : params.entrySet()) {
       entries.add(
           HbaseMetastoreProto.ParameterEntry.newBuilder()
@@ -119,7 +118,7 @@ class HBaseUtils {
   }
 
   private static Map<String, String> buildParameters(HbaseMetastoreProto.Parameters protoParams) {
-    Map<String, String> params = new HashMap<String, String>();
+    Map<String, String> params = new HashMap<>();
     for (HbaseMetastoreProto.ParameterEntry pe : protoParams.getParameterList()) {
       params.put(pe.getKey(), pe.getValue());
     }
@@ -129,8 +128,7 @@ class HBaseUtils {
 
   private static List<HbaseMetastoreProto.PrincipalPrivilegeSetEntry>
   buildPrincipalPrivilegeSetEntry(Map<String, List<PrivilegeGrantInfo>> entries) {
-    List<HbaseMetastoreProto.PrincipalPrivilegeSetEntry> results =
-        new ArrayList<HbaseMetastoreProto.PrincipalPrivilegeSetEntry>();
+    List<HbaseMetastoreProto.PrincipalPrivilegeSetEntry> results = new ArrayList<>();
     for (Map.Entry<String, List<PrivilegeGrantInfo>> entry : entries.entrySet()) {
       results.add(HbaseMetastoreProto.PrincipalPrivilegeSetEntry.newBuilder()
           .setPrincipalName(entry.getKey())
@@ -142,8 +140,7 @@ class HBaseUtils {
 
   private static List<HbaseMetastoreProto.PrivilegeGrantInfo> buildPrivilegeGrantInfo(
       List<PrivilegeGrantInfo> privileges) {
-    List<HbaseMetastoreProto.PrivilegeGrantInfo> results =
-        new ArrayList<HbaseMetastoreProto.PrivilegeGrantInfo>();
+    List<HbaseMetastoreProto.PrivilegeGrantInfo> results = new ArrayList<>();
     for (PrivilegeGrantInfo privilege : privileges) {
       HbaseMetastoreProto.PrivilegeGrantInfo.Builder builder =
           HbaseMetastoreProto.PrivilegeGrantInfo.newBuilder();
@@ -187,8 +184,7 @@ class HBaseUtils {
 
   private static Map<String, List<PrivilegeGrantInfo>> convertPrincipalPrivilegeSetEntries(
       List<HbaseMetastoreProto.PrincipalPrivilegeSetEntry> entries) {
-    Map<String, List<PrivilegeGrantInfo>> map =
-        new HashMap<String, List<PrivilegeGrantInfo>>();
+    Map<String, List<PrivilegeGrantInfo>> map = new HashMap<>();
     for (HbaseMetastoreProto.PrincipalPrivilegeSetEntry entry : entries) {
       map.put(entry.getPrincipalName(), convertPrivilegeGrantInfos(entry.getPrivilegesList()));
     }
@@ -197,7 +193,7 @@ class HBaseUtils {
 
   private static List<PrivilegeGrantInfo> convertPrivilegeGrantInfos(
       List<HbaseMetastoreProto.PrivilegeGrantInfo> privileges) {
-    List<PrivilegeGrantInfo> results = new ArrayList<PrivilegeGrantInfo>();
+    List<PrivilegeGrantInfo> results = new ArrayList<>();
     for (HbaseMetastoreProto.PrivilegeGrantInfo proto : privileges) {
       PrivilegeGrantInfo pgi = new PrivilegeGrantInfo();
       if (proto.hasPrivilege()) pgi.setPrivilege(proto.getPrivilege());
@@ -316,7 +312,7 @@ class HBaseUtils {
 
   static List<String> deserializeRoleList(byte[] value) throws InvalidProtocolBufferException {
     HbaseMetastoreProto.RoleList proto = HbaseMetastoreProto.RoleList.parseFrom(value);
-    return new ArrayList<String>(proto.getRoleList());
+    return new ArrayList<>(proto.getRoleList());
   }
 
   /**
@@ -491,7 +487,7 @@ class HBaseUtils {
 
   private static List<FieldSchema>
   convertFieldSchemaListFromProto(List<HbaseMetastoreProto.FieldSchema> protoList) {
-    List<FieldSchema> schemas = new ArrayList<FieldSchema>(protoList.size());
+    List<FieldSchema> schemas = new ArrayList<>(protoList.size());
     for (HbaseMetastoreProto.FieldSchema proto : protoList) {
       schemas.add(new FieldSchema(proto.getName(), proto.getType(),
           proto.hasComment() ? proto.getComment() : null));
@@ -501,8 +497,7 @@ class HBaseUtils {
 
   private static List<HbaseMetastoreProto.FieldSchema>
   convertFieldSchemaListToProto(List<FieldSchema> schemas) {
-    List<HbaseMetastoreProto.FieldSchema> protoList =
-        new ArrayList<HbaseMetastoreProto.FieldSchema>(schemas.size());
+    List<HbaseMetastoreProto.FieldSchema> protoList = new ArrayList<>(schemas.size());
     for (FieldSchema fs : schemas) {
       HbaseMetastoreProto.FieldSchema.Builder builder =
           HbaseMetastoreProto.FieldSchema.newBuilder();
@@ -552,8 +547,7 @@ class HBaseUtils {
     }
     if (sd.getSortCols() != null) {
       List<Order> orders = sd.getSortCols();
-      List<HbaseMetastoreProto.StorageDescriptor.Order> protoList =
-          new ArrayList<HbaseMetastoreProto.StorageDescriptor.Order>(orders.size());
+      List<HbaseMetastoreProto.StorageDescriptor.Order> protoList = new ArrayList<>(orders.size());
       for (Order order : orders) {
         protoList.add(HbaseMetastoreProto.StorageDescriptor.Order.newBuilder()
             .setColumnName(order.getCol())
@@ -625,7 +619,7 @@ class HBaseUtils {
         md.update(serde.getSerializationLib().getBytes(ENCODING));
       }
       if (serde.getParameters() != null) {
-        SortedMap<String, String> params = new TreeMap<String, String>(serde.getParameters());
+        SortedMap<String, String> params = new TreeMap<>(serde.getParameters());
         for (Map.Entry<String, String> param : params.entrySet()) {
           md.update(param.getKey().getBytes(ENCODING));
           md.update(param.getValue().getBytes(ENCODING));
@@ -633,11 +627,11 @@ class HBaseUtils {
       }
     }
     if (sd.getBucketCols() != null) {
-      SortedSet<String> bucketCols = new TreeSet<String>(sd.getBucketCols());
+      SortedSet<String> bucketCols = new TreeSet<>(sd.getBucketCols());
       for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
     }
     if (sd.getSortCols() != null) {
-      SortedSet<Order> orders = new TreeSet<Order>(sd.getSortCols());
+      SortedSet<Order> orders = new TreeSet<>(sd.getSortCols());
       for (Order order : orders) {
         md.update(order.getCol().getBytes(ENCODING));
         md.update(Integer.toString(order.getOrder()).getBytes(ENCODING));
@@ -646,21 +640,21 @@ class HBaseUtils {
     if (sd.getSkewedInfo() != null) {
       SkewedInfo skewed = sd.getSkewedInfo();
       if (skewed.getSkewedColNames() != null) {
-        SortedSet<String> colnames = new TreeSet<String>(skewed.getSkewedColNames());
+        SortedSet<String> colnames = new TreeSet<>(skewed.getSkewedColNames());
         for (String colname : colnames) md.update(colname.getBytes(ENCODING));
       }
       if (skewed.getSkewedColValues() != null) {
-        SortedSet<String> sortedOuterList = new TreeSet<String>();
+        SortedSet<String> sortedOuterList = new TreeSet<>();
         for (List<String> innerList : skewed.getSkewedColValues()) {
-          SortedSet<String> sortedInnerList = new TreeSet<String>(innerList);
+          SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
           sortedOuterList.add(StringUtils.join(sortedInnerList, "."));
         }
         for (String colval : sortedOuterList) md.update(colval.getBytes(ENCODING));
       }
       if (skewed.getSkewedColValueLocationMaps() != null) {
-        SortedMap<String, String> sortedMap = new TreeMap<String, String>();
+        SortedMap<String, String> sortedMap = new TreeMap<>();
         for (Map.Entry<List<String>, String> smap : skewed.getSkewedColValueLocationMaps().entrySet()) {
-          SortedSet<String> sortedKey = new TreeSet<String>(smap.getKey());
+          SortedSet<String> sortedKey = new TreeSet<>(smap.getKey());
           sortedMap.put(StringUtils.join(sortedKey, "."), smap.getValue());
         }
         for (Map.Entry<String, String> e : sortedMap.entrySet()) {
@@ -690,8 +684,8 @@ class HBaseUtils {
       serde.setParameters(buildParameters(proto.getSerdeInfo().getParameters()));
       sd.setSerdeInfo(serde);
     }
-    sd.setBucketCols(new ArrayList<String>(proto.getBucketColsList()));
-    List<Order> sortCols = new ArrayList<Order>();
+    sd.setBucketCols(new ArrayList<>(proto.getBucketColsList()));
+    List<Order> sortCols = new ArrayList<>();
     for (HbaseMetastoreProto.StorageDescriptor.Order protoOrder : proto.getSortColsList()) {
       sortCols.add(new Order(protoOrder.getColumnName(), protoOrder.getOrder()));
     }
@@ -699,15 +693,15 @@ class HBaseUtils {
     if (proto.hasSkewedInfo()) {
       SkewedInfo skewed = new SkewedInfo();
       skewed
-          .setSkewedColNames(new ArrayList<String>(proto.getSkewedInfo().getSkewedColNamesList()));
+          .setSkewedColNames(new ArrayList<>(proto.getSkewedInfo().getSkewedColNamesList()));
       for (HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueList innerList :
           proto.getSkewedInfo().getSkewedColValuesList()) {
-        skewed.addToSkewedColValues(new ArrayList<String>(innerList.getSkewedColValueList()));
+        skewed.addToSkewedColValues(new ArrayList<>(innerList.getSkewedColValueList()));
       }
-      Map<List<String>, String> colMaps = new HashMap<List<String>, String>();
+      Map<List<String>, String> colMaps = new HashMap<>();
       for (HbaseMetastoreProto.StorageDescriptor.SkewedInfo.SkewedColValueLocationMap map :
           proto.getSkewedInfo().getSkewedColValueLocationMapsList()) {
-        colMaps.put(new ArrayList<String>(map.getKeyList()), map.getValue());
+        colMaps.put(new ArrayList<>(map.getKeyList()), map.getValue());
       }
       skewed.setSkewedColValueLocationMaps(colMaps);
       sd.setSkewedInfo(skewed);
@@ -742,7 +736,7 @@ class HBaseUtils {
   }
 
   static byte[] buildPartitionKey(String dbName, String tableName, List<String> partVals) {
-    Deque<String> keyParts = new ArrayDeque<String>(partVals);
+    Deque<String> keyParts = new ArrayDeque<>(partVals);
     keyParts.addFirst(tableName);
     keyParts.addFirst(dbName);
     return buildKey(keyParts.toArray(new String[keyParts.size()]));
@@ -1132,6 +1126,61 @@ class HBaseUtils {
       aggrStats.addToColStats(statsForOneColumnFromProtoBuf(null, protoCS));
     }
     return aggrStats;
+  }
+
+  /**
+   * Serialize a delegation token
+   * @param tokenIdentifier
+   * @param delegationToken
+   * @return two byte arrays, first contains the key, the second the serialized value.
+   */
+  static byte[][] serializeDelegationToken(String tokenIdentifier, String delegationToken) {
+    byte[][] result = new byte[2][];
+    result[0] = buildKey(tokenIdentifier);
+    result[1] = HbaseMetastoreProto.DelegationToken.newBuilder()
+        .setTokenStr(delegationToken)
+        .build()
+        .toByteArray();
+    return result;
+  }
+
+  /**
+   * Deserialize a delegation token.
+   * @param value value fetched from hbase
+   * @return A delegation token.
+   * @throws InvalidProtocolBufferException
+   */
+  static String deserializeDelegationToken(byte[] value) throws InvalidProtocolBufferException {
+    HbaseMetastoreProto.DelegationToken protoToken =
+        HbaseMetastoreProto.DelegationToken.parseFrom(value);
+    return protoToken.getTokenStr();
+  }
+
+  /**
+   * Serialize a master key
+   * @param seqNo
+   * @param key
+   * @return two byte arrays, first contains the key, the second the serialized value.
+   */
+  static byte[][] serializeMasterKey(Integer seqNo, String key) {
+    byte[][] result = new byte[2][];
+    result[0] = buildKey(seqNo.toString());
+    result[1] = HbaseMetastoreProto.MasterKey.newBuilder()
+        .setMasterKey(key)
+        .build()
+        .toByteArray();
+    return result;
+  }
+
+  /**
+   * Deserialize a master key.
+   * @param value value fetched from hbase
+   * @return A master key
+   * @throws InvalidProtocolBufferException
+   */
+  static String deserializeMasterKey(byte[] value) throws InvalidProtocolBufferException {
+    HbaseMetastoreProto.MasterKey protoKey = HbaseMetastoreProto.MasterKey.parseFrom(value);
+    return protoKey.getMasterKey();
   }
 
   /**
