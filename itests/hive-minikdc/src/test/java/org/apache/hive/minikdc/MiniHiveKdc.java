@@ -102,7 +102,7 @@ public class MiniHiveKdc {
     miniKdc.start();
 
     // create default users
-    addUserPrincipal(getServicePrincipalForUser(HIVE_SERVICE_PRINCIPAL));
+    addUserPrincipal(getServicePrincipalForUser(HIVE_SERVICE_PRINCIPAL, null));
     addUserPrincipal(HIVE_TEST_USER_1);
     addUserPrincipal(HIVE_TEST_USER_2);
     addUserPrincipal(HIVE_TEST_SUPER_USER);
@@ -120,6 +120,10 @@ public class MiniHiveKdc {
     File keytab = new File(workDir, "miniKdc" + keyTabCounter++ + ".keytab");
     miniKdc.createPrincipal(keytab, principal);
     userPrincipals.put(principal, keytab.getPath());
+  }
+
+  public void addServicePrincipalWithHost(String host) throws Exception {
+    addUserPrincipal(getServicePrincipalForUser(HIVE_SERVICE_PRINCIPAL, host));
   }
 
   /**
@@ -143,20 +147,31 @@ public class MiniHiveKdc {
     return shortUserName + "@" + miniKdc.getRealm();
   }
 
-  public String getFullyQualifiedServicePrincipal(String shortUserName) {
-    return getServicePrincipalForUser(shortUserName) + "@" + miniKdc.getRealm();
+  public String getFullyQualifiedServicePrincipal(String shortUserName, String host) {
+    return getServicePrincipalForUser(shortUserName, host) + "@" + miniKdc.getRealm();
   }
 
-  public String getServicePrincipalForUser(String shortUserName) {
-    return shortUserName + "/" + miniKdc.getHost();
+  public String getServicePrincipalForUser(String shortUserName, String host) {
+    if (host == null)
+      return shortUserName + "/" + miniKdc.getHost();
+    else
+      return shortUserName + "/" + host;
   }
 
   public String getHiveServicePrincipal() {
-    return getServicePrincipalForUser(HIVE_SERVICE_PRINCIPAL);
+    return getHiveServicePrincipal(null);
+  }
+
+  public String getHiveServicePrincipal(String host) {
+    return getServicePrincipalForUser(HIVE_SERVICE_PRINCIPAL, host);
   }
 
   public String getFullHiveServicePrincipal() {
-    return getServicePrincipalForUser(HIVE_SERVICE_PRINCIPAL) + "@" + miniKdc.getRealm();
+    return getFullHiveServicePrincipal(null);
+  }
+
+  public String getFullHiveServicePrincipal(String host) {
+    return getServicePrincipalForUser(HIVE_SERVICE_PRINCIPAL, host) + "@" + miniKdc.getRealm();
   }
 
   public String getDefaultUserPrincipal() {
@@ -216,9 +231,9 @@ public class MiniHiveKdc {
   public static MiniHS2 getMiniHS2WithKerbWithRemoteHMS(MiniHiveKdc miniHiveKdc, HiveConf hiveConf,
       String authType) throws Exception {
     String hivePrincipal =
-        miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+        miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL, null);
     String hiveKeytab = miniHiveKdc.getKeyTabFile(
-        miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL));
+        miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL, null));
 
     return new MiniHS2.Builder().withConf(hiveConf).withRemoteMetastore().
         withMiniKdc(hivePrincipal, hiveKeytab).withAuthenticationType(authType).build();

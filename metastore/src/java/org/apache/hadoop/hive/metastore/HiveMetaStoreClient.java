@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -130,6 +133,8 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
@@ -428,11 +433,37 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     int clientSocketTimeout = (int) conf.getTimeVar(
         ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
+    Socket socket = null;
+    String hiveHost = null;
+    try {
+      UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
+      if (loginUser != null && loginUser.hasKerberosCredentials()) {
+        hiveHost = SecurityUtil.getHostFromPrincipal(loginUser.getUserName());
+      }
+    } catch (IOException ioe) {
+       LOG.error("Couldn't create client transport", ioe);
+       throw new MetaException(ioe.toString());
+    }
+
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
         LOG.info("Trying to connect to metastore with URI " + store);
         try {
-          transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+          try {
+            TSocket tsocket = new TSocket(store.getHost(), store.getPort(), 1000 * clientSocketTimeout);
+            if (hiveHost != null && !hiveHost.isEmpty())  {
+              socket = tsocket.getSocket();
+              InetAddress localAddr = NetUtils.getLocalInetAddress(hiveHost);
+              if (localAddr != null)
+                socket.bind(new InetSocketAddress(localAddr, 0));
+            }
+            transport = tsocket;
+          } catch (IOException ioe) {
+              LOG.error("Couldn't create client transport to HiveMetastore("
+                + store.getHost() + ":" + store.getPort() + ")", ioe);
+              throw new MetaException(ioe.toString());
+          }
+
           if (useSasl) {
             // Wrap thrift connection with SASL for secure connection.
             try {
