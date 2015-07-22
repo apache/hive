@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -288,7 +289,7 @@ public final class PlanUtils {
     tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
     //enable extended nesting levels
     tblDesc.getProperties().setProperty(
-        LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");
+    		LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS, "true");
     return tblDesc;
   }
 

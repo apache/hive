@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -25,13 +27,20 @@ import junit.framework.TestCase;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.SimpleMapEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
+import org.apache.hadoop.hive.serde2.objectinspector.TestSimpleMapEqualComparer.TextStringMapHolder;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -79,41 +88,7 @@ public class TestLazySimpleSerDe extends TestCase {
     }
   }
 
-  private void deserializeAndSerialize(LazySimpleSerDe serDe, Text t, String s,
-      Object[] expectedFieldsData) throws SerDeException {
-    // Get the row structure
-    StructObjectInspector oi = (StructObjectInspector) serDe
-        .getObjectInspector();
-    List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
-    assertEquals(expectedFieldsData.length, fieldRefs.size());
 
-    // Deserialize
-    Object row = serDe.deserialize(t);
-    for (int i = 0; i < fieldRefs.size(); i++) {
-      Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
-      if (fieldData != null) {
-        fieldData = ((LazyPrimitive) fieldData).getWritableObject();
-      }
-      assertEquals("Field " + i, expectedFieldsData[i], fieldData);
-    }
-    // Serialize
-    assertEquals(Text.class, serDe.getSerializedClass());
-    Text serializedText = (Text) serDe.serialize(row, oi);
-    assertEquals("Serialized data", s, serializedText.toString());
-  }
-
-  private Properties createProperties() {
-    Properties tbl = new Properties();
-
-    // Set the configuration parameters
-    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
-    tbl.setProperty("columns",
-        "abyte,ashort,aint,along,adouble,astring,anullint,anullstring");
-    tbl.setProperty("columns.types",
-        "tinyint:smallint:int:bigint:double:string:int:string");
-    tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
-    return tbl;
-  }
 
   /**
    * Test the LazySimpleSerDe class with LastColumnTakesRest option.
@@ -199,5 +174,53 @@ public class TestLazySimpleSerDe extends TestCase {
       throw e;
     }
   }
+  
+  Object serializeAndDeserialize(List<Integer> o1, StructObjectInspector oi1,
+      LazySimpleSerDe serde,
+      LazySerDeParameters serdeParams) throws IOException, SerDeException {
+    ByteStream.Output serializeStream = new ByteStream.Output();
+    LazySimpleSerDe.serialize(serializeStream, o1, oi1, serdeParams
+        .getSeparators(), 0, serdeParams.getNullSequence(), serdeParams
+        .isEscaped(), serdeParams.getEscapeChar(), serdeParams
+        .getNeedsEscape());
+    Text t = new Text(serializeStream.toByteArray());
+    return serde.deserialize(t);
+  }
+  
+  
+  private void deserializeAndSerialize(LazySimpleSerDe serDe, Text t, String s,
+      Object[] expectedFieldsData) throws SerDeException {
+    // Get the row structure
+    StructObjectInspector oi = (StructObjectInspector) serDe
+        .getObjectInspector();
+    List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
+    assertEquals(expectedFieldsData.length, fieldRefs.size());
 
+    // Deserialize
+    Object row = serDe.deserialize(t);
+    for (int i = 0; i < fieldRefs.size(); i++) {
+      Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
+      if (fieldData != null) {
+        fieldData = ((LazyPrimitive) fieldData).getWritableObject();
+      }
+      assertEquals("Field " + i, expectedFieldsData[i], fieldData);
+    }
+    // Serialize
+    assertEquals(Text.class, serDe.getSerializedClass());
+    Text serializedText = (Text) serDe.serialize(row, oi);
+    assertEquals("Serialized data", s, serializedText.toString());
+  }
+
+  private Properties createProperties() {
+    Properties tbl = new Properties();
+
+    // Set the configuration parameters
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty("columns",
+        "abyte,ashort,aint,along,adouble,astring,anullint,anullstring");
+    tbl.setProperty("columns.types",
+        "tinyint:smallint:int:bigint:double:string:int:string");
+    tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
+    return tbl;
+  }
 }

@@ -217,9 +217,9 @@ public final class LazyFactory {
    * @throws SerDeException
    */
   public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
-      byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
+  		byte[] separators, int separatorIndex, Text nullSequence, boolean escaped,
       byte escapeChar, ObjectInspectorOptions option) throws SerDeException {
-    return createLazyObjectInspector(typeInfo, separator, separatorIndex, nullSequence,
+    return createLazyObjectInspector(typeInfo, separators, separatorIndex, nullSequence,
         escaped, escapeChar, false, option);
   }
   
@@ -241,9 +241,9 @@ public final class LazyFactory {
    * @throws SerDeException
    */
   public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
-      byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
+  		byte[] separators, int separatorIndex, Text nullSequence, boolean escaped,
       byte escapeChar) throws SerDeException {
-    return createLazyObjectInspector(typeInfo, separator, separatorIndex, nullSequence,
+    return createLazyObjectInspector(typeInfo, separators, separatorIndex, nullSequence,
         escaped, escapeChar, false, ObjectInspectorOptions.JAVA);
   }
 
@@ -262,9 +262,9 @@ public final class LazyFactory {
    * @throws SerDeException
    */
   public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
-      byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
+  		byte[] separators, int separatorIndex, Text nullSequence, boolean escaped,
       byte escapeChar, boolean extendedBooleanLiteral) throws SerDeException {
-    return createLazyObjectInspector(typeInfo, separator, separatorIndex, nullSequence, escaped,
+    return createLazyObjectInspector(typeInfo, separators, separatorIndex, nullSequence, escaped,
         escapeChar, extendedBooleanLiteral, ObjectInspectorOptions.JAVA);
   }
   
@@ -283,7 +283,7 @@ public final class LazyFactory {
    * @throws SerDeException
    */
   public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
-      byte[] separator, int separatorIndex, Text nullSequence, boolean escaped,
+  		byte[] separators, int separatorIndex, Text nullSequence, boolean escaped,
       byte escapeChar, boolean extendedBooleanLiteral, ObjectInspectorOptions option) throws SerDeException {
     ObjectInspector.Category c = typeInfo.getCategory();
     switch (c) {
@@ -293,18 +293,18 @@ public final class LazyFactory {
     case MAP:
       return LazyObjectInspectorFactory.getLazySimpleMapObjectInspector(
           createLazyObjectInspector(((MapTypeInfo) typeInfo)
-          .getMapKeyTypeInfo(), separator, separatorIndex + 2,
+          .getMapKeyTypeInfo(), separators, separatorIndex + 2,
           nullSequence, escaped, escapeChar, extendedBooleanLiteral, option), createLazyObjectInspector(
-          ((MapTypeInfo) typeInfo).getMapValueTypeInfo(), separator,
+          ((MapTypeInfo) typeInfo).getMapValueTypeInfo(), separators,
           separatorIndex + 2, nullSequence, escaped, escapeChar, extendedBooleanLiteral, option),
-          LazyUtils.getSeparator(separator, separatorIndex),
-          LazyUtils.getSeparator(separator, separatorIndex+1),
+          LazyUtils.getSeparator(separators, separatorIndex),
+          LazyUtils.getSeparator(separators, separatorIndex+1),
           nullSequence, escaped, escapeChar);
     case LIST:
       return LazyObjectInspectorFactory.getLazySimpleListObjectInspector(
           createLazyObjectInspector(((ListTypeInfo) typeInfo)
-          .getListElementTypeInfo(), separator, separatorIndex + 1,
-          nullSequence, escaped, escapeChar, extendedBooleanLiteral, option), LazyUtils.getSeparator(separator, separatorIndex),
+          .getListElementTypeInfo(), separators, separatorIndex + 1,
+          nullSequence, escaped, escapeChar, extendedBooleanLiteral, option), LazyUtils.getSeparator(separators, separatorIndex),
           nullSequence, escaped, escapeChar);
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
@@ -315,27 +315,26 @@ public final class LazyFactory {
           fieldTypeInfos.size());
       for (int i = 0; i < fieldTypeInfos.size(); i++) {
         fieldObjectInspectors.add(createLazyObjectInspector(fieldTypeInfos
-            .get(i), separator, separatorIndex + 1, nullSequence, escaped,
+            .get(i), separators, separatorIndex + 1, nullSequence, escaped,
             escapeChar, extendedBooleanLiteral, option));
       }
       return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
           fieldNames, fieldObjectInspectors,
-          LazyUtils.getSeparator(separator, separatorIndex),
- nullSequence,
+          LazyUtils.getSeparator(separators, separatorIndex),
+          nullSequence,
           false, escaped, escapeChar, option);
     case UNION:
       UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
       List<ObjectInspector> lazyOIs = new ArrayList<ObjectInspector>();
       for (TypeInfo uti : unionTypeInfo.getAllUnionObjectTypeInfos()) {
-        lazyOIs.add(createLazyObjectInspector(uti, separator,
+        lazyOIs.add(createLazyObjectInspector(uti, separators,
             separatorIndex + 1, nullSequence, escaped,
             escapeChar, extendedBooleanLiteral, option));
       }
       return LazyObjectInspectorFactory.getLazyUnionObjectInspector(lazyOIs,
-          LazyUtils.getSeparator(separator, separatorIndex),
+          LazyUtils.getSeparator(separators, separatorIndex),
           nullSequence, escaped, escapeChar);
     }
-
     throw new RuntimeException("Hive LazySerDe Internal error.");
   }
 
@@ -371,7 +370,7 @@ public final class LazyFactory {
    *      boolean, byte)
    */
   public static ObjectInspector createLazyStructInspector(
-      List<String> columnNames, List<TypeInfo> typeInfos, byte[] separators,
+     List<String> columnNames, List<TypeInfo> typeInfos, byte[] separators,
       Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
       byte escapeChar, boolean extendedBooleanLiteral) throws SerDeException {
     ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(

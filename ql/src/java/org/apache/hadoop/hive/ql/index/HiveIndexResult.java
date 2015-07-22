@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -144,7 +144,7 @@ public class HiveIndexResult {
     int firstEnd = 0;
     int i = 0;
     for (int index = 0; index < bytes.length; index++) {
-      if (bytes[index] == LazySimpleSerDe.DefaultSeparators[0]) {
+      if (bytes[index] == LazySerDeParameters.DefaultSeparators[0]) {
         i++;
         firstEnd = index;
       }
@@ -169,7 +169,7 @@ public class HiveIndexResult {
     int currentStart = firstEnd + 1;
     int currentEnd = firstEnd + 1;
     for (; currentEnd < bytes.length; currentEnd++) {
-      if (bytes[currentEnd] == LazySimpleSerDe.DefaultSeparators[1]) {
+      if (bytes[currentEnd] == LazySerDeParameters.DefaultSeparators[1]) {
         String one_offset = new String(bytes, currentStart, currentEnd
             - currentStart);
         Long offset = Long.parseLong(one_offset);
