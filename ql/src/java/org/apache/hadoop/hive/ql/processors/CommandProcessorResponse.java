@@ -19,16 +19,19 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 /**
  * Encapsulates the basic response info returned by classes the implement the
  * <code>CommandProcessor</code> interface. Typically <code>errorMessage</code>
  * and <code>SQLState</code> will only be set if the <code>responseCode</code>
- * is not 0.
+ * is not 0.  Note that often {@code responseCode} ends up the exit value of
+ * command shell process so should keep it to < 127.
  */
 public class CommandProcessorResponse {
   private final int responseCode;
   private final String errorMessage;
+  private final int hiveErrorCode;
   private final String SQLState;
   private final Schema resSchema;
 
@@ -49,6 +52,10 @@ public class CommandProcessorResponse {
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState, Schema schema) {
     this(responseCode, errorMessage, SQLState, schema, null);
   }
+  public CommandProcessorResponse(int responseCode, ErrorMsg canonicalErrMsg, Throwable t, String ... msgArgs) {
+    this(responseCode, canonicalErrMsg.format(msgArgs),
+      canonicalErrMsg.getSQLState(), null, t, canonicalErrMsg.getErrorCode());
+  }
 
   /**
    * Create CommandProcessorResponse object indicating an error.
@@ -63,12 +70,17 @@ public class CommandProcessorResponse {
   }
 
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState,
-      Schema schema, Throwable exception) {
+                                  Schema schema, Throwable exception) {
+    this(responseCode, errorMessage, SQLState, schema, exception, -1);
+  }
+  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState,
+      Schema schema, Throwable exception, int hiveErrorCode) {
     this.responseCode = responseCode;
     this.errorMessage = errorMessage;
     this.SQLState = SQLState;
     this.resSchema = schema;
     this.exception = exception;
+    this.hiveErrorCode = hiveErrorCode;
   }
 
   public int getResponseCode() { return responseCode; }
@@ -76,8 +88,11 @@ public class CommandProcessorResponse {
   public String getSQLState() { return SQLState; }
   public Schema getSchema() { return resSchema; }
   public Throwable getException() { return exception; }
+  public int getErrorCode() { return hiveErrorCode; }
   public String toString() {
-    return "(" + responseCode + "," + errorMessage + "," + SQLState + 
+    return "(" + responseCode + "," + errorMessage + "," +
+      (hiveErrorCode > 0 ? hiveErrorCode + "," : "" ) +
+      SQLState +
       (resSchema == null ? "" : ",") +
       (exception == null ? "" : exception.getMessage()) + ")";
   }

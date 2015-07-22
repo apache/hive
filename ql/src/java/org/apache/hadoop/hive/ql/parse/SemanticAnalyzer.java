@@ -10056,6 +10056,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       viewsExpanded.add(createVwDesc.getViewName());
     }
 
+    switch(ast.getToken().getType()) {
+      case HiveParser.TOK_SET_AUTOCOMMIT:
+        assert ast.getChildCount() == 1;
+        if(ast.getChild(0).getType() == HiveParser.TOK_TRUE) {
+          setAutoCommitValue(true);
+        }
+        else if(ast.getChild(0).getType() == HiveParser.TOK_FALSE) {
+          setAutoCommitValue(false);
+        }
+        else {
+          assert false : "Unexpected child of TOK_SET_AUTOCOMMIT: " + ast.getChild(0).getType();
+        }
+        //fall through
+      case HiveParser.TOK_START_TRANSACTION:
+      case HiveParser.TOK_COMMIT:
+      case HiveParser.TOK_ROLLBACK:
+        SessionState.get().setCommandType(SemanticAnalyzerFactory.getOperation(ast.getToken().getType()));
+        return false;
+    }
     // 4. continue analyzing from the child ASTNode.
     Phase1Ctx ctx_1 = initPhase1Ctx();
     preProcessForInsert(child, qb);
@@ -10178,7 +10197,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // 6. Generate table access stats if required
-    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS) == true) {
+    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS)) {
       TableAccessAnalyzer tableAccessAnalyzer = new TableAccessAnalyzer(pCtx);
       setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
     }
@@ -10201,7 +10220,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isColumnInfoNeedForAuth = SessionState.get().isAuthorizationModeV2()
         && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED);
     if (isColumnInfoNeedForAuth
-        || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS) == true) {
+        || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
       ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess());
     }
@@ -10691,7 +10710,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Add default properties for table property. If a default parameter exists
    * in the tblProp, the value in tblProp will be kept.
    *
-   * @param table
+   * @param tblProp
    *          property map
    * @return Modified table property map
    */

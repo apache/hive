@@ -47,9 +47,9 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@exchange_part_test2
 ds=2013-04-05/hr=1
 PREHOOK: query: ALTER TABLE exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05', hr='1') WITH TABLE exchange_part_test2
-PREHOOK: type: null
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
 POSTHOOK: query: ALTER TABLE exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05', hr='1') WITH TABLE exchange_part_test2
-POSTHOOK: type: null
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
 PREHOOK: query: SHOW PARTITIONS exchange_part_test1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@exchange_part_test1

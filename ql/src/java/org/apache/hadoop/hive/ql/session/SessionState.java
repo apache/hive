@@ -112,7 +112,7 @@ public class SessionState {
   /**
    * current configuration.
    */
-  protected HiveConf conf;
+  private final HiveConf conf;
 
   /**
    * silent mode.
@@ -245,23 +245,6 @@ public class SessionState {
   private HiveTxnManager txnMgr = null;
 
   /**
-   * When {@link #setCurrentTxn(long)} is set to this or {@link #getCurrentTxn()}} returns this it
-   * indicates that there is not a current transaction in this session.
-  */
-  public static final long NO_CURRENT_TXN = -1L;
-
-  /**
-   * Transaction currently open
-   */
-  private long currentTxn = NO_CURRENT_TXN;
-
-  /**
-   * Whether we are in auto-commit state or not.  Currently we are always in auto-commit,
-   * so there are not setters for this yet.
-   */
-  private final boolean txnAutoCommit = true;
-
-  /**
    * store the jars loaded last time
    */
   private final Set<String> preReloadableAuxJars = new HashSet<String>();
@@ -289,9 +272,6 @@ public class SessionState {
     return conf;
   }
 
-  public void setConf(HiveConf conf) {
-    this.conf = conf;
-  }
 
   public File getTmpOutputFile() {
     return tmpOutputFile;
@@ -400,18 +380,6 @@ public class SessionState {
 
   public HiveTxnManager getTxnMgr() {
     return txnMgr;
-  }
-
-  public long getCurrentTxn() {
-    return currentTxn;
-  }
-
-  public void setCurrentTxn(long currTxn) {
-    currentTxn = currTxn;
-  }
-
-  public boolean isAutoCommit() {
-    return txnAutoCommit;
   }
 
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {

@@ -50,5 +50,5 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@ex_table2
 part=part1
 PREHOOK: query: ALTER TABLE ex_table1 EXCHANGE PARTITION (part='part1') WITH TABLE ex_table2
-PREHOOK: type: null
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Got exception: java.io.IOException Cannot rename the source path. The destination path already exists.)

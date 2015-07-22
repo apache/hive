@@ -499,6 +499,12 @@ booleanValue
     KW_TRUE^ | KW_FALSE^
     ;
 
+booleanValueTok
+   :
+   KW_TRUE -> TOK_TRUE
+   | KW_FALSE -> TOK_FALSE
+   ;
+
 tableOrPartition
    :
    tableName partitionSpec? -> ^(TOK_TAB tableName partitionSpec?)
@@ -629,7 +635,18 @@ nonReserved
     | KW_STREAMTABLE | KW_STRING | KW_STRUCT | KW_TABLES | KW_TBLPROPERTIES | KW_TEMPORARY | KW_TERMINATED
     | KW_TINYINT | KW_TOUCH | KW_TRANSACTIONS | KW_UNARCHIVE | KW_UNDO | KW_UNIONTYPE | KW_UNLOCK | KW_UNSET
     | KW_UNSIGNED | KW_URI | KW_USE | KW_UTC | KW_UTCTIMESTAMP | KW_VALUE_TYPE | KW_VIEW | KW_WHILE | KW_YEAR
-    ;
+    | KW_WORK
+    | KW_START
+    | KW_TRANSACTION
+    | KW_COMMIT
+    | KW_ROLLBACK
+    | KW_ONLY
+    | KW_WRITE
+    | KW_ISOLATION
+    | KW_LEVEL
+    | KW_SNAPSHOT
+    | KW_AUTOCOMMIT
+;
 
 //The following SQL2011 reserved keywords are used as cast function name only, it is a subset of the sql11ReservedKeywordsUsedAsIdentifier.
 sql11ReservedKeywordsUsedAsCastFunctionName

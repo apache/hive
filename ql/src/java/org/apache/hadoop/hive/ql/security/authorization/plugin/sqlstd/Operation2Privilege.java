@@ -400,6 +400,17 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.GET_COLUMNS,
         PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
 
+    op2Priv.put(HiveOperationType.START_TRANSACTION, PrivRequirement.newIOPrivRequirement
+      (null, null));
+    op2Priv.put(HiveOperationType.COMMIT, PrivRequirement.newIOPrivRequirement
+      (null, null));
+    op2Priv.put(HiveOperationType.ROLLBACK, PrivRequirement.newIOPrivRequirement
+      (null, null));
+    op2Priv.put(HiveOperationType.SET_AUTOCOMMIT, PrivRequirement.newIOPrivRequirement
+      (null, null));
+    op2Priv.put(HiveOperationType.ALTERTABLE_EXCHANGEPARTITION,
+      PrivRequirement.newIOPrivRequirement(null, null));
+
   }
 
   /**
