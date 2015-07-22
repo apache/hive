@@ -2366,4 +2366,20 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
       assertTrue(accumulatedLogs.contains(expectedLog));
     }
   }
+  @Test
+  public void testPrepareSetDate() throws Exception {
+    try {
+      String sql = "select * from " + dataTypeTableName + " where c20 = ?";
+      PreparedStatement ps = con.prepareStatement(sql);
+      java.sql.Date dtValue = java.sql.Date.valueOf("2013-01-01");
+      ps.setDate(1, dtValue);
+      ResultSet res = ps.executeQuery();
+      assertTrue(res.next());
+      assertEquals("2013-01-01", res.getString(20));
+      ps.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail(e.toString());
+    }
+  }
 }

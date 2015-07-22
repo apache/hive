@@ -1,0 +1,13 @@
+Ln:1 DECLARE var1 INT = 3
+Ln:2 PRINT
+C
+Ln:3 PRINT
+C
+Ln:5 SET var1 = 1
+Ln:6 PRINT
+A
+Ln:8 SET var1 = NULL
+Ln:9 PRINT
+C
+Ln:10 PRINT
+C

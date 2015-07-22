@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.merge.orcfile.stripe.level=false;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;

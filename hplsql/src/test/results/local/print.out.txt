@@ -1,0 +1,6 @@
+Ln:1 PRINT
+1
+Ln:2 PRINT
+abc
+Ln:3 PRINT
+abc

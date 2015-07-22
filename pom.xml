@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>1.3.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -39,6 +39,7 @@
     <module>contrib</module>
     <module>hbase-handler</module>
     <module>hcatalog</module>
+    <module>hplsql</module>
     <module>hwi</module>
     <module>jdbc</module>
     <module>metastore</module>
@@ -53,7 +54,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>1.3.0</hive.version.shortname>
+    <hive.version.shortname>2.0.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -74,6 +75,7 @@
 
     <!-- To add additional exclude patterns set this property -->
     <test.excludes.additional></test.excludes.additional>
+    <skip.spark.files></skip.spark.files>
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
@@ -115,7 +117,7 @@
     <commons-logging.version>1.1.3</commons-logging.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
-    <derby.version>10.11.1.1</derby.version>
+    <derby.version>10.10.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>14.0.1</guava.version>
     <groovy.version>2.1.6</groovy.version>
@@ -151,7 +153,7 @@
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.23.Final</netty.version>
-    <parquet.version>1.6.0</parquet.version>
+    <parquet.version>1.7.0</parquet.version>
     <pig.version>0.12.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
@@ -173,6 +175,7 @@
     <curator.version>2.6.0</curator.version>
     <jsr305.version>3.0.0</jsr305.version>
     <tephra.version>0.4.0</tephra.version>
+    <gson.version>2.2.4</gson.version>
   </properties>
 
   <repositories>
@@ -257,12 +260,12 @@
         <version>${bonecp.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.twitter</groupId>
-        <artifactId>parquet-hadoop-bundle</artifactId>
+        <groupId>org.apache.parquet</groupId>
+        <artifactId>parquet</artifactId>
         <version>${parquet.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.twitter</groupId>
+        <groupId>org.apache.parquet</groupId>
         <artifactId>parquet-column</artifactId>
         <version>${parquet.version}</version>
         <classifier>tests</classifier>
@@ -824,8 +827,8 @@
             <exclude>**/ql/exec/vector/udf/legacy/*.java</exclude>
             <exclude>**/ql/exec/vector/udf/generic/*.java</exclude>
             <exclude>**/TestHiveServer2Concurrency.java</exclude>
-            <exclude>**/TestHiveMetaStore.java</exclude>
             <exclude>${test.excludes.additional}</exclude>
+            <exclude>${skip.spark.files}</exclude>
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -1206,6 +1209,19 @@
         <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
         <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>
         <test.log4j.scheme>file:/</test.log4j.scheme>
+      </properties>
+    </profile>
+    <profile>
+      <id>spark-test</id>
+      <activation>
+	<property>
+          <name>!skipSparkTests</name>
+	</property>
+      </activation>
+      <properties>
+        <skip.spark.files>
+          **/ql/exec/spark/session/TestSparkSessionManagerImpl.java,**/TestMultiSessionsHS2WithLocalClusterSpark.java,**/TestJdbcWithLocalClusterSpark.java
+        </skip.spark.files>
       </properties>
     </profile>
   </profiles>

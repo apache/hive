@@ -3,7 +3,6 @@ CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMIN
 LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1;
 
 set hive.optimize.ppd = false;
-set hive.cbo.enable = false;
 
 -- This filter is not pushed down
 EXPLAIN

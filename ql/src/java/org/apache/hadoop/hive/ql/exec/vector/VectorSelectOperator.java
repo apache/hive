@@ -129,8 +129,6 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     }
 
     // Prepare output, set the projections
-    VectorExpressionWriter [] originalValueWriters = vrg.valueWriters;
-    vrg.setValueWriters(valueWriters);
     int[] originalProjections = vrg.projectedColumns;
     int originalProjectionSize = vrg.projectionSize;
     vrg.projectionSize = vExpressions.length;
@@ -140,7 +138,6 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     // Revert the projected columns back, because vrg will be re-used.
     vrg.projectionSize = originalProjectionSize;
     vrg.projectedColumns = originalProjections;
-    vrg.valueWriters = originalValueWriters;
   }
 
   static public String getOperatorName() {

@@ -33,10 +33,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -61,6 +59,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -392,6 +391,97 @@ public class TestInputOutputFormat {
     conf.set("mapred.input.dir", "/a/b/c\\,d,/e/f\\,g/h");
     assertArrayEquals(new Path[]{new Path("/a/b/c,d"), new Path("/e/f,g/h")},
         OrcInputFormat.getInputPaths(conf));
+  }
+
+  private FileSystem generateMockFiles(final int count, final int size) {
+    final byte[] data = new byte[size];
+    MockFile[] files = new MockFile[count];
+    for (int i = 0; i < count; i++) {
+      files[i] = new MockFile(String.format("mock:/a/b/part-%d", i), size, data);
+    }
+    return new MockFileSystem(conf, files);
+  }
+
+  @Test
+  public void testSplitStrategySelection() throws Exception {
+
+    conf.set("mapreduce.input.fileinputformat.split.maxsize", "500");
+    conf.setLong(HiveConf.ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE.varname,
+        100);
+    final int[] counts = { 1, 10, 100, 256 };
+    final int[] sizes = { 100, 1000 };
+    final int[] numSplits = { 1, 9, 10, 11, 99, 111 };
+    final String[] strategyResults = new String[] {
+    "ETLSplitStrategy", /* 1 files x 100 size for 1 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 9 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 10 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 11 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 99 splits */
+    "ETLSplitStrategy", /* 1 files x 100 size for 111 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 1 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 9 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 10 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 11 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 99 splits */
+    "ETLSplitStrategy", /* 1 files x 1000 size for 111 splits */
+    "BISplitStrategy", /* 10 files x 100 size for 1 splits */
+    "BISplitStrategy", /* 10 files x 100 size for 9 splits */
+    "ETLSplitStrategy", /* 10 files x 100 size for 10 splits */
+    "ETLSplitStrategy", /* 10 files x 100 size for 11 splits */
+    "ETLSplitStrategy", /* 10 files x 100 size for 99 splits */
+    "ETLSplitStrategy", /* 10 files x 100 size for 111 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 1 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 9 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 10 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 11 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 99 splits */
+    "ETLSplitStrategy", /* 10 files x 1000 size for 111 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 1 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 9 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 10 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 11 splits */
+    "BISplitStrategy", /* 100 files x 100 size for 99 splits */
+    "ETLSplitStrategy", /* 100 files x 100 size for 111 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 1 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 9 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 10 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 11 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 99 splits */
+    "ETLSplitStrategy", /* 100 files x 1000 size for 111 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 1 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 9 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 10 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 11 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 99 splits */
+    "BISplitStrategy", /* 256 files x 100 size for 111 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 1 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 9 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 10 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 11 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 99 splits */
+    "ETLSplitStrategy", /* 256 files x 1000 size for 111 splits */
+    };
+
+    int k = 0;
+
+    for (int c : counts) {
+      for (int s : sizes) {
+        final FileSystem fs = generateMockFiles(c, s);
+        for (int n : numSplits) {
+          final OrcInputFormat.Context context = new OrcInputFormat.Context(
+              conf, n);
+          OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
+              context, fs, new MockPath(fs, "mock:/a/b"));
+          final SplitStrategy splitStrategy = gen.call();
+          assertTrue(
+              String.format(
+                  "Split strategy for %d files x %d size for %d splits", c, s,
+                  n),
+              splitStrategy.getClass().getSimpleName()
+                  .equals(strategyResults[k++]));
+        }
+      }
+    }
   }
 
   @Test
@@ -838,7 +928,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
             fs.getFileStatus(new Path("/a/file")), null, true,
-            new ArrayList<Long>(), true, null, null));
+            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null));
     OrcSplit result = splitter.createSplit(0, 200, null);
     assertEquals(0, result.getStart());
     assertEquals(200, result.getLength());
@@ -879,7 +969,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
             fs.getFileStatus(new Path("/a/file")), null, true,
-            new ArrayList<Long>(), true, null, null));
+            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null));
     List<OrcSplit> results = splitter.call();
     OrcSplit result = results.get(0);
     assertEquals(3, result.getStart());
@@ -901,7 +991,7 @@ public class TestInputOutputFormat {
     conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-      fs.getFileStatus(new Path("/a/file")), null, true, new ArrayList<Long>(),
+      fs.getFileStatus(new Path("/a/file")), null, true, new ArrayList<AcidInputFormat.DeltaMetaData>(),
         true, null, null));
     results = splitter.call();
     for(int i=0; i < stripeSizes.length; ++i) {
@@ -1115,7 +1205,7 @@ public class TestInputOutputFormat {
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
     InputSplit[] splits = in.getSplits(conf, 1);
-    assertTrue(1 == splits.length);
+    assertTrue(0 == splits.length);
     assertEquals(null, serde.getSerDeStats());
   }
 
@@ -1408,7 +1498,7 @@ public class TestInputOutputFormat {
     Path partDir = new Path(conf.get("mapred.input.dir"));
     OrcRecordUpdater writer = new OrcRecordUpdater(partDir,
         new AcidOutputFormat.Options(conf).maximumTransactionId(10)
-            .writingBase(true).bucket(0).inspector(inspector));
+            .writingBase(true).bucket(0).inspector(inspector).finalDestination(partDir));
     for(int i=0; i < 100; ++i) {
       BigRow row = new BigRow(i);
       writer.insert(10, row);
@@ -1559,7 +1649,7 @@ public class TestInputOutputFormat {
     // write a base file in partition 0
     OrcRecordUpdater writer = new OrcRecordUpdater(partDir[0],
         new AcidOutputFormat.Options(conf).maximumTransactionId(10)
-            .writingBase(true).bucket(0).inspector(inspector));
+            .writingBase(true).bucket(0).inspector(inspector).finalDestination(partDir[0]));
     for(int i=0; i < 10; ++i) {
       writer.insert(10, new MyRow(i, 2 * i));
     }
@@ -1572,7 +1662,7 @@ public class TestInputOutputFormat {
     // write a delta file in partition 0
     writer = new OrcRecordUpdater(partDir[0],
         new AcidOutputFormat.Options(conf).maximumTransactionId(10)
-            .writingBase(true).bucket(1).inspector(inspector));
+            .writingBase(true).bucket(1).inspector(inspector).finalDestination(partDir[0]));
     for(int i=10; i < 20; ++i) {
       writer.insert(10, new MyRow(i, 2*i));
     }
@@ -1608,14 +1698,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(625, split.getLength());
+    assertEquals(607, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(647, split.getLength());
+    assertEquals(629, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -1623,7 +1713,7 @@ public class TestInputOutputFormat {
       assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
           combineSplit.getPath(bucket).toString());
       assertEquals(0, combineSplit.getOffset(bucket));
-      assertEquals(253, combineSplit.getLength(bucket));
+      assertEquals(241, combineSplit.getLength(bucket));
     }
     String[] hosts = combineSplit.getLocations();
     assertEquals(2, hosts.length);

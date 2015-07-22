@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
@@ -307,16 +308,16 @@ public class HiveServer2 extends CompositeService {
     HiveConf hiveConf = this.getHiveConf();
     super.stop();
     // Shutdown Metrics
-    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+    if (MetricsFactory.getInstance() != null) {
       try {
-        MetricsFactory.getMetricsInstance().deInit();
+        MetricsFactory.close();
       } catch (Exception e) {
         LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
           + e.getMessage(), e);
       }
     }
     // Remove this server instance from ZooKeeper if dynamic service discovery is set
-    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY)) {
+    if (hiveConf != null && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY)) {
       try {
         removeServerInstanceFromZooKeeper();
       } catch (Exception e) {
@@ -325,7 +326,7 @@ public class HiveServer2 extends CompositeService {
     }
     // There should already be an instance of the session pool manager.
     // If not, ignoring is fine while stopping HiveServer2.
-    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+    if (hiveConf != null && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
       try {
         TezSessionPoolManager.getInstance().stop();
       } catch (Exception e) {
@@ -334,7 +335,7 @@ public class HiveServer2 extends CompositeService {
       }
     }
 
-    if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+    if (hiveConf != null && hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
       try {
         SparkSessionManagerImpl.getInstance().shutdown();
       } catch(Exception ex) {
@@ -351,12 +352,14 @@ public class HiveServer2 extends CompositeService {
       maxAttempts = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS);
       HiveServer2 server = null;
       try {
+        // Cleanup the scratch dir before starting
+        ServerUtils.cleanUpScratchDir(hiveConf);
         server = new HiveServer2();
         server.init(hiveConf);
         server.start();
 
         if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
-          MetricsFactory.getMetricsInstance().init(hiveConf);
+          MetricsFactory.init(hiveConf);
         }
         try {
           JvmPauseMonitor pauseMonitor = new JvmPauseMonitor(hiveConf);

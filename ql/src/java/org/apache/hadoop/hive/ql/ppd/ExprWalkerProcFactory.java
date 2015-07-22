@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.RuleExactMatch;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -267,14 +269,9 @@ public final class ExprWalkerProcFactory {
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
-    exprRules.put(
-        new RuleRegExp("R1", ExprNodeColumnDesc.class.getName() + "%"),
-        getColumnProcessor());
-    exprRules.put(
-        new RuleRegExp("R2", ExprNodeFieldDesc.class.getName() + "%"),
-        getFieldProcessor());
-    exprRules.put(new RuleRegExp("R3", ExprNodeGenericFuncDesc.class.getName()
-        + "%"), getGenericFuncProcessor());
+    exprRules.put(new TypeRule(ExprNodeColumnDesc.class), getColumnProcessor());
+    exprRules.put(new TypeRule(ExprNodeFieldDesc.class), getFieldProcessor());
+    exprRules.put(new TypeRule(ExprNodeGenericFuncDesc.class), getGenericFuncProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -319,9 +316,9 @@ public final class ExprWalkerProcFactory {
       assert ctx.getNewToOldExprMap().containsKey(expr);
       for (int i = 0; i < expr.getChildren().size(); i++) {
         ctx.getNewToOldExprMap().put(
-            (ExprNodeDesc) expr.getChildren().get(i),
+            expr.getChildren().get(i),
             ctx.getNewToOldExprMap().get(expr).getChildren().get(i));
-        extractFinalCandidates((ExprNodeDesc) expr.getChildren().get(i),
+        extractFinalCandidates(expr.getChildren().get(i),
             ctx, conf);
       }
       return;

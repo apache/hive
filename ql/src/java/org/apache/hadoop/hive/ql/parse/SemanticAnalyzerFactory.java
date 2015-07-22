@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.HashMap;
-
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import java.util.HashMap;
 
 /**
  * SemanticAnalyzerFactory.
@@ -114,10 +114,6 @@ public final class SemanticAnalyzerFactory {
   }
 
   static {
-    tablePartitionCommandType.put(
-        HiveParser.TOK_ALTERTABLE_PROTECTMODE,
-        new HiveOperation[] { HiveOperation.ALTERTABLE_PROTECTMODE,
-            HiveOperation.ALTERPARTITION_PROTECTMODE });
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_FILEFORMAT,
         new HiveOperation[] { HiveOperation.ALTERTABLE_FILEFORMAT,
             HiveOperation.ALTERPARTITION_FILEFORMAT });

@@ -4818,7 +4818,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key = 11) (type: boolean)
+                    predicate: (UDFToDouble(key) = 11.0) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string), hr (type: string)
@@ -5047,7 +5047,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key = 11) (type: boolean)
+                    predicate: (UDFToDouble(key) = 11.0) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string), ds (type: string)

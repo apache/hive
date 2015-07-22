@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 set hive.auto.convert.join=false;
 set hive.optimize.correlation=false;
 -- This query has a GroupByOperator folling JoinOperator and they share the same keys.

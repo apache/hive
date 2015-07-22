@@ -941,14 +941,12 @@ Partition Value:    	[foo, 27]
 Database:           	default             	 
 Table:              	over1k_part_orc     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	1424                
+	totalSize           	1400                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -985,14 +983,12 @@ Partition Value:    	[foo, __HIVE_DEFAULT_PARTITION__]
 Database:           	default             	 
 Table:              	over1k_part_orc     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	1128                
+	totalSize           	1102                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1029,14 +1025,12 @@ Partition Value:    	[foo, 27]
 Database:           	default             	 
 Table:              	over1k_part_limit_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
 	numRows             	14                  
 	rawDataSize         	280                 
-	totalSize           	1240                
+	totalSize           	1216                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1073,14 +1067,12 @@ Partition Value:    	[foo, __HIVE_DEFAULT_PARTITION__]
 Database:           	default             	 
 Table:              	over1k_part_limit_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	1128                
+	totalSize           	1102                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1116,14 +1108,12 @@ Partition Value:    	[27]
 Database:           	default             	 
 Table:              	over1k_part_buck_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	4644                
+	totalSize           	4548                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1159,14 +1149,12 @@ Partition Value:    	[__HIVE_DEFAULT_PARTITION__]
 Database:           	default             	 
 Table:              	over1k_part_buck_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2262                
+	totalSize           	2212                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1202,14 +1190,12 @@ Partition Value:    	[27]
 Database:           	default             	 
 Table:              	over1k_part_buck_sort_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	4630                
+	totalSize           	4534                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1245,14 +1231,12 @@ Partition Value:    	[__HIVE_DEFAULT_PARTITION__]
 Database:           	default             	 
 Table:              	over1k_part_buck_sort_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2262                
+	totalSize           	2212                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1791,8 +1775,6 @@ Partition Value:    	[foo, 27]
 Database:           	default             	 
 Table:              	over1k_part2_orc    	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1834,8 +1816,6 @@ t                   	tinyint
 Partition Value:    	[foo, __HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part2_orc    	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1940,8 +1920,6 @@ Partition Value:    	[foo, 27]
 Database:           	default             	 
 Table:              	over1k_part2_orc    	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1983,8 +1961,6 @@ t                   	tinyint
 Partition Value:    	[foo, __HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part2_orc    	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -2256,8 +2232,6 @@ Partition Value:    	[27]
 Database:           	default             	 
 Table:              	over1k_part_buck_sort2_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -2298,8 +2272,6 @@ t                   	tinyint
 Partition Value:    	[__HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part_buck_sort2_orc	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -2475,8 +2447,6 @@ Partition Value:    	[27]
 Database:           	default             	 
 Table:              	over1k_part_buck_sort2_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -2517,8 +2487,6 @@ t                   	tinyint
 Partition Value:    	[__HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part_buck_sort2_orc	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

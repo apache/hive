@@ -1086,6 +1086,9 @@ public class HiveConf extends Configuration {
         "job, process those skewed keys. The same key need not be skewed for all the tables, and so,\n" +
         "the follow-up map-reduce job (for the skewed keys) would be much faster, since it would be a\n" +
         "map-join."),
+    HIVEDYNAMICPARTITIONHASHJOIN("hive.optimize.dynamic.partition.hashjoin", false,
+        "Whether to enable dynamically partitioned hash join optimization. \n" +
+        "This setting is also dependent on enabling hive.auto.convert.join"),
     HIVECONVERTJOIN("hive.auto.convert.join", true,
         "Whether Hive enables the optimization about converting common join into mapjoin based on the input file size"),
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true,
@@ -1745,7 +1748,7 @@ public class HiveConf extends Configuration {
     HIVE_LOG_EXPLAIN_OUTPUT("hive.log.explain.output", false,
         "Whether to log explain output for every query.\n" +
         "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level."),
-    HIVE_EXPLAIN_USER("hive.explain.user", false,
+    HIVE_EXPLAIN_USER("hive.explain.user", true,
         "Whether to show explain result at user level.\n" +
         "When enabled, will log EXPLAIN output for the query at user level."),
 
@@ -1765,8 +1768,8 @@ public class HiveConf extends Configuration {
         "Hive metrics subsystem implementation class."),
     HIVE_METRICS_REPORTER("hive.service.metrics.reporter", "JSON_FILE, JMX",
         "Reporter type for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics, comma separated list of JMX, CONSOLE, JSON_FILE"),
-    HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "file:///tmp/my-logging.properties",
-        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of JSON metrics file.  " +
+    HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "/tmp/report.json",
+        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of local JSON metrics file.  " +
         "This file will get overwritten at every interval."),
     HIVE_METRICS_JSON_FILE_INTERVAL("hive.service.metrics.file.frequency", "5s",
         new TimeValidator(TimeUnit.MILLISECONDS),
@@ -1829,6 +1832,8 @@ public class HiveConf extends Configuration {
         "Transport mode of HiveServer2."),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
         "Bind host on which to run the HiveServer2 Thrift service."),
+    HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
+        "enable parallel compilation between sessions on HiveServer2. The default is false."),
 
     // http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001,
@@ -1947,6 +1952,27 @@ public class HiveConf extends Configuration {
          " order specified until a connection is successful."),
     HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null, "LDAP base DN"),
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null, ""),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN("hive.server2.authentication.ldap.groupDNPattern", null,
+        "COLON-separated list of patterns to use to find DNs for group entities in this directory.\n" +
+        "Use %s where the actual group name is to be substituted for.\n" +
+        "For example: CN=%s,CN=Groups,DC=subdomain,DC=domain,DC=com."),
+    HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER("hive.server2.authentication.ldap.groupFilter", null,
+        "COMMA-separated list of LDAP Group names (short name not full DNs).\n" +
+        "For example: HiveAdmins,HadoopAdmins,Administrators"),
+    HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN("hive.server2.authentication.ldap.userDNPattern", null,
+        "COLON-separated list of patterns to use to find DNs for users in this directory.\n" +
+        "Use %s where the actual group name is to be substituted for.\n" +
+        "For example: CN=%s,CN=Users,DC=subdomain,DC=domain,DC=com."),
+    HIVE_SERVER2_PLAIN_LDAP_USERFILTER("hive.server2.authentication.ldap.userFilter", null,
+        "COMMA-separated list of LDAP usernames (just short names, not full DNs).\n" +
+        "For example: hiveuser,impalauser,hiveadmin,hadoopadmin"),
+    HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY("hive.server2.authentication.ldap.customLDAPQuery", null,
+        "A full LDAP query that LDAP Atn provider uses to execute against LDAP Server.\n" +
+        "If this query returns a null resultset, the LDAP Provider fails the Authentication\n" +
+        "request, succeeds if the user is part of the resultset." +
+        "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
+        "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
+        "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
         "Custom authentication class. Used when property\n" +
         "'hive.server2.authentication' is set to 'CUSTOM'. Provided class\n" +
@@ -2235,7 +2261,11 @@ public class HiveConf extends Configuration {
         new StringSet("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
        "directories that are partition-like but contain unsupported characters. 'throw' (an " +
        "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
-       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)");
+       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
+    HIVE_TEZ_ENABLE_MEMORY_MANAGER("hive.tez.enable.memory.manager", true,
+        "Enable memory manager for tez"),
+    HIVE_HASH_TABLE_INFLATION_FACTOR("hive.hash.table.inflation.factor", (float) 2.0,
+	"Expected inflation factor between disk/in memory representation of hash tables");
 
 
     public final String varname;
@@ -2970,6 +3000,7 @@ public class HiveConf extends Configuration {
     "mapred\\.min\\.split\\.size",
     "mapreduce\\.job\\.reduce\\.slowstart\\.completedmaps",
     "mapreduce\\.job\\.queuename",
+    "mapreduce\\.job\\.tags",
     "mapreduce\\.input\\.fileinputformat\\.split\\.minsize",
     "mapreduce\\.map\\..*",
     "mapreduce\\.reduce\\..*",
@@ -2979,6 +3010,7 @@ public class HiveConf extends Configuration {
     "tez\\.task\\..*",
     "tez\\.runtime\\..*",
     "tez.queue.name",
+
   };
 
 

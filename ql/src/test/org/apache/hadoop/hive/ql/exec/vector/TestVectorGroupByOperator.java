@@ -2268,7 +2268,7 @@ public class TestVectorGroupByOperator {
 
     GroupByDesc desc = buildGroupByDescType(ctx, "count", "A", TypeInfoFactory.longTypeInfo);
     VectorGroupByDesc vectorDesc = desc.getVectorDesc();
-    vectorDesc.setIsReduce(true);
+    vectorDesc.setIsReduceMergePartial(true);
 
     VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
 

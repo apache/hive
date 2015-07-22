@@ -28,6 +28,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This is in org.apache.hadoop.mapred package because it relies on
@@ -108,6 +110,14 @@ public class WebHCatJTShim20S implements WebHCatJTShim {
   @Override
   public void killJobs(String tag, long timestamp) {
     return;
+  }
+  /**
+   * Get jobs is only supported on hadoop 2.0+.
+   */
+  @Override
+  public Set<String> getJobs(String tag, long timestamp)
+  {
+    return new HashSet<String>();
   }
 }
 

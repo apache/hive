@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
+
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +40,8 @@ import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.cli.CommonCliOptions;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -184,12 +187,16 @@ import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
@@ -198,6 +205,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
 import javax.jdo.JDOException;
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -225,7 +233,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.*;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
 /**
  * TODO:pc remove application logic to a separate interface.
@@ -294,14 +304,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private static final ThreadLocal<RawStore> threadLocalMS =
         new ThreadLocal<RawStore>() {
           @Override
-          protected synchronized RawStore initialValue() {
+          protected RawStore initialValue() {
             return null;
           }
         };
 
     private static final ThreadLocal<TxnHandler> threadLocalTxn = new ThreadLocal<TxnHandler>() {
       @Override
-      protected synchronized TxnHandler initialValue() {
+      protected TxnHandler initialValue() {
         return null;
       }
     };
@@ -319,7 +329,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private static final ThreadLocal<Configuration> threadLocalConf =
         new ThreadLocal<Configuration>() {
           @Override
-          protected synchronized Configuration initialValue() {
+          protected Configuration initialValue() {
             return null;
           }
         };
@@ -371,7 +381,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private static int nextSerialNum = 0;
     private static ThreadLocal<Integer> threadLocalId = new ThreadLocal<Integer>() {
       @Override
-      protected synchronized Integer initialValue() {
+      protected Integer initialValue() {
         return new Integer(nextSerialNum++);
       }
     };
@@ -381,7 +391,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // instance of TSocket.
     private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
       @Override
-      protected synchronized String initialValue() {
+      protected String initialValue() {
         return null;
       }
     };
@@ -761,9 +771,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter(function);
       logInfo((getIpAddress() == null ? "" : "source:" + getIpAddress() + " ") +
           function + extraLogInfo);
-      if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
+      if (MetricsFactory.getInstance() != null) {
         try {
-          MetricsFactory.getMetricsInstance().startScope(function);
+          MetricsFactory.getInstance().startScope(function);
         } catch (IOException e) {
           LOG.debug("Exception when starting metrics scope"
             + e.getClass().getName() + " " + e.getMessage(), e);
@@ -805,9 +815,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void endFunction(String function, MetaStoreEndFunctionContext context) {
-      if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
+      if (MetricsFactory.getInstance() != null) {
         try {
-          MetricsFactory.getMetricsInstance().endScope(function);
+          MetricsFactory.getInstance().endScope(function);
         } catch (IOException e) {
           LOG.debug("Exception when closing metrics scope" + e);
         }
@@ -832,14 +842,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.shutdown();
         } finally {
           threadLocalMS.remove();
-        }
-      }
-      if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
-        try {
-          MetricsFactory.deInit();
-        } catch (Exception e) {
-          LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
-            + e.getMessage(), e);
         }
       }
       logInfo("Metastore shutdown complete.");
@@ -1514,17 +1516,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
-
-        /**
-         * Trash may be skipped iff:
-         * 1. deleteData == true, obviously.
-         * 2. tbl is external.
-         * 3. Either
-         *  3.1. User has specified PURGE from the commandline, and if not,
-         *  3.2. User has set the table to auto-purge.
-         */
-        ifPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
-          || (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+        ifPurge = isMustPurge(envContext, tbl);
 
         firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
@@ -1559,19 +1551,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         // tblPath will be null when tbl is a view. We skip the following if block in that case.
-        if(tblPath != null && !ifPurge) {
-          String trashInterval = hiveConf.get("fs.trash.interval");
-          boolean trashEnabled = trashInterval != null && trashInterval.length() > 0
-            && Float.parseFloat(trashInterval) > 0;
-          if (trashEnabled) {
-            HadoopShims.HdfsEncryptionShim shim =
-              ShimLoader.getHadoopShims().createHdfsEncryptionShim(FileSystem.get(hiveConf), hiveConf);
-            if (shim.isPathEncrypted(tblPath)) {
-              throw new MetaException("Unable to drop table because it is in an encryption zone" +
-                " and trash is enabled.  Use PURGE option to skip trash.");
-            }
-          }
-        }
+        checkTrashPurgeCombination(tblPath, dbname + "." + name, ifPurge);
         // Drop the partitions and get a list of locations which need to be deleted
         partPaths = dropPartitionsAndGetLocations(ms, dbname, name, tblPath,
             tbl.getPartitionKeys(), deleteData && !isExternal);
@@ -1600,6 +1580,41 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return success;
+    }
+
+    /**
+     * Will throw MetaException if combination of trash policy/purge can't be satisfied
+     * @param pathToData path to data which may potentially be moved to trash
+     * @param objectName db.table, or db.table.part
+     * @param ifPurge if PURGE options is specified
+     */
+    private void checkTrashPurgeCombination(Path pathToData, String objectName, boolean ifPurge)
+      throws MetaException {
+      if (!(pathToData != null && !ifPurge)) {//pathToData may be NULL for a view
+        return;
+      }
+
+      boolean trashEnabled = false;
+      try {
+	trashEnabled = 0 < hiveConf.getFloat("fs.trash.interval", -1);
+      } catch(NumberFormatException ex) {
+	// nothing to do
+      }
+
+      if (trashEnabled) {
+        try {
+          HadoopShims.HdfsEncryptionShim shim =
+            ShimLoader.getHadoopShims().createHdfsEncryptionShim(FileSystem.get(hiveConf), hiveConf);
+          if (shim.isPathEncrypted(pathToData)) {
+            throw new MetaException("Unable to drop " + objectName + " because it is in an encryption zone" +
+              " and trash is enabled.  Use PURGE option to skip trash.");
+          }
+        } catch (IOException ex) {
+          MetaException e = new MetaException(ex.getMessage());
+          e.initCause(ex);
+          throw e;
+        }
+      }
     }
 
     /**
@@ -1832,9 +1847,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     /**
      * Gets multiple tables from the hive metastore.
      *
-     * @param dbname
+     * @param dbName
      *          The name of the database in which the tables reside
-     * @param names
+     * @param tableNames
      *          The names of the tables to get.
      *
      * @return A list of tables whose names are in the the list "names" and
@@ -1846,21 +1861,44 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws UnknownDBException
      */
     @Override
-    public List<Table> get_table_objects_by_name(final String dbname, final List<String> names)
+    public List<Table> get_table_objects_by_name(final String dbName, final List<String> tableNames)
         throws MetaException, InvalidOperationException, UnknownDBException {
-      List<Table> tables = null;
-      startMultiTableFunction("get_multi_table", dbname, names);
+      List<Table> tables = new ArrayList<Table>();
+      startMultiTableFunction("get_multi_table", dbName, tableNames);
       Exception ex = null;
-      try {
+      int tableBatchSize = HiveConf.getIntVar(hiveConf,
+          ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
 
-        if (dbname == null || dbname.isEmpty()) {
+      try {
+        if (dbName == null || dbName.isEmpty()) {
           throw new UnknownDBException("DB name is null or empty");
         }
-        if (names == null)
+        if (tableNames == null)
         {
-          throw new InvalidOperationException(dbname + " cannot find null tables");
+          throw new InvalidOperationException(dbName + " cannot find null tables");
         }
-        tables = getMS().getTableObjectsByName(dbname, names);
+
+        // The list of table names could contain duplicates. RawStore.getTableObjectsByName()
+        // only guarantees returning no duplicate table objects in one batch. If we need
+        // to break into multiple batches, remove duplicates first.
+        List<String> distinctTableNames = tableNames;
+        if (distinctTableNames.size() > tableBatchSize) {
+          List<String> lowercaseTableNames = new ArrayList<String>();
+          for (String tableName : tableNames) {
+            lowercaseTableNames.add(HiveStringUtils.normalizeIdentifier(tableName));
+          }
+          distinctTableNames = new ArrayList<String>(new HashSet<String>(lowercaseTableNames));
+        }
+
+        RawStore ms = getMS();
+        int startIndex = 0;
+        // Retrieve the tables from the metastore in batches. Some databases like
+        // Oracle cannot have over 1000 expressions in a in-list
+        while (startIndex < distinctTableNames.size()) {
+          int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
+          tables.addAll(ms.getTableObjectsByName(dbName, distinctTableNames.subList(startIndex, endIndex)));
+          startIndex = endIndex;
+        }
       } catch (Exception e) {
         ex = e;
         if (e instanceof MetaException) {
@@ -1873,7 +1911,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw newMetaException(e);
         }
       } finally {
-        endFunction("get_multi_table", tables != null, ex, join(names, ","));
+        endFunction("get_multi_table", tables != null, ex, join(tableNames, ","));
       }
       return tables;
     }
@@ -2584,7 +2622,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         pathCreated = wh.renameDir(sourcePath, destPath);
         success = ms.commitTransaction();
       } finally {
-        if (!success) {
+        if (!success || !pathCreated) {
           ms.rollbackTransaction();
           if (pathCreated) {
             wh.renameDir(destPath, sourcePath);
@@ -2604,12 +2642,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Partition part = null;
       boolean isArchived = false;
       Path archiveParentDir = null;
+      boolean mustPurge = false;
 
       try {
         ms.openTransaction();
         part = ms.getPartition(db_name, tbl_name, part_vals);
         tbl = get_table_core(db_name, tbl_name);
         firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
+        mustPurge = isMustPurge(envContext, tbl);
 
         if (part == null) {
           throw new NoSuchObjectException("Partition doesn't exist. "
@@ -2620,6 +2660,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (isArchived) {
           archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
           verifyIsWritablePath(archiveParentDir);
+          checkTrashPurgeCombination(archiveParentDir, db_name + "." + tbl_name + "." + part_vals, mustPurge);
         }
         if (!ms.dropPartition(db_name, tbl_name, part_vals)) {
           throw new MetaException("Unable to drop partition");
@@ -2628,22 +2669,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
           partPath = new Path(part.getSd().getLocation());
           verifyIsWritablePath(partPath);
+          checkTrashPurgeCombination(partPath, db_name + "." + tbl_name + "." + part_vals, mustPurge);
         }
       } finally {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
           if (tbl != null && !isExternal(tbl)) {
-            // Data needs deletion. Check if trash may be skipped.
-            // Trash may be skipped iff:
-            //  1. deleteData == true, obviously.
-            //  2. tbl is external.
-            //  3. Either
-            //    3.1. User has specified PURGE from the commandline, and if not,
-            //    3.2. User has set the table to auto-purge.
-            boolean mustPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
-                                ||
-                                 (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
             if (mustPurge) {
               LOG.info("dropPartition() will purge " + partPath + " directly, skipping trash.");
             }
@@ -2673,6 +2705,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return true;
     }
 
+    private static boolean isMustPurge(EnvironmentContext envContext, Table tbl) {
+      // Data needs deletion. Check if trash may be skipped.
+      // Trash may be skipped iff:
+      //  1. deleteData == true, obviously.
+      //  2. tbl is external.
+      //  3. Either
+      //    3.1. User has specified PURGE from the commandline, and if not,
+      //    3.2. User has set the table to auto-purge.
+      return ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+        || (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+
+    }
     private void deleteParentRecursive(Path parent, int depth, boolean mustPurge) throws IOException, MetaException {
       if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmpty(parent)) {
         wh.deleteDir(parent, true, mustPurge);
@@ -2715,10 +2759,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       ms.openTransaction();
       Table tbl = null;
       List<Partition> parts = null;
+      boolean mustPurge = false;
       try {
         // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
         // Great... Maybe we could bypass fetching MPartitions by issuing direct SQL deletes.
         tbl = get_table_core(dbName, tblName);
+        mustPurge = isMustPurge(envContext, tbl);
         int minCount = 0;
         RequestPartsSpec spec = request.getParts();
         List<String> partNames = null;
@@ -2769,10 +2815,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         for (Partition part : parts) {
-          if (!ignoreProtection && !MetaStoreUtils.canDropPartition(tbl, part)) {
-            throw new MetaException("Table " + tbl.getTableName()
-                + " Partition " + part + " is protected from being dropped");
-          }
+
+          // TODO - we need to speed this up for the normal path where all partitions are under
+          // the table and we don't have to stat every partition
 
           firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
           if (colNames != null) {
@@ -2783,11 +2828,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (MetaStoreUtils.isArchived(part)) {
             Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
             verifyIsWritablePath(archiveParentDir);
+            checkTrashPurgeCombination(archiveParentDir, dbName + "." + tblName + "." + part.getValues(), mustPurge);
             archToDelete.add(archiveParentDir);
           }
           if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
             Path partPath = new Path(part.getSd().getLocation());
             verifyIsWritablePath(partPath);
+            checkTrashPurgeCombination(partPath, dbName + "." + tblName + "." + part.getValues(), mustPurge);
             dirsToDelete.add(new PathAndPartValSize(partPath, part.getValues().size()));
           }
         }
@@ -2803,16 +2850,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal(tbl)) {
-          // Data needs deletion. Check if trash may be skipped.
-          // Trash may be skipped iff:
-          //  1. deleteData == true, obviously.
-          //  2. tbl is external.
-          //  3. Either
-          //    3.1. User has specified PURGE from the commandline, and if not,
-          //    3.2. User has set the table to auto-purge.
-          boolean mustPurge = ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
-                              ||
-                              (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
           LOG.info( mustPurge?
                       "dropPartition() will purge partition-directories directly, skipping trash."
                     :  "dropPartition() will move partition-directories to trash-directory.");
@@ -5765,7 +5802,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void main(String[] args) throws Throwable {
     HiveConf.setLoadMetastoreConfig(true);
-    HiveConf conf = new HiveConf(HMSHandler.class);
+    final HiveConf conf = new HiveConf(HMSHandler.class);
 
     HiveMetastoreCli cli = new HiveMetastoreCli(conf);
     cli.parse(args);
@@ -5807,6 +5844,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           HMSHandler.LOG.info(shutdownMsg);
           if (isCliVerbose) {
             System.err.println(shutdownMsg);
+          }
+          if (conf.getBoolVar(ConfVars.METASTORE_METRICS)) {
+            try {
+              MetricsFactory.close();
+            } catch (Exception e) {
+              LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
+                + e.getMessage(), e);
+            }
           }
         }
       });
@@ -5877,7 +5922,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Server will create new threads up to max as necessary. After an idle
       // period, it will destroy threads to keep the number of threads in the
       // pool to min.
-      int maxMessageSize = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXMESSAGESIZE);
+      long maxMessageSize = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXMESSAGESIZE);
       int minWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMINTHREADS);
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
@@ -5944,6 +5989,42 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           .maxWorkerThreads(maxWorkerThreads);
 
       TServer tServer = new TThreadPoolServer(args);
+      TServerEventHandler tServerEventHandler = new TServerEventHandler() {
+        @Override
+        public void preServe() {
+        }
+
+        @Override
+        public ServerContext createContext(TProtocol tProtocol, TProtocol tProtocol1) {
+          try {
+            Metrics metrics = MetricsFactory.getInstance();
+            if (metrics != null) {
+              metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+            }
+          } catch (Exception e) {
+            LOG.warn("Error Reporting Metastore open connection to Metrics system", e);
+          }
+          return null;
+        }
+
+        @Override
+        public void deleteContext(ServerContext serverContext, TProtocol tProtocol, TProtocol tProtocol1) {
+          try {
+            Metrics metrics = MetricsFactory.getInstance();
+            if (metrics != null) {
+              metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+            }
+          } catch (Exception e) {
+            LOG.warn("Error Reporting Metastore close connection to Metrics system", e);
+          }
+        }
+
+        @Override
+        public void processContext(ServerContext serverContext, TTransport tTransport, TTransport tTransport1) {
+        }
+      };
+
+      tServer.setServerEventHandler(tServerEventHandler);
       HMSHandler.LOG.info("Started the new metaserver on port [" + port
           + "]...");
       HMSHandler.LOG.info("Options.minWorkerThreads = "

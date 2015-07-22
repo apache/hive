@@ -300,11 +300,11 @@ STAGE PLANS:
                   alias: vectortab2korc
                   Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: dt (type: date)
-                    outputColumnNames: dt
+                    expressions: concat(concat(concat('Quarter ', UDFToString(UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0) + 1.0)))), '-'), UDFToString(year(dt))) (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: concat(concat(concat('Quarter ', UDFToString(UDFToInteger((((month(dt) - 1) / 3) + 1)))), '-'), UDFToString(year(dt))) (type: string)
+                      keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE

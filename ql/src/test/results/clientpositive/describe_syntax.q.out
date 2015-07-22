@@ -95,7 +95,6 @@ part                	string
 # Detailed Table Information	 	 
 Database:           	db1                 	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -168,7 +167,6 @@ part                	string
 # Detailed Table Information	 	 
 Database:           	db1                 	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -322,8 +320,6 @@ Partition Value:    	[4, 5]
 Database:           	db1                 	 
 Table:              	t1                  	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
 	 	 
@@ -394,8 +390,6 @@ part                	string
 Partition Value:    	[4, 5]              	 
 Database:           	db1                 	 
 Table:              	t1                  	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####

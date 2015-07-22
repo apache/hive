@@ -319,7 +319,8 @@ public class <ClassName> extends VectorAggregateExpression {
         int batchSize,
         int[] selected) {
 
-      for (int i=0; i< batchSize; ++i) {
+      for (int j=0; j< batchSize; ++j) {
+        int i = selected[j];
         myagg.checkValue(inputColumn.vector[i],
           inputColumn.start[i],
           inputColumn.length[i]);

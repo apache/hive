@@ -93,6 +93,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public class StatsUtils {
@@ -250,7 +251,8 @@ public class StatsUtils {
         neededColumns = processNeededColumns(schema, neededColumns);
         AggrStats aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
             neededColumns, partNames);
-        if (null == aggrStats) {
+        if (null == aggrStats || null == aggrStats.getColStats()
+            || aggrStats.getColStatsSize() == 0) {
           // There are some partitions with no state (or we didn't fetch any state).
           // Update the stats with empty list to reflect that in the
           // state/initialize structures.
@@ -1111,6 +1113,16 @@ public class StatsUtils {
         if (colStat != null) {
           colStat.setColumnName(outColName);
           cs.add(colStat);
+        }
+      }
+      // sometimes RowSchema is empty, so fetch stats of columns in exprMap
+      for (Entry<String, ExprNodeDesc> pair : colExprMap.entrySet()) {
+        if (rowSchema.getColumnInfo(pair.getKey()) == null) {
+          ColStatistics colStat = getColStatisticsFromExpression(conf, parentStats, pair.getValue());
+          if (colStat != null) {
+            colStat.setColumnName(pair.getKey());
+            cs.add(colStat);
+          }
         }
       }
 

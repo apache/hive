@@ -128,10 +128,18 @@ class MetaStoreDirectSql {
     convertMapNullsToEmptyStrings =
         HiveConf.getBoolVar(conf, ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
 
-    this.isCompatibleDatastore = ensureDbInit() && runTestQuery();
-    if (isCompatibleDatastore) {
-      LOG.info("Using direct SQL, underlying DB is " + dbType);
+    String jdoIdFactory = HiveConf.getVar(conf, ConfVars.METASTORE_IDENTIFIER_FACTORY);
+    if (! ("datanucleus1".equalsIgnoreCase(jdoIdFactory))){
+      LOG.warn("Underlying metastore does not use 'datanuclues1' for its ORM naming scheme."
+          + " Disabling directSQL as it uses hand-hardcoded SQL with that assumption.");
+      isCompatibleDatastore = false;
+    } else {
+      isCompatibleDatastore = ensureDbInit() && runTestQuery();
+      if (isCompatibleDatastore) {
+        LOG.info("Using direct SQL, underlying DB is " + dbType);
+      }
     }
+
     isAggregateStatsCacheEnabled = HiveConf.getBoolVar(conf, ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED);
     if (isAggregateStatsCacheEnabled) {
       aggrStatsCache = AggregateStatsCache.getInstance(conf);
@@ -170,31 +178,55 @@ class MetaStoreDirectSql {
 
   private boolean ensureDbInit() {
     Transaction tx = pm.currentTransaction();
+    Query dbQuery = null, tblColumnQuery = null, partColumnQuery = null;
     try {
       // Force the underlying db to initialize.
-      pm.newQuery(MDatabase.class, "name == ''").execute();
-      pm.newQuery(MTableColumnStatistics.class, "dbName == ''").execute();
-      pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''").execute();
+      dbQuery = pm.newQuery(MDatabase.class, "name == ''");
+      dbQuery.execute();
+
+      tblColumnQuery = pm.newQuery(MTableColumnStatistics.class, "dbName == ''");
+      tblColumnQuery.execute();
+
+      partColumnQuery = pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''");
+      partColumnQuery.execute();
+
       return true;
     } catch (Exception ex) {
       LOG.warn("Database initialization failed; direct SQL is disabled", ex);
       tx.rollback();
       return false;
+    } finally {
+      if (dbQuery != null) {
+        dbQuery.closeAll();
+      }
+      if (tblColumnQuery != null) {
+        tblColumnQuery.closeAll();
+      }
+      if (partColumnQuery != null) {
+        partColumnQuery.closeAll();
+      }
     }
   }
 
   private boolean runTestQuery() {
     Transaction tx = pm.currentTransaction();
+    Query query = null;
     // Run a self-test query. If it doesn't work, we will self-disable. What a PITA...
     String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
     try {
-      pm.newQuery("javax.jdo.query.SQL", selfTestQuery).execute();
+      query = pm.newQuery("javax.jdo.query.SQL", selfTestQuery);
+      query.execute();
       tx.commit();
       return true;
     } catch (Exception ex) {
       LOG.warn("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", ex);
       tx.rollback();
       return false;
+    }
+    finally {
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -385,14 +417,21 @@ class MetaStoreDirectSql {
   }
 
   private boolean isViewTable(String dbName, String tblName) throws MetaException {
-    String queryText = "select \"TBL_TYPE\" from \"TBLS\"" +
-        " inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" " +
-        " where \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ?";
-    Object[] params = new Object[] { tblName, dbName };
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    query.setUnique(true);
-    Object result = executeWithArray(query, params, queryText);
-    return (result != null) && result.toString().equals(TableType.VIRTUAL_VIEW.toString());
+    Query query = null;
+    try {
+      String queryText = "select \"TBL_TYPE\" from \"TBLS\"" +
+          " inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" " +
+          " where \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ?";
+      Object[] params = new Object[] { tblName, dbName };
+      query = pm.newQuery("javax.jdo.query.SQL", queryText);
+      query.setUnique(true);
+      Object result = executeWithArray(query, params, queryText);
+      return (result != null) && result.toString().equals(TableType.VIRTUAL_VIEW.toString());
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
   }
 
   /**
@@ -1100,6 +1139,7 @@ class MetaStoreDirectSql {
   public AggrStats aggrColStatsForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames, boolean useDensityFunctionForNDVEstimation)
       throws MetaException {
+    if (colNames.isEmpty() || partNames.isEmpty()) return new AggrStats(); // Nothing to aggregate.
     long partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
     List<ColumnStatisticsObj> colStatsList;
     // Try to read from the cache first
@@ -1160,6 +1200,7 @@ class MetaStoreDirectSql {
 
   private long partsFoundForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException {
+    assert !colNames.isEmpty() && !partNames.isEmpty();
     long partsFound = 0;
     boolean doTrace = LOG.isDebugEnabled();
     String queryText = "select count(\"COLUMN_NAME\") from \"PART_COL_STATS\""
@@ -1180,6 +1221,7 @@ class MetaStoreDirectSql {
         partsFound++;
       }
     }
+    query.closeAll();
     return partsFound;
   }
 

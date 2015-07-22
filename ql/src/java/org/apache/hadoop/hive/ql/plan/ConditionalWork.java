@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 /**
  * ConditionalWork.
  *
  */
-@Explain(displayName = "Conditional Operator")
+@Explain(displayName = "Conditional Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ConditionalWork implements Serializable {
   private static final long serialVersionUID = 1L;
   List<? extends Serializable> listWorks;

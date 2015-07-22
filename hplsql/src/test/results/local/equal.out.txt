@@ -1,0 +1,48 @@
+Ln:1 PRINT
+Case 1 = 1
+Ln:2 IF
+Ln:2 IF TRUE executed
+Ln:3 PRINT
+Equal - Correct
+Ln:8 PRINT
+Case 1 == 1
+Ln:9 IF
+Ln:9 IF TRUE executed
+Ln:10 PRINT
+Equal - Correct
+Ln:15 PRINT
+Case 1 <> 3
+Ln:16 IF
+Ln:16 IF TRUE executed
+Ln:17 PRINT
+Not equal - Correct
+Ln:22 PRINT
+Case 1 != 3
+Ln:23 IF
+Ln:23 IF TRUE executed
+Ln:24 PRINT
+Not equal - Correct
+Ln:29 PRINT
+Case 3 > 1
+Ln:30 IF
+Ln:30 IF TRUE executed
+Ln:31 PRINT
+Greater - Correct
+Ln:36 PRINT
+Case 1 < 3
+Ln:37 IF
+Ln:37 IF TRUE executed
+Ln:38 PRINT
+Less - Correct
+Ln:43 PRINT
+Case 3 >= 1
+Ln:44 IF
+Ln:44 IF TRUE executed
+Ln:45 PRINT
+Greater or equal - Correct
+Ln:50 PRINT
+Case 1 <= 3
+Ln:51 IF
+Ln:51 IF TRUE executed
+Ln:52 PRINT
+Less or equal - Correct

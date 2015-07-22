@@ -1,5 +1,3 @@
-set hive.cbo.enable=true;
-
 select * from (
      select * from ( select 1 as id , 'foo' as str_1 from src tablesample(5 rows)) f
  union all

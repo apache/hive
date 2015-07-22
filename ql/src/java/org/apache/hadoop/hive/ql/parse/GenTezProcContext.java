@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -82,6 +83,9 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // walk.
   public Operator<? extends OperatorDesc> parentOfRoot;
 
+  // sequence number is used to name vertices (e.g.: Map 1, Reduce 14, ...)
+  private int sequenceNumber = 0;
+
   // tez task we're currently processing
   public TezTask currentTask;
 
@@ -103,6 +107,10 @@ public class GenTezProcContext implements NodeProcessorCtx{
 
   // map that says which mapjoin belongs to which work item
   public final Map<MapJoinOperator, List<BaseWork>> mapJoinWorkMap;
+
+  // Mapping of reducesink to mapjoin operators
+  // Only used for dynamic partitioned hash joins (mapjoin operator in the reducer)
+  public final Map<Operator<?>, MapJoinOperator> smallTableParentToMapJoinMap;
 
   // a map to keep track of which root generated which work
   public final Map<Operator<?>, BaseWork> rootToWorkMap;
@@ -148,6 +156,11 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // remember the connections between ts and event
   public final Map<TableScanOperator, List<AppMasterEventOperator>> tsToEventMap;
 
+  // When processing dynamic partitioned hash joins, some of the small tables may not get processed
+  // before the mapjoin's parents are removed during GenTezWork.process(). This is to keep
+  // track of which small tables haven't been processed yet.
+  public Map<MapJoinOperator, Set<ReduceSinkOperator>> mapJoinToUnprocessedSmallTableReduceSinks;
+
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
       List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
@@ -164,6 +177,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.leafOperatorToFollowingWork = new LinkedHashMap<Operator<?>, BaseWork>();
     this.linkOpWithWorkMap = new LinkedHashMap<Operator<?>, Map<BaseWork, TezEdgeProperty>>();
     this.linkWorkWithReduceSinkMap = new LinkedHashMap<BaseWork, List<ReduceSinkOperator>>();
+    this.smallTableParentToMapJoinMap = new LinkedHashMap<Operator<?>, MapJoinOperator>();
     this.mapJoinWorkMap = new LinkedHashMap<MapJoinOperator, List<BaseWork>>();
     this.rootToWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
     this.childToWorkMap = new LinkedHashMap<Operator<?>, List<BaseWork>>();
@@ -185,7 +199,13 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.tsToEventMap = new LinkedHashMap<TableScanOperator, List<AppMasterEventOperator>>();
     this.opMergeJoinWorkMap = new LinkedHashMap<Operator<?>, MergeJoinWork>();
     this.currentMergeJoinOperator = null;
+    this.mapJoinToUnprocessedSmallTableReduceSinks = new HashMap<MapJoinOperator, Set<ReduceSinkOperator>>();
 
     rootTasks.add(currentTask);
+  }
+
+  /** Not thread-safe. */
+  public int nextSequenceNumber() {
+     return ++sequenceNumber;
   }
 }

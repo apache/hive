@@ -358,7 +358,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.lengthFor(histogram) +
+        return histogram.lengthFor(model) +
             model.array() + JavaDataModel.PRIMITIVES2 * quantiles.length;
       }
     };

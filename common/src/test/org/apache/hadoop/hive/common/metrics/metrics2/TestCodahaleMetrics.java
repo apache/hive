@@ -22,7 +22,9 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.junit.After;
@@ -63,20 +65,20 @@ public class TestCodahaleMetrics {
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
 
     MetricsFactory.init(conf);
-    metricRegistry = ((CodahaleMetrics) MetricsFactory.getMetricsInstance()).getMetricRegistry();
+    metricRegistry = ((CodahaleMetrics) MetricsFactory.getInstance()).getMetricRegistry();
   }
 
   @After
   public void after() throws Exception {
-    MetricsFactory.deInit();
+    MetricsFactory.close();
   }
 
   @Test
   public void testScope() throws Exception {
     int runs = 5;
     for (int i = 0; i < runs; i++) {
-      MetricsFactory.getMetricsInstance().startScope("method1");
-      MetricsFactory.getMetricsInstance().endScope("method1");
+      MetricsFactory.getInstance().startScope("method1");
+      MetricsFactory.getInstance().endScope("method1");
     }
 
     Timer timer = metricRegistry.getTimers().get("api_method1");
@@ -89,7 +91,7 @@ public class TestCodahaleMetrics {
   public void testCount() throws Exception {
     int runs = 5;
     for (int i = 0; i < runs; i++) {
-      MetricsFactory.getMetricsInstance().incrementCounter("count1");
+      MetricsFactory.getInstance().incrementCounter("count1");
     }
     Counter counter = metricRegistry.getCounters().get("count1");
     Assert.assertEquals(5L, counter.getCount());
@@ -104,8 +106,8 @@ public class TestCodahaleMetrics {
       executorService.submit(new Callable<Void>() {
         @Override
         public Void call() throws Exception {
-          MetricsFactory.getMetricsInstance().startScope("method2");
-          MetricsFactory.getMetricsInstance().endScope("method2");
+          MetricsFactory.getInstance().startScope("method2");
+          MetricsFactory.getInstance().endScope("method2");
           return null;
         }
       });
@@ -121,7 +123,7 @@ public class TestCodahaleMetrics {
   public void testFileReporting() throws Exception {
     int runs = 5;
     for (int i = 0; i < runs; i++) {
-      MetricsFactory.getMetricsInstance().incrementCounter("count2");
+      MetricsFactory.getInstance().incrementCounter("count2");
       Thread.sleep(100);
     }
 
@@ -134,5 +136,45 @@ public class TestCodahaleMetrics {
     JsonNode methodCounterNode = countersNode.path("count2");
     JsonNode countNode = methodCounterNode.path("count");
     Assert.assertEquals(countNode.asInt(), 5);
+  }
+
+  class TestMetricsVariable implements MetricsVariable {
+    private int gaugeVal;
+
+    @Override
+    public Object getValue() {
+      return gaugeVal;
+    }
+    public void setValue(int gaugeVal) {
+      this.gaugeVal = gaugeVal;
+    }
+  };
+
+  @Test
+  public void testGauge() throws Exception {
+    TestMetricsVariable testVar = new TestMetricsVariable();
+    testVar.setValue(20);
+
+    MetricsFactory.getInstance().addGauge("gauge1", testVar);
+    Thread.sleep(2000);
+    byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    JsonNode rootNode = objectMapper.readTree(jsonData);
+    JsonNode gaugesNode = rootNode.path("gauges");
+    JsonNode methodGaugeNode = gaugesNode.path("gauge1");
+    JsonNode countNode = methodGaugeNode.path("value");
+    Assert.assertEquals(countNode.asInt(), testVar.getValue());
+
+    testVar.setValue(40);
+    Thread.sleep(2000);
+
+    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+
+    rootNode = objectMapper.readTree(jsonData);
+    gaugesNode = rootNode.path("gauges");
+    methodGaugeNode = gaugesNode.path("gauge1");
+    countNode = methodGaugeNode.path("value");
+    Assert.assertEquals(countNode.asInt(), testVar.getValue());
   }
 }

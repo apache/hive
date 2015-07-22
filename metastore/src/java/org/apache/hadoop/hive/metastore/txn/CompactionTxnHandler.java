@@ -95,7 +95,7 @@ public class CompactionTxnHandler extends TxnHandler {
         dbConn.rollback();
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database " + e.getMessage());
-        checkRetryable(dbConn, e, "findPotentialCompactions");
+        checkRetryable(dbConn, e, "findPotentialCompactions(maxAborted:" + maxAborted + ")");
       } finally {
         closeDbConn(dbConn);
         closeStmt(stmt);
@@ -133,7 +133,7 @@ public class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to update compaction queue, " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "setRunAs");
+        checkRetryable(dbConn, e, "setRunAs(cq_id:" + cq_id + ",user:" + user +")");
       } finally {
         closeDbConn(dbConn);
         closeStmt(stmt);
@@ -194,7 +194,7 @@ public class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to select next element for compaction, " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "findNextToCompact");
+        checkRetryable(dbConn, e, "findNextToCompact(workerId:" + workerId + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -232,7 +232,7 @@ public class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to update compaction queue " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "markCompacted");
+        checkRetryable(dbConn, e, "markCompacted(" + info + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -374,7 +374,7 @@ public class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to delete from compaction queue " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "markCleaned");
+        checkRetryable(dbConn, e, "markCleaned(" + info + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -465,7 +465,7 @@ public class CompactionTxnHandler extends TxnHandler {
           e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "revokeFromLocalWorkers");
+        checkRetryable(dbConn, e, "revokeFromLocalWorkers(hostname:" + hostname +")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -508,7 +508,7 @@ public class CompactionTxnHandler extends TxnHandler {
           e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "revokeTimedoutWorkers");
+        checkRetryable(dbConn, e, "revokeTimedoutWorkers(timeout:" + timeout + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -565,10 +565,9 @@ public class CompactionTxnHandler extends TxnHandler {
         dbConn.commit();
         return columns;
       } catch (SQLException e) {
-        LOG.error("Failed to find columns to analyze stats on for " + ci.tableName +
-          (ci.partName == null ? "" : "/" + ci.partName), e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "findColumnsWithStats");
+        checkRetryable(dbConn, e, "findColumnsWithStats(" + ci.tableName +
+          (ci.partName == null ? "" : "/" + ci.partName) + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {

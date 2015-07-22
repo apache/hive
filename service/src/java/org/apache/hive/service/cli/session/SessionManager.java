@@ -326,7 +326,7 @@ public class SessionManager extends CompositeService {
 
   private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
     @Override
-    protected synchronized String initialValue() {
+    protected String initialValue() {
       return null;
     }
   };
@@ -345,7 +345,7 @@ public class SessionManager extends CompositeService {
 
   private static ThreadLocal<String> threadLocalUserName = new ThreadLocal<String>(){
     @Override
-    protected synchronized String initialValue() {
+    protected String initialValue() {
       return null;
     }
   };
@@ -364,7 +364,7 @@ public class SessionManager extends CompositeService {
 
   private static ThreadLocal<String> threadLocalProxyUserName = new ThreadLocal<String>(){
     @Override
-    protected synchronized String initialValue() {
+    protected String initialValue() {
       return null;
     }
   };

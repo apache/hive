@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common.metrics;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 import java.io.IOException;
@@ -149,7 +150,6 @@ public class LegacyMetrics implements Metrics {
     }
   }
 
-
   private static final ThreadLocal<HashMap<String, MetricsScope>> threadLocalScopes
     = new ThreadLocal<HashMap<String,MetricsScope>>() {
     @Override
@@ -158,31 +158,16 @@ public class LegacyMetrics implements Metrics {
     }
   };
 
-  private boolean initialized = false;
-
-  public void init(HiveConf conf) throws Exception {
-    if (!initialized) {
-      MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-      mbs.registerMBean(metrics, oname);
-      initialized = true;
-    }
+  public LegacyMetrics(HiveConf conf) throws Exception {
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    mbs.registerMBean(metrics, oname);
   }
 
-  public boolean isInitialized() {
-    return initialized;
-  }
-
-  public Long incrementCounter(String name) throws IOException{
-    if (!initialized) {
-      return null;
-    }
+  public Long incrementCounter(String name) throws IOException {
     return incrementCounter(name,Long.valueOf(1));
   }
 
-  public Long incrementCounter(String name, long increment) throws IOException{
-    if (!initialized) {
-      return null;
-    }
+  public Long incrementCounter(String name, long increment) throws IOException {
     Long value;
     synchronized(metrics) {
       if (!metrics.hasKey(name)) {
@@ -196,24 +181,38 @@ public class LegacyMetrics implements Metrics {
     return value;
   }
 
-  public void set(String name, Object value) throws IOException{
-    if (!initialized) {
-      return;
+  public Long decrementCounter(String name) throws IOException{
+    return decrementCounter(name, Long.valueOf(1));
+  }
+
+  public Long decrementCounter(String name, long decrement) throws IOException {
+    Long value;
+    synchronized(metrics) {
+      if (!metrics.hasKey(name)) {
+        value = Long.valueOf(decrement);
+        set(name, -value);
+      } else {
+        value = ((Long)get(name)) - decrement;
+        set(name, value);
+      }
     }
+    return value;
+  }
+
+  @Override
+  public void addGauge(String name, MetricsVariable variable) {
+    //Not implemented.
+  }
+
+  public void set(String name, Object value) throws IOException{
     metrics.put(name,value);
   }
 
   public Object get(String name) throws IOException{
-    if (!initialized) {
-      return null;
-    }
     return metrics.get(name);
   }
 
   public void startScope(String name) throws IOException{
-    if (!initialized) {
-      return;
-    }
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
@@ -222,9 +221,6 @@ public class LegacyMetrics implements Metrics {
   }
 
   public MetricsScope getScope(String name) throws IOException {
-    if (!initialized) {
-      return null;
-    }
     if (threadLocalScopes.get().containsKey(name)) {
       return threadLocalScopes.get().get(name);
     } else {
@@ -233,13 +229,12 @@ public class LegacyMetrics implements Metrics {
   }
 
   public void endScope(String name) throws IOException{
-    if (!initialized) {
-      return;
-    }
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();
     }
   }
+
+
 
   /**
    * Resets the static context state to initial.
@@ -247,16 +242,14 @@ public class LegacyMetrics implements Metrics {
    *
    * Note that threadLocalScopes ThreadLocal is *not* cleared in this call.
    */
-  public void deInit() throws Exception {
+  public void close() throws Exception {
     synchronized (metrics) {
-      if (initialized) {
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        if (mbs.isRegistered(oname)) {
-          mbs.unregisterMBean(oname);
-        }
-        metrics.clear();
-        initialized = false;
+      MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+      if (mbs.isRegistered(oname)) {
+        mbs.unregisterMBean(oname);
       }
+      metrics.clear();
+      threadLocalScopes.remove();
     }
   }
 }

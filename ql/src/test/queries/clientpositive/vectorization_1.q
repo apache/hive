@@ -1,4 +1,7 @@
 SET hive.vectorized.execution.enabled=true;
+
+-- SORT_QUERY_RESULTS
+
 SELECT VAR_POP(ctinyint),
        (VAR_POP(ctinyint) / -26.28),
        SUM(cfloat),

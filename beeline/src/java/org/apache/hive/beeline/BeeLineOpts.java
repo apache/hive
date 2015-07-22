@@ -80,6 +80,7 @@ class BeeLineOpts implements Completer {
   private String outputFormat = "table";
   private boolean trimScripts = true;
   private boolean allowMultiLineCommand = true;
+  private boolean showConnectedUrl = false;
 
   //This can be set for old behavior of nulls printed as empty strings
   private boolean nullEmptyString = false;
@@ -197,9 +198,9 @@ class BeeLineOpts implements Completer {
 
     String[] names = propertyNames();
     for (int i = 0; names != null && i < names.length; i++) {
+      Object o = beeLine.getReflector().invoke(this, "get" + names[i], new Object[0]);
       props.setProperty(PROPERTY_PREFIX + names[i],
-          beeLine.getReflector().invoke(this, "get" + names[i], new Object[0])
-              .toString());
+          o == null ? "" : o.toString());
     }
     beeLine.debug("properties: " + props.toString());
     return props;
@@ -432,6 +433,14 @@ class BeeLineOpts implements Completer {
 
   public boolean getAutosave() {
     return autosave;
+  }
+
+  public boolean getShowConnectedUrl() {
+    return showConnectedUrl;
+  }
+
+  public void setShowConnectedUrl(boolean showConnectedUrl) {
+    this.showConnectedUrl = showConnectedUrl;
   }
 
   public void setOutputFormat(String outputFormat) {

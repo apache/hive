@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.IOException;
+
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -31,8 +34,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
-
-import java.io.IOException;
 
 /**
  * Fast file merge operator for ORC files.
@@ -72,6 +73,14 @@ public class OrcFileMergeOperator extends
       } else {
         k = (OrcFileKeyWrapper) key;
       }
+
+      // skip incompatible file, files that are missing stripe statistics are set to incompatible
+      if (k.isIncompatFile()) {
+        LOG.warn("Incompatible ORC file merge! Stripe statistics is missing. " + k.getInputPath());
+        incompatFileSet.add(k.getInputPath());
+        return;
+      }
+
       filePath = k.getInputPath().toUri().getPath();
 
       fixTmpPath(k.getInputPath().getParent());
@@ -81,9 +90,9 @@ public class OrcFileMergeOperator extends
       if (prevPath == null) {
         prevPath = k.getInputPath();
         reader = OrcFile.createReader(fs, k.getInputPath());
-	if (isLogInfoEnabled) {
-	  LOG.info("ORC merge file input path: " + k.getInputPath());
-	}
+        if (isLogInfoEnabled) {
+          LOG.info("ORC merge file input path: " + k.getInputPath());
+        }
       }
 
       // store the orc configuration from the first file. All other files should
@@ -102,9 +111,9 @@ public class OrcFileMergeOperator extends
                 .version(version)
                 .rowIndexStride(rowIndexStride)
                 .inspector(reader.getObjectInspector()));
-	if (isLogDebugEnabled) {
-	  LOG.info("ORC merge file output path: " + outPath);
-	}
+        if (isLogDebugEnabled) {
+          LOG.info("ORC merge file output path: " + outPath);
+        }
       }
 
       if (!checkCompatibility(k)) {
@@ -128,9 +137,10 @@ public class OrcFileMergeOperator extends
           v.getStripeStatistics());
 
       if (isLogInfoEnabled) {
-	LOG.info("Merged stripe from file " + k.getInputPath() + " [ offset : "
-	    + v.getStripeInformation().getOffset() + " length: "
-	    + v.getStripeInformation().getLength() + " ]");
+        LOG.info("Merged stripe from file " + k.getInputPath() + " [ offset : "
+            + v.getStripeInformation().getOffset() + " length: "
+            + v.getStripeInformation().getLength() + " row: "
+            + v.getStripeStatistics().getColStats(0).getNumberOfValues() + " ]");
       }
 
       // add user metadata to footer in case of any
@@ -139,9 +149,12 @@ public class OrcFileMergeOperator extends
       }
     } catch (Throwable e) {
       this.exception = true;
-      closeOp(true);
+      LOG.error("Closing operator..Exception: " + ExceptionUtils.getStackTrace(e));
       throw new HiveException(e);
     } finally {
+      if (exception) {
+        closeOp(true);
+      }
       if (fdis != null) {
         try {
           fdis.close();
@@ -157,43 +170,28 @@ public class OrcFileMergeOperator extends
   private boolean checkCompatibility(OrcFileKeyWrapper k) {
     // check compatibility with subsequent files
     if ((k.getTypes().get(0).getSubtypesCount() != columnCount)) {
-      if (isLogInfoEnabled) {
-	LOG.info("Incompatible ORC file merge! Column counts does not match for "
-	    + k.getInputPath());
-      }
+      LOG.warn("Incompatible ORC file merge! Column counts mismatch for " + k.getInputPath());
       return false;
     }
 
     if (!k.getCompression().equals(compression)) {
-      if (isLogInfoEnabled) {
-	LOG.info("Incompatible ORC file merge! Compression codec does not match" +
-	    " for " + k.getInputPath());
-      }
+      LOG.warn("Incompatible ORC file merge! Compression codec mismatch for " + k.getInputPath());
       return false;
     }
 
     if (k.getCompressBufferSize() != compressBuffSize) {
-      if (isLogInfoEnabled) {
-	LOG.info("Incompatible ORC file merge! Compression buffer size does not" +
-	    " match for " + k.getInputPath());
-      }
+      LOG.warn("Incompatible ORC file merge! Compression buffer size mismatch for " + k.getInputPath());
       return false;
 
     }
 
     if (!k.getVersion().equals(version)) {
-      if (isLogInfoEnabled) {
-	LOG.info("Incompatible ORC file merge! Version does not match for "
-	    + k.getInputPath());
-      }
+      LOG.warn("Incompatible ORC file merge! Version mismatch for " + k.getInputPath());
       return false;
     }
 
     if (k.getRowIndexStride() != rowIndexStride) {
-      if (isLogInfoEnabled) {
-	LOG.info("Incompatible ORC file merge! Row index stride does not match" +
-	    " for " + k.getInputPath());
-      }
+      LOG.warn("Incompatible ORC file merge! Row index stride mismatch for " + k.getInputPath());
       return false;
     }
 
@@ -232,7 +230,7 @@ public class OrcFileMergeOperator extends
 
       outWriter.close();
       outWriter = null;
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new HiveException("Unable to close OrcFileMergeOperator", e);
     }
     super.closeOp(abort);

@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -63,8 +61,6 @@ import org.apache.hadoop.io.LongWritable;
         + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n"
         + "where neither x nor y is null.")
 public class GenericUDAFCovariance extends AbstractGenericUDAFResolver {
-
-  static final Log LOG = LogFactory.getLog(GenericUDAFCovariance.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {

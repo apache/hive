@@ -44,13 +44,13 @@ public class JarDelegator extends LauncherDelegator {
                List<String> jarArgs, List<String> defines,
                String statusdir, String callback, 
                boolean usesHcatalog, String completedUrl,
-               boolean enablelog, JobType jobType)
+               boolean enablelog, Boolean enableJobReconnect, JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
     runAs = user;
     List<String> args = makeArgs(jar, mainClass,
       libjars, files, jarArgs, defines,
-      statusdir, usesHcatalog, completedUrl, enablelog, jobType);
+      statusdir, usesHcatalog, completedUrl, enablelog, enableJobReconnect, jobType);
 
     return enqueueController(user, userArgs, callback, args);
   }
@@ -59,7 +59,7 @@ public class JarDelegator extends LauncherDelegator {
                   String libjars, String files,
                   List<String> jarArgs, List<String> defines,
                   String statusdir, boolean usesHcatalog, String completedUrl,
-                  boolean enablelog, JobType jobType)
+                  boolean enablelog, Boolean enableJobReconnect, JobType jobType)
     throws BadParam, IOException, InterruptedException {
     ArrayList<String> args = new ArrayList<String>();
     try {
@@ -67,7 +67,7 @@ public class JarDelegator extends LauncherDelegator {
       allFiles.add(TempletonUtils.hadoopFsFilename(jar, appConf, runAs));
 
       args.addAll(makeLauncherArgs(appConf, statusdir,
-        completedUrl, allFiles, enablelog, jobType));
+        completedUrl, allFiles, enablelog, enableJobReconnect, jobType));
       args.add("--");
       TempletonUtils.addCmdForWindows(args);
 

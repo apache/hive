@@ -106,4 +106,9 @@ public interface MapJoinTableContainer {
    * This is only applicable for HybridHashTableContainer.
    */
   boolean hasSpill();
+
+  /**
+   * Return the size of the hash table
+   */
+  int size();
 }

@@ -190,7 +190,7 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 select  p_mfgr,p_name, p_size, 
 histogram_numeric(p_retailprice, 5) over w1 as hist, 
 percentile(p_partkey, 0.5) over w1 as per,
-row_number() over(distribute by p_mfgr sort by p_name) as rn
+row_number() over(distribute by p_mfgr sort by p_mfgr, p_name) as rn
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 

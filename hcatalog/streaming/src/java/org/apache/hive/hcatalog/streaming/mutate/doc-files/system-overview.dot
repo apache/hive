@@ -1,0 +1,27 @@
+digraph "API Usage" {
+  nodesep=1.2;
+
+  DATA [label="ACID\ndataset",shape=oval,style=filled,color="gray"];
+  CHANGES [label="Changed\ndata",shape=oval,style=filled,color="gray"];
+  
+  META_STORE [label="Hive\nMetaStore",shape=box,style=filled,color="darkseagreen3"];
+  HIVE_CLI [label="Hive\nCLI",shape=box,style=filled,color="darkseagreen3"];	
+
+  MERGE1 [label="Compute\nmutations\n(your code)",shape=box,style=filled,color="khaki1"];
+  SORT [label="Group\n& sort\n(your code)",shape=box,style=filled,color="khaki1"];
+  CLIENT [label="Mutator\nclient",shape=box,style=filled,color="lightblue"];
+  BUCKET [label="Bucket ID\nappender",shape=box,style=filled,color="lightblue"];
+  COORD [label="Mutator\ncoordinator",shape=box,style=filled,color="lightblue"]; 
+  CLIENT -> COORD [label="Provides\nconf to"];
+  CLIENT -> BUCKET [label="Provides\nconf to"];
+  
+  CLIENT -> META_STORE [label="Manages\ntxns using"];
+  CHANGES -> MERGE1 [label="Reads ∆s\nfrom"];
+  DATA -> MERGE1 [label="Reads\nROW__IDs\nfrom"];
+  BUCKET -> MERGE1 [label="Appends ids\nto inserts"];
+  MERGE1 -> SORT;
+  SORT -> COORD [label="Issues\nmutations to"];
+  COORD -> DATA [label="Writes to"];
+  DATA -> HIVE_CLI [label="Read by"];
+  META_STORE -> DATA [label="Compacts"]; 
+}

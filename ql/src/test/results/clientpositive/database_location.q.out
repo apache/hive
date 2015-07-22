@@ -39,7 +39,6 @@ value               	int
 # Detailed Table Information	 	 
 Database:           	db1                 	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -110,7 +109,6 @@ value               	int
 # Detailed Table Information	 	 
 Database:           	db2                 	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 

@@ -36,28 +36,28 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class TezJsonParser implements JsonParser {
-  JSONObject inputObject;
-  Map<String, Stage> stages;
-  PrintStream outputStream;
+public final class TezJsonParser implements JsonParser {
+  public final Map<String, Stage> stages = new HashMap<String, Stage>();;
   protected final Log LOG;
   // the object that has been printed.
-  public static Set<Object> printSet = new HashSet<>();
-  // the vertex that should be inlined. <Operator, list of Vertex that is inlined>
-  public static Map<Op, List<Connection>> inlineMap = new HashMap<>();
+  public final Set<Object> printSet = new HashSet<>();
+  // the vertex that should be inlined. <Operator, list of Vertex that is
+  // inlined>
+  public final Map<Op, List<Connection>> inlineMap = new HashMap<>();
+
   public TezJsonParser() {
     super();
     LOG = LogFactory.getLog(this.getClass().getName());
   }
-  public void extractStagesAndPlans() throws JSONException, JsonParseException,
-      JsonMappingException, Exception, IOException {
+
+  public void extractStagesAndPlans(JSONObject inputObject) throws JSONException,
+      JsonParseException, JsonMappingException, Exception, IOException {
     // extract stages
-    this.stages = new HashMap<String, Stage>();
     JSONObject dependency = inputObject.getJSONObject("STAGE DEPENDENCIES");
-    if (dependency.length() > 0) {
+    if (dependency != null && dependency.length() > 0) {
       // iterate for the first time to get all the names of stages.
       for (String stageName : JSONObject.getNames(dependency)) {
-        this.stages.put(stageName, new Stage(stageName));
+        this.stages.put(stageName, new Stage(stageName, this));
       }
       // iterate for the second time to get all the dependency.
       for (String stageName : JSONObject.getNames(dependency)) {
@@ -67,7 +67,7 @@ public class TezJsonParser implements JsonParser {
     }
     // extract stage plans
     JSONObject stagePlans = inputObject.getJSONObject("STAGE PLANS");
-    if (stagePlans.length() > 0) {
+    if (stagePlans != null && stagePlans.length() > 0) {
       for (String stageName : JSONObject.getNames(stagePlans)) {
         JSONObject stagePlan = stagePlans.getJSONObject(stageName);
         this.stages.get(stageName).extractVertex(stagePlan);
@@ -77,8 +77,8 @@ public class TezJsonParser implements JsonParser {
 
   /**
    * @param indentFlag
-   * help to generate correct indent
-   * @return 
+   *          help to generate correct indent
+   * @return
    */
   public static String prefixString(List<Boolean> indentFlag) {
     StringBuilder sb = new StringBuilder();
@@ -94,7 +94,7 @@ public class TezJsonParser implements JsonParser {
   /**
    * @param indentFlag
    * @param tail
-   * help to generate correct indent with a specific tail
+   *          help to generate correct indent with a specific tail
    * @return
    */
   public static String prefixString(List<Boolean> indentFlag, String tail) {
@@ -111,19 +111,18 @@ public class TezJsonParser implements JsonParser {
 
   @Override
   public void print(JSONObject inputObject, PrintStream outputStream) throws Exception {
-    LOG.info("JsonParser is parsing\n" + inputObject.toString());
-    this.inputObject = inputObject;
-    this.outputStream = outputStream;
-    this.extractStagesAndPlans();
+    LOG.info("JsonParser is parsing:" + inputObject.toString());
+    this.extractStagesAndPlans(inputObject);
+    Printer printer = new Printer();
     // print out the cbo info
     if (inputObject.has("cboInfo")) {
-      outputStream.println(inputObject.getString("cboInfo"));
-      outputStream.println();
+      printer.println(inputObject.getString("cboInfo"));
+      printer.println();
     }
     // print out the vertex dependency in root stage
     for (Stage candidate : this.stages.values()) {
       if (candidate.tezStageDependency != null && candidate.tezStageDependency.size() > 0) {
-        outputStream.println("Vertex dependency in root stage");
+        printer.println("Vertex dependency in root stage");
         for (Entry<Vertex, List<Connection>> entry : candidate.tezStageDependency.entrySet()) {
           StringBuilder sb = new StringBuilder();
           sb.append(entry.getKey().name);
@@ -137,21 +136,22 @@ public class TezJsonParser implements JsonParser {
             }
             sb.append(connection.from.name + " (" + connection.type + ")");
           }
-          outputStream.println(sb.toString());
+          printer.println(sb.toString());
         }
-        outputStream.println();
+        printer.println();
       }
     }
     List<Boolean> indentFlag = new ArrayList<>();
     // print out all the stages that have no childStages.
     for (Stage candidate : this.stages.values()) {
       if (candidate.childStages.isEmpty()) {
-        candidate.print(outputStream, indentFlag);
+        candidate.print(printer, indentFlag);
       }
     }
+    outputStream.println(printer.toString());
   }
 
-  public static void addInline(Op op, Connection connection) {
+  public void addInline(Op op, Connection connection) {
     List<Connection> list = inlineMap.get(op);
     if (list == null) {
       list = new ArrayList<>();
@@ -161,10 +161,11 @@ public class TezJsonParser implements JsonParser {
       list.add(connection);
     }
   }
-  public static boolean isInline(Vertex v) {
-    for(List<Connection> list : inlineMap.values()){
+
+  public boolean isInline(Vertex v) {
+    for (List<Connection> list : inlineMap.values()) {
       for (Connection connection : list) {
-        if(connection.from.equals(v)){
+        if (connection.from.equals(v)) {
           return true;
         }
       }

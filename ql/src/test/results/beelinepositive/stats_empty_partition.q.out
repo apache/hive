@@ -33,7 +33,6 @@ No rows selected
 'Table:              ','tmptable            ',''
 'CreateTime:         ','!!TIMESTAMP!!',''
 'LastAccessTime:     ','UNKNOWN             ',''
-'Protect Mode:       ','None                ',''
 'Location:           ','!!{hive.metastore.warehouse.dir}!!/stats_empty_partition.db/tmptable/part=1',''
 'Partition Parameters:','',''
 '','numFiles            ','1                   '

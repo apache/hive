@@ -97,7 +97,8 @@ public class TestOrcRecordUpdater {
         .minimumTransactionId(10)
         .maximumTransactionId(19)
         .inspector(inspector)
-        .reporter(Reporter.NULL);
+        .reporter(Reporter.NULL)
+        .finalDestination(root);
     RecordUpdater updater = new OrcRecordUpdater(root, options);
     updater.insert(11, new MyRow("first"));
     updater.insert(11, new MyRow("second"));
@@ -197,7 +198,8 @@ public class TestOrcRecordUpdater {
         .maximumTransactionId(100)
         .inspector(inspector)
         .reporter(Reporter.NULL)
-        .recordIdColumn(1);
+        .recordIdColumn(1)
+        .finalDestination(root);
     RecordUpdater updater = new OrcRecordUpdater(root, options);
     updater.update(100, new MyRow("update", 30, 10, bucket));
     updater.delete(100, new MyRow("", 60, 40, bucket));

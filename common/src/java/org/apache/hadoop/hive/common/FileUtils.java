@@ -30,7 +30,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -635,6 +634,14 @@ public final class FileUtils {
                                Path destPath, boolean inheritPerms,
                                Configuration conf) throws IOException {
     LOG.info("Renaming " + sourcePath + " to " + destPath);
+
+    // If destPath directory exists, rename call will move the sourcePath
+    // into destPath without failing. So check it before renaming.
+    if (fs.exists(destPath)) {
+      throw new IOException("Cannot rename the source path. The destination "
+          + "path already exists.");
+    }
+
     if (!inheritPerms) {
       //just rename the directory
       return fs.rename(sourcePath, destPath);

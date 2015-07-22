@@ -2138,7 +2138,7 @@ public class VectorizationContext {
     add(new AggregateDefinition("stddev_samp", VectorExpressionDescriptor.ArgumentType.DECIMAL,                GroupByDesc.Mode.HASH,         VectorUDAFStdSampDecimal.class));
   }};
 
-  public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc, boolean isReduce)
+  public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc, boolean isReduceMergePartial)
       throws HiveException {
 
     ArrayList<ExprNodeDesc> paramDescList = desc.getParameters();
@@ -2166,11 +2166,11 @@ public class VectorizationContext {
            inputType == VectorExpressionDescriptor.ArgumentType.NONE) ||
           (aggDef.getType().isSameTypeOrFamily(inputType)))) {
 
-    	if (aggDef.getMode() == GroupByDesc.Mode.HASH && isReduce) {
-    	  continue;
-    	} else if (aggDef.getMode() == GroupByDesc.Mode.MERGEPARTIAL && !isReduce) {
-    	  continue;
-    	}
+        if (aggDef.getMode() == GroupByDesc.Mode.HASH && isReduceMergePartial) {
+          continue;
+        } else if (aggDef.getMode() == GroupByDesc.Mode.MERGEPARTIAL && !isReduceMergePartial) {
+          continue;
+        }
 
         Class<? extends VectorAggregateExpression> aggClass = aggDef.getAggClass();
         try
@@ -2189,7 +2189,7 @@ public class VectorizationContext {
     }
 
     throw new HiveException("Vector aggregate not implemented: \"" + aggregateName +
-        "\" for type: \"" + inputType.name() + " (reduce-side = " + isReduce + ")");
+        "\" for type: \"" + inputType.name() + " (reduce-merge-partial = " + isReduceMergePartial + ")");
   }
 
   public int firstOutputColumnIndex() {

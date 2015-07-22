@@ -28,16 +28,12 @@ import java.io.IOException;
  */
 public interface Metrics {
 
-  /**
-   * Initialize Metrics system with given Hive configuration.
-   * @param conf
-   */
-  public void init(HiveConf conf) throws Exception;
+  //Must declare CTOR taking in HiveConf.
 
   /**
    * Deinitializes the Metrics system.
    */
-  public void deInit() throws Exception;
+  public void close() throws Exception;
 
   /**
    * @param name
@@ -65,4 +61,31 @@ public interface Metrics {
    * @throws IOException
    */
   public Long incrementCounter(String name, long increment) throws IOException;
+
+
+  /**
+   * Decrements a counter of the given name by 1.
+   * @param name
+   * @return
+   * @throws IOException
+   */
+  public Long decrementCounter(String name) throws IOException;
+
+  /**
+   * Decrements a counter of the given name by "decrement"
+   * @param name
+   * @param decrement
+   * @return
+   * @throws IOException
+   */
+  public Long decrementCounter(String name, long decrement) throws IOException;
+
+
+  /**
+   * Adds a metrics-gauge to track variable.  For example, number of open database connections.
+   * @param name name of gauge
+   * @param variable variable to track.
+   * @throws IOException
+   */
+  public void addGauge(String name, final MetricsVariable variable);
 }

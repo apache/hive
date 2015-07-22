@@ -19,13 +19,13 @@
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonParseException;
@@ -34,35 +34,48 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Stage {
-  String name;
+public final class Stage {
+  //external name is used to show at the console
+  String externalName;
+  //internal name is used to track the stages
+  public final String internalName;
+  //tezJsonParser
+  public final TezJsonParser parser;
   // upstream stages, e.g., root stage
-  List<Stage> parentStages;
+  public final List<Stage> parentStages = new ArrayList<>();
   // downstream stages.
-  List<Stage> childStages;
-  Map<String, Vertex> vertexs;
-  List<Attr> attrs;
-  LinkedHashMap<Vertex, List<Connection>> tezStageDependency;
+  public final List<Stage> childStages = new ArrayList<>();
+  public final Map<String, Vertex> vertexs =new LinkedHashMap<>();
+  public final List<Attr> attrs = new ArrayList<>();
+  Map<Vertex, List<Connection>> tezStageDependency;
   // some stage may contain only a single operator, e.g., create table operator,
   // fetch operator.
   Op op;
 
-  public Stage(String name) {
+  public Stage(String name, TezJsonParser tezJsonParser) {
     super();
-    this.name = name;
-    parentStages = new ArrayList<>();
-    childStages = new ArrayList<>();
-    attrs = new ArrayList<>();
-    vertexs = new LinkedHashMap<>();
+    internalName = name;
+    externalName = name;
+    parser = tezJsonParser;
   }
 
   public void addDependency(JSONObject object, Map<String, Stage> stages) throws JSONException {
-    if (!object.has("ROOT STAGE")) {
+    if (object.has("DEPENDENT STAGES")) {
       String names = object.getString("DEPENDENT STAGES");
       for (String name : names.split(",")) {
         Stage parent = stages.get(name.trim());
         this.parentStages.add(parent);
         parent.childStages.add(this);
+      }
+    }
+    if (object.has("CONDITIONAL CHILD TASKS")) {
+      String names = object.getString("CONDITIONAL CHILD TASKS");
+      this.externalName = this.internalName + "(CONDITIONAL CHILD TASKS: " + names + ")";
+      for (String name : names.split(",")) {
+        Stage child = stages.get(name.trim());
+        child.externalName = child.internalName + "(CONDITIONAL)";
+        child.parentStages.add(this);
+        this.childStages.add(child);
       }
     }
   }
@@ -76,14 +89,14 @@ public class Stage {
    */
   public void extractVertex(JSONObject object) throws Exception {
     if (object.has("Tez")) {
-      this.tezStageDependency = new LinkedHashMap<>();
+      this.tezStageDependency = new TreeMap<>();
       JSONObject tez = (JSONObject) object.get("Tez");
       JSONObject vertices = tez.getJSONObject("Vertices:");
       if (tez.has("Edges:")) {
         JSONObject edges = tez.getJSONObject("Edges:");
         // iterate for the first time to get all the vertices
         for (String to : JSONObject.getNames(edges)) {
-          vertexs.put(to, new Vertex(to, vertices.getJSONObject(to)));
+          vertexs.put(to, new Vertex(to, vertices.getJSONObject(to), parser));
         }
         // iterate for the second time to get all the vertex dependency
         for (String to : JSONObject.getNames(edges)) {
@@ -95,7 +108,7 @@ public class Stage {
             String parent = obj.getString("parent");
             Vertex parentVertex = vertexs.get(parent);
             if (parentVertex == null) {
-              parentVertex = new Vertex(parent, vertices.getJSONObject(parent));
+              parentVertex = new Vertex(parent, vertices.getJSONObject(parent), parser);
               vertexs.put(parent, parentVertex);
             }
             String type = obj.getString("type");
@@ -117,7 +130,7 @@ public class Stage {
               String parent = obj.getString("parent");
               Vertex parentVertex = vertexs.get(parent);
               if (parentVertex == null) {
-                parentVertex = new Vertex(parent, vertices.getJSONObject(parent));
+                parentVertex = new Vertex(parent, vertices.getJSONObject(parent), parser);
                 vertexs.put(parent, parentVertex);
               }
               String type = obj.getString("type");
@@ -135,7 +148,7 @@ public class Stage {
         }
       } else {
         for (String vertexName : JSONObject.getNames(vertices)) {
-          vertexs.put(vertexName, new Vertex(vertexName, vertices.getJSONObject(vertexName)));
+          vertexs.put(vertexName, new Vertex(vertexName, vertices.getJSONObject(vertexName), parser));
         }
       }
       // The opTree in vertex is extracted
@@ -147,11 +160,13 @@ public class Stage {
       }
     } else {
       String[] names = JSONObject.getNames(object);
-      for (String name : names) {
-        if (name.contains("Operator")) {
-          this.op = extractOp(name, object.getJSONObject(name));
-        } else {
-          attrs.add(new Attr(name, object.get(name).toString()));
+      if (names != null) {
+        for (String name : names) {
+          if (name.contains("Operator")) {
+            this.op = extractOp(name, object.getJSONObject(name));
+          } else {
+            attrs.add(new Attr(name, object.get(name).toString()));
+          }
         }
       }
     }
@@ -185,7 +200,7 @@ public class Stage {
             if (name.equals("Processor Tree:")) {
               JSONObject object = new JSONObject();
               object.put(name, attrObj);
-              v = new Vertex(null, object);
+              v = new Vertex(null, object, parser);
               v.extractOpTree();
             } else {
               for (String attrName : JSONObject.getNames(attrObj)) {
@@ -194,13 +209,13 @@ public class Stage {
             }
           }
         } else {
-          throw new Exception("Unsupported object in " + this.name);
+          throw new Exception("Unsupported object in " + this.internalName);
         }
       }
     }
-    Op op = new Op(opName, null, null, null, attrs, null, v);
+    Op op = new Op(opName, null, null, null, attrs, null, v, parser);
     if (v != null) {
-      TezJsonParser.addInline(op, new Connection(null, v));
+      parser.addInline(op, new Connection(null, v));
     }
     return op;
   }
@@ -217,37 +232,37 @@ public class Stage {
     return false;
   }
 
-  public void print(PrintStream out, List<Boolean> indentFlag) throws JSONException, Exception {
+  public void print(Printer printer, List<Boolean> indentFlag) throws JSONException, Exception {
     // print stagename
-    if (TezJsonParser.printSet.contains(this)) {
-      out.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "
-          + this.name);
+    if (parser.printSet.contains(this)) {
+      printer.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "
+          + externalName);
       return;
     }
-    TezJsonParser.printSet.add(this);
-    out.println(TezJsonParser.prefixString(indentFlag) + this.name);
+    parser.printSet.add(this);
+    printer.println(TezJsonParser.prefixString(indentFlag) + externalName);
     // print vertexes
     List<Boolean> nextIndentFlag = new ArrayList<>();
     nextIndentFlag.addAll(indentFlag);
     nextIndentFlag.add(false);
     for (Vertex candidate : this.vertexs.values()) {
-      if (!TezJsonParser.isInline(candidate) && candidate.children.isEmpty()) {
-        candidate.print(out, nextIndentFlag, null, null);
+      if (!parser.isInline(candidate) && candidate.children.isEmpty()) {
+        candidate.print(printer, nextIndentFlag, null, null);
       }
     }
     if (!attrs.isEmpty()) {
       Collections.sort(attrs);
       for (Attr attr : attrs) {
-        out.println(TezJsonParser.prefixString(nextIndentFlag) + attr.toString());
+        printer.println(TezJsonParser.prefixString(nextIndentFlag) + attr.toString());
       }
     }
     if (op != null) {
-      op.print(out, nextIndentFlag, false);
+      op.print(printer, nextIndentFlag, false);
     }
     nextIndentFlag.add(false);
     // print dependent stages
     for (Stage stage : this.parentStages) {
-      stage.print(out, nextIndentFlag);
+      stage.print(printer, nextIndentFlag);
     }
   }
 }

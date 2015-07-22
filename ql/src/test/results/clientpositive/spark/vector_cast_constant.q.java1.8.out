@@ -133,11 +133,11 @@ STAGE PLANS:
                   Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: i (type: int)
-                    outputColumnNames: i
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg(50), avg(UDFToDouble(50)), avg(CAST( 50 AS decimal(10,0)))
-                      keys: i (type: int)
+                      aggregations: avg(50), avg(50.0), avg(50)
+                      keys: _col0 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE

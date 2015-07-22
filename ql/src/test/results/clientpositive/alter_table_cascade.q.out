@@ -49,8 +49,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_table_src
 POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
-POSTHOOK: Lineage: alter_table_cascade PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), (alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
-POSTHOOK: Lineage: alter_table_cascade PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), (alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_table_cascade PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_table_cascade PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
 PREHOOK: query: show partitions alter_table_cascade
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter_table_cascade
@@ -914,8 +914,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_table_src
 POSTHOOK: Output: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 POSTHOOK: Output: default@alter_table_restrict@p1=abc/p2=123
-POSTHOOK: Lineage: alter_table_restrict PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), (alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
-POSTHOOK: Lineage: alter_table_restrict PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), (alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_table_restrict PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_table_restrict PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
 PREHOOK: query: show partitions alter_table_restrict
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@alter_table_restrict

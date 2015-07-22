@@ -54,6 +54,10 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public int getStatementId() {
+    return 0;
+  }
+  @Override
   public HiveLockManager getLockManager() throws LockException {
     if (lockMgr == null) {
       boolean supportConcurrency =
@@ -156,21 +160,6 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     if (lockObjects.isEmpty() && !ctx.isNeedLockMgr()) {
       return;
     }
-
-    HiveLockObject.HiveLockObjectData lockData =
-      new HiveLockObject.HiveLockObjectData(plan.getQueryId(),
-                             String.valueOf(System.currentTimeMillis()),
-                             "IMPLICIT",
-                             plan.getQueryStr());
-
-    // Lock the database also
-    String currentDb = SessionState.get().getCurrentDatabase();
-    lockObjects.add(
-        new HiveLockObj(
-            new HiveLockObject(currentDb, lockData),
-            HiveLockMode.SHARED
-            )
-        );
 
     dedupLockObjects(lockObjects);
     List<HiveLock> hiveLocks = lockMgr.lock(lockObjects, false);

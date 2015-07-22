@@ -359,13 +359,13 @@ where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey
             and p1.p_partkey = p2.p_partkey
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -418,6 +418,13 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            Reduce Output Operator
+              key expressions: _col3 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: string)
+          TableScan
             alias: p1
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -432,21 +439,14 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col3 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col3 (type: string)
-              Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: string)
-            1 _col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col4
+            0 _col3 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col0, _col1, _col3, _col4
           Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -455,9 +455,16 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string), _col3 (type: string), _col4 (type: string)
           TableScan
             alias: p1
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -474,24 +481,17 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
-          TableScan
-            Reduce Output Operator
-              key expressions: _col1 (type: int)
-              sort order: +
-              Map-reduce partition columns: _col1 (type: int)
-              Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col2 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
             0 _col0 (type: int)
-            1 _col1 (type: int)
-          outputColumnNames: _col1, _col2, _col4, _col6
+            1 _col0 (type: int)
+          outputColumnNames: _col1, _col3, _col4, _col6
           Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col4 (type: string), _col6 (type: string), _col2 (type: string), _col1 (type: string)
+            expressions: _col1 (type: string), _col3 (type: string), _col4 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -519,13 +519,13 @@ where p2.p_name = p3.p_name and p1.p_partkey = p4.p_partkey
             and p1.p_partkey = p2.p_partkey
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -578,6 +578,13 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            Reduce Output Operator
+              key expressions: _col3 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: string)
+          TableScan
             alias: p1
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -592,21 +599,14 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col3 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col3 (type: string)
-              Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: string)
-            1 _col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col4
+            0 _col3 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col0, _col1, _col3, _col4
           Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -615,9 +615,16 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string), _col3 (type: string), _col4 (type: string)
           TableScan
             alias: p1
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -634,24 +641,17 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
-          TableScan
-            Reduce Output Operator
-              key expressions: _col1 (type: int)
-              sort order: +
-              Map-reduce partition columns: _col1 (type: int)
-              Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col2 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
             0 _col0 (type: int)
-            1 _col1 (type: int)
-          outputColumnNames: _col1, _col2, _col4, _col6
+            1 _col0 (type: int)
+          outputColumnNames: _col1, _col3, _col4, _col6
           Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col4 (type: string), _col6 (type: string), _col2 (type: string), _col1 (type: string)
+            expressions: _col1 (type: string), _col3 (type: string), _col4 (type: string), _col6 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

@@ -190,4 +190,16 @@ public class LongColumnVector extends ColumnVector {
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
     vector[outElementNum] = ((LongColumnVector) inputVector).vector[inputElementNum];
   }
+
+  @Override
+  public void stringifyValue(StringBuilder buffer, int row) {
+    if (isRepeating) {
+      row = 0;
+    }
+    if (noNulls || !isNull[row]) {
+      buffer.append(vector[row]);
+    } else {
+      buffer.append("null");
+    }
+  }
 }

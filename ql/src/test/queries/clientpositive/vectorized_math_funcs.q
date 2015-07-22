@@ -1,3 +1,4 @@
+set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
 
 -- Test math functions in vectorized mode to verify they run correctly end-to-end.

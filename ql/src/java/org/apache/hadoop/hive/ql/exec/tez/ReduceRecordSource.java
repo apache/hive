@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -34,7 +35,6 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -51,12 +51,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.tez.runtime.api.Reader;
+import org.apache.tez.runtime.library.api.KeyValueReader;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
 
 /**
@@ -95,7 +97,6 @@ public class ReduceRecordSource implements RecordSource {
 
   private VectorDeserializeRow valueLazyBinaryDeserializeToRow;
 
-  private VectorizedRowBatchCtx batchContext;
   private VectorizedRowBatch batch;
 
   // number of columns pertaining to keys in a vectorized row batch
@@ -108,7 +109,7 @@ public class ReduceRecordSource implements RecordSource {
   /* this is only used in the error code path */
   private List<VectorExpressionWriter> valueStringWriters;
 
-  private KeyValuesReader reader;
+  private KeyValuesAdapter reader;
 
   private boolean handleGroupKey;
 
@@ -117,11 +118,11 @@ public class ReduceRecordSource implements RecordSource {
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
 
   private Iterable<Object> valueWritables;
-  
+
   private final GroupIterator groupIterator = new GroupIterator();
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
-      TableDesc valueTableDesc, KeyValuesReader reader, boolean handleGroupKey, byte tag,
+      TableDesc valueTableDesc, Reader reader, boolean handleGroupKey, byte tag,
       Map<Integer, String> vectorScratchColumnTypeMap)
       throws Exception {
 
@@ -130,7 +131,11 @@ public class ReduceRecordSource implements RecordSource {
     this.reducer = reducer;
     this.vectorized = vectorized;
     this.keyTableDesc = keyTableDesc;
-    this.reader = reader;
+    if (reader instanceof KeyValueReader) {
+      this.reader = new KeyValuesFromKeyValue((KeyValueReader) reader);
+    } else {
+      this.reader = new KeyValuesFromKeyValues((KeyValuesReader) reader);
+    }
     this.handleGroupKey = handleGroupKey;
     this.tag = tag;
 
@@ -169,26 +174,10 @@ public class ReduceRecordSource implements RecordSource {
             .asList(VectorExpressionWriterFactory
                 .genVectorStructExpressionWritables(valueStructInspectors)));
 
-        /*
-         * The row object inspector used by ReduceWork needs to be a **standard**
-         * struct object inspector, not just any struct object inspector.
-         */
-        ArrayList<String> colNames = new ArrayList<String>();
-        List<? extends StructField> fields = keyStructInspector.getAllStructFieldRefs();
-        for (StructField field: fields) {
-          colNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
-          ois.add(field.getFieldObjectInspector());
-        }
-        fields = valueStructInspectors.getAllStructFieldRefs();
-        for (StructField field: fields) {
-          colNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-          ois.add(field.getFieldObjectInspector());
-        }
-        rowObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(colNames, ois);
-
-        batchContext = new VectorizedRowBatchCtx();
-        batchContext.init(vectorScratchColumnTypeMap, (StructObjectInspector) rowObjectInspector);
-        batch = batchContext.createVectorizedRowBatch();
+        ObjectPair<VectorizedRowBatch, StandardStructObjectInspector> pair =
+            VectorizedBatchUtil.constructVectorizedRowBatch(keyStructInspector, valueStructInspectors, vectorScratchColumnTypeMap);
+        rowObjectInspector = pair.getSecond();
+        batch = pair.getFirst();
 
         // Setup vectorized deserialization for the key and value.
         BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
@@ -237,7 +226,7 @@ public class ReduceRecordSource implements RecordSource {
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
-  
+
   @Override
   public final boolean isGrouped() {
     return vectorized;
@@ -461,9 +450,6 @@ public class ReduceRecordSource implements RecordSource {
     } catch (Exception e) {
       String rowString = null;
       try {
-        /* batch.toString depends on this */
-        batch.setValueWriters(valueStringWriters
-            .toArray(new VectorExpressionWriter[0]));
         rowString = batch.toString();
       } catch (Exception e2) {
         rowString = "[Error getting row data with exception "

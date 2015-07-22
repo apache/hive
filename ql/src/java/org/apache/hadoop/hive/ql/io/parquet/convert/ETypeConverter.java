@@ -33,11 +33,11 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-import parquet.column.Dictionary;
-import parquet.io.api.Binary;
-import parquet.io.api.PrimitiveConverter;
-import parquet.schema.OriginalType;
-import parquet.schema.PrimitiveType;
+import org.apache.parquet.column.Dictionary;
+import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.io.api.PrimitiveConverter;
+import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.PrimitiveType;
 
 /**
  *

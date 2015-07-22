@@ -359,10 +359,13 @@ class AvroDeserializer {
 
   private Object deserializeUnion(Object datum, Schema fileSchema, Schema recordSchema,
                                   UnionTypeInfo columnType) throws AvroSerdeException {
-    int tag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value
-    Object desered = worker(datum, fileSchema == null ? null : fileSchema.getTypes().get(tag),
-        recordSchema.getTypes().get(tag), columnType.getAllUnionObjectTypeInfos().get(tag));
-    return new StandardUnionObjectInspector.StandardUnion((byte)tag, desered);
+    // Calculate tags individually since the schema can evolve and can have different tags. In worst case, both schemas are same 
+    // and we would end up doing calculations twice to get the same tag
+    int fsTag = GenericData.get().resolveUnion(fileSchema, datum); // Determine index of value from fileSchema
+    int rsTag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value from recordSchema
+    Object desered = worker(datum, fileSchema == null ? null : fileSchema.getTypes().get(fsTag),
+        recordSchema.getTypes().get(rsTag), columnType.getAllUnionObjectTypeInfos().get(rsTag));
+    return new StandardUnionObjectInspector.StandardUnion((byte)rsTag, desered);
   }
 
   private Object deserializeList(Object datum, Schema fileSchema, Schema recordSchema,

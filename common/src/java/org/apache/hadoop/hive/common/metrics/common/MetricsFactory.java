@@ -20,29 +20,43 @@ package org.apache.hadoop.hive.common.metrics.common;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import java.lang.reflect.Constructor;
+
 /**
  * Class that manages a static Metric instance for this process.
  */
 public class MetricsFactory {
 
-  private static Metrics metrics;
-  private static Object initLock = new Object();
+  //Volatile ensures that static access returns Metrics instance in fully-initialized state.
+  //Alternative is to synchronize static access, which has performance penalties.
+  private volatile static Metrics metrics;
 
+  /**
+   * Initializes static Metrics instance.
+   */
   public synchronized static void init(HiveConf conf) throws Exception {
     if (metrics == null) {
-      metrics = (Metrics) ReflectionUtils.newInstance(conf.getClassByName(
-        conf.getVar(HiveConf.ConfVars.HIVE_METRICS_CLASS)), conf);
+      Class metricsClass = conf.getClassByName(
+        conf.getVar(HiveConf.ConfVars.HIVE_METRICS_CLASS));
+      Constructor constructor = metricsClass.getConstructor(HiveConf.class);
+      metrics = (Metrics) constructor.newInstance(conf);
     }
-    metrics.init(conf);
   }
 
-  public synchronized static Metrics getMetricsInstance() {
+  /**
+   * Returns static Metrics instance, null if not initialized or closed.
+   */
+  public static Metrics getInstance() {
     return metrics;
   }
 
-  public synchronized static void deInit() throws Exception {
+  /**
+   * Closes and removes static Metrics instance.
+   */
+  public synchronized static void close() throws Exception {
     if (metrics != null) {
-      metrics.deInit();
+      metrics.close();
+      metrics = null;
     }
   }
 }

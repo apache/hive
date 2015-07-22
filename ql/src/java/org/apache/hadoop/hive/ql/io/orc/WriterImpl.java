@@ -40,7 +40,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
@@ -76,6 +75,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -95,13 +96,19 @@ import com.google.protobuf.CodedOutputStream;
  * sub-types. Each of the TreeWriters writes the column's data as a set of
  * streams.
  *
- * This class is synchronized so that multi-threaded access is ok. In
- * particular, because the MemoryManager is shared between writers, this class
- * assumes that checkMemory may be called from a separate thread.
+ * This class is unsynchronized like most Stream objects, so from the creation of an OrcFile and all
+ * access to a single instance has to be from a single thread.
+ * 
+ * There are no known cases where these happen between different threads today.
+ * 
+ * Caveat: the MemoryManager is created during WriterOptions create, that has to be confined to a single
+ * thread as well.
+ * 
  */
 public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static final Log LOG = LogFactory.getLog(WriterImpl.class);
+  static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
   private static final int HDFS_BUFFER_SIZE = 256 * 1024;
   private static final int MIN_ROW_INDEX_STRIDE = 1000;
@@ -119,7 +126,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   private final boolean addBlockPadding;
   private final int bufferSize;
   private final long blockSize;
-  private final float paddingTolerance;
+  private final double paddingTolerance;
   // the streams that make up the current stripe
   private final Map<StreamName, BufferedStream> streams =
     new TreeMap<StreamName, BufferedStream>();
@@ -152,6 +159,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   private final OrcFile.CompressionStrategy compressionStrategy;
   private final boolean[] bloomFilterColumns;
   private final double bloomFilterFpp;
+  private boolean writeTimeZone;
 
   WriterImpl(FileSystem fs,
       Path path,
@@ -167,7 +175,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       OrcFile.WriterCallback callback,
       EncodingStrategy encodingStrategy,
       CompressionStrategy compressionStrategy,
-      float paddingTolerance,
+      double paddingTolerance,
       long blockSizeValue,
       String bloomFilterColumnNames,
       double bloomFilterFpp) throws IOException {
@@ -306,8 +314,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   // the assumption is only one ORC writer open at a time, which holds true for
   // most of the cases. HIVE-6455 forces single writer case.
   private long getMemoryAvailableForORC() {
-    HiveConf.ConfVars poolVar = HiveConf.ConfVars.HIVE_ORC_FILE_MEMORY_POOL;
-    double maxLoad = conf.getFloat(poolVar.varname, poolVar.defaultFloatVal);
+    double maxLoad = OrcConf.MEMORY_POOL.getDouble(conf);
     long totalMemoryPool = Math.round(ManagementFactory.getMemoryMXBean().
         getHeapMemoryUsage().getMax() * maxLoad);
     return totalMemoryPool;
@@ -341,7 +348,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   @Override
-  public synchronized boolean checkMemory(double newScale) throws IOException {
+  public boolean checkMemory(double newScale) throws IOException {
     long limit = (long) Math.round(adjustedStripeSize * newScale);
     long size = estimateStripeSize();
     if (LOG.isDebugEnabled()) {
@@ -616,6 +623,14 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     public OrcFile.Version getVersion() {
       return version;
     }
+
+    public void useWriterTimeZone(boolean val) {
+      writeTimeZone = val;
+    }
+
+    public boolean hasWriterTimeZone() {
+      return writeTimeZone;
+    }
   }
 
   /**
@@ -645,6 +660,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     private boolean foundNulls;
     private OutStream isPresentOutStream;
     private final List<StripeStatistics.Builder> stripeStatsBuilders;
+    private final StreamFactory streamFactory;
 
     /**
      * Create a tree writer.
@@ -657,6 +673,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     TreeWriter(int columnId, ObjectInspector inspector,
                StreamFactory streamFactory,
                boolean nullable) throws IOException {
+      this.streamFactory = streamFactory;
       this.isCompressed = streamFactory.isCompressed();
       this.id = columnId;
       this.inspector = inspector;
@@ -796,7 +813,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       foundNulls = false;
 
       builder.addColumns(getEncoding());
-      builder.setWriterTimezone(TimeZone.getDefault().getID());
+      if (streamFactory.hasWriterTimeZone()) {
+        builder.setWriterTimezone(TimeZone.getDefault().getID());
+      }
       if (rowIndexStream != null) {
         if (rowIndex.getEntryCount() != requiredIndexEntries) {
           throw new IllegalArgumentException("Column has wrong number of " +
@@ -1157,7 +1176,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     private final List<Long> rowIndexValueCount = new ArrayList<Long>();
     // If the number of keys in a dictionary is greater than this fraction of
     //the total number of non-null rows, turn off dictionary encoding
-    private final float dictionaryKeySizeThreshold;
+    private final double dictionaryKeySizeThreshold;
     private boolean useDictionaryEncoding = true;
     private boolean isDirectV2 = true;
     private boolean doneDictionaryCheck;
@@ -1181,14 +1200,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       directStreamOutput = writer.createStream(id, OrcProto.Stream.Kind.DATA);
       directLengthOutput = createIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
-      dictionaryKeySizeThreshold = writer.getConfiguration().getFloat(
-          HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname,
-          HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.
-              defaultFloatVal);
-      strideDictionaryCheck = writer.getConfiguration().getBoolean(
-          HiveConf.ConfVars.HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK.varname,
-          HiveConf.ConfVars.HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK.
-            defaultBoolVal);
+      Configuration conf = writer.getConfiguration();
+      dictionaryKeySizeThreshold =
+          OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getDouble(conf);
+      strideDictionaryCheck =
+          OrcConf.ROW_INDEX_STRIDE_DICTIONARY_CHECK.getBoolean(conf);
       doneDictionaryCheck = false;
     }
 
@@ -1526,6 +1542,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       recordPosition(rowIndexPosition);
       // for unit tests to set different time zones
       this.base_timestamp = Timestamp.valueOf(BASE_TIMESTAMP_STRING).getTime() / MILLIS_PER_SECOND;
+      writer.useWriterTimeZone(true);
     }
 
     @Override
@@ -2101,7 +2118,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   FSDataOutputStream getStream() throws IOException {
     if (rawWriter == null) {
       rawWriter = fs.create(path, false, HDFS_BUFFER_SIZE,
-                            fs.getDefaultReplication(), blockSize);
+                            fs.getDefaultReplication(path), blockSize);
       rawWriter.writeBytes(OrcFile.MAGIC);
       headerLength = rawWriter.getPos();
       writer = new OutStream("metadata", bufferSize, codec,
@@ -2167,8 +2184,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         // and user specified padding tolerance. Since stripe size can overflow
         // the default stripe size we should apply this correction to avoid
         // writing portion of last stripe to next hdfs block.
-        float correction = overflow > 0 ? (float) overflow
-            / (float) adjustedStripeSize : 0.0f;
+        double correction = overflow > 0 ? (double) overflow
+            / (double) adjustedStripeSize : 0.0;
 
         // correction should not be greater than user specified padding
         // tolerance
@@ -2393,21 +2410,19 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   @Override
-  public synchronized void addUserMetadata(String name, ByteBuffer value) {
+  public void addUserMetadata(String name, ByteBuffer value) {
     userMetadata.put(name, ByteString.copyFrom(value));
   }
 
   @Override
   public void addRow(Object row) throws IOException {
-    synchronized (this) {
-      treeWriter.write(row);
-      rowsInStripe += 1;
-      if (buildIndex) {
-        rowsInIndex += 1;
+    treeWriter.write(row);
+    rowsInStripe += 1;
+    if (buildIndex) {
+      rowsInIndex += 1;
 
-        if (rowsInIndex >= rowIndexStride) {
-          createRowIndexEntry();
-        }
+      if (rowsInIndex >= rowIndexStride) {
+        createRowIndexEntry();
       }
     }
     memoryManager.addedRow();
@@ -2421,13 +2436,12 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     // remove us from the memory manager so that we don't get any callbacks
     memoryManager.removeWriter(path);
     // actually close the file
-    synchronized (this) {
-      flushStripe();
-      int metadataLength = writeMetadata(rawWriter.getPos());
-      int footerLength = writeFooter(rawWriter.getPos() - metadataLength);
-      rawWriter.writeByte(writePostScript(footerLength, metadataLength));
-      rawWriter.close();
-    }
+    flushStripe();
+    int metadataLength = writeMetadata(rawWriter.getPos());
+    int footerLength = writeFooter(rawWriter.getPos() - metadataLength);
+    rawWriter.writeByte(writePostScript(footerLength, metadataLength));
+    rawWriter.close();
+
   }
 
   /**
@@ -2449,7 +2463,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   @Override
-  public synchronized long writeIntermediateFooter() throws IOException {
+  public long writeIntermediateFooter() throws IOException {
     // flush any buffered rows
     flushStripe();
     // write a footer
@@ -2461,7 +2475,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       int footLength = writeFooter(rawWriter.getPos() - metaLength);
       rawWriter.writeByte(writePostScript(footLength, metaLength));
       stripesAtLastFlush = stripes.size();
-      OrcInputFormat.SHIMS.hflush(rawWriter);
+      SHIMS.hflush(rawWriter);
     }
     return rawWriter.getPos();
   }

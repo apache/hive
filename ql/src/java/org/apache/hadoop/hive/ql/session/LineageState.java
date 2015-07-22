@@ -62,6 +62,7 @@ public class LineageState {
   public LineageState() {
     dirToFop = new HashMap<Path, FileSinkOperator>();
     linfo = new LineageInfo();
+    index = new Index();
   }
 
   /**
@@ -109,12 +110,12 @@ public class LineageState {
   }
 
   /**
-   * Sets the index for the lineage state.
+   * Gets the index for the lineage state.
    *
-   * @param index The index derived from lineage context.
+   * @return Index.
    */
-  public void setIndex(Index index) {
-    this.index = index;
+  public Index getIndex() {
+    return index;
   }
 
   /**
