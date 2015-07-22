@@ -380,8 +380,9 @@ public class TxnHandler {
           "tc_partition from TXN_COMPONENTS where tc_txnid = " + txnid;
         LOG.debug("Going to execute insert <" + s + ">");
         if (stmt.executeUpdate(s) < 1) {
-          LOG.warn("Expected to move at least one record from txn_components to " +
-            "completed_txn_components when committing txn!");
+          //this can be reasonable for an empty txn START/COMMIT
+          LOG.info("Expected to move at least one record from txn_components to " +
+            "completed_txn_components when committing txn! txnid:" + txnid);
         }
 
         // Always access TXN_COMPONENTS before HIVE_LOCKS;
@@ -1351,7 +1352,7 @@ public class TxnHandler {
     throws NoSuchTxnException,  TxnAbortedException, MetaException, SQLException {
     // We want to minimize the number of concurrent lock requests being issued.  If we do not we
     // get a large number of deadlocks in the database, since this method has to both clean
-    // timedout locks and insert new locks.  This synchronization barrier will not eliminiate all
+    // timedout locks and insert new locks.  This synchronization barrier will not eliminate all
     // deadlocks, and the code is still resilient in the face of a database deadlock.  But it
     // will reduce the number.  This could have been done via a lock table command in the
     // underlying database, but was not for two reasons.  One, different databases have different
@@ -1452,7 +1453,7 @@ public class TxnHandler {
                                  long extLockId,
                                  boolean alwaysCommit)
     throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException, SQLException {
-    List<LockInfo> locksBeingChecked = getLockInfoFromLockId(dbConn, extLockId);
+    List<LockInfo> locksBeingChecked = getLockInfoFromLockId(dbConn, extLockId);//being acquired now
     LockResponse response = new LockResponse();
     response.setLockid(extLockId);
 

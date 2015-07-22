@@ -21,7 +21,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
@@ -51,6 +50,10 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
   private DbLockManager lockMgr = null;
   private IMetaStoreClient client = null;
+  /**
+   * The Metastore NEXT_TXN_ID.NTXN_NEXT is initialized to 1; it contains the next available
+   * transaction id.  Thus is 1 is first transaction id.
+   */
   private long txnId = 0;
   /**
    * assigns a unique monotonically increasing ID to each statement
@@ -75,14 +78,16 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   @Override
   public long openTxn(String user) throws LockException {
     init();
+    if(isTxnOpen()) {
+      throw new LockException("Transaction already opened. txnId=" + txnId);//ToDo: ErrorMsg
+    }
     try {
       txnId = client.openTxn(user);
       statementId = 0;
       LOG.debug("Opened txn " + txnId);
       return txnId;
     } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
-          e);
+      throw new LockException(e, ErrorMsg.METASTORE_COMMUNICATION_FAILED);
     }
   }
 
@@ -232,7 +237,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     }
 
     List<HiveLock> locks = new ArrayList<HiveLock>(1);
-    if(txnId > 0) {
+    if(isTxnOpen()) {
       statementId++;
     }
     LockState lockState = lockMgr.lock(rqstBuilder.build(), plan.getQueryId(), isBlocking, locks);
@@ -242,9 +247,8 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public void commitTxn() throws LockException {
-    if (txnId == 0) {
-      throw new RuntimeException("Attempt to commit before opening a " +
-          "transaction");
+    if (!isTxnOpen()) {
+      throw new RuntimeException("Attempt to commit before opening a transaction");
     }
     try {
       lockMgr.clearLocalLockRecords();
@@ -267,9 +271,8 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public void rollbackTxn() throws LockException {
-    if (txnId == 0) {
-      throw new RuntimeException("Attempt to rollback before opening a " +
-          "transaction");
+    if (!isTxnOpen()) {
+      throw new RuntimeException("Attempt to rollback before opening a transaction");
     }
     try {
       lockMgr.clearLocalLockRecords();
@@ -292,7 +295,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     LOG.debug("Heartbeating lock and transaction " + txnId);
     List<HiveLock> locks = lockMgr.getLocks(false, false);
     if (locks.size() == 0) {
-      if (txnId == 0) {
+      if (!isTxnOpen()) {
         // No locks, no txn, we outta here.
         return;
       } else {
@@ -350,7 +353,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   @Override
   protected void destruct() {
     try {
-      if (txnId > 0) rollbackTxn();
+      if (isTxnOpen()) rollbackTxn();
       if (lockMgr != null) lockMgr.close();
     } catch (Exception e) {
       LOG.error("Caught exception " + e.getClass().getName() + " with message <" + e.getMessage()
@@ -376,8 +379,15 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
   @Override
+  public boolean isTxnOpen() {
+    return txnId > 0;
+  }
+  @Override
+  public long getCurrentTxnId() {
+    return txnId;
+  }
+  @Override
   public int getStatementId() {
     return statementId;
   }
-
 }

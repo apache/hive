@@ -354,6 +354,15 @@ TOK_ANONYMOUS;
 TOK_COL_NAME;
 TOK_URI_TYPE;
 TOK_SERVER_TYPE;
+TOK_START_TRANSACTION;
+TOK_ISOLATION_LEVEL;
+TOK_ISOLATION_SNAPSHOT;
+TOK_TXN_ACCESS_MODE;
+TOK_TXN_READ_ONLY;
+TOK_TXN_READ_WRITE;
+TOK_COMMIT;
+TOK_ROLLBACK;
+TOK_SET_AUTOCOMMIT;
 }
 
 
@@ -375,6 +384,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
   private static HashMap<String, String> xlateMap;
   static {
+    //this is used to support auto completion in CLI
     xlateMap = new HashMap<String, String>();
 
     // Keywords
@@ -693,6 +703,7 @@ execStatement
     | ddlStatement
     | deleteStatement
     | updateStatement
+    | sqlTransactionStatement
     ;
 
 loadStatement
@@ -2363,3 +2374,62 @@ updateStatement
    :
    KW_UPDATE tableName setColumnsClause whereClause? -> ^(TOK_UPDATE_TABLE tableName setColumnsClause whereClause?)
    ;
+
+/*
+BEGIN user defined transaction boundaries; follows SQL 2003 standard exactly except for addition of
+"setAutoCommitStatement" which is not in the standard doc but is supported by most SQL engines.
+*/
+sqlTransactionStatement
+@init { pushMsg("transaction statement", state); }
+@after { popMsg(state); }
+  :
+  startTransactionStatement
+	|	commitStatement
+	|	rollbackStatement
+	| setAutoCommitStatement
+	;
+
+startTransactionStatement
+  :
+  KW_START KW_TRANSACTION ( transactionMode  ( COMMA transactionMode  )* )? -> ^(TOK_START_TRANSACTION transactionMode*)
+  ;
+
+transactionMode
+  :
+  isolationLevel
+  | transactionAccessMode -> ^(TOK_TXN_ACCESS_MODE transactionAccessMode)
+  ;
+
+transactionAccessMode
+  :
+  KW_READ KW_ONLY -> TOK_TXN_READ_ONLY
+  | KW_READ KW_WRITE -> TOK_TXN_READ_WRITE
+  ;
+
+isolationLevel
+  :
+  KW_ISOLATION KW_LEVEL levelOfIsolation -> ^(TOK_ISOLATION_LEVEL levelOfIsolation)
+  ;
+
+/*READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SERIALIZABLE may be supported later*/
+levelOfIsolation
+  :
+  KW_SNAPSHOT -> TOK_ISOLATION_SNAPSHOT
+  ;
+
+commitStatement
+  :
+  KW_COMMIT ( KW_WORK )? -> TOK_COMMIT
+  ;
+
+rollbackStatement
+  :
+  KW_ROLLBACK ( KW_WORK )? -> TOK_ROLLBACK
+  ;
+setAutoCommitStatement
+  :
+  KW_SET KW_AUTOCOMMIT booleanValueTok -> ^(TOK_SET_AUTOCOMMIT booleanValueTok)
+  ;
+/*
+END user defined transaction boundaries
+*/

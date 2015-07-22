@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -43,5 +44,10 @@ public class LockException extends HiveException {
   public LockException(String message, Throwable cause) {
     super(message, cause);
   }
-
+  public LockException(Throwable cause, ErrorMsg errorMsg, String... msgArgs) {
+    super(cause, errorMsg, msgArgs);
+  }
+  public LockException(Throwable cause, ErrorMsg errorMsg) {
+    super(cause, errorMsg);
+  }
 }
