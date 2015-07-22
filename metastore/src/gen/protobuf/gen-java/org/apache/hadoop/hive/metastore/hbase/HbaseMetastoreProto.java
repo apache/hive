@@ -90,6 +90,3688 @@ public final class HbaseMetastoreProto {
     // @@protoc_insertion_point(enum_scope:org.apache.hadoop.hive.metastore.hbase.PrincipalType)
   }
 
+  public interface AggrStatsOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required int64 parts_found = 1;
+    /**
+     * <code>required int64 parts_found = 1;</code>
+     */
+    boolean hasPartsFound();
+    /**
+     * <code>required int64 parts_found = 1;</code>
+     */
+    long getPartsFound();
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats> 
+        getColStatsList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats getColStats(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    int getColStatsCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder> 
+        getColStatsOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder getColStatsOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStats}
+   */
+  public static final class AggrStats extends
+      com.google.protobuf.GeneratedMessage
+      implements AggrStatsOrBuilder {
+    // Use AggrStats.newBuilder() to construct.
+    private AggrStats(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private AggrStats(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final AggrStats defaultInstance;
+    public static AggrStats getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public AggrStats getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AggrStats(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              partsFound_ = input.readInt64();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                colStats_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              colStats_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          colStats_ = java.util.Collections.unmodifiableList(colStats_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<AggrStats> PARSER =
+        new com.google.protobuf.AbstractParser<AggrStats>() {
+      public AggrStats parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new AggrStats(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AggrStats> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required int64 parts_found = 1;
+    public static final int PARTS_FOUND_FIELD_NUMBER = 1;
+    private long partsFound_;
+    /**
+     * <code>required int64 parts_found = 1;</code>
+     */
+    public boolean hasPartsFound() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required int64 parts_found = 1;</code>
+     */
+    public long getPartsFound() {
+      return partsFound_;
+    }
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;
+    public static final int COL_STATS_FIELD_NUMBER = 2;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats> colStats_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats> getColStatsList() {
+      return colStats_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder> 
+        getColStatsOrBuilderList() {
+      return colStats_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    public int getColStatsCount() {
+      return colStats_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats getColStats(int index) {
+      return colStats_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder getColStatsOrBuilder(
+        int index) {
+      return colStats_.get(index);
+    }
+
+    private void initFields() {
+      partsFound_ = 0L;
+      colStats_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasPartsFound()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      for (int i = 0; i < getColStatsCount(); i++) {
+        if (!getColStats(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt64(1, partsFound_);
+      }
+      for (int i = 0; i < colStats_.size(); i++) {
+        output.writeMessage(2, colStats_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, partsFound_);
+      }
+      for (int i = 0; i < colStats_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, colStats_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStats}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getColStatsFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        partsFound_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (colStatsBuilder_ == null) {
+          colStats_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          colStatsBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.partsFound_ = partsFound_;
+        if (colStatsBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            colStats_ = java.util.Collections.unmodifiableList(colStats_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.colStats_ = colStats_;
+        } else {
+          result.colStats_ = colStatsBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats.getDefaultInstance()) return this;
+        if (other.hasPartsFound()) {
+          setPartsFound(other.getPartsFound());
+        }
+        if (colStatsBuilder_ == null) {
+          if (!other.colStats_.isEmpty()) {
+            if (colStats_.isEmpty()) {
+              colStats_ = other.colStats_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureColStatsIsMutable();
+              colStats_.addAll(other.colStats_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.colStats_.isEmpty()) {
+            if (colStatsBuilder_.isEmpty()) {
+              colStatsBuilder_.dispose();
+              colStatsBuilder_ = null;
+              colStats_ = other.colStats_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              colStatsBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getColStatsFieldBuilder() : null;
+            } else {
+              colStatsBuilder_.addAllMessages(other.colStats_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasPartsFound()) {
+          
+          return false;
+        }
+        for (int i = 0; i < getColStatsCount(); i++) {
+          if (!getColStats(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStats) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required int64 parts_found = 1;
+      private long partsFound_ ;
+      /**
+       * <code>required int64 parts_found = 1;</code>
+       */
+      public boolean hasPartsFound() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required int64 parts_found = 1;</code>
+       */
+      public long getPartsFound() {
+        return partsFound_;
+      }
+      /**
+       * <code>required int64 parts_found = 1;</code>
+       */
+      public Builder setPartsFound(long value) {
+        bitField0_ |= 0x00000001;
+        partsFound_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int64 parts_found = 1;</code>
+       */
+      public Builder clearPartsFound() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        partsFound_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats> colStats_ =
+        java.util.Collections.emptyList();
+      private void ensureColStatsIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          colStats_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats>(colStats_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder> colStatsBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats> getColStatsList() {
+        if (colStatsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(colStats_);
+        } else {
+          return colStatsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public int getColStatsCount() {
+        if (colStatsBuilder_ == null) {
+          return colStats_.size();
+        } else {
+          return colStatsBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats getColStats(int index) {
+        if (colStatsBuilder_ == null) {
+          return colStats_.get(index);
+        } else {
+          return colStatsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder setColStats(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats value) {
+        if (colStatsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColStatsIsMutable();
+          colStats_.set(index, value);
+          onChanged();
+        } else {
+          colStatsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder setColStats(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder builderForValue) {
+        if (colStatsBuilder_ == null) {
+          ensureColStatsIsMutable();
+          colStats_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          colStatsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder addColStats(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats value) {
+        if (colStatsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColStatsIsMutable();
+          colStats_.add(value);
+          onChanged();
+        } else {
+          colStatsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder addColStats(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats value) {
+        if (colStatsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColStatsIsMutable();
+          colStats_.add(index, value);
+          onChanged();
+        } else {
+          colStatsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder addColStats(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder builderForValue) {
+        if (colStatsBuilder_ == null) {
+          ensureColStatsIsMutable();
+          colStats_.add(builderForValue.build());
+          onChanged();
+        } else {
+          colStatsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder addColStats(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder builderForValue) {
+        if (colStatsBuilder_ == null) {
+          ensureColStatsIsMutable();
+          colStats_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          colStatsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder addAllColStats(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats> values) {
+        if (colStatsBuilder_ == null) {
+          ensureColStatsIsMutable();
+          super.addAll(values, colStats_);
+          onChanged();
+        } else {
+          colStatsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder clearColStats() {
+        if (colStatsBuilder_ == null) {
+          colStats_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          colStatsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public Builder removeColStats(int index) {
+        if (colStatsBuilder_ == null) {
+          ensureColStatsIsMutable();
+          colStats_.remove(index);
+          onChanged();
+        } else {
+          colStatsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder getColStatsBuilder(
+          int index) {
+        return getColStatsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder getColStatsOrBuilder(
+          int index) {
+        if (colStatsBuilder_ == null) {
+          return colStats_.get(index);  } else {
+          return colStatsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder> 
+           getColStatsOrBuilderList() {
+        if (colStatsBuilder_ != null) {
+          return colStatsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(colStats_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder addColStatsBuilder() {
+        return getColStatsFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder addColStatsBuilder(
+          int index) {
+        return getColStatsFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ColumnStats col_stats = 2;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder> 
+           getColStatsBuilderList() {
+        return getColStatsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder> 
+          getColStatsFieldBuilder() {
+        if (colStatsBuilder_ == null) {
+          colStatsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStatsOrBuilder>(
+                  colStats_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          colStats_ = null;
+        }
+        return colStatsBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.AggrStats)
+    }
+
+    static {
+      defaultInstance = new AggrStats(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.AggrStats)
+  }
+
+  public interface AggrStatsBloomFilterOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required bytes db_name = 1;
+    /**
+     * <code>required bytes db_name = 1;</code>
+     */
+    boolean hasDbName();
+    /**
+     * <code>required bytes db_name = 1;</code>
+     */
+    com.google.protobuf.ByteString getDbName();
+
+    // required bytes table_name = 2;
+    /**
+     * <code>required bytes table_name = 2;</code>
+     */
+    boolean hasTableName();
+    /**
+     * <code>required bytes table_name = 2;</code>
+     */
+    com.google.protobuf.ByteString getTableName();
+
+    // required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;
+    /**
+     * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+     */
+    boolean hasBloomFilter();
+    /**
+     * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter getBloomFilter();
+    /**
+     * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilterOrBuilder getBloomFilterOrBuilder();
+
+    // required int64 aggregated_at = 4;
+    /**
+     * <code>required int64 aggregated_at = 4;</code>
+     */
+    boolean hasAggregatedAt();
+    /**
+     * <code>required int64 aggregated_at = 4;</code>
+     */
+    long getAggregatedAt();
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter}
+   */
+  public static final class AggrStatsBloomFilter extends
+      com.google.protobuf.GeneratedMessage
+      implements AggrStatsBloomFilterOrBuilder {
+    // Use AggrStatsBloomFilter.newBuilder() to construct.
+    private AggrStatsBloomFilter(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private AggrStatsBloomFilter(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final AggrStatsBloomFilter defaultInstance;
+    public static AggrStatsBloomFilter getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public AggrStatsBloomFilter getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AggrStatsBloomFilter(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              dbName_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              tableName_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                subBuilder = bloomFilter_.toBuilder();
+              }
+              bloomFilter_ = input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(bloomFilter_);
+                bloomFilter_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000004;
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              aggregatedAt_ = input.readInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<AggrStatsBloomFilter> PARSER =
+        new com.google.protobuf.AbstractParser<AggrStatsBloomFilter>() {
+      public AggrStatsBloomFilter parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new AggrStatsBloomFilter(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AggrStatsBloomFilter> getParserForType() {
+      return PARSER;
+    }
+
+    public interface BloomFilterOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required int32 num_bits = 1;
+      /**
+       * <code>required int32 num_bits = 1;</code>
+       */
+      boolean hasNumBits();
+      /**
+       * <code>required int32 num_bits = 1;</code>
+       */
+      int getNumBits();
+
+      // required int32 num_funcs = 2;
+      /**
+       * <code>required int32 num_funcs = 2;</code>
+       */
+      boolean hasNumFuncs();
+      /**
+       * <code>required int32 num_funcs = 2;</code>
+       */
+      int getNumFuncs();
+
+      // repeated int64 bits = 3;
+      /**
+       * <code>repeated int64 bits = 3;</code>
+       */
+      java.util.List<java.lang.Long> getBitsList();
+      /**
+       * <code>repeated int64 bits = 3;</code>
+       */
+      int getBitsCount();
+      /**
+       * <code>repeated int64 bits = 3;</code>
+       */
+      long getBits(int index);
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter}
+     */
+    public static final class BloomFilter extends
+        com.google.protobuf.GeneratedMessage
+        implements BloomFilterOrBuilder {
+      // Use BloomFilter.newBuilder() to construct.
+      private BloomFilter(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private BloomFilter(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final BloomFilter defaultInstance;
+      public static BloomFilter getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public BloomFilter getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private BloomFilter(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 8: {
+                bitField0_ |= 0x00000001;
+                numBits_ = input.readInt32();
+                break;
+              }
+              case 16: {
+                bitField0_ |= 0x00000002;
+                numFuncs_ = input.readInt32();
+                break;
+              }
+              case 24: {
+                if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                  bits_ = new java.util.ArrayList<java.lang.Long>();
+                  mutable_bitField0_ |= 0x00000004;
+                }
+                bits_.add(input.readInt64());
+                break;
+              }
+              case 26: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
+                  bits_ = new java.util.ArrayList<java.lang.Long>();
+                  mutable_bitField0_ |= 0x00000004;
+                }
+                while (input.getBytesUntilLimit() > 0) {
+                  bits_.add(input.readInt64());
+                }
+                input.popLimit(limit);
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+            bits_ = java.util.Collections.unmodifiableList(bits_);
+          }
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<BloomFilter> PARSER =
+          new com.google.protobuf.AbstractParser<BloomFilter>() {
+        public BloomFilter parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new BloomFilter(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<BloomFilter> getParserForType() {
+        return PARSER;
+      }
+
+      private int bitField0_;
+      // required int32 num_bits = 1;
+      public static final int NUM_BITS_FIELD_NUMBER = 1;
+      private int numBits_;
+      /**
+       * <code>required int32 num_bits = 1;</code>
+       */
+      public boolean hasNumBits() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required int32 num_bits = 1;</code>
+       */
+      public int getNumBits() {
+        return numBits_;
+      }
+
+      // required int32 num_funcs = 2;
+      public static final int NUM_FUNCS_FIELD_NUMBER = 2;
+      private int numFuncs_;
+      /**
+       * <code>required int32 num_funcs = 2;</code>
+       */
+      public boolean hasNumFuncs() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int32 num_funcs = 2;</code>
+       */
+      public int getNumFuncs() {
+        return numFuncs_;
+      }
+
+      // repeated int64 bits = 3;
+      public static final int BITS_FIELD_NUMBER = 3;
+      private java.util.List<java.lang.Long> bits_;
+      /**
+       * <code>repeated int64 bits = 3;</code>
+       */
+      public java.util.List<java.lang.Long>
+          getBitsList() {
+        return bits_;
+      }
+      /**
+       * <code>repeated int64 bits = 3;</code>
+       */
+      public int getBitsCount() {
+        return bits_.size();
+      }
+      /**
+       * <code>repeated int64 bits = 3;</code>
+       */
+      public long getBits(int index) {
+        return bits_.get(index);
+      }
+
+      private void initFields() {
+        numBits_ = 0;
+        numFuncs_ = 0;
+        bits_ = java.util.Collections.emptyList();
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasNumBits()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasNumFuncs()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeInt32(1, numBits_);
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeInt32(2, numFuncs_);
+        }
+        for (int i = 0; i < bits_.size(); i++) {
+          output.writeInt64(3, bits_.get(i));
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(1, numBits_);
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(2, numFuncs_);
+        }
+        {
+          int dataSize = 0;
+          for (int i = 0; i < bits_.size(); i++) {
+            dataSize += com.google.protobuf.CodedOutputStream
+              .computeInt64SizeNoTag(bits_.get(i));
+          }
+          size += dataSize;
+          size += 1 * getBitsList().size();
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilterOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          numBits_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000001);
+          numFuncs_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          bits_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.numBits_ = numBits_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.numFuncs_ = numFuncs_;
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            bits_ = java.util.Collections.unmodifiableList(bits_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.bits_ = bits_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.getDefaultInstance()) return this;
+          if (other.hasNumBits()) {
+            setNumBits(other.getNumBits());
+          }
+          if (other.hasNumFuncs()) {
+            setNumFuncs(other.getNumFuncs());
+          }
+          if (!other.bits_.isEmpty()) {
+            if (bits_.isEmpty()) {
+              bits_ = other.bits_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureBitsIsMutable();
+              bits_.addAll(other.bits_);
+            }
+            onChanged();
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasNumBits()) {
+            
+            return false;
+          }
+          if (!hasNumFuncs()) {
+            
+            return false;
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required int32 num_bits = 1;
+        private int numBits_ ;
+        /**
+         * <code>required int32 num_bits = 1;</code>
+         */
+        public boolean hasNumBits() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required int32 num_bits = 1;</code>
+         */
+        public int getNumBits() {
+          return numBits_;
+        }
+        /**
+         * <code>required int32 num_bits = 1;</code>
+         */
+        public Builder setNumBits(int value) {
+          bitField0_ |= 0x00000001;
+          numBits_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required int32 num_bits = 1;</code>
+         */
+        public Builder clearNumBits() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          numBits_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // required int32 num_funcs = 2;
+        private int numFuncs_ ;
+        /**
+         * <code>required int32 num_funcs = 2;</code>
+         */
+        public boolean hasNumFuncs() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required int32 num_funcs = 2;</code>
+         */
+        public int getNumFuncs() {
+          return numFuncs_;
+        }
+        /**
+         * <code>required int32 num_funcs = 2;</code>
+         */
+        public Builder setNumFuncs(int value) {
+          bitField0_ |= 0x00000002;
+          numFuncs_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required int32 num_funcs = 2;</code>
+         */
+        public Builder clearNumFuncs() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          numFuncs_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // repeated int64 bits = 3;
+        private java.util.List<java.lang.Long> bits_ = java.util.Collections.emptyList();
+        private void ensureBitsIsMutable() {
+          if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+            bits_ = new java.util.ArrayList<java.lang.Long>(bits_);
+            bitField0_ |= 0x00000004;
+           }
+        }
+        /**
+         * <code>repeated int64 bits = 3;</code>
+         */
+        public java.util.List<java.lang.Long>
+            getBitsList() {
+          return java.util.Collections.unmodifiableList(bits_);
+        }
+        /**
+         * <code>repeated int64 bits = 3;</code>
+         */
+        public int getBitsCount() {
+          return bits_.size();
+        }
+        /**
+         * <code>repeated int64 bits = 3;</code>
+         */
+        public long getBits(int index) {
+          return bits_.get(index);
+        }
+        /**
+         * <code>repeated int64 bits = 3;</code>
+         */
+        public Builder setBits(
+            int index, long value) {
+          ensureBitsIsMutable();
+          bits_.set(index, value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int64 bits = 3;</code>
+         */
+        public Builder addBits(long value) {
+          ensureBitsIsMutable();
+          bits_.add(value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int64 bits = 3;</code>
+         */
+        public Builder addAllBits(
+            java.lang.Iterable<? extends java.lang.Long> values) {
+          ensureBitsIsMutable();
+          super.addAll(values, bits_);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int64 bits = 3;</code>
+         */
+        public Builder clearBits() {
+          bits_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter)
+      }
+
+      static {
+        defaultInstance = new BloomFilter(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter)
+    }
+
+    private int bitField0_;
+    // required bytes db_name = 1;
+    public static final int DB_NAME_FIELD_NUMBER = 1;
+    private com.google.protobuf.ByteString dbName_;
+    /**
+     * <code>required bytes db_name = 1;</code>
+     */
+    public boolean hasDbName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required bytes db_name = 1;</code>
+     */
+    public com.google.protobuf.ByteString getDbName() {
+      return dbName_;
+    }
+
+    // required bytes table_name = 2;
+    public static final int TABLE_NAME_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString tableName_;
+    /**
+     * <code>required bytes table_name = 2;</code>
+     */
+    public boolean hasTableName() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required bytes table_name = 2;</code>
+     */
+    public com.google.protobuf.ByteString getTableName() {
+      return tableName_;
+    }
+
+    // required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;
+    public static final int BLOOM_FILTER_FIELD_NUMBER = 3;
+    private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter bloomFilter_;
+    /**
+     * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+     */
+    public boolean hasBloomFilter() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter getBloomFilter() {
+      return bloomFilter_;
+    }
+    /**
+     * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilterOrBuilder getBloomFilterOrBuilder() {
+      return bloomFilter_;
+    }
+
+    // required int64 aggregated_at = 4;
+    public static final int AGGREGATED_AT_FIELD_NUMBER = 4;
+    private long aggregatedAt_;
+    /**
+     * <code>required int64 aggregated_at = 4;</code>
+     */
+    public boolean hasAggregatedAt() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>required int64 aggregated_at = 4;</code>
+     */
+    public long getAggregatedAt() {
+      return aggregatedAt_;
+    }
+
+    private void initFields() {
+      dbName_ = com.google.protobuf.ByteString.EMPTY;
+      tableName_ = com.google.protobuf.ByteString.EMPTY;
+      bloomFilter_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.getDefaultInstance();
+      aggregatedAt_ = 0L;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasDbName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasTableName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasBloomFilter()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasAggregatedAt()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!getBloomFilter().isInitialized()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, dbName_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, tableName_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(3, bloomFilter_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt64(4, aggregatedAt_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, dbName_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, tableName_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, bloomFilter_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, aggregatedAt_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilterOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getBloomFilterFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        dbName_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        tableName_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        if (bloomFilterBuilder_ == null) {
+          bloomFilter_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.getDefaultInstance();
+        } else {
+          bloomFilterBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        aggregatedAt_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.dbName_ = dbName_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.tableName_ = tableName_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (bloomFilterBuilder_ == null) {
+          result.bloomFilter_ = bloomFilter_;
+        } else {
+          result.bloomFilter_ = bloomFilterBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.aggregatedAt_ = aggregatedAt_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.getDefaultInstance()) return this;
+        if (other.hasDbName()) {
+          setDbName(other.getDbName());
+        }
+        if (other.hasTableName()) {
+          setTableName(other.getTableName());
+        }
+        if (other.hasBloomFilter()) {
+          mergeBloomFilter(other.getBloomFilter());
+        }
+        if (other.hasAggregatedAt()) {
+          setAggregatedAt(other.getAggregatedAt());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasDbName()) {
+          
+          return false;
+        }
+        if (!hasTableName()) {
+          
+          return false;
+        }
+        if (!hasBloomFilter()) {
+          
+          return false;
+        }
+        if (!hasAggregatedAt()) {
+          
+          return false;
+        }
+        if (!getBloomFilter().isInitialized()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required bytes db_name = 1;
+      private com.google.protobuf.ByteString dbName_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>required bytes db_name = 1;</code>
+       */
+      public boolean hasDbName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required bytes db_name = 1;</code>
+       */
+      public com.google.protobuf.ByteString getDbName() {
+        return dbName_;
+      }
+      /**
+       * <code>required bytes db_name = 1;</code>
+       */
+      public Builder setDbName(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        dbName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required bytes db_name = 1;</code>
+       */
+      public Builder clearDbName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        dbName_ = getDefaultInstance().getDbName();
+        onChanged();
+        return this;
+      }
+
+      // required bytes table_name = 2;
+      private com.google.protobuf.ByteString tableName_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>required bytes table_name = 2;</code>
+       */
+      public boolean hasTableName() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required bytes table_name = 2;</code>
+       */
+      public com.google.protobuf.ByteString getTableName() {
+        return tableName_;
+      }
+      /**
+       * <code>required bytes table_name = 2;</code>
+       */
+      public Builder setTableName(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        tableName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required bytes table_name = 2;</code>
+       */
+      public Builder clearTableName() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        tableName_ = getDefaultInstance().getTableName();
+        onChanged();
+        return this;
+      }
+
+      // required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter bloomFilter_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilterOrBuilder> bloomFilterBuilder_;
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      public boolean hasBloomFilter() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter getBloomFilter() {
+        if (bloomFilterBuilder_ == null) {
+          return bloomFilter_;
+        } else {
+          return bloomFilterBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      public Builder setBloomFilter(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter value) {
+        if (bloomFilterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bloomFilter_ = value;
+          onChanged();
+        } else {
+          bloomFilterBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      public Builder setBloomFilter(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.Builder builderForValue) {
+        if (bloomFilterBuilder_ == null) {
+          bloomFilter_ = builderForValue.build();
+          onChanged();
+        } else {
+          bloomFilterBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      public Builder mergeBloomFilter(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter value) {
+        if (bloomFilterBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+              bloomFilter_ != org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.getDefaultInstance()) {
+            bloomFilter_ =
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.newBuilder(bloomFilter_).mergeFrom(value).buildPartial();
+          } else {
+            bloomFilter_ = value;
+          }
+          onChanged();
+        } else {
+          bloomFilterBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      public Builder clearBloomFilter() {
+        if (bloomFilterBuilder_ == null) {
+          bloomFilter_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.getDefaultInstance();
+          onChanged();
+        } else {
+          bloomFilterBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.Builder getBloomFilterBuilder() {
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return getBloomFilterFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilterOrBuilder getBloomFilterOrBuilder() {
+        if (bloomFilterBuilder_ != null) {
+          return bloomFilterBuilder_.getMessageOrBuilder();
+        } else {
+          return bloomFilter_;
+        }
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter.BloomFilter bloom_filter = 3;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilterOrBuilder> 
+          getBloomFilterFieldBuilder() {
+        if (bloomFilterBuilder_ == null) {
+          bloomFilterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilter.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsBloomFilter.BloomFilterOrBuilder>(
+                  bloomFilter_,
+                  getParentForChildren(),
+                  isClean());
+          bloomFilter_ = null;
+        }
+        return bloomFilterBuilder_;
+      }
+
+      // required int64 aggregated_at = 4;
+      private long aggregatedAt_ ;
+      /**
+       * <code>required int64 aggregated_at = 4;</code>
+       */
+      public boolean hasAggregatedAt() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>required int64 aggregated_at = 4;</code>
+       */
+      public long getAggregatedAt() {
+        return aggregatedAt_;
+      }
+      /**
+       * <code>required int64 aggregated_at = 4;</code>
+       */
+      public Builder setAggregatedAt(long value) {
+        bitField0_ |= 0x00000008;
+        aggregatedAt_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int64 aggregated_at = 4;</code>
+       */
+      public Builder clearAggregatedAt() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        aggregatedAt_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter)
+    }
+
+    static {
+      defaultInstance = new AggrStatsBloomFilter(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.AggrStatsBloomFilter)
+  }
+
+  public interface AggrStatsInvalidatorFilterOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry> 
+        getToInvalidateList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry getToInvalidate(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    int getToInvalidateCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder> 
+        getToInvalidateOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder getToInvalidateOrBuilder(
+        int index);
+
+    // required int64 run_every = 2;
+    /**
+     * <code>required int64 run_every = 2;</code>
+     */
+    boolean hasRunEvery();
+    /**
+     * <code>required int64 run_every = 2;</code>
+     */
+    long getRunEvery();
+
+    // required int64 max_cache_entry_life = 3;
+    /**
+     * <code>required int64 max_cache_entry_life = 3;</code>
+     */
+    boolean hasMaxCacheEntryLife();
+    /**
+     * <code>required int64 max_cache_entry_life = 3;</code>
+     */
+    long getMaxCacheEntryLife();
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter}
+   */
+  public static final class AggrStatsInvalidatorFilter extends
+      com.google.protobuf.GeneratedMessage
+      implements AggrStatsInvalidatorFilterOrBuilder {
+    // Use AggrStatsInvalidatorFilter.newBuilder() to construct.
+    private AggrStatsInvalidatorFilter(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private AggrStatsInvalidatorFilter(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final AggrStatsInvalidatorFilter defaultInstance;
+    public static AggrStatsInvalidatorFilter getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public AggrStatsInvalidatorFilter getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AggrStatsInvalidatorFilter(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                toInvalidate_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              toInvalidate_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.PARSER, extensionRegistry));
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000001;
+              runEvery_ = input.readInt64();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000002;
+              maxCacheEntryLife_ = input.readInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          toInvalidate_ = java.util.Collections.unmodifiableList(toInvalidate_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<AggrStatsInvalidatorFilter> PARSER =
+        new com.google.protobuf.AbstractParser<AggrStatsInvalidatorFilter>() {
+      public AggrStatsInvalidatorFilter parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new AggrStatsInvalidatorFilter(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AggrStatsInvalidatorFilter> getParserForType() {
+      return PARSER;
+    }
+
+    public interface EntryOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required bytes db_name = 1;
+      /**
+       * <code>required bytes db_name = 1;</code>
+       */
+      boolean hasDbName();
+      /**
+       * <code>required bytes db_name = 1;</code>
+       */
+      com.google.protobuf.ByteString getDbName();
+
+      // required bytes table_name = 2;
+      /**
+       * <code>required bytes table_name = 2;</code>
+       */
+      boolean hasTableName();
+      /**
+       * <code>required bytes table_name = 2;</code>
+       */
+      com.google.protobuf.ByteString getTableName();
+
+      // required bytes part_name = 3;
+      /**
+       * <code>required bytes part_name = 3;</code>
+       */
+      boolean hasPartName();
+      /**
+       * <code>required bytes part_name = 3;</code>
+       */
+      com.google.protobuf.ByteString getPartName();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry}
+     */
+    public static final class Entry extends
+        com.google.protobuf.GeneratedMessage
+        implements EntryOrBuilder {
+      // Use Entry.newBuilder() to construct.
+      private Entry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private Entry(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final Entry defaultInstance;
+      public static Entry getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public Entry getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private Entry(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                bitField0_ |= 0x00000001;
+                dbName_ = input.readBytes();
+                break;
+              }
+              case 18: {
+                bitField0_ |= 0x00000002;
+                tableName_ = input.readBytes();
+                break;
+              }
+              case 26: {
+                bitField0_ |= 0x00000004;
+                partName_ = input.readBytes();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<Entry> PARSER =
+          new com.google.protobuf.AbstractParser<Entry>() {
+        public Entry parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Entry(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<Entry> getParserForType() {
+        return PARSER;
+      }
+
+      private int bitField0_;
+      // required bytes db_name = 1;
+      public static final int DB_NAME_FIELD_NUMBER = 1;
+      private com.google.protobuf.ByteString dbName_;
+      /**
+       * <code>required bytes db_name = 1;</code>
+       */
+      public boolean hasDbName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required bytes db_name = 1;</code>
+       */
+      public com.google.protobuf.ByteString getDbName() {
+        return dbName_;
+      }
+
+      // required bytes table_name = 2;
+      public static final int TABLE_NAME_FIELD_NUMBER = 2;
+      private com.google.protobuf.ByteString tableName_;
+      /**
+       * <code>required bytes table_name = 2;</code>
+       */
+      public boolean hasTableName() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required bytes table_name = 2;</code>
+       */
+      public com.google.protobuf.ByteString getTableName() {
+        return tableName_;
+      }
+
+      // required bytes part_name = 3;
+      public static final int PART_NAME_FIELD_NUMBER = 3;
+      private com.google.protobuf.ByteString partName_;
+      /**
+       * <code>required bytes part_name = 3;</code>
+       */
+      public boolean hasPartName() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required bytes part_name = 3;</code>
+       */
+      public com.google.protobuf.ByteString getPartName() {
+        return partName_;
+      }
+
+      private void initFields() {
+        dbName_ = com.google.protobuf.ByteString.EMPTY;
+        tableName_ = com.google.protobuf.ByteString.EMPTY;
+        partName_ = com.google.protobuf.ByteString.EMPTY;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasDbName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasTableName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasPartName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeBytes(1, dbName_);
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeBytes(2, tableName_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBytes(3, partName_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(1, dbName_);
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(2, tableName_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(3, partName_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          dbName_ = com.google.protobuf.ByteString.EMPTY;
+          bitField0_ = (bitField0_ & ~0x00000001);
+          tableName_ = com.google.protobuf.ByteString.EMPTY;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          partName_ = com.google.protobuf.ByteString.EMPTY;
+          bitField0_ = (bitField0_ & ~0x00000004);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.dbName_ = dbName_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.tableName_ = tableName_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.partName_ = partName_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.getDefaultInstance()) return this;
+          if (other.hasDbName()) {
+            setDbName(other.getDbName());
+          }
+          if (other.hasTableName()) {
+            setTableName(other.getTableName());
+          }
+          if (other.hasPartName()) {
+            setPartName(other.getPartName());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasDbName()) {
+            
+            return false;
+          }
+          if (!hasTableName()) {
+            
+            return false;
+          }
+          if (!hasPartName()) {
+            
+            return false;
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required bytes db_name = 1;
+        private com.google.protobuf.ByteString dbName_ = com.google.protobuf.ByteString.EMPTY;
+        /**
+         * <code>required bytes db_name = 1;</code>
+         */
+        public boolean hasDbName() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required bytes db_name = 1;</code>
+         */
+        public com.google.protobuf.ByteString getDbName() {
+          return dbName_;
+        }
+        /**
+         * <code>required bytes db_name = 1;</code>
+         */
+        public Builder setDbName(com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          dbName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required bytes db_name = 1;</code>
+         */
+        public Builder clearDbName() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          dbName_ = getDefaultInstance().getDbName();
+          onChanged();
+          return this;
+        }
+
+        // required bytes table_name = 2;
+        private com.google.protobuf.ByteString tableName_ = com.google.protobuf.ByteString.EMPTY;
+        /**
+         * <code>required bytes table_name = 2;</code>
+         */
+        public boolean hasTableName() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required bytes table_name = 2;</code>
+         */
+        public com.google.protobuf.ByteString getTableName() {
+          return tableName_;
+        }
+        /**
+         * <code>required bytes table_name = 2;</code>
+         */
+        public Builder setTableName(com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          tableName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required bytes table_name = 2;</code>
+         */
+        public Builder clearTableName() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          tableName_ = getDefaultInstance().getTableName();
+          onChanged();
+          return this;
+        }
+
+        // required bytes part_name = 3;
+        private com.google.protobuf.ByteString partName_ = com.google.protobuf.ByteString.EMPTY;
+        /**
+         * <code>required bytes part_name = 3;</code>
+         */
+        public boolean hasPartName() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>required bytes part_name = 3;</code>
+         */
+        public com.google.protobuf.ByteString getPartName() {
+          return partName_;
+        }
+        /**
+         * <code>required bytes part_name = 3;</code>
+         */
+        public Builder setPartName(com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          partName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required bytes part_name = 3;</code>
+         */
+        public Builder clearPartName() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          partName_ = getDefaultInstance().getPartName();
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry)
+      }
+
+      static {
+        defaultInstance = new Entry(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry)
+    }
+
+    private int bitField0_;
+    // repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;
+    public static final int TO_INVALIDATE_FIELD_NUMBER = 1;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry> toInvalidate_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry> getToInvalidateList() {
+      return toInvalidate_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder> 
+        getToInvalidateOrBuilderList() {
+      return toInvalidate_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    public int getToInvalidateCount() {
+      return toInvalidate_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry getToInvalidate(int index) {
+      return toInvalidate_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder getToInvalidateOrBuilder(
+        int index) {
+      return toInvalidate_.get(index);
+    }
+
+    // required int64 run_every = 2;
+    public static final int RUN_EVERY_FIELD_NUMBER = 2;
+    private long runEvery_;
+    /**
+     * <code>required int64 run_every = 2;</code>
+     */
+    public boolean hasRunEvery() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required int64 run_every = 2;</code>
+     */
+    public long getRunEvery() {
+      return runEvery_;
+    }
+
+    // required int64 max_cache_entry_life = 3;
+    public static final int MAX_CACHE_ENTRY_LIFE_FIELD_NUMBER = 3;
+    private long maxCacheEntryLife_;
+    /**
+     * <code>required int64 max_cache_entry_life = 3;</code>
+     */
+    public boolean hasMaxCacheEntryLife() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int64 max_cache_entry_life = 3;</code>
+     */
+    public long getMaxCacheEntryLife() {
+      return maxCacheEntryLife_;
+    }
+
+    private void initFields() {
+      toInvalidate_ = java.util.Collections.emptyList();
+      runEvery_ = 0L;
+      maxCacheEntryLife_ = 0L;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasRunEvery()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasMaxCacheEntryLife()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      for (int i = 0; i < getToInvalidateCount(); i++) {
+        if (!getToInvalidate(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < toInvalidate_.size(); i++) {
+        output.writeMessage(1, toInvalidate_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt64(2, runEvery_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt64(3, maxCacheEntryLife_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < toInvalidate_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, toInvalidate_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, runEvery_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, maxCacheEntryLife_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilterOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getToInvalidateFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (toInvalidateBuilder_ == null) {
+          toInvalidate_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          toInvalidateBuilder_.clear();
+        }
+        runEvery_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        maxCacheEntryLife_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (toInvalidateBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            toInvalidate_ = java.util.Collections.unmodifiableList(toInvalidate_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.toInvalidate_ = toInvalidate_;
+        } else {
+          result.toInvalidate_ = toInvalidateBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.runEvery_ = runEvery_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.maxCacheEntryLife_ = maxCacheEntryLife_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.getDefaultInstance()) return this;
+        if (toInvalidateBuilder_ == null) {
+          if (!other.toInvalidate_.isEmpty()) {
+            if (toInvalidate_.isEmpty()) {
+              toInvalidate_ = other.toInvalidate_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureToInvalidateIsMutable();
+              toInvalidate_.addAll(other.toInvalidate_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.toInvalidate_.isEmpty()) {
+            if (toInvalidateBuilder_.isEmpty()) {
+              toInvalidateBuilder_.dispose();
+              toInvalidateBuilder_ = null;
+              toInvalidate_ = other.toInvalidate_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              toInvalidateBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getToInvalidateFieldBuilder() : null;
+            } else {
+              toInvalidateBuilder_.addAllMessages(other.toInvalidate_);
+            }
+          }
+        }
+        if (other.hasRunEvery()) {
+          setRunEvery(other.getRunEvery());
+        }
+        if (other.hasMaxCacheEntryLife()) {
+          setMaxCacheEntryLife(other.getMaxCacheEntryLife());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasRunEvery()) {
+          
+          return false;
+        }
+        if (!hasMaxCacheEntryLife()) {
+          
+          return false;
+        }
+        for (int i = 0; i < getToInvalidateCount(); i++) {
+          if (!getToInvalidate(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry> toInvalidate_ =
+        java.util.Collections.emptyList();
+      private void ensureToInvalidateIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          toInvalidate_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry>(toInvalidate_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder> toInvalidateBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry> getToInvalidateList() {
+        if (toInvalidateBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(toInvalidate_);
+        } else {
+          return toInvalidateBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public int getToInvalidateCount() {
+        if (toInvalidateBuilder_ == null) {
+          return toInvalidate_.size();
+        } else {
+          return toInvalidateBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry getToInvalidate(int index) {
+        if (toInvalidateBuilder_ == null) {
+          return toInvalidate_.get(index);
+        } else {
+          return toInvalidateBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder setToInvalidate(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry value) {
+        if (toInvalidateBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureToInvalidateIsMutable();
+          toInvalidate_.set(index, value);
+          onChanged();
+        } else {
+          toInvalidateBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder setToInvalidate(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder builderForValue) {
+        if (toInvalidateBuilder_ == null) {
+          ensureToInvalidateIsMutable();
+          toInvalidate_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          toInvalidateBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder addToInvalidate(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry value) {
+        if (toInvalidateBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureToInvalidateIsMutable();
+          toInvalidate_.add(value);
+          onChanged();
+        } else {
+          toInvalidateBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder addToInvalidate(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry value) {
+        if (toInvalidateBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureToInvalidateIsMutable();
+          toInvalidate_.add(index, value);
+          onChanged();
+        } else {
+          toInvalidateBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder addToInvalidate(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder builderForValue) {
+        if (toInvalidateBuilder_ == null) {
+          ensureToInvalidateIsMutable();
+          toInvalidate_.add(builderForValue.build());
+          onChanged();
+        } else {
+          toInvalidateBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder addToInvalidate(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder builderForValue) {
+        if (toInvalidateBuilder_ == null) {
+          ensureToInvalidateIsMutable();
+          toInvalidate_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          toInvalidateBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder addAllToInvalidate(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry> values) {
+        if (toInvalidateBuilder_ == null) {
+          ensureToInvalidateIsMutable();
+          super.addAll(values, toInvalidate_);
+          onChanged();
+        } else {
+          toInvalidateBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder clearToInvalidate() {
+        if (toInvalidateBuilder_ == null) {
+          toInvalidate_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          toInvalidateBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public Builder removeToInvalidate(int index) {
+        if (toInvalidateBuilder_ == null) {
+          ensureToInvalidateIsMutable();
+          toInvalidate_.remove(index);
+          onChanged();
+        } else {
+          toInvalidateBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder getToInvalidateBuilder(
+          int index) {
+        return getToInvalidateFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder getToInvalidateOrBuilder(
+          int index) {
+        if (toInvalidateBuilder_ == null) {
+          return toInvalidate_.get(index);  } else {
+          return toInvalidateBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder> 
+           getToInvalidateOrBuilderList() {
+        if (toInvalidateBuilder_ != null) {
+          return toInvalidateBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(toInvalidate_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder addToInvalidateBuilder() {
+        return getToInvalidateFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder addToInvalidateBuilder(
+          int index) {
+        return getToInvalidateFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter.Entry to_invalidate = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder> 
+           getToInvalidateBuilderList() {
+        return getToInvalidateFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder> 
+          getToInvalidateFieldBuilder() {
+        if (toInvalidateBuilder_ == null) {
+          toInvalidateBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.Entry.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.AggrStatsInvalidatorFilter.EntryOrBuilder>(
+                  toInvalidate_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          toInvalidate_ = null;
+        }
+        return toInvalidateBuilder_;
+      }
+
+      // required int64 run_every = 2;
+      private long runEvery_ ;
+      /**
+       * <code>required int64 run_every = 2;</code>
+       */
+      public boolean hasRunEvery() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int64 run_every = 2;</code>
+       */
+      public long getRunEvery() {
+        return runEvery_;
+      }
+      /**
+       * <code>required int64 run_every = 2;</code>
+       */
+      public Builder setRunEvery(long value) {
+        bitField0_ |= 0x00000002;
+        runEvery_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int64 run_every = 2;</code>
+       */
+      public Builder clearRunEvery() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        runEvery_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // required int64 max_cache_entry_life = 3;
+      private long maxCacheEntryLife_ ;
+      /**
+       * <code>required int64 max_cache_entry_life = 3;</code>
+       */
+      public boolean hasMaxCacheEntryLife() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int64 max_cache_entry_life = 3;</code>
+       */
+      public long getMaxCacheEntryLife() {
+        return maxCacheEntryLife_;
+      }
+      /**
+       * <code>required int64 max_cache_entry_life = 3;</code>
+       */
+      public Builder setMaxCacheEntryLife(long value) {
+        bitField0_ |= 0x00000004;
+        maxCacheEntryLife_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int64 max_cache_entry_life = 3;</code>
+       */
+      public Builder clearMaxCacheEntryLife() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        maxCacheEntryLife_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter)
+    }
+
+    static {
+      defaultInstance = new AggrStatsInvalidatorFilter(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.AggrStatsInvalidatorFilter)
+  }
+
   public interface ColumnStatsOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -221,6 +3903,21 @@ public final class HbaseMetastoreProto {
      * <code>optional .org.apache.hadoop.hive.metastore.hbase.ColumnStats.DecimalStats decimal_stats = 10;</code>
      */
     org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.DecimalStatsOrBuilder getDecimalStatsOrBuilder();
+
+    // optional string column_name = 11;
+    /**
+     * <code>optional string column_name = 11;</code>
+     */
+    boolean hasColumnName();
+    /**
+     * <code>optional string column_name = 11;</code>
+     */
+    java.lang.String getColumnName();
+    /**
+     * <code>optional string column_name = 11;</code>
+     */
+    com.google.protobuf.ByteString
+        getColumnNameBytes();
   }
   /**
    * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.ColumnStats}
@@ -369,6 +4066,11 @@ public final class HbaseMetastoreProto {
                 decimalStats_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000200;
+              break;
+            }
+            case 90: {
+              bitField0_ |= 0x00000400;
+              columnName_ = input.readBytes();
               break;
             }
           }
@@ -3761,6 +7463,49 @@ public final class HbaseMetastoreProto {
       return decimalStats_;
     }
 
+    // optional string column_name = 11;
+    public static final int COLUMN_NAME_FIELD_NUMBER = 11;
+    private java.lang.Object columnName_;
+    /**
+     * <code>optional string column_name = 11;</code>
+     */
+    public boolean hasColumnName() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    /**
+     * <code>optional string column_name = 11;</code>
+     */
+    public java.lang.String getColumnName() {
+      java.lang.Object ref = columnName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          columnName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string column_name = 11;</code>
+     */
+    public com.google.protobuf.ByteString
+        getColumnNameBytes() {
+      java.lang.Object ref = columnName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        columnName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       lastAnalyzed_ = 0L;
       columnType_ = "";
@@ -3772,6 +7517,7 @@ public final class HbaseMetastoreProto {
       stringStats_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.StringStats.getDefaultInstance();
       binaryStats_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.StringStats.getDefaultInstance();
       decimalStats_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ColumnStats.DecimalStats.getDefaultInstance();
+      columnName_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3825,6 +7571,9 @@ public final class HbaseMetastoreProto {
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeMessage(10, decimalStats_);
       }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeBytes(11, getColumnNameBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -3873,6 +7622,10 @@ public final class HbaseMetastoreProto {
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(10, decimalStats_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(11, getColumnNameBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4040,6 +7793,8 @@ public final class HbaseMetastoreProto {
           decimalStatsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000200);
+        columnName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
 
@@ -4132,6 +7887,10 @@ public final class HbaseMetastoreProto {
         } else {
           result.decimalStats_ = decimalStatsBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.columnName_ = columnName_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4179,6 +7938,11 @@ public final class HbaseMetastoreProto {
         }
         if (other.hasDecimalStats()) {
           mergeDecimalStats(other.getDecimalStats());
+        }
+        if (other.hasColumnName()) {
+          bitField0_ |= 0x00000400;
+          columnName_ = other.columnName_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -5090,6 +8854,80 @@ public final class HbaseMetastoreProto {
           decimalStats_ = null;
         }
         return decimalStatsBuilder_;
+      }
+
+      // optional string column_name = 11;
+      private java.lang.Object columnName_ = "";
+      /**
+       * <code>optional string column_name = 11;</code>
+       */
+      public boolean hasColumnName() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      /**
+       * <code>optional string column_name = 11;</code>
+       */
+      public java.lang.String getColumnName() {
+        java.lang.Object ref = columnName_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          columnName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string column_name = 11;</code>
+       */
+      public com.google.protobuf.ByteString
+          getColumnNameBytes() {
+        java.lang.Object ref = columnName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          columnName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string column_name = 11;</code>
+       */
+      public Builder setColumnName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000400;
+        columnName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string column_name = 11;</code>
+       */
+      public Builder clearColumnName() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        columnName_ = getDefaultInstance().getColumnName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string column_name = 11;</code>
+       */
+      public Builder setColumnNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000400;
+        columnName_ = value;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.ColumnStats)
@@ -25822,6 +29660,31 @@ public final class HbaseMetastoreProto {
   }
 
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -25971,142 +29834,188 @@ public final class HbaseMetastoreProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\033hbase_metastore_proto.proto\022&org.apach" +
-      "e.hadoop.hive.metastore.hbase\"\310\010\n\013Column" +
-      "Stats\022\025\n\rlast_analyzed\030\001 \001(\003\022\023\n\013column_t" +
-      "ype\030\002 \002(\t\022\021\n\tnum_nulls\030\003 \001(\003\022\033\n\023num_dist" +
-      "inct_values\030\004 \001(\003\022T\n\nbool_stats\030\005 \001(\0132@." +
-      "org.apache.hadoop.hive.metastore.hbase.C" +
-      "olumnStats.BooleanStats\022Q\n\nlong_stats\030\006 " +
-      "\001(\0132=.org.apache.hadoop.hive.metastore.h" +
-      "base.ColumnStats.LongStats\022U\n\014double_sta" +
-      "ts\030\007 \001(\0132?.org.apache.hadoop.hive.metast",
-      "ore.hbase.ColumnStats.DoubleStats\022U\n\014str" +
-      "ing_stats\030\010 \001(\0132?.org.apache.hadoop.hive" +
-      ".metastore.hbase.ColumnStats.StringStats" +
-      "\022U\n\014binary_stats\030\t \001(\0132?.org.apache.hado" +
-      "op.hive.metastore.hbase.ColumnStats.Stri" +
-      "ngStats\022W\n\rdecimal_stats\030\n \001(\0132@.org.apa" +
-      "che.hadoop.hive.metastore.hbase.ColumnSt" +
-      "ats.DecimalStats\0325\n\014BooleanStats\022\021\n\tnum_" +
-      "trues\030\001 \001(\003\022\022\n\nnum_falses\030\002 \001(\003\0322\n\tLongS" +
-      "tats\022\021\n\tlow_value\030\001 \001(\022\022\022\n\nhigh_value\030\002 ",
-      "\001(\022\0324\n\013DoubleStats\022\021\n\tlow_value\030\001 \001(\001\022\022\n" +
-      "\nhigh_value\030\002 \001(\001\032=\n\013StringStats\022\026\n\016max_" +
-      "col_length\030\001 \001(\003\022\026\n\016avg_col_length\030\002 \001(\001" +
-      "\032\365\001\n\014DecimalStats\022[\n\tlow_value\030\001 \001(\0132H.o" +
-      "rg.apache.hadoop.hive.metastore.hbase.Co" +
-      "lumnStats.DecimalStats.Decimal\022\\\n\nhigh_v" +
-      "alue\030\002 \001(\0132H.org.apache.hadoop.hive.meta" +
-      "store.hbase.ColumnStats.DecimalStats.Dec" +
-      "imal\032*\n\007Decimal\022\020\n\010unscaled\030\001 \002(\014\022\r\n\005sca" +
-      "le\030\002 \002(\005\"\246\002\n\010Database\022\023\n\013description\030\001 \001",
-      "(\t\022\013\n\003uri\030\002 \001(\t\022F\n\nparameters\030\003 \001(\01322.or" +
-      "g.apache.hadoop.hive.metastore.hbase.Par" +
-      "ameters\022Q\n\nprivileges\030\004 \001(\0132=.org.apache" +
-      ".hadoop.hive.metastore.hbase.PrincipalPr" +
-      "ivilegeSet\022\022\n\nowner_name\030\005 \001(\t\022I\n\nowner_" +
-      "type\030\006 \001(\01625.org.apache.hadoop.hive.meta" +
-      "store.hbase.PrincipalType\":\n\013FieldSchema" +
-      "\022\014\n\004name\030\001 \002(\t\022\014\n\004type\030\002 \002(\t\022\017\n\007comment\030" +
-      "\003 \001(\t\"\206\004\n\010Function\022\022\n\nclass_name\030\001 \001(\t\022\022" +
-      "\n\nowner_name\030\002 \001(\t\022I\n\nowner_type\030\003 \001(\01625",
+      "e.hadoop.hive.metastore.hbase\"h\n\tAggrSta" +
+      "ts\022\023\n\013parts_found\030\001 \002(\003\022F\n\tcol_stats\030\002 \003" +
+      "(\01323.org.apache.hadoop.hive.metastore.hb" +
+      "ase.ColumnStats\"\364\001\n\024AggrStatsBloomFilter" +
+      "\022\017\n\007db_name\030\001 \002(\014\022\022\n\ntable_name\030\002 \002(\014\022^\n" +
+      "\014bloom_filter\030\003 \002(\0132H.org.apache.hadoop." +
+      "hive.metastore.hbase.AggrStatsBloomFilte" +
+      "r.BloomFilter\022\025\n\raggregated_at\030\004 \002(\003\032@\n\013" +
+      "BloomFilter\022\020\n\010num_bits\030\001 \002(\005\022\021\n\tnum_fun",
+      "cs\030\002 \002(\005\022\014\n\004bits\030\003 \003(\003\"\357\001\n\032AggrStatsInva" +
+      "lidatorFilter\022_\n\rto_invalidate\030\001 \003(\0132H.o" +
+      "rg.apache.hadoop.hive.metastore.hbase.Ag" +
+      "grStatsInvalidatorFilter.Entry\022\021\n\trun_ev" +
+      "ery\030\002 \002(\003\022\034\n\024max_cache_entry_life\030\003 \002(\003\032" +
+      "?\n\005Entry\022\017\n\007db_name\030\001 \002(\014\022\022\n\ntable_name\030" +
+      "\002 \002(\014\022\021\n\tpart_name\030\003 \002(\014\"\335\010\n\013ColumnStats" +
+      "\022\025\n\rlast_analyzed\030\001 \001(\003\022\023\n\013column_type\030\002" +
+      " \002(\t\022\021\n\tnum_nulls\030\003 \001(\003\022\033\n\023num_distinct_" +
+      "values\030\004 \001(\003\022T\n\nbool_stats\030\005 \001(\0132@.org.a",
+      "pache.hadoop.hive.metastore.hbase.Column" +
+      "Stats.BooleanStats\022Q\n\nlong_stats\030\006 \001(\0132=" +
       ".org.apache.hadoop.hive.metastore.hbase." +
-      "PrincipalType\022\023\n\013create_time\030\004 \001(\022\022T\n\rfu" +
-      "nction_type\030\005 \001(\0162=.org.apache.hadoop.hi" +
-      "ve.metastore.hbase.Function.FunctionType" +
-      "\022S\n\rresource_uris\030\006 \003(\0132<.org.apache.had" +
-      "oop.hive.metastore.hbase.Function.Resour" +
-      "ceUri\032\254\001\n\013ResourceUri\022`\n\rresource_type\030\001" +
-      " \002(\0162I.org.apache.hadoop.hive.metastore." +
-      "hbase.Function.ResourceUri.ResourceType\022" +
-      "\013\n\003uri\030\002 \002(\t\".\n\014ResourceType\022\007\n\003JAR\020\001\022\010\n",
-      "\004FILE\020\002\022\013\n\007ARCHIVE\020\003\"\030\n\014FunctionType\022\010\n\004" +
-      "JAVA\020\001\",\n\016ParameterEntry\022\013\n\003key\030\001 \002(\t\022\r\n" +
-      "\005value\030\002 \002(\t\"W\n\nParameters\022I\n\tparameter\030" +
-      "\001 \003(\01326.org.apache.hadoop.hive.metastore" +
-      ".hbase.ParameterEntry\"\360\001\n\tPartition\022\023\n\013c" +
-      "reate_time\030\001 \001(\003\022\030\n\020last_access_time\030\002 \001" +
-      "(\003\022\020\n\010location\030\003 \001(\t\022I\n\rsd_parameters\030\004 " +
-      "\001(\01322.org.apache.hadoop.hive.metastore.h" +
-      "base.Parameters\022\017\n\007sd_hash\030\005 \002(\014\022F\n\npara" +
-      "meters\030\006 \001(\01322.org.apache.hadoop.hive.me",
-      "tastore.hbase.Parameters\"\204\001\n\032PrincipalPr" +
-      "ivilegeSetEntry\022\026\n\016principal_name\030\001 \002(\t\022" +
-      "N\n\nprivileges\030\002 \003(\0132:.org.apache.hadoop." +
-      "hive.metastore.hbase.PrivilegeGrantInfo\"" +
-      "\275\001\n\025PrincipalPrivilegeSet\022Q\n\005users\030\001 \003(\013" +
-      "2B.org.apache.hadoop.hive.metastore.hbas" +
-      "e.PrincipalPrivilegeSetEntry\022Q\n\005roles\030\002 " +
-      "\003(\0132B.org.apache.hadoop.hive.metastore.h" +
-      "base.PrincipalPrivilegeSetEntry\"\260\001\n\022Priv" +
-      "ilegeGrantInfo\022\021\n\tprivilege\030\001 \001(\t\022\023\n\013cre",
-      "ate_time\030\002 \001(\003\022\017\n\007grantor\030\003 \001(\t\022K\n\014grant" +
-      "or_type\030\004 \001(\01625.org.apache.hadoop.hive.m" +
-      "etastore.hbase.PrincipalType\022\024\n\014grant_op" +
-      "tion\030\005 \001(\010\"\374\001\n\rRoleGrantInfo\022\026\n\016principa" +
-      "l_name\030\001 \002(\t\022M\n\016principal_type\030\002 \002(\01625.o" +
-      "rg.apache.hadoop.hive.metastore.hbase.Pr" +
-      "incipalType\022\020\n\010add_time\030\003 \001(\003\022\017\n\007grantor" +
-      "\030\004 \001(\t\022K\n\014grantor_type\030\005 \001(\01625.org.apach" +
-      "e.hadoop.hive.metastore.hbase.PrincipalT" +
-      "ype\022\024\n\014grant_option\030\006 \001(\010\"^\n\021RoleGrantIn",
-      "foList\022I\n\ngrant_info\030\001 \003(\01325.org.apache." +
-      "hadoop.hive.metastore.hbase.RoleGrantInf" +
-      "o\"\030\n\010RoleList\022\014\n\004role\030\001 \003(\t\"/\n\004Role\022\023\n\013c" +
-      "reate_time\030\001 \001(\003\022\022\n\nowner_name\030\002 \001(\t\"\254\010\n" +
-      "\021StorageDescriptor\022A\n\004cols\030\001 \003(\01323.org.a" +
-      "pache.hadoop.hive.metastore.hbase.FieldS" +
-      "chema\022\024\n\014input_format\030\002 \001(\t\022\025\n\routput_fo" +
-      "rmat\030\003 \001(\t\022\025\n\ris_compressed\030\004 \001(\010\022\023\n\013num" +
-      "_buckets\030\005 \001(\021\022W\n\nserde_info\030\006 \001(\0132C.org" +
-      ".apache.hadoop.hive.metastore.hbase.Stor",
-      "ageDescriptor.SerDeInfo\022\023\n\013bucket_cols\030\007" +
-      " \003(\t\022R\n\tsort_cols\030\010 \003(\0132?.org.apache.had" +
-      "oop.hive.metastore.hbase.StorageDescript" +
-      "or.Order\022Y\n\013skewed_info\030\t \001(\0132D.org.apac" +
-      "he.hadoop.hive.metastore.hbase.StorageDe" +
-      "scriptor.SkewedInfo\022!\n\031stored_as_sub_dir" +
-      "ectories\030\n \001(\010\032.\n\005Order\022\023\n\013column_name\030\001" +
-      " \002(\t\022\020\n\005order\030\002 \001(\021:\0011\032|\n\tSerDeInfo\022\014\n\004n" +
-      "ame\030\001 \001(\t\022\031\n\021serialization_lib\030\002 \001(\t\022F\n\n" +
-      "parameters\030\003 \001(\01322.org.apache.hadoop.hiv",
-      "e.metastore.hbase.Parameters\032\214\003\n\nSkewedI" +
-      "nfo\022\030\n\020skewed_col_names\030\001 \003(\t\022r\n\021skewed_" +
-      "col_values\030\002 \003(\0132W.org.apache.hadoop.hiv" +
-      "e.metastore.hbase.StorageDescriptor.Skew" +
-      "edInfo.SkewedColValueList\022\206\001\n\036skewed_col" +
-      "_value_location_maps\030\003 \003(\0132^.org.apache." +
-      "hadoop.hive.metastore.hbase.StorageDescr" +
-      "iptor.SkewedInfo.SkewedColValueLocationM" +
-      "ap\032.\n\022SkewedColValueList\022\030\n\020skewed_col_v" +
-      "alue\030\001 \003(\t\0327\n\031SkewedColValueLocationMap\022",
-      "\013\n\003key\030\001 \003(\t\022\r\n\005value\030\002 \002(\t\"\220\004\n\005Table\022\r\n" +
-      "\005owner\030\001 \001(\t\022\023\n\013create_time\030\002 \001(\003\022\030\n\020las" +
-      "t_access_time\030\003 \001(\003\022\021\n\tretention\030\004 \001(\003\022\020" +
-      "\n\010location\030\005 \001(\t\022I\n\rsd_parameters\030\006 \001(\0132" +
-      "2.org.apache.hadoop.hive.metastore.hbase" +
-      ".Parameters\022\017\n\007sd_hash\030\007 \002(\014\022K\n\016partitio" +
-      "n_keys\030\010 \003(\01323.org.apache.hadoop.hive.me" +
-      "tastore.hbase.FieldSchema\022F\n\nparameters\030" +
-      "\t \001(\01322.org.apache.hadoop.hive.metastore" +
-      ".hbase.Parameters\022\032\n\022view_original_text\030",
-      "\n \001(\t\022\032\n\022view_expanded_text\030\013 \001(\t\022\022\n\ntab" +
-      "le_type\030\014 \001(\t\022Q\n\nprivileges\030\r \001(\0132=.org." +
-      "apache.hadoop.hive.metastore.hbase.Princ" +
-      "ipalPrivilegeSet\022\024\n\014is_temporary\030\016 \001(\010*#" +
-      "\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
+      "ColumnStats.LongStats\022U\n\014double_stats\030\007 " +
+      "\001(\0132?.org.apache.hadoop.hive.metastore.h" +
+      "base.ColumnStats.DoubleStats\022U\n\014string_s" +
+      "tats\030\010 \001(\0132?.org.apache.hadoop.hive.meta" +
+      "store.hbase.ColumnStats.StringStats\022U\n\014b" +
+      "inary_stats\030\t \001(\0132?.org.apache.hadoop.hi" +
+      "ve.metastore.hbase.ColumnStats.StringSta",
+      "ts\022W\n\rdecimal_stats\030\n \001(\0132@.org.apache.h" +
+      "adoop.hive.metastore.hbase.ColumnStats.D" +
+      "ecimalStats\022\023\n\013column_name\030\013 \001(\t\0325\n\014Bool" +
+      "eanStats\022\021\n\tnum_trues\030\001 \001(\003\022\022\n\nnum_false" +
+      "s\030\002 \001(\003\0322\n\tLongStats\022\021\n\tlow_value\030\001 \001(\022\022" +
+      "\022\n\nhigh_value\030\002 \001(\022\0324\n\013DoubleStats\022\021\n\tlo" +
+      "w_value\030\001 \001(\001\022\022\n\nhigh_value\030\002 \001(\001\032=\n\013Str" +
+      "ingStats\022\026\n\016max_col_length\030\001 \001(\003\022\026\n\016avg_" +
+      "col_length\030\002 \001(\001\032\365\001\n\014DecimalStats\022[\n\tlow" +
+      "_value\030\001 \001(\0132H.org.apache.hadoop.hive.me",
+      "tastore.hbase.ColumnStats.DecimalStats.D" +
+      "ecimal\022\\\n\nhigh_value\030\002 \001(\0132H.org.apache." +
+      "hadoop.hive.metastore.hbase.ColumnStats." +
+      "DecimalStats.Decimal\032*\n\007Decimal\022\020\n\010unsca" +
+      "led\030\001 \002(\014\022\r\n\005scale\030\002 \002(\005\"\246\002\n\010Database\022\023\n" +
+      "\013description\030\001 \001(\t\022\013\n\003uri\030\002 \001(\t\022F\n\nparam" +
+      "eters\030\003 \001(\01322.org.apache.hadoop.hive.met" +
+      "astore.hbase.Parameters\022Q\n\nprivileges\030\004 " +
+      "\001(\0132=.org.apache.hadoop.hive.metastore.h" +
+      "base.PrincipalPrivilegeSet\022\022\n\nowner_name",
+      "\030\005 \001(\t\022I\n\nowner_type\030\006 \001(\01625.org.apache." +
+      "hadoop.hive.metastore.hbase.PrincipalTyp" +
+      "e\":\n\013FieldSchema\022\014\n\004name\030\001 \002(\t\022\014\n\004type\030\002" +
+      " \002(\t\022\017\n\007comment\030\003 \001(\t\"\206\004\n\010Function\022\022\n\ncl" +
+      "ass_name\030\001 \001(\t\022\022\n\nowner_name\030\002 \001(\t\022I\n\now" +
+      "ner_type\030\003 \001(\01625.org.apache.hadoop.hive." +
+      "metastore.hbase.PrincipalType\022\023\n\013create_" +
+      "time\030\004 \001(\022\022T\n\rfunction_type\030\005 \001(\0162=.org." +
+      "apache.hadoop.hive.metastore.hbase.Funct" +
+      "ion.FunctionType\022S\n\rresource_uris\030\006 \003(\0132",
+      "<.org.apache.hadoop.hive.metastore.hbase" +
+      ".Function.ResourceUri\032\254\001\n\013ResourceUri\022`\n" +
+      "\rresource_type\030\001 \002(\0162I.org.apache.hadoop" +
+      ".hive.metastore.hbase.Function.ResourceU" +
+      "ri.ResourceType\022\013\n\003uri\030\002 \002(\t\".\n\014Resource" +
+      "Type\022\007\n\003JAR\020\001\022\010\n\004FILE\020\002\022\013\n\007ARCHIVE\020\003\"\030\n\014" +
+      "FunctionType\022\010\n\004JAVA\020\001\",\n\016ParameterEntry" +
+      "\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"W\n\nParamete" +
+      "rs\022I\n\tparameter\030\001 \003(\01326.org.apache.hadoo" +
+      "p.hive.metastore.hbase.ParameterEntry\"\360\001",
+      "\n\tPartition\022\023\n\013create_time\030\001 \001(\003\022\030\n\020last" +
+      "_access_time\030\002 \001(\003\022\020\n\010location\030\003 \001(\t\022I\n\r" +
+      "sd_parameters\030\004 \001(\01322.org.apache.hadoop." +
+      "hive.metastore.hbase.Parameters\022\017\n\007sd_ha" +
+      "sh\030\005 \002(\014\022F\n\nparameters\030\006 \001(\01322.org.apach" +
+      "e.hadoop.hive.metastore.hbase.Parameters" +
+      "\"\204\001\n\032PrincipalPrivilegeSetEntry\022\026\n\016princ" +
+      "ipal_name\030\001 \002(\t\022N\n\nprivileges\030\002 \003(\0132:.or" +
+      "g.apache.hadoop.hive.metastore.hbase.Pri" +
+      "vilegeGrantInfo\"\275\001\n\025PrincipalPrivilegeSe",
+      "t\022Q\n\005users\030\001 \003(\0132B.org.apache.hadoop.hiv" +
+      "e.metastore.hbase.PrincipalPrivilegeSetE" +
+      "ntry\022Q\n\005roles\030\002 \003(\0132B.org.apache.hadoop." +
+      "hive.metastore.hbase.PrincipalPrivilegeS" +
+      "etEntry\"\260\001\n\022PrivilegeGrantInfo\022\021\n\tprivil" +
+      "ege\030\001 \001(\t\022\023\n\013create_time\030\002 \001(\003\022\017\n\007granto" +
+      "r\030\003 \001(\t\022K\n\014grantor_type\030\004 \001(\01625.org.apac" +
+      "he.hadoop.hive.metastore.hbase.Principal" +
+      "Type\022\024\n\014grant_option\030\005 \001(\010\"\374\001\n\rRoleGrant" +
+      "Info\022\026\n\016principal_name\030\001 \002(\t\022M\n\016principa",
+      "l_type\030\002 \002(\01625.org.apache.hadoop.hive.me" +
+      "tastore.hbase.PrincipalType\022\020\n\010add_time\030" +
+      "\003 \001(\003\022\017\n\007grantor\030\004 \001(\t\022K\n\014grantor_type\030\005" +
+      " \001(\01625.org.apache.hadoop.hive.metastore." +
+      "hbase.PrincipalType\022\024\n\014grant_option\030\006 \001(" +
+      "\010\"^\n\021RoleGrantInfoList\022I\n\ngrant_info\030\001 \003" +
+      "(\01325.org.apache.hadoop.hive.metastore.hb" +
+      "ase.RoleGrantInfo\"\030\n\010RoleList\022\014\n\004role\030\001 " +
+      "\003(\t\"/\n\004Role\022\023\n\013create_time\030\001 \001(\003\022\022\n\nowne" +
+      "r_name\030\002 \001(\t\"\254\010\n\021StorageDescriptor\022A\n\004co",
+      "ls\030\001 \003(\01323.org.apache.hadoop.hive.metast" +
+      "ore.hbase.FieldSchema\022\024\n\014input_format\030\002 " +
+      "\001(\t\022\025\n\routput_format\030\003 \001(\t\022\025\n\ris_compres" +
+      "sed\030\004 \001(\010\022\023\n\013num_buckets\030\005 \001(\021\022W\n\nserde_" +
+      "info\030\006 \001(\0132C.org.apache.hadoop.hive.meta" +
+      "store.hbase.StorageDescriptor.SerDeInfo\022" +
+      "\023\n\013bucket_cols\030\007 \003(\t\022R\n\tsort_cols\030\010 \003(\0132" +
+      "?.org.apache.hadoop.hive.metastore.hbase" +
+      ".StorageDescriptor.Order\022Y\n\013skewed_info\030" +
+      "\t \001(\0132D.org.apache.hadoop.hive.metastore",
+      ".hbase.StorageDescriptor.SkewedInfo\022!\n\031s" +
+      "tored_as_sub_directories\030\n \001(\010\032.\n\005Order\022" +
+      "\023\n\013column_name\030\001 \002(\t\022\020\n\005order\030\002 \001(\021:\0011\032|" +
+      "\n\tSerDeInfo\022\014\n\004name\030\001 \001(\t\022\031\n\021serializati" +
+      "on_lib\030\002 \001(\t\022F\n\nparameters\030\003 \001(\01322.org.a" +
+      "pache.hadoop.hive.metastore.hbase.Parame" +
+      "ters\032\214\003\n\nSkewedInfo\022\030\n\020skewed_col_names\030" +
+      "\001 \003(\t\022r\n\021skewed_col_values\030\002 \003(\0132W.org.a" +
+      "pache.hadoop.hive.metastore.hbase.Storag" +
+      "eDescriptor.SkewedInfo.SkewedColValueLis",
+      "t\022\206\001\n\036skewed_col_value_location_maps\030\003 \003" +
+      "(\0132^.org.apache.hadoop.hive.metastore.hb" +
+      "ase.StorageDescriptor.SkewedInfo.SkewedC" +
+      "olValueLocationMap\032.\n\022SkewedColValueList" +
+      "\022\030\n\020skewed_col_value\030\001 \003(\t\0327\n\031SkewedColV" +
+      "alueLocationMap\022\013\n\003key\030\001 \003(\t\022\r\n\005value\030\002 " +
+      "\002(\t\"\220\004\n\005Table\022\r\n\005owner\030\001 \001(\t\022\023\n\013create_t" +
+      "ime\030\002 \001(\003\022\030\n\020last_access_time\030\003 \001(\003\022\021\n\tr" +
+      "etention\030\004 \001(\003\022\020\n\010location\030\005 \001(\t\022I\n\rsd_p" +
+      "arameters\030\006 \001(\01322.org.apache.hadoop.hive",
+      ".metastore.hbase.Parameters\022\017\n\007sd_hash\030\007" +
+      " \002(\014\022K\n\016partition_keys\030\010 \003(\01323.org.apach" +
+      "e.hadoop.hive.metastore.hbase.FieldSchem" +
+      "a\022F\n\nparameters\030\t \001(\01322.org.apache.hadoo" +
+      "p.hive.metastore.hbase.Parameters\022\032\n\022vie" +
+      "w_original_text\030\n \001(\t\022\032\n\022view_expanded_t" +
+      "ext\030\013 \001(\t\022\022\n\ntable_type\030\014 \001(\t\022Q\n\nprivile" +
+      "ges\030\r \001(\0132=.org.apache.hadoop.hive.metas" +
+      "tore.hbase.PrincipalPrivilegeSet\022\024\n\014is_t" +
+      "emporary\030\016 \001(\010*#\n\rPrincipalType\022\010\n\004USER\020",
+      "\000\022\010\n\004ROLE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_descriptor =
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor =
             getDescriptor().getMessageTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor,
+              new java.lang.String[] { "PartsFound", "ColStats", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_descriptor =
+            getDescriptor().getMessageTypes().get(1);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_descriptor,
+              new java.lang.String[] { "DbName", "TableName", "BloomFilter", "AggregatedAt", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsBloomFilter_BloomFilter_descriptor,
+              new java.lang.String[] { "NumBits", "NumFuncs", "Bits", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_descriptor =
+            getDescriptor().getMessageTypes().get(2);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_descriptor,
+              new java.lang.String[] { "ToInvalidate", "RunEvery", "MaxCacheEntryLife", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStatsInvalidatorFilter_Entry_descriptor,
+              new java.lang.String[] { "DbName", "TableName", "PartName", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_descriptor =
+            getDescriptor().getMessageTypes().get(3);
           internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_descriptor,
-              new java.lang.String[] { "LastAnalyzed", "ColumnType", "NumNulls", "NumDistinctValues", "BoolStats", "LongStats", "DoubleStats", "StringStats", "BinaryStats", "DecimalStats", });
+              new java.lang.String[] { "LastAnalyzed", "ColumnType", "NumNulls", "NumDistinctValues", "BoolStats", "LongStats", "DoubleStats", "StringStats", "BinaryStats", "DecimalStats", "ColumnName", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_BooleanStats_descriptor =
             internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_descriptor.getNestedTypes().get(0);
           internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_BooleanStats_fieldAccessorTable = new
@@ -26144,19 +30053,19 @@ public final class HbaseMetastoreProto {
               internal_static_org_apache_hadoop_hive_metastore_hbase_ColumnStats_DecimalStats_Decimal_descriptor,
               new java.lang.String[] { "Unscaled", "Scale", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Database_descriptor =
-            getDescriptor().getMessageTypes().get(1);
+            getDescriptor().getMessageTypes().get(4);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Database_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Database_descriptor,
               new java.lang.String[] { "Description", "Uri", "Parameters", "Privileges", "OwnerName", "OwnerType", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_descriptor =
-            getDescriptor().getMessageTypes().get(2);
+            getDescriptor().getMessageTypes().get(5);
           internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_FieldSchema_descriptor,
               new java.lang.String[] { "Name", "Type", "Comment", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor =
-            getDescriptor().getMessageTypes().get(3);
+            getDescriptor().getMessageTypes().get(6);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Function_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Function_descriptor,
@@ -26168,67 +30077,67 @@ public final class HbaseMetastoreProto {
               internal_static_org_apache_hadoop_hive_metastore_hbase_Function_ResourceUri_descriptor,
               new java.lang.String[] { "ResourceType", "Uri", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor =
-            getDescriptor().getMessageTypes().get(4);
+            getDescriptor().getMessageTypes().get(7);
           internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_ParameterEntry_descriptor,
               new java.lang.String[] { "Key", "Value", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_descriptor =
-            getDescriptor().getMessageTypes().get(5);
+            getDescriptor().getMessageTypes().get(8);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Parameters_descriptor,
               new java.lang.String[] { "Parameter", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_descriptor =
-            getDescriptor().getMessageTypes().get(6);
+            getDescriptor().getMessageTypes().get(9);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Partition_descriptor,
               new java.lang.String[] { "CreateTime", "LastAccessTime", "Location", "SdParameters", "SdHash", "Parameters", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_descriptor =
-            getDescriptor().getMessageTypes().get(7);
+            getDescriptor().getMessageTypes().get(10);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSetEntry_descriptor,
               new java.lang.String[] { "PrincipalName", "Privileges", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_descriptor =
-            getDescriptor().getMessageTypes().get(8);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrincipalPrivilegeSet_descriptor,
               new java.lang.String[] { "Users", "Roles", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_descriptor =
-            getDescriptor().getMessageTypes().get(9);
+            getDescriptor().getMessageTypes().get(12);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PrivilegeGrantInfo_descriptor,
               new java.lang.String[] { "Privilege", "CreateTime", "Grantor", "GrantorType", "GrantOption", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(13);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfo_descriptor,
               new java.lang.String[] { "PrincipalName", "PrincipalType", "AddTime", "Grantor", "GrantorType", "GrantOption", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(14);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleGrantInfoList_descriptor,
               new java.lang.String[] { "GrantInfo", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_RoleList_descriptor,
               new java.lang.String[] { "Role", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Role_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(16);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Role_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Role_descriptor,
               new java.lang.String[] { "CreateTime", "OwnerName", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_descriptor,
@@ -26264,7 +30173,7 @@ public final class HbaseMetastoreProto {
               internal_static_org_apache_hadoop_hive_metastore_hbase_StorageDescriptor_SkewedInfo_SkewedColValueLocationMap_descriptor,
               new java.lang.String[] { "Key", "Value", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Table_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor,

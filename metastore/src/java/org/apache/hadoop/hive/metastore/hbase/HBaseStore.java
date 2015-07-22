@@ -18,6 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.CacheLoader;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -370,6 +372,9 @@ public class HBaseStore implements RawStore {
     openTransaction();
     try {
       getHBase().deletePartition(dbName, tableName, part_vals);
+      // Drop any cached stats that reference this partitions
+      getHBase().getStatsCache().invalidate(dbName, tableName,
+          buildExternalPartName(dbName, tableName, part_vals));
       commit = true;
       return true;
     } catch (IOException e) {
@@ -1472,7 +1477,7 @@ public class HBaseStore implements RawStore {
     openTransaction();
     try {
       getHBase().updateStatistics(colStats.getStatsDesc().getDbName(),
-          colStats.getStatsDesc().getTableName(), null, null, colStats);
+          colStats.getStatsDesc().getTableName(), null, colStats);
       commit = true;
       return true;
     } catch (IOException e) {
@@ -1491,8 +1496,10 @@ public class HBaseStore implements RawStore {
     openTransaction();
     try {
       getHBase().updateStatistics(statsObj.getStatsDesc().getDbName(),
-          statsObj.getStatsDesc().getTableName(), statsObj.getStatsDesc().getPartName(),
-          partVals, statsObj);
+          statsObj.getStatsDesc().getTableName(), partVals, statsObj);
+      // We need to invalidate aggregates that include this partition
+      getHBase().getStatsCache().invalidate(statsObj.getStatsDesc().getDbName(),
+          statsObj.getStatsDesc().getTableName(), statsObj.getStatsDesc().getPartName());
       commit = true;
       return true;
     } catch (IOException e) {
@@ -1528,7 +1535,6 @@ public class HBaseStore implements RawStore {
     for (String partName : partNames) {
       partVals.add(partNameToVals(partName));
     }
-    for (String partName : partNames) partVals.add(partNameToVals(partName));
     boolean commit = false;
     openTransaction();
     try {
@@ -1574,9 +1580,24 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      AggrStats stats = getHBase().getAggrStats(dbName, tblName, partNames, partVals, colNames);
+      AggrStats aggrStats = new AggrStats();
+      for (String colName : colNames) {
+        try {
+          AggrStats oneCol =
+              getHBase().getStatsCache().get(dbName, tblName, partNames, colName);
+          if (oneCol.getColStatsSize() > 0) {
+            assert oneCol.getColStatsSize() == 1;
+            aggrStats.setPartsFound(aggrStats.getPartsFound() + oneCol.getPartsFound());
+            aggrStats.addToColStats(oneCol.getColStats().get(0));
+          }
+        } catch (CacheLoader.InvalidCacheLoadException e) {
+          LOG.debug("Found no stats for column " + colName);
+          // This means we have no stats at all for this column for these partitions, so just
+          // move on.
+        }
+      }
       commit = true;
-      return stats;
+      return aggrStats;
     } catch (IOException e) {
       LOG.error("Unable to fetch aggregate column statistics", e);
       throw new MetaException("Failed fetching aggregate column statistics, " + e.getMessage());
@@ -2068,7 +2089,7 @@ public class HBaseStore implements RawStore {
     return FileUtils.makePartName(partCols, partVals);
   }
 
-  private List<String> partNameToVals(String name) {
+  private static List<String> partNameToVals(String name) {
     if (name == null) return null;
     List<String> vals = new ArrayList<String>();
     String[] kvp = name.split("/");
@@ -2076,6 +2097,14 @@ public class HBaseStore implements RawStore {
       vals.add(kv.substring(kv.indexOf('=') + 1));
     }
     return vals;
+  }
+
+  static List<List<String>> partNameListToValsList(List<String> partNames) {
+    List<List<String>> valLists = new ArrayList<List<String>>(partNames.size());
+    for (String partName : partNames) {
+      valLists.add(partNameToVals(partName));
+    }
+    return valLists;
   }
 
   private String likeToRegex(String like) {
@@ -2096,5 +2125,9 @@ public class HBaseStore implements RawStore {
       LOG.debug("Rolling back transaction");
       rollbackTransaction();
     }
+  }
+
+  @VisibleForTesting HBaseReadWrite backdoor() {
+    return getHBase();
   }
 }
