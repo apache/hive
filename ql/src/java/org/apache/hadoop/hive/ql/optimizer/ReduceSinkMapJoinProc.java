@@ -21,12 +21,15 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -58,11 +61,13 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
+import com.google.common.collect.Sets;
+
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
 
 public class ReduceSinkMapJoinProc implements NodeProcessor {
 
-  protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
+  private final static Log LOG = LogFactory.getLog(ReduceSinkMapJoinProc.class.getName());
 
   /* (non-Javadoc)
    * This processor addresses the RS-MJ case that occurs in tez on the small/hash
@@ -79,7 +84,40 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     GenTezProcContext context = (GenTezProcContext) procContext;
     MapJoinOperator mapJoinOp = (MapJoinOperator)nd;
 
-    if (stack.size() < 2 || !(stack.get(stack.size() - 2) instanceof ReduceSinkOperator)) {
+    // remember the original parent list before we start modifying it.
+    if (!context.mapJoinParentMap.containsKey(mapJoinOp)) {
+      List<Operator<?>> parents = new ArrayList<Operator<?>>(mapJoinOp.getParentOperators());
+      context.mapJoinParentMap.put(mapJoinOp, parents);
+    }
+
+    boolean isBigTable = stack.size() < 2
+        || !(stack.get(stack.size() - 2) instanceof ReduceSinkOperator);
+
+    ReduceSinkOperator parentRS = null;
+    if (!isBigTable) {
+      parentRS = (ReduceSinkOperator)stack.get(stack.size() - 2);
+
+      // For dynamic partitioned hash join, the big table will also be coming from a ReduceSinkOperator
+      // Check for this condition.
+      // TODO: use indexOf(), or parentRS.getTag()?
+      isBigTable =
+          (mapJoinOp.getParentOperators().indexOf(parentRS) == mapJoinOp.getConf().getPosBigTable());
+    }
+
+    if (mapJoinOp.getConf().isDynamicPartitionHashJoin() &&
+        !context.mapJoinToUnprocessedSmallTableReduceSinks.containsKey(mapJoinOp)) {
+      // Initialize set of unprocessed small tables
+      Set<ReduceSinkOperator> rsSet = Sets.newIdentityHashSet();
+      for (int pos = 0; pos < mapJoinOp.getParentOperators().size(); ++pos) {
+        if (pos == mapJoinOp.getConf().getPosBigTable()) {
+          continue;
+        }
+        rsSet.add((ReduceSinkOperator) mapJoinOp.getParentOperators().get(pos));
+      }
+      context.mapJoinToUnprocessedSmallTableReduceSinks.put(mapJoinOp, rsSet);
+    }
+
+    if (isBigTable) {
       context.currentMapJoinOperators.add(mapJoinOp);
       return null;
     }
@@ -87,14 +125,29 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     context.preceedingWork = null;
     context.currentRootOperator = null;
 
-    ReduceSinkOperator parentRS = (ReduceSinkOperator)stack.get(stack.size() - 2);
+    return processReduceSinkToHashJoin(parentRS, mapJoinOp, context);
+  }
+
+  public static BaseWork getMapJoinParentWork(GenTezProcContext context, Operator<?> parentRS) {
+    BaseWork parentWork;
+    if (context.unionWorkMap.containsKey(parentRS)) {
+      parentWork = context.unionWorkMap.get(parentRS);
+    } else {
+      assert context.childToWorkMap.get(parentRS).size() == 1;
+      parentWork = context.childToWorkMap.get(parentRS).get(0);
+    }
+    return parentWork;
+  }
+
+  public static Object processReduceSinkToHashJoin(ReduceSinkOperator parentRS, MapJoinOperator mapJoinOp,
+      GenTezProcContext context) throws SemanticException {
     // remove the tag for in-memory side of mapjoin
     parentRS.getConf().setSkipTag(true);
     parentRS.setSkipTag(true);
-    // remember the original parent list before we start modifying it.
-    if (!context.mapJoinParentMap.containsKey(mapJoinOp)) {
-      List<Operator<?>> parents = new ArrayList<Operator<?>>(mapJoinOp.getParentOperators());
-      context.mapJoinParentMap.put(mapJoinOp, parents);
+
+    // Mark this small table as being processed
+    if (mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+      context.mapJoinToUnprocessedSmallTableReduceSinks.get(mapJoinOp).remove(parentRS);
     }
 
     List<BaseWork> mapJoinWork = null;
@@ -109,13 +162,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
      *
      */
     mapJoinWork = context.mapJoinWorkMap.get(mapJoinOp);
-    BaseWork parentWork;
-    if (context.unionWorkMap.containsKey(parentRS)) {
-      parentWork = context.unionWorkMap.get(parentRS);
-    } else {
-      assert context.childToWorkMap.get(parentRS).size() == 1;
-      parentWork = context.childToWorkMap.get(parentRS).get(0);
-    }
+    BaseWork parentWork = getMapJoinParentWork(context, parentRS);
 
     // set the link between mapjoin and parent vertex
     int pos = context.mapJoinParentMap.get(mapJoinOp).indexOf(parentRS);
@@ -161,6 +208,11 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           keyCount /= bucketCount;
           tableSize /= bucketCount;
         }
+      } else if (joinConf.isDynamicPartitionHashJoin()) {
+        // For dynamic partitioned hash join, assuming table is split evenly among the reduce tasks.
+        bucketCount = parentRS.getConf().getNumReducers();
+        keyCount /= bucketCount;
+        tableSize /= bucketCount;
       }
     }
     LOG.info("Mapjoin " + mapJoinOp + ", pos: " + pos + " --> " + parentWork.getName() + " ("
@@ -218,6 +270,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
         }
       }
+    } else if (mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+      edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
     }
     TezEdgeProperty edgeProp = new TezEdgeProperty(null, edgeType, numBuckets);
 
@@ -232,7 +286,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
         }
 
         ReduceSinkOperator r = null;
-        if (parentRS.getConf().getOutputName() != null) {
+        if (context.connectedReduceSinks.contains(parentRS)) {
           LOG.debug("Cloning reduce sink for multi-child broadcast edge");
           // we've already set this one up. Need to clone for the next work.
           r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
