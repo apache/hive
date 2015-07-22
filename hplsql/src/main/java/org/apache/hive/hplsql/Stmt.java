@@ -48,6 +48,58 @@ public class Stmt {
   }
   
   /**
+   * ALLOCATE CURSOR statement
+   */
+  public Integer allocateCursor(HplsqlParser.Allocate_cursor_stmtContext ctx) { 
+    trace(ctx, "ALLOCATE CURSOR");
+    String name = ctx.ident(0).getText();
+    Var cur = null;
+    if (ctx.T_PROCEDURE() != null) {
+      cur = exec.consumeReturnCursor(ctx.ident(1).getText());
+    }
+    else if (ctx.T_RESULT() != null) {
+      cur = exec.findVariable(ctx.ident(1).getText());
+      if (cur != null && cur.type != Type.RS_LOCATOR) {
+        cur = null;
+      }
+    }
+    if (cur == null) {
+      trace(ctx, "Cursor for procedure not found: " + name);
+      exec.signal(Signal.Type.SQLEXCEPTION);
+      return -1;
+    }
+    exec.addVariable(new Var(name, Type.CURSOR, cur.value)); 
+    return 0; 
+  }
+  
+  /**
+   * ASSOCIATE LOCATOR statement
+   */
+  public Integer associateLocator(HplsqlParser.Associate_locator_stmtContext ctx) { 
+    trace(ctx, "ASSOCIATE LOCATOR");
+    int cnt = ctx.ident().size();
+    if (cnt < 2) {
+      return -1;
+    }
+    String procedure = ctx.ident(cnt - 1).getText();
+    for (int i = 0; i < cnt - 1; i++) {
+      Var cur = exec.consumeReturnCursor(procedure);
+      if (cur != null) {
+        String name = ctx.ident(i).getText(); 
+        Var loc = exec.findVariable(name);
+        if (loc == null) {
+          loc = new Var(name, Type.RS_LOCATOR, cur.value);
+          exec.addVariable(loc);
+        }
+        else {
+          loc.setValue(cur.value);
+        }
+      }      
+    }
+    return 0; 
+  }
+  
+  /**
    * DECLARE cursor statement
    */
   public Integer declareCursor(HplsqlParser.Declare_cursor_itemContext ctx) { 
@@ -62,7 +114,11 @@ public class Stmt {
     else if (ctx.select_stmt() != null) {
       query.setSelectCtx(ctx.select_stmt());
     }
-    exec.addVariable(new Var(name, Type.CURSOR, query));
+    if (ctx.cursor_with_return() != null) {
+      query.setWithReturn(true);
+    }
+    Var var = new Var(name, Type.CURSOR, query);
+    exec.addVariable(var);
     return 0; 
   }
   
@@ -262,6 +318,9 @@ public class Stmt {
       else if (!exec.getOffline()) {
         exec.setSqlCode(0);
       }
+      if (query.getWithReturn()) {
+        exec.addReturnCursor(var);
+      }
     }
     else {
       trace(ctx, "Cursor not found: " + cursor);
@@ -278,8 +337,8 @@ public class Stmt {
   public Integer fetch(HplsqlParser.Fetch_stmtContext ctx) { 
     trace(ctx, "FETCH");
     String name = ctx.L_ID(0).toString();
-    Var cursor = exec.findVariable(name);
-    if (cursor == null || cursor.type != Type.CURSOR) {
+    Var cursor = exec.findCursor(name);
+    if (cursor == null) {
       trace(ctx, "Cursor not found: " + name);
       exec.setSqlCode(-1);
       exec.signal(Signal.Type.SQLEXCEPTION);
@@ -319,8 +378,10 @@ public class Stmt {
         }
         else {
           exec.setSqlCode(100);
-          exec.signal(Signal.Type.NOTFOUND);
         }
+      }
+      else {
+        exec.setSqlCode(-1);
       }
     } 
     catch (SQLException e) {

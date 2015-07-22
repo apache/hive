@@ -41,10 +41,12 @@ public class Conn {
   Exec exec;
   Timer timer = new Timer();
   boolean trace = false;  
+  boolean info = false;
   
   Conn(Exec e) {
     exec = e;  
     trace = exec.getTrace();
+    info = exec.getInfo();
   }
   
   /**
@@ -59,8 +61,8 @@ public class Conn {
       ResultSet rs = stmt.executeQuery(query.sql);
       timer.stop();
       query.set(conn, stmt, rs);      
-      if (trace) {
-        exec.trace(null, "Query executed successfully (" + timer.format() + ")");
+      if (info) {
+        exec.info(null, "Query executed successfully (" + timer.format() + ")");
       }      
     } catch (Exception e) {
       query.setError(e);
@@ -169,8 +171,8 @@ public class Conn {
     timer.start();
     Connection conn = DriverManager.getConnection(url, usr, pwd);
     timer.stop();
-    if (trace) {
-      exec.trace(null, "Open connection: " + url + " (" + timer.format() + ")");
+    if (info) {
+      exec.info(null, "Open connection: " + url + " (" + timer.format() + ")");
     }
     return conn;
   }

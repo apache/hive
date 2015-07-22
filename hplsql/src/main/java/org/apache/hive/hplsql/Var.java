@@ -32,7 +32,7 @@ import java.sql.Timestamp;
 public class Var {
 
 	// Data types
-	public enum Type {BOOL, CURSOR, DATE, DEC, FILE, IDENT, BIGINT, INTERVAL, STRING, STRINGLIST, TIMESTAMP, NULL};
+	public enum Type {BOOL, CURSOR, DATE, DEC, FILE, IDENT, BIGINT, INTERVAL, RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL};
 	public static Var Empty = new Var();
 	public static Var Null = new Var(Type.NULL);
 	
@@ -194,6 +194,10 @@ public class Var {
     return this;
   }
 	
+	public void setValue(Object value) {
+    this.value = value;
+  }
+	
 	/**
    * Set the new value from a result set
    */
@@ -243,6 +247,9 @@ public class Var {
     }
     else if (type.equalsIgnoreCase("UTL_FILE.FILE_TYPE")) {
       return Type.FILE;
+    }
+    else if (type.toUpperCase().startsWith("RESULT_SET_LOCATOR")) {
+      return Type.RS_LOCATOR;
     }
     return Type.NULL;
   }

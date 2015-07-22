@@ -35,6 +35,8 @@ public class Query {
   ResultSet rs;
   Exception exception;
   
+  boolean withReturn = false;
+  
   Query() {
   }
   
@@ -103,6 +105,13 @@ public class Query {
   }
   
   /**
+   * Set whether the cursor is returned to the caller
+   */
+  public void setWithReturn(boolean withReturn) {
+    this.withReturn = withReturn;
+  }
+  
+  /**
    * Set an execution error
    */
   public void setError(Exception e) {
@@ -130,6 +139,13 @@ public class Query {
    */
   public Connection getConnection() {
     return conn;
+  }
+  
+  /**
+   * Check if the cursor defined as a return cursor to client
+   */
+  public boolean getWithReturn() {
+    return withReturn;
   }
   
   /**
