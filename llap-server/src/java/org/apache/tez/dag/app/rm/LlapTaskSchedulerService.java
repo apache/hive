@@ -60,7 +60,6 @@ import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.Clock;
-import org.apache.tez.dag.app.AppContext;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -68,16 +67,18 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.hadoop.yarn.util.SystemClock;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
+import org.apache.tez.serviceplugins.api.TaskScheduler;
+import org.apache.tez.serviceplugins.api.TaskSchedulerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LlapTaskSchedulerService extends TaskSchedulerService {
+public class LlapTaskSchedulerService extends TaskScheduler {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskSchedulerService.class);
 
-  private final ExecutorService appCallbackExecutor;
-  private final TaskSchedulerAppCallback appClientDelegate;
+  private final Configuration conf;
 
   // interface into the registry service
   private ServiceInstanceSet activeInstances;
@@ -150,16 +151,17 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   @VisibleForTesting
   StatsPerDag dagStats = new StatsPerDag();
 
-  public LlapTaskSchedulerService(TaskSchedulerAppCallback appClient, AppContext appContext,
-      String clientHostname, int clientPort, String trackingUrl, long customAppIdIdentifier,
-      Configuration conf) {
-    // Accepting configuration here to allow setting up fields as final
+  public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext) {
+    this(taskSchedulerContext, new SystemClock());
+  }
 
-    super(LlapTaskSchedulerService.class.getName());
-    this.appCallbackExecutor = createAppCallbackExecutorService();
-    this.appClientDelegate = createAppCallbackDelegate(appClient);
-    this.clock = appContext.getClock();
-    this.containerFactory = new ContainerFactory(appContext, customAppIdIdentifier);
+  @VisibleForTesting
+  public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext, Clock clock) {
+    super(taskSchedulerContext);
+    this.clock = clock;
+    this.conf = taskSchedulerContext.getInitialConfiguration();
+    this.containerFactory = new ContainerFactory(taskSchedulerContext.getApplicationAttemptId(),
+        taskSchedulerContext.getCustomClusterIdentifier());
     this.memoryPerInstance =
         conf.getInt(LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB,
             LlapConfiguration.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT);
@@ -206,12 +208,12 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   }
 
   @Override
-  public void serviceInit(Configuration conf) {
+  public void initialize() {
     registry.init(conf);
   }
 
   @Override
-  public void serviceStart() throws IOException {
+  public void start() throws IOException {
     writeLock.lock();
     try {
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
@@ -249,7 +251,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   }
 
   @Override
-  public void serviceStop() {
+  public void shutdown() {
     writeLock.lock();
     try {
       if (!this.isStopped.getAndSet(true)) {
@@ -268,7 +270,6 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
         if (registry != null) {
           registry.stop();
         }
-        appCallbackExecutor.shutdownNow();
       }
     } finally {
       writeLock.unlock();
@@ -479,7 +480,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     } finally {
       writeLock.unlock();
     }
-    appClientDelegate.containerBeingReleased(taskInfo.containerId);
+    getContext().containerBeingReleased(taskInfo.containerId);
     return true;
   }
 
@@ -505,11 +506,6 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
   private ExecutorService createAppCallbackExecutorService() {
     return Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
         .setNameFormat("TaskSchedulerAppCaller #%d").setDaemon(true).build());
-  }
-
-  @VisibleForTesting
-  TaskSchedulerAppCallback createAppCallbackDelegate(TaskSchedulerAppCallback realAppClient) {
-    return new TaskSchedulerAppCallbackWrapper(realAppClient, appCallbackExecutor);
   }
 
   /**
@@ -791,7 +787,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
         writeLock.unlock();
       }
 
-      appClientDelegate.taskAllocated(taskInfo.task, taskInfo.clientCookie, container);
+      getContext().taskAllocated(taskInfo.task, taskInfo.clientCookie, container);
       return true;
     }
   }
@@ -842,7 +838,7 @@ public class LlapTaskSchedulerService extends TaskSchedulerService {
     if (preemptedTaskList != null) {
       for (TaskInfo taskInfo : preemptedTaskList) {
         LOG.info("DBG: Preempting task {}", taskInfo);
-        appClientDelegate.preemptContainer(taskInfo.containerId);
+        getContext().preemptContainer(taskInfo.containerId);
       }
     }
     // The schedule loop will be triggered again when the deallocateTask request comes in for the
