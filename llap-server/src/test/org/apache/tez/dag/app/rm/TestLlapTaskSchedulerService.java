@@ -24,6 +24,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,11 +41,11 @@ import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
-import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ControlledClock;
-import org.apache.tez.dag.app.rm.TaskSchedulerService.TaskSchedulerAppCallback;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
+import org.apache.tez.serviceplugins.api.TaskSchedulerContext;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -57,7 +58,7 @@ public class TestLlapTaskSchedulerService {
   private static final String HOST3 = "host3";
 
   @Test (timeout = 5000)
-  public void testSimpleLocalAllocation() {
+  public void testSimpleLocalAllocation() throws IOException {
 
     TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
 
@@ -79,7 +80,7 @@ public class TestLlapTaskSchedulerService {
   }
 
   @Test (timeout = 5000)
-  public void testSimpleNoLocalityAllocation() {
+  public void testSimpleNoLocalityAllocation() throws IOException {
     TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
 
     try {
@@ -101,7 +102,7 @@ public class TestLlapTaskSchedulerService {
   // task triggers the next task to be scheduled.
 
   @Test(timeout=5000)
-  public void testPreemption() throws InterruptedException {
+  public void testPreemption() throws InterruptedException, IOException {
 
     Priority priority1 = Priority.newInstance(1);
     Priority priority2 = Priority.newInstance(2);
@@ -155,7 +156,7 @@ public class TestLlapTaskSchedulerService {
   }
 
   @Test(timeout=5000)
-  public void testNodeDisabled() {
+  public void testNodeDisabled() throws IOException {
     TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper(10000l);
     try {
       Priority priority1 = Priority.newInstance(1);
@@ -200,7 +201,7 @@ public class TestLlapTaskSchedulerService {
   }
 
   // Flaky test disabled @Test(timeout=5000)
-  public void testNodeReEnabled() throws InterruptedException {
+  public void testNodeReEnabled() throws InterruptedException, IOException {
     // Based on actual timing.
     TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper(1000l);
     try {
@@ -274,22 +275,22 @@ public class TestLlapTaskSchedulerService {
   private static class TestTaskSchedulerServiceWrapper {
     static final Resource resource = Resource.newInstance(1024, 1);
     Configuration conf;
-    TaskSchedulerAppCallback mockAppCallback = mock(TaskSchedulerAppCallback.class);
-    AppContext mockAppContext = mock(AppContext.class);
+    TaskSchedulerContext mockAppCallback = mock(TaskSchedulerContext.class);
     ControlledClock clock = new ControlledClock(new SystemClock());
     ApplicationAttemptId appAttemptId = ApplicationAttemptId.newInstance(ApplicationId.newInstance(1000, 1), 1);
     LlapTaskSchedulerServiceForTest ts;
 
-    TestTaskSchedulerServiceWrapper() {
+    TestTaskSchedulerServiceWrapper() throws IOException {
       this(2000l);
     }
 
-    TestTaskSchedulerServiceWrapper(long disableTimeoutMillis) {
+    TestTaskSchedulerServiceWrapper(long disableTimeoutMillis) throws IOException {
       this(disableTimeoutMillis, new String[]{HOST1, HOST2, HOST3}, 4,
           LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE_DEFAULT);
     }
 
-    TestTaskSchedulerServiceWrapper(long disableTimeoutMillis, String[] hosts, int numExecutors, int waitQueueSize) {
+    TestTaskSchedulerServiceWrapper(long disableTimeoutMillis, String[] hosts, int numExecutors, int waitQueueSize) throws
+        IOException {
       conf = new Configuration();
       conf.setStrings(LlapConfiguration.LLAP_DAEMON_SERVICE_HOSTS, hosts);
       conf.setInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS, numExecutors);
@@ -298,12 +299,13 @@ public class TestLlapTaskSchedulerService {
           disableTimeoutMillis);
       conf.setBoolean(LlapTaskSchedulerServiceForTest.LLAP_TASK_SCHEDULER_IN_TEST, true);
 
-      doReturn(clock).when(mockAppContext).getClock();
-      doReturn(appAttemptId).when(mockAppContext).getApplicationAttemptId();
+      doReturn(appAttemptId).when(mockAppCallback).getApplicationAttemptId();
+      doReturn(11111l).when(mockAppCallback).getCustomClusterIdentifier();
+      doReturn(conf).when(mockAppCallback).getInitialConfiguration();
 
-      ts = new LlapTaskSchedulerServiceForTest(mockAppCallback, mockAppContext, null, 0, null, 11111, conf);
+      ts = new LlapTaskSchedulerServiceForTest(mockAppCallback, clock);
 
-      ts.init(conf);
+      ts.initialize();
       ts.start();
       // One shceduler pass from the nodes that are added at startup
       awaitSchedulerRunNumber(1);
@@ -329,7 +331,7 @@ public class TestLlapTaskSchedulerService {
     }
 
     void shutdown() {
-      ts.stop();
+      ts.shutdown();
     }
 
     void allocateTask(Object task, String[] hosts, Priority priority, Object clientCookie) {
@@ -358,18 +360,9 @@ public class TestLlapTaskSchedulerService {
     private boolean forTestSchedulerGoSignal = false;
 
     public LlapTaskSchedulerServiceForTest(
-        TaskSchedulerAppCallback appClient, AppContext appContext, String clientHostname,
-        int clientPort, String trackingUrl, long customAppIdIdentifier,
-        Configuration conf) {
-      super(appClient, appContext, clientHostname, clientPort, trackingUrl, customAppIdIdentifier,
-          conf);
-      this.inTest = conf.getBoolean(LLAP_TASK_SCHEDULER_IN_TEST, false);
-    }
-
-    @Override
-    TaskSchedulerAppCallback createAppCallbackDelegate(
-        TaskSchedulerAppCallback realAppClient) {
-      return realAppClient;
+        TaskSchedulerContext appClient, Clock clock) {
+      super(appClient, clock);
+      this.inTest = appClient.getInitialConfiguration().getBoolean(LLAP_TASK_SCHEDULER_IN_TEST, false);
     }
 
     protected void schedulePendingTasks() {

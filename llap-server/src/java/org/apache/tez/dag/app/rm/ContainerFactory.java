@@ -23,20 +23,17 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.tez.dag.app.AppContext;
 
 class ContainerFactory {
   final ApplicationAttemptId customAppAttemptId;
   AtomicLong nextId;
 
-  public ContainerFactory(AppContext appContext, long appIdLong) {
+  public ContainerFactory(ApplicationAttemptId appAttemptId, long appIdLong) {
     this.nextId = new AtomicLong(1);
     ApplicationId appId =
-        ApplicationId.newInstance(appIdLong, appContext.getApplicationAttemptId()
-            .getApplicationId().getId());
+        ApplicationId.newInstance(appIdLong, appAttemptId.getApplicationId().getId());
     this.customAppAttemptId =
-        ApplicationAttemptId.newInstance(appId, appContext.getApplicationAttemptId()
-            .getAttemptId());
+        ApplicationAttemptId.newInstance(appId, appAttemptId.getAttemptId());
   }
 
   public Container createContainer(Resource capability, Priority priority, String hostname,
