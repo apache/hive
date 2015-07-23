@@ -18,7 +18,7 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import co.cask.tephra.hbase98.coprocessor.TransactionProcessor;
+import co.cask.tephra.hbase10.coprocessor.TransactionProcessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
@@ -46,7 +46,7 @@ public class HBaseIntegrationTests {
 
   protected static HBaseTestingUtility utility;
   protected static HBaseAdmin admin;
-  protected static Map<String, String> emptyParameters = new HashMap<String, String>();
+  protected static Map<String, String> emptyParameters = new HashMap<>();
   protected static HiveConf conf;
 
   protected HBaseStore store;
@@ -57,6 +57,9 @@ public class HBaseIntegrationTests {
         System.getProperty(HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS.varname);
     boolean testingTephra =
         connectionClassName != null && connectionClassName.equals(TephraHBaseConnection.class.getName());
+    if (testingTephra) {
+      LOG.info("Testing with Tephra");
+    }
     utility = new HBaseTestingUtility();
     utility.startMiniCluster();
     conf = new HiveConf(utility.getConfiguration(), HBaseIntegrationTests.class);

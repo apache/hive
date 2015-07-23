@@ -138,7 +138,7 @@
     </dependency>
     <dependency>
       <groupId>co.cask.tephra</groupId>
-      <artifactId>tephra-hbase-compat-0.98</artifactId>
+      <artifactId>tephra-hbase-compat-1.0</artifactId>
       <version>${tephra.version}</version>
     </dependency>
     <!-- test inter-project -->
