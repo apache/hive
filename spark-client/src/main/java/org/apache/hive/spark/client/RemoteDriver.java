@@ -43,10 +43,10 @@ import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.rpc.Rpc;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.counter.SparkCounters;
+import org.apache.spark.JavaSparkListener;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerApplicationEnd;
 import org.apache.spark.scheduler.SparkListenerApplicationStart;
 import org.apache.spark.scheduler.SparkListenerBlockManagerAdded;
@@ -438,7 +438,7 @@ public class RemoteDriver {
 
   }
 
-  private class ClientListener implements SparkListener {
+  private class ClientListener extends JavaSparkListener {
 
     private final Map<Integer, Integer> stageToJobId = Maps.newHashMap();
 

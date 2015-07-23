@@ -23,8 +23,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.spark.JavaSparkListener;
 import org.apache.spark.executor.TaskMetrics;
-import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerApplicationEnd;
 import org.apache.spark.scheduler.SparkListenerApplicationStart;
 import org.apache.spark.scheduler.SparkListenerBlockManagerAdded;
@@ -45,7 +45,7 @@ import org.apache.spark.scheduler.SparkListenerExecutorAdded;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class JobMetricsListener implements SparkListener {
+public class JobMetricsListener extends JavaSparkListener {
 
   private static final Log LOG = LogFactory.getLog(JobMetricsListener.class);
 
