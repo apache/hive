@@ -55,11 +55,14 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
 
   private final Map<CommonJoinOperator, Map<Byte, List<String>>> joinPrunedColLists;
 
+  private final Map<UnionOperator, List<Integer>> unionPrunedColLists;
+
   public ColumnPrunerProcCtx(ParseContext pctx) {
     this.pctx = pctx;
     this.opToParseCtxMap = pctx.getOpParseCtx();
     prunedColLists = new HashMap<Operator<? extends OperatorDesc>, List<String>>();
     joinPrunedColLists = new HashMap<CommonJoinOperator, Map<Byte, List<String>>>();
+    unionPrunedColLists = new HashMap<>();
   }
 
   public ParseContext getParseContext() {
@@ -68,6 +71,10 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
 
   public Map<CommonJoinOperator, Map<Byte, List<String>>> getJoinPrunedColLists() {
     return joinPrunedColLists;
+  }
+
+  public Map<UnionOperator, List<Integer>> getUnionPrunedColLists() {
+    return unionPrunedColLists;
   }
 
   /**
@@ -103,10 +110,20 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     }
     List<String> colList = null;
     for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
-      List<String> prunList;
+      List<String> prunList = null;
       if (child instanceof CommonJoinOperator) {
         int tag = child.getParentOperators().indexOf(curOp);
         prunList = joinPrunedColLists.get(child).get((byte) tag);
+      } else if (child instanceof UnionOperator) {
+        List<Integer> positions = unionPrunedColLists.get(child);
+        if (positions != null && positions.size() > 0) {
+          prunList = new ArrayList<>();
+          RowSchema oldRS = curOp.getSchema();
+          for (Integer pos : positions) {
+            ColumnInfo colInfo = oldRS.getSignature().get(pos);
+            prunList.add(colInfo.getInternalName());
+          }
+        }
       } else {
         prunList = prunedColLists.get(child);
       }
@@ -120,6 +137,44 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
       }
     }
     return colList;
+  }
+
+  /**
+   * Creates the list of internal column names(these names are used in the
+   * RowResolver and are different from the external column names) that are
+   * needed in the subtree. These columns eventually have to be selected from
+   * the table scan.
+   *
+   * @param curOp
+   *          The root of the operator subtree.
+   * @param child
+   *          The consumer.
+   * @return List<String> of the internal column names.
+   * @throws SemanticException
+   */
+  public List<String> genColLists(Operator<? extends OperatorDesc> curOp,
+          Operator<? extends OperatorDesc> child)
+      throws SemanticException {
+    if (curOp.getChildOperators() == null) {
+      return null;
+    }
+    if (child instanceof CommonJoinOperator) {
+      int tag = child.getParentOperators().indexOf(curOp);
+      return joinPrunedColLists.get(child).get((byte) tag);
+    } else if (child instanceof UnionOperator) {
+      List<Integer> positions = unionPrunedColLists.get(child);
+      List<String> prunList = new ArrayList<>();
+      if (positions != null && positions.size() > 0) {
+        RowSchema oldRS = curOp.getSchema();
+        for (Integer pos : positions) {
+          ColumnInfo colInfo = oldRS.getSignature().get(pos);
+          prunList.add(colInfo.getInternalName());
+        }
+      }
+      return prunList;
+    } else {
+      return prunedColLists.get(child);
+    }
   }
 
   /**
