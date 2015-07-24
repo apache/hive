@@ -288,54 +288,7 @@ public class VectorizedRowBatchCtx {
           || ((partitionValues != null) &&
               partitionValues.containsKey(fieldRefs.get(j).getFieldName()))) {
         ObjectInspector foi = fieldRefs.get(j).getFieldObjectInspector();
-        switch (foi.getCategory()) {
-        case PRIMITIVE: {
-          PrimitiveObjectInspector poi = (PrimitiveObjectInspector) foi;
-          // Vectorization currently only supports the following data types:
-          // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BINARY, STRING, CHAR, VARCHAR, TIMESTAMP,
-          // DATE and DECIMAL
-          switch (poi.getPrimitiveCategory()) {
-          case BOOLEAN:
-          case BYTE:
-          case SHORT:
-          case INT:
-          case LONG:
-          case TIMESTAMP:
-          case DATE:
-          case INTERVAL_YEAR_MONTH:
-          case INTERVAL_DAY_TIME:
-            result.cols[j] = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-            break;
-          case FLOAT:
-          case DOUBLE:
-            result.cols[j] = new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-            break;
-          case BINARY:
-          case STRING:
-          case CHAR:
-          case VARCHAR:
-            result.cols[j] = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-            break;
-          case DECIMAL:
-            DecimalTypeInfo tInfo = (DecimalTypeInfo) poi.getTypeInfo();
-            result.cols[j] = new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-                tInfo.precision(), tInfo.scale());
-            break;
-          default:
-            throw new RuntimeException("Vectorizaton is not supported for datatype:"
-                + poi.getPrimitiveCategory());
-          }
-          break;
-        }
-        case LIST:
-        case MAP:
-        case STRUCT:
-        case UNION:
-          throw new HiveException("Vectorizaton is not supported for datatype:"
-              + foi.getCategory());
-        default:
-          throw new HiveException("Unknown ObjectInspector category!");
-        }    
+        result.cols[j] = VectorizedBatchUtil.createColumnVector(foi);
       }
     }
     result.numCols = fieldRefs.size();

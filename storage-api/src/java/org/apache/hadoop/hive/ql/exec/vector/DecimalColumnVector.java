@@ -77,12 +77,23 @@ public class DecimalColumnVector extends ColumnVector {
 
   @Override
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
-    HiveDecimal hiveDec = ((DecimalColumnVector) inputVector).vector[inputElementNum].getHiveDecimal(precision, scale);
-    if (hiveDec == null) {
-      noNulls = false;
-      isNull[outElementNum] = true;
+    if (inputVector.isRepeating) {
+      inputElementNum = 0;
+    }
+    if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
+      HiveDecimal hiveDec =
+          ((DecimalColumnVector) inputVector).vector[inputElementNum]
+              .getHiveDecimal(precision, scale);
+      if (hiveDec == null) {
+        isNull[outElementNum] = true;
+        noNulls = false;
+      } else {
+        isNull[outElementNum] = false;
+        vector[outElementNum].set(hiveDec);
+      }
     } else {
-      vector[outElementNum].set(hiveDec);
+      isNull[outElementNum] = true;
+      noNulls = false;
     }
   }
 
@@ -122,5 +133,21 @@ public class DecimalColumnVector extends ColumnVector {
     // E.g. For scale 2 the minimum is "0.01"
     HiveDecimal minimumNonZeroValue = HiveDecimal.create(BigInteger.ONE, scale);
     vector[elementNum].set(minimumNonZeroValue);
+  }
+
+  @Override
+  public void ensureSize(int size, boolean preserveData) {
+    if (size > vector.length) {
+      super.ensureSize(size, preserveData);
+      HiveDecimalWritable[] oldArray = vector;
+      vector = new HiveDecimalWritable[size];
+      if (preserveData) {
+        // we copy all of the values to avoid creating more objects
+        System.arraycopy(oldArray, 0, vector, 0 , oldArray.length);
+        for(int i= oldArray.length; i < vector.length; ++i) {
+          vector[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
+        }
+      }
+    }
   }
 }
