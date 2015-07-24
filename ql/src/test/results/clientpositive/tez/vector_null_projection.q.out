@@ -110,6 +110,8 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
+                    expressions: null (type: void)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
@@ -129,6 +131,8 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
+                    expressions: null (type: void)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE

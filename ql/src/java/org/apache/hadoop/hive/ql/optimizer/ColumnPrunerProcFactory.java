@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDTFOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
@@ -951,6 +953,44 @@ public final class ColumnPrunerProcFactory {
       AbstractMapJoinOperator<MapJoinDesc> op = (AbstractMapJoinOperator<MapJoinDesc>) nd;
       pruneJoinOperator(ctx, op, op.getConf(), op.getColumnExprMap(), op
           .getConf().getRetainList(), true);
+      return null;
+    }
+  }
+
+  /**
+   * The Factory method to get UnionProc class.
+   *
+   * @return UnionProc
+   */
+  public static ColumnPrunerUnionProc getUnionProc() {
+    return new ColumnPrunerUnionProc();
+  }
+
+  /**
+   * The Node Processor for Column Pruning on Union Operators.
+   */
+  public static class ColumnPrunerUnionProc implements NodeProcessor {
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+        throws SemanticException {
+      ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
+      UnionOperator op = (UnionOperator) nd;
+      List<String> childColLists = cppCtx.genColLists(op);
+      if (childColLists == null) {
+        return null;
+      }
+      RowSchema inputSchema = op.getSchema();
+      if (inputSchema != null) {
+        List<Integer> positions = new ArrayList<>();
+        RowSchema oldRS = op.getSchema();
+        for (int index = 0; index < oldRS.getSignature().size(); index++) {
+          ColumnInfo colInfo = oldRS.getSignature().get(index);
+          if (childColLists.contains(colInfo.getInternalName())) {
+            positions.add(index);
+          }
+        }
+        cppCtx.getUnionPrunedColLists().put(op, positions);
+      }
       return null;
     }
   }
