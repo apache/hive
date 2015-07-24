@@ -71,7 +71,7 @@ import java.util.Set;
 /**
  * Class to manage storing object in and reading them from HBase.
  */
-class HBaseReadWrite {
+public class HBaseReadWrite {
 
   @VisibleForTesting final static String AGGR_STATS_TABLE = "HBMS_AGGR_STATS";
   @VisibleForTesting final static String DB_TABLE = "HBMS_DBS";
@@ -90,10 +90,10 @@ class HBaseReadWrite {
   /**
    * List of tables in HBase
    */
-  final static String[] tableNames = { AGGR_STATS_TABLE, DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE,
+  public final static String[] tableNames = { AGGR_STATS_TABLE, DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE,
                                        PART_TABLE, USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE,
                                        SECURITY_TABLE, SEQUENCES_TABLE, TABLE_TABLE};
-  final static Map<String, List<byte[]>> columnFamilies =
+  public final static Map<String, List<byte[]>> columnFamilies =
       new HashMap<String, List<byte[]>> (tableNames.length);
 
   static {
@@ -178,7 +178,7 @@ class HBaseReadWrite {
    * @param configuration Configuration object
    * @return thread's instance of HBaseReadWrite
    */
-  static HBaseReadWrite getInstance(Configuration configuration) {
+  public static HBaseReadWrite getInstance(Configuration configuration) {
     staticConf = configuration;
     return self.get();
   }

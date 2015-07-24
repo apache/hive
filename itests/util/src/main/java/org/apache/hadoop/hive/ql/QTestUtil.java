@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.io.BufferedInputStream;
@@ -65,6 +66,11 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseTestingUtility;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -75,7 +81,10 @@ import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.hbase.HBaseReadWrite;
+import org.apache.hadoop.hive.metastore.hbase.TephraHBaseConnection;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -162,6 +171,8 @@ public class QTestUtil {
   public interface SuiteAddTestFunctor {
     public void addTestToSuite(TestSuite suite, Object setup, String tName);
   }
+  private HBaseTestingUtility utility;
+  private boolean snapshotTaken = false;
 
   static {
     for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
@@ -277,10 +288,6 @@ public class QTestUtil {
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     }
 
-    // Plug verifying metastore in for testing.
-    conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-      "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
-
     if (mr != null) {
       assert dfs != null;
 
@@ -342,6 +349,51 @@ public class QTestUtil {
     return "jceks://file" + new Path(keyDir, "test.jks").toUri();
   }
 
+  private void rebuildHBase() throws Exception {
+    HBaseAdmin admin = utility.getHBaseAdmin();
+    if (!snapshotTaken) {
+      for (String tableName : HBaseReadWrite.tableNames) {
+        List<byte[]> families = HBaseReadWrite.columnFamilies.get(tableName);
+        HTableDescriptor desc = new HTableDescriptor(
+            TableName.valueOf(tableName));
+        for (byte[] family : families) {
+          HColumnDescriptor columnDesc = new HColumnDescriptor(family);
+          desc.addFamily(columnDesc);
+        }
+        try {
+          admin.disableTable(tableName);
+          admin.deleteTable(tableName);
+        } catch (IOException e) {
+          System.out.println(e.getMessage());
+        }
+        admin.createTable(desc);
+      }
+    } else {
+      for (String tableName : HBaseReadWrite.tableNames) {
+        admin.disableTable(tableName);
+        admin.restoreSnapshot("snapshot_" + tableName);
+        admin.enableTable(tableName);
+      }
+      try {
+        db.createDatabase(new org.apache.hadoop.hive.metastore.api.Database(
+            DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT, new Warehouse(conf)
+                .getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null));
+      } catch (Exception e) {
+        // Ignore if default database already exist
+      }
+      SessionState.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
+    }
+    admin.close();
+  }
+
+  private void startMiniHBaseCluster() throws Exception {
+    utility = new HBaseTestingUtility();
+    utility.startMiniCluster();
+    conf = new HiveConf(utility.getConfiguration(), Driver.class);
+    rebuildHBase();
+    HBaseReadWrite.getInstance(conf);
+  }
+
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
       String confDir, String hadoopVer, String initScript, String cleanupScript)
     throws Exception {
@@ -351,6 +403,7 @@ public class QTestUtil {
       HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
+    startMiniHBaseCluster();
     conf = new HiveConf(Driver.class);
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
@@ -444,6 +497,7 @@ public class QTestUtil {
         sparkSession = null;
       }
     }
+    utility.shutdownMiniCluster();
     if (mr != null) {
       mr.shutdown();
       mr = null;
@@ -731,6 +785,8 @@ public class QTestUtil {
       return;
     }
 
+    rebuildHBase();
+
     clearTablesCreatedDuringTests();
     clearKeysCreatedInTests();
 
@@ -820,6 +876,12 @@ public class QTestUtil {
     cliDriver.processLine(initCommands);
 
     conf.setBoolean("hive.test.init.phase", false);
+
+    HBaseAdmin admin = utility.getHBaseAdmin();
+    for (String tableName : HBaseReadWrite.tableNames) {
+      admin.snapshot("snapshot_" + tableName, tableName);
+    }
+    snapshotTaken = true;
   }
 
   public void init() throws Exception {
@@ -1571,7 +1633,7 @@ public class QTestUtil {
       // close it first.
       SessionState ss = SessionState.get();
       if (ss != null && ss.out != null && ss.out != System.out) {
-	ss.out.close();
+  ss.out.close();
       }
 
       String inSorted = inFileName + SORT_SUFFIX;
