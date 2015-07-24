@@ -232,7 +232,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   /**
    * Push a boolean value to the stack
    */
-  public void stackPush(boolean val) {
+  public void stackPush(Boolean val) {
     exec.stack.push(new Var(val));  
   }
 
@@ -832,7 +832,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     while (!signals.empty()) {
       Signal sig = signals.pop();
       if (sig.type == Signal.Type.SQLEXCEPTION) {
-        System.err.println("Unhandled exception in PL/HQL");
+        System.err.println("Unhandled exception in HPL/SQL");
       }
       if (sig.exception != null) {
         sig.exception.printStackTrace(); 
@@ -1320,6 +1320,15 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     return 0; 
   }
+  
+  /**
+   * Cursor attribute %ISOPEN, %FOUND and %NOTFOUND
+   */
+  @Override 
+  public Integer visitExpr_cursor_attribute(HplsqlParser.Expr_cursor_attributeContext ctx) {
+    exec.expr.execCursorAttribute(ctx);
+    return 0; 
+  }
     
   /**
    * Function call
@@ -1497,6 +1506,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitReturn_stmt(HplsqlParser.Return_stmtContext ctx) {
     return exec.stmt.return_(ctx); 
   }  
+  
+  /** 
+   * SET session options
+   */
+  @Override 
+  public Integer visitSet_current_schema_option(HplsqlParser.Set_current_schema_optionContext ctx) { 
+    return exec.stmt.setCurrentSchema(ctx); 
+  }
   
   /**
    * MAP OBJECT statement

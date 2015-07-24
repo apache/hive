@@ -1,0 +1,33 @@
+Ln:2 DECLARE CURSOR c1
+Ln:3 DECLARE v1 VARCHAR
+Ln:5 IF
+Ln:5 ELSE executed
+%ISOPEN correct
+Ln:11 OPEN
+Ln:11 c1: SELECT 'A' FROM src LIMIT 1
+Ln:13 IF
+Ln:13 IF TRUE executed
+%ISOPEN correct
+Ln:19 IF
+Ln:19 IF TRUE executed
+%FOUND correct
+Ln:25 IF
+Ln:25 IF TRUE executed
+%NOTFOUND correct
+Ln:31 FETCH
+Ln:31 COLUMN: _c0, string
+Ln:31 SET v1 = A
+Ln:33 IF
+Ln:33 IF TRUE executed
+%FOUND correct
+Ln:39 IF
+Ln:39 ELSE executed
+%NOTFOUND correct
+Ln:45 FETCH
+Ln:47 IF
+Ln:47 ELSE executed
+%FOUND correct
+Ln:53 IF
+Ln:53 IF TRUE executed
+%NOTFOUND correct
+Ln:59 CLOSE

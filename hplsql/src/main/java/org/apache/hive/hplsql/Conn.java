@@ -57,6 +57,7 @@ public class Conn {
       Connection conn = getConnection(connName);
       runPreSql(connName, conn);
       Statement stmt = conn.createStatement();
+      exec.info(null, "Starting query");
       timer.start();
       ResultSet rs = stmt.executeQuery(query.sql);
       timer.stop();
@@ -84,10 +85,15 @@ public class Conn {
       runPreSql(connName, conn);
       Statement stmt = conn.createStatement();
       ResultSet rs = null;
+      exec.info(null, "Starting SQL statement");
+      timer.start();
       if (stmt.execute(sql)) {
         rs = stmt.getResultSet();        
       } 
       query.set(conn, stmt, rs);
+      if (info) {
+        exec.info(null, "SQL statement executed successfully (" + timer.format() + ")");
+      } 
     } catch (Exception e) {
       query.setError(e);
     }
