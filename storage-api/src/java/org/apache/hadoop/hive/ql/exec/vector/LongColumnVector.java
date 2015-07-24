@@ -181,7 +181,17 @@ public class LongColumnVector extends ColumnVector {
 
   @Override
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
-    vector[outElementNum] = ((LongColumnVector) inputVector).vector[inputElementNum];
+    if (inputVector.isRepeating) {
+      inputElementNum = 0;
+    }
+    if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
+      isNull[outElementNum] = false;
+      vector[outElementNum] =
+          ((LongColumnVector) inputVector).vector[inputElementNum];
+    } else {
+      isNull[outElementNum] = true;
+      noNulls = false;
+    }
   }
 
   @Override
@@ -193,6 +203,22 @@ public class LongColumnVector extends ColumnVector {
       buffer.append(vector[row]);
     } else {
       buffer.append("null");
+    }
+  }
+
+  @Override
+  public void ensureSize(int size, boolean preserveData) {
+    if (size > vector.length) {
+      super.ensureSize(size, preserveData);
+      long[] oldArray = vector;
+      vector = new long[size];
+      if (preserveData) {
+        if (isRepeating) {
+          vector[0] = oldArray[0];
+        } else {
+          System.arraycopy(oldArray, 0, vector, 0 , oldArray.length);
+        }
+      }
     }
   }
 }

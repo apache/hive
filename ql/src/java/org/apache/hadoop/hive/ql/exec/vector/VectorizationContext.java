@@ -2296,36 +2296,51 @@ public class VectorizationContext {
   }
 
   public static ColumnVector.Type getColumnVectorTypeFromTypeInfo(TypeInfo typeInfo) throws HiveException {
-    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
-    PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
+    switch (typeInfo.getCategory()) {
+      case STRUCT:
+        return Type.STRUCT;
+      case UNION:
+        return Type.UNION;
+      case LIST:
+        return Type.LIST;
+      case MAP:
+        return Type.MAP;
+      case PRIMITIVE: {
+        PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+        PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
 
-    switch (primitiveCategory) {
-    case BOOLEAN:
-    case BYTE:
-    case SHORT:
-    case INT:
-    case LONG:
-    case DATE:
-    case TIMESTAMP:
-    case INTERVAL_YEAR_MONTH:
-    case INTERVAL_DAY_TIME:
-      return ColumnVector.Type.LONG;
+        switch (primitiveCategory) {
+          case BOOLEAN:
+          case BYTE:
+          case SHORT:
+          case INT:
+          case LONG:
+          case DATE:
+          case TIMESTAMP:
+          case INTERVAL_YEAR_MONTH:
+          case INTERVAL_DAY_TIME:
+            return ColumnVector.Type.LONG;
 
-    case FLOAT:
-    case DOUBLE:
-      return ColumnVector.Type.DOUBLE;
+          case FLOAT:
+          case DOUBLE:
+            return ColumnVector.Type.DOUBLE;
 
-    case STRING:
-    case CHAR:
-    case VARCHAR:
-    case BINARY:
-      return ColumnVector.Type.BYTES;
+          case STRING:
+          case CHAR:
+          case VARCHAR:
+          case BINARY:
+            return ColumnVector.Type.BYTES;
 
-    case DECIMAL:
-      return ColumnVector.Type.DECIMAL;
+          case DECIMAL:
+            return ColumnVector.Type.DECIMAL;
 
-    default:
-      throw new HiveException("Unexpected primitive type category " + primitiveCategory);
+          default:
+            throw new HiveException("Unexpected primitive type category " + primitiveCategory);
+        }
+      }
+      default:
+        throw new HiveException("Unexpected type category " +
+            typeInfo.getCategory());
     }
   }
 
