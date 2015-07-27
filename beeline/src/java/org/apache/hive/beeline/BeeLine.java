@@ -827,10 +827,10 @@ public class BeeLine implements Closeable {
         }
       } else {
         int code = initArgsFromCliVars(args);
-        defaultConnect(false);
-        if (code != 0){
+        if (code != 0 || exit) {
           return code;
         }
+        defaultConnect(false);
         getOpts().updateBeeLineOptsFromConf();
         getOpts().setShowHeader(false);
         getOpts().setOutputFormat("dsv");
