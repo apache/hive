@@ -28,7 +28,7 @@ public class LlapIoProxy {
   private final static String IMPL_CLASS = "org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl";
 
   // Llap server depends on Hive execution, so the reverse cannot be true. We create the I/O
-  // singleton once (on daemon startup); the said singleton server as the IO interface.
+  // singleton once (on daemon startup); the said singleton serves as the IO interface.
   private static LlapIo io = null;
 
   private static boolean isDaemon = false;

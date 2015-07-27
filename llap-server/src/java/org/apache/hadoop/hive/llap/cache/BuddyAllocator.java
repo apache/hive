@@ -22,9 +22,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
@@ -97,8 +97,8 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
 
   // TODO: would it make sense to return buffers asynchronously?
   @Override
-  public void allocateMultiple(LlapMemoryBuffer[] dest, int size)
-      throws LlapCacheOutOfMemoryException {
+  public void allocateMultiple(MemoryBuffer[] dest, int size)
+      throws AllocatorOutOfMemoryException {
     assert size > 0 : "size is " + size;
     if (size > maxAllocation) {
       throw new RuntimeException("Trying to allocate " + size + "; max is " + maxAllocation);
@@ -114,7 +114,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     int ix = 0;
     for (int i = 0; i < dest.length; ++i) {
       if (dest[i] != null) continue;
-      dest[i] = new LlapDataBuffer(); // TODO: pool of objects?
+      dest[i] = createUnallocated(); // TODO: pool of objects?
     }
     // First try to quickly lock some of the correct-sized free lists and allocate from them.
     int arenaCount = allocatedArenas.get();
@@ -173,20 +173,20 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     String msg = "Failed to allocate " + size + "; at " + ix + " out of " + dest.length;
     LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
         + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
-    throw new LlapCacheOutOfMemoryException(msg);
+    throw new AllocatorOutOfMemoryException(msg);
   }
 
   @Override
-  public void deallocate(LlapMemoryBuffer buffer) {
+  public void deallocate(MemoryBuffer buffer) {
     deallocateInternal(buffer, true);
   }
 
   @Override
-  public void deallocateEvicted(LlapMemoryBuffer buffer) {
+  public void deallocateEvicted(MemoryBuffer buffer) {
     deallocateInternal(buffer, false);
   }
 
-  private void deallocateInternal(LlapMemoryBuffer buffer, boolean doReleaseMemory) {
+  private void deallocateInternal(MemoryBuffer buffer, boolean doReleaseMemory) {
     LlapDataBuffer buf = (LlapDataBuffer)buffer;
     long memUsage = buf.getMemoryUsage();
     metrics.decrCacheCapacityUsed(buf.byteBuffer.capacity());
@@ -303,7 +303,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     }
 
     private int allocateFast(
-        int arenaIx, int freeListIx, LlapMemoryBuffer[] dest, int ix, int size) {
+        int arenaIx, int freeListIx, MemoryBuffer[] dest, int ix, int size) {
       if (data == null) return -1; // not allocated yet
       FreeList freeList = freeLists[freeListIx];
       if (!freeList.lock.tryLock()) return ix;
@@ -315,7 +315,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     }
 
     private int allocateWithSplit(int arenaIx, int freeListIx,
-        LlapMemoryBuffer[] dest, int ix, int allocationSize) {
+        MemoryBuffer[] dest, int ix, int allocationSize) {
       if (data == null) return -1; // not allocated yet
       FreeList freeList = freeLists[freeListIx];
       int remaining = -1;
@@ -404,7 +404,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     }
 
     private int allocateWithExpand(
-        int arenaIx, int freeListIx, LlapMemoryBuffer[] dest, int ix, int size) {
+        int arenaIx, int freeListIx, MemoryBuffer[] dest, int ix, int size) {
       while (true) {
         int arenaCount = allocatedArenas.get(), allocArenaCount = arenaCount;
         if (arenaCount < 0)  {
@@ -449,7 +449,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     }
 
     public int allocateFromFreeListUnderLock(int arenaIx, FreeList freeList,
-        int freeListIx, LlapMemoryBuffer[] dest, int ix, int size) {
+        int freeListIx, MemoryBuffer[] dest, int ix, int size) {
       int current = freeList.listHead;
       while (current >= 0 && ix < dest.length) {
         int offset = offsetFromHeaderIndex(current);
@@ -532,14 +532,16 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     }
   }
 
-  private static class Request {
-
-  }
   private static class FreeList {
     ReentrantLock lock = new ReentrantLock(false);
     int listHead = -1; // Index of where the buffer is; in minAllocation units
     // TODO: One possible improvement - store blocks arriving left over from splits, and
     //       blocks requested, to be able to wait for pending splits and reduce fragmentation.
     //       However, we are trying to increase fragmentation now, since we cater to single-size.
+  }
+
+  @Override
+  public MemoryBuffer createUnallocated() {
+    return new LlapDataBuffer();
   }
 }

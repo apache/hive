@@ -29,12 +29,11 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DFSClient;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
+import org.apache.hadoop.hive.common.DiskRangeList.CreateHelper;
+import org.apache.hadoop.hive.common.DiskRangeList.MutateHelper;
+import org.apache.hadoop.hive.common.io.storage_api.DataReader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -48,6 +47,69 @@ import com.google.common.collect.ComparisonChain;
  */
 public class RecordReaderUtils {
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
+
+  private static class DefaultDataReader implements DataReader {
+    private FSDataInputStream file;
+    private ByteBufferAllocatorPool pool;
+    private ZeroCopyReaderShim zcr;
+    private FileSystem fs;
+    private Path path;
+    private boolean useZeroCopy;
+    private CompressionCodec codec;
+
+    public DefaultDataReader(
+        FileSystem fs, Path path, boolean useZeroCopy, CompressionCodec codec) {
+      this.fs = fs;
+      this.path = path;
+      this.useZeroCopy = useZeroCopy;
+      this.codec = codec;
+    }
+
+    @Override
+    public void open() throws IOException {
+      this.file = fs.open(path);
+      if (useZeroCopy) {
+        pool = new ByteBufferAllocatorPool();
+        zcr = RecordReaderUtils.createZeroCopyShim(file, codec, pool);
+      } else {
+        pool = null;
+        zcr = null;
+      }
+    }
+
+    @Override
+    public DiskRangeList readFileData(
+        DiskRangeList range, long baseOffset, boolean doForceDirect) throws IOException {
+      return RecordReaderUtils.readDiskRanges(file, zcr, baseOffset, range, doForceDirect);
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (file != null) {
+        file.close();
+      }
+      if (pool != null) {
+        pool.clear();
+      }
+    }
+
+    @Override
+    public boolean isTrackingDiskRanges() {
+      return zcr != null;
+    }
+
+    @Override
+    public void releaseBuffer(ByteBuffer buffer) {
+      zcr.releaseBuffer(buffer);
+    }
+
+  }
+
+  static DataReader createDefaultDataReader(
+      FileSystem fs, Path path, boolean useZeroCopy, CompressionCodec codec) {
+    return new DefaultDataReader(fs, path, useZeroCopy, codec);
+  }
+
   static boolean[] findPresentStreamsByColumn(
       List<OrcProto.Stream> streamList, List<OrcProto.Type> types) {
     boolean[] hasNull = new boolean[types.size()];
@@ -75,14 +137,14 @@ public class RecordReaderUtils {
   }
 
   static void addEntireStreamToRanges(
-      long offset, long length, DiskRangeListCreateHelper list, boolean doMergeBuffers) {
+      long offset, long length, CreateHelper list, boolean doMergeBuffers) {
     list.addOrMerge(offset, offset + length, doMergeBuffers, false);
   }
 
   static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
       boolean[] includedRowGroups, boolean isCompressed, OrcProto.RowIndex index,
       OrcProto.ColumnEncoding encoding, OrcProto.Type type, int compressionSize, boolean hasNull,
-      long offset, long length, DiskRangeListCreateHelper list, boolean doMergeBuffers) {
+      long offset, long length, CreateHelper list, boolean doMergeBuffers) {
     for (int group = 0; group < includedRowGroups.length; ++group) {
       if (!includedRowGroups[group]) continue;
       int posn = getIndexPosition(
@@ -204,7 +266,7 @@ public class RecordReaderUtils {
    * @param ranges ranges to stringify
    * @return the resulting string
    */
-  static String stringifyDiskRanges(DiskRangeList range) {
+  public static String stringifyDiskRanges(DiskRangeList range) {
     StringBuilder buffer = new StringBuilder();
     buffer.append("[");
     boolean isFirst = true;
@@ -240,7 +302,7 @@ public class RecordReaderUtils {
     if (range == null) return null;
     DiskRangeList prev = range.prev;
     if (prev == null) {
-      prev = new DiskRangeListMutateHelper(range);
+      prev = new MutateHelper(range);
     }
     while (range != null) {
       if (range.hasData()) {
@@ -433,32 +495,5 @@ public class RecordReaderUtils {
         // If our key is not unique on the first try, we try again
       }
     }
-  }
-
-  public static long getFileId(FileSystem fileSystem, Path path) throws IOException {
-    String pathStr = path.toUri().getPath();
-    if (fileSystem instanceof DistributedFileSystem) {
-      return SHIMS.getFileId(fileSystem, pathStr);
-    }
-    // If we are not on DFS, we just hash the file name + size and hope for the best.
-    // TODO: we assume it only happens in tests. Fix?
-    int nameHash = pathStr.hashCode();
-    long fileSize = fileSystem.getFileStatus(path).getLen();
-    long id = ((fileSize ^ (fileSize >>> 32)) << 32) | ((long)nameHash & 0xffffffffL);
-    RecordReaderImpl.LOG.warn("Cannot get unique file ID from "
-        + fileSystem.getClass().getSimpleName() + "; using " + id + "(" + pathStr
-        + "," + nameHash + "," + fileSize + ")");
-    return id;
-  }
-
-  // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
-  //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use
-  //       as public utility method in HDFS to obtain the inode-based path.
-  private static String HDFS_ID_PATH_PREFIX = "/.reserved/.inodes/";
-
-  public static Path getFileIdPath(
-      FileSystem fileSystem, Path path, long fileId) {
-    return (fileSystem instanceof DistributedFileSystem)
-        ? new Path(HDFS_ID_PATH_PREFIX + fileId) : path;
   }
 }

@@ -19,11 +19,10 @@ package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch;
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
@@ -31,6 +30,8 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
+import org.apache.hadoop.hive.ql.io.orc.llap.Consumer;
+import org.apache.hadoop.hive.ql.io.orc.llap.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.EncodedTreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
@@ -71,14 +72,14 @@ public class OrcEncodedDataConsumer
   protected void decodeBatch(OrcEncodedColumnBatch batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) {
     long startTime = counters.startTimeCounter();
-    int currentStripeIndex = batch.batchKey.stripeIx;
+    int currentStripeIndex = batch.getBatchKey().stripeIx;
 
     boolean sameStripe = currentStripeIndex == previousStripeIndex;
 
     try {
       OrcStripeMetadata stripeMetadata = stripes[currentStripeIndex];
       // Get non null row count from root column, to get max vector batches
-      int rgIdx = batch.batchKey.rgIx;
+      int rgIdx = batch.getBatchKey().rgIx;
       long nonNullRowCount = -1;
       if (rgIdx == OrcEncodedColumnBatch.ALL_RGS) {
         nonNullRowCount = stripeMetadata.getRowCount();
@@ -88,7 +89,7 @@ public class OrcEncodedDataConsumer
       }
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
-      int numCols = batch.columnIxs.length;
+      int numCols = batch.getColumnIxs().length;
       if (columnReaders == null || !sameStripe) {
         this.columnReaders = EncodedTreeReaderFactory.createEncodedTreeReader(numCols,
             fileMetadata.getTypes(), stripeMetadata.getEncodings(), batch, codec, skipCorrupt);
@@ -106,10 +107,10 @@ public class OrcEncodedDataConsumer
         }
 
         ColumnVectorBatch cvb = cvbPool.take();
-        assert cvb.cols.length == batch.columnIxs.length; // Must be constant per split.
+        assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
         cvb.size = batchSize;
 
-        for (int idx = 0; idx < batch.columnIxs.length; idx++) {
+        for (int idx = 0; idx < batch.getColumnIxs().length; idx++) {
           cvb.cols[idx] = (ColumnVector)columnReaders[idx].nextVector(cvb.cols[idx], batchSize);
         }
 
@@ -130,8 +131,8 @@ public class OrcEncodedDataConsumer
       EncodedColumnBatch<OrcBatchKey> batch, int numCols,
       OrcStripeMetadata stripeMetadata) throws IOException {
     for (int i = 0; i < numCols; i++) {
-      int columnIndex = batch.columnIxs[i];
-      int rowGroupIndex = batch.batchKey.rgIx;
+      int columnIndex = batch.getColumnIxs()[i];
+      int rowGroupIndex = batch.getBatchKey().rgIx;
       OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[columnIndex];
       OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rowGroupIndex);
       columnReaders[i].seek(new RecordReaderImpl.PositionProviderImpl(rowIndexEntry));
@@ -142,9 +143,9 @@ public class OrcEncodedDataConsumer
       EncodedColumnBatch<OrcBatchKey> batch, boolean sameStripe, int numCols,
       OrcStripeMetadata stripeMetadata) throws IOException {
     for (int i = 0; i < numCols; i++) {
-      int columnIndex = batch.columnIxs[i];
-      int rowGroupIndex = batch.batchKey.rgIx;
-      EncodedColumnBatch.StreamBuffer[] streamBuffers = batch.columnData[i];
+      int columnIndex = batch.getColumnIxs()[i];
+      int rowGroupIndex = batch.getBatchKey().rgIx;
+      ColumnStreamData[] streamBuffers = batch.getColumnData()[i];
       OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[columnIndex];
       OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rowGroupIndex);
       columnReaders[i].setBuffers(streamBuffers, sameStripe);

@@ -152,10 +152,8 @@ public class DiskRangeList extends DiskRange {
     return result;
   }
 
-  public static class DiskRangeListCreateHelper {
+  public static class CreateHelper {
     private DiskRangeList tail = null, head;
-    public DiskRangeListCreateHelper() {
-    }
 
     public DiskRangeList getTail() {
       return tail;
@@ -175,7 +173,6 @@ public class DiskRangeList extends DiskRange {
       }
     }
 
-
     public DiskRangeList get() {
       return head;
     }
@@ -192,8 +189,8 @@ public class DiskRangeList extends DiskRange {
    * and thus remains constant even if head is replaced with some new range via in-place list
    * mutation. extract() can be used to obtain the modified list.
    */
-  public static class DiskRangeListMutateHelper extends DiskRangeList {
-    public DiskRangeListMutateHelper(DiskRangeList head) {
+  public static class MutateHelper extends DiskRangeList {
+    public MutateHelper(DiskRangeList head) {
       super(-1, -1);
       assert head != null;
       assert head.prev == null;

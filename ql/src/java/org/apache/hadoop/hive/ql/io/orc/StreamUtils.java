@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.hadoop.hive.common.DiskRangeInfo;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch.ColumnStreamData;
 
 /**
  * Stream utility.
@@ -39,7 +39,7 @@ public class StreamUtils {
    * @throws IOException
    */
   public static SettableUncompressedStream createSettableUncompressedStream(String streamName,
-      Long fileId, EncodedColumnBatch.StreamBuffer streamBuffer) throws IOException {
+      Long fileId, ColumnStreamData streamBuffer) throws IOException {
     if (streamBuffer == null) {
       return null;
     }
@@ -54,11 +54,11 @@ public class StreamUtils {
    * @param streamBuffer - stream buffer
    * @return - total length of disk ranges
    */
-  public static DiskRangeInfo createDiskRangeInfo(EncodedColumnBatch.StreamBuffer streamBuffer) {
-    DiskRangeInfo diskRangeInfo = new DiskRangeInfo(streamBuffer.indexBaseOffset);
+  public static DiskRangeInfo createDiskRangeInfo(ColumnStreamData streamBuffer) {
+    DiskRangeInfo diskRangeInfo = new DiskRangeInfo(streamBuffer.getIndexBaseOffset());
     long offset = diskRangeInfo.getTotalLength(); // See ctor comment.
     // TODO: we should get rid of this
-    for (LlapMemoryBuffer memoryBuffer : streamBuffer.cacheBuffers) {
+    for (MemoryBuffer memoryBuffer : streamBuffer.getCacheBuffers()) {
       ByteBuffer buffer = memoryBuffer.getByteBufferDup();
       diskRangeInfo.addDiskRange(new RecordReaderImpl.BufferChunk(buffer, offset));
       offset += buffer.remaining();

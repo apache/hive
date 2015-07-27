@@ -30,9 +30,9 @@ import java.util.concurrent.FutureTask;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
+import org.apache.hadoop.hive.common.io.storage_api.Allocator.AllocatorOutOfMemoryException;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.cache.Allocator.LlapCacheOutOfMemoryException;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.junit.Test;
 
@@ -191,7 +191,7 @@ public class TestBuddyAllocator {
   }
 
   private void allocSameSize(BuddyAllocator a, int allocCount, int sizeLog2) throws Exception {
-    LlapMemoryBuffer[][] allocs = new LlapMemoryBuffer[allocCount][];
+    MemoryBuffer[][] allocs = new MemoryBuffer[allocCount][];
     long[][] testValues = new long[allocCount][];
     for (int j = 0; j < allocCount; ++j) {
       allocateAndUseBuffer(a, allocs, testValues, 1, j, sizeLog2);
@@ -202,7 +202,7 @@ public class TestBuddyAllocator {
   private void allocateUp(BuddyAllocator a, int min, int max, int allocPerSize,
       boolean isSameOrderDealloc) throws Exception {
     int sizes = max - min + 1;
-    LlapMemoryBuffer[][] allocs = new LlapMemoryBuffer[sizes][];
+    MemoryBuffer[][] allocs = new MemoryBuffer[sizes][];
     // Put in the beginning; relies on the knowledge of internal implementation. Pave?
     long[][] testValues = new long[sizes][];
     for (int i = min; i <= max; ++i) {
@@ -214,7 +214,7 @@ public class TestBuddyAllocator {
   private void allocateDown(BuddyAllocator a, int min, int max, int allocPerSize,
       boolean isSameOrderDealloc) throws Exception {
     int sizes = max - min + 1;
-    LlapMemoryBuffer[][] allocs = new LlapMemoryBuffer[sizes][];
+    MemoryBuffer[][] allocs = new MemoryBuffer[sizes][];
     // Put in the beginning; relies on the knowledge of internal implementation. Pave?
     long[][] testValues = new long[sizes][];
     for (int i = max; i >= min; --i) {
@@ -223,20 +223,20 @@ public class TestBuddyAllocator {
     deallocUpOrDown(a, isSameOrderDealloc, allocs, testValues);
   }
 
-  private void allocateAndUseBuffer(BuddyAllocator a, LlapMemoryBuffer[][] allocs,
+  private void allocateAndUseBuffer(BuddyAllocator a, MemoryBuffer[][] allocs,
       long[][] testValues, int allocCount, int index, int sizeLog2) throws Exception {
-    allocs[index] = new LlapMemoryBuffer[allocCount];
+    allocs[index] = new MemoryBuffer[allocCount];
     testValues[index] = new long[allocCount];
     int size = (1 << sizeLog2) - 1;
     try {
       a.allocateMultiple(allocs[index], size);
-    } catch (LlapCacheOutOfMemoryException ex) {
+    } catch (AllocatorOutOfMemoryException ex) {
       LOG.error("Failed to allocate " + allocCount + " of " + size + "; " + a.debugDump());
       throw ex;
     }
     // LOG.info("Allocated " + allocCount + " of " + size + "; " + a.debugDump());
     for (int j = 0; j < allocCount; ++j) {
-      LlapMemoryBuffer mem = allocs[index][j];
+      MemoryBuffer mem = allocs[index][j];
       long testValue = testValues[index][j] = rdm.nextLong();
       int pos = mem.getByteBufferRaw().position();
       mem.getByteBufferRaw().putLong(pos, testValue);
@@ -248,7 +248,7 @@ public class TestBuddyAllocator {
   }
 
   private void deallocUpOrDown(BuddyAllocator a, boolean isSameOrderDealloc,
-      LlapMemoryBuffer[][] allocs, long[][] testValues) {
+      MemoryBuffer[][] allocs, long[][] testValues) {
     if (isSameOrderDealloc) {
       for (int i = 0; i < allocs.length; ++i) {
         deallocBuffers(a, allocs[i], testValues[i]);
@@ -261,7 +261,7 @@ public class TestBuddyAllocator {
   }
 
   private void deallocBuffers(
-      BuddyAllocator a, LlapMemoryBuffer[] allocs, long[] testValues) {
+      BuddyAllocator a, MemoryBuffer[] allocs, long[] testValues) {
     for (int j = 0; j < allocs.length; ++j) {
       LlapDataBuffer mem = (LlapDataBuffer)allocs[j];
       int pos = mem.getByteBufferRaw().position();

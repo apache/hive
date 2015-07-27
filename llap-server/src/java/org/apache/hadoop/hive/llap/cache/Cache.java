@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch.ColumnStreamData;
 
 /** Dummy interface for now, might be different. */
 public interface Cache<CacheKey> {
-  public StreamBuffer[] cacheOrGet(CacheKey key, StreamBuffer[] value);
-  public StreamBuffer[] get(CacheKey key);
+  public ColumnStreamData[] cacheOrGet(CacheKey key, ColumnStreamData[] value);
+  public ColumnStreamData[] get(CacheKey key);
 }

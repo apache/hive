@@ -27,11 +27,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
+import org.apache.hadoop.hive.common.DiskRangeList.MutateHelper;
+import org.apache.hadoop.hive.common.io.storage_api.Allocator;
+import org.apache.hadoop.hive.common.io.storage_api.DataCache.BooleanRef;
+import org.apache.hadoop.hive.common.io.storage_api.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
 import org.apache.hadoop.hive.llap.DebugUtils;
-import org.apache.hadoop.hive.llap.counters.LowLevelCacheCounters;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
@@ -74,14 +75,8 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   }
 
   @Override
-  public DiskRangeList getFileData(
-      long fileId, DiskRangeList ranges, long baseOffset, CacheChunkFactory factory) {
-    return getFileData(fileId, ranges, baseOffset, factory, null);
-  }
-
-  @Override
   public DiskRangeList getFileData(long fileId, DiskRangeList ranges, long baseOffset,
-      CacheChunkFactory factory, LowLevelCacheCounters qfCounters) {
+      DiskRangeListFactory factory, LowLevelCacheCounters qfCounters, BooleanRef gotAllData) {
     if (ranges == null) return null;
     DiskRangeList prev = ranges.prev;
     FileCache subCache = cache.get(fileId);
@@ -91,25 +86,24 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
       if (qfCounters != null) {
         qfCounters.recordCacheMiss(totalMissed);
       }
-      if (prev != null && prev instanceof CacheListHelper) {
-        ((CacheListHelper)prev).didGetAllData = false;
+      if (prev != null && gotAllData != null) {
+        gotAllData.value = false;
       }
       return ranges;
     }
-    CacheListHelper resultObj = null;
     try {
       if (prev == null) {
-        prev = new DiskRangeListMutateHelper(ranges);
-      } else if (prev instanceof CacheListHelper) {
-        resultObj = (CacheListHelper)prev;
-        resultObj.didGetAllData = true;
+        prev = new MutateHelper(ranges);
+      }
+      if (gotAllData != null) {
+        gotAllData.value = true;
       }
       DiskRangeList current = ranges;
       while (current != null) {
         metrics.incrCacheRequestedBytes(current.getLength());
         // We assume ranges in "ranges" are non-overlapping; thus, we will save next in advance.
         DiskRangeList next = current.next;
-        getOverlappingRanges(baseOffset, current, subCache.cache, factory, resultObj);
+        getOverlappingRanges(baseOffset, current, subCache.cache, factory, gotAllData);
         current = next;
       }
     } finally {
@@ -134,8 +128,8 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   }
 
   private void getOverlappingRanges(long baseOffset, DiskRangeList currentNotCached,
-      ConcurrentSkipListMap<Long, LlapDataBuffer> cache, CacheChunkFactory factory,
-      CacheListHelper resultObj) {
+      ConcurrentSkipListMap<Long, LlapDataBuffer> cache, DiskRangeListFactory factory,
+      BooleanRef gotAllData) {
     long absOffset = currentNotCached.getOffset() + baseOffset;
     if (!doAssumeGranularBlocks) {
       // This currently only happens in tests. See getFileData comment on the interface.
@@ -161,8 +155,8 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
       if (!lockBuffer(buffer, true)) {
         // If we cannot lock, remove this from cache and continue.
         matches.remove();
-        if (resultObj != null) {
-          resultObj.didGetAllData = false;
+        if (gotAllData != null) {
+          gotAllData.value = false;
         }
         continue;
       }
@@ -174,13 +168,13 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
       cacheEnd = cacheOffset + buffer.declaredCachedLength;
       DiskRangeList currentCached = factory.createCacheChunk(buffer,
           cacheOffset - baseOffset, cacheEnd - baseOffset);
-      currentNotCached = addCachedBufferToIter(currentNotCached, currentCached, resultObj);
+      currentNotCached = addCachedBufferToIter(currentNotCached, currentCached, gotAllData);
       metrics.incrCacheHitBytes(Math.min(requestedLength, currentCached.getLength()));
     }
     if (currentNotCached != null) {
       assert !currentNotCached.hasData();
-      if (resultObj != null) {
-        resultObj.didGetAllData = false;
+      if (gotAllData != null) {
+        gotAllData.value = false;
       }
     }
   }
@@ -193,7 +187,7 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
    * @return The new currentNotCached pointer, following the cached buffer insertion.
    */
   private DiskRangeList addCachedBufferToIter(
-      DiskRangeList currentNotCached, DiskRangeList currentCached, CacheListHelper resultObj) {
+      DiskRangeList currentNotCached, DiskRangeList currentCached, BooleanRef gotAllData) {
     if (currentNotCached.getOffset() >= currentCached.getOffset()) {
       if (currentNotCached.getEnd() <= currentCached.getEnd()) {  // we assume it's always "==" now
         // Replace the entire current DiskRange with new cached range.
@@ -206,8 +200,8 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
       }
     } else {
       // There's some part of current buffer that is not cached.
-      if (resultObj != null) {
-        resultObj.didGetAllData = false;
+      if (gotAllData != null) {
+        gotAllData.value = false;
       }
       assert currentNotCached.getOffset() < currentCached.getOffset()
         || currentNotCached.prev == null
@@ -238,13 +232,7 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   }
 
   @Override
-  public long[] putFileData(long fileId, DiskRange[] ranges,
-      LlapMemoryBuffer[] buffers, long baseOffset, Priority priority) {
-    return putFileData(fileId, ranges, buffers, baseOffset, priority, null);
-  }
-
-  @Override
-  public long[] putFileData(long fileId, DiskRange[] ranges, LlapMemoryBuffer[] buffers,
+  public long[] putFileData(long fileId, DiskRange[] ranges, MemoryBuffer[] buffers,
       long baseOffset, Priority priority, LowLevelCacheCounters qfCounters) {
     long[] result = null;
     assert buffers.length == ranges.length;
@@ -346,13 +334,13 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   }
 
   @Override
-  public void releaseBuffer(LlapMemoryBuffer buffer) {
+  public void releaseBuffer(MemoryBuffer buffer) {
     unlockBuffer((LlapDataBuffer)buffer, true);
   }
 
   @Override
-  public void releaseBuffers(List<LlapMemoryBuffer> cacheBuffers) {
-    for (LlapMemoryBuffer b : cacheBuffers) {
+  public void releaseBuffers(List<MemoryBuffer> cacheBuffers) {
+    for (MemoryBuffer b : cacheBuffers) {
       unlockBuffer((LlapDataBuffer)b, true);
     }
   }
@@ -514,12 +502,7 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   }
 
   @Override
-  public LlapMemoryBuffer createUnallocated() {
-    return new LlapDataBuffer();
-  }
-
-  @Override
-  public boolean notifyReused(LlapMemoryBuffer buffer) {
+  public boolean reuseBuffer(MemoryBuffer buffer) {
     // notifyReused implies that buffer is already locked; it's also called once for new
     // buffers that are not cached yet. Don't notify cache policy.
     return lockBuffer(((LlapDataBuffer)buffer), false);

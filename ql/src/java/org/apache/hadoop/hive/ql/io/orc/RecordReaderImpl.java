@@ -34,35 +34,30 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
+import org.apache.hadoop.hive.common.DiskRangeList.CreateHelper;
+import org.apache.hadoop.hive.common.io.storage_api.DataReader;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.hadoop.io.Text;
 
 public class RecordReaderImpl implements RecordReader {
   static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
   private final Path path;
-  private final FileSystem fileSystem;
-  private final FSDataInputStream file;
   private final long firstRow;
   private final List<StripeInformation> stripes =
       new ArrayList<StripeInformation>();
@@ -88,9 +83,7 @@ public class RecordReaderImpl implements RecordReader {
   private boolean[] includedRowGroups = null;
   private final Configuration conf;
   private final MetadataReader metadata;
-
-  private final ByteBufferAllocatorPool pool = new ByteBufferAllocatorPool();
-  private final ZeroCopyReaderShim zcr;
+  private final DataReader dataReader;
 
   public final static class Index {
     OrcProto.RowIndex[] rowGroupIndex;
@@ -163,9 +156,7 @@ public class RecordReaderImpl implements RecordReader {
                    long strideRate,
                    Configuration conf
                    ) throws IOException {
-    this.fileSystem = fileSystem;
     this.path = path;
-    this.file = fileSystem.open(path);
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
@@ -194,9 +185,10 @@ public class RecordReaderImpl implements RecordReader {
       }
     }
 
-    final boolean zeroCopy = (conf != null)
-        && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
-    zcr = zeroCopy ? RecordReaderUtils.createZeroCopyShim(file, codec, pool) : null;
+    final boolean zeroCopy = (conf != null) && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
+    // TODO: we could change the ctor to pass this externally
+    this.dataReader = RecordReaderUtils.createDefaultDataReader(fileSystem, path, zeroCopy, codec);
+    this.dataReader.open();
 
     firstRow = skippedRows;
     totalRowCount = rows;
@@ -766,16 +758,16 @@ public class RecordReaderImpl implements RecordReader {
       is.close();
     }
     if (bufferChunks != null) {
-      if (zcr != null) {
+      if (dataReader.isTrackingDiskRanges()) {
         for (DiskRangeList range = bufferChunks; range != null; range = range.next) {
           if (!(range instanceof BufferChunk)) {
             continue;
           }
-          zcr.releaseBuffer(((BufferChunk) range).chunk);
+          dataReader.releaseBuffer(((BufferChunk) range).chunk);
         }
       }
-      bufferChunks = null;
     }
+    bufferChunks = null;
     streams.clear();
   }
 
@@ -835,10 +827,9 @@ public class RecordReaderImpl implements RecordReader {
     long end = start + stripe.getDataLength();
     // explicitly trigger 1 big read
     DiskRangeList toRead = new DiskRangeList(start, end);
-    bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
+    bufferChunks = dataReader.readFileData(toRead, stripe.getOffset(), false);
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
     createStreams(streamDescriptions, bufferChunks, null, codec, bufferSize, streams);
-    // TODO: decompressed data from streams should be put in cache
   }
 
   /**
@@ -891,37 +882,6 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  public static class CacheChunk extends DiskRangeList {
-    public LlapMemoryBuffer buffer;
-
-    public CacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
-      super(offset, end);
-      this.buffer = buffer;
-    }
-
-    @Override
-    public boolean hasData() {
-      return buffer != null;
-    }
-
-    @Override
-    public ByteBuffer getData() {
-      // Callers duplicate the buffer, they have to for BufferChunk
-      return buffer.getByteBufferRaw();
-    }
-
-    @Override
-    public String toString() {
-      return "start: " + offset + " end: " + end + " cache buffer: " + buffer;
-    }
-
-    @Override
-    public DiskRange sliceAndShift(long offset, long end, long shiftBy) {
-      throw new UnsupportedOperationException("Cache chunk cannot be sliced - attempted ["
-          + this.offset + ", " + this.end + ") to [" + offset + ", " + end + ") ");
-    }
-  }
-
   /**
    * Plan the ranges of the file that we need to read given the list of
    * columns and row groups.
@@ -949,7 +909,7 @@ public class RecordReaderImpl implements RecordReader {
     long offset = 0;
     // figure out which columns have a present stream
     boolean[] hasNull = RecordReaderUtils.findPresentStreamsByColumn(streamList, types);
-    DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
+    CreateHelper list = new CreateHelper();
     for (OrcProto.Stream stream : streamList) {
       long length = stream.getLength();
       int column = stream.getColumn();
@@ -992,7 +952,7 @@ public class RecordReaderImpl implements RecordReader {
           ranges, streamOffset, streamDesc.getLength());
       StreamName name = new StreamName(column, streamDesc.getKind());
       streams.put(name, InStream.create(null, name.toString(), buffers,
-          streamDesc.getLength(), codec, bufferSize, null));
+          streamDesc.getLength(), codec, bufferSize));
       streamOffset += streamDesc.getLength();
     }
   }
@@ -1005,7 +965,7 @@ public class RecordReaderImpl implements RecordReader {
     if (LOG.isDebugEnabled()) {
       LOG.debug("chunks = " + RecordReaderUtils.stringifyDiskRanges(toRead));
     }
-    bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
+    bufferChunks = dataReader.readFileData(toRead, stripe.getOffset(), false);
     if (LOG.isDebugEnabled()) {
       LOG.debug("merge = " + RecordReaderUtils.stringifyDiskRanges(bufferChunks));
     }
@@ -1162,8 +1122,7 @@ public class RecordReaderImpl implements RecordReader {
   @Override
   public void close() throws IOException {
     clearStreams();
-    pool.clear();
-    file.close();
+    dataReader.close();
   }
 
   @Override

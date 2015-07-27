@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 
 public interface LowLevelCachePolicy extends LlapOomDebugDump {
   void cache(LlapCacheableBuffer buffer, Priority priority);

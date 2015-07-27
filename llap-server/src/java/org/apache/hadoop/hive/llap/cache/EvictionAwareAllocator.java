@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+import org.apache.hadoop.hive.common.io.storage_api.Allocator;
+import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
 
 /**
  * An allocator that has additional, internal-only call to deallocate evicted buffer.
@@ -25,5 +26,5 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
  * ourselves, so we set the value atomically to account for both eviction and the new demand.
  */
 public interface EvictionAwareAllocator extends Allocator {
-  void deallocateEvicted(LlapMemoryBuffer buffer);
+  void deallocateEvicted(MemoryBuffer buffer);
 }

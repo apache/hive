@@ -83,12 +83,12 @@ public class MetadataReaderImpl implements MetadataReader {
           file.readFully(buffer);
           indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create(null, "index",
               Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), stream.getLength(),
-              codec, bufferSize, null));
+              codec, bufferSize));
           if (readBloomFilter) {
             bb.position((int) stream.getLength());
             bloomFilterIndices[col] = OrcProto.BloomFilterIndex.parseFrom(InStream.create(
                 null, "bloom_filter", Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
-                nextStream.getLength(), codec, bufferSize, null));
+                nextStream.getLength(), codec, bufferSize));
           }
         }
       }
@@ -109,7 +109,7 @@ public class MetadataReaderImpl implements MetadataReader {
     file.readFully(tailBuf.array(), tailBuf.arrayOffset(), tailLength);
     return OrcProto.StripeFooter.parseFrom(InStream.create(null, "footer",
         Lists.<DiskRange>newArrayList(new BufferChunk(tailBuf, 0)),
-        tailLength, codec, bufferSize, null));
+        tailLength, codec, bufferSize));
   }
 
   @Override

@@ -21,13 +21,10 @@ package org.apache.hadoop.hive.llap.io.metadata;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.hadoop.hive.llap.cache.EvictionListener;
-import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
-import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.MemoryManager;
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache.Priority;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.ql.io.orc.llap.OrcBatchKey;
 
 public class OrcMetadataCache {
   private final ConcurrentHashMap<Long, OrcFileMetadata> metadata =

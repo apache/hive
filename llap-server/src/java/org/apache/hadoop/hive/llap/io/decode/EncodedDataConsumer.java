@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
+import org.apache.hadoop.hive.ql.io.orc.llap.Consumer;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hive.common.util.FixedSizedObjectPool.PoolObjectHelper;
 
@@ -80,10 +80,10 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
     synchronized (pendingData) {
       localIsStopped = isStopped;
       if (!localIsStopped) {
-        targetBatch = pendingData.get(data.batchKey);
+        targetBatch = pendingData.get(data.getBatchKey());
         if (targetBatch == null) {
           targetBatch = data;
-          pendingData.put(data.batchKey, data);
+          pendingData.put(data.getBatchKey(), data);
         }
         // We have the map locked; the code the throws things away from map only bumps the version
         // under the same map lock; code the throws things away here only bumps the version when
@@ -102,7 +102,7 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
         throw new UnsupportedOperationException("Merging is not supported");
       }
       synchronized (pendingData) {
-        targetBatch = isStopped ? null : pendingData.remove(data.batchKey);
+        targetBatch = isStopped ? null : pendingData.remove(data.getBatchKey());
         // Check if someone already threw this away and changed the version.
         localIsStopped = (targetBatchVersion != targetBatch.version);
       }

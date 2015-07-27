@@ -15,20 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+package org.apache.hadoop.hive.common.io.storage_api;
 
-public interface Allocator {
-  public static class LlapCacheOutOfMemoryException extends RuntimeException {
-    public LlapCacheOutOfMemoryException(String msg) {
-      super(msg);
-    }
+import java.nio.ByteBuffer;
 
-    private static final long serialVersionUID = 268124648177151761L;
-  }
-  void allocateMultiple(LlapMemoryBuffer[] dest, int size) throws LlapCacheOutOfMemoryException;
-  void deallocate(LlapMemoryBuffer buffer);
-  boolean isDirectAlloc();
-  int getMaxAllocation();
+/** Abstract interface for any class wrapping a ByteBuffer. */
+public interface MemoryBuffer {
+  /** Note - raw buffer should not be modified. */
+  public ByteBuffer getByteBufferRaw();
+  public ByteBuffer getByteBufferDup();
 }
