@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.llap.io.encoded;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,25 +13,29 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CallableWithNdc;
+import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.io.storage_api.Allocator;
+import org.apache.hadoop.hive.common.io.storage_api.DataCache;
+import org.apache.hadoop.hive.common.io.storage_api.DataReader;
+import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.Cache;
+import org.apache.hadoop.hive.llap.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters.Counter;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
 import org.apache.hadoop.hive.ql.io.orc.EncodedReader;
 import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl;
@@ -44,9 +49,14 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
+import org.apache.hadoop.hive.ql.io.orc.llap.Consumer;
+import org.apache.hadoop.hive.ql.io.orc.llap.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.llap.OrcCacheKey;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 
@@ -235,7 +245,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     try {
       ensureOrcReader();
       // Reader creating updates HDFS counters, don't do it here.
-      stripeReader = orcReader.encodedReader(fileId, lowLevelCache, counters, dataConsumer);
+      DataWrapperForOrc dw = new DataWrapperForOrc();
+      stripeReader = orcReader.encodedReader(fileId, dw, dw);
+      stripeReader.setDebugTracing(DebugUtils.isTraceOrcEnabled());
     } catch (Throwable t) {
       consumer.setError(t);
       recordReaderTime(startTime);
@@ -340,7 +352,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         // Also, currently readEncodedColumns is not stoppable. The consumer will discard the
         // data it receives for one stripe. We could probably interrupt it, if it checked that.
         stripeReader.readEncodedColumns(stripeIx, stripe, stripeMetadata.getRowIndexes(),
-            stripeMetadata.getEncodings(), stripeMetadata.getStreams(), stripeIncludes, colRgs);
+            stripeMetadata.getEncodings(), stripeMetadata.getStreams(), stripeIncludes,
+            colRgs, dataConsumer);
       } catch (Throwable t) {
         consumer.setError(t);
         cleanupReaders();
@@ -434,7 +447,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
     LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return RecordReaderUtils.getFileId(fs, split.getPath());
+    return HdfsUtils.getFileId(fs, split.getPath());
   }
 
   private boolean[][] genStripeColRgs(List<Integer> stripeCols, boolean[][] globalColRgs) {
@@ -499,7 +512,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private void ensureOrcReader() throws IOException {
     if (orcReader != null) return;
-    Path path = RecordReaderUtils.getFileIdPath(fs, split.getPath(), fileId);
+    Path path = HdfsUtils.getFileIdPath(fs, split.getPath(), fileId);
     if (DebugUtils.isTraceOrcEnabled()) {
       LOG.info("Creating reader for " + path + " (" + split.getPath() + ")");
     }
@@ -578,15 +591,15 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   @Override
   public void returnData(OrcEncodedColumnBatch ecb) {
-    for (StreamBuffer[] datas : ecb.columnData) {
-      for (StreamBuffer data : datas) {
+    for (ColumnStreamData[] datas : ecb.getColumnData()) {
+      for (ColumnStreamData data : datas) {
         if (data.decRef() != 0) continue;
         if (DebugUtils.isTraceLockingEnabled()) {
-          for (LlapMemoryBuffer buf : data.cacheBuffers) {
+          for (MemoryBuffer buf : data.getCacheBuffers()) {
             LlapIoImpl.LOG.info("Unlocking " + buf + " at the end of processing");
           }
         }
-        lowLevelCache.releaseBuffers(data.cacheBuffers);
+        lowLevelCache.releaseBuffers(data.getCacheBuffers());
         EncodedReaderImpl.SB_POOL.offer(data);
       }
     }
@@ -743,12 +756,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             if ((readMask == SargApplier.READ_NO_RGS) || (readMask != SargApplier.READ_ALL_RGS
                 && (readMask.length <= rgIx || !readMask[rgIx]))) continue;
             key.colIx = columnIds.get(colIxMod);
-            StreamBuffer[] cached = cache.get(key);
+            ColumnStreamData[] cached = cache.get(key);
             if (cached == null) {
               isMissingAnyRgs[colIxMod] = true;
               continue;
             }
-            col.setAllStreams(colIxMod, key.colIx, cached);
+            col.setAllStreamsData(colIxMod, key.colIx, cached);
             hasAnyCached = true;
             if (readMask == SargApplier.READ_ALL_RGS) {
               // We were going to read all RGs, but some were in cache, allocate the mask.
@@ -793,16 +806,16 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   public void consumeData(OrcEncodedColumnBatch data) {
     // Store object in cache; create new key object - cannot be reused.
     assert cache != null;
-    for (int i = 0; i < data.columnData.length; ++i) {
-      OrcCacheKey key = new OrcCacheKey(data.batchKey, data.columnIxs[i]);
-      StreamBuffer[] toCache = data.columnData[i];
-      StreamBuffer[] cached = cache.cacheOrGet(key, toCache);
+    for (int i = 0; i < data.getColumnData().length; ++i) {
+      OrcCacheKey key = new OrcCacheKey(data.getBatchKey(), data.getColumnIxs()[i]);
+      ColumnStreamData[] toCache = data.getColumnData()[i];
+      ColumnStreamData[] cached = cache.cacheOrGet(key, toCache);
       if (toCache != cached) {
-        for (StreamBuffer sb : toCache) {
+        for (ColumnStreamData sb : toCache) {
           if (sb.decRef() != 0) continue;
-          lowLevelCache.releaseBuffers(sb.cacheBuffers);
+          lowLevelCache.releaseBuffers(sb.getCacheBuffers());
         }
-        data.columnData[i] = cached;
+        data.getColumnData()[i] = cached;
       }
     }
     consumer.consumeData(data);
@@ -811,5 +824,83 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @Override
   public void setError(Throwable t) {
     consumer.setError(t);
+  }
+
+  private class DataWrapperForOrc implements DataReader, DataCache {
+    private DataReader orcDataReader;
+
+    public DataWrapperForOrc() {
+      boolean useZeroCopy = (conf != null)
+          && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_ZEROCOPY);
+      if (useZeroCopy && !lowLevelCache.getAllocator().isDirectAlloc()) {
+        throw new UnsupportedOperationException("Cannot use zero-copy reader with non-direct cache "
+            + "buffers; either disable zero-copy or enable direct cache allocation");
+      }
+      this.orcDataReader = orcReader.createDefaultDataReader(useZeroCopy);
+    }
+
+    @Override
+    public DiskRangeList getFileData(long fileId, DiskRangeList range,
+        long baseOffset, DiskRangeListFactory factory, BooleanRef gotAllData) {
+      return lowLevelCache.getFileData(fileId, range, baseOffset, factory, counters, gotAllData);
+    }
+
+    @Override
+    public long[] putFileData(long fileId, DiskRange[] ranges,
+        MemoryBuffer[] data, long baseOffset) {
+      return lowLevelCache.putFileData(
+          fileId, ranges, data, baseOffset, Priority.NORMAL, counters);
+    }
+
+    @Override
+    public void releaseBuffer(MemoryBuffer buffer) {
+      lowLevelCache.releaseBuffer(buffer);
+    }
+
+    @Override
+    public void reuseBuffer(MemoryBuffer buffer) {
+      boolean isReused = lowLevelCache.reuseBuffer(buffer);
+      assert isReused;
+    }
+
+    @Override
+    public Allocator getAllocator() {
+      return lowLevelCache.getAllocator();
+    }
+
+    @Override
+    public void close() throws IOException {
+      orcDataReader.close();
+    }
+
+    @Override
+    public DiskRangeList readFileData(DiskRangeList range, long baseOffset,
+        boolean doForceDirect) throws IOException {
+      long startTime = counters.startTimeCounter();
+      DiskRangeList result = orcDataReader.readFileData(range, baseOffset, doForceDirect);
+      counters.recordHdfsTime(startTime);
+      if (DebugUtils.isTraceOrcEnabled() && LOG.isInfoEnabled()) {
+        LOG.info("Disk ranges after disk read (file " + fileId + ", base offset " + baseOffset
+              + "): " + RecordReaderUtils.stringifyDiskRanges(result));
+      }
+      return result;
+    }
+
+    @Override
+    public boolean isTrackingDiskRanges() {
+      return orcDataReader.isTrackingDiskRanges();
+    }
+
+    @Override
+    public void releaseBuffer(ByteBuffer buffer) {
+      orcDataReader.releaseBuffer(buffer);
+    }
+
+    @Override
+    public void open() throws IOException {
+      long startTime = counters.startTimeCounter();
+      orcDataReader.open();
+      counters.recordHdfsTime(startTime);
+    }
   }
 }

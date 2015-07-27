@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -65,11 +65,11 @@ public class TreeReaderFactory {
     protected final int columnId;
     protected BitFieldReader present = null;
     protected boolean valuePresent = false;
-    protected EncodedColumnBatch.StreamBuffer presentStreamBuffer = null;
-    protected EncodedColumnBatch.StreamBuffer dataStreamBuffer = null;
-    protected EncodedColumnBatch.StreamBuffer dictionaryStreamBuffer = null;
-    protected EncodedColumnBatch.StreamBuffer lengthsStreamBuffer = null;
-    protected EncodedColumnBatch.StreamBuffer secondaryStreamBuffer = null;
+    protected ColumnStreamData presentStreamBuffer = null;
+    protected ColumnStreamData dataStreamBuffer = null;
+    protected ColumnStreamData dictionaryStreamBuffer = null;
+    protected ColumnStreamData lengthsStreamBuffer = null;
+    protected ColumnStreamData secondaryStreamBuffer = null;
 
     TreeReader(int columnId) throws IOException {
       this(columnId, null);
@@ -137,11 +137,11 @@ public class TreeReaderFactory {
       }
     }
 
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       // stream buffers are arranged in enum order of stream kind
-      for (EncodedColumnBatch.StreamBuffer streamBuffer : buffers) {
-        switch (streamBuffer.streamKind) {
+      for (ColumnStreamData streamBuffer : buffers) {
+        switch (streamBuffer.getStreamKind()) {
           case 0:
             // PRESENT stream
             presentStreamBuffer = streamBuffer;
@@ -163,7 +163,7 @@ public class TreeReaderFactory {
             secondaryStreamBuffer = streamBuffer;
             break;
           default:
-            throw new IOException("Unexpected stream kind: " + streamBuffer.streamKind);
+            throw new IOException("Unexpected stream kind: " + streamBuffer.getStreamKind());
         }
       }
     }

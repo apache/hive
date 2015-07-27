@@ -16,29 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.io.api.cache;
+package org.apache.hadoop.hive.llap.cache;
 
 import java.util.List;
 
 import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
-import  org.apache.hadoop.hive.llap.cache.Allocator;
-import org.apache.hadoop.hive.llap.counters.LowLevelCacheCounters;
+import org.apache.hadoop.hive.common.io.storage_api.DataCache.BooleanRef;
+import org.apache.hadoop.hive.common.io.storage_api.Allocator;
+import org.apache.hadoop.hive.common.io.storage_api.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
 
 public interface LowLevelCache {
   public enum Priority {
     NORMAL,
     HIGH
-  }
-
-  public class CacheListHelper extends DiskRangeListMutateHelper {
-    public CacheListHelper(DiskRangeList head) {
-      super(head);
-    }
-
-    /** Workaround for Java's limitations, used to return stuff from getFileData. */
-    public boolean didGetAllData;
   }
 
   /**
@@ -61,36 +53,24 @@ public interface LowLevelCache {
    * @param base base offset for the ranges (stripe/stream offset in case of ORC).
    */
   DiskRangeList getFileData(long fileId, DiskRangeList range, long baseOffset,
-      CacheChunkFactory factory, LowLevelCacheCounters qfCounters);
-
-  DiskRangeList getFileData(
-      long fileId, DiskRangeList range, long baseOffset, CacheChunkFactory factory);
+      DiskRangeListFactory factory, LowLevelCacheCounters qfCounters, BooleanRef gotAllData);
 
   /**
    * Puts file data into cache.
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks,
-      long base, Priority priority, LowLevelCacheCounters qfCounters);
-
-  long[] putFileData(long fileId, DiskRange[] ranges, LlapMemoryBuffer[] chunks,
-      long base, Priority priority);
+  long[] putFileData(long fileId, DiskRange[] ranges, MemoryBuffer[] chunks,
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters);
 
   Allocator getAllocator();
 
   /**
-   * Releases the buffer returned by getFileData or allocateMultiple.
+   * Releases the buffer returned by getFileData.
    */
-  void releaseBuffer(LlapMemoryBuffer buffer);
+  void releaseBuffer(MemoryBuffer buffer);
 
-  void releaseBuffers(List<LlapMemoryBuffer> cacheBuffers);
+  void releaseBuffers(List<MemoryBuffer> cacheBuffers);
 
-  LlapMemoryBuffer createUnallocated();
-
-  boolean notifyReused(LlapMemoryBuffer buffer);
-
-  public interface CacheChunkFactory {
-    DiskRangeList createCacheChunk(LlapMemoryBuffer buffer, long startOffset, long endOffset);
-  }
+  boolean reuseBuffer(MemoryBuffer buffer);
 }

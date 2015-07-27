@@ -34,14 +34,10 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.common.io.storage_api.DataCache;
+import org.apache.hadoop.hive.common.io.storage_api.DataReader;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.Consumer;
-import org.apache.hadoop.hive.llap.counters.LowLevelCacheCounters;
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
-import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer;
 import org.apache.hadoop.hive.ql.io.FileFormatException;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
@@ -505,13 +501,13 @@ public class ReaderImpl implements Reader {
       footerBuffer.limit(position + metadataSize);
 
       InputStream instream = InStream.create(null, "metadata", Lists.<DiskRange>newArrayList(
-          new BufferChunk(footerBuffer, 0)), metadataSize, codec, bufferSize, null);
+          new BufferChunk(footerBuffer, 0)), metadataSize, codec, bufferSize);
       this.metadata = OrcProto.Metadata.parseFrom(instream);
 
       footerBuffer.position(position + metadataSize);
       footerBuffer.limit(position + metadataSize + footerBufferSize);
       instream = InStream.create(null, "footer", Lists.<DiskRange>newArrayList(
-          new BufferChunk(footerBuffer, 0)), footerBufferSize, codec, bufferSize, null);
+          new BufferChunk(footerBuffer, 0)), footerBufferSize, codec, bufferSize);
       this.footer = OrcProto.Footer.parseFrom(instream);
 
       footerBuffer.position(position);
@@ -722,13 +718,10 @@ public class ReaderImpl implements Reader {
   }
 
   @Override
-  public EncodedReader encodedReader(long fileId, LowLevelCache lowLevelCache,
-      LowLevelCacheCounters qfCounters, Consumer<OrcEncodedColumnBatch> consumer)
-          throws IOException {
-    boolean useZeroCopy = (conf != null)
-        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_ZEROCOPY);
-    return new EncodedReaderImpl(fileSystem, path, fileId, useZeroCopy, types,
-        codec, bufferSize, rowIndexStride, lowLevelCache, qfCounters, consumer);
+  public EncodedReader encodedReader(
+      long fileId, DataCache dataCache, DataReader dataReader) throws IOException {
+    return new EncodedReaderImpl(fileId, types,
+        codec, bufferSize, rowIndexStride, dataCache, dataReader);
   }
 
   @Override
@@ -739,5 +732,10 @@ public class ReaderImpl implements Reader {
   @Override
   public int getMetadataSize() {
     return metadataSize;
+  }
+
+  @Override
+  public DataReader createDefaultDataReader(boolean useZeroCopy) {
+    return RecordReaderUtils.createDefaultDataReader(fileSystem, path, useZeroCopy, codec);
   }
 }

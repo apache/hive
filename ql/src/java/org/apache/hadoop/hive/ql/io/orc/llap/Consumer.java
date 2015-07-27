@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap;
+package org.apache.hadoop.hive.ql.io.orc.llap;
 
 /**
  * Data consumer; an equivalent of a data queue for an asynchronous data producer.

@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch;
+import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch.ColumnStreamData;
+import org.apache.hadoop.hive.ql.io.orc.llap.OrcBatchKey;
 
 /**
  *
@@ -71,7 +72,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -88,9 +89,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
-      private EncodedColumnBatch.StreamBuffer nanosStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
+      private ColumnStreamData nanosStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
       private boolean skipCorrupt;
@@ -105,17 +106,17 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setSecondsStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setSecondsStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
 
-      public StreamReaderBuilder setNanosStream(EncodedColumnBatch.StreamBuffer secondaryStream) {
+      public StreamReaderBuilder setNanosStream(ColumnStreamData secondaryStream) {
         this.nanosStream = secondaryStream;
         return this;
       }
@@ -222,7 +223,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -251,10 +252,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
-      private EncodedColumnBatch.StreamBuffer dictionaryStream;
-      private EncodedColumnBatch.StreamBuffer lengthStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
+      private ColumnStreamData dictionaryStream;
+      private ColumnStreamData lengthStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
@@ -268,22 +269,22 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
 
-      public StreamReaderBuilder setLengthStream(EncodedColumnBatch.StreamBuffer lengthStream) {
+      public StreamReaderBuilder setLengthStream(ColumnStreamData lengthStream) {
         this.lengthStream = lengthStream;
         return this;
       }
 
-      public StreamReaderBuilder setDictionaryStream(EncodedColumnBatch.StreamBuffer dictStream) {
+      public StreamReaderBuilder setDictionaryStream(ColumnStreamData dictStream) {
         this.dictionaryStream = dictStream;
         return this;
       }
@@ -360,7 +361,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -374,8 +375,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
@@ -389,12 +390,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
@@ -463,7 +464,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -477,8 +478,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
       private boolean skipCorrupt;
@@ -493,12 +494,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
@@ -572,7 +573,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -586,8 +587,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
@@ -601,12 +602,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
@@ -675,7 +676,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -689,8 +690,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
 
       public StreamReaderBuilder setFileId(Long fileId) {
@@ -703,12 +704,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
@@ -771,7 +772,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -785,8 +786,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
 
       public StreamReaderBuilder setFileId(Long fileId) {
@@ -799,12 +800,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
@@ -878,7 +879,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -895,9 +896,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer valueStream;
-      private EncodedColumnBatch.StreamBuffer scaleStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData valueStream;
+      private ColumnStreamData scaleStream;
       private int scale;
       private int precision;
       private CompressionCodec compressionCodec;
@@ -923,17 +924,17 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setValueStream(EncodedColumnBatch.StreamBuffer valueStream) {
+      public StreamReaderBuilder setValueStream(ColumnStreamData valueStream) {
         this.valueStream = valueStream;
         return this;
       }
 
-      public StreamReaderBuilder setScaleStream(EncodedColumnBatch.StreamBuffer scaleStream) {
+      public StreamReaderBuilder setScaleStream(ColumnStreamData scaleStream) {
         this.scaleStream = scaleStream;
         return this;
       }
@@ -1004,7 +1005,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -1018,8 +1019,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
@@ -1033,12 +1034,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
@@ -1138,7 +1139,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -1168,10 +1169,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private Long fileId;
       private int columnIndex;
       private int maxLength;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
-      private EncodedColumnBatch.StreamBuffer dictionaryStream;
-      private EncodedColumnBatch.StreamBuffer lengthStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
+      private ColumnStreamData dictionaryStream;
+      private ColumnStreamData lengthStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
@@ -1190,22 +1191,22 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
 
-      public StreamReaderBuilder setLengthStream(EncodedColumnBatch.StreamBuffer lengthStream) {
+      public StreamReaderBuilder setLengthStream(ColumnStreamData lengthStream) {
         this.lengthStream = lengthStream;
         return this;
       }
 
-      public StreamReaderBuilder setDictionaryStream(EncodedColumnBatch.StreamBuffer dictStream) {
+      public StreamReaderBuilder setDictionaryStream(ColumnStreamData dictStream) {
         this.dictionaryStream = dictStream;
         return this;
       }
@@ -1312,7 +1313,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -1342,10 +1343,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private Long fileId;
       private int columnIndex;
       private int maxLength;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
-      private EncodedColumnBatch.StreamBuffer dictionaryStream;
-      private EncodedColumnBatch.StreamBuffer lengthStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
+      private ColumnStreamData dictionaryStream;
+      private ColumnStreamData lengthStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
@@ -1364,22 +1365,22 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
 
-      public StreamReaderBuilder setLengthStream(EncodedColumnBatch.StreamBuffer lengthStream) {
+      public StreamReaderBuilder setLengthStream(ColumnStreamData lengthStream) {
         this.lengthStream = lengthStream;
         return this;
       }
 
-      public StreamReaderBuilder setDictionaryStream(EncodedColumnBatch.StreamBuffer dictStream) {
+      public StreamReaderBuilder setDictionaryStream(ColumnStreamData dictStream) {
         this.dictionaryStream = dictStream;
         return this;
       }
@@ -1455,7 +1456,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -1469,8 +1470,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
 
       public StreamReaderBuilder setFileId(Long fileId) {
@@ -1483,12 +1484,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
@@ -1561,7 +1562,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -1578,9 +1579,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
-      private EncodedColumnBatch.StreamBuffer lengthStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
+      private ColumnStreamData lengthStream;
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
 
@@ -1594,17 +1595,17 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
 
-      public StreamReaderBuilder setLengthStream(EncodedColumnBatch.StreamBuffer secondaryStream) {
+      public StreamReaderBuilder setLengthStream(ColumnStreamData secondaryStream) {
         this.lengthStream = secondaryStream;
         return this;
       }
@@ -1673,7 +1674,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(EncodedColumnBatch.StreamBuffer[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
         throws IOException {
       super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
@@ -1687,8 +1688,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public static class StreamReaderBuilder {
       private Long fileId;
       private int columnIndex;
-      private EncodedColumnBatch.StreamBuffer presentStream;
-      private EncodedColumnBatch.StreamBuffer dataStream;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
 
       public StreamReaderBuilder setFileId(Long fileId) {
@@ -1701,12 +1702,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
-      public StreamReaderBuilder setPresentStream(EncodedColumnBatch.StreamBuffer presentStream) {
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
         this.presentStream = presentStream;
         return this;
       }
 
-      public StreamReaderBuilder setDataStream(EncodedColumnBatch.StreamBuffer dataStream) {
+      public StreamReaderBuilder setDataStream(ColumnStreamData dataStream) {
         this.dataStream = dataStream;
         return this;
       }
@@ -1740,11 +1741,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       List<OrcProto.ColumnEncoding> encodings,
       EncodedColumnBatch<OrcBatchKey> batch,
       CompressionCodec codec, boolean skipCorrupt) throws IOException {
-    long file = batch.batchKey.file;
+    long file = batch.getBatchKey().file;
     TreeReader[] treeReaders = new TreeReader[numCols];
     for (int i = 0; i < numCols; i++) {
-      int columnIndex = batch.columnIxs[i];
-      EncodedColumnBatch.StreamBuffer[] streamBuffers = batch.columnData[i];
+      int columnIndex = batch.getColumnIxs()[i];
+      ColumnStreamData[] streamBuffers = batch.getColumnData()[i];
       OrcProto.Type columnType = types.get(columnIndex);
 
       // EncodedColumnBatch is already decompressed, we don't really need to pass codec.
@@ -1756,13 +1757,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       OrcProto.ColumnEncoding columnEncoding = encodings.get(columnIndex);
 
       // stream buffers are arranged in enum order of stream kind
-      EncodedColumnBatch.StreamBuffer present = null;
-      EncodedColumnBatch.StreamBuffer data = null;
-      EncodedColumnBatch.StreamBuffer dictionary = null;
-      EncodedColumnBatch.StreamBuffer lengths = null;
-      EncodedColumnBatch.StreamBuffer secondary = null;
-      for (EncodedColumnBatch.StreamBuffer streamBuffer : streamBuffers) {
-        switch (streamBuffer.streamKind) {
+      ColumnStreamData present = null;
+      ColumnStreamData data = null;
+      ColumnStreamData dictionary = null;
+      ColumnStreamData lengths = null;
+      ColumnStreamData secondary = null;
+      for (ColumnStreamData streamBuffer : streamBuffers) {
+        switch (streamBuffer.getStreamKind()) {
           case 0:
             // PRESENT stream
             present = streamBuffer;
@@ -1784,7 +1785,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             secondary = streamBuffer;
             break;
           default:
-            throw new IOException("Unexpected stream kind: " + streamBuffer.streamKind);
+            throw new IOException("Unexpected stream kind: " + streamBuffer.getStreamKind());
         }
       }
 

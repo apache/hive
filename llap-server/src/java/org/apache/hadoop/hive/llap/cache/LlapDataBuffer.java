@@ -21,13 +21,13 @@ package org.apache.hadoop.hive.llap.cache;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
 import org.apache.hadoop.hive.llap.DebugUtils;
-import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
 import com.google.common.annotations.VisibleForTesting;
 
-public final class LlapDataBuffer extends LlapCacheableBuffer implements LlapMemoryBuffer {
+public final class LlapDataBuffer extends LlapCacheableBuffer implements MemoryBuffer {
 
   // For now, we don't track refcount for metadata blocks, don't clear them, don't reuse them and
   // basically rely on GC to remove them. So, refcount only applies to data blocks. If that

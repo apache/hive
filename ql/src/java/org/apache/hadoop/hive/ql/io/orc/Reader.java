@@ -22,11 +22,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.apache.hadoop.hive.llap.Consumer;
-import org.apache.hadoop.hive.llap.counters.LowLevelCacheCounters;
-import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
-import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.common.io.storage_api.DataCache;
+import org.apache.hadoop.hive.common.io.storage_api.DataReader;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -318,9 +316,8 @@ public interface Reader {
 
   MetadataReader metadata() throws IOException;
 
-  EncodedReader encodedReader(long fileId, LowLevelCache lowLevelCache,
-      LowLevelCacheCounters qfCounters, Consumer<OrcEncodedColumnBatch> consumer)
-          throws IOException;
+  EncodedReader encodedReader(
+      long fileId, DataCache dataCache, DataReader dataReader) throws IOException;
 
   List<Integer> getVersionList();
 
@@ -331,4 +328,6 @@ public interface Reader {
   List<StripeStatistics> getStripeStatistics();
 
   List<OrcProto.ColumnStatistics> getOrcProtoFileStatistics();
+
+  DataReader createDefaultDataReader(boolean useZeroCopy);
 }

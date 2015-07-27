@@ -15,16 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.llap.cache;
 
-package org.apache.hadoop.hive.llap.io.api.cache;
-
-import java.nio.ByteBuffer;
-import org.apache.hadoop.metrics2.MetricsSource;
-
-
-public interface LlapMemoryBuffer {
-  /** Note - position of the raw buffer should NOT be modified ever;
-   * limit should not be modified after it's in cache. */
-  public ByteBuffer getByteBufferRaw();
-  public ByteBuffer getByteBufferDup();
+public interface LowLevelCacheCounters {
+  void recordCacheHit(long bytesHit);
+  void recordCacheMiss(long bytesMissed);
+  void recordAllocBytes(long bytesWasted, long bytesAllocated);
+  void recordHdfsTime(long timeUs);
+  long startTimeCounter();
 }

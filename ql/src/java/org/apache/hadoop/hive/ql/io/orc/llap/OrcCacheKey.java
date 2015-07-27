@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.io.api.orc;
+package org.apache.hadoop.hive.ql.io.orc.llap;
 
 public class OrcCacheKey extends OrcBatchKey {
   public int colIx;
