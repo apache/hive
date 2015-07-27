@@ -134,7 +134,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     // the task in. On MR: The cache is a no-op.
     String queryId = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID);
     cacheKey = "HASH_MAP_" + this.getOperatorId() + "_container";
-
     cache = ObjectCacheFactory.getCache(hconf, queryId);
     loader = getHashTableLoader(hconf);
 
@@ -196,10 +195,15 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
       if (!loadCalled && spilled) {
         // we can't use the cached table because it has spilled.
+
         loadHashTable(getExecContext(), MapredContext.get());
       } else {
         if (LOG.isInfoEnabled()) {
-          LOG.info("Using tables from cache: " + pair.getLeft());
+          String s = "Using tables from cache: [";
+          for (MapJoinTableContainer c : pair.getLeft()) {
+            s += ((c == null) ? "null" : c.getClass().getSimpleName()) + ", ";
+          }
+          LOG.info(s + "]");
         }
         // let's use the table from the cache.
         mapJoinTables = pair.getLeft();

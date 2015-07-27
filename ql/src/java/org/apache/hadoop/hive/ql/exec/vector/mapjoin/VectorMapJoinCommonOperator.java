@@ -530,7 +530,6 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    */
   @Override
   protected HashTableLoader getHashTableLoader(Configuration hconf) {
-
     VectorMapJoinDesc vectorDesc = conf.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
     HashTableLoader hashTableLoader;
@@ -621,7 +620,6 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
 
     VectorMapJoinDesc vectorDesc = conf.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
-    HashTableLoader hashTableLoader;
     switch (vectorDesc.hashTableImplementationType()) {
     case OPTIMIZED:
       {

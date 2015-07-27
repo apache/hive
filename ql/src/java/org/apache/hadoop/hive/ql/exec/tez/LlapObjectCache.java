@@ -42,17 +42,16 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   private static final Log LOG = LogFactory.getLog(LlapObjectCache.class.getName());
 
-  private static final Cache<String, Object> registry
-    = CacheBuilder.newBuilder().softValues().build();
-
-  private static final Map<String, ReentrantLock> locks
-    = new HashMap<String, ReentrantLock>();
-
-  private static final ReentrantLock lock = new ReentrantLock();
-
   private static ExecutorService staticPool = Executors.newCachedThreadPool();
 
   private static final boolean isLogInfoEnabled = LOG.isInfoEnabled();
+
+  private final Cache<String, Object> registry = CacheBuilder.newBuilder().softValues().build();
+
+  private final Map<String, ReentrantLock> locks = new HashMap<String, ReentrantLock>();
+
+  private final ReentrantLock lock = new ReentrantLock();
+
 
   @Override
   public void release(String key) {
