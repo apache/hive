@@ -106,7 +106,7 @@ public final class ColumnPrunerProcFactory {
           filterOpPrunedColListsOrderPreserved);
 
       pruneOperator(cppCtx, op, cppCtx.getPrunedColLists().get(op));
-
+      cppCtx.handleFilterUnionChildren(op);
       return null;
     }
   }
