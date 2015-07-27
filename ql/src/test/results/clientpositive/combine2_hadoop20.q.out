@@ -65,14 +65,14 @@ POSTHOOK: Output: default@combine2@value=val_5
 POSTHOOK: Output: default@combine2@value=val_8
 POSTHOOK: Output: default@combine2@value=val_9
 POSTHOOK: Output: default@combine2@value=|
-POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_4).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_8).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_9).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=|).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2 PARTITION(value=val_4).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2 PARTITION(value=val_5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2 PARTITION(value=val_8).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2 PARTITION(value=val_9).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2 PARTITION(value=|).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: show partitions combine2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@combine2
