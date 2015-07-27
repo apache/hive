@@ -173,7 +173,16 @@ public class PartInfo implements Serializable {
 
   void setTableInfo(HCatTableInfo thatTableInfo) {
     this.tableInfo = thatTableInfo;
+    restoreLocalInfoFromTableInfo();
+  }
 
+  /**
+   * Undoes the effects of compression( dedupWithTableInfo() ) during serialization,
+   * and restores PartInfo fields to return original data.
+   * Can be called idempotently, repeatably.
+   */
+  private void restoreLocalInfoFromTableInfo() {
+    assert tableInfo != null : "TableInfo can't be null at this point.";
     if (partitionSchema == null) {
       partitionSchema = tableInfo.getDataColumns();
     }
@@ -196,15 +205,10 @@ public class PartInfo implements Serializable {
   }
 
   /**
-   * Serialization method. Suppresses serialization of redundant information that's already
-   * available from TableInfo.
+   * Finds commonalities with TableInfo, and suppresses (nulls) fields if they are identical
    */
-  private void writeObject(ObjectOutputStream oos)
-      throws IOException {
-    // Suppress commonality with TableInfo.
-
+  private void dedupWithTableInfo() {
     assert tableInfo != null : "TableInfo can't be null at this point.";
-
     if (partitionSchema != null) {
       if (partitionSchema.equals(tableInfo.getDataColumns())) {
         partitionSchema = null;
@@ -260,7 +264,21 @@ public class PartInfo implements Serializable {
         }
       }
     }
-
-    oos.defaultWriteObject();
   }
+
+  /**
+   * Serialization method used by java serialization.
+   * Suppresses serialization of redundant information that's already available from
+   * TableInfo before writing out, so as to minimize amount of serialized space but
+   * restore it back before returning, so that PartInfo object is still usable afterwards
+   * (See HIVE-8485 and HIVE-11344 for details.)
+   */
+  private void writeObject(ObjectOutputStream oos)
+      throws IOException {
+    dedupWithTableInfo();
+    oos.defaultWriteObject();
+    restoreLocalInfoFromTableInfo();
+  }
+
+
 }
