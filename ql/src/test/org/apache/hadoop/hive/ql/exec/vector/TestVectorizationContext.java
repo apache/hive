@@ -32,6 +32,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BRoundWithNumDigitsDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DoubleColumnInList;
@@ -94,6 +95,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterVarCharColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterVarCharColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterCharColumnBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterCharColumnNotBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncBRoundDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRoundDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
@@ -114,6 +116,7 @@ import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBRound;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
@@ -989,6 +992,12 @@ public class TestVectorizationContext {
     ve = vc.getVectorExpression(mathFuncExpr);
     Assert.assertEquals(FuncRoundDoubleToDouble.class, ve.getClass());
 
+    // BRound without digits
+    GenericUDFBRound udfBRound = new GenericUDFBRound();
+    mathFuncExpr.setGenericUDF(udfBRound);
+    ve = vc.getVectorExpression(mathFuncExpr);
+    Assert.assertEquals(FuncBRoundDoubleToDouble.class, ve.getClass());
+
     // Round with digits
     mathFuncExpr.setGenericUDF(udfRound);
     children2.add(new ExprNodeConstantDesc(4));
@@ -996,6 +1005,12 @@ public class TestVectorizationContext {
     ve = vc.getVectorExpression(mathFuncExpr);
     Assert.assertEquals(RoundWithNumDigitsDoubleToDouble.class, ve.getClass());
     Assert.assertEquals(4, ((RoundWithNumDigitsDoubleToDouble) ve).getDecimalPlaces().get());
+
+    // BRound with digits
+    mathFuncExpr.setGenericUDF(udfBRound);
+    ve = vc.getVectorExpression(mathFuncExpr);
+    Assert.assertEquals(BRoundWithNumDigitsDoubleToDouble.class, ve.getClass());
+    Assert.assertEquals(4, ((BRoundWithNumDigitsDoubleToDouble) ve).getDecimalPlaces().get());
 
     // Log with int base
     gudfBridge = new GenericUDFBridge("log", false, UDFLog.class.getName());

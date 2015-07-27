@@ -696,6 +696,7 @@ public class GenVectorCode extends Task {
       // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>,
       //   <ResultCast>, <Cleanup> <VectorExprArgType>
       {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncBRound", "double", "double", "MathExpr.bround", "", "", "", ""},
       // round(longCol) returns a long and is a no-op. So it will not be implemented here.
       // round(Col, N) is a special case and will be implemented separately from this template
       {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)", "", ""},
@@ -752,6 +753,7 @@ public class GenVectorCode extends Task {
       {"DecimalColumnUnaryFunc", "FuncAbs", "decimal", "DecimalUtil.abs"},
       {"DecimalColumnUnaryFunc", "FuncSign", "long", "DecimalUtil.sign"},
       {"DecimalColumnUnaryFunc", "FuncRound", "decimal", "DecimalUtil.round"},
+      {"DecimalColumnUnaryFunc", "FuncBRound", "decimal", "DecimalUtil.bround"},
       {"DecimalColumnUnaryFunc", "FuncNegate", "decimal", "DecimalUtil.negate"},
 
       // Casts

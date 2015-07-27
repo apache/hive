@@ -250,6 +250,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFLog.class);
     supportedGenericUDFs.add(GenericUDFPower.class);
     supportedGenericUDFs.add(GenericUDFRound.class);
+    supportedGenericUDFs.add(GenericUDFBRound.class);
     supportedGenericUDFs.add(GenericUDFPosMod.class);
     supportedGenericUDFs.add(UDFSqrt.class);
     supportedGenericUDFs.add(UDFSign.class);
