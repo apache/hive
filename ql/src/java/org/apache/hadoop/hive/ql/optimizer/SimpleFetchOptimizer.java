@@ -369,9 +369,10 @@ public class SimpleFetchOptimizer implements Transform {
 
     private FetchWork convertToWork() throws HiveException {
       inputs.clear();
+      TableDesc tableDesc = Utilities.getTableDesc(table);
       if (!table.isPartitioned()) {
         inputs.add(new ReadEntity(table, parent, !table.isView() && parent == null));
-        FetchWork work = new FetchWork(table.getPath(), Utilities.getTableDesc(table));
+        FetchWork work = new FetchWork(table.getPath(), tableDesc);
         PlanUtils.configureInputJobPropertiesForStorageHandler(work.getTblDesc());
         work.setSplitSample(splitSample);
         return work;
@@ -382,7 +383,7 @@ public class SimpleFetchOptimizer implements Transform {
       for (Partition partition : partsList.getNotDeniedPartns()) {
         inputs.add(new ReadEntity(partition, parent, parent == null));
         listP.add(partition.getDataLocation());
-        partP.add(Utilities.getPartitionDesc(partition));
+        partP.add(Utilities.getPartitionDescFromTableDesc(tableDesc, partition, true));
       }
       Table sourceTable = partsList.getSourceTable();
       inputs.add(new ReadEntity(sourceTable, parent, parent == null));
