@@ -48,6 +48,7 @@ public class ObjectCacheFactory {
     if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       if (LlapIoProxy.isDaemon()) { // daemon
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OBJECT_CACHE_ENABLED)) {
+          // LLAP object cache, unlike others, does not use globals. Thus, get the existing one.
           return getLlapObjectCache(queryId);
         } else { // no cache
           return new ObjectCacheWrapper(
@@ -66,19 +67,20 @@ public class ObjectCacheFactory {
   private static ObjectCache getLlapObjectCache(String queryId) {
     // If order of events (i.e. dagstart and fragmentstart) was guaranteed, we could just
     // create the cache when dag starts, and blindly return it to execution here.
+    if (queryId == null) throw new RuntimeException("Query ID cannot be null");
     ObjectCache result = llapQueryCaches.get(queryId);
     if (result != null) return result;
     result = new LlapObjectCache();
     ObjectCache old = llapQueryCaches.putIfAbsent(queryId, result);
-    if (old == null && LOG.isDebugEnabled()) {
-      LOG.debug("Created object cache for " + queryId);
+    if (old == null && LOG.isInfoEnabled()) {
+      LOG.info("Created object cache for " + queryId);
     }
     return (old != null) ? old : result;
   }
 
   public static void removeLlapQueryCache(String queryId) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Removing object cache for " + queryId);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Removing object cache for " + queryId);
     }
     llapQueryCaches.remove(queryId);
   }
