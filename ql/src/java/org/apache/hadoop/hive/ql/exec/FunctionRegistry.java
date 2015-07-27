@@ -192,6 +192,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("size", GenericUDFSize.class);
 
     system.registerGenericUDF("round", GenericUDFRound.class);
+    system.registerGenericUDF("bround", GenericUDFBRound.class);
     system.registerGenericUDF("floor", GenericUDFFloor.class);
     system.registerUDF("sqrt", UDFSqrt.class, false);
     system.registerGenericUDF("cbrt", GenericUDFCbrt.class);

@@ -51,6 +51,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   public static final int ROUND_FLOOR = BigDecimal.ROUND_FLOOR;
   public static final int ROUND_CEILING = BigDecimal.ROUND_CEILING;
   public static final int ROUND_HALF_UP = BigDecimal.ROUND_HALF_UP;
+  public static final int ROUND_HALF_EVEN = BigDecimal.ROUND_HALF_EVEN;
 
   private BigDecimal bd = BigDecimal.ZERO;
 
