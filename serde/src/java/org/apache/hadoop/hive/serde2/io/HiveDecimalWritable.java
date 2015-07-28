@@ -24,13 +24,8 @@ import java.math.BigInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
-import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 
@@ -40,8 +35,6 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
 
   private byte[] internalStorage = new byte[0];
   private int scale;
-
-  private final VInt vInt = new VInt(); // reusable integer
 
   public HiveDecimalWritable() {
   }
@@ -83,18 +76,6 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
     this.scale = scale;
   }
 
-  public void setFromBytes(byte[] bytes, int offset, int length) {
-    LazyBinaryUtils.readVInt(bytes, offset, vInt);
-    scale = vInt.value;
-    offset += vInt.length;
-    LazyBinaryUtils.readVInt(bytes, offset, vInt);
-    offset += vInt.length;
-    if (internalStorage.length != vInt.value) {
-      internalStorage = new byte[vInt.value];
-    }
-    System.arraycopy(bytes, offset, internalStorage, 0, vInt.value);
-  }
-
   public HiveDecimal getHiveDecimal() {
     return HiveDecimal.create(new BigInteger(internalStorage), scale);
   }
@@ -107,7 +88,8 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
    * @return HiveDecimal instance
    */
   public HiveDecimal getHiveDecimal(int maxPrecision, int maxScale) {
-     return HiveDecimalUtils.enforcePrecisionScale(HiveDecimal.create(new BigInteger(internalStorage), scale),
+     return HiveDecimal.enforcePrecisionScale(HiveDecimal.
+             create(new BigInteger(internalStorage), scale),
          maxPrecision, maxScale);
   }
 
@@ -131,20 +113,6 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
   @Override
   public int compareTo(HiveDecimalWritable that) {
     return getHiveDecimal().compareTo(that.getHiveDecimal());
-  }
-
-  public static void writeToByteStream(Decimal128 dec, Output byteStream) {
-    HiveDecimal hd = HiveDecimal.create(dec.toBigDecimal());
-    LazyBinaryUtils.writeVInt(byteStream, hd.scale());
-    byte[] bytes = hd.unscaledValue().toByteArray();
-    LazyBinaryUtils.writeVInt(byteStream, bytes.length);
-    byteStream.write(bytes, 0, bytes.length);
-  }
-
-  public void writeToByteStream(RandomAccessOutput byteStream) {
-    LazyBinaryUtils.writeVInt(byteStream, scale);
-    LazyBinaryUtils.writeVInt(byteStream, internalStorage.length);
-    byteStream.write(internalStorage, 0, internalStorage.length);
   }
 
   @Override
@@ -189,5 +157,18 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
    */
   public int getScale() {
     return scale;
+  }
+
+  public static
+  HiveDecimalWritable enforcePrecisionScale(HiveDecimalWritable writable,
+                                            int precision, int scale) {
+    if (writable == null) {
+      return null;
+    }
+
+    HiveDecimal dec =
+        HiveDecimal.enforcePrecisionScale(writable.getHiveDecimal(), precision,
+            scale);
+    return dec == null ? null : new HiveDecimalWritable(dec);
   }
 }
