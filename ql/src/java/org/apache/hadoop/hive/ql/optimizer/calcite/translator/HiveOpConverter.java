@@ -605,7 +605,7 @@ public class HiveOpConverter {
     WindowingComponentizer groups = new WindowingComponentizer(wSpec);
     RowResolver rr = new RowResolver();
     for (ColumnInfo ci : input.getSchema().getSignature()) {
-      rr.put(ci.getTabAlias(), ci.getInternalName(), ci);
+      rr.put(inputOpAf.tabAlias, ci.getInternalName(), ci);
     }
 
     while (groups.hasNext()) {
