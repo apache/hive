@@ -108,6 +108,7 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.dag.api.Vertex.VertexExecutionContext;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
@@ -625,15 +626,13 @@ public class DagUtils {
       procClassName = MergeFileTezProcessor.class.getName();
     }
 
-    String serviceName = findServiceName(mapWork);
+    VertexExecutionContext executionContext = createVertexExecutionContext(mapWork);
 
     map = Vertex.create(mapWork.getName(), ProcessorDescriptor.create(procClassName)
-        .setUserPayload(serializedConf), numTasks, getContainerResource(conf))
-      .setConf(TezConfiguration.TEZ_AM_VERTEX_TASK_SCHEDULER_NAME, serviceName)
-      .setConf(TezConfiguration.TEZ_AM_VERTEX_CONTAINER_LAUNCHER_NAME, serviceName)
-      .setConf(TezConfiguration.TEZ_AM_VERTEX_TASK_COMMUNICATOR_NAME, serviceName);
+        .setUserPayload(serializedConf), numTasks, getContainerResource(conf));
 
     map.setTaskEnvironment(getContainerEnvironment(conf, true));
+    map.setExecutionContext(executionContext);
     map.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     assert mapWork.getAliasToWork().keySet().size() == 1;
@@ -671,11 +670,17 @@ public class DagUtils {
     return conf;
   }
 
-  private String findServiceName(BaseWork work) {
-    String serviceName = TezSessionState.DEFAULT_SERVICE;
-    if (work.getLlapMode()) serviceName = TezSessionState.LLAP_SERVICE;
-    if (work.getUberMode()) serviceName = TezSessionState.LOCAL_SERVICE;
-    return serviceName;
+  private VertexExecutionContext createVertexExecutionContext(BaseWork work) {
+    VertexExecutionContext vertexExecutionContext = VertexExecutionContext.createExecuteInContainers(true);
+    if (work.getLlapMode()) {
+      vertexExecutionContext = VertexExecutionContext
+          .create(TezSessionState.LLAP_SERVICE, TezSessionState.LLAP_SERVICE,
+              TezSessionState.LLAP_SERVICE);
+    }
+    if (work.getUberMode()) {
+      vertexExecutionContext = VertexExecutionContext.createExecuteInAm(true);
+    }
+    return vertexExecutionContext;
   }
 
   /*
@@ -692,20 +697,18 @@ public class DagUtils {
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, reduceWork);
 
-    String serviceName = findServiceName(reduceWork);
+    VertexExecutionContext vertexExecutionContext = createVertexExecutionContext(reduceWork);
 
     // create the vertex
     Vertex reducer = Vertex.create(reduceWork.getName(),
         ProcessorDescriptor.create(ReduceTezProcessor.class.getName()).
-        setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
-            reduceWork.isAutoReduceParallelism()?
-	      reduceWork.getMaxReduceTasks():
-	      reduceWork.getNumReduceTasks(), getContainerResource(conf))
-      .setConf(TezConfiguration.TEZ_AM_VERTEX_TASK_SCHEDULER_NAME, serviceName)
-      .setConf(TezConfiguration.TEZ_AM_VERTEX_CONTAINER_LAUNCHER_NAME, serviceName)
-      .setConf(TezConfiguration.TEZ_AM_VERTEX_TASK_COMMUNICATOR_NAME, serviceName);
+            setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
+        reduceWork.isAutoReduceParallelism() ?
+            reduceWork.getMaxReduceTasks() :
+            reduceWork.getNumReduceTasks(), getContainerResource(conf));
 
     reducer.setTaskEnvironment(getContainerEnvironment(conf, false));
+    reducer.setExecutionContext(vertexExecutionContext);
     reducer.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();

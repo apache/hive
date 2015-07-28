@@ -43,6 +43,8 @@ import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
+import org.apache.tez.common.TezUtils;
+import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.app.ControlledClock;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
 import org.apache.tez.serviceplugins.api.TaskSchedulerContext;
@@ -301,7 +303,8 @@ public class TestLlapTaskSchedulerService {
 
       doReturn(appAttemptId).when(mockAppCallback).getApplicationAttemptId();
       doReturn(11111l).when(mockAppCallback).getCustomClusterIdentifier();
-      doReturn(conf).when(mockAppCallback).getInitialConfiguration();
+      UserPayload userPayload = TezUtils.createUserPayloadFromConf(conf);
+      doReturn(userPayload).when(mockAppCallback).getInitialUserPayload();
 
       ts = new LlapTaskSchedulerServiceForTest(mockAppCallback, clock);
 
@@ -362,7 +365,13 @@ public class TestLlapTaskSchedulerService {
     public LlapTaskSchedulerServiceForTest(
         TaskSchedulerContext appClient, Clock clock) {
       super(appClient, clock);
-      this.inTest = appClient.getInitialConfiguration().getBoolean(LLAP_TASK_SCHEDULER_IN_TEST, false);
+      Configuration conf;
+      try {
+        conf = TezUtils.createConfFromUserPayload(appClient.getInitialUserPayload());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      this.inTest = conf.getBoolean(LLAP_TASK_SCHEDULER_IN_TEST, false);
     }
 
     protected void schedulePendingTasks() {

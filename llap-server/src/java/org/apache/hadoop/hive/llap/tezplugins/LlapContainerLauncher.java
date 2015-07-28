@@ -25,7 +25,7 @@ public class LlapContainerLauncher extends ContainerLauncher {
   private static final Logger LOG = LoggerFactory.getLogger(LlapContainerLauncher.class);
 
   public LlapContainerLauncher(ContainerLauncherContext containerLauncherContext) {
-    super(LlapContainerLauncher.class.getName(), containerLauncherContext);
+    super(containerLauncherContext);
   }
 
   @Override

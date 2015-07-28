@@ -24,10 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,22 +44,23 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.client.TezClient;
+import org.apache.tez.common.TezUtils;
 import org.apache.tez.dag.api.PreWarmVertex;
 import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
+import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
-import org.apache.tez.dag.api.TezConstants;
-import org.apache.tez.dag.api.TezException;
+import org.apache.tez.serviceplugins.api.ContainerLauncherDescriptor;
+import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
+import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
+import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
 
 /**
  * Holds session state related to Tez
@@ -71,14 +70,9 @@ public class TezSessionState {
   private static final Log LOG = LogFactory.getLog(TezSessionState.class.getName());
   private static final String TEZ_DIR = "_tez_session_dir";
   public static final String LLAP_SERVICE = "LLAP";
-  public static final String DEFAULT_SERVICE = TezConstants.TEZ_AM_SERVICE_PLUGINS_NAME_DEFAULT;
-  public static final String LOCAL_SERVICE = TezConstants.TEZ_AM_SERVICE_PLUGINS_LOCAL_MODE_NAME_DEFAULT;
   private static final String LLAP_SCHEDULER = "org.apache.tez.dag.app.rm.LlapTaskSchedulerService";
   private static final String LLAP_LAUNCHER = "org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher";
   private static final String LLAP_TASK_COMMUNICATOR = "org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator";
-  private static final String LLAP_SERVICE_SCHEDULER = LLAP_SERVICE + ":" + LLAP_SCHEDULER;
-  private static final String LLAP_SERVICE_LAUNCHER = LLAP_SERVICE + ":" + LLAP_LAUNCHER;
-  private static final String LLAP_SERVICE_TASK_COMMUNICATOR = LLAP_SERVICE + ":" + LLAP_TASK_COMMUNICATOR;
 
   private HiveConf conf;
   private Path tezScratchDir;
@@ -212,25 +206,23 @@ public class TezSessionState {
     // set up the staging directory to use
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
 
+    ServicePluginsDescriptor servicePluginsDescriptor;
+    UserPayload servicePluginPayload = TezUtils.createUserPayloadFromConf(tezConfig);
+
     if (llapMode) {
       // we need plugins to handle llap and uber mode
-      tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_SCHEDULERS, DEFAULT_SERVICE, LOCAL_SERVICE,
-          LLAP_SERVICE_SCHEDULER);
-
-      tezConfig.setStrings(TezConfiguration.TEZ_AM_CONTAINER_LAUNCHERS, DEFAULT_SERVICE,
-          LOCAL_SERVICE, LLAP_SERVICE_LAUNCHER);
-
-      tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_COMMUNICATORS, DEFAULT_SERVICE,
-          LOCAL_SERVICE, LLAP_SERVICE_TASK_COMMUNICATOR);
+      servicePluginsDescriptor = ServicePluginsDescriptor.create(true,
+          new TaskSchedulerDescriptor[]{
+              TaskSchedulerDescriptor.create(LLAP_SERVICE, LLAP_SCHEDULER)
+                  .setUserPayload(servicePluginPayload)},
+          new ContainerLauncherDescriptor[]{
+              ContainerLauncherDescriptor.create(LLAP_SERVICE, LLAP_LAUNCHER)},
+          new TaskCommunicatorDescriptor[]{
+              TaskCommunicatorDescriptor.create(LLAP_SERVICE, LLAP_TASK_COMMUNICATOR)
+                  .setUserPayload(servicePluginPayload)});
     } else {
       // we need plugins to handle llap and uber mode
-      tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_SCHEDULERS, DEFAULT_SERVICE, LOCAL_SERVICE);
-
-      tezConfig.setStrings(TezConfiguration.TEZ_AM_CONTAINER_LAUNCHERS, DEFAULT_SERVICE,
-          LOCAL_SERVICE);
-
-      tezConfig.setStrings(TezConfiguration.TEZ_AM_TASK_COMMUNICATORS, DEFAULT_SERVICE,
-          LOCAL_SERVICE);
+      servicePluginsDescriptor = ServicePluginsDescriptor.create(true);
     }
 
     // container prewarming. tell the am how many containers we need
@@ -242,8 +234,9 @@ public class TezSessionState {
       tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
     }
 
-    session = TezClient.create("HIVE-" + sessionId, tezConfig, true,
-        commonLocalResources, null);
+    session = TezClient.newBuilder("HIVE-" + sessionId, tezConfig).setIsSession(true)
+        .setLocalResources(commonLocalResources)
+        .setServicePluginDescriptor(servicePluginsDescriptor).build();
 
     LOG.info("Opening new Tez Session (id: " + sessionId
         + ", scratch dir: " + tezScratchDir + ")");
