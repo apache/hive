@@ -106,12 +106,13 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     BASE_SUBMIT_WORK_REQUEST = baseBuilder.build();
 
     credentialMap = new ConcurrentHashMap<>();
-    sourceStateTracker = new SourceStateTracker(getTaskCommunicatorContext(), this);
+    sourceStateTracker = new SourceStateTracker(getContext(), this);
   }
 
   @Override
-  public void serviceInit(Configuration conf) throws Exception {
-    super.serviceInit(conf);
+  public void initialize() throws Exception {
+    super.initialize();
+    Configuration conf = getConf();
     int numThreads = conf.getInt(LlapConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS,
         LlapConfiguration.LLAP_DAEMON_COMMUNICATOR_NUM_THREADS_DEFAULT);
     this.communicator = new TaskCommunicator(numThreads, conf);
@@ -124,14 +125,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   }
 
   @Override
-  public void serviceStart() {
-    super.serviceStart();
+  public void start() {
+    super.start();
     this.communicator.start();
   }
 
   @Override
-  public void serviceStop() {
-    super.serviceStop();
+  public void shutdown() {
+    super.shutdown();
     if (this.communicator != null) {
       this.communicator.stop();
     }
@@ -139,7 +140,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   @Override
   protected void startRpcServer() {
-    Configuration conf = getConfig();
+    Configuration conf = getConf();
     try {
       JobTokenSecretManager jobTokenSecretManager =
           new JobTokenSecretManager();
@@ -232,7 +233,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     // Have to register this up front right now. Otherwise, it's possible for the task to start
     // sending out status/DONE/KILLED/FAILED messages before TAImpl knows how to handle them.
-    getTaskCommunicatorContext()
+    getContext()
         .taskStartedRemotely(taskSpec.getTaskAttemptID(), containerId);
     communicator.sendSubmitWork(requestProto, host, port,
         new TaskCommunicator.ExecuteRequestCallback<SubmitWorkResponseProto>() {
@@ -255,14 +256,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                 LOG.info(
                     "Unable to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                         containerId + ", Service Busy");
-                getTaskCommunicatorContext().taskKilled(taskSpec.getTaskAttemptID(),
+                getContext().taskKilled(taskSpec.getTaskAttemptID(),
                     TaskAttemptEndReason.SERVICE_BUSY, "Service Busy");
               } else {
                 // All others from the remote service cause the task to FAIL.
                 LOG.info(
                     "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                         containerId, t);
-                getTaskCommunicatorContext()
+                getContext()
                     .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
                         t.toString());
               }
@@ -272,14 +273,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                 LOG.info(
                     "Unable to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                         containerId + ", Communication Error");
-                getTaskCommunicatorContext().taskKilled(taskSpec.getTaskAttemptID(),
+                getContext().taskKilled(taskSpec.getTaskAttemptID(),
                     TaskAttemptEndReason.COMMUNICATION_ERROR, "Communication Error");
               } else {
                 // Anything else is a FAIL.
                 LOG.info(
                     "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                         containerId, t);
-                getTaskCommunicatorContext()
+                getContext()
                     .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
                         t.getMessage());
               }
@@ -406,11 +407,11 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     builder.setAmPort(getAddress().getPort());
     Credentials taskCredentials = new Credentials();
     // Credentials can change across DAGs. Ideally construct only once per DAG.
-    taskCredentials.addAll(getTaskCommunicatorContext().getCredentials());
+    taskCredentials.addAll(getContext().getCredentials());
 
     ByteBuffer credentialsBinary = credentialMap.get(taskSpec.getDAGName());
     if (credentialsBinary == null) {
-      credentialsBinary = serializeCredentials(getTaskCommunicatorContext().getCredentials());
+      credentialsBinary = serializeCredentials(getContext().getCredentials());
       credentialMap.putIfAbsent(taskSpec.getDAGName(), credentialsBinary.duplicate());
     } else {
       credentialsBinary = credentialsBinary.duplicate();
@@ -459,7 +460,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     @Override
     public void taskKilled(TezTaskAttemptID taskAttemptId) throws IOException {
       // TODO Unregister the task for state updates, which could in turn unregister the node.
-      getTaskCommunicatorContext().taskKilled(taskAttemptId,
+      getContext().taskKilled(taskAttemptId,
           TaskAttemptEndReason.EXTERNAL_PREEMPTION, "Attempt preempted");
       entityTracker.unregisterTaskAttempt(taskAttemptId);
     }
@@ -598,8 +599,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       if (biMap != null) {
         synchronized(biMap) {
           for (Map.Entry<ContainerId, TezTaskAttemptID> entry : biMap.entrySet()) {
-            getTaskCommunicatorContext().taskAlive(entry.getValue());
-            getTaskCommunicatorContext().containerAlive(entry.getKey());
+            getContext().taskAlive(entry.getValue());
+            getContext().containerAlive(entry.getKey());
           }
         }
       } else {
