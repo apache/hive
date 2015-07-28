@@ -23,9 +23,23 @@ import static org.junit.Assert.assertSame;
 
 public class TestInstanceCache {
   private static class Foo {
+
+    private int value = 42;
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      Foo foo = (Foo) o;
+
+      return value == foo.value;
+
+    }
+
     @Override
     public int hashCode() {
-      return 42;
+      return value;
     }
   }
 

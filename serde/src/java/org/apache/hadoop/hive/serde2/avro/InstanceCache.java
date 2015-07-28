@@ -21,6 +21,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Cache for objects whose creation only depends on some other set of objects
@@ -32,7 +34,7 @@ import java.util.HashMap;
  */
 public abstract class InstanceCache<SeedObject, Instance> {
   private static final Log LOG = LogFactory.getLog(InstanceCache.class);
-  HashMap<Integer, Instance> cache = new HashMap<Integer, Instance>();
+  Map<SeedObject, Instance> cache = new HashMap<SeedObject, Instance>();
   
   public InstanceCache() {}
 
@@ -43,15 +45,15 @@ public abstract class InstanceCache<SeedObject, Instance> {
   public Instance retrieve(SeedObject hv) throws AvroSerdeException {
     if(LOG.isDebugEnabled()) LOG.debug("Checking for hv: " + hv.toString());
 
-    if(cache.containsKey(hv.hashCode())) {
+    if(cache.containsKey(hv)) {
       if(LOG.isDebugEnabled()) LOG.debug("Returning cache result.");
-      return cache.get(hv.hashCode());
+      return cache.get(hv);
     }
 
     if(LOG.isDebugEnabled()) LOG.debug("Creating new instance and storing in cache");
 
     Instance instance = makeInstance(hv);
-    cache.put(hv.hashCode(), instance);
+    cache.put(hv, instance);
     return instance;
   }
 
