@@ -22,7 +22,6 @@
  */
 package org.apache.hive.beeline;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -31,7 +30,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.SequenceInputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -686,6 +684,10 @@ public class BeeLine implements Closeable {
 
     getOpts().setScriptFile(commandLine.getOptionValue("f"));
 
+    if (commandLine.getOptionValues("i") != null) {
+      getOpts().setInitFiles(commandLine.getOptionValues("i"));
+    }
+
     dbName = commandLine.getOptionValue("database");
     getOpts().setVerbose(Boolean.valueOf(commandLine.getOptionValue("verbose")));
     getOpts().setSilent(Boolean.valueOf(commandLine.getOptionValue("slient")));
@@ -761,7 +763,7 @@ public class BeeLine implements Closeable {
       pass = cl.getOptionValue("p");
     }
     url = cl.getOptionValue("u");
-    getOpts().setInitFile(cl.getOptionValue("i"));
+    getOpts().setInitFiles(cl.getOptionValues("i"));
     getOpts().setScriptFile(cl.getOptionValue("f"));
     if (cl.getOptionValues('e') != null) {
       commands = Arrays.asList(cl.getOptionValues('e'));
@@ -880,6 +882,8 @@ public class BeeLine implements Closeable {
         getOpts().setShowHeader(false);
         getOpts().setOutputFormat("dsv");
         getOpts().setDelimiterForDSV(' ');
+
+        processInitFiles(opts.getInitFiles());
       }
 
       if (getOpts().isHelpAsked()) {
@@ -901,13 +905,15 @@ public class BeeLine implements Closeable {
   }
 
   int runInit() {
-    String initFile = getOpts().getInitFile();
-    if (initFile != null) {
-      info("Running init script " + initFile);
-      try {
-        return executeFile(initFile);
-      } finally {
-        exit = false;
+    String initFiles[] = getOpts().getInitFiles();
+    if (initFiles != null && initFiles.length != 0) {
+      for (String initFile : initFiles) {
+        info("Running init script " + initFile);
+        try {
+          return executeFile(initFile);
+        } finally {
+          exit = false;
+        }
       }
     }
     return ERRNO_OK;
@@ -965,6 +971,24 @@ public class BeeLine implements Closeable {
       IOUtils.closeStream(initStream);
       consoleReader = null;
       output("");   // dummy new line
+    }
+  }
+
+  /**
+   * Only initial files specified by i option will be executed. The hiverc file will be processed by session manager.
+   *
+   * @param files
+   * @throws IOException
+   */
+  public void processInitFiles(String[] files) throws IOException {
+    if (files == null || files.length == 0) {
+      return;
+    }
+    for (String initFile : files) {
+      int rc = executeFile(initFile);
+      if (rc != 0) {
+        System.exit(rc);
+      }
     }
   }
 
