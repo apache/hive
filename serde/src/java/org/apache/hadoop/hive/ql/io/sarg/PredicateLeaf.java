@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -43,14 +47,27 @@ public interface PredicateLeaf {
    * The possible types for sargs.
    */
   public static enum Type {
-    INTEGER, // all of the integer types except long
-    LONG,
-    FLOAT,   // float and double
-    STRING,  // string, char, varchar
-    DATE,
-    DECIMAL,
-    TIMESTAMP,
-    BOOLEAN
+    INTEGER(Integer.class), // all of the integer types except long
+    LONG(Long.class),
+    FLOAT(Double.class),   // float and double
+    STRING(String.class),  // string, char, varchar
+    DATE(Date.class),
+    DECIMAL(HiveDecimalWritable.class),
+    TIMESTAMP(Timestamp.class),
+    BOOLEAN(Boolean.class);
+
+    private final Class cls;
+    Type(Class cls) {
+      this.cls = cls;
+    }
+
+    /**
+     * For all SARG leaves, the values must be the matching class.
+     * @return the value class
+     */
+    public Class getValueClass() {
+      return cls;
+    }
   }
 
   /**

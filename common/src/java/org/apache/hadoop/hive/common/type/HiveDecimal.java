@@ -75,7 +75,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   public static HiveDecimal create(String dec) {
     BigDecimal bd;
     try {
-      bd = new BigDecimal(dec);
+      bd = new BigDecimal(dec.trim());
     } catch (NumberFormatException ex) {
       return null;
     }

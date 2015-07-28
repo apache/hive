@@ -54,10 +54,10 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -305,7 +305,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       options.searchArgument(null, null);
       return;
     }
-    SearchArgument sarg = SearchArgumentFactory.createFromConf(conf);
+    SearchArgument sarg = ConvertAstToSearchArg.createFromConf(conf);
     if (sarg == null) {
       LOG.debug("No ORC pushdown predicate");
       options.searchArgument(null, null);

@@ -215,58 +215,78 @@ public interface SearchArgument {
     /**
      * Add a less than leaf to the current item on the stack.
      * @param column the name of the column
+     * @param type the type of the expression
      * @param literal the literal
      * @return this
      */
-    public Builder lessThan(String column, Object literal);
+    public Builder lessThan(String column, PredicateLeaf.Type type,
+                            Object literal);
 
     /**
      * Add a less than equals leaf to the current item on the stack.
      * @param column the name of the column
+     * @param type the type of the expression
      * @param literal the literal
      * @return this
      */
-    public Builder lessThanEquals(String column, Object literal);
+    public Builder lessThanEquals(String column, PredicateLeaf.Type type,
+                                  Object literal);
 
     /**
      * Add an equals leaf to the current item on the stack.
      * @param column the name of the column
+     * @param type the type of the expression
      * @param literal the literal
      * @return this
      */
-    public Builder equals(String column, Object literal);
+    public Builder equals(String column, PredicateLeaf.Type type,
+                          Object literal);
 
     /**
      * Add a null safe equals leaf to the current item on the stack.
      * @param column the name of the column
+     * @param type the type of the expression
      * @param literal the literal
      * @return this
      */
-    public Builder nullSafeEquals(String column, Object literal);
+    public Builder nullSafeEquals(String column, PredicateLeaf.Type type,
+                                  Object literal);
 
     /**
      * Add an in leaf to the current item on the stack.
      * @param column the name of the column
+     * @param type the type of the expression
      * @param literal the literal
      * @return this
      */
-    public Builder in(String column, Object... literal);
+    public Builder in(String column, PredicateLeaf.Type type,
+                      Object... literal);
 
     /**
      * Add an is null leaf to the current item on the stack.
      * @param column the name of the column
+     * @param type the type of the expression
      * @return this
      */
-    public Builder isNull(String column);
+    public Builder isNull(String column, PredicateLeaf.Type type);
 
     /**
      * Add a between leaf to the current item on the stack.
      * @param column the name of the column
+     * @param type the type of the expression
      * @param lower the literal
      * @param upper the literal
      * @return this
      */
-    public Builder between(String column, Object lower, Object upper);
+    public Builder between(String column, PredicateLeaf.Type type,
+                           Object lower, Object upper);
+
+    /**
+     * Add a truth value to the expression.
+     * @param truth
+     * @return this
+     */
+    public Builder literal(TruthValue truth);
 
     /**
      * Build and return the SearchArgument that has been defined. All of the

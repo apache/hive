@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitStrategy;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -1746,8 +1747,8 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
-        .startAnd().isNull("cost").end().build();
-    conf.set(SearchArgumentFactory.SARG_PUSHDOWN, isNull.toKryo());
+        .startAnd().isNull("cost", PredicateLeaf.Type.INTEGER).end().build();
+    conf.set(ConvertAstToSearchArg.SARG_PUSHDOWN, isNull.toKryo());
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
     options.include(new boolean[]{true, true, false, true, false});
@@ -1791,7 +1792,7 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", new Integer(0))
+            .lessThan("z", PredicateLeaf.Type.INTEGER, new Integer(0))
             .end()
             .build();
     conf.set("sarg.pushdown", sarg.toKryo());
@@ -1833,7 +1834,7 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", new String("foo"))
+            .lessThan("z", PredicateLeaf.Type.STRING, new String("foo"))
             .end()
             .build();
     conf.set("sarg.pushdown", sarg.toKryo());
