@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.io.Writable;
-
 /**
  * ColumnVector contains the shared structure for the sub-types,
  * including NULL information, and whether this vector
@@ -63,8 +61,6 @@ public abstract class ColumnVector {
   // Variables to hold state from before flattening so it can be easily restored.
   private boolean preFlattenIsRepeating;
   private boolean preFlattenNoNulls;
-
-  public abstract Writable getWritableObject(int index);
 
   /**
    * Constructor for super-class ColumnVector. This is not called directly,

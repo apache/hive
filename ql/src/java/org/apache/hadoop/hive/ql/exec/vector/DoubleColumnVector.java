@@ -19,10 +19,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
-
 /**
  * This class represents a nullable double precision floating point column vector.
  * This class will be used for operations on all floating point types (float, double)
@@ -36,7 +32,6 @@ import org.apache.hadoop.io.Writable;
  */
 public class DoubleColumnVector extends ColumnVector {
   public double[] vector;
-  private final DoubleWritable writableObj = new DoubleWritable();
   public static final double NULL_VALUE = Double.NaN;
 
   /**
@@ -55,19 +50,6 @@ public class DoubleColumnVector extends ColumnVector {
   public DoubleColumnVector(int len) {
     super(len);
     vector = new double[len];
-  }
-
-  @Override
-  public Writable getWritableObject(int index) {
-    if (this.isRepeating) {
-      index = 0;
-    }
-    if (!noNulls && isNull[index]) {
-      return NullWritable.get();
-    } else {
-      writableObj.set(vector[index]);
-      return writableObj;
-    }
   }
 
   // Copy the current object contents into the output. Only copy selected entries,

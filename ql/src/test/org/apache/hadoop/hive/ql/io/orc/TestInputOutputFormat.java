@@ -1542,8 +1542,11 @@ public class TestInputOutputFormat {
       assertEquals("checking long " + i, i, longColumn.vector[i]);
       assertEquals("checking float " + i, i, floatColumn.vector[i], 0.0001);
       assertEquals("checking double " + i, i, doubleCoulmn.vector[i], 0.0001);
+      Text strValue = new Text();
+      strValue.set(stringColumn.vector[i], stringColumn.start[i],
+          stringColumn.length[i]);
       assertEquals("checking string " + i, new Text(Long.toHexString(i)),
-          stringColumn.getWritableObject(i));
+          strValue);
       assertEquals("checking decimal " + i, HiveDecimal.create(i),
           decimalColumn.vector[i].getHiveDecimal());
       assertEquals("checking date " + i, i, dateColumn.vector[i]);

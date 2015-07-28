@@ -22,9 +22,6 @@ import java.math.BigInteger;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
 
 public class DecimalColumnVector extends ColumnVector {
 
@@ -39,8 +36,6 @@ public class DecimalColumnVector extends ColumnVector {
   public short scale;
   public short precision;
 
-  private final HiveDecimalWritable writableObj = new HiveDecimalWritable();
-
   public DecimalColumnVector(int precision, int scale) {
     this(VectorizedRowBatch.DEFAULT_SIZE, precision, scale);
   }
@@ -49,23 +44,9 @@ public class DecimalColumnVector extends ColumnVector {
     super(size);
     this.precision = (short) precision;
     this.scale = (short) scale;
-    final int len = size;
-    vector = new HiveDecimalWritable[len];
-    for (int i = 0; i < len; i++) {
+    vector = new HiveDecimalWritable[size];
+    for (int i = 0; i < size; i++) {
       vector[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
-    }
-  }
-
-  @Override
-  public Writable getWritableObject(int index) {
-    if (isRepeating) {
-      index = 0;
-    }
-    if (!noNulls && isNull[index]) {
-      return NullWritable.get();
-    } else {
-      writableObj.set(vector[index]);
-      return writableObj;
     }
   }
 

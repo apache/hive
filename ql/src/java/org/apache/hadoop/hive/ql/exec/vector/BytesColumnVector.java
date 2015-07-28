@@ -18,12 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.Arrays;
-
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
-
 /**
  * This class supports string and binary data by value reference -- i.e. each field is
  * explicitly present, as opposed to provided by a dictionary reference.
@@ -50,9 +44,6 @@ public class BytesColumnVector extends ColumnVector {
   public int[] length;
   private byte[] buffer;   // optional buffer to use when actually copying in data
   private int nextFree;    // next free position in buffer
-
-  // Reusable text object
-  private final Text textObject = new Text();
 
   // Estimate that there will be 16 bytes per entry
   static final int DEFAULT_BUFFER_SIZE = 16 * VectorizedRowBatch.DEFAULT_SIZE;
@@ -215,22 +206,6 @@ public class BytesColumnVector extends ColumnVector {
     buffer = newBuffer;
   }
 
-  @Override
-  public Writable getWritableObject(int index) {
-    if (this.isRepeating) {
-      index = 0;
-    }
-    Writable result = null;
-    if (!isNull[index] && vector[index] != null) {
-      textObject.clear();
-      textObject.append(vector[index], start[index], length[index]);
-      result = textObject;
-    } else {
-      result = NullWritable.get();
-    }
-    return result;
-  }
-
   /** Copy the current object contents into the output. Only copy selected entries,
     * as indicated by selectedInUse and the sel array.
     */
@@ -294,7 +269,7 @@ public class BytesColumnVector extends ColumnVector {
 
       // Only copy data values if entry is not null. The string value
       // at position 0 is undefined if the position 0 value is null.
-      if (noNulls || (!noNulls && !isNull[0])) {
+      if (noNulls || !isNull[0]) {
 
         // loops start at position 1 because position 0 is already set
         if (selectedInUse) {

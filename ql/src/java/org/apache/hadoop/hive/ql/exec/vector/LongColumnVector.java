@@ -19,10 +19,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
-
 /**
  * This class represents a nullable int column vector.
  * This class will be used for operations on all integer types (tinyint, smallint, int, bigint)
@@ -36,7 +32,6 @@ import org.apache.hadoop.io.Writable;
  */
 public class LongColumnVector extends ColumnVector {
   public long[] vector;
-  private final LongWritable writableObj = new LongWritable();
   public static final long NULL_VALUE = 1;
 
   /**
@@ -50,24 +45,11 @@ public class LongColumnVector extends ColumnVector {
   /**
    * Don't use this except for testing purposes.
    *
-   * @param len
+   * @param len the number of rows
    */
   public LongColumnVector(int len) {
     super(len);
     vector = new long[len];
-  }
-
-  @Override
-  public Writable getWritableObject(int index) {
-    if (this.isRepeating) {
-      index = 0;
-    }
-    if (!noNulls && isNull[index]) {
-      return NullWritable.get();
-    } else {
-      writableObj.set(vector[index]);
-      return writableObj;
-    }
   }
 
   // Copy the current object contents into the output. Only copy selected entries,
@@ -141,7 +123,9 @@ public class LongColumnVector extends ColumnVector {
       }
     }
     else {
-      System.arraycopy(vector, 0, output.vector, 0, size);
+      for(int i = 0; i < size; ++i) {
+        output.vector[i] = vector[i];
+      }
     }
 
     // Copy nulls over if needed

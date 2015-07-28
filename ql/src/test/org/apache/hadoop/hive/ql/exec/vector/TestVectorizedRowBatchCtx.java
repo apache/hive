@@ -289,7 +289,8 @@ public class TestVectorizedRowBatchCtx {
           case BINARY: {
             BytesColumnVector bcv = (BytesColumnVector) batch.cols[j];
               BytesWritable colBinary = (BytesWritable) writableCol;
-              BytesWritable batchBinary = (BytesWritable) bcv.getWritableObject(i);
+              BytesWritable batchBinary = new BytesWritable();
+              batchBinary.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
               byte[] a = colBinary.getBytes();
               byte[] b = batchBinary.getBytes();
               Assert.assertEquals(true, Arrays.equals(a, b));
@@ -298,7 +299,8 @@ public class TestVectorizedRowBatchCtx {
           case STRING: {
             BytesColumnVector bcv = (BytesColumnVector) batch.cols[j];
             Text colText = (Text) writableCol;
-            Text batchText = (Text) bcv.getWritableObject(i);
+            Text batchText = new Text();
+            batchText.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
             String a = colText.toString();
             String b = batchText.toString();
             Assert.assertEquals(true, a.equals(b));
