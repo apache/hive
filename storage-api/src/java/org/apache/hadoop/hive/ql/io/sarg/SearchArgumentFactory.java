@@ -18,22 +18,11 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.Builder;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-
 /**
  * A factory for creating SearchArguments.
  */
 public class SearchArgumentFactory {
-  public static Builder newBuilder() {
+  public static SearchArgument.Builder newBuilder() {
     return new SearchArgumentImpl.BuilderImpl();
   }
 }

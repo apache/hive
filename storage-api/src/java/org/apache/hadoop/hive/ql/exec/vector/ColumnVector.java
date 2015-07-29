@@ -171,4 +171,3 @@ public abstract class ColumnVector {
     public abstract void stringifyValue(StringBuilder buffer,
                                         int row);
   }
-

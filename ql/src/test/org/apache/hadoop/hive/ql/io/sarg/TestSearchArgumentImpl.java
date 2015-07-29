@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.PredicateLeafImpl;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -464,7 +465,7 @@ public class TestSearchArgumentImpl {
         .end()
         .build();
 
-    String serializedSarg = sarg.toKryo();
+    String serializedSarg = TestInputOutputFormat.toKryo(sarg);
     SearchArgument sarg2 = ConvertAstToSearchArg.create(serializedSarg);
 
     Field literalField = PredicateLeafImpl.class.getDeclaredField("literal");

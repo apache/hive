@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Output;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,6 +43,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -105,6 +109,13 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 public class TestInputOutputFormat {
+
+  public static String toKryo(SearchArgument sarg) {
+    Output out = new Output(4 * 1024, 10 * 1024 * 1024);
+    new Kryo().writeObject(out, sarg);
+    out.close();
+    return Base64.encodeBase64String(out.toBytes());
+  }
 
   Path workDir = new Path(System.getProperty("test.tmp.dir","target/tmp"));
   static final int MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
@@ -1751,7 +1762,7 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
         .startAnd().isNull("cost", PredicateLeaf.Type.INTEGER).end().build();
-    conf.set(ConvertAstToSearchArg.SARG_PUSHDOWN, isNull.toKryo());
+    conf.set(ConvertAstToSearchArg.SARG_PUSHDOWN, toKryo(isNull));
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
     options.include(new boolean[]{true, true, false, true, false});
@@ -1798,7 +1809,7 @@ public class TestInputOutputFormat {
             .lessThan("z", PredicateLeaf.Type.INTEGER, new Integer(0))
             .end()
             .build();
-    conf.set("sarg.pushdown", sarg.toKryo());
+    conf.set("sarg.pushdown", toKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z,r");
     properties.setProperty("columns", "z,r");
     properties.setProperty("columns.types", "int:struct<x:int,y:int>");
@@ -1840,7 +1851,7 @@ public class TestInputOutputFormat {
             .lessThan("z", PredicateLeaf.Type.STRING, new String("foo"))
             .end()
             .build();
-    conf.set("sarg.pushdown", sarg.toKryo());
+    conf.set("sarg.pushdown", toKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z");
     properties.setProperty("columns", "z");
     properties.setProperty("columns.types", "string");

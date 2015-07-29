@@ -144,16 +144,16 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
 
   /* (non-Javadoc)
    * In order to update a Decimal128 fast (w/o allocation) we need to expose access to the
-   * internal storage bytes and scale.  
+   * internal storage bytes and scale.
    * @return
    */
   public byte[] getInternalStorage() {
     return internalStorage;
   }
-  
+
   /* (non-Javadoc)
    * In order to update a Decimal128 fast (w/o allocation) we need to expose access to the
-   * internal storage bytes and scale.  
+   * internal storage bytes and scale.
    */
   public int getScale() {
     return scale;

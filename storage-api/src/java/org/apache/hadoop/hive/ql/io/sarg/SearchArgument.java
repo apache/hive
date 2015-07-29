@@ -161,24 +161,13 @@ public interface SearchArgument {
    * need to translate the expression to an internal form.
    */
   public ExpressionTree getExpression();
- 
+
   /**
    * Evaluate the entire predicate based on the values for the leaf predicates.
    * @param leaves the value of each leaf predicate
    * @return the value of hte entire predicate
    */
   public TruthValue evaluate(TruthValue[] leaves);
-
-  /**
-   * Serialize the SARG as a kyro object and return the base64 string.
-   *
-   * Hive should replace the current XML-based AST serialization for predicate pushdown
-   * with the Kryo serialization of the SARG because the representation is much more
-   * compact and focused on what is needed for predicate pushdown.
-   *
-   * @return the serialized SARG
-   */
-  public String toKryo();
 
   /**
    * A builder object for contexts outside of Hive where it isn't easy to

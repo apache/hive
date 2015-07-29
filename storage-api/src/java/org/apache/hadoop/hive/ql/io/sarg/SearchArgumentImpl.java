@@ -31,9 +31,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Output;
-
 /**
  * The implementation of SearchArguments.
  */
@@ -214,13 +211,6 @@ final class SearchArgumentImpl implements SearchArgument {
     buffer.append("expr = ");
     buffer.append(expression);
     return buffer.toString();
-  }
-
-  public String toKryo() {
-    Output out = new Output(4 * 1024, 10 * 1024 * 1024);
-    new Kryo().writeObject(out, this);
-    out.close();
-    return Base64.encodeBase64String(out.toBytes());
   }
 
   static class BuilderImpl implements Builder {
