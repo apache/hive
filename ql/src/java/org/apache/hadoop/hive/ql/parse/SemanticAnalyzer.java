@@ -6690,10 +6690,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
       throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getMsg());
     }
-    if (conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED)) {
-      LOG.info("Turning off vectorization for acid write operation");
-      conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    }
     LOG.info("Modifying config values for ACID write");
     conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, true);
     conf.setIntVar(ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER, 1);
