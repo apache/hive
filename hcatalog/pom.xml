@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.1.spark</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
