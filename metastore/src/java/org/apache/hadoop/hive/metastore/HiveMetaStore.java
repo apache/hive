@@ -1025,14 +1025,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
 
         int startIndex = 0;
-        int endIndex = -1;
         // retrieve the tables from the metastore in batches to alleviate memory constraints
-        while (endIndex < allTables.size() - 1) {
-          startIndex = endIndex + 1;
-          endIndex = endIndex + tableBatchSize;
-          if (endIndex >= allTables.size()) {
-            endIndex = allTables.size() - 1;
-          }
+        while (startIndex < allTables.size()) {
+          int endIndex = Math.min(startIndex + tableBatchSize, allTables.size());
 
           List<Table> tables = null;
           try {
@@ -1068,6 +1063,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // Drop the table but not its data
               drop_table(name, table.getTableName(), false);
             }
+
+            startIndex = endIndex;
           }
         }
 
