@@ -522,6 +522,9 @@ public class HBaseStore implements RawStore {
     try {
       Partition oldPart = getHBase().getPartition(db_name, tbl_name, part_vals);
       getHBase().replacePartition(oldPart, new_part);
+      // Drop any cached stats that reference this partitions
+      getHBase().getStatsCache().invalidate(db_name, tbl_name,
+          buildExternalPartName(db_name, tbl_name, part_vals));
       commit = true;
     } catch (IOException e) {
       LOG.error("Unable to add partition", e);
@@ -540,6 +543,10 @@ public class HBaseStore implements RawStore {
     try {
       List<Partition> oldParts = getHBase().getPartitions(db_name, tbl_name, part_vals_list);
       getHBase().replacePartitions(oldParts, new_parts);
+      for (List<String> part_vals : part_vals_list) {
+        getHBase().getStatsCache().invalidate(db_name, tbl_name,
+            buildExternalPartName(db_name, tbl_name, part_vals));
+      }
       commit = true;
     } catch (IOException e) {
       LOG.error("Unable to add partition", e);
