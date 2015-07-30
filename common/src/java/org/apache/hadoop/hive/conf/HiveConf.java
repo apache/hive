@@ -2073,6 +2073,11 @@ public class HiveConf extends Configuration {
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
+    SPARK_PREWARM_CONTAINERS("hive.spark.prewarm.containers", false, "Whether to prewarn containers for Spark." +
+      "If enabled, Hive will spend no more than 60 seconds to wait for the containers to come up " +
+      "before any query can be executed."),
+    SPARK_PREWARM_NUM_CONTAINERS("hive.spark.prewarm.num.containers", 10, "The minimum number of containers to be prewarmed for Spark." +
+      "Applicable only if hive.spark.prewarm.containers is set to true."),
     SPARK_ENABLED("hive.enable.spark.execution.engine", false, "Whether Spark is allowed as an execution engine");
 
     public final String varname;

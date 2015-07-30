@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.spark.SparkConf;
-import org.apache.spark.SparkException;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -51,9 +50,7 @@ public class HiveSparkClientFactory {
   private static final String SPARK_DEFAULT_SERIALIZER = "org.apache.spark.serializer.KryoSerializer";
   private static final String SPARK_DEFAULT_REFERENCE_TRACKING = "false";
 
-  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf)
-    throws IOException, SparkException {
-
+  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf) throws Exception {
     Map<String, String> sparkConf = initiateSparkConf(hiveconf);
     // Submit spark job through local spark context while spark master is local mode, otherwise submit
     // spark job through remote spark context.
