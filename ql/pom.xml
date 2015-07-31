@@ -684,10 +684,26 @@
                 <!--also see maven-jar-plugin execution.id=core-jar-->
               <artifactSet>
                 <includes>
-                  <!-- order is meant to be the same as the ant build -->
-                  <include>org.apache.hive:hive-common</include>
-                  <include>org.apache.hive:hive-exec</include>
-                  <include>org.apache.hive:hive-serde</include>
+                  <include>org.spark-project.hive:hive-common</include>
+                  <include>org.spark-project.hive:hive-exec</include>
+                  <include>org.spark-project.hive:hive-serde</include>
+<!--
+                  <include>org.spark-project.hive:hive-metastore</include>
+-->
+                  <include>org.spark-project.hive.shims:hive-shims-0.20S</include>
+                  <include>org.spark-project.hive.shims:hive-shims-0.23</include>
+                  <include>org.spark-project.hive.shims:hive-shims-0.23</include>
+                  <include>org.spark-project.hive.shims:hive-shims-common</include>
+                  <include>com.google.protobuf:protobuf-java</include>
+                </includes>
+              </artifactSet>
+<!--
+              <artifactSet>
+                <includes>
+                  &lt;!&ndash; order is meant to be the same as the ant build &ndash;&gt;
+                  <include>org.spark-project.hive:hive-common</include>
+                  <include>org.spark-project.hive:hive-exec</include>
+                  <include>org.spark-project.hive:hive-serde</include>
                   <include>com.esotericsoftware.kryo:kryo</include>
                   <include>com.twitter:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
@@ -697,26 +713,34 @@
                   <include>org.json:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
-                  <include>org.apache.hive.shims:hive-shims-0.20S</include>
-                  <include>org.apache.hive.shims:hive-shims-0.23</include>
-                  <include>org.apache.hive.shims:hive-shims-0.23</include>
-                  <include>org.apache.hive.shims:hive-shims-common</include>
+                  <include>org.spark-project.hive.shims:hive-shims-0.20S</include>
+                  <include>org.spark-project.hive.shims:hive-shims-0.23</include>
+                  <include>org.spark-project.hive.shims:hive-shims-0.23</include>
+                  <include>org.spark-project.hive.shims:hive-shims-common</include>
                   <include>com.googlecode.javaewah:JavaEWAH</include>
                   <include>javolution:javolution</include>
                   <include>com.google.protobuf:protobuf-java</include>
+                  <include>com.google.guava:guava</include>
                   <include>org.iq80.snappy:snappy</include>
                   <include>org.codehaus.jackson:jackson-core-asl</include>
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
-                  <include>org.apache.hive:spark-client</include>
+                  <include>org.spark-project.hive:spark-client</include>
                   <include>joda-time:joda-time</include>
                 </includes>
               </artifactSet>
+-->
               <relocations>
+<!--
                 <relocation>
                   <pattern>com.esotericsoftware</pattern>
-                  <shadedPattern>org.apache.hive.com.esotericsoftware</shadedPattern>
+                  <shadedPattern>org.spark-project.hive.com.esotericsoftware</shadedPattern>
+                </relocation>
+-->
+                <relocation>
+                  <pattern>com.google.protobuf</pattern>
+                  <shadedPattern>org.apache.hive.shaded.com.google.protobuf</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
