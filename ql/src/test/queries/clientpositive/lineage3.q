@@ -36,7 +36,8 @@ with v2 as
     sum(cint + cbigint) over(partition by cboolean1) b
     from (select * from alltypesorc) v1)
 select cdouble, a, b, a + b, cdouble + a from v2
-order by 1, 2, 3 limit 5;
+where cdouble is not null
+order by cdouble, a, b limit 5;
 
 select a.cbigint, a.ctinyint, b.cint, b.ctinyint
 from
@@ -46,8 +47,8 @@ from
   inner join
   alltypesorc b
   on (a.ctinyint = b.ctinyint)
-where b.ctinyint < 100
-order by 1, 2, 3, 4 limit 5;
+where b.ctinyint < 100 and a.cbigint is not null and b.cint is not null
+order by a.cbigint, a.ctinyint, b.cint, b.ctinyint limit 5;
 
 select x.ctinyint, x.cint, c.cbigint-100, c.cstring1
 from alltypesorc c
