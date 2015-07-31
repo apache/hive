@@ -46,7 +46,9 @@ import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -61,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
  * GenSparkUtils is a collection of shared helper methods to produce SparkWork
@@ -132,7 +135,7 @@ public class GenSparkUtils {
 
     // remember which parent belongs to which tag
     reduceWork.getTagToInput().put(reduceSink.getConf().getTag(),
-         context.preceedingWork.getName());
+        context.preceedingWork.getName());
 
     // remember the output name of the reduce sink
     reduceSink.getConf().setOutputName(reduceWork.getName());
@@ -218,6 +221,16 @@ public class GenSparkUtils {
       Iterator<Operator<?>> newOpQueueIt = newOpQueue.iterator();
       for (Operator<?> op : opQueue) {
         Operator<?> newOp = newOpQueueIt.next();
+
+        // We need to update rootToWorkMap in case the op is a key, since even
+        // though we clone the op tree, we're still using the same MapWork/ReduceWork.
+        if (context.rootToWorkMap.containsKey(op)) {
+          context.rootToWorkMap.put(newOp, context.rootToWorkMap.get(op));
+        }
+        // Don't remove the old entry - in SparkPartitionPruningSink it still
+        // refers to the old TS, and we need to lookup it later in
+        // processPartitionPruningSink.
+
         if (op instanceof FileSinkOperator) {
           List<FileSinkOperator> fileSinkList = context.fileSinkMap.get(op);
           if (fileSinkList == null) {
@@ -225,6 +238,12 @@ public class GenSparkUtils {
           }
           fileSinkList.add((FileSinkOperator) newOp);
           context.fileSinkMap.put((FileSinkOperator) op, fileSinkList);
+        } else if (op instanceof SparkPartitionPruningSinkOperator) {
+          SparkPartitionPruningSinkOperator oldPruningSink = (SparkPartitionPruningSinkOperator) op;
+          SparkPartitionPruningSinkOperator newPruningSink = (SparkPartitionPruningSinkOperator) newOp;
+          newPruningSink.getConf().setTableScan(oldPruningSink.getConf().getTableScan());
+          context.pruningSinkSet.add(newPruningSink);
+          context.pruningSinkSet.remove(oldPruningSink);
         }
       }
     }
@@ -335,6 +354,67 @@ public class GenSparkUtils {
         context.currentTask.setFetchSource(true);
       }
     }
+  }
+
+  /**
+   * Populate partition pruning information from the pruning sink operator to the
+   * target MapWork (the MapWork for the big table side). The information include the source table
+   * name, column name, and partition key expression. It also set up the temporary path used to
+   * communicate between the target MapWork and source BaseWork.
+   *
+   * Here "source" refers to the small table side, while "target" refers to the big
+   * table side.
+   *
+   * @param context the spark context.
+   * @param pruningSink the pruner sink operator being processed.
+   */
+  public void processPartitionPruningSink(GenSparkProcContext context,
+      SparkPartitionPruningSinkOperator pruningSink) {
+    SparkPartitionPruningSinkDesc desc = pruningSink.getConf();
+    TableScanOperator ts = desc.getTableScan();
+    MapWork targetWork = (MapWork) context.rootToWorkMap.get(ts);
+
+    Preconditions.checkArgument(
+        targetWork != null,
+        "No targetWork found for tablescan " + ts);
+
+    String targetId = SparkUtilities.getWorkId(targetWork);
+
+    BaseWork sourceWork = getEnclosingWork(pruningSink, context);
+    String sourceId = SparkUtilities.getWorkId(sourceWork);
+
+    // set up temporary path to communicate between the small/big table
+    Path tmpPath = targetWork.getTmpPathForPartitionPruning();
+    if (tmpPath == null) {
+      Path baseTmpPath = context.parseContext.getContext().getMRTmpPath();
+      tmpPath = SparkUtilities.generateTmpPathForPartitionPruning(baseTmpPath, targetId);
+      targetWork.setTmpPathForPartitionPruning(tmpPath);
+      LOG.info("Setting tmp path between source work and target work:\n" + tmpPath);
+    }
+
+    desc.setPath(new Path(tmpPath, sourceId));
+    desc.setTargetWork(targetWork.getName());
+
+    // store table descriptor in map-targetWork
+    if (!targetWork.getEventSourceTableDescMap().containsKey(sourceId)) {
+      targetWork.getEventSourceTableDescMap().put(sourceId, new LinkedList<TableDesc>());
+    }
+    List<TableDesc> tables = targetWork.getEventSourceTableDescMap().get(sourceId);
+    tables.add(pruningSink.getConf().getTable());
+
+    // store column name in map-targetWork
+    if (!targetWork.getEventSourceColumnNameMap().containsKey(sourceId)) {
+      targetWork.getEventSourceColumnNameMap().put(sourceId, new LinkedList<String>());
+    }
+    List<String> columns = targetWork.getEventSourceColumnNameMap().get(sourceId);
+    columns.add(desc.getTargetColumnName());
+
+    // store partition key expr in map-targetWork
+    if (!targetWork.getEventSourcePartKeyExprMap().containsKey(sourceId)) {
+      targetWork.getEventSourcePartKeyExprMap().put(sourceId, new LinkedList<ExprNodeDesc>());
+    }
+    List<ExprNodeDesc> keys = targetWork.getEventSourcePartKeyExprMap().get(sourceId);
+    keys.add(desc.getPartKey());
   }
 
   public static SparkEdgeProperty getEdgeProperty(ReduceSinkOperator reduceSink,
@@ -489,5 +569,34 @@ public class GenSparkUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * getEncosingWork finds the BaseWork any given operator belongs to.
+   */
+  public BaseWork getEnclosingWork(Operator<?> op, GenSparkProcContext procCtx) {
+    List<Operator<?>> ops = new ArrayList<Operator<?>>();
+    findRoots(op, ops);
+    for (Operator<?> r : ops) {
+      BaseWork work = procCtx.rootToWorkMap.get(r);
+      if (work != null) {
+        return work;
+      }
+    }
+    return null;
+  }
+
+  /*
+   * findRoots returns all root operators (in ops) that result in operator op
+   */
+  private void findRoots(Operator<?> op, List<Operator<?>> ops) {
+    List<Operator<?>> parents = op.getParentOperators();
+    if (parents == null || parents.isEmpty()) {
+      ops.add(op);
+      return;
+    }
+    for (Operator<?> p : parents) {
+      findRoots(p, ops);
+    }
   }
 }

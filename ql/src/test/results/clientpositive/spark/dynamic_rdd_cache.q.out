@@ -1,0 +1,1073 @@
+PREHOOK: query: -- JOIN TEST
+
+EXPLAIN
+FROM
+(SELECT src.* FROM src sort by key) X
+RIGHT OUTER JOIN
+(SELECT src.* FROM src sort by value) Y
+ON (X.key = Y.key)
+JOIN
+(SELECT src.* FROM src sort by value) Z
+ON (X.key = Z.key)
+SELECT sum(hash(Y.key,Y.value)) GROUP BY Y.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- JOIN TEST
+
+EXPLAIN
+FROM
+(SELECT src.* FROM src sort by key) X
+RIGHT OUTER JOIN
+(SELECT src.* FROM src sort by value) Y
+ON (X.key = Y.key)
+JOIN
+(SELECT src.* FROM src sort by value) Z
+ON (X.key = Z.key)
+SELECT sum(hash(Y.key,Y.value)) GROUP BY Y.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 31)
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 31)
+        Reducer 8 <- Map 5 (PARTITION-LEVEL SORT, 31)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 31), Reducer 6 (PARTITION-LEVEL SORT, 31), Reducer 8 (PARTITION-LEVEL SORT, 31)
+        Reducer 4 <- Reducer 3 (GROUP, 31)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string)
+                      sort order: +
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                     Inner Join 0 to 2
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                  2 _col0 (type: string)
+                outputColumnNames: _col2, _col3
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(hash(_col2,_col3))
+                  keys: _col2 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: true
+                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
+        Reducer 8 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: CREATE TABLE dest1(key INT, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
+POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1
+PREHOOK: query: CREATE TABLE dest2(key INT, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2
+POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest2
+PREHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+INSERT OVERWRITE TABLE dest2 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+INSERT OVERWRITE TABLE dest2 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 4 (GROUP, 31)
+        Reducer 3 <- Map 4 (GROUP, 31)
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(substr(value, 5))
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: double)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: true
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: true
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+PREHOOK: query: SELECT dest2.* FROM dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest2.* FROM dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE dest1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1
+PREHOOK: Output: default@dest1
+POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: default@dest1
+PREHOOK: query: DROP TABLE dest2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest2
+PREHOOK: Output: default@dest2
+POSTHOOK: query: DROP TABLE dest2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: default@dest2
+PREHOOK: query: -- UNION TEST
+
+CREATE TABLE tmptable(key STRING, value INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: -- UNION TEST
+
+CREATE TABLE tmptable(key STRING, value INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE tmptable
+  SELECT unionsrc.key, unionsrc.value FROM (SELECT 'tst1' AS key, count(1) AS value FROM src s1
+                                        UNION  ALL
+                                            SELECT 'tst2' AS key, count(1) AS value FROM src s2
+                                        UNION ALL
+                                            SELECT 'tst3' AS key, count(1) AS value FROM src s3) unionsrc
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE tmptable
+  SELECT unionsrc.key, unionsrc.value FROM (SELECT 'tst1' AS key, count(1) AS value FROM src s1
+                                        UNION  ALL
+                                            SELECT 'tst2' AS key, count(1) AS value FROM src s2
+                                        UNION ALL
+                                            SELECT 'tst3' AS key, count(1) AS value FROM src s3) unionsrc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 4 <- Map 1 (GROUP, 1)
+        Reducer 6 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'tst1' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: true
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.tmptable
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'tst2' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: true
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.tmptable
+        Reducer 6 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'tst3' (type: string), _col0 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: true
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.tmptable
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.tmptable
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: SELECT * FROM tmptable x SORT BY x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmptable
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM tmptable x SORT BY x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmptable
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmtable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE tmtable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: EXPLAIN
+SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
+FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
+                         UNION  ALL
+      SELECT s2.key AS key, s2.value AS value FROM src s2 WHERE s2.key < 10) unionsrc1
+JOIN
+     (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s3
+                         UNION  ALL
+      SELECT s4.key AS key, s4.value AS value FROM src s4 WHERE s4.key < 10) unionsrc2
+ON (unionsrc1.key = unionsrc2.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
+FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
+                         UNION  ALL
+      SELECT s2.key AS key, s2.value AS value FROM src s2 WHERE s2.key < 10) unionsrc1
+JOIN
+     (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s3
+                         UNION  ALL
+      SELECT s4.key AS key, s4.value AS value FROM src s4 WHERE s4.key < 10) unionsrc2
+ON (unionsrc1.key = unionsrc2.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 3 <- Map 4 (PARTITION-LEVEL SORT, 31), Map 7 (PARTITION-LEVEL SORT, 31), Reducer 2 (PARTITION-LEVEL SORT, 31), Reducer 6 (PARTITION-LEVEL SORT, 31)
+        Reducer 6 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col1 (type: string)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
+                    value expressions: _col1 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 27889 Data size: 15171616 Basic stats: COMPLETE Column stats: PARTIAL
+                File Output Operator
+                  compressed: true
+                  Statistics: Num rows: 27889 Data size: 15171616 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 167 Data size: 2035 Basic stats: COMPLETE Column stats: PARTIAL
+                    value expressions: _col1 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- CWE TEST
+
+CREATE TABLE inv(w_warehouse_name STRING , w_warehouse_sk INT , stdev INT , d_moy INT , mean INT , cov INT , inv_quantity_on_hand INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inv
+POSTHOOK: query: -- CWE TEST
+
+CREATE TABLE inv(w_warehouse_name STRING , w_warehouse_sk INT , stdev INT , d_moy INT , mean INT , cov INT , inv_quantity_on_hand INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inv
+PREHOOK: query: CREATE TABLE inventory(inv_date_sk INT , inv_item_sk INT ,inv_quantity_on_hand INT ,inv_warehouse_sk INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inventory
+POSTHOOK: query: CREATE TABLE inventory(inv_date_sk INT , inv_item_sk INT ,inv_quantity_on_hand INT ,inv_warehouse_sk INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inventory
+PREHOOK: query: CREATE TABLE item(i_item_sk INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@item
+POSTHOOK: query: CREATE TABLE item(i_item_sk INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@item
+PREHOOK: query: CREATE TABLE warehouse(w_warehouse_sk INT , w_warehouse_name STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@warehouse
+POSTHOOK: query: CREATE TABLE warehouse(w_warehouse_sk INT , w_warehouse_name STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@warehouse
+PREHOOK: query: CREATE TABLE date_dim(d_date_sk INT , d_year INT , d_moy INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim
+POSTHOOK: query: CREATE TABLE date_dim(d_date_sk INT , d_year INT , d_moy INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim
+PREHOOK: query: EXPLAIN
+WITH inv AS
+(SELECT w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, CASE mean WHEN 0 THEN null ELSE stdev/mean END cov
+FROM(SELECT w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,STDDEV_SAMP(inv_quantity_on_hand) stdev,AVG(inv_quantity_on_hand) mean
+      FROM inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      WHERE inv_item_sk = i_item_sk
+        AND inv_warehouse_sk = w_warehouse_sk
+        AND inv_date_sk = d_date_sk
+        AND d_year =1999
+      GROUP BY w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ WHERE CASE mean WHEN 0 THEN 0 ELSE stdev/mean END > 1)
+SELECT inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+FROM inv inv1,inv inv2
+WHERE inv1.i_item_sk = inv2.i_item_sk
+  AND inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  AND inv1.d_moy=3
+  AND inv2.d_moy=3+1
+ORDER BY inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+WITH inv AS
+(SELECT w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, CASE mean WHEN 0 THEN null ELSE stdev/mean END cov
+FROM(SELECT w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,STDDEV_SAMP(inv_quantity_on_hand) stdev,AVG(inv_quantity_on_hand) mean
+      FROM inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      WHERE inv_item_sk = i_item_sk
+        AND inv_warehouse_sk = w_warehouse_sk
+        AND inv_date_sk = d_date_sk
+        AND d_year =1999
+      GROUP BY w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ WHERE CASE mean WHEN 0 THEN 0 ELSE stdev/mean END > 1)
+SELECT inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+FROM inv inv1,inv inv2
+WHERE inv1.i_item_sk = inv2.i_item_sk
+  AND inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  AND inv1.d_moy=3
+  AND inv2.d_moy=3+1
+ORDER BY inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 12 <- Map 1 (PARTITION-LEVEL SORT, 31), Map 16 (PARTITION-LEVEL SORT, 31)
+        Reducer 13 <- Map 17 (PARTITION-LEVEL SORT, 31), Reducer 12 (PARTITION-LEVEL SORT, 31)
+        Reducer 14 <- Map 18 (PARTITION-LEVEL SORT, 31), Reducer 13 (PARTITION-LEVEL SORT, 31)
+        Reducer 15 <- Reducer 14 (GROUP, 31)
+        Reducer 4 <- Map 10 (PARTITION-LEVEL SORT, 31), Reducer 13 (PARTITION-LEVEL SORT, 31)
+        Reducer 5 <- Reducer 4 (GROUP, 31)
+        Reducer 6 <- Reducer 15 (PARTITION-LEVEL SORT, 31), Reducer 5 (PARTITION-LEVEL SORT, 31)
+        Reducer 7 <- Reducer 6 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: inventory
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((inv_item_sk is not null and inv_warehouse_sk is not null) and inv_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: inv_item_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: inv_item_sk (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      value expressions: inv_date_sk (type: int), inv_quantity_on_hand (type: int), inv_warehouse_sk (type: int)
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_date_sk is not null and (d_year = 1999)) and (d_moy = 3)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: d_date_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: d_date_sk (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+        Map 16 
+            Map Operator Tree:
+                TableScan
+                  alias: item
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: i_item_sk is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: i_item_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: i_item_sk (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+        Map 17 
+            Map Operator Tree:
+                TableScan
+                  alias: warehouse
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: w_warehouse_sk is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: w_warehouse_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: w_warehouse_sk (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      value expressions: w_warehouse_name (type: string)
+        Map 18 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_date_sk is not null and (d_year = 1999)) and (d_moy = 4)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: d_date_sk (type: int)
+                      sort order: +
+                      Map-reduce partition columns: d_date_sk (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+        Reducer 12 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 inv_item_sk (type: int)
+                  1 i_item_sk (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col7
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col3 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col3 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col7 (type: int)
+        Reducer 13 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col3 (type: int)
+                  1 w_warehouse_sk (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col7, _col11, _col12
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col7 (type: int), _col11 (type: int), _col12 (type: string)
+        Reducer 14 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 d_date_sk (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col7, _col11, _col12, _col16
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Filter Operator
+                  predicate: (((_col1 = _col7) and (_col3 = _col11)) and (_col0 = _col16)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: _col12 (type: string), _col11 (type: int), _col7 (type: int), 4 (type: int), _col2 (type: int)
+                    outputColumnNames: _col12, _col11, _col7, _col18, _col2
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: stddev_samp(_col2), avg(_col2)
+                      keys: _col12 (type: string), _col11 (type: int), _col7 (type: int), _col18 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col3 (type: int)
+                        sort order: ++++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col3 (type: int)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col4 (type: struct<count:bigint,sum:double,variance:double>), _col5 (type: struct<count:bigint,sum:double,input:int>)
+        Reducer 15 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: stddev_samp(VALUE._col0), avg(VALUE._col1)
+                keys: KEY._col0 (type: string), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: double), _col5 (type: double)
+                  outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (CASE (_col5) WHEN (0) THEN (0) ELSE ((_col4 / _col5)) END > 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col5 (type: double), CASE (_col5) WHEN (0) THEN (null) ELSE ((_col4 / _col5)) END (type: double)
+                      outputColumnNames: _col1, _col2, _col3, _col5, _col6
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col2 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col3 (type: int), _col5 (type: double), _col6 (type: double)
+        Reducer 4 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 d_date_sk (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col7, _col11, _col12, _col16
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Filter Operator
+                  predicate: (((_col1 = _col7) and (_col3 = _col11)) and (_col0 = _col16)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: _col12 (type: string), _col11 (type: int), _col7 (type: int), 3 (type: int), _col2 (type: int)
+                    outputColumnNames: _col12, _col11, _col7, _col18, _col2
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: stddev_samp(_col2), avg(_col2)
+                      keys: _col12 (type: string), _col11 (type: int), _col7 (type: int), _col18 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col3 (type: int)
+                        sort order: ++++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col3 (type: int)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col4 (type: struct<count:bigint,sum:double,variance:double>), _col5 (type: struct<count:bigint,sum:double,input:int>)
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: stddev_samp(VALUE._col0), avg(VALUE._col1)
+                keys: KEY._col0 (type: string), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: double), _col5 (type: double)
+                  outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: (CASE (_col5) WHEN (0) THEN (0) ELSE ((_col4 / _col5)) END > 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col5 (type: double), CASE (_col5) WHEN (0) THEN (null) ELSE ((_col4 / _col5)) END (type: double)
+                      outputColumnNames: _col1, _col2, _col3, _col5, _col6
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col2 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col3 (type: int), _col5 (type: double), _col6 (type: double)
+        Reducer 6 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col2 (type: int), _col1 (type: int)
+                  1 _col2 (type: int), _col1 (type: int)
+                outputColumnNames: _col1, _col2, _col3, _col5, _col6, _col8, _col9, _col10, _col12, _col13
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Filter Operator
+                  predicate: ((((_col2 = _col9) and (_col1 = _col8)) and (_col3 = 3)) and (_col10 = 4)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: _col1 (type: int), _col2 (type: int), _col5 (type: double), _col6 (type: double), _col8 (type: int), _col9 (type: int), _col12 (type: double), _col13 (type: double)
+                    outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col6, _col8, _col9
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int), _col1 (type: int), 3 (type: int), _col3 (type: double), _col4 (type: double), 4 (type: int), _col8 (type: double), _col9 (type: double)
+                      sort order: ++++++++
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      value expressions: _col5 (type: int), _col6 (type: int)
+        Reducer 7 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), 3 (type: int), KEY.reducesinkkey3 (type: double), KEY.reducesinkkey4 (type: double), VALUE._col0 (type: int), VALUE._col1 (type: int), 4 (type: int), KEY.reducesinkkey6 (type: double), KEY.reducesinkkey7 (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  compressed: true
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN
+WITH test AS
+(SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory
+  UNION ALL
+ SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory)
+SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM test SORT BY inv_quantity_on_hand
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+WITH test AS
+(SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory
+  UNION ALL
+ SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM inventory)
+SELECT inv_date_sk , inv_item_sk ,inv_quantity_on_hand FROM test SORT BY inv_quantity_on_hand
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 31), Map 1 (PARTITION-LEVEL SORT, 31)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: inventory
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: inv_date_sk (type: int), inv_item_sk (type: int), inv_quantity_on_hand (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: int)
+                      sort order: +
+                      Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  compressed: true
+                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DROP TABLE inv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inv
+PREHOOK: Output: default@inv
+POSTHOOK: query: DROP TABLE inv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inv
+POSTHOOK: Output: default@inv
+PREHOOK: query: DROP TABLE inventory
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inventory
+PREHOOK: Output: default@inventory
+POSTHOOK: query: DROP TABLE inventory
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inventory
+POSTHOOK: Output: default@inventory
+PREHOOK: query: DROP TABLE item
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@item
+PREHOOK: Output: default@item
+POSTHOOK: query: DROP TABLE item
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@item
+POSTHOOK: Output: default@item
+PREHOOK: query: DROP TABLE warehouse
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: default@warehouse
+POSTHOOK: query: DROP TABLE warehouse
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: default@warehouse
+PREHOOK: query: DROP TABLE date_dim
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_dim
+PREHOOK: Output: default@date_dim
+POSTHOOK: query: DROP TABLE date_dim
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Output: default@date_dim

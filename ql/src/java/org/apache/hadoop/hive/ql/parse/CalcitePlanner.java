@@ -925,7 +925,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       //0. Distinct aggregate rewrite
       // Run this optimization early, since it is expanding the operator pipeline.
-      if (conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") &&
+      if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
           conf.getBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEDISTINCTREWRITE)) {
         // Its not clear, if this rewrite is always performant on MR, since extra map phase
         // introduced for 2nd MR job may offset gains of this multi-stage aggregation.

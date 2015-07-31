@@ -1,0 +1,1015 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table dim_shops (id int, label string) row format delimited fields terminated by ',' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dim_shops
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table dim_shops (id int, label string) row format delimited fields terminated by ',' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dim_shops
+PREHOOK: query: load data local inpath '../../data/files/dim_shops.txt' into table dim_shops
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dim_shops
+POSTHOOK: query: load data local inpath '../../data/files/dim_shops.txt' into table dim_shops
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dim_shops
+PREHOOK: query: create table agg_01 (amount decimal) partitioned by (dim_shops_id int) row format delimited fields terminated by ',' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@agg_01
+POSTHOOK: query: create table agg_01 (amount decimal) partitioned by (dim_shops_id int) row format delimited fields terminated by ',' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@agg_01
+PREHOOK: query: alter table agg_01 add partition (dim_shops_id = 1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@agg_01
+POSTHOOK: query: alter table agg_01 add partition (dim_shops_id = 1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@agg_01
+POSTHOOK: Output: default@agg_01@dim_shops_id=1
+PREHOOK: query: alter table agg_01 add partition (dim_shops_id = 2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@agg_01
+POSTHOOK: query: alter table agg_01 add partition (dim_shops_id = 2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@agg_01
+POSTHOOK: Output: default@agg_01@dim_shops_id=2
+PREHOOK: query: alter table agg_01 add partition (dim_shops_id = 3)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@agg_01
+POSTHOOK: query: alter table agg_01 add partition (dim_shops_id = 3)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@agg_01
+POSTHOOK: Output: default@agg_01@dim_shops_id=3
+PREHOOK: query: load data local inpath '../../data/files/agg_01-p1.txt' into table agg_01 partition (dim_shops_id=1)
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@agg_01@dim_shops_id=1
+POSTHOOK: query: load data local inpath '../../data/files/agg_01-p1.txt' into table agg_01 partition (dim_shops_id=1)
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@agg_01@dim_shops_id=1
+PREHOOK: query: load data local inpath '../../data/files/agg_01-p2.txt' into table agg_01 partition (dim_shops_id=2)
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@agg_01@dim_shops_id=2
+POSTHOOK: query: load data local inpath '../../data/files/agg_01-p2.txt' into table agg_01 partition (dim_shops_id=2)
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@agg_01@dim_shops_id=2
+PREHOOK: query: load data local inpath '../../data/files/agg_01-p3.txt' into table agg_01 partition (dim_shops_id=3)
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@agg_01@dim_shops_id=3
+POSTHOOK: query: load data local inpath '../../data/files/agg_01-p3.txt' into table agg_01 partition (dim_shops_id=3)
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@agg_01@dim_shops_id=3
+PREHOOK: query: analyze table dim_shops compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: default@dim_shops
+POSTHOOK: query: analyze table dim_shops compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: default@dim_shops
+PREHOOK: query: analyze table agg_01 partition (dim_shops_id) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Output: default@agg_01
+PREHOOK: Output: default@agg_01@dim_shops_id=1
+PREHOOK: Output: default@agg_01@dim_shops_id=2
+PREHOOK: Output: default@agg_01@dim_shops_id=3
+POSTHOOK: query: analyze table agg_01 partition (dim_shops_id) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Output: default@agg_01
+POSTHOOK: Output: default@agg_01@dim_shops_id=1
+POSTHOOK: Output: default@agg_01@dim_shops_id=2
+POSTHOOK: Output: default@agg_01@dim_shops_id=3
+PREHOOK: query: select * from dim_shops
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dim_shops
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+1	foo
+2	bar
+3	baz
+PREHOOK: query: select * from agg_01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from agg_01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+#### A masked pattern was here ####
+1	1
+2	1
+3	1
+4	2
+5	2
+6	2
+7	3
+8	3
+9	3
+PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: d1
+                  filterExpr: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 dim_shops_id (type: int)
+                        1 id (type: int)
+                    Select Operator
+                      expressions: id (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          partition key expr: dim_shops_id
+                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                          target column name: dim_shops_id
+                          target work: Map 1
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: agg
+                  filterExpr: dim_shops_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 dim_shops_id (type: int)
+                      1 id (type: int)
+                    outputColumnNames: _col0, _col1, _col5, _col6
+                    input vertices:
+                      1 Map 4
+                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
+                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col6 (type: string), _col0 (type: decimal(10,0))
+                        outputColumnNames: _col6, _col0
+                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(), sum(_col0)
+                          keys: _col6 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+            Local Work:
+              Map Reduce Local Work
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+bar	3	15
+foo	3	6
+PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: d1
+                  filterExpr: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 dim_shops_id (type: int)
+                        1 id (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: agg
+                  filterExpr: dim_shops_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 dim_shops_id (type: int)
+                      1 id (type: int)
+                    outputColumnNames: _col0, _col1, _col5, _col6
+                    input vertices:
+                      1 Map 4
+                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
+                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col6 (type: string), _col0 (type: decimal(10,0))
+                        outputColumnNames: _col6, _col0
+                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(), sum(_col0)
+                          keys: _col6 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+            Local Work:
+              Map Reduce Local Work
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+bar	3	15
+foo	3	6
+PREHOOK: query: EXPLAIN SELECT d1.label
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT d1.label
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: d1
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 dim_shops_id (type: int)
+                        1 id (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: agg
+                  filterExpr: dim_shops_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 dim_shops_id (type: int)
+                      1 id (type: int)
+                    outputColumnNames: _col1, _col5, _col6
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: (_col1 = _col5) (type: boolean)
+                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col6 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT d1.label
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d1.label
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+bar
+bar
+bar
+baz
+baz
+baz
+foo
+foo
+foo
+PREHOOK: query: EXPLAIN SELECT agg.amount
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and agg.dim_shops_id = 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT agg.amount
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and agg.dim_shops_id = 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: d1
+                  filterExpr: (id = 1) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 1 (type: int)
+                        1 1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: agg
+                  filterExpr: (dim_shops_id = 1) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 1 (type: int)
+                      1 1 (type: int)
+                    outputColumnNames: _col0
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT agg.amount
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and agg.dim_shops_id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT agg.amount
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and agg.dim_shops_id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: d1
+                  filterExpr: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 dim_shops_id (type: int)
+                        1 id (type: int)
+                    Select Operator
+                      expressions: id (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          partition key expr: dim_shops_id
+                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                          target column name: dim_shops_id
+                          target work: Map 1
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: agg
+                  filterExpr: dim_shops_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 dim_shops_id (type: int)
+                      1 id (type: int)
+                    outputColumnNames: _col0, _col1, _col5, _col6
+                    input vertices:
+                      1 Map 4
+                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
+                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col6 (type: string), _col0 (type: decimal(10,0))
+                        outputColumnNames: _col6, _col0
+                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(), sum(_col0)
+                          keys: _col6 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+            Local Work:
+              Map Reduce Local Work
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
+FROM agg_01 agg,
+dim_shops d1
+WHERE agg.dim_shops_id = d1.id
+and
+d1.label in ('foo', 'bar')
+GROUP BY d1.label
+ORDER BY d1.label
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+bar	3	15
+foo	3	6
+PREHOOK: query: EXPLAIN 
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+UNION ALL
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN 
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+UNION ALL
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: dim_shops
+                  filterExpr: (id is not null and (label = 'foo')) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id is not null and (label = 'foo')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 dim_shops_id (type: int)
+                        1 id (type: int)
+                    Select Operator
+                      expressions: id (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          partition key expr: dim_shops_id
+                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                          target column name: dim_shops_id
+                          target work: Map 1
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: dim_shops
+                  filterExpr: (id is not null and (label = 'bar')) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id is not null and (label = 'bar')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 dim_shops_id (type: int)
+                        1 id (type: int)
+                    Select Operator
+                      expressions: id (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          partition key expr: dim_shops_id
+                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                          target column name: dim_shops_id
+                          target work: Map 3
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: agg_01
+                  filterExpr: dim_shops_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 dim_shops_id (type: int)
+                      1 id (type: int)
+                    outputColumnNames: _col0, _col1, _col5
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: (_col1 = _col5) (type: boolean)
+                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: decimal(10,0))
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: agg_01
+                  filterExpr: dim_shops_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 dim_shops_id (type: int)
+                      1 id (type: int)
+                    outputColumnNames: _col0, _col1, _col5
+                    input vertices:
+                      1 Map 4
+                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: (_col1 = _col5) (type: boolean)
+                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: decimal(10,0))
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+UNION ALL
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+UNION ALL
+SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6

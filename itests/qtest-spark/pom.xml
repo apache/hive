@@ -333,6 +333,10 @@
                   classpath="${test.classpath}" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/spark" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/miniSparkOnYarn" />
+                <mkdir dir="${project.build.directory}/qfile-results/clientnegative/spark" />
+                <mkdir dir="${project.build.directory}/qfile-results/clientnegative/miniSparkOnYarn" />
+
+                <!-- Cli with Spark standalone mode -->
                 <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
                   outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
                   templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
@@ -349,6 +353,8 @@
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/spark"
                   initScript="q_test_init.sql"
                   cleanupScript="q_test_cleanup.sql"/>
+
+                <!-- Cli with Spark on YARN -->
                 <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
                   outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
                   templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
@@ -365,6 +371,24 @@
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/spark"
                   initScript="q_test_init.sql"
                   cleanupScript="q_test_cleanup.sql"/>
+
+                <!-- Negative Cli with Spark standalone mode -->
+                <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+                  outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
+                  templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestNegativeCliDriver.vm"
+                  queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientnegative/"
+                  queryFile="${qfile}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="spark"
+                  includeQueryFile="${spark.query.negative.files}"
+                  runDisabled="${run_disabled}"
+                  hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/spark/standalone"
+                  resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientnegative/spark" className="TestSparkNegativeCliDriver"
+                  logFile="${project.build.directory}/testsparknegativeclidrivergen.log"
+                  logDirectory="${project.build.directory}/qfile-results/clientnegative/spark"
+                  initScript="q_test_init.sql"
+                  cleanupScript="q_test_cleanup.sql"/>
+
               </target>
             </configuration>
             <goals>

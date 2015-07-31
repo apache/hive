@@ -386,6 +386,7 @@ public final class Utilities {
           ClassLoader loader = Thread.currentThread().getContextClassLoader();
           ClassLoader newLoader = addToClassPath(loader, addedJars.split(";"));
           Thread.currentThread().setContextClassLoader(newLoader);
+          runtimeSerializationKryo.get().setClassLoader(newLoader);
         }
       }
 
