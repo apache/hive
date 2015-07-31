@@ -27,10 +27,10 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.FilterPredicateLeafBuilder;
 import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.ArrayWritable;
@@ -149,7 +149,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
     }
 
     SearchArgument sarg =
-        SearchArgumentFactory.create(Utilities.deserializeExpression
+        ConvertAstToSearchArg.create(Utilities.deserializeExpression
             (serializedPushdown));
     FilterPredicate p = toFilterPredicate(sarg);
     if (p != null) {
@@ -316,8 +316,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
    * @return translate the sarg into a filter predicate
    */
   public static FilterPredicate toFilterPredicate(SearchArgument sarg) {
-    return translate(sarg.getExpression(),
-        sarg.getLeaves());
+    return translate(sarg.getExpression(), sarg.getLeaves());
   }
 
   private static boolean isMultiLiteralsOperator(PredicateLeaf.Operator op) {

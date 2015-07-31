@@ -173,6 +173,27 @@ public interface HiveTxnManager {
    */
   boolean supportsAcid();
 
+  /**
+   * This behaves exactly as
+   * https://docs.oracle.com/javase/6/docs/api/java/sql/Connection.html#setAutoCommit(boolean)
+   */
+  void setAutoCommit(boolean autoCommit) throws LockException;
+
+  /**
+   * This behaves exactly as
+   * https://docs.oracle.com/javase/6/docs/api/java/sql/Connection.html#getAutoCommit()
+   */
+  boolean getAutoCommit();
+
+  boolean isTxnOpen();
+  /**
+   * if {@code isTxnOpen()}, returns the currently active transaction ID
+   */
+  long getCurrentTxnId();
+
+  /**
+   * 0..N Id of current statement within currently opened transaction
+   */
   int getStatementId();
 
 }

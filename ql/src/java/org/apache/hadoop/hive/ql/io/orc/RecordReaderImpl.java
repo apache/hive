@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -41,7 +39,6 @@ import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeList;
 import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
@@ -50,8 +47,8 @@ import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory.TreeReader;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.hadoop.io.Text;
@@ -153,15 +150,15 @@ class RecordReaderImpl implements RecordReader {
   }
 
   protected RecordReaderImpl(List<StripeInformation> stripes,
-                   FileSystem fileSystem,
-                   Path path,
-                   Reader.Options options,
-                   List<OrcProto.Type> types,
-                   CompressionCodec codec,
-                   int bufferSize,
-                   long strideRate,
-                   Configuration conf
-                   ) throws IOException {
+                             FileSystem fileSystem,
+                             Path path,
+                             Reader.Options options,
+                             List<OrcProto.Type> types,
+                             CompressionCodec codec,
+                             int bufferSize,
+                             long strideRate,
+                             Configuration conf
+                             ) throws IOException {
     this.path = path;
     this.file = fileSystem.open(path);
     this.codec = codec;
@@ -192,13 +189,19 @@ class RecordReaderImpl implements RecordReader {
       }
     }
 
-    final boolean zeroCopy = (conf != null)
-        && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
+    Boolean zeroCopy = options.getUseZeroCopy();
+    if (zeroCopy == null) {
+      zeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(conf);
+    }
     zcr = zeroCopy ? RecordReaderUtils.createZeroCopyShim(file, codec, pool) : null;
 
     firstRow = skippedRows;
     totalRowCount = rows;
-    boolean skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    Boolean skipCorrupt = options.getSkipCorruptRecords();
+    if (skipCorrupt == null) {
+      skipCorrupt = OrcConf.SKIP_CORRUPT_DATA.getBoolean(conf);
+    }
+
     reader = RecordReaderFactory.createTreeReader(0, conf, types, included, skipCorrupt);
     indexes = new OrcProto.RowIndex[types.size()];
     bloomFilterIndices = new OrcProto.BloomFilterIndex[types.size()];
@@ -520,7 +523,8 @@ class RecordReaderImpl implements RecordReader {
         result = TruthValue.YES_NO_NULL;
       }
     } else if (predObj instanceof String || predObj instanceof Text ||
-        predObj instanceof HiveDecimal || predObj instanceof BigDecimal) {
+        predObj instanceof HiveDecimalWritable ||
+        predObj instanceof BigDecimal) {
       if (bf.testString(predObj.toString())) {
         result = TruthValue.YES_NO_NULL;
       }
@@ -557,11 +561,7 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static Object getBaseObjectForComparison(PredicateLeaf.Type type, Object obj) {
-    if (obj != null) {
-      if (obj instanceof ExprNodeConstantDesc) {
-        obj = ((ExprNodeConstantDesc) obj).getValue();
-      }
-    } else {
+    if (obj == null) {
       return null;
     }
     switch (type) {
@@ -585,20 +585,23 @@ class RecordReaderImpl implements RecordReader {
         break;
       case DECIMAL:
         if (obj instanceof Boolean) {
-          return ((Boolean) obj).booleanValue() ? HiveDecimal.ONE : HiveDecimal.ZERO;
+          return new HiveDecimalWritable(((Boolean) obj).booleanValue() ?
+              HiveDecimal.ONE : HiveDecimal.ZERO);
         } else if (obj instanceof Integer) {
-          return HiveDecimal.create(((Integer) obj).intValue());
+          return new HiveDecimalWritable(((Integer) obj).intValue());
         } else if (obj instanceof Long) {
-          return HiveDecimal.create(((Long) obj));
+          return new HiveDecimalWritable(((Long) obj));
         } else if (obj instanceof Float || obj instanceof Double ||
             obj instanceof String) {
-          return HiveDecimal.create(obj.toString());
+          return new HiveDecimalWritable(obj.toString());
         } else if (obj instanceof BigDecimal) {
-          return HiveDecimal.create((BigDecimal) obj);
+          return new HiveDecimalWritable(HiveDecimal.create((BigDecimal) obj));
         } else if (obj instanceof HiveDecimal) {
+          return new HiveDecimalWritable((HiveDecimal) obj);
+        } else if (obj instanceof HiveDecimalWritable) {
           return obj;
         } else if (obj instanceof Timestamp) {
-          return HiveDecimal.create(
+          return new HiveDecimalWritable(
               new Double(new TimestampWritable((Timestamp) obj).getDouble()).toString());
         }
         break;
@@ -638,12 +641,16 @@ class RecordReaderImpl implements RecordReader {
       case TIMESTAMP:
         if (obj instanceof Timestamp) {
           return obj;
+        } else if (obj instanceof Integer) {
+          return TimestampWritable.longToTimestamp(((Number) obj).longValue(), false);
         } else if (obj instanceof Float) {
           return TimestampWritable.doubleToTimestamp(((Float) obj).doubleValue());
         } else if (obj instanceof Double) {
           return TimestampWritable.doubleToTimestamp(((Double) obj).doubleValue());
         } else if (obj instanceof HiveDecimal) {
           return TimestampWritable.decimalToTimestamp((HiveDecimal) obj);
+        } else if (obj instanceof HiveDecimalWritable) {
+          return TimestampWritable.decimalToTimestamp(((HiveDecimalWritable) obj).getHiveDecimal());
         } else if (obj instanceof Date) {
           return new Timestamp(((Date) obj).getTime());
         }

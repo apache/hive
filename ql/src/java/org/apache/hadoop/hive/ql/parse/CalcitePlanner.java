@@ -641,7 +641,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-            introduceProjectIfNeeded(optimizedOptiqPlan), topLevelFieldSchema);
+        introduceProjectIfNeeded(optimizedOptiqPlan), topLevelFieldSchema, this.getQB()
+            .getTableDesc() != null);
 
     LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
     Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps,

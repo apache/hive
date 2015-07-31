@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
@@ -106,14 +107,16 @@ public class QueryPlan implements Serializable {
   private QueryProperties queryProperties;
 
   private transient Long queryStartTime;
-  private String operationName;
+  private final HiveOperation operation;
+  private Boolean autoCommitValue;
 
   public QueryPlan() {
     this.reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
+    operation = null;
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
-      String operationName, Schema resultSchema) {
+                   HiveOperation operation, Schema resultSchema) {
     this.queryString = queryString;
 
     rootTasks = new ArrayList<Task<? extends Serializable>>();
@@ -134,7 +137,8 @@ public class QueryPlan implements Serializable {
     query.putToQueryAttributes("queryString", this.queryString);
     queryProperties = sem.getQueryProperties();
     queryStartTime = startTime;
-    this.operationName = operationName;
+    this.operation = operation;
+    this.autoCommitValue = sem.getAutoCommitValue();
     this.resultSchema = resultSchema;
   }
 
@@ -794,6 +798,12 @@ public class QueryPlan implements Serializable {
   }
 
   public String getOperationName() {
-    return operationName;
+    return operation == null ? null : operation.getOperationName();
+  }
+  public HiveOperation getOperation() {
+    return operation;
+  }
+  public Boolean getAutoCommitValue() {
+    return autoCommitValue;
   }
 }

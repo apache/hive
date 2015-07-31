@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -278,6 +279,59 @@ public class ExprNodeDescUtils {
     throw new SemanticException("Met multiple parent operators");
   }
 
+  public static List<ExprNodeDesc> resolveJoinKeysAsRSColumns(List<ExprNodeDesc> sourceList,
+      Operator<?> reduceSinkOp) {
+    ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());
+    for (ExprNodeDesc source : sourceList) {
+      ExprNodeDesc newExpr = resolveJoinKeysAsRSColumns(source, reduceSinkOp);
+      if (newExpr == null) {
+        return null;
+      }
+      result.add(newExpr);
+    }
+    return result;
+  }
+
+  /**
+   * Join keys are expressions based on the select operator. Resolve the expressions so they
+   * are based on the ReduceSink operator
+   *   SEL -> RS -> JOIN
+   * @param source
+   * @param reduceSinkOp
+   * @return
+   */
+  public static ExprNodeDesc resolveJoinKeysAsRSColumns(ExprNodeDesc source, Operator<?> reduceSinkOp) {
+    // Assuming this is only being done for join keys. As a result we shouldn't have to recursively
+    // check any nested child expressions, because the result of the expression should exist as an
+    // output column of the ReduceSink operator
+    if (source == null) {
+      return null;
+    }
+
+    // columnExprMap has the reverse of what we need - a mapping of the internal column names
+    // to the ExprNodeDesc from the previous operation.
+    // Find the key/value where the ExprNodeDesc value matches the column we are searching for.
+    // The key portion of the entry will be the internal column name for the join key expression.
+    for (Map.Entry<String, ExprNodeDesc> mapEntry : reduceSinkOp.getColumnExprMap().entrySet()) {
+      if (mapEntry.getValue().isSame(source)) {
+        String columnInternalName = mapEntry.getKey();
+        if (source instanceof ExprNodeColumnDesc) {
+          // The join key is a table column. Create the ExprNodeDesc based on this column.
+          ColumnInfo columnInfo = reduceSinkOp.getSchema().getColumnInfo(columnInternalName);
+          return new ExprNodeColumnDesc(columnInfo);
+        } else {
+          // Join key expression is likely some expression involving functions/operators, so there
+          // is no actual table column for this. But the ReduceSink operator should still have an
+          // output column corresponding to this expression, using the columnInternalName.
+          // TODO: does tableAlias matter for this kind of expression?
+          return new ExprNodeColumnDesc(source.getTypeInfo(), columnInternalName, "", false);
+        }
+      }
+    }
+
+    return null;  // Couldn't find reference to expression
+  }
+
   public static ExprNodeDesc[] extractComparePair(ExprNodeDesc expr1, ExprNodeDesc expr2) {
     expr1 = extractConstant(expr1);
     expr2 = extractConstant(expr2);
@@ -483,4 +537,65 @@ public class ExprNodeDescUtils {
 
     return exprColLst;
   }  
+
+  public static List<ExprNodeDesc> flattenExprList(List<ExprNodeDesc> sourceList) {
+    ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());
+    for (ExprNodeDesc source : sourceList) {
+      result.add(flattenExpr(source));
+    }
+    return result;
+  }
+
+  /**
+   * A normal reduce operator's rowObjectInspector looks like a struct containing
+   *  nested key/value structs that contain the column values:
+   *  { key: { reducesinkkey0:int }, value: { _col0:int, _col1:int, .. } }
+   *
+   * While the rowObjectInspector looks the same for vectorized queries during
+   * compilation time, within the tasks at query execution the rowObjectInspector
+   * has changed to a flatter structure without nested key/value structs:
+   *  { 'key.reducesinkkey0':int, 'value._col0':int, 'value._col1':int, .. }
+   *
+   * Trying to fetch 'key.reducesinkkey0' by name from the list of flattened
+   * ObjectInspectors does not work because the '.' gets interpreted as a field member,
+   * even though it is a flattened list of column values.
+   * This workaround converts the column name referenced in the ExprNodeDesc
+   * from a nested field name (key.reducesinkkey0) to key_reducesinkkey0,
+   * simply by replacing '.' with '_'.
+   * @param source
+   * @return
+   */
+  public static ExprNodeDesc flattenExpr(ExprNodeDesc source) {
+    if (source instanceof ExprNodeGenericFuncDesc) {
+      // all children expression should be resolved
+      ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
+      List<ExprNodeDesc> newChildren = flattenExprList(function.getChildren());
+      for (ExprNodeDesc newChild : newChildren) {
+        if (newChild == null) {
+          // Could not resolve all of the function children, fail
+          return null;
+        }
+      }
+      function.setChildren(newChildren);
+      return function;
+    }
+    if (source instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc column = (ExprNodeColumnDesc) source;
+      // Create a new ColumnInfo, replacing STRUCT.COLUMN with STRUCT_COLUMN
+      String newColumn = column.getColumn().replace('.', '_');
+      return new ExprNodeColumnDesc(source.getTypeInfo(), newColumn, column.getTabAlias(), false);
+    }
+    if (source instanceof ExprNodeFieldDesc) {
+      // field expression should be resolved
+      ExprNodeFieldDesc field = (ExprNodeFieldDesc) source.clone();
+      ExprNodeDesc fieldDesc = flattenExpr(field.getDesc());
+      if (fieldDesc == null) {
+        return null;
+      }
+      field.setDesc(fieldDesc);
+      return field;
+    }
+    // constant or null expr, just return
+    return source;
+  }
 }

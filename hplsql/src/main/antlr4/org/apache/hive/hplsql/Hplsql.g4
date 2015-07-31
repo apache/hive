@@ -33,6 +33,8 @@ single_block_stmt :                                      // Single BEGIN END blo
 
 stmt : 
        assignment_stmt
+     | allocate_cursor_stmt
+     | associate_locator_stmt
      | break_stmt
      | call_stmt
      | close_stmt
@@ -96,7 +98,8 @@ expr_stmt :             // Standalone expression
      ;
 
 assignment_stmt :       // Assignment statement
-       T_SET? assignment_stmt_item (T_COMMA assignment_stmt_item)*  
+       T_SET set_session_option
+     | T_SET? assignment_stmt_item (T_COMMA assignment_stmt_item)*  
      ;
 
 assignment_stmt_item : 
@@ -117,6 +120,14 @@ assignment_stmt_select_item :
        (ident | (T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P)) T_COLON? T_EQUAL T_OPEN_P select_stmt T_CLOSE_P
      ;
      
+allocate_cursor_stmt:
+       T_ALLOCATE ident T_CURSOR T_FOR ((T_RESULT T_SET) | T_PROCEDURE) ident
+     ;
+     
+associate_locator_stmt : 
+       T_ASSOCIATE (T_RESULT T_SET)? (T_LOCATOR | T_LOCATORS) T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P T_WITH T_PROCEDURE ident
+     ;       
+
 break_stmt :
        T_BREAK
      ;
@@ -135,9 +146,9 @@ declare_block :         // Declaration block
    
      
 declare_stmt_item :
-       declare_var_item 
+       declare_cursor_item
+     | declare_var_item 
      | declare_condition_item  
-     | declare_cursor_item
      | declare_handler_item
      | declare_temporary_table_item
      ;
@@ -151,12 +162,15 @@ declare_condition_item :    // Condition declaration
      ;
      
 declare_cursor_item :      // Cursor declaration 
-       (T_CURSOR ident | ident T_CURSOR) declare_cursor_return? (T_IS | T_AS | T_FOR) (select_stmt | expr )
+       (T_CURSOR ident | ident T_CURSOR) (cursor_with_return | cursor_without_return)? (T_IS | T_AS | T_FOR) (select_stmt | expr )
      ;
      
-declare_cursor_return :
+cursor_with_return :
+       T_WITH T_RETURN T_ONLY? (T_TO (T_CALLER | T_CLIENT))?
+     ;
+     
+cursor_without_return :
        T_WITHOUT T_RETURN
-     | T_WITH T_RETURN T_ONLY? (T_TO (T_CALLER | T_CLIENT))?
      ;
 
 declare_handler_item :     // Condition handler declaration 
@@ -238,8 +252,10 @@ dtype :                  // Data types
      | T_INT
      | T_INTEGER
      | T_NUMBER
+     | T_RESULT_SET_LOCATOR T_VARYING
      | T_SMALLINT
      | T_STRING
+     | T_SYS_REFCURSOR
      | T_TIMESTAMP
      | T_VARCHAR
      | T_VARCHAR2
@@ -261,7 +277,7 @@ dtype_default :         // Default clause in variable declaration
      ;
      
 create_function_stmt : 
-      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE) T_FUNCTION ident create_routine_params create_function_return (T_AS | T_IS)? single_block_stmt 
+      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE) T_FUNCTION ident create_routine_params? create_function_return (T_AS | T_IS)? single_block_stmt 
     ;
      
 create_function_return :
@@ -269,7 +285,7 @@ create_function_return :
      ;
 
 create_procedure_stmt : 
-      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE) (T_PROCEDURE | T_PROC) ident create_routine_params create_routine_options? (T_AS | T_IS)? label? single_block_stmt (ident T_SEMICOLON)? 
+      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE) (T_PROCEDURE | T_PROC) ident create_routine_params? create_routine_options? (T_AS | T_IS)? label? single_block_stmt (ident T_SEMICOLON)? 
     ;
 
 create_routine_params :
@@ -287,7 +303,7 @@ create_routine_options :
 create_routine_option :
        T_LANGUAGE T_SQL       
      | T_SQL T_SECURITY (T_CREATOR | T_DEFINER | T_INVOKER | T_OWNER)
-     | T_DYNAMIC T_RESULT T_SETS L_INT
+     | T_DYNAMIC? T_RESULT T_SETS L_INT
      ;
      
 drop_stmt :             // DROP statement
@@ -377,7 +393,7 @@ map_object_stmt :
      ;
      
 open_stmt :             // OPEN cursor statement
-       T_OPEN L_ID (T_FOR (expr | select_stmt))?
+       T_OPEN L_ID (T_FOR (select_stmt | expr))?
      ;
 
 fetch_stmt :            // FETCH cursor statement
@@ -444,6 +460,14 @@ return_stmt :           // RETURN statement
      
 rollback_stmt :         // ROLLBACK statement
        T_ROLLBACK T_WORK?
+     ;
+     
+set_session_option :          
+       set_current_schema_option
+     ;
+
+set_current_schema_option :          
+       ((T_CURRENT? T_SCHEMA) | T_CURRENT_SCHEMA) T_EQUAL? expr
      ;
      
 signal_stmt :          // SIGNAL statement
@@ -661,6 +685,7 @@ bool_expr :                               // Boolean condition
 bool_expr_atom :
       bool_expr_unary
     | bool_expr_binary
+    | expr
     ;
     
 bool_expr_unary :
@@ -708,6 +733,7 @@ expr :
      | T_OPEN_P expr T_CLOSE_P 
      | expr_concat
      | expr_case
+     | expr_cursor_attribute
      | expr_agg_window_func
      | expr_spec_func
      | expr_func                          
@@ -762,6 +788,10 @@ expr_case_simple :
 expr_case_searched :              
        T_CASE (T_WHEN bool_expr T_THEN expr)+ (T_ELSE expr)? T_END
      ;
+     
+expr_cursor_attribute :
+      ident '%' (T_ISOPEN | T_FOUND | T_NOTFOUND)
+    ;
      
 expr_agg_window_func :
        T_AVG T_OPEN_P expr_func_all_distinct? expr T_CLOSE_P expr_func_over_clause?
@@ -886,10 +916,12 @@ null_const :                              // NULL constant
 non_reserved_words :                      // Tokens that are not reserved words and can be used as identifiers
        T_ACTIVITY_COUNT
      | T_ALL 
+     | T_ALLOCATE
      | T_ALTER
      | T_AND
      | T_AS     
-     | T_ASC    
+     | T_ASC   
+     | T_ASSOCIATE     
      | T_AT
      | T_AVG
      | T_BATCHSIZE
@@ -921,6 +953,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_CS
      | T_CURRENT 
      | T_CURRENT_DATE
+     | T_CURRENT_SCHEMA
      | T_CURRENT_TIMESTAMP
      | T_CURRENT_USER
      | T_CURSOR  
@@ -991,6 +1024,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_INVOKER     
      | T_ITEMS     
      | T_IS    
+     | T_ISOPEN
      | T_JOIN     
      | T_KEY
      | T_KEYS
@@ -1004,6 +1038,8 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_LIMIT  
      | T_LINES     
      | T_LOCAL     
+     | T_LOCATOR
+     | T_LOCATORS
      | T_LOGGED     
      | T_LOOP    
      | T_MAP  
@@ -1015,7 +1051,8 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_MICROSECONDS
      | T_MIN
      | T_MULTISET
-     | T_NOT          
+     | T_NOT         
+     | T_NOTFOUND     
      // T_NULL reserved word       
      | T_NUMBER   
      | T_OBJECT     
@@ -1042,6 +1079,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_REPLACE
      | T_RESIGNAL
      | T_RESULT
+     | T_RESULT_SET_LOCATOR
      | T_RETURN       
      | T_RETURNS
      | T_REVERSE    
@@ -1053,6 +1091,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_ROWS
      | T_ROW_COUNT
      | T_ROW_NUMBER
+     | T_SCHEMA
      | T_SECURITY
      | T_SEL          
      | T_SELECT       
@@ -1070,7 +1109,8 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_STRING    
      | T_SUBSTRING
      | T_SUM
-     | T_SYSDATE     
+     | T_SYSDATE 
+     | T_SYS_REFCURSOR     
      | T_TABLE
      | T_TEMPORARY
      | T_TERMINATED
@@ -1092,6 +1132,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_VAR
      | T_VARCHAR      
      | T_VARCHAR2
+     | T_VARYING
      | T_VARIANCE
      | T_VOLATILE
      // T_WHEN reserved word         
@@ -1104,10 +1145,12 @@ non_reserved_words :                      // Tokens that are not reserved words 
 
 // Lexer rules
 T_ALL             : A L L ;
+T_ALLOCATE        : A L L O C A T E ;
 T_ALTER           : A L T E R ;
 T_AND             : A N D ;
 T_AS              : A S ;
 T_ASC             : A S C ;
+T_ASSOCIATE       : A S S O C I A T E ; 
 T_AT              : A T ;
 T_AVG             : A V G ; 
 T_BATCHSIZE       : B A T C H S I Z E ;
@@ -1138,6 +1181,7 @@ T_CREATE          : C R E A T E ;
 T_CREATOR         : C R E A T O R ;
 T_CS              : C S;
 T_CURRENT         : C U R R E N T ;
+T_CURRENT_SCHEMA  : C U R R E N T '_' S C H E M A ;
 T_CURSOR          : C U R S O R ;
 T_DATE            : D A T E ;
 T_DAY             : D A Y ;
@@ -1203,6 +1247,7 @@ T_INTERSECT       : I N T E R S E C T ;
 T_INTO            : I N T O ;
 T_INVOKER         : I N V O K E R ;
 T_IS              : I S ;
+T_ISOPEN          : I S O P E N ;
 T_ITEMS           : I T E M S ; 
 T_JOIN            : J O I N ;
 T_KEY             : K E Y ;
@@ -1214,6 +1259,8 @@ T_LIKE            : L I K E ;
 T_LIMIT           : L I M I T ;
 T_LINES           : L I N E S ; 
 T_LOCAL           : L O C A L ;
+T_LOCATOR         : L O C A T O R ; 
+T_LOCATORS        : L O C A T O R S ; 
 T_LOGGED          : L O G G E D ; 
 T_LOOP            : L O O P ;
 T_MAP             : M A P ; 
@@ -1226,6 +1273,7 @@ T_MICROSECONDS    : M I C R O S E C O N D S;
 T_MIN             : M I N ;
 T_MULTISET        : M U L T I S E T ; 
 T_NOT             : N O T ;
+T_NOTFOUND        : N O T F O U N D ; 
 T_NULL            : N U L L ;
 T_NUMBER          : N U M B E R ;
 T_OBJECT          : O B J E C T ; 
@@ -1249,6 +1297,7 @@ T_REGEXP          : R E G E X P ;
 T_REPLACE         : R E P L A C E ; 
 T_RESIGNAL        : R E S I G N A L ;
 T_RESULT          : R E S U L T ; 
+T_RESULT_SET_LOCATOR : R E S U L T '_' S E T '_' L O C A T O R ;
 T_RETURN          : R E T U R N ;
 T_RETURNS         : R E T U R N S ;
 T_REVERSE         : R E V E R S E ;
@@ -1261,6 +1310,7 @@ T_ROW_COUNT       : R O W '_' C O U N T ;
 T_RR              : R R;
 T_RS              : R S ;
 T_TRIM            : T R I M ;
+T_SCHEMA          : S C H E M A ;
 T_SECURITY        : S E C U R I T Y ; 
 T_SEL             : S E L ;
 T_SELECT          : S E L E C T ; 
@@ -1277,6 +1327,7 @@ T_STEP            : S T E P ;
 T_STRING          : S T R I N G ;
 T_SUBSTRING       : S U B S T R I N G ; 
 T_SUM             : S U M ;
+T_SYS_REFCURSOR   : S Y S '_' R E F C U R S O R ; 
 T_TABLE           : T A B L E ;
 T_TEMPORARY       : T E M P O R A R Y ;
 T_TERMINATED      : T E R M I N A T E D ; 
@@ -1296,6 +1347,7 @@ T_VALUES          : V A L U E S ;
 T_VAR             : V A R ;
 T_VARCHAR         : V A R C H A R ;
 T_VARCHAR2        : V A R C H A R '2' ;
+T_VARYING         : V A R Y I N G ;
 T_VOLATILE        : V O L A T I L E ;
 T_WHEN            : W H E N ;
 T_WHERE           : W H E R E ;

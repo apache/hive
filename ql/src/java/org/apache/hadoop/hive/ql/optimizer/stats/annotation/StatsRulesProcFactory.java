@@ -301,6 +301,9 @@ public class StatsRulesProcFactory {
       long newNumRows = 0;
       Statistics andStats = null;
 
+      if (stats.getNumRows() <= 1 || stats.getDataSize() <= 0)
+        return 1;
+
       if (pred instanceof ExprNodeGenericFuncDesc) {
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) pred;
         GenericUDF udf = genFunc.getGenericUDF();

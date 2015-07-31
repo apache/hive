@@ -34,6 +34,11 @@ public class Query {
   Statement stmt;
   ResultSet rs;
   Exception exception;
+
+  public enum State { OPEN, FETCHED_OK, FETCHED_NODATA, CLOSE };
+  State state = State.CLOSE;
+  
+  boolean withReturn = false;
   
   Query() {
   }
@@ -49,6 +54,21 @@ public class Query {
     this.conn = conn;
     this.stmt = stmt;
     this.rs = rs;
+    if (rs != null) {
+      state = State.OPEN;
+    }
+  }
+  
+  /**
+   * Set the fetch status
+   */
+  public void setFetch(boolean ok) {
+    if (ok == true) {
+      state = State.FETCHED_OK;
+    }
+    else {
+      state = State.FETCHED_NODATA;
+    }
   }
   
   /**
@@ -64,6 +84,42 @@ public class Query {
   }
   
   /**
+   * Check if the cursor is open
+   */
+  public boolean isOpen() {
+    if (rs != null) {
+      return true;
+    }
+    return false;
+  }
+  
+  /**
+   * Check if the cursor was fetched and a row was returned
+   */
+  public Boolean isFound() {
+    if (state == State.OPEN || state == State.CLOSE) {
+      return null;
+    }
+    if (state == State.FETCHED_OK) {
+      return Boolean.valueOf(true);
+    } 
+    return Boolean.valueOf(false);    
+  }
+  
+  /**
+   * Check if the cursor was fetched and no row was returned
+   */
+  public Boolean isNotFound() {
+    if (state == State.OPEN || state == State.CLOSE) {
+      return null;
+    }
+    if (state == State.FETCHED_NODATA) {
+      return Boolean.valueOf(true);
+    }
+    return Boolean.valueOf(false);
+  }
+  
+  /**
    * Close statement results
    */
   public void closeStatement() {
@@ -76,6 +132,7 @@ public class Query {
         stmt.close();
         stmt = null;
       }
+      state = State.CLOSE;
     } catch (SQLException e) {
       e.printStackTrace();
     }   
@@ -100,6 +157,13 @@ public class Query {
    */
   public void setSelectCtx(ParserRuleContext sqlSelect) {
     this.sqlSelect = sqlSelect;
+  }
+  
+  /**
+   * Set whether the cursor is returned to the caller
+   */
+  public void setWithReturn(boolean withReturn) {
+    this.withReturn = withReturn;
   }
   
   /**
@@ -130,6 +194,13 @@ public class Query {
    */
   public Connection getConnection() {
     return conn;
+  }
+  
+  /**
+   * Check if the cursor defined as a return cursor to client
+   */
+  public boolean getWithReturn() {
+    return withReturn;
   }
   
   /**

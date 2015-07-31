@@ -551,6 +551,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
 
   @Override
   protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+
     Collection<Future<?>> result = super.initializeOp(hconf);
 
     if (LOG.isDebugEnabled()) {

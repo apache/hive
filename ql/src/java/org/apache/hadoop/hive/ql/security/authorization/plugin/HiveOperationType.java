@@ -125,6 +125,11 @@ public enum HiveOperationType {
   ADD,
   DELETE,
   COMPILE,
+  START_TRANSACTION,
+  COMMIT,
+  ROLLBACK,
+  SET_AUTOCOMMIT,
+  ALTERTABLE_EXCHANGEPARTITION,
   // ==== Hive command operations ends here ==== //
 
   // ==== HiveServer2 metadata api types start here ==== //

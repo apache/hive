@@ -268,6 +268,34 @@ public class Expression {
   }
   
   /**
+   * Cursor attribute %ISOPEN, %FOUND and %NOTFOUND
+   */
+  public void execCursorAttribute(HplsqlParser.Expr_cursor_attributeContext ctx) {
+    String name = ctx.ident().getText();
+    Var val = new Var(Var.Type.BOOL);
+    Var cursor = exec.findCursor(name);
+    if (cursor != null) {
+      Query query = (Query)cursor.value;
+      if (query != null) {
+        if (ctx.T_ISOPEN() != null) {
+          val.setValue(query.isOpen());
+        }
+        else if (ctx.T_FOUND() != null) {
+          val.setValue(query.isFound());
+        }
+        else if (ctx.T_NOTFOUND() != null) {
+          val.setValue(query.isNotFound());
+        }
+      }
+      exec.stackPush(val);
+    }
+    else {
+      trace(ctx, "Cursor not found: " + name);
+      exec.signal(Signal.Type.SQLEXCEPTION);
+    }
+  }
+  
+  /**
    * Addition operator
    */
   public void operatorAdd(HplsqlParser.ExprContext ctx) {

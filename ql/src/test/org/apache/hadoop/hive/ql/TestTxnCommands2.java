@@ -20,13 +20,11 @@ package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.orc.FileDump;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,13 +34,11 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * TODO: this should be merged with TestTxnCommands once that is checked in
@@ -55,7 +51,7 @@ public class TestTxnCommands2 {
   ).getPath().replaceAll("\\\\", "/");
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   //bucket count for test tables; set it to 1 for easier debugging
-  private static int BUCKET_COUNT = 2;
+  private static int BUCKET_COUNT = 1;
   @Rule
   public TestName testName = new TestName();
   private HiveConf hiveConf;
@@ -121,6 +117,64 @@ public class TestTxnCommands2 {
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
+  }
+  @Test
+  public void testOrcPPD() throws Exception  {
+    testOrcPPD(true);
+  }
+  @Test
+  public void testOrcNoPPD() throws Exception {
+    testOrcPPD(false);
+  }
+  private void testOrcPPD(boolean enablePPD) throws Exception  {
+    boolean originalPpd = hiveConf.getBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, enablePPD);//enables ORC PPD
+    int[][] tableData = {{1,2},{3,4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean stop = new AtomicBoolean();
+    AtomicBoolean looped = new AtomicBoolean();
+    stop.set(true);
+    t.init(stop, looped);
+    t.run();
+    //now we have base_0001 file
+    int[][] tableData2 = {{1,7},{5,6},{7,8},{9,10}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
+    //now we have delta_0002_0002_0000 with inserts only (ok to push predicate)
+    runStatementOnDriver("delete from " + Table.ACIDTBL + " where a=7 and b=8");
+    //now we have delta_0003_0003_0000 with delete events (can't push predicate)
+    runStatementOnDriver("update " + Table.ACIDTBL + " set b = 11 where a = 9");
+    //and another delta with update op
+    List<String> rs1 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " where a > 1 order by a,b");
+    int [][] resultData = {{3,4},{5,6},{9,11}};
+    Assert.assertEquals("Update failed", stringifyValues(resultData), rs1);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, originalPpd);
+  }
+  @Ignore("alter table")
+  @Test
+  public void testAlterTable() throws Exception {
+    int[][] tableData = {{1,2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean stop = new AtomicBoolean();
+    AtomicBoolean looped = new AtomicBoolean();
+    stop.set(true);
+    t.init(stop, looped);
+    t.run();
+    int[][] tableData2 = {{5,6}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
+    List<String> rs1 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " where b > 0 order by a,b");
+
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " add columns(c int)");
+    int[][] moreTableData = {{7,8,9}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b,c) " + makeValuesClause(moreTableData));
+    List<String> rs0 = runStatementOnDriver("select a,b,c from " + Table.ACIDTBL + " where a > 0 order by a,b,c");
   }
   @Ignore("not needed but useful for testing")
   @Test

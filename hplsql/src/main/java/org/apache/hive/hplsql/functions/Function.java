@@ -188,8 +188,12 @@ public class Function {
       return false;
     }    
     exec.enterScope(Scope.Type.ROUTINE);
-    setCallParameters(procCtx.create_routine_params());
+    exec.callStackPush(name);
+    if (procCtx.create_routine_params() != null) {
+      setCallParameters(procCtx.create_routine_params());
+    }
     visit(procCtx.single_block_stmt());
+    exec.callStackPop();
     exec.leaveScope();       
     return true;
   }
@@ -208,8 +212,12 @@ public class Function {
     }    
     HashMap<String, Var> out = new HashMap<String, Var>();
     exec.enterScope(Scope.Type.ROUTINE);
-    setCallParameters(ctx, procCtx.create_routine_params(), out);
+    exec.callStackPush(name);
+    if (procCtx.create_routine_params() != null) {
+      setCallParameters(ctx, procCtx.create_routine_params(), out);
+    }
     visit(procCtx.single_block_stmt());
+    exec.callStackPop();
     exec.leaveScope();       
     for (Map.Entry<String, Var> i : out.entrySet()) {      // Set OUT parameters
       exec.setVariable(i.getKey(), i.getValue());

@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 abstract class HiveTxnManagerImpl implements HiveTxnManager {
 
   protected HiveConf conf;
+  private boolean isAutoCommit = true;//true by default; matches JDBC spec
 
   void setHiveConf(HiveConf c) {
     conf = c;
@@ -57,6 +58,15 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
   @Override
   protected void finalize() throws Throwable {
     destruct();
+  }
+  @Override
+  public void setAutoCommit(boolean autoCommit) throws LockException {
+    isAutoCommit = autoCommit;
+  }
+
+  @Override
+  public boolean getAutoCommit() {
+    return isAutoCommit;
   }
 
   @Override

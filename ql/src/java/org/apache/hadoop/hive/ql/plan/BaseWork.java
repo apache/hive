@@ -47,7 +47,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   // Their function is mainly as root ops to give the mapjoin the correct
   // schema info.
   List<HashTableDummyOperator> dummyOps;
-  int tag;
+  int tag = 0;
   private final List<String> sortColNames = new ArrayList<String>();
 
   private MapredLocalWork mrLocalWork;

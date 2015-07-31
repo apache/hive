@@ -1233,8 +1233,9 @@ public class BeeLine implements Closeable {
       return "beeline> ";
     } else {
       String printClosed = getDatabaseConnection().isClosed() ? " (closed)" : "";
-      return getPrompt(getDatabaseConnections().getIndex()
-          + ": " + getDatabaseConnection().getUrl()) + printClosed + "> ";
+      String url =  getOpts().getShowConnectedUrl() ? getDatabaseConnection().getConnectedUrl()
+          : getDatabaseConnection().getUrl();
+      return getPrompt(getDatabaseConnections().getIndex() + ": " + url) + printClosed + "> ";
     }
   }
 

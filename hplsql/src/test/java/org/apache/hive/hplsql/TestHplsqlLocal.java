@@ -134,26 +134,6 @@ public class TestHplsqlLocal {
   }
 
   @Test
-  public void testException2() throws Exception {
-    run("exception2");
-  }
-
-  @Test
-  public void testException3() throws Exception {
-    run("exception2");
-  }
-
-  @Test
-  public void testException4() throws Exception {
-    run("exception2");
-  }
-
-  @Test
-  public void testException5() throws Exception {
-    run("exception2");
-  }
-
-  @Test
   public void testExit() throws Exception {
     run("exit");
   }
@@ -300,11 +280,7 @@ public class TestHplsqlLocal {
     System.setOut(new PrintStream(out));
     Exec exec = new Exec();
     String[] args = { "-f", "src/test/queries/local/" + testFile + ".sql", "-trace" };
-    exec.init(args);
-    Var result = exec.run();
-    if (result != null) {
-      System.out.println(result.toString());
-    }
+    exec.run(args);
     String s = getTestOutput(out.toString()).trim();
     FileUtils.writeStringToFile(new java.io.File("target/tmp/log/" + testFile + ".out.txt"), s);
     String t = FileUtils.readFileToString(new java.io.File("src/test/results/local/" + testFile + ".out.txt"), "utf-8").trim();
