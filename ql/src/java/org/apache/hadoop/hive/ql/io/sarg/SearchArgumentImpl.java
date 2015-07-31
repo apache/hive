@@ -22,6 +22,15 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -29,8 +38,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.io.parquet.FilterPredicateLeafBuilder;
-import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -53,19 +60,6 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import parquet.filter2.predicate.FilterApi;
-import parquet.filter2.predicate.FilterPredicate;
 
 /**
  * The implementation of SearchArguments.
@@ -222,195 +216,6 @@ final class SearchArgumentImpl implements SearchArgument {
              (literal == null ? 0 : literal.hashCode()) * 101 * 3 * 17 +
              (literalList == null ? 0 : literalList.hashCode()) *
                  103 * 101 * 3 * 17;
-    }
-  }
-
-  static class ExpressionTree {
-    static enum Operator {OR, AND, NOT, LEAF, CONSTANT}
-    private final Operator operator;
-    private final List<ExpressionTree> children;
-    private final int leaf;
-    private final TruthValue constant;
-
-    ExpressionTree() {
-      operator = null;
-      children = null;
-      leaf = 0;
-      constant = null;
-    }
-
-    ExpressionTree(Operator op, ExpressionTree... kids) {
-      operator = op;
-      children = new ArrayList<ExpressionTree>();
-      leaf = -1;
-      this.constant = null;
-      Collections.addAll(children, kids);
-    }
-
-    ExpressionTree(int leaf) {
-      operator = Operator.LEAF;
-      children = null;
-      this.leaf = leaf;
-      this.constant = null;
-    }
-
-    ExpressionTree(TruthValue constant) {
-      operator = Operator.CONSTANT;
-      children = null;
-      this.leaf = -1;
-      this.constant = constant;
-    }
-
-    ExpressionTree(ExpressionTree other) {
-      this.operator = other.operator;
-      if (other.children == null) {
-        this.children = null;
-      } else {
-        this.children = new ArrayList<ExpressionTree>();
-        for(ExpressionTree child: other.children) {
-          children.add(new ExpressionTree(child));
-        }
-      }
-      this.leaf = other.leaf;
-      this.constant = other.constant;
-    }
-
-    TruthValue evaluate(TruthValue[] leaves) {
-      TruthValue result = null;
-      switch (operator) {
-        case OR:
-          for(ExpressionTree child: children) {
-            result = child.evaluate(leaves).or(result);
-          }
-          return result;
-        case AND:
-          for(ExpressionTree child: children) {
-            result = child.evaluate(leaves).and(result);
-          }
-          return result;
-        case NOT:
-          return children.get(0).evaluate(leaves).not();
-        case LEAF:
-          return leaves[leaf];
-        case CONSTANT:
-          return constant;
-        default:
-          throw new IllegalStateException("Unknown operator: " + operator);
-      }
-    }
-
-    FilterPredicate translate(List<PredicateLeaf> leafs){
-      FilterPredicate p = null;
-      switch (operator) {
-        case OR:
-          for(ExpressionTree child: children) {
-            if (p == null) {
-              p = child.translate(leafs);
-            } else {
-              FilterPredicate right = child.translate(leafs);
-              // constant means no filter, ignore it when it is null
-              if(right != null){
-                p = FilterApi.or(p, right);
-              }
-            }
-          }
-          return p;
-        case AND:
-          for(ExpressionTree child: children) {
-            if (p == null) {
-              p = child.translate(leafs);
-            } else {
-              FilterPredicate right = child.translate(leafs);
-              // constant means no filter, ignore it when it is null
-              if(right != null){
-                p = FilterApi.and(p, right);
-              }
-            }
-          }
-          return p;
-        case NOT:
-          FilterPredicate op = children.get(0).translate(leafs);
-          if (op != null) {
-            return FilterApi.not(op);
-          } else {
-            return null;
-          }
-        case LEAF:
-          return buildFilterPredicateFromPredicateLeaf(leafs.get(leaf));
-        case CONSTANT:
-          return null;// no filter will be executed for constant
-        default:
-          throw new IllegalStateException("Unknown operator: " + operator);
-      }
-    }
-
-    private FilterPredicate buildFilterPredicateFromPredicateLeaf(PredicateLeaf leaf) {
-      LeafFilterFactory leafFilterFactory = new LeafFilterFactory();
-      FilterPredicateLeafBuilder builder;
-      try {
-        builder = leafFilterFactory
-          .getLeafFilterBuilderByType(leaf.getType());
-        if (builder == null) return null;
-        if (isMultiLiteralsOperator(leaf.getOperator())) {
-          return builder.buildPredicate(leaf.getOperator(), leaf.getLiteralList(
-            PredicateLeaf.FileFormat.PARQUET), leaf.getColumnName());
-        } else {
-          return builder
-            .buildPredict(leaf.getOperator(), leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET),
-              leaf.getColumnName());
-        }
-      } catch (Exception e) {
-        LOG.error("fail to build predicate filter leaf with errors" + e, e);
-        return null;
-      }
-    }
-
-    private boolean isMultiLiteralsOperator(PredicateLeaf.Operator op) {
-      return (op == PredicateLeaf.Operator.IN) || (op == PredicateLeaf.Operator.BETWEEN);
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder buffer = new StringBuilder();
-      switch (operator) {
-        case OR:
-          buffer.append("(or");
-          for(ExpressionTree child: children) {
-            buffer.append(' ');
-            buffer.append(child.toString());
-          }
-          buffer.append(')');
-          break;
-        case AND:
-          buffer.append("(and");
-          for(ExpressionTree child: children) {
-            buffer.append(' ');
-            buffer.append(child.toString());
-          }
-          buffer.append(')');
-          break;
-        case NOT:
-          buffer.append("(not ");
-          buffer.append(children.get(0));
-          buffer.append(')');
-          break;
-        case LEAF:
-          buffer.append("leaf-");
-          buffer.append(leaf);
-          break;
-        case CONSTANT:
-          buffer.append(constant);
-          break;
-      }
-      return buffer.toString();
-    }
-
-    Operator getOperator() {
-      return operator;
-    }
-
-    List<ExpressionTree> getChildren() {
-      return children;
     }
   }
 
@@ -620,7 +425,7 @@ final class SearchArgumentImpl implements SearchArgument {
 
     private ExpressionTree negate(ExpressionTree expr) {
       ExpressionTree result = new ExpressionTree(ExpressionTree.Operator.NOT);
-      result.children.add(expr);
+      result.getChildren().add(expr);
       return result;
     }
 
@@ -628,7 +433,7 @@ final class SearchArgumentImpl implements SearchArgument {
                              ExprNodeGenericFuncDesc node,
                              List<PredicateLeaf> leafCache) {
       for(ExprNodeDesc child: node.getChildren()) {
-        result.children.add(parse(child, leafCache));
+        result.getChildren().add(parse(child, leafCache));
       }
     }
 
@@ -704,24 +509,24 @@ final class SearchArgumentImpl implements SearchArgument {
      * nodes of the original expression.
      */
     static ExpressionTree pushDownNot(ExpressionTree root) {
-      if (root.operator == ExpressionTree.Operator.NOT) {
-        ExpressionTree child = root.children.get(0);
-        switch (child.operator) {
+      if (root.getOperator() == ExpressionTree.Operator.NOT) {
+        ExpressionTree child = root.getChildren().get(0);
+        switch (child.getOperator()) {
           case NOT:
-            return pushDownNot(child.children.get(0));
+            return pushDownNot(child.getChildren().get(0));
           case CONSTANT:
-            return  new ExpressionTree(child.constant.not());
+            return  new ExpressionTree(child.getConstant().not());
           case AND:
             root = new ExpressionTree(ExpressionTree.Operator.OR);
-            for(ExpressionTree kid: child.children) {
-              root.children.add(pushDownNot(new
+            for(ExpressionTree kid: child.getChildren()) {
+              root.getChildren().add(pushDownNot(new
                   ExpressionTree(ExpressionTree.Operator.NOT, kid)));
             }
             break;
           case OR:
             root = new ExpressionTree(ExpressionTree.Operator.AND);
-            for(ExpressionTree kid: child.children) {
-              root.children.add(pushDownNot(new ExpressionTree
+            for(ExpressionTree kid: child.getChildren()) {
+              root.getChildren().add(pushDownNot(new ExpressionTree
                   (ExpressionTree.Operator.NOT, kid)));
             }
             break;
@@ -729,10 +534,10 @@ final class SearchArgumentImpl implements SearchArgument {
           default:
             break;
         }
-      } else if (root.children != null) {
+      } else if (root.getChildren() != null) {
         // iterate through children and push down not for each one
-        for(int i=0; i < root.children.size(); ++i) {
-          root.children.set(i, pushDownNot(root.children.get(i)));
+        for(int i=0; i < root.getChildren().size(); ++i) {
+          root.getChildren().set(i, pushDownNot(root.getChildren().get(i)));
         }
       }
       return root;
@@ -746,13 +551,13 @@ final class SearchArgumentImpl implements SearchArgument {
      * @return The cleaned up expression
      */
     static ExpressionTree foldMaybe(ExpressionTree expr) {
-      if (expr.children != null) {
-        for(int i=0; i < expr.children.size(); ++i) {
-          ExpressionTree child = foldMaybe(expr.children.get(i));
-          if (child.constant == TruthValue.YES_NO_NULL) {
-            switch (expr.operator) {
+      if (expr.getChildren() != null) {
+        for(int i=0; i < expr.getChildren().size(); ++i) {
+          ExpressionTree child = foldMaybe(expr.getChildren().get(i));
+          if (child.getConstant() == TruthValue.YES_NO_NULL) {
+            switch (expr.getOperator()) {
               case AND:
-                expr.children.remove(i);
+                expr.getChildren().remove(i);
                 i -= 1;
                 break;
               case OR:
@@ -763,10 +568,10 @@ final class SearchArgumentImpl implements SearchArgument {
                   expr);
             }
           } else {
-            expr.children.set(i, child);
+            expr.getChildren().set(i, child);
           }
         }
-        if (expr.children.isEmpty()) {
+        if (expr.getChildren().isEmpty()) {
           return new ExpressionTree(TruthValue.YES_NO_NULL);
         }
       }
@@ -787,15 +592,15 @@ final class SearchArgumentImpl implements SearchArgument {
                                                 List<ExpressionTree> andList,
                                                 List<ExpressionTree> nonAndList
                                                ) {
-      List<ExpressionTree> kids = andList.get(0).children;
+      List<ExpressionTree> kids = andList.get(0).getChildren();
       if (result.isEmpty()) {
         for(ExpressionTree kid: kids) {
           ExpressionTree or = new ExpressionTree(ExpressionTree.Operator.OR);
           result.add(or);
           for(ExpressionTree node: nonAndList) {
-            or.children.add(new ExpressionTree(node));
+            or.getChildren().add(new ExpressionTree(node));
           }
-          or.children.add(kid);
+          or.getChildren().add(kid);
         }
       } else {
         List<ExpressionTree> work = new ArrayList<ExpressionTree>(result);
@@ -803,7 +608,7 @@ final class SearchArgumentImpl implements SearchArgument {
         for(ExpressionTree kid: kids) {
           for(ExpressionTree or: work) {
             ExpressionTree copy = new ExpressionTree(or);
-            copy.children.add(kid);
+            copy.getChildren().add(kid);
             result.add(copy);
           }
         }
@@ -822,23 +627,23 @@ final class SearchArgumentImpl implements SearchArgument {
      * @return the normalized expression
      */
     static ExpressionTree convertToCNF(ExpressionTree root) {
-      if (root.children != null) {
+      if (root.getChildren() != null) {
         // convert all of the children to CNF
-        int size = root.children.size();
+        int size = root.getChildren().size();
         for(int i=0; i < size; ++i) {
-          root.children.set(i, convertToCNF(root.children.get(i)));
+          root.getChildren().set(i, convertToCNF(root.getChildren().get(i)));
         }
-        if (root.operator == ExpressionTree.Operator.OR) {
+        if (root.getOperator() == ExpressionTree.Operator.OR) {
           // a list of leaves that weren't under AND expressions
           List<ExpressionTree> nonAndList = new ArrayList<ExpressionTree>();
           // a list of AND expressions that we need to distribute
           List<ExpressionTree> andList = new ArrayList<ExpressionTree>();
-          for(ExpressionTree child: root.children) {
-            if (child.operator == ExpressionTree.Operator.AND) {
+          for(ExpressionTree child: root.getChildren()) {
+            if (child.getOperator() == ExpressionTree.Operator.AND) {
               andList.add(child);
-            } else if (child.operator == ExpressionTree.Operator.OR) {
+            } else if (child.getOperator() == ExpressionTree.Operator.OR) {
               // pull apart the kids of the OR expression
-              for(ExpressionTree grandkid: child.children) {
+              for(ExpressionTree grandkid: child.getChildren()) {
                 nonAndList.add(grandkid);
               }
             } else {
@@ -848,7 +653,7 @@ final class SearchArgumentImpl implements SearchArgument {
           if (!andList.isEmpty()) {
             if (checkCombinationsThreshold(andList)) {
               root = new ExpressionTree(ExpressionTree.Operator.AND);
-              generateAllCombinations(root.children, andList, nonAndList);
+              generateAllCombinations(root.getChildren(), andList, nonAndList);
             } else {
               root = new ExpressionTree(TruthValue.YES_NO_NULL);
             }
@@ -861,7 +666,7 @@ final class SearchArgumentImpl implements SearchArgument {
     private static boolean checkCombinationsThreshold(List<ExpressionTree> andList) {
       int numComb = 1;
       for (ExpressionTree tree : andList) {
-        numComb *= tree.children.size();
+        numComb *= tree.getChildren().size();
         if (numComb > CNF_COMBINATIONS_THRESHOLD) {
           return false;
         }
@@ -876,33 +681,33 @@ final class SearchArgumentImpl implements SearchArgument {
      *   potentially modified children.
      */
     static ExpressionTree flatten(ExpressionTree root) {
-      if (root.children != null) {
+      if (root.getChildren() != null) {
         // iterate through the index, so that if we add more children,
         // they don't get re-visited
-        for(int i=0; i < root.children.size(); ++i) {
-          ExpressionTree child = flatten(root.children.get(i));
+        for(int i=0; i < root.getChildren().size(); ++i) {
+          ExpressionTree child = flatten(root.getChildren().get(i));
           // do we need to flatten?
-          if (child.operator == root.operator &&
-              child.operator != ExpressionTree.Operator.NOT) {
+          if (child.getOperator() == root.getOperator() &&
+              child.getOperator() != ExpressionTree.Operator.NOT) {
             boolean first = true;
-            for(ExpressionTree grandkid: child.children) {
+            for(ExpressionTree grandkid: child.getChildren()) {
               // for the first grandkid replace the original parent
               if (first) {
                 first = false;
-                root.children.set(i, grandkid);
+                root.getChildren().set(i, grandkid);
               } else {
-                root.children.add(++i, grandkid);
+                root.getChildren().add(++i, grandkid);
               }
             }
           } else {
-            root.children.set(i, child);
+            root.getChildren().set(i, child);
           }
         }
         // if we have a singleton AND or OR, just return the child
-        if ((root.operator == ExpressionTree.Operator.OR ||
-             root.operator == ExpressionTree.Operator.AND) &&
-            root.children.size() == 1) {
-          return root.children.get(0);
+        if ((root.getOperator() == ExpressionTree.Operator.OR ||
+             root.getOperator() == ExpressionTree.Operator.AND) &&
+            root.getChildren().size() == 1) {
+          return root.getChildren().get(0);
         }
       }
       return root;
@@ -921,13 +726,13 @@ final class SearchArgumentImpl implements SearchArgument {
                                          List<PredicateLeaf> leafCache,
                                          Map<PredicateLeaf,
                                              ExpressionTree> lookup) {
-      if (expr.children != null) {
-        for(int i=0; i < expr.children.size(); ++i) {
-          expr.children.set(i, buildLeafList(expr.children.get(i), leafCache,
-              lookup));
+      if (expr.getChildren() != null) {
+        for(int i=0; i < expr.getChildren().size(); ++i) {
+          expr.getChildren().set(i, buildLeafList(expr.getChildren().get(i),
+              leafCache, lookup));
         }
-      } else if (expr.operator == ExpressionTree.Operator.LEAF) {
-        PredicateLeaf leaf = leafCache.get(expr.leaf);
+      } else if (expr.getOperator() == ExpressionTree.Operator.LEAF) {
+        PredicateLeaf leaf = leafCache.get(expr.getLeaf());
         ExpressionTree val = lookup.get(leaf);
         if (val == null) {
           val = new ExpressionTree(leaves.size());
@@ -1008,7 +813,8 @@ final class SearchArgumentImpl implements SearchArgument {
     return expression == null ? TruthValue.YES : expression.evaluate(leaves);
   }
 
-  ExpressionTree getExpression() {
+  @Override
+  public ExpressionTree getExpression() {
     return expression;
   }
 
@@ -1039,11 +845,6 @@ final class SearchArgumentImpl implements SearchArgument {
     return new Kryo().readObject(input, SearchArgumentImpl.class);
   }
 
-  @Override
-  public FilterPredicate toFilterPredicate() {
-    return expression.translate(leaves);
-  }
-
   private static class BuilderImpl implements Builder {
     private final Deque<ExpressionTree> currentTree =
         new ArrayDeque<ExpressionTree>();
@@ -1055,7 +856,7 @@ final class SearchArgumentImpl implements SearchArgument {
       ExpressionTree node = new ExpressionTree(ExpressionTree.Operator.OR);
       if (currentTree.size() != 0) {
         ExpressionTree parent = currentTree.getFirst();
-        parent.children.add(node);
+        parent.getChildren().add(node);
       }
       currentTree.addFirst(node);
       return this;
@@ -1066,7 +867,7 @@ final class SearchArgumentImpl implements SearchArgument {
       ExpressionTree node = new ExpressionTree(ExpressionTree.Operator.AND);
       if (currentTree.size() != 0) {
         ExpressionTree parent = currentTree.getFirst();
-        parent.children.add(node);
+        parent.getChildren().add(node);
       }
       currentTree.addFirst(node);
       return this;
@@ -1077,7 +878,7 @@ final class SearchArgumentImpl implements SearchArgument {
       ExpressionTree node = new ExpressionTree(ExpressionTree.Operator.NOT);
       if (currentTree.size() != 0) {
         ExpressionTree parent = currentTree.getFirst();
-        parent.children.add(node);
+        parent.getChildren().add(node);
       }
       currentTree.addFirst(node);
       return this;
@@ -1086,12 +887,12 @@ final class SearchArgumentImpl implements SearchArgument {
     @Override
     public Builder end() {
       root = currentTree.removeFirst();
-      if (root.children.size() == 0) {
+      if (root.getChildren().size() == 0) {
         throw new IllegalArgumentException("Can't create expression " + root +
             " with no children.");
       }
-      if (root.operator == ExpressionTree.Operator.NOT &&
-          root.children.size() != 1) {
+      if (root.getOperator() == ExpressionTree.Operator.NOT &&
+          root.getChildren().size() != 1) {
         throw new IllegalArgumentException("Can't create not expression " +
             root + " with more than 1 child.");
       }
@@ -1160,7 +961,7 @@ final class SearchArgumentImpl implements SearchArgument {
           new PredicateLeafImpl(PredicateLeaf.Operator.LESS_THAN,
               getType(box), column, box, null);
       leaves.add(leaf);
-      parent.children.add(new ExpressionTree(leaves.size() - 1));
+      parent.getChildren().add(new ExpressionTree(leaves.size() - 1));
       return this;
     }
 
@@ -1172,7 +973,7 @@ final class SearchArgumentImpl implements SearchArgument {
           new PredicateLeafImpl(PredicateLeaf.Operator.LESS_THAN_EQUALS,
               getType(box), column, box, null);
       leaves.add(leaf);
-      parent.children.add(new ExpressionTree(leaves.size() - 1));
+      parent.getChildren().add(new ExpressionTree(leaves.size() - 1));
       return this;
     }
 
@@ -1184,7 +985,7 @@ final class SearchArgumentImpl implements SearchArgument {
           new PredicateLeafImpl(PredicateLeaf.Operator.EQUALS,
               getType(box), column, box, null);
       leaves.add(leaf);
-      parent.children.add(new ExpressionTree(leaves.size() - 1));
+      parent.getChildren().add(new ExpressionTree(leaves.size() - 1));
       return this;
     }
 
@@ -1196,7 +997,7 @@ final class SearchArgumentImpl implements SearchArgument {
           new PredicateLeafImpl(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
               getType(box), column, box, null);
       leaves.add(leaf);
-      parent.children.add(new ExpressionTree(leaves.size() - 1));
+      parent.getChildren().add(new ExpressionTree(leaves.size() - 1));
       return this;
     }
 
@@ -1216,7 +1017,7 @@ final class SearchArgumentImpl implements SearchArgument {
           new PredicateLeafImpl(PredicateLeaf.Operator.IN,
               getType(argList.get(0)), column, null, argList);
       leaves.add(leaf);
-      parent.children.add(new ExpressionTree(leaves.size() - 1));
+      parent.getChildren().add(new ExpressionTree(leaves.size() - 1));
       return this;
     }
 
@@ -1227,7 +1028,7 @@ final class SearchArgumentImpl implements SearchArgument {
           new PredicateLeafImpl(PredicateLeaf.Operator.IS_NULL,
               PredicateLeaf.Type.STRING, column, null, null);
       leaves.add(leaf);
-      parent.children.add(new ExpressionTree(leaves.size() - 1));
+      parent.getChildren().add(new ExpressionTree(leaves.size() - 1));
       return this;
     }
 
@@ -1241,7 +1042,7 @@ final class SearchArgumentImpl implements SearchArgument {
           new PredicateLeafImpl(PredicateLeaf.Operator.BETWEEN,
               getType(argList.get(0)), column, null, argList);
       leaves.add(leaf);
-      parent.children.add(new ExpressionTree(leaves.size() - 1));
+      parent.getChildren().add(new ExpressionTree(leaves.size() - 1));
       return this;
     }
 

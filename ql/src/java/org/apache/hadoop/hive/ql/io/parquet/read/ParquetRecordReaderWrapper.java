@@ -24,7 +24,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.parquet.FilterPredicateLeafBuilder;
+import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
+import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -40,6 +45,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 
 import parquet.filter2.compat.FilterCompat;
 import parquet.filter2.compat.RowGroupFilter;
+import parquet.filter2.predicate.FilterApi;
 import parquet.filter2.predicate.FilterPredicate;
 import parquet.hadoop.ParquetFileReader;
 import parquet.hadoop.ParquetInputFormat;
@@ -140,9 +146,10 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       return null;
     }
 
-    FilterPredicate p =
-      SearchArgumentFactory.create(Utilities.deserializeExpression(serializedPushdown))
-        .toFilterPredicate();
+    SearchArgument sarg =
+        SearchArgumentFactory.create(Utilities.deserializeExpression
+            (serializedPushdown));
+    FilterPredicate p = toFilterPredicate(sarg);
     if (p != null) {
       LOG.debug("Predicate filter for parquet is " + p.toString());
       ParquetInputFormat.setFilterPredicate(conf, p);
@@ -301,4 +308,93 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
   public List<BlockMetaData> getFiltedBlocks() {
     return filtedBlocks;
   }
+
+  /**
+   * Translate the search argument to the filter predicate parquet used
+   * @return translate the sarg into a filter predicate
+   */
+  public static FilterPredicate toFilterPredicate(SearchArgument sarg) {
+    return translate(sarg.getExpression(),
+        sarg.getLeaves());
+  }
+
+  private static boolean isMultiLiteralsOperator(PredicateLeaf.Operator op) {
+    return (op == PredicateLeaf.Operator.IN) ||
+        (op == PredicateLeaf.Operator.BETWEEN);
+  }
+
+  private static FilterPredicate translate(ExpressionTree root,
+                                           List<PredicateLeaf> leafs){
+    FilterPredicate p = null;
+    switch (root.getOperator()) {
+      case OR:
+        for(ExpressionTree child: root.getChildren()) {
+          if (p == null) {
+            p = translate(child, leafs);
+          } else {
+            FilterPredicate right = translate(child, leafs);
+            // constant means no filter, ignore it when it is null
+            if(right != null){
+              p = FilterApi.or(p, right);
+            }
+          }
+        }
+        return p;
+      case AND:
+        for(ExpressionTree child: root.getChildren()) {
+          if (p == null) {
+            p = translate(child, leafs);
+          } else {
+            FilterPredicate right = translate(child, leafs);
+            // constant means no filter, ignore it when it is null
+            if(right != null){
+              p = FilterApi.and(p, right);
+            }
+          }
+        }
+        return p;
+      case NOT:
+        FilterPredicate op = translate(root.getChildren().get(0), leafs);
+        if (op != null) {
+          return FilterApi.not(op);
+        } else {
+          return null;
+        }
+      case LEAF:
+        return buildFilterPredicateFromPredicateLeaf(leafs.get(root.getLeaf()));
+      case CONSTANT:
+        return null;// no filter will be executed for constant
+      default:
+        throw new IllegalStateException("Unknown operator: " +
+            root.getOperator());
+    }
+  }
+
+  private static FilterPredicate buildFilterPredicateFromPredicateLeaf
+          (PredicateLeaf leaf) {
+    LeafFilterFactory leafFilterFactory = new LeafFilterFactory();
+    FilterPredicateLeafBuilder builder;
+    try {
+      builder = leafFilterFactory
+          .getLeafFilterBuilderByType(leaf.getType());
+      if (builder == null) {
+        return null;
+      }
+      if (isMultiLiteralsOperator(leaf.getOperator())) {
+        return builder.buildPredicate(leaf.getOperator(),
+            leaf.getLiteralList(PredicateLeaf.FileFormat.PARQUET),
+            leaf.getColumnName());
+      } else {
+        return builder
+            .buildPredict(leaf.getOperator(),
+                leaf.getLiteral(PredicateLeaf.FileFormat.PARQUET),
+                leaf.getColumnName());
+      }
+    } catch (Exception e) {
+      LOG.error("fail to build predicate filter leaf with errors" + e, e);
+      return null;
+    }
+  }
+
+
 }
