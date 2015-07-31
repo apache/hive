@@ -329,6 +329,105 @@ POSTHOOK: Input: default@union_all_bug_test_2
 0
 1
 0
+PREHOOK: query: explain
+
+SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (f1 = 1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+
+SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (f1 = 1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: union_all_bug_test_1
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (f1 = 1) (type: boolean)
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: 1 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Union
+                  Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: 1 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          TableScan
+            alias: union_all_bug_test_2
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (f1 = 1) (type: boolean)
+              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: 1 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Union
+                  Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: 1 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SELECT f1
 FROM (
 
@@ -370,4 +469,185 @@ POSTHOOK: Input: default@union_all_bug_test_1
 POSTHOOK: Input: default@union_all_bug_test_2
 #### A masked pattern was here ####
 1
+1
+PREHOOK: query: explain
+
+SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (filter = 1 and f1 = 1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+
+SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (filter = 1 and f1 = 1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: union_all_bug_test_1
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((if(true, f1, f2) = 1) and (f1 = 1)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: 1 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Union
+                  Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 1 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          TableScan
+            alias: union_all_bug_test_2
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: false (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Select Operator
+                expressions: 1 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Union
+                  Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 1 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (filter = 1 and f1 = 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_all_bug_test_1
+PREHOOK: Input: default@union_all_bug_test_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (filter = 1 and f1 = 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_all_bug_test_1
+POSTHOOK: Input: default@union_all_bug_test_2
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (f1 = 1 and filter = 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_all_bug_test_1
+PREHOOK: Input: default@union_all_bug_test_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (f1 = 1 and filter = 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_all_bug_test_1
+POSTHOOK: Input: default@union_all_bug_test_2
+#### A masked pattern was here ####
 1
