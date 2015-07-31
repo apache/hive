@@ -22,7 +22,7 @@ import static junit.framework.Assert.assertEquals;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
+import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -56,7 +56,7 @@ public class TestParquetRecordReaderWrapper {
         .end()
         .build();
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected =
       "and(and(and(not(eq(x, null)), not(and(lt(y, 20), not(lteq(y, 10))))), not(or(or(eq(z, 1), " +
         "eq(z, 2)), eq(z, 3)))), not(eq(a, Binary{\"stinger\"})))";
@@ -76,7 +76,7 @@ public class TestParquetRecordReaderWrapper {
             .end()
             .build();
     assertEquals("lteq(y, Binary{\"hi        \"})",
-        ParquetRecordReaderWrapper.toFilterPredicate(sarg).toString());
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg).toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -91,7 +91,7 @@ public class TestParquetRecordReaderWrapper {
         .end()
         .build();
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected =
         "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
         "not(eq(a, Binary{\"stinger\"})))";
@@ -111,7 +111,7 @@ public class TestParquetRecordReaderWrapper {
             .end()
             .build();
     assertEquals("lteq(y, Binary{\"hi        \"})",
-        ParquetRecordReaderWrapper.toFilterPredicate(sarg).toString());
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg).toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -126,7 +126,7 @@ public class TestParquetRecordReaderWrapper {
         .end()
         .build();
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected = "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
         "not(eq(a, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
@@ -146,7 +146,7 @@ public class TestParquetRecordReaderWrapper {
             .end()
             .build();
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected = "and(and(and(and(lt(x, 22), lt(x1, 22))," +
         " lteq(y, Binary{\"hi        \"})), eq(z, " +
         "0.22)), eq(z1, 0.22))";
