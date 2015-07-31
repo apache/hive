@@ -707,6 +707,7 @@
                   <include>org.apache.hive.shims:hive-shims-0.23</include>
                   <include>org.apache.hive.shims:hive-shims-0.23</include>
                   <include>org.apache.hive.shims:hive-shims-common</include>
+                  <include>org.apache.hive:hive-storage-api</include>
                   <include>com.googlecode.javaewah:JavaEWAH</include>
                   <include>javolution:javolution</include>
                   <include>com.google.protobuf:protobuf-java</include>
