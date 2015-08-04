@@ -203,7 +203,7 @@ public class LocalSparkJobStatus implements SparkJobStatus {
       }
     }
 
-    results.put("EexcutorDeserializeTime", executorDeserializeTime);
+    results.put("ExecutorDeserializeTime", executorDeserializeTime);
     results.put("ExecutorRunTime", executorRunTime);
     results.put("ResultSize", resultSize);
     results.put("JvmGCTime", jvmGCTime);
