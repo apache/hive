@@ -220,7 +220,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     Map<String, Long> results = new LinkedHashMap<String, Long>();
     Metrics allMetrics = metricsCollection.getAllMetrics();
 
-    results.put("EexcutorDeserializeTime", allMetrics.executorDeserializeTime);
+    results.put("ExecutorDeserializeTime", allMetrics.executorDeserializeTime);
     results.put("ExecutorRunTime", allMetrics.executorRunTime);
     results.put("ResultSize", allMetrics.resultSize);
     results.put("JvmGCTime", allMetrics.jvmGCTime);
