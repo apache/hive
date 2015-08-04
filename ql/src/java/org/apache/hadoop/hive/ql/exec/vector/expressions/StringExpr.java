@@ -46,6 +46,30 @@ public class StringExpr {
     return len1 - len2;
   }
 
+  /* Determine if two strings are equal from two byte arrays each
+   * with their own start position and length.
+   * Use lexicographic unsigned byte value order.
+   * This is what's used for UTF-8 sort order.
+   */
+  public static boolean equal(byte[] arg1, int start1, int len1, byte[] arg2, int start2, int len2) {
+    if (len1 != len2) {
+      return false;
+    }
+    for (int index1 = start1,
+             index2 = start2;
+         len1 > 0;
+         len1--,
+         index1++,
+         index2++) {
+      // Note the "& 0xff" is just a way to convert unsigned bytes to signed integer.
+      if ((arg1[index1] & 0xff) != (arg2[index2] & 0xff)) {
+        return false;
+      }
+
+    }
+    return true;
+  }
+
   public static int characterCount(byte[] bytes) {
     int end = bytes.length;
 
