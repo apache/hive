@@ -83,6 +83,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   Expression expr;
   Function function;  
   Converter converter;
+  Meta meta;
   Select select;
   Stmt stmt;
   Conn conn;  
@@ -482,7 +483,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       return query;
     }
     setSqlNoData();
-    trace(ctx, "Not executed - offline mode set");
+    info(ctx, "Not executed - offline mode set");
     return query;
   }
 
@@ -500,7 +501,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       exec.rowCount = query.getRowCount();
       return query;
     }
-    trace(ctx, "Not executed - offline mode set");
+    info(ctx, "Not executed - offline mode set");
     return new Query("");
   }  
   
@@ -671,14 +672,15 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     conf = new Conf();
     conf.init();    
-    conn = new Conn(this);   
+    conn = new Conn(this);
+    meta = new Meta();
     initOptions();
     
     expr = new Expression(this);
     select = new Select(this);
     stmt = new Stmt(this);
     converter = new Converter(this);
-    
+        
     function = new Function(this);
     new FunctionDatetime(this).register(function);
     new FunctionMisc(this).register(function);
@@ -948,15 +950,26 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitSelect_options_item(HplsqlParser.Select_options_itemContext ctx) { 
     return exec.select.option(ctx); 
   }
-    
+
+  /**
+   * Column name
+   */
+  @Override 
+  public Integer visitColumn_name(HplsqlParser.Column_nameContext ctx) {
+    stackPush(meta.normalizeIdentifierPart(ctx.getText()));
+    return 0; 
+  }
+  
   /**
    * Table name
    */
   @Override 
   public Integer visitTable_name(HplsqlParser.Table_nameContext ctx) {
-    String name = ctx.getText().toUpperCase(); 
-    String actualName = exec.managedTables.get(name);
-    String conn = exec.objectConnMap.get(name);
+    String name = ctx.getText();
+    String nameUp = name.toUpperCase();
+    String nameNorm = meta.normalizeIdentifier(name);
+    String actualName = exec.managedTables.get(nameUp);
+    String conn = exec.objectConnMap.get(nameUp);
     if (conn == null) {
       conn = conf.defaultConnection;
     }
@@ -965,12 +978,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       stackPush(actualName);
       return 0;
     }
-    actualName = exec.objectMap.get(name);
+    actualName = exec.objectMap.get(nameUp);
     if (actualName != null) {
       stackPush(actualName);
       return 0;
     }
-    stackPush(ctx.getText());
+    stackPush(nameNorm);
     return 0; 
   }
 
@@ -1161,6 +1174,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitCreate_table_options_hive_item(HplsqlParser.Create_table_options_hive_itemContext ctx) { 
     return exec.stmt.createTableHiveOptions(ctx); 
+  }
+  
+  @Override 
+  public Integer visitCreate_table_options_mssql_item(HplsqlParser.Create_table_options_mssql_itemContext ctx) { 
+    return 0; 
   }
   
   /**
@@ -2045,6 +2063,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
 
   public Conf getConf() {
     return exec.conf;
+  }
+  
+  public Meta getMeta() {
+    return exec.meta;
   }
   
   public boolean getTrace() {

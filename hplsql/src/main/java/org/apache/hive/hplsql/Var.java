@@ -152,6 +152,11 @@ public class Var {
 	  else if (type == Type.STRING) {
 	    cast(val.toString());
 	  }
+	  else if (type == Type.DECIMAL) {
+	    if (val.type == Type.BIGINT) {
+	      value = BigDecimal.valueOf(val.longValue());
+	    }
+	  }
 	  else if (type == Type.DATE) {
 	    value = Utils.toDate(val.toString());
     }
@@ -213,7 +218,8 @@ public class Var {
     if (type == java.sql.Types.CHAR || type == java.sql.Types.VARCHAR) {
       cast(new Var(rs.getString(idx)));
     }
-    else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT) {
+    else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT ||
+        type == java.sql.Types.SMALLINT || type == java.sql.Types.TINYINT) {
       cast(new Var(new Long(rs.getLong(idx))));
     }
     else if (type == java.sql.Types.DECIMAL || type == java.sql.Types.NUMERIC) {
@@ -242,8 +248,9 @@ public class Var {
   public static Type defineType(String type) {
     if (type == null) {
       return Type.NULL;
-    }    
-    else if (type.equalsIgnoreCase("INT") || type.equalsIgnoreCase("INTEGER")) {
+    }
+    else if (type.equalsIgnoreCase("INT") || type.equalsIgnoreCase("INTEGER") || type.equalsIgnoreCase("BIGINT") ||
+      type.equalsIgnoreCase("SMALLINT") || type.equalsIgnoreCase("TINYINT")) {
       return Type.BIGINT;
     }
     else if (type.equalsIgnoreCase("CHAR") || type.equalsIgnoreCase("VARCHAR") || type.equalsIgnoreCase("STRING")) {
@@ -369,6 +376,16 @@ public class Var {
 	  }
 	  return -1;
 	}
+	
+	/**
+   * Return a long integer value
+   */
+  public long longValue() {
+    if (type == Type.BIGINT) {
+      return ((Long)value).longValue();
+    }
+    return -1;
+  }
 	
 	/**
 	 * Return true/false for BOOL type

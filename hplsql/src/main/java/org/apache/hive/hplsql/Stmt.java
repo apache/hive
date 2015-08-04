@@ -37,6 +37,7 @@ public class Stmt {
   Exec exec = null;
   Stack<Var> stack = null;
   Conf conf;
+  Meta meta;
   
   boolean trace = false; 
   
@@ -44,6 +45,7 @@ public class Stmt {
     exec = e;  
     stack = exec.getStack();
     conf = exec.getConf();
+    meta = exec.getMeta();
     trace = exec.getTrace();
   }
   
@@ -128,7 +130,8 @@ public class Stmt {
   public Integer createTable(HplsqlParser.Create_table_stmtContext ctx) { 
     trace(ctx, "CREATE TABLE");
     StringBuilder sql = new StringBuilder();
-    sql.append(exec.getText(ctx, ctx.T_CREATE().getSymbol(), ctx.T_OPEN_P().getSymbol()));
+    sql.append(exec.getText(ctx, ctx.T_CREATE().getSymbol(), ctx.T_TABLE().getSymbol()));
+    sql.append(" " + evalPop(ctx.table_name()) + " (");
     int cnt = ctx.create_table_columns().create_table_columns_item().size();
     int cols = 0;
     for (int i = 0; i < cnt; i++) {
@@ -139,14 +142,17 @@ public class Stmt {
       if (cols > 0) {
         sql.append(",\n");
       }
-      sql.append(col.ident().getText());
+      sql.append(evalPop(col.column_name()));
       sql.append(" ");
       sql.append(exec.evalPop(col.dtype(), col.dtype_len()));
       cols++;
     }
     sql.append("\n)");
     if (ctx.create_table_options() != null) {
-      sql.append(" " + evalPop(ctx.create_table_options()).toString());
+      String opt = evalPop(ctx.create_table_options()).toString();
+      if (opt != null) {
+        sql.append(" " + opt);
+      }
     }
     trace(ctx, sql.toString());
     Query query = exec.executeSql(ctx, sql.toString(), exec.conf.defaultConnection);
@@ -653,7 +659,7 @@ public class Stmt {
    */
   public Integer use(HplsqlParser.Use_stmtContext ctx) {
     trace(ctx, "USE");
-    return use(ctx, ctx.T_USE().toString() + " " + evalPop(ctx.expr()).toString());
+    return use(ctx, ctx.T_USE().toString() + " " + meta.normalizeIdentifierPart(evalPop(ctx.expr()).toString()));
   }
   
   public Integer use(ParserRuleContext ctx, String sql) {
@@ -791,24 +797,25 @@ public class Stmt {
   }  
   
   /**
-   * EXEC, EXECUTE and EXECUTE IMMEDIATE statement to execute dynamic SQL
+   * EXEC, EXECUTE and EXECUTE IMMEDIATE statement to execute dynamic SQL or stored procedure
    */
   public Integer exec(HplsqlParser.Exec_stmtContext ctx) { 
-    if(trace) {
-      trace(ctx, "EXECUTE");
+    if (execProc(ctx)) {
+      return 0;
     }
+    trace(ctx, "EXECUTE");
     Var vsql = evalPop(ctx.expr());
     String sql = vsql.toString();
-    if(trace) {
-      trace(ctx, "Query: " + sql);
+    if (trace) {
+      trace(ctx, "SQL statement: " + sql);
     }
     Query query = exec.executeSql(ctx, sql, exec.conf.defaultConnection);
-    if(query.error()) {
+    if (query.error()) {
       exec.signal(query);
       return 1;
     }
     ResultSet rs = query.getResultSet();
-    if(rs != null) {
+    if (rs != null) {
       try {
         ResultSetMetaData rsm = rs.getMetaData();
         // Assign to variables
@@ -851,6 +858,16 @@ public class Stmt {
     }   
     exec.closeQuery(query, exec.conf.defaultConnection);
     return 0; 
+  }
+  
+  /**
+   * EXEC to execute a stored procedure
+   */
+  public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
+    if (exec.function.execProc(ctx.expr_func_params(), evalPop(ctx.expr()).toString())) {
+      return true;
+    }
+    return false;
   }
       
   /**
@@ -978,7 +995,7 @@ public class Stmt {
    */
   public Integer setCurrentSchema(HplsqlParser.Set_current_schema_optionContext ctx) { 
     trace(ctx, "SET CURRENT SCHEMA");
-    return use(ctx, "USE " + evalPop(ctx.expr()).toString());
+    return use(ctx, "USE " + meta.normalizeIdentifierPart(evalPop(ctx.expr()).toString()));
   }
   
   /**

@@ -50,10 +50,10 @@ public class FunctionString extends Function {
    */
   void concat(HplsqlParser.Expr_func_paramsContext ctx) {
     StringBuilder val = new StringBuilder();
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     boolean nulls = true;
     for (int i = 0; i < cnt; i++) {
-      Var c = evalPop(ctx.expr(i));
+      Var c = evalPop(ctx.func_param(i).expr());
       if (!c.isNull()) {
         val.append(c.toString());
         nulls = false;
@@ -71,12 +71,12 @@ public class FunctionString extends Function {
    * CHAR function
    */
   void char_(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     if (cnt != 1) {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.expr(0)).toString(); 
+    String str = evalPop(ctx.func_param(0).expr()).toString(); 
     evalString(str);
   }
   
@@ -84,12 +84,12 @@ public class FunctionString extends Function {
    * INSTR function
    */
   void instr(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     if (cnt < 2) {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.expr(0)).toString();
+    String str = evalPop(ctx.func_param(0).expr()).toString();
     if (str == null) {
       evalNull();
       return;
@@ -98,18 +98,18 @@ public class FunctionString extends Function {
       evalInt(new Long(0));
       return;
     }
-    String substr = evalPop(ctx.expr(1)).toString();
+    String substr = evalPop(ctx.func_param(1).expr()).toString();
     int pos = 1;
     int occur = 1;
     int idx = 0;
     if (cnt >= 3) {
-      pos = evalPop(ctx.expr(2)).intValue();
+      pos = evalPop(ctx.func_param(2).expr()).intValue();
       if (pos == 0) {
         pos = 1;
       }
     }
     if (cnt >= 4) {
-      occur = evalPop(ctx.expr(3)).intValue();
+      occur = evalPop(ctx.func_param(3).expr()).intValue();
       if (occur < 0) {
         occur = 1;
       }
@@ -145,11 +145,11 @@ public class FunctionString extends Function {
    * LEN function (excluding trailing spaces)
    */
   void len(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() != 1) {
+    if (ctx.func_param().size() != 1) {
       evalNull();
       return;
     }
-    int len = evalPop(ctx.expr(0)).toString().trim().length(); 
+    int len = evalPop(ctx.func_param(0).expr()).toString().trim().length(); 
     evalInt(new Long(len));
   }
   
@@ -157,11 +157,11 @@ public class FunctionString extends Function {
    * LENGTH function
    */
   void length(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() != 1) {
+    if (ctx.func_param().size() != 1) {
       evalNull();
       return;
     }
-    int len = evalPop(ctx.expr(0)).toString().length(); 
+    int len = evalPop(ctx.func_param(0).expr()).toString().length(); 
     evalInt(new Long(len));
   }
   
@@ -169,11 +169,11 @@ public class FunctionString extends Function {
    * LOWER function
    */
   void lower(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() != 1) {
+    if (ctx.func_param().size() != 1) {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.expr(0)).toString().toLowerCase(); 
+    String str = evalPop(ctx.func_param(0).expr()).toString().toLowerCase(); 
     evalString(str);
   }
   
@@ -181,19 +181,19 @@ public class FunctionString extends Function {
    * SUBSTR and SUBSTRING function
    */
   void substr(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     if (cnt < 2) {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.expr(0)).toString(); 
-    int start = evalPop(ctx.expr(1)).intValue();
+    String str = evalPop(ctx.func_param(0).expr()).toString(); 
+    int start = evalPop(ctx.func_param(1).expr()).intValue();
     int len = -1;
     if (start == 0) {
       start = 1; 
     }
     if (cnt > 2) {
-      len = evalPop(ctx.expr(2)).intValue();
+      len = evalPop(ctx.func_param(2).expr()).intValue();
     }
     substr(str, start, len);
   }
@@ -253,12 +253,12 @@ public class FunctionString extends Function {
    * TO_CHAR function
    */
   void toChar(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     if (cnt != 1) {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.expr(0)).toString(); 
+    String str = evalPop(ctx.func_param(0).expr()).toString(); 
     evalString(str);
   }
   
@@ -266,11 +266,11 @@ public class FunctionString extends Function {
    * UPPER function
    */
   void upper(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() != 1) {
+    if (ctx.func_param().size() != 1) {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.expr(0)).toString().toUpperCase(); 
+    String str = evalPop(ctx.func_param(0).expr()).toString().toUpperCase(); 
     evalString(str);
   }
 }

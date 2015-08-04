@@ -132,6 +132,11 @@ public class TestHplsqlLocal {
   public void testException() throws Exception {
     run("exception");
   }
+  
+  @Test
+  public void testExceptionDivideByZero() throws Exception {
+    run("exception_divide_by_zero");
+  }
 
   @Test
   public void testExit() throws Exception {
