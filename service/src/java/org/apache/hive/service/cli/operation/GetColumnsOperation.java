@@ -30,10 +30,12 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.TableIterable;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.ColumnDescriptor;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -153,11 +155,15 @@ public class GetColumnsOperation extends MetadataOperation {
         authorizeMetaGets(HiveOperationType.GET_COLUMNS, privObjs, cmdStr);
       }
 
+      int maxBatchSize = SessionState.get().getConf().getIntVar(ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
       for (Entry<String, List<String>> dbTabs : db2Tabs.entrySet()) {
         String dbName = dbTabs.getKey();
         List<String> tableNames = dbTabs.getValue();
-        for (Table table : metastoreClient.getTableObjectsByName(dbName, tableNames)) {
-          TableSchema schema = new TableSchema(metastoreClient.getSchema(dbName, table.getTableName()));
+
+        for (Table table : new TableIterable(metastoreClient, dbName, tableNames, maxBatchSize)) {
+
+          TableSchema schema = new TableSchema(metastoreClient.getSchema(dbName,
+              table.getTableName()));
           for (ColumnDescriptor column : schema.getColumnDescriptors()) {
             if (columnPattern != null && !columnPattern.matcher(column.getName()).matches()) {
               continue;
