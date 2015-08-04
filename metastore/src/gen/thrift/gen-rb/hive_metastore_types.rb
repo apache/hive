@@ -2231,6 +2231,22 @@ class FireEventResponse
   ::Thrift::Struct.generate_accessors self
 end
 
+class GetAllFunctionsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FUNCTIONS = 1
+
+  FIELDS = {
+    FUNCTIONS => {:type => ::Thrift::Types::LIST, :name => 'functions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Function}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class MetaException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)

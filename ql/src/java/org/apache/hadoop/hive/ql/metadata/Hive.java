@@ -171,17 +171,16 @@ public class Hive {
 
   public static void reloadFunctions() throws HiveException {
     Hive db = Hive.get();
-    for (String dbName : db.getAllDatabases()) {
-      for (String functionName : db.getFunctions(dbName, "*")) {
-        Function function = db.getFunction(dbName, functionName);
-        try {
-	  FunctionRegistry.registerPermanentFunction(
-	      FunctionUtils.qualifyFunctionName(functionName, dbName), function.getClassName(),
-	      false, FunctionTask.toFunctionResource(function.getResourceUris()));
-        } catch (Exception e) {
-          LOG.warn("Failed to register persistent function " +
-              functionName + ":" + function.getClassName() + ". Ignore and continue.");
-        }
+    for (Function function : db.getAllFunctions()) {
+      String functionName = function.getFunctionName();
+      try {
+        LOG.info("Registering function " + functionName + " " + function.getClassName());
+        FunctionRegistry.registerPermanentFunction(
+                FunctionUtils.qualifyFunctionName(functionName, function.getDbName()), function.getClassName(),
+                false, FunctionTask.toFunctionResource(function.getResourceUris()));
+      } catch (Exception e) {
+        LOG.warn("Failed to register persistent function " +
+                functionName + ":" + function.getClassName() + ". Ignore and continue.");
       }
     }
   }
@@ -3240,6 +3239,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public Function getFunction(String dbName, String funcName) throws HiveException {
     try {
       return getMSC().getFunction(dbName, funcName);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public List<Function> getAllFunctions() throws HiveException {
+    try {
+      List<Function> functions = getMSC().getAllFunctions().getFunctions();
+      return functions == null ? new ArrayList<Function>() : functions;
     } catch (TException te) {
       throw new HiveException(te);
     }
