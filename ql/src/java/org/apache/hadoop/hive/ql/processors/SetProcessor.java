@@ -168,6 +168,10 @@ public class SetProcessor implements CommandProcessor {
       }
     }
     conf.verifyAndSet(key, value);
+    if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)
+        && !"spark".equals(value)) {
+      SessionState.get().closeSparkSession();
+    }
     if (register) {
       SessionState.get().getOverriddenConfigurations().put(key, value);
     }

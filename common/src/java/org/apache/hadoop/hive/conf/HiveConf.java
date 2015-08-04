@@ -2563,6 +2563,7 @@ public class HiveConf extends Configuration {
     super(other);
     hiveJar = other.hiveJar;
     auxJars = other.auxJars;
+    isSparkConfigUpdated = other.isSparkConfigUpdated;
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
   }

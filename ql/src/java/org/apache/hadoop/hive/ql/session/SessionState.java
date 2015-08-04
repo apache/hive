@@ -739,7 +739,7 @@ public class SessionState {
         getAuthorizer() : getAuthorizerV2();
   }
 
-  public Class getAuthorizerInterface() {
+  public Class<?> getAuthorizerInterface() {
     return getAuthorizationMode() == AuthorizationMode.V1 ?
         HiveAuthorizationProvider.class : HiveAuthorizer.class;
   }
@@ -1351,6 +1351,12 @@ public class SessionState {
       tezSessionState = null;
     }
 
+    closeSparkSession();
+    registry.closeCUDFLoaders();
+    dropSessionPaths(conf);
+  }
+
+  public void closeSparkSession() {
     if (sparkSession != null) {
       try {
         SparkSessionManagerImpl.getInstance().closeSession(sparkSession);
@@ -1360,8 +1366,6 @@ public class SessionState {
         sparkSession = null;
       }
     }
-    registry.closeCUDFLoaders();
-    dropSessionPaths(conf);
   }
 
   public AuthorizationMode getAuthorizationMode(){
