@@ -121,6 +121,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void alter_function(string dbName, string funcName, Function newFunc)')
   print('   get_functions(string dbName, string pattern)')
   print('  Function get_function(string dbName, string funcName)')
+  print('  GetAllFunctionsResponse get_all_functions()')
   print('  bool create_role(Role role)')
   print('  bool drop_role(string role_name)')
   print('   get_role_names()')
@@ -165,8 +166,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void setOption(string key, string value)')
   print('  string getOption(string key)')
   print('   getOptions()')
-  print('  string getCpuProfile(i32 profileDurationInSec)')
   print('  i64 aliveSince()')
+  print('  reflection_limited.Service getLimitedReflection()')
   print('  void reinitialize()')
   print('  void shutdown()')
   print('')
@@ -807,6 +808,12 @@ elif cmd == 'get_function':
     sys.exit(1)
   pp.pprint(client.get_function(args[0],args[1],))
 
+elif cmd == 'get_all_functions':
+  if len(args) != 0:
+    print('get_all_functions requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.get_all_functions())
+
 elif cmd == 'create_role':
   if len(args) != 1:
     print('create_role requires 1 args')
@@ -1071,17 +1078,17 @@ elif cmd == 'getOptions':
     sys.exit(1)
   pp.pprint(client.getOptions())
 
-elif cmd == 'getCpuProfile':
-  if len(args) != 1:
-    print('getCpuProfile requires 1 args')
-    sys.exit(1)
-  pp.pprint(client.getCpuProfile(eval(args[0]),))
-
 elif cmd == 'aliveSince':
   if len(args) != 0:
     print('aliveSince requires 0 args')
     sys.exit(1)
   pp.pprint(client.aliveSince())
+
+elif cmd == 'getLimitedReflection':
+  if len(args) != 0:
+    print('getLimitedReflection requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.getLimitedReflection())
 
 elif cmd == 'reinitialize':
   if len(args) != 0:

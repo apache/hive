@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
@@ -5533,6 +5534,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       return funcNames;
+    }
+
+    @Override
+    public GetAllFunctionsResponse get_all_functions()
+            throws MetaException {
+      GetAllFunctionsResponse response = new GetAllFunctionsResponse();
+      startFunction("get_all_functions");
+      RawStore ms = getMS();
+      List<Function> allFunctions = null;
+      Exception ex = null;
+      try {
+        allFunctions = ms.getAllFunctions();
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_all_functions", allFunctions != null, ex);
+      }
+      response.setFunctions(allFunctions);
+      return response;
     }
 
     @Override

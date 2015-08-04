@@ -715,6 +715,9 @@ struct FireEventResponse {
 }
     
 
+struct GetAllFunctionsResponse {
+  1: optional list<Function> functions
+}
 
 exception MetaException {
   1: string message
@@ -1113,6 +1116,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws (1:MetaException o1)
   Function get_function(1:string dbName, 2:string funcName)
       throws (1:MetaException o1, 2:NoSuchObjectException o2)
+
+  GetAllFunctionsResponse get_all_functions() throws (1:MetaException o1)
 
   //authorization privileges
 
