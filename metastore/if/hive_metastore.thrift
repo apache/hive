@@ -664,6 +664,32 @@ struct CurrentNotificationEventId {
     1: required i64 eventId,
 }
 
+struct InsertEventRequestData {
+    1: required list<string> filesAdded
+}
+
+union FireEventRequestData {
+    1: InsertEventRequestData insertData
+}
+
+struct FireEventRequest {
+    1: required bool successful,
+    2: required FireEventRequestData data
+    // dbname, tablename, and partition vals are included as optional in the top level event rather than placed in each type of
+    // subevent as I assume they'll be used across most event types.
+    3: optional string dbName,
+    4: optional string tableName,
+    5: optional list<string> partitionVals,
+}
+
+struct FireEventResponse {
+    // NOP for now, this is just a place holder for future responses
+}
+    
+
+struct GetAllFunctionsResponse {
+  1: optional list<Function> functions
+}
 
 exception MetaException {
   1: string message
@@ -1062,6 +1088,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws (1:MetaException o1)
   Function get_function(1:string dbName, 2:string funcName)
       throws (1:MetaException o1, 2:NoSuchObjectException o2)
+
+  GetAllFunctionsResponse get_all_functions() throws (1:MetaException o1)
 
   //authorization privileges
 

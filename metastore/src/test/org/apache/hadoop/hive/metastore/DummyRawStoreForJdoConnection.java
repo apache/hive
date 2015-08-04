@@ -733,6 +733,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<Function> getAllFunctions()
+          throws MetaException {
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<String> getFunctions(String dbName, String pattern)
       throws MetaException {
     return Collections.emptyList();

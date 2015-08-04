@@ -89,6 +89,8 @@ serdeConstants::serdeConstants() {
 
   LIST_COLUMN_TYPES = "columns.types";
 
+  TIMESTAMP_FORMATS = "timestamp.formats";
+
   PrimitiveTypes.insert("void");
   PrimitiveTypes.insert("boolean");
   PrimitiveTypes.insert("tinyint");
