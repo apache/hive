@@ -146,7 +146,7 @@ public final class ParseUtils {
 
   static int getIndex(String[] list, String elem) {
     for(int i=0; i < list.length; i++) {
-      if (list[i].toLowerCase().equals(elem)) {
+      if (list[i] != null && list[i].toLowerCase().equals(elem)) {
         return i;
       }
     }
