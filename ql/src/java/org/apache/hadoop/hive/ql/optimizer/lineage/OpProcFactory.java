@@ -121,7 +121,7 @@ public class OpProcFactory {
       }
 
       dep.setType(new_type);
-      dep.setBaseCols(new ArrayList<BaseColumnInfo>(col_set));
+      dep.setBaseCols(col_set);
 
       boolean isScript = op instanceof ScriptOperator;
 
@@ -187,7 +187,7 @@ public class OpProcFactory {
 
         // Populate the dependency
         dep.setType(LineageInfo.DependencyType.SIMPLE);
-        dep.setBaseCols(new ArrayList<BaseColumnInfo>());
+        dep.setBaseCols(new LinkedHashSet<BaseColumnInfo>());
         dep.getBaseCols().add(bci);
 
         // Put the dependency in the map
@@ -397,7 +397,7 @@ public class OpProcFactory {
       }
       if (op == null || (op.getChildOperators().isEmpty()
           && op instanceof FileSinkOperator)) {
-        lctx.getIndex().setFinalSelectOp(sop);
+        lctx.getIndex().addFinalSelectOp(sop, op);
       }
 
       return null;
@@ -451,7 +451,7 @@ public class OpProcFactory {
             new_type = LineageCtx.getNewDependencyType(expr_dep.getType(), new_type);
             bci_set.addAll(expr_dep.getBaseCols());
             if (expr_dep.getType() == LineageInfo.DependencyType.SIMPLE) {
-              BaseColumnInfo col = expr_dep.getBaseCols().get(0);
+              BaseColumnInfo col = expr_dep.getBaseCols().iterator().next();
               Table t = col.getTabAlias().getTable();
               if (t != null) {
                 sb.append(t.getDbName()).append(".").append(t.getTableName()).append(".");
@@ -515,7 +515,7 @@ public class OpProcFactory {
           }
         }
 
-        dep.setBaseCols(new ArrayList<BaseColumnInfo>(bci_set));
+        dep.setBaseCols(bci_set);
         dep.setType(new_type);
         lctx.getIndex().putDependency(gop, col_infos.get(cnt++), dep);
       }

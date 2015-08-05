@@ -440,8 +440,11 @@ public class Driver implements CommandProcessor {
       // to avoid returning sensitive data
       String queryStr = HookUtils.redactLogString(conf, command);
 
+      // get the output schema
+      schema = getSchema(sem, conf);
+
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-        SessionState.get().getCommandType(), getSchema(sem, conf));
+        SessionState.get().getCommandType(), schema);
 
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
@@ -452,9 +455,6 @@ public class Driver implements CommandProcessor {
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(conf, plan, null);
       }
-
-      // get the output schema
-      schema = getSchema(sem, conf);
 
       //do the authorization check
       if (!sem.skipAuthorization() &&
