@@ -1,5 +1,20 @@
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.LineageLogger;
 
+drop table if exists d1;
+create table d1(a int);
+
+from (select a.ctinyint x, b.cstring1 y
+from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t
+insert into table d1 select x + length(y);
+
+drop table if exists d2;
+create table d2(b varchar(128));
+
+from (select a.ctinyint x, b.cstring1 y
+from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t
+insert into table d1 select x where y is null
+insert into table d2 select y where x > 0;
+
 drop table if exists t;
 create table t as
 select * from
