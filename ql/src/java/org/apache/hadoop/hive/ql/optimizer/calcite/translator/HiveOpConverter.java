@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,7 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -93,6 +95,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -513,7 +516,14 @@ public class HiveOpConverter {
     ArrayList<ColumnInfo> cinfoLst = createColInfos(inputs[0].inputs.get(0));
     Operator<?>[] children = new Operator<?>[inputs.length];
     for (int i = 0; i < children.length; i++) {
-      children[i] = inputs[i].inputs.get(0);
+      if (i == 0) {
+        children[i] = inputs[i].inputs.get(0);
+      } else {
+        Operator<?> op = inputs[i].inputs.get(0);
+        // We need to check if the other input branches for union is following the first branch
+        // We may need to cast the data types for specific columns.
+        children[i] = genInputSelectForUnion(op, cinfoLst);
+      }
     }
     Operator<? extends OperatorDesc> unionOp = OperatorFactory.getAndMakeChild(unionDesc,
         new RowSchema(cinfoLst), children);
@@ -986,5 +996,37 @@ public class HiveOpConverter {
     }
 
     return new Pair<ArrayList<ColumnInfo>, Set<Integer>>(colInfos, newVColSet);
+  }
+
+  private Operator<? extends OperatorDesc> genInputSelectForUnion(
+      Operator<? extends OperatorDesc> origInputOp, ArrayList<ColumnInfo> uColumnInfo)
+      throws SemanticException {
+    Iterator<ColumnInfo> oIter = origInputOp.getSchema().getSignature().iterator();
+    Iterator<ColumnInfo> uIter = uColumnInfo.iterator();
+    List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
+    List<String> colName = new ArrayList<String>();
+    Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
+    boolean needSelectOp = false;
+    while (oIter.hasNext()) {
+      ColumnInfo oInfo = oIter.next();
+      ColumnInfo uInfo = uIter.next();
+      if (!oInfo.isSameColumnForRR(uInfo)) {
+        needSelectOp = true;
+      }
+      ExprNodeDesc column = new ExprNodeColumnDesc(oInfo.getType(), oInfo.getInternalName(),
+          oInfo.getTabAlias(), oInfo.getIsVirtualCol(), oInfo.isSkewedCol());
+      if (!oInfo.getType().equals(uInfo.getType())) {
+        column = ParseUtils.createConversionCast(column, (PrimitiveTypeInfo) uInfo.getType());
+      }
+      columns.add(column);
+      colName.add(uInfo.getInternalName());
+      columnExprMap.put(uInfo.getInternalName(), column);
+    }
+    if (needSelectOp) {
+      return OperatorFactory.getAndMakeChild(new SelectDesc(columns, colName), new RowSchema(
+          uColumnInfo), columnExprMap, origInputOp);
+    } else {
+      return origInputOp;
+    }
   }
 }
