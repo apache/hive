@@ -410,7 +410,7 @@ public class Driver implements CommandProcessor {
               HiveSemanticAnalyzerHook.class);
 
       // Do semantic analysis and plan generation
-      if (saHooks != null) {
+      if (saHooks != null && !saHooks.isEmpty()) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
         hookCtx.setConf(conf);
         hookCtx.setUserName(userName);
