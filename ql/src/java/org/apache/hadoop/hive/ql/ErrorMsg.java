@@ -385,14 +385,14 @@ public enum ErrorMsg {
       "set hive.txn.manager"),
   TXNMGR_NOT_INSTANTIATED(10261, "Transaction manager could not be " +
       "instantiated, check hive.txn.manager"),
-  TXN_NO_SUCH_TRANSACTION(10262, "No record of transaction could be found, " +
-      "may have timed out"),
-  TXN_ABORTED(10263, "Transaction manager has aborted the transaction."),
+  TXN_NO_SUCH_TRANSACTION(10262, "No record of transaction {0} could be found, " +
+      "may have timed out", true),
+  TXN_ABORTED(10263, "Transaction manager has aborted the transaction {0}.", true),
   DBTXNMGR_REQUIRES_CONCURRENCY(10264,
       "To use DbTxnManager you must set hive.support.concurrency=true"),
 
-  LOCK_NO_SUCH_LOCK(10270, "No record of lock could be found, " +
-      "may have timed out"),
+  LOCK_NO_SUCH_LOCK(10270, "No record of lock {0} could be found, " +
+      "may have timed out", true),
   LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
       "support explicit lock requests.  Transaction manager:  "),
 
