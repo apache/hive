@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkBucketMapJoinContext;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -62,6 +63,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   private MapJoinOperator joinOp;
   private MapJoinDesc desc;
 
+  private boolean useFastContainer = false;
+
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext, Configuration hconf,
       MapJoinOperator joinOp) {
@@ -69,6 +72,12 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     this.hconf = hconf;
     this.joinOp = joinOp;
     this.desc = joinOp.getConf();
+    if (desc.getVectorMode() && HiveConf.getBoolVar(
+        hconf, HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED)) {
+      VectorMapJoinDesc vectorDesc = desc.getVectorDesc();
+      useFastContainer = vectorDesc != null && vectorDesc.hashTableImplementationType() ==
+          VectorMapJoinDesc.HashTableImplementationType.FAST;
+    }
   }
 
   @Override
@@ -98,7 +107,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       FileSystem fs = FileSystem.get(baseDir.toUri(), hconf);
       BucketMapJoinContext mapJoinCtx = localWork.getBucketMapjoinContext();
       boolean firstContainer = true;
-      boolean useOptimizedContainer = HiveConf.getBoolVar(
+      boolean useOptimizedContainer = !useFastContainer && HiveConf.getBoolVar(
           hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
       for (int pos = 0; pos < mapJoinTables.length; pos++) {
         if (pos == desc.getPosBigTable() || mapJoinTables[pos] != null) {
@@ -146,14 +155,17 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       MapJoinTableContainerSerDe mapJoinTableSerde) throws HiveException {
     LOG.info("\tLoad back all hashtable files from tmp folder uri:" + path);
     if (!SparkUtilities.isDedicatedCluster(hconf)) {
-      return mapJoinTableSerde.load(fs, path, hconf);
+      return useFastContainer ? mapJoinTableSerde.loadFastContainer(desc, fs, path, hconf) :
+          mapJoinTableSerde.load(fs, path, hconf);
     }
     MapJoinTableContainer mapJoinTable = SmallTableCache.get(path);
     if (mapJoinTable == null) {
       synchronized (path.toString().intern()) {
         mapJoinTable = SmallTableCache.get(path);
         if (mapJoinTable == null) {
-          mapJoinTable = mapJoinTableSerde.load(fs, path, hconf);
+          mapJoinTable = useFastContainer ?
+              mapJoinTableSerde.loadFastContainer(desc, fs, path, hconf) :
+              mapJoinTableSerde.load(fs, path, hconf);
           SmallTableCache.cache(path, mapJoinTable);
         }
       }

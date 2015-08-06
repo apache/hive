@@ -162,6 +162,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private PhysicalContext physicalContext = null;
   private HiveConf hiveConf;
+  private boolean isSpark;
 
   public Vectorizer() {
 
@@ -889,6 +890,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Vectorization is disabled");
       return physicalContext;
     }
+    isSpark = (HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark"));
     // create dispatcher and graph walker
     Dispatcher disp = new VectorizationDispatcher(physicalContext);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
@@ -1493,8 +1495,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     Operator<? extends OperatorDesc> vectorOp = null;
     Class<? extends Operator<?>> opClass = null;
 
-    boolean isOuterJoin = !desc.getNoOuterJoin();
-
     VectorMapJoinDesc.HashTableImplementationType hashTableImplementationType = HashTableImplementationType.NONE;
     VectorMapJoinDesc.HashTableKind hashTableKind = HashTableKind.NONE;
     VectorMapJoinDesc.HashTableKeyType hashTableKeyType = HashTableKeyType.NONE;
@@ -1715,7 +1715,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case MAPJOIN:
         {
           MapJoinDesc desc = (MapJoinDesc) op.getConf();
-          boolean specialize = canSpecializeMapJoin(op, desc, isTez);
+          boolean specialize = canSpecializeMapJoin(op, desc, isTez || isSpark);
 
           if (!specialize) {
 

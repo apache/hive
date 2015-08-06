@@ -536,7 +536,9 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
       break;
     case FAST:
       // Use our specialized hash table loader.
-      hashTableLoader = new VectorMapJoinFastHashTableLoader();
+      hashTableLoader = HiveConf.getVar(
+          hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark") ?
+          HashTableLoaderFactory.getLoader(hconf) : new VectorMapJoinFastHashTableLoader();
       break;
     default:
       throw new RuntimeException("Unknown vector map join hash table implementation type " + hashTableImplementationType.name());
