@@ -80,4 +80,8 @@ public class KryoSerializer {
     return conf;
   }
 
+  public static void setClassLoader(ClassLoader classLoader) {
+    Utilities.sparkSerializationKryo.get().setClassLoader(classLoader);
+  }
+
 }

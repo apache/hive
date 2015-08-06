@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
@@ -31,8 +32,12 @@ import org.apache.hadoop.hive.ql.lib.Node;
  */
 public class ASTNode extends CommonTree implements Node,Serializable {
   private static final long serialVersionUID = 1L;
-
+  private transient StringBuffer astStr;
   private transient ASTNodeOrigin origin;
+  private transient int startIndx = -1;
+  private transient int endIndx = -1;
+  private transient ASTNode rootNode;
+  private transient boolean isValidASTStr;
 
   public ASTNode() {
   }
@@ -81,6 +86,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    *
    * @see org.apache.hadoop.hive.ql.lib.Node#getName()
    */
+  @Override
   public String getName() {
     return (Integer.valueOf(super.getToken().getType())).toString();
   }
@@ -125,5 +131,136 @@ public class ASTNode extends CommonTree implements Node,Serializable {
       }
     }
     return sb;
+  }
+
+  private ASTNode getRootNodeWithValidASTStr (boolean useMemoizedRoot) {
+    if (useMemoizedRoot && rootNode != null && rootNode.parent == null &&
+        rootNode.hasValidMemoizedString()) {
+      return rootNode;
+    }
+    ASTNode retNode = this;
+    while (retNode.parent != null) {
+      retNode = (ASTNode) retNode.parent;
+    }
+    rootNode=retNode;
+    rootNode.astStr = new StringBuffer();
+    rootNode.toStringTree(rootNode);
+    rootNode.isValidASTStr = true;
+    return retNode;
+  }
+
+  private boolean hasValidMemoizedString() {
+    return isValidASTStr && astStr != null;
+  }
+
+  private void resetRootInformation() {
+    // Reset the previously stored rootNode string
+    if (rootNode != null) {
+      rootNode.astStr = null;
+      rootNode.isValidASTStr = false;
+    }
+    // The root might have changed because of tree modifications.
+    // Compute the new root for this tree and set the astStr.
+    getRootNodeWithValidASTStr(false);
+  }
+
+  private int getMemoizedStringLen() {
+    return astStr == null ? 0 : astStr.length();
+  }
+
+  private String getMemoizedSubString(int start, int end) {
+    return  (astStr == null || start < 0 || end > astStr.length() || start >= end) ? null :
+      astStr.subSequence(start, end).toString();
+  }
+
+  private void addtoMemoizedString(String string) {
+    if (astStr == null) {
+      astStr = new StringBuffer();
+    }
+    astStr.append(string);
+  }
+
+  @Override
+  public void setParent(Tree t) {
+    super.setParent(t);
+    resetRootInformation();
+  }
+
+  @Override
+  public void addChild(Tree t) {
+    super.addChild(t);
+    resetRootInformation();
+  }
+
+  @Override
+  public void addChildren(List kids) {
+    super.addChildren(kids);
+    resetRootInformation();
+  }
+
+  @Override
+  public void setChild(int i, Tree t) {
+    super.setChild(i, t);
+    resetRootInformation();
+  }
+
+  @Override
+  public void insertChild(int i, Object t) {
+    super.insertChild(i, t);
+    resetRootInformation();
+  }
+
+  @Override
+  public Object deleteChild(int i) {
+   Object ret = super.deleteChild(i);
+   resetRootInformation();
+   return ret;
+  }
+
+  @Override
+  public void replaceChildren(int startChildIndex, int stopChildIndex, Object t) {
+    super.replaceChildren(startChildIndex, stopChildIndex, t);
+    resetRootInformation();
+  }
+
+  @Override
+  public String toStringTree() {
+    // The tree modifier functions invalidate the old astStr, rootNode, etc.
+    // Hence, we can use the memoized root node and string values here.
+    ASTNode rootNode = (ASTNode)this.getRootNodeWithValidASTStr(true);
+
+    // If rootNotModified is false, then startIndx and endIndx will be stale.
+    if (startIndx >= 0 && endIndx <= rootNode.getMemoizedStringLen()) {
+      return rootNode.getMemoizedSubString(startIndx, endIndx);
+    }
+    return toStringTree(rootNode);
+  }
+
+  private String toStringTree(ASTNode rootNode) {
+    this.rootNode = rootNode;
+    startIndx = rootNode.getMemoizedStringLen();
+    // Leaf node
+    if ( children==null || children.size()==0 ) {
+      rootNode.addtoMemoizedString(this.toString());
+      endIndx =  rootNode.getMemoizedStringLen();
+      return this.toString();
+    }
+    if ( !isNil() ) {
+      rootNode.addtoMemoizedString("(");
+      rootNode.addtoMemoizedString(this.toString());
+      rootNode.addtoMemoizedString(" ");
+    }
+    for (int i = 0; children!=null && i < children.size(); i++) {
+      ASTNode t = (ASTNode)children.get(i);
+      if ( i>0 ) {
+        rootNode.addtoMemoizedString(" ");
+      }
+      t.toStringTree(rootNode);
+    }
+    if ( !isNil() ) {
+      rootNode.addtoMemoizedString(")");
+    }
+    endIndx =  rootNode.getMemoizedStringLen();
+    return rootNode.getMemoizedSubString(startIndx, endIndx);
   }
 }

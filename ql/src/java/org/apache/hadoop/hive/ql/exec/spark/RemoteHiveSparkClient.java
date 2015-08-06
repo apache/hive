@@ -39,6 +39,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -59,7 +60,6 @@ import org.apache.hive.spark.client.SparkClientFactory;
 import org.apache.hive.spark.client.SparkClientUtilities;
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.SparkConf;
-import org.apache.spark.SparkException;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
 
@@ -71,9 +71,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
-  protected static final transient Log LOG = LogFactory
-    .getLog(RemoteHiveSparkClient.class);
-
+  private static final transient Log LOG = LogFactory.getLog(RemoteHiveSparkClient.class);
+  private static final long MAX_PREWARM_TIME = 30000; // 30s
   private static final transient Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private transient SparkClient remoteClient;
@@ -85,11 +84,56 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   private final transient long sparkClientTimtout;
 
-  RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf) throws IOException, SparkException {
+  RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf) throws Exception {
     this.hiveConf = hiveConf;
+    sparkClientTimtout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT,
+        TimeUnit.SECONDS);
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
     remoteClient = SparkClientFactory.createClient(conf, hiveConf);
-    sparkClientTimtout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
+
+    if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PREWARM_ENABLED) &&
+        hiveConf.get("spark.master").startsWith("yarn-")) {
+      int minExecutors = getExecutorsToWarm();
+      if (minExecutors <= 0) {
+        return;
+      }
+
+      LOG.info("Prewarm Spark executors. The minimum number of executors to warm is " + minExecutors);
+
+      // Spend at most MAX_PREWARM_TIME to wait for executors to come up.
+      int curExecutors = 0;
+      long ts = System.currentTimeMillis();
+      do {
+        curExecutors = getExecutorCount();
+        if (curExecutors >= minExecutors) {
+          LOG.info("Finished prewarming Spark executors. The current number of executors is " + curExecutors);
+          return;
+        }
+        Thread.sleep(1000); // sleep 1 second
+      } while (System.currentTimeMillis() - ts < MAX_PREWARM_TIME);
+
+      LOG.info("Timeout (60s) occurred while prewarming executors. The current number of executors is " + curExecutors);
+    }
+  }
+
+  /**
+   * Please note that the method is very tied with Spark documentation 1.4.1 regarding
+   * dynamic allocation, such as default values.
+   * @return
+   */
+  private int getExecutorsToWarm() {
+    int minExecutors =
+        HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
+    boolean dynamicAllocation = hiveConf.getBoolean("spark.dynamicAllocation.enabled", false);
+    if (dynamicAllocation) {
+      int min = sparkConf.getInt("spark.dynamicAllocation.minExecutors", 0);
+      int initExecutors = sparkConf.getInt("spark.dynamicAllocation.initialExecutors", min);
+      minExecutors = Math.min(minExecutors, initExecutors);
+    } else {
+      int execInstances = sparkConf.getInt("spark.executor.instances", 2);
+      minExecutors = Math.min(minExecutors, execInstances);
+    }
+    return minExecutors;
   }
 
   @Override
@@ -232,6 +276,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       Set<String> addedJars = jc.getAddedJars();
       if (addedJars != null && !addedJars.isEmpty()) {
         SparkClientUtilities.addToClassPath(addedJars, localJobConf, jc.getLocalTmpDir());
+        KryoSerializer.setClassLoader(Thread.currentThread().getContextClassLoader());
         localJobConf.set(Utilities.HIVE_ADDED_JARS, StringUtils.join(addedJars, ";"));
       }
 

@@ -240,6 +240,10 @@ public class HiveConnection implements java.sql.Connection {
     }
   }
 
+  public String getConnectedUrl() {
+    return jdbcUriString;
+  }
+
   private String getServerHttpUrl(boolean useSsl) {
     // Create the http/https url
     // JDBC driver will set up an https url if ssl is enabled, otherwise http

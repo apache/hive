@@ -1,9 +1,13 @@
 package org.apache.hive.hcatalog.streaming.mutate.worker;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -57,20 +61,41 @@ public class MutatorCoordinatorBuilder {
   }
 
   public MutatorCoordinator build() throws WorkerException, MetaException {
-    String user = authenticatedUser == null ? System.getProperty("user.name") : authenticatedUser.getShortUserName();
-    boolean secureMode = authenticatedUser == null ? false : authenticatedUser.hasKerberosCredentials();
-
     configuration = HiveConfFactory.newInstance(configuration, this.getClass(), metaStoreUri);
 
-    IMetaStoreClient metaStoreClient;
+    PartitionHelper partitionHelper;
+    if (table.createPartitions()) {
+      partitionHelper = newMetaStorePartitionHelper();
+    } else {
+      partitionHelper = newWarehousePartitionHelper();
+    }
+
+    return new MutatorCoordinator(configuration, mutatorFactory, partitionHelper, table, deleteDeltaIfExists);
+  }
+
+  private PartitionHelper newWarehousePartitionHelper() throws MetaException, WorkerException {
+    String location = table.getTable().getSd().getLocation();
+    Path tablePath = new Path(location);
+    List<FieldSchema> partitionFields = table.getTable().getPartitionKeys();
+    List<String> partitionColumns = new ArrayList<>(partitionFields.size());
+    for (FieldSchema field : partitionFields) {
+      partitionColumns.add(field.getName());
+    }
+    return new WarehousePartitionHelper(configuration, tablePath, partitionColumns);
+  }
+
+  private PartitionHelper newMetaStorePartitionHelper() throws MetaException, WorkerException {
+    String user = authenticatedUser == null ? System.getProperty("user.name") : authenticatedUser.getShortUserName();
+    boolean secureMode = authenticatedUser == null ? false : authenticatedUser.hasKerberosCredentials();
     try {
-      metaStoreClient = new UgiMetaStoreClientFactory(metaStoreUri, configuration, authenticatedUser, user, secureMode)
-          .newInstance(HCatUtil.getHiveMetastoreClient(configuration));
+      IMetaStoreClient metaStoreClient = new UgiMetaStoreClientFactory(metaStoreUri, configuration, authenticatedUser,
+          user, secureMode).newInstance(HCatUtil.getHiveMetastoreClient(configuration));
+      String tableLocation = table.getTable().getSd().getLocation();
+      Path tablePath = new Path(tableLocation);
+      return new MetaStorePartitionHelper(metaStoreClient, table.getDatabaseName(), table.getTableName(), tablePath);
     } catch (IOException e) {
       throw new WorkerException("Could not create meta store client.", e);
     }
-
-    return new MutatorCoordinator(metaStoreClient, configuration, mutatorFactory, table, deleteDeltaIfExists);
   }
 
 }

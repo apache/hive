@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
+ * NOTE: before LLAP branch merge, there's no LLAP code here.
  * There used to be a global static map of IOContext-s inside IOContext (Hive style!).
  * Unfortunately, due to variety of factors, this is now a giant fustercluck.
  * 1) Spark doesn't apparently care about multiple inputs, but has multiple threads, so one

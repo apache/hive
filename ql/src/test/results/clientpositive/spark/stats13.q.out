@@ -158,7 +158,6 @@ hr                  	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -196,8 +195,6 @@ hr                  	string
 Partition Value:    	[2008-04-08, 11]    	 
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -239,8 +236,6 @@ Partition Value:    	[2008-04-08, 12]
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 	numFiles            	1                   
@@ -281,8 +276,6 @@ Partition Value:    	[2008-04-09, 11]
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 	numFiles            	1                   
@@ -322,8 +315,6 @@ hr                  	string
 Partition Value:    	[2008-04-09, 12]    	 
 Database:           	default             	 
 Table:              	analyze_srcpart     	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
@@ -371,7 +362,6 @@ hr                  	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 

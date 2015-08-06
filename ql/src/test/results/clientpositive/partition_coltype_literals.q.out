@@ -44,8 +44,6 @@ Partition Value:    	[100, 20000, 300000000000]
 Database:           	default             	 
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
 	 	 
@@ -92,8 +90,6 @@ bint                	bigint
 Partition Value:    	[100, 20000, 300000000000]	 
 Database:           	default             	 
 Table:              	partcoltypenum      	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
@@ -148,8 +144,6 @@ Partition Value:    	[100, 20000, 300000000000]
 Database:           	default             	 
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
@@ -203,8 +197,6 @@ bint                	bigint
 Partition Value:    	[110, 22000, 330000000000]	 
 Database:           	default             	 
 Table:              	partcoltypenum      	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
@@ -375,8 +367,6 @@ Partition Value:    	[110, 22000, 330000000000]
 Database:           	default             	 
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 #### A masked pattern was here ####
@@ -427,8 +417,6 @@ bint                	bigint
 Partition Value:    	[110, 22000, 330000000000]	 
 Database:           	default             	 
 Table:              	partcoltypenum      	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -509,8 +497,6 @@ Partition Value:    	[100, 20000, 300000000000]
 Database:           	default             	 
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -561,8 +547,6 @@ bint                	bigint
 Partition Value:    	[100, 20000, 300000000000]	 
 Database:           	default             	 
 Table:              	partcoltypenum      	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

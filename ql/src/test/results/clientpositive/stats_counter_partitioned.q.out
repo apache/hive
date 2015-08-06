@@ -66,8 +66,6 @@ Partition Value:    	[2008, 11]
 Database:           	default             	 
 Table:              	dummy               	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -107,8 +105,6 @@ hr                  	string
 Partition Value:    	[2008, 12]          	 
 Database:           	default             	 
 Table:              	dummy               	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -190,8 +186,6 @@ Partition Value:    	[10, 11]
 Database:           	default             	 
 Table:              	dummy               	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -231,8 +225,6 @@ hr                  	string
 Partition Value:    	[10, 12]            	 
 Database:           	default             	 
 Table:              	dummy               	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -323,8 +315,6 @@ Partition Value:    	[1997]
 Database:           	default             	 
 Table:              	dummy               	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -362,8 +352,6 @@ hr                  	int
 Partition Value:    	[1994]              	 
 Database:           	default             	 
 Table:              	dummy               	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -403,8 +391,6 @@ Partition Value:    	[1998]
 Database:           	default             	 
 Table:              	dummy               	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -442,8 +428,6 @@ hr                  	int
 Partition Value:    	[1996]              	 
 Database:           	default             	 
 Table:              	dummy               	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

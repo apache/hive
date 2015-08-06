@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.util.Daemon;
 
@@ -186,14 +187,14 @@ public class JvmPauseMonitor {
           ++numGcWarnThresholdExceeded;
           LOG.warn(formatMessage(
             extraSleepTime, gcTimesAfterSleep, gcTimesBeforeSleep));
-          incrementMetricsCounter("jvm.pause.warn-threshold", 1);
+          incrementMetricsCounter(MetricsConstant.JVM_PAUSE_WARN, 1);
         } else if (extraSleepTime > infoThresholdMs) {
           ++numGcInfoThresholdExceeded;
           LOG.info(formatMessage(
             extraSleepTime, gcTimesAfterSleep, gcTimesBeforeSleep));
-          incrementMetricsCounter("jvm.pause.info-threshold", 1);
+          incrementMetricsCounter(MetricsConstant.JVM_PAUSE_INFO, 1);
         }
-        incrementMetricsCounter("jvm.pause.extraSleepTime", extraSleepTime);
+        incrementMetricsCounter(MetricsConstant.JVM_EXTRA_SLEEP, extraSleepTime);
         totalGcExtraSleepTime += extraSleepTime;
         gcTimesBeforeSleep = gcTimesAfterSleep;
       }

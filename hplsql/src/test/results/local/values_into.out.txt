@@ -1,0 +1,11 @@
+Ln:1 VALUES statement
+Ln:1 SET code = A
+Ln:2 VALUES statement
+Ln:2 SET limit = 0
+Ln:2 SET count = 100
+Ln:4 PRINT
+A
+Ln:5 PRINT
+100
+Ln:6 PRINT
+0

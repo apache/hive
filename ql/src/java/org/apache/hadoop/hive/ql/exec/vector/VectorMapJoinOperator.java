@@ -100,7 +100,6 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
 
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {
-
     // Use a final variable to properly parameterize the processVectorInspector closure.
     // Using a member variable in the closure will not do the right thing...
     final int parameterizePosBigTable = conf.getPosBigTable();

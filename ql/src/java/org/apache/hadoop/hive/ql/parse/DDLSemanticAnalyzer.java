@@ -18,28 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
-
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
@@ -158,7 +137,27 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
 
-import com.google.common.collect.Lists;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
 
 /**
  * DDLSemanticAnalyzer.
@@ -288,8 +287,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeExchangePartition(qualified, ast);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT) {
         analyzeAlterTableFileFormat(ast, tableName, partSpec);
-      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PROTECTMODE) {
-        analyzeAlterTableProtectMode(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_LOCATION) {
         analyzeAlterTableLocation(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_MERGEFILES) {
@@ -1476,56 +1473,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   }
 
-  private void analyzeAlterTableProtectMode(ASTNode ast, String tableName,
-      HashMap<String, String> partSpec)
-      throws SemanticException {
-
-    AlterTableDesc alterTblDesc =
-        new AlterTableDesc(AlterTableTypes.ALTERPROTECTMODE);
-
-    alterTblDesc.setOldName(tableName);
-    alterTblDesc.setPartSpec(partSpec);
-
-    ASTNode child = (ASTNode) ast.getChild(0);
-
-    switch (child.getToken().getType()) {
-    case HiveParser.TOK_ENABLE:
-      alterTblDesc.setProtectModeEnable(true);
-      break;
-    case HiveParser.TOK_DISABLE:
-      alterTblDesc.setProtectModeEnable(false);
-      break;
-    default:
-      throw new SemanticException(
-          "Set Protect mode Syntax parsing error.");
-    }
-
-    ASTNode grandChild = (ASTNode) child.getChild(0);
-    switch (grandChild.getToken().getType()) {
-    case HiveParser.TOK_OFFLINE:
-      alterTblDesc.setProtectModeType(AlterTableDesc.ProtectModeType.OFFLINE);
-      break;
-    case HiveParser.TOK_NO_DROP:
-      if (grandChild.getChildCount() > 0) {
-        alterTblDesc.setProtectModeType(AlterTableDesc.ProtectModeType.NO_DROP_CASCADE);
-      }
-      else {
-        alterTblDesc.setProtectModeType(AlterTableDesc.ProtectModeType.NO_DROP);
-      }
-      break;
-    case HiveParser.TOK_READONLY:
-      throw new SemanticException(
-          "Potect mode READONLY is not implemented");
-    default:
-      throw new SemanticException(
-          "Only protect mode NO_DROP or OFFLINE supported");
-    }
-
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
-  }
-
   private void analyzeAlterTablePartMergeFiles(ASTNode ast,
       String tableName, HashMap<String, String> partSpec)
       throws SemanticException {
@@ -2690,11 +2637,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     re.noLockNeeded();
     inputs.add(re);
 
-    boolean ignoreProtection = ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null;
-    addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists, ignoreProtection);
+    addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists);
 
     DropTableDesc dropTblDesc =
-        new DropTableDesc(getDotName(qualified), partSpecs, expectView, ignoreProtection, mustPurge, replicationSpec);
+        new DropTableDesc(getDotName(qualified), partSpecs, expectView, mustPurge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc), conf));
   }
 
@@ -3165,9 +3111,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * throwIfNonExistent is true, otherwise ignore it.
    */
   private void addTableDropPartsOutputs(Table tab,
-      Collection<List<ExprNodeGenericFuncDesc>> partSpecs, boolean throwIfNonExistent,
-      boolean ignoreProtection) throws SemanticException {
-
+                                        Collection<List<ExprNodeGenericFuncDesc>> partSpecs,
+                                        boolean throwIfNonExistent) throws SemanticException {
     for (List<ExprNodeGenericFuncDesc> specs : partSpecs) {
       for (ExprNodeGenericFuncDesc partSpec : specs) {
         List<Partition> parts = new ArrayList<Partition>();
@@ -3193,11 +3138,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
         for (Partition p : parts) {
-          // TODO: same thing, metastore already checks this but check here if we can.
-          if (!ignoreProtection && !p.canDrop()) {
-            throw new SemanticException(
-              ErrorMsg.DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION.getMsg(p.getCompleteName()));
-          }
           outputs.add(new WriteEntity(p, WriteEntity.WriteType.DDL_EXCLUSIVE));
         }
       }

@@ -72,41 +72,55 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   /**
    * A RecordIdentifier extended with the current transaction id. This is the
    * key of our merge sort with the originalTransaction, bucket, and rowId
-   * ascending and the currentTransaction descending. This means that if the
+   * ascending and the currentTransaction, statementId descending. This means that if the
    * reader is collapsing events to just the last update, just the first
    * instance of each record is required.
    */
   final static class ReaderKey extends RecordIdentifier{
     private long currentTransactionId;
+    private int statementId;//sort on this descending, like currentTransactionId
 
     public ReaderKey() {
-      this(-1, -1, -1, -1);
+      this(-1, -1, -1, -1, 0);
     }
 
     public ReaderKey(long originalTransaction, int bucket, long rowId,
                      long currentTransactionId) {
+      this(originalTransaction, bucket, rowId, currentTransactionId, 0);
+    }
+    /**
+     * @param statementId - set this to 0 if N/A
+     */
+    public ReaderKey(long originalTransaction, int bucket, long rowId,
+                     long currentTransactionId, int statementId) {
       super(originalTransaction, bucket, rowId);
       this.currentTransactionId = currentTransactionId;
+      this.statementId = statementId;
     }
 
     @Override
     public void set(RecordIdentifier other) {
       super.set(other);
       currentTransactionId = ((ReaderKey) other).currentTransactionId;
+      statementId = ((ReaderKey) other).statementId;
     }
 
     public void setValues(long originalTransactionId,
                           int bucket,
                           long rowId,
-                          long currentTransactionId) {
+                          long currentTransactionId,
+                          int statementId) {
       setValues(originalTransactionId, bucket, rowId);
       this.currentTransactionId = currentTransactionId;
+      this.statementId = statementId;
     }
 
     @Override
     public boolean equals(Object other) {
       return super.equals(other) &&
-          currentTransactionId == ((ReaderKey) other).currentTransactionId;
+          currentTransactionId == ((ReaderKey) other).currentTransactionId
+            && statementId == ((ReaderKey) other).statementId//consistent with compareTo()
+          ;
     }
 
     @Override
@@ -118,6 +132,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           if (currentTransactionId != oth.currentTransactionId) {
             return currentTransactionId < oth.currentTransactionId ? +1 : -1;
           }
+          if(statementId != oth.statementId) {
+            return statementId < oth.statementId ? +1 : -1;
+          }
         } else {
           return -1;
         }
@@ -125,6 +142,13 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       return sup;
     }
 
+    /**
+     * This means 1 txn modified the same row more than once
+     */
+    private boolean isSameRow(ReaderKey other) {
+      return compareRow(other) == 0 && currentTransactionId == other.currentTransactionId;
+    }
+    
     public long getCurrentTransactionId() {
       return currentTransactionId;
     }
@@ -142,7 +166,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     public String toString() {
       return "{originalTxn: " + getTransactionId() + ", bucket: " +
           getBucketId() + ", row: " + getRowId() + ", currentTxn: " +
-          currentTransactionId + "}";
+          currentTransactionId + ", statementId: "+ statementId + "}";
     }
   }
 
@@ -159,6 +183,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     final ReaderKey key;
     final RecordIdentifier maxKey;
     final int bucket;
+    private final int statementId;
 
     /**
      * Create a reader that reads from the first key larger than minKey to any
@@ -170,17 +195,19 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
      * @param maxKey only return keys less than or equal to maxKey if it is
      *               non-null
      * @param options options to provide to read the rows.
+     * @param statementId id of SQL statement within a transaction
      * @throws IOException
      */
     ReaderPair(ReaderKey key, Reader reader, int bucket,
                RecordIdentifier minKey, RecordIdentifier maxKey,
-               ReaderImpl.Options options) throws IOException {
+               ReaderImpl.Options options, int statementId) throws IOException {
       this.reader = reader;
       this.key = key;
       this.maxKey = maxKey;
       this.bucket = bucket;
       // TODO use stripe statistics to jump over stripes
       recordReader = reader.rowsOptions(options);
+      this.statementId = statementId;
       // advance the reader until we reach the minimum key
       do {
         next(nextRecord);
@@ -195,7 +222,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         key.setValues(OrcRecordUpdater.getOriginalTransaction(nextRecord),
             OrcRecordUpdater.getBucket(nextRecord),
             OrcRecordUpdater.getRowId(nextRecord),
-            OrcRecordUpdater.getCurrentTransaction(nextRecord));
+            OrcRecordUpdater.getCurrentTransaction(nextRecord),
+            statementId);
 
         // if this record is larger than maxKey, we need to stop
         if (maxKey != null && key.compareRow(maxKey) > 0) {
@@ -223,7 +251,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     OriginalReaderPair(ReaderKey key, Reader reader, int bucket,
                        RecordIdentifier minKey, RecordIdentifier maxKey,
                        Reader.Options options) throws IOException {
-      super(key, reader, bucket, minKey, maxKey, options);
+      super(key, reader, bucket, minKey, maxKey, options, 0);
     }
 
     @Override
@@ -263,7 +291,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           nextRecord.setFieldValue(OrcRecordUpdater.ROW,
               recordReader.next(OrcRecordUpdater.getRow(next)));
         }
-        key.setValues(0L, bucket, nextRowId, 0L);
+        key.setValues(0L, bucket, nextRowId, 0L, 0);
         if (maxKey != null && key.compareRow(maxKey) > 0) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("key " + key + " > maxkey " + maxKey);
@@ -415,7 +443,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     this.offset = options.getOffset();
     this.length = options.getLength();
     this.validTxnList = validTxnList;
-    // modify the optins to reflect the event instead of the base row
+    // modify the options to reflect the event instead of the base row
     Reader.Options eventOptions = createEventOptions(options);
     if (reader == null) {
       baseReader = null;
@@ -438,7 +466,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
                                       options);
       } else {
         pair = new ReaderPair(key, reader, bucket, minKey, maxKey,
-                              eventOptions);
+                              eventOptions, 0);
       }
 
       // if there is at least one record, put it in the map
@@ -450,21 +478,30 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
     // we always want to read all of the deltas
     eventOptions.range(0, Long.MAX_VALUE);
-    // Turn off the sarg before pushing it to delta.  We never want to push a sarg to a delta as
-    // it can produce wrong results (if the latest valid version of the record is filtered out by
-    // the sarg) or ArrayOutOfBounds errors (when the sarg is applied to a delete record)
-    eventOptions.searchArgument(null, null);
     if (deltaDirectory != null) {
       for(Path delta: deltaDirectory) {
         ReaderKey key = new ReaderKey();
         Path deltaFile = AcidUtils.createBucketFile(delta, bucket);
+        AcidUtils.ParsedDelta deltaDir = AcidUtils.parsedDelta(delta);
         FileSystem fs = deltaFile.getFileSystem(conf);
         long length = getLastFlushLength(fs, deltaFile);
         if (length != -1 && fs.exists(deltaFile)) {
           Reader deltaReader = OrcFile.createReader(deltaFile,
               OrcFile.readerOptions(conf).maxLength(length));
-          ReaderPair deltaPair = new ReaderPair(key, deltaReader, bucket, minKey,
-            maxKey, eventOptions);
+          Reader.Options deltaEventOptions = null;
+          if(eventOptions.getSearchArgument() != null) {
+            // Turn off the sarg before pushing it to delta.  We never want to push a sarg to a delta as
+            // it can produce wrong results (if the latest valid version of the record is filtered out by
+            // the sarg) or ArrayOutOfBounds errors (when the sarg is applied to a delete record)
+            // unless the delta only has insert events
+            OrcRecordUpdater.AcidStats acidStats = OrcRecordUpdater.parseAcidStats(deltaReader);
+            if(acidStats.deletes > 0 || acidStats.updates > 0) {
+              deltaEventOptions = eventOptions.clone().searchArgument(null, null);
+            }
+          }
+          ReaderPair deltaPair;
+          deltaPair = new ReaderPair(key, deltaReader, bucket, minKey,
+            maxKey, deltaEventOptions != null ? deltaEventOptions : eventOptions, deltaDir.getStatementId());
           if (deltaPair.nextRecord != null) {
             readers.put(key, deltaPair);
           }
@@ -580,9 +617,18 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         continue;
       }
 
+      /*for multi-statement txns, you may have multiple events for the same
+      * row in the same (current) transaction.  We want to collapse these to just the last one
+      * regardless whether we are minor compacting.  Consider INSERT/UPDATE/UPDATE of the
+      * same row in the same txn.  There is no benefit passing along anything except the last
+      * event.  If we did want to pass it along, we'd have to include statementId in the row
+      * returned so that compaction could write it out or make minor minor compaction understand
+      * how to write out delta files in delta_xxx_yyy_stid format.  There doesn't seem to be any
+      * value in this.*/
+      boolean isSameRow = prevKey.isSameRow((ReaderKey)recordIdentifier);
       // if we are collapsing, figure out if this is a new row
-      if (collapse) {
-        keysSame = prevKey.compareRow(recordIdentifier) == 0;
+      if (collapse || isSameRow) {
+        keysSame = (collapse && prevKey.compareRow(recordIdentifier) == 0) || (isSameRow);
         if (!keysSame) {
           prevKey.set(recordIdentifier);
         }

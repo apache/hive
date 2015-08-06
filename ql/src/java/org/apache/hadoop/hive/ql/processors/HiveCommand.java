@@ -75,6 +75,9 @@ public enum HiveCommand {
       } else if(command.length > 1 && "from".equalsIgnoreCase(command[1])) {
         //special handling for SQL "delete from <table> where..."
         return null;
+      }
+      else if(command.length > 1 && "set".equalsIgnoreCase(command[0]) && "autocommit".equalsIgnoreCase(command[1])) {
+        return null;//don't want set autocommit true|false to get mixed with set hive.foo.bar...
       } else if (COMMANDS.contains(cmd)) {
         HiveCommand hiveCommand = HiveCommand.valueOf(cmd);
 

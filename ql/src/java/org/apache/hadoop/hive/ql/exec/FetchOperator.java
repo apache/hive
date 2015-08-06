@@ -230,8 +230,9 @@ public class FetchOperator implements Serializable {
     String[] partKeyTypes = pcolTypes.trim().split(":");
     ObjectInspector[] inspectors = new ObjectInspector[partKeys.length];
     for (int i = 0; i < partKeys.length; i++) {
-      inspectors[i] = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
-          TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i]));
+      inspectors[i] = PrimitiveObjectInspectorFactory
+          .getPrimitiveWritableObjectInspector(TypeInfoFactory
+              .getPrimitiveTypeInfo(partKeyTypes[i]));
     }
     return ObjectInspectorFactory.getStandardStructObjectInspector(
         Arrays.asList(partKeys), Arrays.asList(inspectors));

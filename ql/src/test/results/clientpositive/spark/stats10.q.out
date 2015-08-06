@@ -422,8 +422,6 @@ Partition Value:    	[1]
 Database:           	default             	 
 Table:              	bucket3_1           	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
@@ -463,8 +461,6 @@ Partition Value:    	[2]
 Database:           	default             	 
 Table:              	bucket3_1           	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
@@ -502,7 +498,6 @@ ds                  	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 

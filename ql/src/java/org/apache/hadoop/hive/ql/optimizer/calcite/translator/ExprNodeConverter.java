@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -43,6 +44,9 @@ import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
@@ -199,6 +203,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       return new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(((Number) literal
           .getValue3()).longValue()));
     case FLOAT:
+    case REAL:
       return new ExprNodeConstantDesc(TypeInfoFactory.floatTypeInfo,
           Float.valueOf(((Number) literal.getValue3()).floatValue()));
     case DOUBLE:
@@ -207,6 +212,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     case DATE:
       return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
         new Date(((Calendar)literal.getValue()).getTimeInMillis()));
+    case TIME:
     case TIMESTAMP: {
       Object value = literal.getValue3();
       if (value instanceof Long) {
@@ -218,13 +224,37 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
     case DECIMAL:
       return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
-          lType.getScale()), literal.getValue3());
-    case VARCHAR:
-      return new ExprNodeConstantDesc(TypeInfoFactory.getVarcharTypeInfo(lType.getPrecision()),
-          new HiveVarchar((String) literal.getValue3(), lType.getPrecision()));
-    case CHAR:
-      return new ExprNodeConstantDesc(TypeInfoFactory.getCharTypeInfo(lType.getPrecision()),
-          new HiveChar((String) literal.getValue3(), lType.getPrecision()));
+          lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
+    case VARCHAR: {
+      int varcharLength = lType.getPrecision();
+      // If we cannot use Varchar due to type length restrictions, we use String
+      if (varcharLength < 1 || varcharLength > HiveVarchar.MAX_VARCHAR_LENGTH) {
+        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
+      }
+      return new ExprNodeConstantDesc(TypeInfoFactory.getVarcharTypeInfo(varcharLength),
+          new HiveVarchar((String) literal.getValue3(), varcharLength));
+    }
+    case CHAR: {
+      int charLength = lType.getPrecision();
+      // If we cannot use Char due to type length restrictions, we use String
+      if (charLength < 1 || charLength > HiveChar.MAX_CHAR_LENGTH) {
+        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
+      }
+      return new ExprNodeConstantDesc(TypeInfoFactory.getCharTypeInfo(charLength),
+          new HiveChar((String) literal.getValue3(), charLength));
+    }
+    case INTERVAL_YEAR_MONTH: {
+      BigDecimal monthsBd = (BigDecimal) literal.getValue();
+      return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+              new HiveIntervalYearMonth(monthsBd.intValue()));
+    }
+    case INTERVAL_DAY_TIME: {
+      BigDecimal millisBd = (BigDecimal) literal.getValue();
+      // Calcite literal is in millis, we need to convert to seconds
+      BigDecimal secsBd = millisBd.divide(BigDecimal.valueOf(1000));
+      return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+              new HiveIntervalDayTime(secsBd));
+    }
     case OTHER:
     default:
       return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());

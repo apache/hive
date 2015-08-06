@@ -58,7 +58,6 @@
       <artifactId>commons-logging</artifactId>
       <version>${commons-logging.version}</version>
     </dependency>
-
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -73,6 +72,12 @@
        <groupId>org.antlr</groupId>
        <artifactId>antlr4-runtime</artifactId>
        <version>4.5</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -103,7 +108,7 @@
   
   <build>
     <plugins>
-      <plugin>
+     <plugin>
         <groupId>org.antlr</groupId>
           <artifactId>antlr4-maven-plugin</artifactId>
           <version>4.5</version>

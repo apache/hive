@@ -60,6 +60,9 @@ public class HiveException extends Exception {
     canonicalErrorMsg = errorMsg;
 
   }
+  public HiveException(Throwable cause, ErrorMsg errorMsg) {
+    this(cause, errorMsg, new String[0]);
+  }
   /**
    * @return {@link ErrorMsg#GENERIC_ERROR} by default
    */

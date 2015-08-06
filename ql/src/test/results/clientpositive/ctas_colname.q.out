@@ -103,7 +103,6 @@ c2                  	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -261,7 +260,6 @@ rr                  	int
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -449,7 +447,6 @@ lead1               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -620,7 +617,6 @@ _c1                 	double
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -769,7 +765,6 @@ _c1                 	bigint
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -1205,7 +1200,6 @@ _c1                 	bigint
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -1343,7 +1337,6 @@ key                 	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 

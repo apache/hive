@@ -22,13 +22,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The interface required for input formats that what to support ACID
@@ -62,7 +68,7 @@ import java.io.IOException;
  *   <li>New format -
  *     <pre>
  *        $partition/base_$tid/$bucket
- *                   delta_$tid_$tid/$bucket
+ *                   delta_$tid_$tid_$stid/$bucket
  *     </pre></li>
  * </ul>
  * <p>
@@ -71,6 +77,8 @@ import java.io.IOException;
  * stored sorted by the original transaction id (ascending), bucket (ascending),
  * row id (ascending), and current transaction id (descending). Thus the files
  * can be merged by advancing through the files in parallel.
+ * The stid is unique id (within the transaction) of the statement that created
+ * this delta file.
  * <p>
  * The base files include all transactions from the beginning of time
  * (transaction id 0) to the transaction in the directory name. Delta
@@ -91,7 +99,7 @@ import java.io.IOException;
  *   For row-at-a-time processing, KEY can conveniently pass RowId into the operator
  *   pipeline.  For vectorized execution the KEY could perhaps represent a range in the batch.
  *   Since {@link org.apache.hadoop.hive.ql.io.orc.OrcInputFormat} is declared to return
- *   {@code NullWritable} key, {@link org.apache.hadoop.hive.ql.io.AcidRecordReader} is defined
+ *   {@code NullWritable} key, {@link org.apache.hadoop.hive.ql.io.AcidInputFormat.AcidRecordReader} is defined
  *   to provide access to the RowId.  Other implementations of AcidInputFormat can use either
  *   mechanism.
  * </p>
@@ -101,6 +109,54 @@ import java.io.IOException;
 public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     extends InputFormat<KEY, VALUE>, InputFormatChecker {
 
+  static final class DeltaMetaData implements Writable {
+    private long minTxnId;
+    private long maxTxnId;
+    private List<Integer> stmtIds;
+    
+    public DeltaMetaData() {
+      this(0,0,null);
+    }
+    DeltaMetaData(long minTxnId, long maxTxnId, List<Integer> stmtIds) {
+      this.minTxnId = minTxnId;
+      this.maxTxnId = maxTxnId;
+      this.stmtIds = stmtIds;
+    }
+    long getMinTxnId() {
+      return minTxnId;
+    }
+    long getMaxTxnId() {
+      return maxTxnId;
+    }
+    List<Integer> getStmtIds() {
+      return stmtIds;
+    }
+    @Override
+    public void write(DataOutput out) throws IOException {
+      out.writeLong(minTxnId);
+      out.writeLong(maxTxnId);
+      out.writeInt(stmtIds.size());
+      if(stmtIds == null) {
+        return;
+      }
+      for(Integer id : stmtIds) {
+        out.writeInt(id);
+      }
+    }
+    @Override
+    public void readFields(DataInput in) throws IOException {
+      minTxnId = in.readLong();
+      maxTxnId = in.readLong();
+      int numStatements = in.readInt();
+      if(numStatements <= 0) {
+        return;
+      }
+      stmtIds = new ArrayList<>();
+      for(int i = 0; i < numStatements; i++) {
+        stmtIds.add(in.readInt());
+      }
+    }
+  }
   /**
    * Options for controlling the record readers.
    */

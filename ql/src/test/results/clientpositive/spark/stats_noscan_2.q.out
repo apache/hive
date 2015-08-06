@@ -47,7 +47,6 @@ a                   	int
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
@@ -91,7 +90,6 @@ a                   	int
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
@@ -231,8 +229,6 @@ Partition Value:    	[2008-01-01]
 Database:           	default             	 
 Table:              	anaylyze_external   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -283,8 +279,6 @@ insertdate          	string
 Partition Value:    	[2008-01-01]        	 
 Database:           	default             	 
 Table:              	anaylyze_external   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

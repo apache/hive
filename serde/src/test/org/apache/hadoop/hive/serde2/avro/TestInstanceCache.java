@@ -24,9 +24,23 @@ import static org.junit.Assert.assertSame;
 
 public class TestInstanceCache {
   private static class Foo {
+
+    private int value = 42;
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      Foo foo = (Foo) o;
+
+      return value == foo.value;
+
+    }
+
     @Override
     public int hashCode() {
-      return 42;
+      return value;
     }
   }
 
@@ -41,12 +55,12 @@ public class TestInstanceCache {
   @Test
   public void instanceCachesOnlyCreateOneInstance() throws AvroSerdeException {
     InstanceCache<Foo, Wrapper<Foo>> ic = new InstanceCache<Foo, Wrapper<Foo>>() {
-                                           @Override
-                                           protected Wrapper makeInstance(Foo hv,
-                                               Set<Foo> seenSchemas) {
-                                             return new Wrapper(hv);
-                                           }
-                                          };
+      @Override
+      protected Wrapper makeInstance(Foo hv,
+                                     Set<Foo> seenSchemas) {
+        return new Wrapper(hv);
+      }
+    };
     Foo f1 = new Foo();
 
     Wrapper fc = ic.retrieve(f1, null);
@@ -62,12 +76,12 @@ public class TestInstanceCache {
   @Test
   public void instanceCacheReturnsCorrectInstances() throws AvroSerdeException {
     InstanceCache<String, Wrapper<String>> ic = new InstanceCache<String, Wrapper<String>>() {
-                                   @Override
-                                   protected Wrapper<String> makeInstance(
-                                       String hv, Set<String> seenSchemas) {
-                                     return new Wrapper<String>(hv);
-                                   }
-                                 };
+      @Override
+      protected Wrapper<String> makeInstance(
+          String hv, Set<String> seenSchemas) {
+        return new Wrapper<String>(hv);
+      }
+    };
 
     Wrapper<String> one = ic.retrieve("one", null);
     Wrapper<String> two = ic.retrieve("two", null);

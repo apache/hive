@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.Version;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -1919,9 +1920,9 @@ public class TestOrcFile {
     SearchArgument sarg = SearchArgumentFactory.newBuilder()
         .startAnd()
           .startNot()
-             .lessThan("int1", 300000)
+             .lessThan("int1", PredicateLeaf.Type.INTEGER, 300000)
           .end()
-          .lessThan("int1", 600000)
+          .lessThan("int1", PredicateLeaf.Type.INTEGER, 600000)
         .end()
         .build();
     RecordReader rows = reader.rowsOptions(new Reader.Options()
@@ -1942,7 +1943,7 @@ public class TestOrcFile {
     // look through the file with no rows selected
     sarg = SearchArgumentFactory.newBuilder()
         .startAnd()
-          .lessThan("int1", 0)
+          .lessThan("int1", PredicateLeaf.Type.INTEGER, 0)
         .end()
         .build();
     rows = reader.rowsOptions(new Reader.Options()
@@ -1955,9 +1956,9 @@ public class TestOrcFile {
     // select first 100 and last 100 rows
     sarg = SearchArgumentFactory.newBuilder()
         .startOr()
-          .lessThan("int1", 300 * 100)
+          .lessThan("int1", PredicateLeaf.Type.INTEGER, 300 * 100)
           .startNot()
-            .lessThan("int1", 300 * 3400)
+            .lessThan("int1", PredicateLeaf.Type.INTEGER, 300 * 3400)
           .end()
         .end()
         .build();

@@ -941,8 +941,6 @@ Partition Value:    	[foo, 27]
 Database:           	default             	 
 Table:              	over1k_part_orc     	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
@@ -984,8 +982,6 @@ t                   	tinyint
 Partition Value:    	[foo, __HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part_orc     	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1029,8 +1025,6 @@ Partition Value:    	[foo, 27]
 Database:           	default             	 
 Table:              	over1k_part_limit_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
@@ -1073,8 +1067,6 @@ Partition Value:    	[foo, __HIVE_DEFAULT_PARTITION__]
 Database:           	default             	 
 Table:              	over1k_part_limit_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
@@ -1115,8 +1107,6 @@ t                   	tinyint
 Partition Value:    	[27]                	 
 Database:           	default             	 
 Table:              	over1k_part_buck_orc	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1159,8 +1149,6 @@ Partition Value:    	[__HIVE_DEFAULT_PARTITION__]
 Database:           	default             	 
 Table:              	over1k_part_buck_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
@@ -1202,8 +1190,6 @@ Partition Value:    	[27]
 Database:           	default             	 
 Table:              	over1k_part_buck_sort_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	8                   
@@ -1244,8 +1230,6 @@ t                   	tinyint
 Partition Value:    	[__HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part_buck_sort_orc	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1791,8 +1775,6 @@ Partition Value:    	[foo, 27]
 Database:           	default             	 
 Table:              	over1k_part2_orc    	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1834,8 +1816,6 @@ t                   	tinyint
 Partition Value:    	[foo, __HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part2_orc    	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1940,8 +1920,6 @@ Partition Value:    	[foo, 27]
 Database:           	default             	 
 Table:              	over1k_part2_orc    	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1983,8 +1961,6 @@ t                   	tinyint
 Partition Value:    	[foo, __HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part2_orc    	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -2256,8 +2232,6 @@ Partition Value:    	[27]
 Database:           	default             	 
 Table:              	over1k_part_buck_sort2_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -2298,8 +2272,6 @@ t                   	tinyint
 Partition Value:    	[__HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part_buck_sort2_orc	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -2475,8 +2447,6 @@ Partition Value:    	[27]
 Database:           	default             	 
 Table:              	over1k_part_buck_sort2_orc	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -2517,8 +2487,6 @@ t                   	tinyint
 Partition Value:    	[__HIVE_DEFAULT_PARTITION__]	 
 Database:           	default             	 
 Table:              	over1k_part_buck_sort2_orc	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

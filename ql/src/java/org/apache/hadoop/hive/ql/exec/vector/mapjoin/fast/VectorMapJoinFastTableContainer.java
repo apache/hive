@@ -213,6 +213,11 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     return false;
   }
 
+  @Override
+  public int size() {
+    return VectorMapJoinFastHashTable.size();
+  }
+
   /*
   @Override
   public com.esotericsoftware.kryo.io.Output getHybridBigTableSpillOutput(int partitionId) {

@@ -241,7 +241,8 @@ public class AggregateStatsCache {
     // We'll count misses as we iterate
     int maxMisses = (int) maxVariance * numPartsRequested;
     for (String partName : partNames) {
-      for (Map.Entry<AggrColStats, MatchStats> entry : candidateMatchStats.entrySet()) {
+      for (Iterator<Map.Entry<AggrColStats, MatchStats>> iterator = candidateMatchStats.entrySet().iterator(); iterator.hasNext();) {
+        Map.Entry<AggrColStats, MatchStats> entry = iterator.next();
         AggrColStats candidate = entry.getKey();
         matchStats = entry.getValue();
         if (candidate.getBloomFilter().test(partName.getBytes())) {
@@ -252,7 +253,7 @@ public class AggregateStatsCache {
         // 2nd pass at removing invalid candidates
         // If misses so far exceed max tolerable misses
         if (matchStats.misses > maxMisses) {
-          candidateMatchStats.remove(candidate);
+          iterator.remove();
           continue;
         }
         // Check if this is the best match so far

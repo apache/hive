@@ -40,7 +40,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
@@ -127,7 +126,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   private final boolean addBlockPadding;
   private final int bufferSize;
   private final long blockSize;
-  private final float paddingTolerance;
+  private final double paddingTolerance;
   // the streams that make up the current stripe
   private final Map<StreamName, BufferedStream> streams =
     new TreeMap<StreamName, BufferedStream>();
@@ -176,7 +175,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       OrcFile.WriterCallback callback,
       EncodingStrategy encodingStrategy,
       CompressionStrategy compressionStrategy,
-      float paddingTolerance,
+      double paddingTolerance,
       long blockSizeValue,
       String bloomFilterColumnNames,
       double bloomFilterFpp) throws IOException {
@@ -315,8 +314,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   // the assumption is only one ORC writer open at a time, which holds true for
   // most of the cases. HIVE-6455 forces single writer case.
   private long getMemoryAvailableForORC() {
-    HiveConf.ConfVars poolVar = HiveConf.ConfVars.HIVE_ORC_FILE_MEMORY_POOL;
-    double maxLoad = conf.getFloat(poolVar.varname, poolVar.defaultFloatVal);
+    double maxLoad = OrcConf.MEMORY_POOL.getDouble(conf);
     long totalMemoryPool = Math.round(ManagementFactory.getMemoryMXBean().
         getHeapMemoryUsage().getMax() * maxLoad);
     return totalMemoryPool;
@@ -1178,7 +1176,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     private final List<Long> rowIndexValueCount = new ArrayList<Long>();
     // If the number of keys in a dictionary is greater than this fraction of
     //the total number of non-null rows, turn off dictionary encoding
-    private final float dictionaryKeySizeThreshold;
+    private final double dictionaryKeySizeThreshold;
     private boolean useDictionaryEncoding = true;
     private boolean isDirectV2 = true;
     private boolean doneDictionaryCheck;
@@ -1202,14 +1200,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       directStreamOutput = writer.createStream(id, OrcProto.Stream.Kind.DATA);
       directLengthOutput = createIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
-      dictionaryKeySizeThreshold = writer.getConfiguration().getFloat(
-          HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname,
-          HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.
-              defaultFloatVal);
-      strideDictionaryCheck = writer.getConfiguration().getBoolean(
-          HiveConf.ConfVars.HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK.varname,
-          HiveConf.ConfVars.HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK.
-            defaultBoolVal);
+      Configuration conf = writer.getConfiguration();
+      dictionaryKeySizeThreshold =
+          OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getDouble(conf);
+      strideDictionaryCheck =
+          OrcConf.ROW_INDEX_STRIDE_DICTIONARY_CHECK.getBoolean(conf);
       doneDictionaryCheck = false;
     }
 
@@ -2189,8 +2184,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         // and user specified padding tolerance. Since stripe size can overflow
         // the default stripe size we should apply this correction to avoid
         // writing portion of last stripe to next hdfs block.
-        float correction = overflow > 0 ? (float) overflow
-            / (float) adjustedStripeSize : 0.0f;
+        double correction = overflow > 0 ? (double) overflow
+            / (double) adjustedStripeSize : 0.0;
 
         // correction should not be greater than user specified padding
         // tolerance

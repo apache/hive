@@ -102,7 +102,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         pCtx,
         tasks,
         fetchTask,
-        input.dump(),
+        input,
         sem,
         extended,
         formatted,

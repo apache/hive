@@ -154,8 +154,6 @@ Partition Value:    	[2008-04-08, 0]
 Database:           	default             	 
 Table:              	test_table          	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
@@ -195,8 +193,6 @@ hr                  	string
 Partition Value:    	[2008-04-08, 1]     	 
 Database:           	default             	 
 Table:              	test_table          	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

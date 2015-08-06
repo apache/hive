@@ -19,7 +19,9 @@ import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,14 +44,17 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestLock {
 
-  private static final Table TABLE_1 = createTable("DB", "ONE");
-  private static final Table TABLE_2 = createTable("DB", "TWO");
-  private static final List<Table> TABLES = ImmutableList.of(TABLE_1, TABLE_2);
+  private static final Table SOURCE_TABLE_1 = createTable("DB", "SOURCE_1");
+  private static final Table SOURCE_TABLE_2 = createTable("DB", "SOURCE_2");
+  private static final Table SINK_TABLE = createTable("DB", "SINK");
+  private static final Set<Table> SOURCES = ImmutableSet.of(SOURCE_TABLE_1, SOURCE_TABLE_2);
+  private static final Set<Table> SINKS = ImmutableSet.of(SINK_TABLE);
+  private static final Set<Table> TABLES = ImmutableSet.of(SOURCE_TABLE_1, SOURCE_TABLE_2, SINK_TABLE);
   private static final long LOCK_ID = 42;
   private static final long TRANSACTION_ID = 109;
   private static final String USER = "ewest";
@@ -67,7 +72,8 @@ public class TestLock {
   @Captor
   private ArgumentCaptor<LockRequest> requestCaptor;
 
-  private Lock lock;
+  private Lock readLock;
+  private Lock writeLock;
   private HiveConf configuration = new HiveConf();
 
   @Before
@@ -79,44 +85,57 @@ public class TestLock {
         mockHeartbeatFactory.newInstance(any(IMetaStoreClient.class), any(LockFailureListener.class), any(Long.class),
             any(Collection.class), anyLong(), anyInt())).thenReturn(mockHeartbeat);
 
-    lock = new Lock(mockMetaStoreClient, mockHeartbeatFactory, configuration, mockListener, USER, TABLES, 3, 0);
+    readLock = new Lock(mockMetaStoreClient, mockHeartbeatFactory, configuration, mockListener, USER, SOURCES,
+        Collections.<Table> emptySet(), 3, 0);
+    writeLock = new Lock(mockMetaStoreClient, mockHeartbeatFactory, configuration, mockListener, USER, SOURCES, SINKS,
+        3, 0);
   }
 
   @Test
   public void testAcquireReadLockWithNoIssues() throws Exception {
-    lock.acquire();
-    assertEquals(Long.valueOf(LOCK_ID), lock.getLockId());
-    assertNull(lock.getTransactionId());
+    readLock.acquire();
+    assertEquals(Long.valueOf(LOCK_ID), readLock.getLockId());
+    assertNull(readLock.getTransactionId());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAcquireWriteLockWithoutTxn() throws Exception {
+    writeLock.acquire();
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void testAcquireWriteLockWithInvalidTxn() throws Exception {
+    writeLock.acquire(0);
   }
 
   @Test
   public void testAcquireTxnLockWithNoIssues() throws Exception {
-    lock.acquire(TRANSACTION_ID);
-    assertEquals(Long.valueOf(LOCK_ID), lock.getLockId());
-    assertEquals(Long.valueOf(TRANSACTION_ID), lock.getTransactionId());
+    writeLock.acquire(TRANSACTION_ID);
+    assertEquals(Long.valueOf(LOCK_ID), writeLock.getLockId());
+    assertEquals(Long.valueOf(TRANSACTION_ID), writeLock.getTransactionId());
   }
 
   @Test
   public void testAcquireReadLockCheckHeartbeatCreated() throws Exception {
     configuration.set("hive.txn.timeout", "100s");
-    lock.acquire();
+    readLock.acquire();
 
-    verify(mockHeartbeatFactory).newInstance(eq(mockMetaStoreClient), eq(mockListener), any(Long.class), eq(TABLES),
+    verify(mockHeartbeatFactory).newInstance(eq(mockMetaStoreClient), eq(mockListener), any(Long.class), eq(SOURCES),
         eq(LOCK_ID), eq(75));
   }
 
   @Test
   public void testAcquireTxnLockCheckHeartbeatCreated() throws Exception {
     configuration.set("hive.txn.timeout", "100s");
-    lock.acquire(TRANSACTION_ID);
+    writeLock.acquire(TRANSACTION_ID);
 
-    verify(mockHeartbeatFactory).newInstance(eq(mockMetaStoreClient), eq(mockListener), eq(TRANSACTION_ID), eq(TABLES),
-        eq(LOCK_ID), eq(75));
+    verify(mockHeartbeatFactory).newInstance(eq(mockMetaStoreClient), eq(mockListener), eq(TRANSACTION_ID),
+        eq(TABLES), eq(LOCK_ID), eq(75));
   }
 
   @Test
   public void testAcquireLockCheckUser() throws Exception {
-    lock.acquire();
+    readLock.acquire();
     verify(mockMetaStoreClient).lock(requestCaptor.capture());
     LockRequest actualRequest = requestCaptor.getValue();
     assertEquals(USER, actualRequest.getUser());
@@ -124,7 +143,7 @@ public class TestLock {
 
   @Test
   public void testAcquireReadLockCheckLocks() throws Exception {
-    lock.acquire();
+    readLock.acquire();
     verify(mockMetaStoreClient).lock(requestCaptor.capture());
 
     LockRequest request = requestCaptor.getValue();
@@ -137,17 +156,17 @@ public class TestLock {
     assertEquals(2, components.size());
 
     LockComponent expected1 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
-    expected1.setTablename("ONE");
+    expected1.setTablename("SOURCE_1");
     assertTrue(components.contains(expected1));
 
     LockComponent expected2 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
-    expected2.setTablename("TWO");
+    expected2.setTablename("SOURCE_2");
     assertTrue(components.contains(expected2));
   }
 
   @Test
   public void testAcquireTxnLockCheckLocks() throws Exception {
-    lock.acquire(TRANSACTION_ID);
+    writeLock.acquire(TRANSACTION_ID);
     verify(mockMetaStoreClient).lock(requestCaptor.capture());
 
     LockRequest request = requestCaptor.getValue();
@@ -157,73 +176,77 @@ public class TestLock {
 
     List<LockComponent> components = request.getComponent();
 
-    System.out.println(components);
-    assertEquals(2, components.size());
+    assertEquals(3, components.size());
 
     LockComponent expected1 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
-    expected1.setTablename("ONE");
+    expected1.setTablename("SOURCE_1");
     assertTrue(components.contains(expected1));
 
     LockComponent expected2 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
-    expected2.setTablename("TWO");
+    expected2.setTablename("SOURCE_2");
     assertTrue(components.contains(expected2));
+
+    LockComponent expected3 = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "DB");
+    expected3.setTablename("SINK");
+    assertTrue(components.contains(expected3));
   }
 
   @Test(expected = LockException.class)
   public void testAcquireLockNotAcquired() throws Exception {
     when(mockLockResponse.getState()).thenReturn(NOT_ACQUIRED);
-    lock.acquire();
+    readLock.acquire();
   }
 
   @Test(expected = LockException.class)
   public void testAcquireLockAborted() throws Exception {
     when(mockLockResponse.getState()).thenReturn(ABORT);
-    lock.acquire();
+    readLock.acquire();
   }
 
   @Test(expected = LockException.class)
   public void testAcquireLockWithWaitRetriesExceeded() throws Exception {
     when(mockLockResponse.getState()).thenReturn(WAITING, WAITING, WAITING);
-    lock.acquire();
+    readLock.acquire();
   }
 
   @Test
   public void testAcquireLockWithWaitRetries() throws Exception {
     when(mockLockResponse.getState()).thenReturn(WAITING, WAITING, ACQUIRED);
-    lock.acquire();
-    assertEquals(Long.valueOf(LOCK_ID), lock.getLockId());
+    readLock.acquire();
+    assertEquals(Long.valueOf(LOCK_ID), readLock.getLockId());
   }
 
   @Test
   public void testReleaseLock() throws Exception {
-    lock.acquire();
-    lock.release();
+    readLock.acquire();
+    readLock.release();
     verify(mockMetaStoreClient).unlock(LOCK_ID);
   }
 
   @Test
   public void testReleaseLockNoLock() throws Exception {
-    lock.release();
+    readLock.release();
     verifyNoMoreInteractions(mockMetaStoreClient);
   }
 
   @Test
   public void testReleaseLockCancelsHeartbeat() throws Exception {
-    lock.acquire();
-    lock.release();
+    readLock.acquire();
+    readLock.release();
     verify(mockHeartbeat).cancel();
   }
 
   @Test
   public void testReadHeartbeat() throws Exception {
-    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, null, TABLES, LOCK_ID);
+    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, null, SOURCES, LOCK_ID);
     task.run();
     verify(mockMetaStoreClient).heartbeat(0, LOCK_ID);
   }
 
   @Test
   public void testTxnHeartbeat() throws Exception {
-    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, TABLES, LOCK_ID);
+    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, SOURCES,
+        LOCK_ID);
     task.run();
     verify(mockMetaStoreClient).heartbeat(TRANSACTION_ID, LOCK_ID);
   }
@@ -232,43 +255,47 @@ public class TestLock {
   public void testReadHeartbeatFailsNoSuchLockException() throws Exception {
     Throwable t = new NoSuchLockException();
     doThrow(t).when(mockMetaStoreClient).heartbeat(0, LOCK_ID);
-    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, null, TABLES, LOCK_ID);
+    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, null, SOURCES, LOCK_ID);
     task.run();
-    verify(mockListener).lockFailed(LOCK_ID, null, Lock.asStrings(TABLES), t);
+    verify(mockListener).lockFailed(LOCK_ID, null, Lock.asStrings(SOURCES), t);
   }
 
   @Test
   public void testTxnHeartbeatFailsNoSuchLockException() throws Exception {
     Throwable t = new NoSuchLockException();
     doThrow(t).when(mockMetaStoreClient).heartbeat(TRANSACTION_ID, LOCK_ID);
-    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, TABLES, LOCK_ID);
+    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, SOURCES,
+        LOCK_ID);
     task.run();
-    verify(mockListener).lockFailed(LOCK_ID, TRANSACTION_ID, Lock.asStrings(TABLES), t);
+    verify(mockListener).lockFailed(LOCK_ID, TRANSACTION_ID, Lock.asStrings(SOURCES), t);
   }
 
   @Test
   public void testHeartbeatFailsNoSuchTxnException() throws Exception {
     Throwable t = new NoSuchTxnException();
     doThrow(t).when(mockMetaStoreClient).heartbeat(TRANSACTION_ID, LOCK_ID);
-    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, TABLES, LOCK_ID);
+    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, SOURCES,
+        LOCK_ID);
     task.run();
-    verify(mockListener).lockFailed(LOCK_ID, TRANSACTION_ID, Lock.asStrings(TABLES), t);
+    verify(mockListener).lockFailed(LOCK_ID, TRANSACTION_ID, Lock.asStrings(SOURCES), t);
   }
 
   @Test
   public void testHeartbeatFailsTxnAbortedException() throws Exception {
     Throwable t = new TxnAbortedException();
     doThrow(t).when(mockMetaStoreClient).heartbeat(TRANSACTION_ID, LOCK_ID);
-    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, TABLES, LOCK_ID);
+    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, SOURCES,
+        LOCK_ID);
     task.run();
-    verify(mockListener).lockFailed(LOCK_ID, TRANSACTION_ID, Lock.asStrings(TABLES), t);
+    verify(mockListener).lockFailed(LOCK_ID, TRANSACTION_ID, Lock.asStrings(SOURCES), t);
   }
 
   @Test
   public void testHeartbeatContinuesTException() throws Exception {
     Throwable t = new TException();
     doThrow(t).when(mockMetaStoreClient).heartbeat(0, LOCK_ID);
-    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, TABLES, LOCK_ID);
+    HeartbeatTimerTask task = new HeartbeatTimerTask(mockMetaStoreClient, mockListener, TRANSACTION_ID, SOURCES,
+        LOCK_ID);
     task.run();
     verifyZeroInteractions(mockListener);
   }

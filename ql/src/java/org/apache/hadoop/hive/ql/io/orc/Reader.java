@@ -143,6 +143,8 @@ public interface Reader {
     private long length = Long.MAX_VALUE;
     private SearchArgument sarg = null;
     private String[] columnNames = null;
+    private Boolean useZeroCopy = null;
+    private Boolean skipCorruptRecords = null;
 
     /**
      * Set the list of columns to read.
@@ -170,11 +172,31 @@ public interface Reader {
      * Set search argument for predicate push down.
      * @param sarg the search argument
      * @param columnNames the column names for
-     * @return
+     * @return this
      */
     public Options searchArgument(SearchArgument sarg, String[] columnNames) {
       this.sarg = sarg;
       this.columnNames = columnNames;
+      return this;
+    }
+
+    /**
+     * Set whether to use zero copy from HDFS.
+     * @param value the new zero copy flag
+     * @return this
+     */
+    public Options useZeroCopy(boolean value) {
+      this.useZeroCopy = value;
+      return this;
+    }
+
+    /**
+     * Set whether to skip corrupt records.
+     * @param value the new skip corrupt records flag
+     * @return this
+     */
+    public Options skipCorruptRecords(boolean value) {
+      this.skipCorruptRecords = value;
       return this;
     }
 
@@ -206,6 +228,14 @@ public interface Reader {
       return result;
     }
 
+    public Boolean getUseZeroCopy() {
+      return useZeroCopy;
+    }
+
+    public Boolean getSkipCorruptRecords() {
+      return skipCorruptRecords;
+    }
+
     public Options clone() {
       Options result = new Options();
       result.include = include;
@@ -213,6 +243,8 @@ public interface Reader {
       result.length = length;
       result.sarg = sarg;
       result.columnNames = columnNames;
+      result.useZeroCopy = useZeroCopy;
+      result.skipCorruptRecords = skipCorruptRecords;
       return result;
     }
 

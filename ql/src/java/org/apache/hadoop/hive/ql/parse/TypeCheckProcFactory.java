@@ -124,6 +124,10 @@ public class TypeCheckProcFactory {
     ASTNode expr = (ASTNode) nd;
     TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
 
+    if (!ctx.isUseCaching()) {
+      return null;
+    }
+
     RowResolver input = ctx.getInputRR();
     ExprNodeDesc desc = null;
 

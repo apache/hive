@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public class RuleExactMatch implements Rule {
 
   private final String ruleName;
-  private final String pattern;
+  private final String[] pattern;
 
   /**
    * The rule specified as operator names separated by % symbols, the left side represents the
@@ -45,7 +45,7 @@ public class RuleExactMatch implements Rule {
    * @param regExp
    *          string specification of the rule
    **/
-  public RuleExactMatch(String ruleName, String pattern) {
+  public RuleExactMatch(String ruleName, String[] pattern) {
     this.ruleName = ruleName;
     this.pattern = pattern;
   }
@@ -62,23 +62,24 @@ public class RuleExactMatch implements Rule {
    * @return cost of the function
    * @throws SemanticException
    */
+  @Override
   public int cost(Stack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
-    String name = new String();
+    if (numElems != pattern.length) {
+      return -1;
+    }
     for (int pos = numElems - 1; pos >= 0; pos--) {
-      name = stack.get(pos).getName() + "%" + name;
+      if(!stack.get(pos).getName().equals(pattern[pos])) {
+        return -1;
+      }
     }
-
-    if (pattern.equals(name)) {
-      return 1;
-    }
-
-    return -1;
+    return numElems;
   }
 
   /**
    * @return the name of the Node
    **/
+  @Override
   public String getName() {
     return ruleName;
   }

@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -57,6 +59,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.GenMapRedWalker;
+import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -89,6 +92,7 @@ public class MapJoinProcessor implements Transform {
   // (column type + column name). The column name is not really used anywhere, but it
   // needs to be passed. Use the string defined below for that.
   private static final String MAPJOINKEY_FIELDPREFIX = "mapjoinkey";
+  private static final Log LOG = LogFactory.getLog(MapJoinProcessor.class.getName());
 
   public MapJoinProcessor() {
   }
@@ -356,11 +360,18 @@ public class MapJoinProcessor implements Transform {
   public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
       JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
       int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
+    return convertJoinOpMapJoinOp(hconf, op, leftInputJoin, baseSrc, mapAliases,
+        mapJoinPos, noCheckOuterJoin, true);
+  }
+
+  public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
+      JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
+      int mapJoinPos, boolean noCheckOuterJoin, boolean adjustParentsChildren)
+          throws SemanticException {
 
     MapJoinDesc mapJoinDescriptor =
         getMapJoinDesc(hconf, op, leftInputJoin, baseSrc, mapAliases,
-                mapJoinPos, noCheckOuterJoin);
-
+            mapJoinPos, noCheckOuterJoin, adjustParentsChildren);
     // reduce sink row resolver used to generate map join op
     RowSchema outputRS = op.getSchema();
 
@@ -1025,7 +1036,7 @@ public class MapJoinProcessor implements Transform {
 
   public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
       JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
-      int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
+      int mapJoinPos, boolean noCheckOuterJoin, boolean adjustParentsChildren) throws SemanticException {
     JoinDesc desc = op.getConf();
     JoinCondDesc[] condns = desc.getConds();
     Byte[] tagOrder = desc.getTagOrder();
@@ -1071,6 +1082,26 @@ public class MapJoinProcessor implements Transform {
 
     // get the join keys from old parent ReduceSink operators
     Map<Byte, List<ExprNodeDesc>> keyExprMap = pair.getSecond();
+
+    if (!adjustParentsChildren) {
+      // Since we did not remove reduce sink parents, keep the original value expressions
+      newValueExprs = valueExprs;
+
+      // Join key exprs are represented in terms of the original table columns,
+      // we need to convert these to the generated column names we can see in the Join operator
+      Map<Byte, List<ExprNodeDesc>> newKeyExprMap = new HashMap<Byte, List<ExprNodeDesc>>();
+      for (Map.Entry<Byte, List<ExprNodeDesc>> mapEntry : keyExprMap.entrySet()) {
+        Byte pos = mapEntry.getKey();
+        ReduceSinkOperator rsParent = oldReduceSinkParentOps.get(pos.byteValue());
+        List<ExprNodeDesc> keyExprList =
+            ExprNodeDescUtils.resolveJoinKeysAsRSColumns(mapEntry.getValue(), rsParent);
+        if (keyExprList == null) {
+          throw new SemanticException("Error resolving join keys");
+        }
+        newKeyExprMap.put(pos, keyExprList);
+      }
+      keyExprMap = newKeyExprMap;
+    }
 
     // construct valueTableDescs and valueFilteredTableDescs
     List<TableDesc> valueTableDescs = new ArrayList<TableDesc>();
@@ -1162,5 +1193,12 @@ public class MapJoinProcessor implements Transform {
     }
 
     return mapJoinDescriptor;
+  }
+
+  public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
+      JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
+      int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
+    return getMapJoinDesc(hconf, op, leftInputJoin, baseSrc,
+        mapAliases, mapJoinPos, noCheckOuterJoin, true);
   }
 }

@@ -74,8 +74,6 @@ Partition Value:    	[2008-04-08, 11]
 Database:           	default             	 
 Table:              	analyze_srcpart_partial_scan	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 	numFiles            	1                   
@@ -149,8 +147,6 @@ Partition Value:    	[2008-04-08, 11]
 Database:           	default             	 
 Table:              	analyze_srcpart_partial_scan	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -190,8 +186,6 @@ hr                  	string
 Partition Value:    	[2008-04-09, 11]    	 
 Database:           	default             	 
 Table:              	analyze_srcpart_partial_scan	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               

@@ -53,9 +53,6 @@ public class SparkHashTableSinkOperator
 
   private final HashTableSinkOperator htsOperator;
 
-  // The position of this table
-  private byte tag;
-
   public SparkHashTableSinkOperator() {
     htsOperator = new HashTableSinkOperator();
   }
@@ -64,6 +61,7 @@ public class SparkHashTableSinkOperator
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     ObjectInspector[] inputOIs = new ObjectInspector[conf.getTagLength()];
+    byte tag = conf.getTag();
     inputOIs[tag] = inputObjInspectors[0];
     conf.setTagOrder(new Byte[]{ tag });
     htsOperator.setConf(conf);
@@ -73,13 +71,14 @@ public class SparkHashTableSinkOperator
   @Override
   public void process(Object row, int tag) throws HiveException {
     // Ignore the tag passed in, which should be 0, not what we want
-    htsOperator.process(row, this.tag);
+    htsOperator.process(row, conf.getTag());
   }
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
     try {
       MapJoinPersistableTableContainer[] mapJoinTables = htsOperator.mapJoinTables;
+      byte tag = conf.getTag();
       if (mapJoinTables == null || mapJoinTables.length < tag
           || mapJoinTables[tag] == null) {
         LOG.debug("mapJoinTable is null");
@@ -140,10 +139,10 @@ public class SparkHashTableSinkOperator
       } catch (FileExistsException e) {
         // No problem, use a new name
       }
-      // TODO find out numOfPartitions for the big table
-      int numOfPartitions = replication;
-      replication = (short) Math.max(MIN_REPLICATION, numOfPartitions);
     }
+    // TODO find out numOfPartitions for the big table
+    int numOfPartitions = replication;
+    replication = (short) Math.max(MIN_REPLICATION, numOfPartitions);
     htsOperator.console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag
       + " with group count: " + tableContainer.size() + " into file: " + path);
     // get the hashtable file and path
@@ -174,10 +173,6 @@ public class SparkHashTableSinkOperator
       }
     }
     tableContainer.clear();
-  }
-
-  public void setTag(byte tag) {
-    this.tag = tag;
   }
 
   /**

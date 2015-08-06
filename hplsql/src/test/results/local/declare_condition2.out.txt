@@ -1,0 +1,12 @@
+Ln:2 DECLARE HANDLER
+Ln:4 DECLARE HANDLER
+Ln:6 IF
+Ln:6 IF TRUE executed
+Ln:7 SIGNAL
+Ln:4 CONTINUE HANDLER
+Ln:5 PRINT
+Condition raised
+Ln:9 PRINT
+Executed 1
+Ln:10 PRINT
+Executed 2

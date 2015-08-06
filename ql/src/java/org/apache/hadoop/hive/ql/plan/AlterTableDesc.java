@@ -18,14 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -33,6 +25,14 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * AlterTableDesc.
@@ -51,8 +51,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     ADDPROPS("add props"), DROPPROPS("drop props"), ADDSERDE("add serde"), ADDSERDEPROPS("add serde props"),
     ADDFILEFORMAT("add fileformat"), ADDCLUSTERSORTCOLUMN("add cluster sort column"),
     RENAMECOLUMN("rename column"), ADDPARTITION("add partition"), TOUCH("touch"), ARCHIVE("archieve"),
-    UNARCHIVE("unarchieve"), ALTERPROTECTMODE("alter protect mode"),
-    ALTERPARTITIONPROTECTMODE("alter partition protect mode"), ALTERLOCATION("alter location"),
+    UNARCHIVE("unarchieve"), ALTERLOCATION("alter location"),
     DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
     ALTERPARTITION("alter partition"), COMPACT("compact"),
@@ -72,7 +71,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
       new HashSet<AlterTableDesc.AlterTableTypes>();
 
   static {
-    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE);
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDCOLS);
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.REPLACECOLS);
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.RENAMECOLUMN);

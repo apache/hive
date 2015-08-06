@@ -416,17 +416,39 @@ data, is the responsibility of the client using the API.
 </p>
 
 <h3>Dynamic Partition Creation:</h3>
+<p>
 It is very likely to be desirable to have new partitions created
 automatically (say on a hourly basis). In such cases requiring the Hive
-admin to pre-create the necessary partitions may not be reasonable.
-Consequently the API allows coordinators to create partitions as needed
-(see:
-<code>MutatorClientBuilder.addTable(String, String, boolean)</code>
+admin to pre-create the necessary partitions may not be reasonable. The
+API allows coordinators to create partitions as needed (see:
+<code>MutatorClientBuilder.addSinkTable(String, String, boolean)</code>
 ). Partition creation being an atomic action, multiple coordinators can
 race to create the partition, but only one would succeed, so
 coordinators clients need not synchronize when creating a partition. The
 user of the coordinator process needs to be given write permissions on
 the Hive table in order to create partitions.
+</p>
+
+<p>Care must be taken when using this option as it requires that the
+coordinators maintain a connection with the meta store database. When
+coordinator are running in a distributed environment (as is likely the
+case) it possible for them to overwhelm the meta store. In such cases it
+may be better to disable partition creation and collect a set of
+affected partitions as part of your ETL merge process. These can then be
+created with a single meta store connection in your client code, once
+the cluster side merge process is complete.</p>
+<p>
+Finally, note that when partition creation is disabled the coordinators
+must synthesize the partition URI as they cannot retrieve it from the
+meta store. This may cause problems if the layout of your partitions in
+HDFS does not follow the Hive standard (as implemented in
+<code>
+org.apache.hadoop.hive.metastore.Warehouse.getPartitionPath(Path,
+LinkedHashMap
+&lt;String , String&gt;).
+</code>
+)
+</p>
 
 <h2>Reading data</h2>
 
@@ -440,14 +462,14 @@ consistent manner requires the following:
 <ol>
 <li>Obtaining a valid transaction list from the meta store (<code>ValidTxnList</code>).
 </li>
-<li>Acquiring a read-lock with the meta store and issuing
-heartbeats (<code>LockImpl</code> can help with this).
+<li>Acquiring a lock with the meta store and issuing heartbeats (<code>LockImpl</code>
+can help with this).
 </li>
 <li>Configuring the <code>OrcInputFormat</code> and then reading
 the data. Make sure that you also pull in the <code>ROW__ID</code>
 values. See: <code>AcidRecordReader.getRecordIdentifier</code>.
 </li>
-<li>Releasing the read-lock.</li>
+<li>Releasing the lock.</li>
 </ol>
 </p>
 
@@ -473,6 +495,7 @@ table. The <code>AcidTableSerializer</code> can help you transport the <code>Aci
 when your workers are in a distributed environment.
 </li>
 <li>Compute your mutation set (this is your ETL merge process).</li>
+<li>Optionally: collect the set of affected partitions.</li>
 <li>Append bucket ids to insertion records. A <code>BucketIdResolver</code>
 can help here.
 </li>
@@ -481,6 +504,8 @@ can help here.
 <li>Close your coordinators.</li>
 <li>Abort or commit the transaction.</li>
 <li>Close your mutation client.</li>
+<li>Optionally: create any affected partitions that do not exist in
+the meta store.</li>
 </ol>
 <p>
 See

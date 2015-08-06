@@ -151,7 +151,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
             newConditionExpr,
             newRowType,
             join.getJoinInputs(),
-            join.getJoinTypes());
+            join.getJoinTypes(),
+            join.getJoinFilters());
 
     return new TrimResult(newJoin, mapping);
   }

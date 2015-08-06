@@ -171,7 +171,7 @@ public class Optimizer {
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES)) {
       transformations.add(new StatsOptimizer());
     }
-    if (isSparkExecEngine || (pctx.getContext().getExplain() && !isTezExecEngine)) {
+    if (pctx.getContext().getExplain() && !isTezExecEngine && !isSparkExecEngine) {
       transformations.add(new AnnotateWithStatistics());
       transformations.add(new AnnotateWithOpTraits());
     }

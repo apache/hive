@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -48,8 +46,6 @@ import org.apache.hadoop.io.IntWritable;
     impliesOrder = true
 )
 public class GenericUDAFCumeDist extends GenericUDAFRank {
-
-  static final Log LOG = LogFactory.getLog(GenericUDAFCumeDist.class.getName());
 
   @Override
   protected GenericUDAFAbstractRankEvaluator createEvaluator() {

@@ -50,7 +50,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hive.spark.client.rpc.Rpc;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
@@ -310,6 +312,17 @@ class SparkClientImpl implements SparkClient {
 
       List<String> argv = Lists.newArrayList();
 
+      if (hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION).equalsIgnoreCase("kerberos")) {
+          argv.add("kinit");
+          String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+              "0.0.0.0");
+          String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+          argv.add(principal);
+          argv.add("-k");
+          argv.add("-t");
+          argv.add(keyTabFile + ";");
+      }
+
       if (sparkHome != null) {
         argv.add(new File(sparkHome, "bin/spark-submit").getAbsolutePath());
       } else {
@@ -406,14 +419,15 @@ class SparkClientImpl implements SparkClient {
         argv.add(String.format("%s=%s", hiveSparkConfKey, value));
       }
 
-      LOG.info("Running client driver with argv: {}", Joiner.on(" ").join(argv));
+      String cmd = Joiner.on(" ").join(argv);
+      LOG.info("Running client driver with argv: {}", cmd);
+      ProcessBuilder pb = new ProcessBuilder("sh", "-c", cmd);
 
-      ProcessBuilder pb = new ProcessBuilder(argv.toArray(new String[argv.size()]));
       if (isTesting != null) {
         pb.environment().put("SPARK_TESTING", isTesting);
       }
-      final Process child = pb.start();
 
+      final Process child = pb.start();
       int childId = childIdGenerator.incrementAndGet();
       redirect("stdout-redir-" + childId, child.getInputStream());
       redirect("stderr-redir-" + childId, child.getErrorStream());

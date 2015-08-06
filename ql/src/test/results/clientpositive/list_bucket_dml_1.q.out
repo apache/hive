@@ -282,8 +282,6 @@ Partition Value:    	[2008-04-08, 11]
 Database:           	default             	 
 Table:              	list_bucketing_dynamic_part	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
@@ -328,8 +326,6 @@ hr                  	string
 Partition Value:    	[2008-04-08, 12]    	 
 Database:           	default             	 
 Table:              	list_bucketing_dynamic_part	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                

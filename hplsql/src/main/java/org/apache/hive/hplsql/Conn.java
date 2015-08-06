@@ -41,10 +41,12 @@ public class Conn {
   Exec exec;
   Timer timer = new Timer();
   boolean trace = false;  
+  boolean info = false;
   
   Conn(Exec e) {
     exec = e;  
     trace = exec.getTrace();
+    info = exec.getInfo();
   }
   
   /**
@@ -55,12 +57,13 @@ public class Conn {
       Connection conn = getConnection(connName);
       runPreSql(connName, conn);
       Statement stmt = conn.createStatement();
+      exec.info(null, "Starting query");
       timer.start();
       ResultSet rs = stmt.executeQuery(query.sql);
       timer.stop();
       query.set(conn, stmt, rs);      
-      if (trace) {
-        exec.trace(null, "Query executed successfully (" + timer.format() + ")");
+      if (info) {
+        exec.info(null, "Query executed successfully (" + timer.format() + ")");
       }      
     } catch (Exception e) {
       query.setError(e);
@@ -82,10 +85,15 @@ public class Conn {
       runPreSql(connName, conn);
       Statement stmt = conn.createStatement();
       ResultSet rs = null;
+      exec.info(null, "Starting SQL statement");
+      timer.start();
       if (stmt.execute(sql)) {
         rs = stmt.getResultSet();        
       } 
       query.set(conn, stmt, rs);
+      if (info) {
+        exec.info(null, "SQL statement executed successfully (" + timer.format() + ")");
+      } 
     } catch (Exception e) {
       query.setError(e);
     }
@@ -169,8 +177,8 @@ public class Conn {
     timer.start();
     Connection conn = DriverManager.getConnection(url, usr, pwd);
     timer.stop();
-    if (trace) {
-      exec.trace(null, "Open connection: " + url + " (" + timer.format() + ")");
+    if (info) {
+      exec.info(null, "Open connection: " + url + " (" + timer.format() + ")");
     }
     return conn;
   }

@@ -34,7 +34,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -538,56 +537,6 @@ public class Partition implements Serializable {
       pvals.add(val);
     }
     tPartition.setValues(pvals);
-  }
-
-  /**
-   * @param protectMode
-   */
-  public void setProtectMode(ProtectMode protectMode){
-    Map<String, String> parameters = tPartition.getParameters();
-    String pm = protectMode.toString();
-    if (pm != null) {
-      parameters.put(ProtectMode.PARAMETER_NAME, pm);
-    } else {
-      parameters.remove(ProtectMode.PARAMETER_NAME);
-    }
-    tPartition.setParameters(parameters);
-  }
-
-  /**
-   * @return protect mode
-   */
-  public ProtectMode getProtectMode(){
-    return MetaStoreUtils.getProtectMode(tPartition);
-  }
-
-  /**
-   * @return True protect mode indicates the partition if offline.
-   */
-  public boolean isOffline(){
-    ProtectMode pm = getProtectMode();
-    if (pm == null) {
-      return false;
-    } else {
-      return pm.offline;
-    }
-  }
-
-  /**
-   * @return True if protect mode attribute of the partition indicate
-   * that it is OK to drop the table
-   */
-  public boolean canDrop() {
-    return MetaStoreUtils.canDropPartition(table.getTTable(), tPartition);
-  }
-
-  /**
-   * @return True if protect mode attribute of the partition indicate
-   * that it is OK to write to the table
-   */
-  public boolean canWrite() {
-    ProtectMode mode = getProtectMode();
-    return (!mode.offline && !mode.readOnly);
   }
 
   /**

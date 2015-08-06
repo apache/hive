@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
@@ -39,6 +40,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -313,6 +316,18 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       } else {
         mrwork = Utilities.getMapWork(job);
       }
+
+      // Prune partitions
+      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
+          && HiveConf.getBoolVar(job, HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+        SparkDynamicPartitionPruner pruner = new SparkDynamicPartitionPruner();
+        try {
+          pruner.prune(mrwork, job);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+
       pathToPartitionInfo = mrwork.getPathToPartitionInfo();
     }
   }
@@ -356,18 +371,28 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   Path[] getInputPaths(JobConf job) throws IOException {
-    Path[] dirs = FileInputFormat.getInputPaths(job);
-    if (dirs.length == 0) {
-      // on tez we're avoiding to duplicate the file info in FileInputFormat.
-      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-        try {
-          List<Path> paths = Utilities.getInputPathsTez(job, mrwork);
-          dirs = paths.toArray(new Path[paths.size()]);
-        } catch (Exception e) {
-          throw new IOException("Could not create input files", e);
+    Path[] dirs;
+    if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      Set<String> pathStrings = mrwork.getPathToPartitionInfo().keySet();
+      dirs = new Path[pathStrings.size()];
+      Iterator<String> it = pathStrings.iterator();
+      for (int i = 0; i < dirs.length; i++) {
+        dirs[i] = new Path(it.next());
+      }
+    } else {
+      dirs = FileInputFormat.getInputPaths(job);
+      if (dirs.length == 0) {
+        // on tez we're avoiding to duplicate the file info in FileInputFormat.
+        if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+          try {
+            List<Path> paths = Utilities.getInputPathsTez(job, mrwork);
+            dirs = paths.toArray(new Path[paths.size()]);
+          } catch (Exception e) {
+            throw new IOException("Could not create input files", e);
+          }
+        } else {
+          throw new IOException("No input paths specified in job");
         }
-      } else {
-        throw new IOException("No input paths specified in job");
       }
     }
     return dirs;

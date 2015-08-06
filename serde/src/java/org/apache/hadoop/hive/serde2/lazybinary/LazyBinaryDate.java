@@ -55,6 +55,8 @@ public class LazyBinaryDate extends
    */
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    data.setFromBytes(bytes.getData(), start, length, vInt);
+    LazyBinaryUtils.readVInt(bytes.getData(), start, vInt);
+    assert (length == vInt.length);
+    data.set(vInt.value);
   }
 }

@@ -1,0 +1,54 @@
+PREHOOK: query: CREATE EXTERNAL TABLE ex_table1 ( key INT, value STRING)
+    PARTITIONED BY (part STRING)
+    STORED AS textfile
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ex_table1
+POSTHOOK: query: CREATE EXTERNAL TABLE ex_table1 ( key INT, value STRING)
+    PARTITIONED BY (part STRING)
+    STORED AS textfile
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ex_table1
+PREHOOK: query: CREATE EXTERNAL TABLE ex_table2 ( key INT, value STRING)
+    PARTITIONED BY (part STRING)
+    STORED AS textfile
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ex_table2
+POSTHOOK: query: CREATE EXTERNAL TABLE ex_table2 ( key INT, value STRING)
+    PARTITIONED BY (part STRING)
+    STORED AS textfile
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ex_table2
+PREHOOK: query: INSERT OVERWRITE TABLE ex_table2 PARTITION (part='part1')
+SELECT key, value FROM src WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ex_table2@part=part1
+POSTHOOK: query: INSERT OVERWRITE TABLE ex_table2 PARTITION (part='part1')
+SELECT key, value FROM src WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ex_table2@part=part1
+POSTHOOK: Lineage: ex_table2 PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ex_table2 PARTITION(part=part1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SHOW PARTITIONS ex_table2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ex_table2
+POSTHOOK: query: SHOW PARTITIONS ex_table2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ex_table2
+part=part1
+PREHOOK: query: ALTER TABLE ex_table1 EXCHANGE PARTITION (part='part1') WITH TABLE ex_table2
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Got exception: java.io.IOException Cannot rename the source path. The destination path already exists.)

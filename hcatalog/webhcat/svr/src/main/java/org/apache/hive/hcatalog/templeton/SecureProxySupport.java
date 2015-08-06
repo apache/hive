@@ -86,6 +86,9 @@ public class SecureProxySupport {
       } catch (Exception e) {
         throw new IOException(e);
       }
+      if(hcatTokenStr == null) {
+        LOG.error("open(" + user + ") token=null");
+      }
       Token<?> msToken = new Token();
       msToken.decodeFromUrlString(hcatTokenStr);
       msToken.setService(new Text(HCAT_SERVICE));
@@ -175,11 +178,10 @@ public class SecureProxySupport {
   }
 
   private String buildHcatDelegationToken(String user)
-    throws IOException, InterruptedException, MetaException, TException {
+    throws IOException, InterruptedException, TException {
     final HiveConf c = new HiveConf();
     final IMetaStoreClient client = HCatUtil.getHiveMetastoreClient(c);
     LOG.info("user: " + user + " loginUser: " + UserGroupInformation.getLoginUser().getUserName());
-    final TokenWrapper twrapper = new TokenWrapper();
     final UserGroupInformation ugi = UgiFactory.getUgi(user);
     String s = ugi.doAs(new PrivilegedExceptionAction<String>() {
       public String run()

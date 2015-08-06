@@ -173,7 +173,7 @@ public class TestIOContextMap {
   }
 
   @Test
-  public void testSparkThreadLocal() throws Exception {
+    public void testSparkThreadLocal() throws Exception {
     // Test that input name does not change IOContext returned, and that each thread gets its own.
     final Configuration conf1 = new Configuration();
     conf1.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "spark");

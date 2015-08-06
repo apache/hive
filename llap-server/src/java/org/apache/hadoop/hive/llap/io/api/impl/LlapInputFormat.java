@@ -30,14 +30,13 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters.Counter;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.llap.Consumer;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
@@ -121,7 +120,7 @@ public class LlapInputFormat
         JobConf job, FileSplit split, List<Integer> includedCols, String hostName) {
       this.split = split;
       this.columnIds = includedCols;
-      this.sarg = SearchArgumentFactory.createFromConf(job);
+      this.sarg = ConvertAstToSearchArg.createFromConf(job);
       this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
       this.counters = new QueryFragmentCounters(job);
       this.counters.setDesc(QueryFragmentCounters.Desc.MACHINE, hostName);

@@ -18,9 +18,6 @@
  */
 package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
-import java.io.Serializable;
-import java.util.List;
-
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,6 +46,9 @@ import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.ErrorType;
 import org.apache.hive.hcatalog.common.HCatException;
+
+import java.io.Serializable;
+import java.util.List;
 
 public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
 
@@ -237,7 +237,6 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
           case HiveParser.TOK_ALTERTABLE_EXCHANGEPARTITION:
           case HiveParser.TOK_ALTERTABLE_SKEWED:
           case HiveParser.TOK_ALTERTABLE_FILEFORMAT:
-          case HiveParser.TOK_ALTERTABLE_PROTECTMODE:
           case HiveParser.TOK_ALTERTABLE_LOCATION:
           case HiveParser.TOK_ALTERTABLE_MERGEFILES:
           case HiveParser.TOK_ALTERTABLE_RENAMEPART:

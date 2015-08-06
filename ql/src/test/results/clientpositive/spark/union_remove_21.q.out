@@ -71,29 +71,10 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 2)
-        Reducer 4 <- Map 3 (GROUP, 2)
+        Reducer 4 <- Map 1 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: inputtbl1
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1
@@ -187,7 +168,6 @@ key                 	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 

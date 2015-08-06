@@ -149,16 +149,21 @@ public class HiveMetaTool {
     initObjectStore(hiveConf);
 
     System.out.println("Executing query: " + query);
-    Collection<?> result = objStore.executeJDOQLSelect(query);
-    if (result != null) {
-      Iterator<?> iter = result.iterator();
-      while (iter.hasNext()) {
-        Object o = iter.next();
-        System.out.println(o.toString());
+    ObjectStore.QueryWrapper queryWrapper = new ObjectStore.QueryWrapper();
+    try {
+      Collection<?> result = objStore.executeJDOQLSelect(query, queryWrapper);
+      if (result != null) {
+        Iterator<?> iter = result.iterator();
+        while (iter.hasNext()) {
+          Object o = iter.next();
+          System.out.println(o.toString());
+        }
+      } else {
+        System.err.println("Encountered error during executeJDOQLSelect -" +
+          "commit of JDO transaction failed.");
       }
-    } else {
-      System.err.println("Encountered error during executeJDOQLSelect -" +
-        "commit of JDO transaction failed.");
+    } finally {
+      queryWrapper.close();
     }
   }
 

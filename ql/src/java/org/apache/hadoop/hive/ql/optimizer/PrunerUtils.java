@@ -35,7 +35,9 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.RuleExactMatch;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -76,9 +78,8 @@ public final class PrunerUtils {
     String tsOprName = TableScanOperator.getOperatorName();
     String filtOprName = FilterOperator.getOperatorName();
 
-    opRules.put(new RuleRegExp("R1", new StringBuilder().append("(").append(tsOprName).append("%")
-        .append(filtOprName).append("%)|(").append(tsOprName).append("%").append(filtOprName)
-        .append("%").append(filtOprName).append("%)").toString()), filterProc);
+    opRules.put(new RuleExactMatch("R1", new String[] {tsOprName, filtOprName, filtOprName}), filterProc);
+    opRules.put(new RuleExactMatch("R2", new String[] {tsOprName, filtOprName}), filterProc);
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -111,10 +112,9 @@ public final class PrunerUtils {
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
-    exprRules.put(new RuleRegExp("R1", ExprNodeColumnDesc.class.getName() + "%"), colProc);
-    exprRules.put(new RuleRegExp("R2", ExprNodeFieldDesc.class.getName() + "%"), fieldProc);
-    exprRules.put(new RuleRegExp("R5", ExprNodeGenericFuncDesc.class.getName() + "%"),
-        genFuncProc);
+    exprRules.put(new TypeRule(ExprNodeColumnDesc.class) , colProc);
+    exprRules.put(new TypeRule(ExprNodeFieldDesc.class), fieldProc);
+    exprRules.put(new TypeRule(ExprNodeGenericFuncDesc.class), genFuncProc);
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

@@ -68,8 +68,8 @@ STAGE PLANS:
       Edges:
         Reducer 11 <- Map 10 (PARTITION-LEVEL SORT, 2), Map 12 (PARTITION-LEVEL SORT, 2)
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
-        Reducer 5 <- Map 4 (PARTITION-LEVEL SORT, 2), Map 6 (PARTITION-LEVEL SORT, 2)
-        Reducer 8 <- Map 7 (PARTITION-LEVEL SORT, 2), Map 9 (PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 8 <- Map 10 (PARTITION-LEVEL SORT, 2), Map 12 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -121,62 +121,6 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and (key = '2')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: val (type: string)
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key is not null and (key = '2')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: val (type: string)
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key is not null and (key = '2')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: val (type: string)
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key is not null and (not (key = '2'))) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: val (type: string)
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key is not null and (not (key = '2'))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)

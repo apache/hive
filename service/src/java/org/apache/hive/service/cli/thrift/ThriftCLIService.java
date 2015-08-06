@@ -30,6 +30,9 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.AbstractService;
@@ -108,13 +111,29 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       @Override
       public ServerContext createContext(
           TProtocol input, TProtocol output) {
+        Metrics metrics = MetricsFactory.getInstance();
+        if (metrics != null) {
+          try {
+            metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+          } catch (Exception e) {
+            LOG.warn("Error Reporting JDO operation to Metrics system", e);
+          }
+        }
         return new ThriftCLIServerContext();
       }
 
       @Override
       public void deleteContext(ServerContext serverContext,
           TProtocol input, TProtocol output) {
-        ThriftCLIServerContext context = (ThriftCLIServerContext)serverContext;
+        Metrics metrics = MetricsFactory.getInstance();
+        if (metrics != null) {
+          try {
+            metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+          } catch (Exception e) {
+            LOG.warn("Error Reporting JDO operation to Metrics system", e);
+          }
+        }
+        ThriftCLIServerContext context = (ThriftCLIServerContext) serverContext;
         SessionHandle sessionHandle = context.getSessionHandle();
         if (sessionHandle != null) {
           LOG.info("Session disconnected without closing properly, close it now");

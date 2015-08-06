@@ -19,27 +19,24 @@
 package org.apache.hadoop.hive.ql.io.sarg;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import com.google.common.collect.Sets;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionBuilder;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionTree;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.PredicateLeafImpl;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.junit.Test;
 
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
@@ -92,96 +89,103 @@ public class TestSearchArgumentImpl {
 
   @Test
   public void testNotPushdown() throws Exception {
-    assertEquals("leaf-1", ExpressionBuilder.pushDownNot(leaf(1)).toString());
+    assertEquals("leaf-1", SearchArgumentImpl.BuilderImpl.pushDownNot(leaf(1))
+        .toString());
     assertEquals("(not leaf-1)",
-        ExpressionBuilder.pushDownNot(not(leaf(1))).toString());
+        SearchArgumentImpl.BuilderImpl.pushDownNot(not(leaf(1))).toString());
     assertEquals("leaf-1",
-        ExpressionBuilder.pushDownNot(not(not(leaf(1)))).toString());
+        SearchArgumentImpl.BuilderImpl.pushDownNot(not(not(leaf(1))))
+            .toString());
     assertEquals("(not leaf-1)",
-        ExpressionBuilder.pushDownNot(not(not(not(leaf(1))))).toString());
+        SearchArgumentImpl.BuilderImpl.pushDownNot(not(not(not(leaf(1))))).
+            toString());
     assertEquals("(or leaf-1 (not leaf-2))",
-        ExpressionBuilder.pushDownNot(not(and(not(leaf(1)),
+        SearchArgumentImpl.BuilderImpl.pushDownNot(not(and(not(leaf(1)),
             leaf(2)))).toString());
     assertEquals("(and (not leaf-1) leaf-2)",
-        ExpressionBuilder.pushDownNot(not(or(leaf(1),
+        SearchArgumentImpl.BuilderImpl.pushDownNot(not(or(leaf(1),
             not(leaf(2))))).toString());
     assertEquals("(or (or (not leaf-1) leaf-2) leaf-3)",
-        ExpressionBuilder.pushDownNot(or(not(and(leaf(1), not(leaf(2)))),
+        SearchArgumentImpl.BuilderImpl.pushDownNot(or(not(and(leaf(1),
+                not(leaf(2)))),
             not(not(leaf(3))))).toString());
-    assertEquals("NO", ExpressionBuilder.pushDownNot(
+    assertEquals("NO", SearchArgumentImpl.BuilderImpl.pushDownNot(
         not(constant(TruthValue.YES))).toString());
-    assertEquals("YES", ExpressionBuilder.pushDownNot(
+    assertEquals("YES", SearchArgumentImpl.BuilderImpl.pushDownNot(
         not(constant(TruthValue.NO))).toString());
-    assertEquals("NULL", ExpressionBuilder.pushDownNot(
+    assertEquals("NULL", SearchArgumentImpl.BuilderImpl.pushDownNot(
         not(constant(TruthValue.NULL))).toString());
-    assertEquals("YES_NO", ExpressionBuilder.pushDownNot(
+    assertEquals("YES_NO", SearchArgumentImpl.BuilderImpl.pushDownNot(
         not(constant(TruthValue.YES_NO))).toString());
-    assertEquals("YES_NULL", ExpressionBuilder.pushDownNot(
+    assertEquals("YES_NULL", SearchArgumentImpl.BuilderImpl.pushDownNot(
         not(constant(TruthValue.NO_NULL))).toString());
-    assertEquals("NO_NULL", ExpressionBuilder.pushDownNot(
+    assertEquals("NO_NULL", SearchArgumentImpl.BuilderImpl.pushDownNot(
         not(constant(TruthValue.YES_NULL))).toString());
-    assertEquals("YES_NO_NULL", ExpressionBuilder.pushDownNot(
+    assertEquals("YES_NO_NULL", SearchArgumentImpl.BuilderImpl.pushDownNot(
         not(constant(TruthValue.YES_NO_NULL))).toString());
   }
 
   @Test
   public void testFlatten() throws Exception {
-    assertEquals("leaf-1", ExpressionBuilder.flatten(leaf(1)).toString());
+    assertEquals("leaf-1", SearchArgumentImpl.BuilderImpl.flatten(leaf(1)).toString());
     assertEquals("NO",
-        ExpressionBuilder.flatten(constant(TruthValue.NO)).toString());
+        SearchArgumentImpl.BuilderImpl.flatten(constant(TruthValue.NO)).toString());
     assertEquals("(not (not leaf-1))",
-        ExpressionBuilder.flatten(not(not(leaf(1)))).toString());
+        SearchArgumentImpl.BuilderImpl.flatten(not(not(leaf(1)))).toString());
     assertEquals("(and leaf-1 leaf-2)",
-        ExpressionBuilder.flatten(and(leaf(1), leaf(2))).toString());
+        SearchArgumentImpl.BuilderImpl.flatten(and(leaf(1), leaf(2))).toString());
     assertEquals("(and (or leaf-1 leaf-2) leaf-3)",
-        ExpressionBuilder.flatten(and(or(leaf(1), leaf(2)), leaf(3))
+        SearchArgumentImpl.BuilderImpl.flatten(and(or(leaf(1), leaf(2)), leaf(3))
         ).toString());
     assertEquals("(and leaf-1 leaf-2 leaf-3 leaf-4)",
-        ExpressionBuilder.flatten(and(and(leaf(1), leaf(2)),
+        SearchArgumentImpl.BuilderImpl.flatten(and(and(leaf(1), leaf(2)),
             and(leaf(3), leaf(4)))).toString());
     assertEquals("(or leaf-1 leaf-2 leaf-3 leaf-4)",
-        ExpressionBuilder.flatten(or(leaf(1), or(leaf(2), or(leaf(3),
+        SearchArgumentImpl.BuilderImpl.flatten(or(leaf(1), or(leaf(2), or(leaf(3),
             leaf(4))))).toString());
     assertEquals("(or leaf-1 leaf-2 leaf-3 leaf-4)",
-        ExpressionBuilder.flatten(or(or(or(leaf(1), leaf(2)), leaf(3)),
+        SearchArgumentImpl.BuilderImpl.flatten(or(or(or(leaf(1), leaf(2)), leaf(3)),
             leaf(4))).toString());
     assertEquals("(or leaf-1 leaf-2 leaf-3 leaf-4 leaf-5 leaf-6)",
-        ExpressionBuilder.flatten(or(or(leaf(1), or(leaf(2), leaf(3))),
+        SearchArgumentImpl.BuilderImpl.flatten(or(or(leaf(1), or(leaf(2), leaf(3))),
             or(or(leaf(4), leaf(5)), leaf(6)))).toString());
     assertEquals("(and (not leaf-1) leaf-2 (not leaf-3) leaf-4 (not leaf-5) leaf-6)",
-        ExpressionBuilder.flatten(and(and(not(leaf(1)), and(leaf(2),
-            not(leaf(3)))), and(and(leaf(4), not(leaf(5))), leaf(6)))
+        SearchArgumentImpl.BuilderImpl.flatten(and(and(not(leaf(1)), and(leaf(2),
+                not(leaf(3)))), and(and(leaf(4), not(leaf(5))), leaf(6)))
         ).toString());
     assertEquals("(not (and leaf-1 leaf-2 leaf-3))",
-        ExpressionBuilder.flatten(not(and(leaf(1), and(leaf(2), leaf(3))))
+        SearchArgumentImpl.BuilderImpl.flatten(not(and(leaf(1), and(leaf(2), leaf(3))))
         ).toString());
   }
 
   @Test
   public void testFoldMaybe() throws Exception {
     assertEquals("(and leaf-1)",
-        ExpressionBuilder.foldMaybe(and(leaf(1),
+        SearchArgumentImpl.BuilderImpl.foldMaybe(and(leaf(1),
             constant(TruthValue.YES_NO_NULL))).toString());
     assertEquals("(and leaf-1 leaf-2)",
-        ExpressionBuilder.foldMaybe(and(leaf(1),
+        SearchArgumentImpl.BuilderImpl.foldMaybe(and(leaf(1),
             constant(TruthValue.YES_NO_NULL), leaf(2))).toString());
     assertEquals("(and leaf-1 leaf-2)",
-        ExpressionBuilder.foldMaybe(and(constant(TruthValue.YES_NO_NULL),
-            leaf(1), leaf(2), constant(TruthValue.YES_NO_NULL))).toString());
+        SearchArgumentImpl.BuilderImpl.
+            foldMaybe(and(constant(TruthValue.YES_NO_NULL),
+                leaf(1), leaf(2), constant(TruthValue.YES_NO_NULL))).toString());
     assertEquals("YES_NO_NULL",
-        ExpressionBuilder.foldMaybe(and(constant(TruthValue.YES_NO_NULL),
-            constant(TruthValue.YES_NO_NULL))).toString());
+        SearchArgumentImpl.BuilderImpl.
+            foldMaybe(and(constant(TruthValue.YES_NO_NULL),
+                constant(TruthValue.YES_NO_NULL))).toString());
     assertEquals("YES_NO_NULL",
-        ExpressionBuilder.foldMaybe(or(leaf(1),
-            constant(TruthValue.YES_NO_NULL))).toString());
+        SearchArgumentImpl.BuilderImpl.
+            foldMaybe(or(leaf(1),
+                constant(TruthValue.YES_NO_NULL))).toString());
     assertEquals("(or leaf-1 (and leaf-2))",
-        ExpressionBuilder.foldMaybe(or(leaf(1),
+        SearchArgumentImpl.BuilderImpl.foldMaybe(or(leaf(1),
             and(leaf(2), constant(TruthValue.YES_NO_NULL)))).toString());
     assertEquals("(and leaf-1)",
-        ExpressionBuilder.foldMaybe(and(or(leaf(2),
+        SearchArgumentImpl.BuilderImpl.foldMaybe(and(or(leaf(2),
             constant(TruthValue.YES_NO_NULL)), leaf(1))).toString());
-    assertEquals("(and leaf-100)", ExpressionBuilder.foldMaybe(
-        ExpressionBuilder.convertToCNF(and(leaf(100),
+    assertEquals("(and leaf-100)", SearchArgumentImpl.BuilderImpl.foldMaybe(
+        SearchArgumentImpl.BuilderImpl.convertToCNF(and(leaf(100),
             or(and(leaf(0), leaf(1)),
                 and(leaf(2), leaf(3)),
                 and(leaf(4), leaf(5)),
@@ -195,28 +199,31 @@ public class TestSearchArgumentImpl {
 
   @Test
   public void testCNF() throws Exception {
-    assertEquals("leaf-1", ExpressionBuilder.convertToCNF(leaf(1)).toString());
-    assertEquals("NO", ExpressionBuilder.convertToCNF(
+    assertEquals("leaf-1", SearchArgumentImpl.BuilderImpl.convertToCNF(leaf(1)).
+        toString());
+    assertEquals("NO", SearchArgumentImpl.BuilderImpl.convertToCNF(
         constant(TruthValue.NO)).toString());
-    assertEquals("(not leaf-1)", ExpressionBuilder.convertToCNF(
+    assertEquals("(not leaf-1)", SearchArgumentImpl.BuilderImpl.convertToCNF(
         not(leaf(1))).toString());
-    assertEquals("(and leaf-1 leaf-2)", ExpressionBuilder.convertToCNF(
-        and(leaf(1), leaf(2))).toString());
-    assertEquals("(or (not leaf-1) leaf-2)", ExpressionBuilder.convertToCNF(
-        or(not(leaf(1)), leaf(2))).toString());
+    assertEquals("(and leaf-1 leaf-2)", SearchArgumentImpl.BuilderImpl.
+        convertToCNF(
+            and(leaf(1), leaf(2))).toString());
+    assertEquals("(or (not leaf-1) leaf-2)", SearchArgumentImpl.BuilderImpl.
+        convertToCNF(
+            or(not(leaf(1)), leaf(2))).toString());
     assertEquals("(and (or leaf-1 leaf-2) (not leaf-3))",
-        ExpressionBuilder.convertToCNF(
+        SearchArgumentImpl.BuilderImpl.convertToCNF(
             and(or(leaf(1), leaf(2)), not(leaf(3)))).toString());
     assertEquals("(and (or leaf-1 leaf-3) (or leaf-2 leaf-3)" +
         " (or leaf-1 leaf-4) (or leaf-2 leaf-4))",
-        ExpressionBuilder.convertToCNF(
+        SearchArgumentImpl.BuilderImpl.convertToCNF(
             or(and(leaf(1), leaf(2)), and(leaf(3), leaf(4)))).toString());
     assertEquals("(and" +
         " (or leaf-1 leaf-5) (or leaf-2 leaf-5)" +
         " (or leaf-3 leaf-5) (or leaf-4 leaf-5)" +
         " (or leaf-1 leaf-6) (or leaf-2 leaf-6)" +
         " (or leaf-3 leaf-6) (or leaf-4 leaf-6))",
-        ExpressionBuilder.convertToCNF(
+        SearchArgumentImpl.BuilderImpl.convertToCNF(
             or(and(leaf(1), leaf(2), leaf(3), leaf(4)),
                 and(leaf(5), leaf(6)))).toString());
     assertEquals("(and" +
@@ -224,7 +231,7 @@ public class TestSearchArgumentImpl {
         " (or leaf-5 leaf-6 (not leaf-7) leaf-2 leaf-3)" +
         " (or leaf-5 leaf-6 (not leaf-7) leaf-1 leaf-4)" +
         " (or leaf-5 leaf-6 (not leaf-7) leaf-2 leaf-4))",
-        ExpressionBuilder.convertToCNF(
+        SearchArgumentImpl.BuilderImpl.convertToCNF(
             or(and(leaf(1), leaf(2)),
                 and(leaf(3), leaf(4)),
                 or(leaf(5), leaf(6)),
@@ -248,33 +255,37 @@ public class TestSearchArgumentImpl {
         " (or leaf-8 leaf-0 leaf-5 leaf-7)" +
         " (or leaf-8 leaf-1 leaf-5 leaf-7)" +
         " (or leaf-8 leaf-2 leaf-5 leaf-7))",
-        ExpressionBuilder.convertToCNF(or(and(leaf(0), leaf(1), leaf(2)),
+        SearchArgumentImpl.BuilderImpl.convertToCNF(or(and(leaf(0), leaf(1),
+                leaf(2)),
             and(leaf(3), leaf(4), leaf(5)),
             and(leaf(6), leaf(7)),
             leaf(8))).toString());
-    assertEquals("YES_NO_NULL", ExpressionBuilder.convertToCNF(or(and(leaf(0), leaf(1)),
-        and(leaf(2), leaf(3)),
-        and(leaf(4), leaf(5)),
-        and(leaf(6), leaf(7)),
-        and(leaf(8), leaf(9)),
-        and(leaf(10), leaf(11)),
-        and(leaf(12), leaf(13)),
-        and(leaf(14), leaf(15)),
-        and(leaf(16), leaf(17)))).toString());
-    assertEquals("(and leaf-100 YES_NO_NULL)", ExpressionBuilder.convertToCNF(and(leaf(100),
-        or(and(leaf(0), leaf(1)),
-        and(leaf(2), leaf(3)),
-        and(leaf(4), leaf(5)),
-        and(leaf(6), leaf(7)),
-        and(leaf(8), leaf(9)),
-        and(leaf(10), leaf(11)),
-        and(leaf(12), leaf(13)),
-        and(leaf(14), leaf(15)),
-        and(leaf(16), leaf(17))))).toString());
-    assertNoSharedNodes(ExpressionBuilder.convertToCNF(or(and(leaf(0), leaf(1), leaf(2)),
-        and(leaf(3), leaf(4), leaf(5)),
-        and(leaf(6), leaf(7)),
-        leaf(8))), Sets.<ExpressionTree>newIdentityHashSet());
+    assertEquals("YES_NO_NULL", SearchArgumentImpl.BuilderImpl.
+        convertToCNF(or(and(leaf(0), leaf(1)),
+            and(leaf(2), leaf(3)),
+            and(leaf(4), leaf(5)),
+            and(leaf(6), leaf(7)),
+            and(leaf(8), leaf(9)),
+            and(leaf(10), leaf(11)),
+            and(leaf(12), leaf(13)),
+            and(leaf(14), leaf(15)),
+            and(leaf(16), leaf(17)))).toString());
+    assertEquals("(and leaf-100 YES_NO_NULL)", SearchArgumentImpl.BuilderImpl.
+        convertToCNF(and(leaf(100),
+            or(and(leaf(0), leaf(1)),
+                and(leaf(2), leaf(3)),
+                and(leaf(4), leaf(5)),
+                and(leaf(6), leaf(7)),
+                and(leaf(8), leaf(9)),
+                and(leaf(10), leaf(11)),
+                and(leaf(12), leaf(13)),
+                and(leaf(14), leaf(15)),
+                and(leaf(16), leaf(17))))).toString());
+    assertNoSharedNodes(SearchArgumentImpl.BuilderImpl.
+        convertToCNF(or(and(leaf(0), leaf(1), leaf(2)),
+            and(leaf(3), leaf(4), leaf(5)),
+            and(leaf(6), leaf(7)),
+            leaf(8))), Sets.<ExpressionTree>newIdentityHashSet());
   }
 
   private static void assertNoSharedNodes(ExpressionTree tree,
@@ -310,2596 +321,6 @@ public class TestSearchArgumentImpl {
     }
   }
 
-  @Test
-  public void testExpression1() throws Exception {
-    // first_name = 'john' or
-    //  'greg' < first_name or
-    //  'alan' > first_name or
-    //  id > 12 or
-    //  13 < id or
-    //  id < 15 or
-    //  16 > id or
-    //  (id <=> 30 and first_name <=> 'owen')
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"children\"> \n" +
-        "                       <object class=\"java.util.ArrayList\"> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                          <void property=\"children\"> \n" +
-        "                           <object class=\"java.util.ArrayList\"> \n" +
-        "                            <void method=\"add\"> \n" +
-        "                             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                              <void property=\"children\"> \n" +
-        "                               <object class=\"java.util.ArrayList\"> \n" +
-        "                                <void method=\"add\"> \n" +
-        "                                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                                  <void property=\"column\"> \n" +
-        "                                   <string>first_name</string> \n" +
-        "                                  </void> \n" +
-        "                                  <void property=\"tabAlias\"> \n" +
-        "                                   <string>orc_people</string> \n" +
-        "                                  </void> \n" +
-        "                                  <void property=\"typeInfo\"> \n" +
-        "                                   <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                                    <void property=\"typeName\"> \n" +
-        "                                     <string>string</string> \n" +
-        "                                    </void> \n" +
-        "                                   </object> \n" +
-        "                                  </void> \n" +
-        "                                 </object> \n" +
-        "                                </void> \n" +
-        "                                <void method=\"add\"> \n" +
-        "                                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                                  <void property=\"typeInfo\"> \n" +
-        "                                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                                  </void> \n" +
-        "                                  <void property=\"value\"> \n" +
-        "                                   <string>john</string> \n" +
-        "                                  </void> \n" +
-        "                                 </object> \n" +
-        "                                </void> \n" +
-        "                               </object> \n" +
-        "                              </void> \n" +
-        "                              <void property=\"genericUDF\"> \n" +
-        "                               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual\"/> \n" +
-        "                              </void> \n" +
-        "                              <void property=\"typeInfo\"> \n" +
-        "                               <object id=\"PrimitiveTypeInfo1\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                                <void property=\"typeName\"> \n" +
-        "                                 <string>boolean</string> \n" +
-        "                                </void> \n" +
-        "                               </object> \n" +
-        "                              </void> \n" +
-        "                             </object> \n" +
-        "                            </void> \n" +
-        "                            <void method=\"add\"> \n" +
-        "                             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                              <void property=\"children\"> \n" +
-        "                               <object class=\"java.util.ArrayList\"> \n" +
-        "                                <void method=\"add\"> \n" +
-        "                                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                                  <void property=\"typeInfo\"> \n" +
-        "                                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                                  </void> \n" +
-        "                                  <void property=\"value\"> \n" +
-        "                                   <string>greg</string> \n" +
-        "                                  </void> \n" +
-        "                                 </object> \n" +
-        "                                </void> \n" +
-        "                                <void method=\"add\"> \n" +
-        "                                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                                  <void property=\"column\"> \n" +
-        "                                   <string>first_name</string> \n" +
-        "                                  </void> \n" +
-        "                                  <void property=\"tabAlias\"> \n" +
-        "                                   <string>orc_people</string> \n" +
-        "                                  </void> \n" +
-        "                                  <void property=\"typeInfo\"> \n" +
-        "                                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                                  </void> \n" +
-        "                                 </object> \n" +
-        "                                </void> \n" +
-        "                               </object> \n" +
-        "                              </void> \n" +
-        "                              <void property=\"genericUDF\"> \n" +
-        "                               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "                              </void> \n" +
-        "                              <void property=\"typeInfo\"> \n" +
-        "                               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                              </void> \n" +
-        "                             </object> \n" +
-        "                            </void> \n" +
-        "                           </object> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"genericUDF\"> \n" +
-        "                           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                          <void property=\"children\"> \n" +
-        "                           <object class=\"java.util.ArrayList\"> \n" +
-        "                            <void method=\"add\"> \n" +
-        "                             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                              <void property=\"typeInfo\"> \n" +
-        "                               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                              </void> \n" +
-        "                              <void property=\"value\"> \n" +
-        "                               <string>alan</string> \n" +
-        "                              </void> \n" +
-        "                             </object> \n" +
-        "                            </void> \n" +
-        "                            <void method=\"add\"> \n" +
-        "                             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                              <void property=\"column\"> \n" +
-        "                               <string>first_name</string> \n" +
-        "                              </void> \n" +
-        "                              <void property=\"tabAlias\"> \n" +
-        "                               <string>orc_people</string> \n" +
-        "                              </void> \n" +
-        "                              <void property=\"typeInfo\"> \n" +
-        "                               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                              </void> \n" +
-        "                             </object> \n" +
-        "                            </void> \n" +
-        "                           </object> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"genericUDF\"> \n" +
-        "                           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan\"/> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"genericUDF\"> \n" +
-        "                       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"children\"> \n" +
-        "                       <object class=\"java.util.ArrayList\"> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                          <void property=\"column\"> \n" +
-        "                           <string>id</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"tabAlias\"> \n" +
-        "                           <string>orc_people</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object id=\"PrimitiveTypeInfo2\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                            <void property=\"typeName\"> \n" +
-        "                             <string>int</string> \n" +
-        "                            </void> \n" +
-        "                           </object> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"value\"> \n" +
-        "                           <int>12</int> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"genericUDF\"> \n" +
-        "                       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <int>13</int> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                      <void property=\"column\"> \n" +
-        "                       <string>id</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"tabAlias\"> \n" +
-        "                       <string>orc_people</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                  <void property=\"column\"> \n" +
-        "                   <string>id</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"tabAlias\"> \n" +
-        "                   <string>orc_people</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"value\"> \n" +
-        "                   <int>15</int> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <int>16</int> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>id</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>id</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <int>30</int> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>first_name</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <string>owen</string> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "  </void> \n" +
-        " </object> \n" +
-        "</java> \n";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(9, leaves.size());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String[] conditions = new String[]{
-      "eq(first_name, Binary{\"john\"})",    /* first_name = 'john' */
-      "not(lteq(first_name, Binary{\"greg\"}))", /* 'greg' < first_name */
-      "lt(first_name, Binary{\"alan\"})",   /* 'alan' > first_name */
-      "not(lteq(id, 12))",                  /* id > 12 or */
-      "not(lteq(id, 13))",                  /* 13 < id or */
-      "lt(id, 15)",                         /* id < 15 or */
-      "lt(id, 16)",                         /* 16 > id or */
-      "eq(id, 30)",                         /* id <=> 30 */
-      "eq(first_name, Binary{\"owen\"})"    /* first_name <=> 'owen' */
-    };
-    String expected = String
-      .format("and(or(or(or(or(or(or(or(%1$s, %2$s), %3$s), %4$s), %5$s), %6$s), %7$s), %8$s), " +
-        "or(or(or(or(or(or(or(%1$s, %2$s), %3$s), %4$s), %5$s), %6$s), %7$s), %9$s))", conditions);
-    assertEquals(expected, p.toString());
-
-    PredicateLeaf leaf = leaves.get(0);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
-    assertEquals("first_name", leaf.getColumnName());
-    assertEquals("john", leaf.getLiteral());
-
-    leaf = leaves.get(1);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
-    assertEquals("first_name", leaf.getColumnName());
-    assertEquals("greg", leaf.getLiteral());
-
-    leaf = leaves.get(2);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("first_name", leaf.getColumnName());
-    assertEquals("alan", leaf.getLiteral());
-
-    leaf = leaves.get(3);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(12, leaf.getLiteral());
-
-    leaf = leaves.get(4);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(13, leaf.getLiteral());
-
-    leaf = leaves.get(5);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(15, leaf.getLiteral());
-
-    leaf = leaves.get(6);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(16, leaf.getLiteral());
-
-    leaf = leaves.get(7);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.NULL_SAFE_EQUALS, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(30, leaf.getLiteral());
-
-    leaf = leaves.get(8);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.NULL_SAFE_EQUALS, leaf.getOperator());
-    assertEquals("first_name", leaf.getColumnName());
-    assertEquals("owen", leaf.getLiteral());
-
-    assertEquals("(and (or leaf-0 (not leaf-1) leaf-2 (not leaf-3)" +
-        " (not leaf-4) leaf-5 leaf-6 leaf-7)" +
-        " (or leaf-0 (not leaf-1) leaf-2 (not leaf-3)" +
-        " (not leaf-4) leaf-5 leaf-6 leaf-8))",
-        sarg.getExpression().toString());
-    assertNoSharedNodes(sarg.getExpression(),
-        Sets.<ExpressionTree>newIdentityHashSet());
-  }
-
-  @Test
-  public void testExpression2() throws Exception {
-    /* first_name is null or
-       first_name <> 'sue' or
-       id >= 12 or
-       id <= 4; */
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                  <void property=\"column\"> \n" +
-        "                   <string>first_name</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"tabAlias\"> \n" +
-        "                   <string>orc_people</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                    <void property=\"typeName\"> \n" +
-        "                     <string>string</string> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object id=\"PrimitiveTypeInfo1\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                <void property=\"typeName\"> \n" +
-        "                 <string>boolean</string> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                  <void property=\"column\"> \n" +
-        "                   <string>first_name</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"tabAlias\"> \n" +
-        "                   <string>orc_people</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"value\"> \n" +
-        "                   <string>sue</string> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>id</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object id=\"PrimitiveTypeInfo2\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                <void property=\"typeName\"> \n" +
-        "                 <string>int</string> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <int>12</int> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "          <void property=\"column\"> \n" +
-        "           <string>id</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"tabAlias\"> \n" +
-        "           <string>orc_people</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <int>4</int> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "  </void> \n" +
-        " </object> \n" +
-        "</java> \n";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(4, leaves.size());
-
-    String[] conditions = new String[]{
-      "eq(first_name, null)",               /* first_name is null  */
-      "not(eq(first_name, Binary{\"sue\"}))",    /* first_name <> 'sue' */
-      "not(lt(id, 12))",                    /* id >= 12            */
-      "lteq(id, 4)"                         /* id <= 4             */
-    };
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected = String.format("or(or(or(%1$s, %2$s), %3$s), %4$s)", conditions);
-    assertEquals(expected, p.toString());
-
-    PredicateLeaf leaf = leaves.get(0);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.IS_NULL, leaf.getOperator());
-    assertEquals("first_name", leaf.getColumnName());
-    assertEquals(null, leaf.getLiteral());
-    assertEquals(null, leaf.getLiteralList());
-
-    leaf = leaves.get(1);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
-    assertEquals("first_name", leaf.getColumnName());
-    assertEquals("sue", leaf.getLiteral());
-
-    leaf = leaves.get(2);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(12, leaf.getLiteral());
-
-    leaf = leaves.get(3);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(4, leaf.getLiteral());
-
-    assertEquals("(or leaf-0 (not leaf-1) (not leaf-2) leaf-3)",
-        sarg.getExpression().toString());
-    assertNoSharedNodes(sarg.getExpression(),
-        Sets.<ExpressionTree>newIdentityHashSet());
-    assertEquals(TruthValue.NO,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.YES,
-            TruthValue.NO)));
-    assertEquals(TruthValue.YES,
-        sarg.evaluate(values(TruthValue.YES, TruthValue.YES, TruthValue.YES,
-            TruthValue.NO)));
-    assertEquals(TruthValue.YES,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.NO, TruthValue.YES,
-            TruthValue.NO)));
-    assertEquals(TruthValue.YES,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.NO,
-            TruthValue.NO)));
-    assertEquals(TruthValue.YES,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.YES,
-            TruthValue.YES)));
-    assertEquals(TruthValue.NULL,
-        sarg.evaluate(values(TruthValue.NULL, TruthValue.YES, TruthValue.YES,
-            TruthValue.NO)));
-    assertEquals(TruthValue.NULL,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.NULL, TruthValue.YES,
-            TruthValue.NO)));
-    assertEquals(TruthValue.NULL,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.NULL,
-            TruthValue.NO)));
-    assertEquals(TruthValue.NULL,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.YES,
-            TruthValue.NULL)));
-    assertEquals(TruthValue.YES_NO,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES_NO, TruthValue.YES,
-            TruthValue.YES_NO)));
-    assertEquals(TruthValue.NO_NULL,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES_NULL, TruthValue.YES,
-            TruthValue.NO_NULL)));
-    assertEquals(TruthValue.YES_NULL,
-        sarg.evaluate(values(TruthValue.YES_NULL, TruthValue.YES_NO_NULL,
-            TruthValue.YES, TruthValue.NULL)));
-    assertEquals(TruthValue.YES_NO_NULL,
-        sarg.evaluate(values(TruthValue.NO_NULL, TruthValue.YES_NO_NULL,
-            TruthValue.YES, TruthValue.NO)));
-  }
-
-  @Test
-  public void testExpression3() throws Exception {
-    /* (id between 23 and 45) and
-       first_name = 'alan' and
-       substr('xxxxx', 3) == first_name and
-       'smith' = last_name and
-       substr(first_name, 3) == 'yyy' */
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                        <void property=\"typeName\"> \n" +
-        "                         <string>boolean</string> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <boolean>false</boolean> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                      <void property=\"column\"> \n" +
-        "                       <string>id</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"tabAlias\"> \n" +
-        "                       <string>orc_people</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object id=\"PrimitiveTypeInfo1\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                        <void property=\"typeName\"> \n" +
-        "                         <string>int</string> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <int>23</int> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <int>45</int> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                      <void property=\"column\"> \n" +
-        "                       <string>first_name</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"tabAlias\"> \n" +
-        "                       <string>orc_people</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object id=\"PrimitiveTypeInfo2\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                        <void property=\"typeName\"> \n" +
-        "                         <string>string</string> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <string>alan</string> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <string>xxxxx</string> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <int>3</int> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
-        "                    <void property=\"udfClassName\"> \n" +
-        "                     <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> \n" +
-        "                    </void> \n" +
-        "                    <void property=\"udfName\"> \n" +
-        "                     <string>substr</string> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                  <void property=\"column\"> \n" +
-        "                   <string>first_name</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"tabAlias\"> \n" +
-        "                   <string>orc_people</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <string>smith</string> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>last_name</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>first_name</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <int>3</int> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
-        "            <void property=\"udfClassName\"> \n" +
-        "             <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> \n" +
-        "            </void> \n" +
-        "            <void property=\"udfName\"> \n" +
-        "             <string>substr</string> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <string>yyy</string> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "  </void> \n" +
-        " </object> \n" +
-        "</java> \n";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(3, leaves.size());
-
-    String[] conditions = new String[]{
-      "lt(id, 45)",                         /* id between 23 and 45 */
-      "not(lteq(id, 23))",                   /* id between 23 and 45 */
-      "eq(first_name, Binary{\"alan\"})",   /* first_name = 'alan'  */
-      "eq(last_name, Binary{\"smith\"})"    /* 'smith' = last_name  */
-    };
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected = String.format("and(and(and(%1$s, %2$s), %3$s), %4$s)", conditions);
-    assertEquals(expected, p.toString());
-
-    PredicateLeaf leaf = leaves.get(0);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.BETWEEN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(null, leaf.getLiteral());
-    assertEquals(23, leaf.getLiteralList().get(0));
-    assertEquals(45, leaf.getLiteralList().get(1));
-
-    leaf = leaves.get(1);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
-    assertEquals("first_name", leaf.getColumnName());
-    assertEquals("alan", leaf.getLiteral());
-
-    leaf = leaves.get(2);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
-    assertEquals("last_name", leaf.getColumnName());
-    assertEquals("smith", leaf.getLiteral());
-
-    assertEquals("(and leaf-0 leaf-1 leaf-2)",
-        sarg.getExpression().toString());
-    assertNoSharedNodes(sarg.getExpression(),
-        Sets.<ExpressionTree>newIdentityHashSet());
-  }
-
-  @Test
-  public void testExpression4() throws Exception {
-    /* id <> 12 and
-       first_name in ('john', 'sue') and
-       id in (34,50) */
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>id</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                <void property=\"typeName\"> \n" +
-        "                 <string>int</string> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <int>12</int> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object id=\"PrimitiveTypeInfo1\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "            <void property=\"typeName\"> \n" +
-        "             <string>boolean</string> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>first_name</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object id=\"PrimitiveTypeInfo2\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                <void property=\"typeName\"> \n" +
-        "                 <string>string</string> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <string>john</string> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo2\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <string>sue</string> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "          <void property=\"column\"> \n" +
-        "           <string>id</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"tabAlias\"> \n" +
-        "           <string>orc_people</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <int>34</int> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <int>50</int> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "  </void> \n" +
-        " </object> \n" +
-        "</java> \n" +
-        "\n";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(3, leaves.size());
-
-    String[] conditions = new String[]{
-      "not(eq(id, 12))", /* id <> 12 */
-      "or(eq(first_name, Binary{\"john\"}), eq(first_name, Binary{\"sue\"}))", /* first_name in
-      ('john', 'sue') */
-      "or(eq(id, 34), eq(id, 50))" /* id in (34,50) */
-    };
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected = String.format("and(and(%1$s, %2$s), %3$s)", conditions);
-    assertEquals(expected, p.toString());
-
-    PredicateLeaf leaf = leaves.get(0);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(12, leaf.getLiteral());
-
-    leaf = leaves.get(1);
-    assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.IN, leaf.getOperator());
-    assertEquals("first_name", leaf.getColumnName());
-    assertEquals("john", leaf.getLiteralList().get(0));
-    assertEquals("sue", leaf.getLiteralList().get(1));
-
-    leaf = leaves.get(2);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.IN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(34, leaf.getLiteralList().get(0));
-    assertEquals(50, leaf.getLiteralList().get(1));
-
-    assertEquals("(and (not leaf-0) leaf-1 leaf-2)",
-        sarg.getExpression().toString());
-    assertNoSharedNodes(sarg.getExpression(),
-        Sets.<ExpressionTree>newIdentityHashSet());
-    assertEquals(TruthValue.YES,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.YES)));
-    assertEquals(TruthValue.NULL,
-        sarg.evaluate(values(TruthValue.NULL, TruthValue.YES, TruthValue.YES)));
-    assertEquals(TruthValue.NULL,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.NULL, TruthValue.YES)));
-    assertEquals(TruthValue.NO,
-        sarg.evaluate(values(TruthValue.YES, TruthValue.YES, TruthValue.YES)));
-    assertEquals(TruthValue.NO,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.NO)));
-    assertEquals(TruthValue.NO,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES_NULL, TruthValue.NO)));
-    assertEquals(TruthValue.NO_NULL,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.NULL, TruthValue.YES_NO_NULL)));
-    assertEquals(TruthValue.NO_NULL,
-        sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.NO_NULL)));
-  }
-
-  @Test
-  public void testExpression5() throws Exception {
-    /* (first_name < 'owen' or 'foobar' = substr(last_name, 4)) and
-    first_name between 'david' and 'greg' */
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>first_name</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                <void property=\"typeName\"> \n" +
-        "                 <string>string</string> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <string>owen</string> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object id=\"PrimitiveTypeInfo1\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "            <void property=\"typeName\"> \n" +
-        "             <string>boolean</string> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <string>foobar</string> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                  <void property=\"column\"> \n" +
-        "                   <string>last_name</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"tabAlias\"> \n" +
-        "                   <string>orc_people</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                    <void property=\"typeName\"> \n" +
-        "                     <string>int</string> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"value\"> \n" +
-        "                   <int>4</int> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
-        "                <void property=\"udfClassName\"> \n" +
-        "                 <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> \n" +
-        "                </void> \n" +
-        "                <void property=\"udfName\"> \n" +
-        "                 <string>substr</string> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <boolean>false</boolean> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "          <void property=\"column\"> \n" +
-        "           <string>first_name</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"tabAlias\"> \n" +
-        "           <string>orc_people</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <string>david</string> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <string>greg</string> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "  </void> \n" +
-        " </object> \n" +
-        "</java> \n";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(1, leaves.size());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected =
-      "and(lt(first_name, Binary{\"greg\"}), not(lteq(first_name, Binary{\"david\"})))";
-    assertEquals(p.toString(), expected);
-
-    assertEquals(PredicateLeaf.Type.STRING, leaves.get(0).getType());
-    assertEquals(PredicateLeaf.Operator.BETWEEN,
-        leaves.get(0).getOperator());
-    assertEquals("first_name", leaves.get(0).getColumnName());
-
-    assertEquals("leaf-0",
-        sarg.getExpression().toString());
-    assertNoSharedNodes(sarg.getExpression(),
-        Sets.<ExpressionTree>newIdentityHashSet());
-  }
-
-  @Test
-  public void testExpression7() throws Exception {
-    /* (id < 10 and id < 11 and id < 12) or (id < 13 and id < 14 and id < 15) or
-       (id < 16 and id < 17) or id < 18 */
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"children\"> \n" +
-        "                       <object class=\"java.util.ArrayList\"> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                          <void property=\"column\"> \n" +
-        "                           <string>id</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"tabAlias\"> \n" +
-        "                           <string>orc_people</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                            <void property=\"typeName\"> \n" +
-        "                             <string>int</string> \n" +
-        "                            </void> \n" +
-        "                           </object> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"value\"> \n" +
-        "                           <int>10</int> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"genericUDF\"> \n" +
-        "                       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object id=\"PrimitiveTypeInfo1\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "                        <void property=\"typeName\"> \n" +
-        "                         <string>boolean</string> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"children\"> \n" +
-        "                       <object class=\"java.util.ArrayList\"> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                          <void property=\"column\"> \n" +
-        "                           <string>id</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"tabAlias\"> \n" +
-        "                           <string>orc_people</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"value\"> \n" +
-        "                           <int>11</int> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"genericUDF\"> \n" +
-        "                       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                      <void property=\"column\"> \n" +
-        "                       <string>id</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"tabAlias\"> \n" +
-        "                       <string>orc_people</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <int>12</int> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"children\"> \n" +
-        "                       <object class=\"java.util.ArrayList\"> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                          <void property=\"column\"> \n" +
-        "                           <string>id</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"tabAlias\"> \n" +
-        "                           <string>orc_people</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"value\"> \n" +
-        "                           <int>13</int> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"genericUDF\"> \n" +
-        "                       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"children\"> \n" +
-        "                       <object class=\"java.util.ArrayList\"> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                          <void property=\"column\"> \n" +
-        "                           <string>id</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"tabAlias\"> \n" +
-        "                           <string>orc_people</string> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                        <void method=\"add\"> \n" +
-        "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                          <void property=\"typeInfo\"> \n" +
-        "                           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                          </void> \n" +
-        "                          <void property=\"value\"> \n" +
-        "                           <int>14</int> \n" +
-        "                          </void> \n" +
-        "                         </object> \n" +
-        "                        </void> \n" +
-        "                       </object> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"genericUDF\"> \n" +
-        "                       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"children\"> \n" +
-        "                   <object class=\"java.util.ArrayList\"> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                      <void property=\"column\"> \n" +
-        "                       <string>id</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"tabAlias\"> \n" +
-        "                       <string>orc_people</string> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                    <void method=\"add\"> \n" +
-        "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                      <void property=\"typeInfo\"> \n" +
-        "                       <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                      </void> \n" +
-        "                      <void property=\"value\"> \n" +
-        "                       <int>15</int> \n" +
-        "                      </void> \n" +
-        "                     </object> \n" +
-        "                    </void> \n" +
-        "                   </object> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"genericUDF\"> \n" +
-        "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                  <void property=\"column\"> \n" +
-        "                   <string>id</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"tabAlias\"> \n" +
-        "                   <string>orc_people</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"value\"> \n" +
-        "                   <int>16</int> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"children\"> \n" +
-        "               <object class=\"java.util.ArrayList\"> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "                  <void property=\"column\"> \n" +
-        "                   <string>id</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"tabAlias\"> \n" +
-        "                   <string>orc_people</string> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "                <void method=\"add\"> \n" +
-        "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "                  <void property=\"typeInfo\"> \n" +
-        "                   <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "                  </void> \n" +
-        "                  <void property=\"value\"> \n" +
-        "                   <int>17</int> \n" +
-        "                  </void> \n" +
-        "                 </object> \n" +
-        "                </void> \n" +
-        "               </object> \n" +
-        "              </void> \n" +
-        "              <void property=\"genericUDF\"> \n" +
-        "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "          <void property=\"column\"> \n" +
-        "           <string>id</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"tabAlias\"> \n" +
-        "           <string>orc_people</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <int>18</int> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "  </void> \n" +
-        " </object>\n" +
-        "</java>";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(9, leaves.size());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected = "and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(" +
-      "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 13)), lt(id, 16)), " +
-      "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 13)), lt(id, 16))), " +
-      "or(or(or(lt(id, 18), lt(id, 12)), lt(id, 13)), lt(id, 16))), " +
-      "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 14)), lt(id, 16))), " +
-      "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 14)), lt(id, 16))), " +
-      "or(or(or(lt(id, 18), lt(id, 12)), lt(id, 14)), lt(id, 16))), " +
-      "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 15)), lt(id, 16))), " +
-      "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 15)), lt(id, 16))), " +
-      "or(or(or(lt(id, 18), lt(id, 12)), lt(id, 15)), lt(id, 16))), " +
-      "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 13)), lt(id, 17))), " +
-      "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 13)), lt(id, 17))), " +
-      "or(or(or(lt(id, 18), lt(id, 12)), lt(id, 13)), lt(id, 17))), " +
-      "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 14)), lt(id, 17))), " +
-      "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 14)), lt(id, 17))), " +
-      "or(or(or(lt(id, 18), lt(id, 12)), lt(id, 14)), lt(id, 17))), " +
-      "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 15)), lt(id, 17))), " +
-      "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 15)), lt(id, 17))), " +
-      "or(or(or(lt(id, 18), lt(id, 12)), lt(id, 15)), lt(id, 17)))";
-    assertEquals(p.toString(), expected);
-
-    PredicateLeaf leaf = leaves.get(0);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(18, leaf.getLiteral());
-
-    leaf = leaves.get(1);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(10, leaf.getLiteral());
-
-    leaf = leaves.get(2);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(13, leaf.getLiteral());
-
-    leaf = leaves.get(3);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(16, leaf.getLiteral());
-
-    leaf = leaves.get(4);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(11, leaf.getLiteral());
-
-    leaf = leaves.get(5);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(12, leaf.getLiteral());
-
-    leaf = leaves.get(6);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(14, leaf.getLiteral());
-
-    leaf = leaves.get(7);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(15, leaf.getLiteral());
-
-    leaf = leaves.get(8);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
-    assertEquals("id", leaf.getColumnName());
-    assertEquals(17, leaf.getLiteral());
-
-    assertEquals("(and" +
-        " (or leaf-0 leaf-1 leaf-2 leaf-3)" +
-        " (or leaf-0 leaf-4 leaf-2 leaf-3)" +
-        " (or leaf-0 leaf-5 leaf-2 leaf-3)" +
-        " (or leaf-0 leaf-1 leaf-6 leaf-3)" +
-        " (or leaf-0 leaf-4 leaf-6 leaf-3)" +
-        " (or leaf-0 leaf-5 leaf-6 leaf-3)" +
-        " (or leaf-0 leaf-1 leaf-7 leaf-3)" +
-        " (or leaf-0 leaf-4 leaf-7 leaf-3)" +
-        " (or leaf-0 leaf-5 leaf-7 leaf-3)" +
-        " (or leaf-0 leaf-1 leaf-2 leaf-8)" +
-        " (or leaf-0 leaf-4 leaf-2 leaf-8)" +
-        " (or leaf-0 leaf-5 leaf-2 leaf-8)" +
-        " (or leaf-0 leaf-1 leaf-6 leaf-8)" +
-        " (or leaf-0 leaf-4 leaf-6 leaf-8)" +
-        " (or leaf-0 leaf-5 leaf-6 leaf-8)" +
-        " (or leaf-0 leaf-1 leaf-7 leaf-8)" +
-        " (or leaf-0 leaf-4 leaf-7 leaf-8)" +
-        " (or leaf-0 leaf-5 leaf-7 leaf-8))",
-        sarg.getExpression().toString());
-  }
-
-  @Test
-  public void testExpression8() throws Exception {
-    /* first_name = last_name */
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "      <void property=\"column\"> \n" +
-        "       <string>first_name</string> \n" +
-        "      </void> \n" +
-        "      <void property=\"tabAlias\"> \n" +
-        "       <string>orc_people</string> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "        <void property=\"typeName\"> \n" +
-        "         <string>string</string> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "      <void property=\"column\"> \n" +
-        "       <string>last_name</string> \n" +
-        "      </void> \n" +
-        "      <void property=\"tabAlias\"> \n" +
-        "       <string>orc_people</string> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "    <void property=\"typeName\"> \n" +
-        "     <string>boolean</string> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        " </object> \n" +
-        "</java> ";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(0, leaves.size());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    assertNull(p);
-
-    assertEquals("YES_NO_NULL",
-        sarg.getExpression().toString());
-  }
-
-  @Test
-  public void testExpression9() throws Exception {
-    /* first_name = last_name */
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "      <void property=\"column\"> \n" +
-        "       <string>id</string> \n" +
-        "      </void> \n" +
-        "      <void property=\"tabAlias\"> \n" +
-        "       <string>orc_people</string> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "        <void property=\"typeName\"> \n" +
-        "         <string>int</string> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <int>1</int> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <int>3</int> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
-        "            <void property=\"operator\"> \n" +
-        "             <boolean>true</boolean> \n" +
-        "            </void> \n" +
-        "            <void property=\"udfClassName\"> \n" +
-        "             <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> \n" +
-        "            </void> \n" +
-        "            <void property=\"udfName\"> \n" +
-        "             <string>+</string> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <int>4</int> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
-        "        <void property=\"operator\"> \n" +
-        "         <boolean>true</boolean> \n" +
-        "        </void> \n" +
-        "        <void property=\"udfClassName\"> \n" +
-        "         <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> \n" +
-        "        </void> \n" +
-        "        <void property=\"udfName\"> \n" +
-        "         <string>+</string> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "    <void property=\"typeName\"> \n" +
-        "     <string>boolean</string> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        " </object> \n" +
-        "</java> ";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(0, leaves.size());
-
-    assertEquals("YES_NO_NULL",
-        sarg.getExpression().toString());
-    assertEquals(TruthValue.YES_NO_NULL, sarg.evaluate(values()));
-  }
-
-  @Test
-  public void testExpression10() throws Exception {
-    /* id >= 10 and not (10 > id) */
-    String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
-        "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
-        " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"children\"> \n" +
-        "   <object class=\"java.util.ArrayList\"> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "          <void property=\"column\"> \n" +
-        "           <string>id</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"tabAlias\"> \n" +
-        "           <string>orc_people</string> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object id=\"PrimitiveTypeInfo0\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "            <void property=\"typeName\"> \n" +
-        "             <string>int</string> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"value\"> \n" +
-        "           <int>10</int> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object id=\"PrimitiveTypeInfo1\" class=\"org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo\"> \n" +
-        "        <void property=\"typeName\"> \n" +
-        "         <string>boolean</string> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "    <void method=\"add\"> \n" +
-        "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"children\"> \n" +
-        "       <object class=\"java.util.ArrayList\"> \n" +
-        "        <void method=\"add\"> \n" +
-        "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"children\"> \n" +
-        "           <object class=\"java.util.ArrayList\"> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
-        "              <void property=\"column\"> \n" +
-        "               <string>id</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"tabAlias\"> \n" +
-        "               <string>orc_people</string> \n" +
-        "              </void> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "            <void method=\"add\"> \n" +
-        "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
-        "              <void property=\"typeInfo\"> \n" +
-        "               <object idref=\"PrimitiveTypeInfo0\"/> \n" +
-        "              </void> \n" +
-        "              <void property=\"value\"> \n" +
-        "               <int>10</int> \n" +
-        "              </void> \n" +
-        "             </object> \n" +
-        "            </void> \n" +
-        "           </object> \n" +
-        "          </void> \n" +
-        "          <void property=\"genericUDF\"> \n" +
-        "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan\"/> \n" +
-        "          </void> \n" +
-        "          <void property=\"typeInfo\"> \n" +
-        "           <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "          </void> \n" +
-        "         </object> \n" +
-        "        </void> \n" +
-        "       </object> \n" +
-        "      </void> \n" +
-        "      <void property=\"genericUDF\"> \n" +
-        "       <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot\"/> \n" +
-        "      </void> \n" +
-        "      <void property=\"typeInfo\"> \n" +
-        "       <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "      </void> \n" +
-        "     </object> \n" +
-        "    </void> \n" +
-        "   </object> \n" +
-        "  </void> \n" +
-        "  <void property=\"genericUDF\"> \n" +
-        "   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd\"/> \n" +
-        "  </void> \n" +
-        "  <void property=\"typeInfo\"> \n" +
-        "   <object idref=\"PrimitiveTypeInfo1\"/> \n" +
-        "  </void> \n" +
-        " </object> \n" +
-        "</java>";
-
-    SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgumentFactory.create(getFuncDesc(exprStr));
-    List<PredicateLeaf> leaves = sarg.getLeaves();
-    assertEquals(1, leaves.size());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected = "and(not(lt(id, 10)), not(lt(id, 10)))";
-    assertEquals(expected, p.toString());
-
-    assertEquals(PredicateLeaf.Type.INTEGER, leaves.get(0).getType());
-    assertEquals(PredicateLeaf.Operator.LESS_THAN,
-        leaves.get(0).getOperator());
-    assertEquals("id", leaves.get(0).getColumnName());
-    assertEquals(10, leaves.get(0).getLiteral());
-
-    assertEquals("(and (not leaf-0) (not leaf-0))",
-        sarg.getExpression().toString());
-    assertNoSharedNodes(sarg.getExpression(),
-        Sets.<ExpressionTree>newIdentityHashSet());
-    assertEquals(TruthValue.NO, sarg.evaluate(values(TruthValue.YES)));
-    assertEquals(TruthValue.YES, sarg.evaluate(values(TruthValue.NO)));
-    assertEquals(TruthValue.NULL, sarg.evaluate(values(TruthValue.NULL)));
-    assertEquals(TruthValue.NO_NULL, sarg.evaluate(values(TruthValue.YES_NULL)));
-    assertEquals(TruthValue.YES_NULL, sarg.evaluate(values(TruthValue.NO_NULL)));
-    assertEquals(TruthValue.YES_NO, sarg.evaluate(values(TruthValue.YES_NO)));
-    assertEquals(TruthValue.YES_NO_NULL, sarg.evaluate(values(TruthValue.YES_NO_NULL)));
-  }
-
   private static TruthValue[] values(TruthValue... vals) {
     return vals;
   }
@@ -2909,9 +330,9 @@ public class TestSearchArgumentImpl {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("x", 10)
-            .lessThanEquals("y", "hi")
-            .equals("z", 1.0)
+            .lessThan("x", PredicateLeaf.Type.INTEGER, 10)
+            .lessThanEquals("y", PredicateLeaf.Type.STRING, "hi")
+            .equals("z", PredicateLeaf.Type.FLOAT, 1.0)
             .end()
             .build();
     assertEquals("leaf-0 = (LESS_THAN x 10)\n" +
@@ -2921,10 +342,10 @@ public class TestSearchArgumentImpl {
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x")
-        .between("y", 10, 20)
-        .in("z", 1, 2, 3)
-        .nullSafeEquals("a", "stinger")
+        .isNull("x", PredicateLeaf.Type.INTEGER)
+        .between("y", PredicateLeaf.Type.INTEGER, 10, 20)
+        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .nullSafeEquals("a", PredicateLeaf.Type.STRING, "stinger")
         .end()
         .end()
         .build();
@@ -2933,12 +354,6 @@ public class TestSearchArgumentImpl {
         "leaf-2 = (IN z 1 2 3)\n" +
         "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected =
-      "and(and(and(not(eq(x, null)), not(and(lt(y, 20), not(lteq(y, 10))))), not(or(or(eq(z, 1), " +
-        "eq(z, 2)), eq(z, 3)))), not(eq(a, Binary{\"stinger\"})))";
-    assertEquals(expected, p.toString());
   }
 
   @Test
@@ -2946,37 +361,36 @@ public class TestSearchArgumentImpl {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("x", new DateWritable(10))
-            .lessThanEquals("y", new HiveChar("hi", 10))
-            .equals("z", HiveDecimal.create("1.0"))
+            .lessThan("x", PredicateLeaf.Type.DATE,
+                Date.valueOf("1970-1-11"))
+            .lessThanEquals("y", PredicateLeaf.Type.STRING,
+                new HiveChar("hi", 10).toString())
+            .equals("z", PredicateLeaf.Type.DECIMAL, new HiveDecimalWritable("1.0"))
             .end()
             .build();
     assertEquals("leaf-0 = (LESS_THAN x 1970-01-11)\n" +
-        "leaf-1 = (LESS_THAN_EQUALS y hi)\n" +
+        "leaf-1 = (LESS_THAN_EQUALS y hi        )\n" +
         "leaf-2 = (EQUALS z 1)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
-    assertEquals("lteq(y, Binary{\"hi\"})", sarg.toFilterPredicate().toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x")
-        .between("y", HiveDecimal.create(10), 20.0)
-        .in("z", (byte) 1, (short) 2, (int) 3)
-        .nullSafeEquals("a", new HiveVarchar("stinger", 100))
+        .isNull("x", PredicateLeaf.Type.INTEGER)
+        .between("y", PredicateLeaf.Type.DECIMAL,
+            new HiveDecimalWritable("10"), new HiveDecimalWritable("20.0"))
+        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .nullSafeEquals("a", PredicateLeaf.Type.STRING,
+            new HiveVarchar("stinger", 100).toString())
         .end()
         .end()
         .build();
     assertEquals("leaf-0 = (IS_NULL x)\n" +
-        "leaf-1 = (BETWEEN y 10 20.0)\n" +
+        "leaf-1 = (BETWEEN y 10 20)\n" +
         "leaf-2 = (IN z 1 2 3)\n" +
         "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
-        "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected = "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
-        "not(eq(a, Binary{\"stinger\"})))";
-    assertEquals(expected, p.toString());
+        "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))",
+        sarg.toString());
   }
 
   @Test
@@ -2984,37 +398,36 @@ public class TestSearchArgumentImpl {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("x", new DateWritable(10))
-            .lessThanEquals("y", new HiveChar("hi", 10))
-            .equals("z", new BigDecimal("1.0"))
+            .lessThan("x", PredicateLeaf.Type.DATE, Date.valueOf("2005-3-12"))
+            .lessThanEquals("y", PredicateLeaf.Type.STRING,
+                new HiveChar("hi", 10).toString())
+            .equals("z", PredicateLeaf.Type.DECIMAL,
+                new HiveDecimalWritable("1.0"))
             .end()
             .build();
-    assertEquals("leaf-0 = (LESS_THAN x 1970-01-11)\n" +
-        "leaf-1 = (LESS_THAN_EQUALS y hi)\n" +
-        "leaf-2 = (EQUALS z 1.0)\n" +
+    assertEquals("leaf-0 = (LESS_THAN x 2005-03-12)\n" +
+        "leaf-1 = (LESS_THAN_EQUALS y hi        )\n" +
+        "leaf-2 = (EQUALS z 1)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
-    assertEquals("lteq(y, Binary{\"hi\"})", sarg.toFilterPredicate().toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x")
-        .between("y", new BigDecimal(10), 20.0)
-        .in("z", (byte) 1, (short) 2, (int) 3)
-        .nullSafeEquals("a", new HiveVarchar("stinger", 100))
+        .isNull("x", PredicateLeaf.Type.INTEGER)
+        .between("y", PredicateLeaf.Type.DECIMAL, new HiveDecimalWritable("10"),
+            new HiveDecimalWritable("20.0"))
+        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .nullSafeEquals("a", PredicateLeaf.Type.STRING,
+            new HiveVarchar("stinger", 100).toString())
         .end()
         .end()
         .build();
     assertEquals("leaf-0 = (IS_NULL x)\n" +
-        "leaf-1 = (BETWEEN y 10 20.0)\n" +
+        "leaf-1 = (BETWEEN y 10 20)\n" +
         "leaf-2 = (IN z 1 2 3)\n" +
         "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
-        "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected = "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
-        "not(eq(a, Binary{\"stinger\"})))";
-    assertEquals(expected, p.toString());
+        "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))",
+        sarg.toString());
   }
 
   @Test
@@ -3022,24 +435,20 @@ public class TestSearchArgumentImpl {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("x", new Short((short) 22))
-            .lessThan("x1", new Integer(22))
-            .lessThanEquals("y", new HiveChar("hi", 10))
-            .equals("z", new Float("0.22"))
-            .equals("z1", new Double(0.22))
+            .lessThan("x", PredicateLeaf.Type.INTEGER, new Integer((short) 22))
+            .lessThan("x1", PredicateLeaf.Type.INTEGER, new Integer(22))
+            .lessThanEquals("y", PredicateLeaf.Type.STRING,
+                new HiveChar("hi", 10).toString())
+            .equals("z", PredicateLeaf.Type.FLOAT, new Double(0.22))
+            .equals("z1", PredicateLeaf.Type.FLOAT, new Double(0.22))
             .end()
             .build();
     assertEquals("leaf-0 = (LESS_THAN x 22)\n" +
         "leaf-1 = (LESS_THAN x1 22)\n" +
-        "leaf-2 = (LESS_THAN_EQUALS y hi)\n" +
+        "leaf-2 = (LESS_THAN_EQUALS y hi        )\n" +
         "leaf-3 = (EQUALS z 0.22)\n" +
         "leaf-4 = (EQUALS z1 0.22)\n" +
         "expr = (and leaf-0 leaf-1 leaf-2 leaf-3 leaf-4)", sarg.toString());
-
-    FilterPredicate p = sarg.toFilterPredicate();
-    String expected = "and(and(and(and(lt(x, 22), lt(x1, 22)), lteq(y, Binary{\"hi\"})), eq(z, " +
-        "0.22)), eq(z1, 0.22))";
-    assertEquals(expected, p.toString());
   }
 
   @Test
@@ -3052,17 +461,37 @@ public class TestSearchArgumentImpl {
     SearchArgument sarg =
       SearchArgumentFactory.newBuilder()
         .startAnd()
-        .lessThan("x", now)
+        .lessThan("x", PredicateLeaf.Type.TIMESTAMP, now)
         .end()
         .build();
 
-    String serializedSarg = sarg.toKryo();
-    SearchArgument sarg2 = SearchArgumentImpl.fromKryo(serializedSarg);
+    String serializedSarg = TestInputOutputFormat.toKryo(sarg);
+    SearchArgument sarg2 = ConvertAstToSearchArg.create(serializedSarg);
 
     Field literalField = PredicateLeafImpl.class.getDeclaredField("literal");
     literalField.setAccessible(true);
     assertTrue(literalField.get(sarg2.getLeaves().get(0)) instanceof java.util.Date);
     Timestamp ts = (Timestamp)sarg2.getLeaves().get(0).getLiteral();
     assertEquals(ts, now);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBadLiteral() throws Exception {
+    SearchArgument sarg =
+        SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("x", PredicateLeaf.Type.INTEGER, "hi")
+        .end()
+        .build();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBadLiteralList() throws Exception {
+    SearchArgument sarg =
+        SearchArgumentFactory.newBuilder()
+            .startAnd()
+            .in("x", PredicateLeaf.Type.STRING, "hi", 23)
+            .end()
+            .build();
   }
 }

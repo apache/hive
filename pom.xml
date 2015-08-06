@@ -50,6 +50,7 @@
     <module>llap-client</module>
     <module>shims</module>
     <module>spark-client</module>
+    <module>storage-api</module>
     <module>testutils</module>
     <module>packaging</module>
   </modules>
@@ -162,7 +163,7 @@
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.8.0-TEZ-2003-SNAPSHOT</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>1.3.1</spark.version>
+    <spark.version>1.4.0</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scala.version>2.10.4</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -218,6 +219,16 @@
        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
        <releases>
          <enabled>false</enabled>
+       </releases>
+       <snapshots>
+         <enabled>false</enabled>
+       </snapshots>
+    </repository>
+     <repository>
+       <id>spark-1.3</id>
+       <url>https://s3-us-west-1.amazonaws.com/hive-spark/maven2/spark_2.10-1.3-rc1/</url>
+       <releases>
+         <enabled>true</enabled>
        </releases>
        <snapshots>
          <enabled>false</enabled>
@@ -827,9 +838,8 @@
             <exclude>**/ql/exec/vector/udf/legacy/*.java</exclude>
             <exclude>**/ql/exec/vector/udf/generic/*.java</exclude>
             <exclude>**/TestHiveServer2Concurrency.java</exclude>
-            <exclude>**/TestHiveMetaStore.java</exclude>
             <exclude>${test.excludes.additional}</exclude>
-            <exclude>%regex[${skip.spark.files}]</exclude>
+            <exclude>${skip.spark.files}</exclude>
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -1223,7 +1233,9 @@
 	</property>
       </activation>
       <properties>
-        <skip.spark.files>.*[TestSparkSessionManagerImpl|TestMultiSessionsHS2WithLocalClusterSpark|TestJdbcWithLocalClusterSpark].class</skip.spark.files>
+        <skip.spark.files>
+          **/ql/exec/spark/session/TestSparkSessionManagerImpl.java,**/TestMultiSessionsHS2WithLocalClusterSpark.java,**/TestJdbcWithLocalClusterSpark.java
+        </skip.spark.files>
       </properties>
     </profile>
   </profiles>

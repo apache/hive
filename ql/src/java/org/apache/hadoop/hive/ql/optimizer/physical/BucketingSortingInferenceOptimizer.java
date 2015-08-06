@@ -104,10 +104,10 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
           BucketingSortingOpProcFactory.getSelProc());
       // Matches only GroupByOperators which are reducers, rather than map group by operators,
       // or multi group by optimization specific operators
-      opRules.put(new RuleExactMatch("R2", GroupByOperator.getOperatorName() + "%"),
+      opRules.put(new RuleExactMatch("R2", new String[]{GroupByOperator.getOperatorName()}),
           BucketingSortingOpProcFactory.getGroupByProc());
       // Matches only JoinOperators which are reducers, rather than map joins, SMB map joins, etc.
-      opRules.put(new RuleExactMatch("R3", JoinOperator.getOperatorName() + "%"),
+      opRules.put(new RuleExactMatch("R3", new String[]{JoinOperator.getOperatorName()}),
           BucketingSortingOpProcFactory.getJoinProc());
       opRules.put(new RuleRegExp("R5", FileSinkOperator.getOperatorName() + "%"),
           BucketingSortingOpProcFactory.getFileSinkProc());
@@ -126,8 +126,8 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
           BucketingSortingOpProcFactory.getForwardProc());
       // Matches only ForwardOperators which are reducers and are followed by GroupByOperators
       // (specific to the multi group by optimization)
-      opRules.put(new RuleExactMatch("R12", ForwardOperator.getOperatorName() + "%" +
-          GroupByOperator.getOperatorName() + "%"),
+      opRules.put(new RuleExactMatch("R12",new String[]{ ForwardOperator.getOperatorName(),
+          GroupByOperator.getOperatorName()}),
           BucketingSortingOpProcFactory.getMultiGroupByProc());
 
       // The dispatcher fires the processor corresponding to the closest matching rule and passes

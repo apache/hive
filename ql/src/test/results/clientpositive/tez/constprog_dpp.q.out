@@ -1,0 +1,113 @@
+PREHOOK: query: drop table if exists tb1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tb1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tb1 (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tb1
+POSTHOOK: query: create table tb1 (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tb1
+PREHOOK: query: drop table if exists tb2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tb2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tb2 (id smallint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tb2
+POSTHOOK: query: create table tb2 (id smallint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tb2
+PREHOOK: query: explain
+select a.id from tb1 a
+left outer join
+(select id from tb2
+union all
+select 2 as id from tb2 limit 1) b
+on a.id=b.id
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select a.id from tb1 a
+left outer join
+(select id from tb2
+union all
+select 2 as id from tb2 limit 1) b
+on a.id=b.id
+POSTHOOK: type: QUERY
+Plan not optimized by CBO due to missing statistics. Please check log for more details.
+
+Vertex dependency in root stage
+Map 1 <- Union 2 (CONTAINS)
+Map 5 <- Union 2 (CONTAINS)
+Reducer 3 <- Union 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 6 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+
+Stage-0
+   Fetch Operator
+      limit:-1
+      Stage-1
+         Reducer 4
+         File Output Operator [FS_16]
+            compressed:false
+            Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            Merge Join Operator [MERGEJOIN_20]
+            |  condition map:[{"":"Left Outer Join0 to 1"}]
+            |  keys:{"1":"_col0 (type: int)","0":"id (type: int)"}
+            |  outputColumnNames:["_col0"]
+            |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            |<-Map 6 [SIMPLE_EDGE]
+            |  Reduce Output Operator [RS_12]
+            |     key expressions:id (type: int)
+            |     Map-reduce partition columns:id (type: int)
+            |     sort order:+
+            |     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            |     TableScan [TS_11]
+            |        alias:a
+            |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            |<-Reducer 3 [SIMPLE_EDGE]
+               Reduce Output Operator [RS_13]
+                  key expressions:_col0 (type: int)
+                  Map-reduce partition columns:_col0 (type: int)
+                  sort order:+
+                  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Limit [LIM_10]
+                     Number of rows:1
+                     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                     Select Operator [SEL_9]
+                     |  outputColumnNames:["_col0"]
+                     |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                     |<-Union 2 [SIMPLE_EDGE]
+                        |<-Map 1 [CONTAINS]
+                        |  Reduce Output Operator [RS_8]
+                        |     sort order:
+                        |     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        |     value expressions:_col0 (type: int)
+                        |     Limit [LIM_7]
+                        |        Number of rows:1
+                        |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        |        Select Operator [SEL_1]
+                        |           outputColumnNames:["_col0"]
+                        |           Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        |           TableScan [TS_0]
+                        |              alias:tb2
+                        |              Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        |<-Map 5 [CONTAINS]
+                           Reduce Output Operator [RS_8]
+                              sort order:
+                              Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                              value expressions:_col0 (type: int)
+                              Limit [LIM_7]
+                                 Number of rows:1
+                                 Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                                 Select Operator [SEL_3]
+                                    outputColumnNames:["_col0"]
+                                    Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                                    TableScan [TS_2]
+                                       alias:tb2
+                                       Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+

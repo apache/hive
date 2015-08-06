@@ -20,7 +20,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -59,7 +58,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -104,7 +102,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -149,7 +146,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -194,7 +190,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -239,7 +234,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -284,7 +278,6 @@ value               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -349,8 +342,6 @@ Partition Value:    	[2010]
 Database:           	default             	 
 Table:              	alter_partition_format_test	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
 	 	 
@@ -393,8 +384,6 @@ ds                  	string
 Partition Value:    	[2010]              	 
 Database:           	default             	 
 Table:              	alter_partition_format_test	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
@@ -445,8 +434,6 @@ Partition Value:    	[2010]
 Database:           	default             	 
 Table:              	alter_partition_format_test	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
@@ -495,8 +482,6 @@ ds                  	string
 Partition Value:    	[2010]              	 
 Database:           	default             	 
 Table:              	alter_partition_format_test	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
@@ -547,8 +532,6 @@ Partition Value:    	[2010]
 Database:           	default             	 
 Table:              	alter_partition_format_test	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
@@ -597,8 +580,6 @@ ds                  	string
 Partition Value:    	[2010]              	 
 Database:           	default             	 
 Table:              	alter_partition_format_test	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               

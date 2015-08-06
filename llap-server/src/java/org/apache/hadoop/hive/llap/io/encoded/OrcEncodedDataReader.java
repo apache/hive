@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
+import org.apache.hadoop.hive.ql.io.orc.OrcConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
@@ -830,8 +831,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     private DataReader orcDataReader;
 
     public DataWrapperForOrc() {
-      boolean useZeroCopy = (conf != null)
-          && HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_ZEROCOPY);
+      boolean useZeroCopy = (conf != null) && OrcConf.USE_ZEROCOPY.getBoolean(conf);
       if (useZeroCopy && !lowLevelCache.getAllocator().isDirectAlloc()) {
         throw new UnsupportedOperationException("Cannot use zero-copy reader with non-direct cache "
             + "buffers; either disable zero-copy or enable direct cache allocation");

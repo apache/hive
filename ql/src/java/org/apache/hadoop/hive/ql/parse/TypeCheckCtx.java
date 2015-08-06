@@ -35,6 +35,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    */
   private RowResolver inputRR;
 
+  private final boolean useCaching;
+
   /**
    * Receives translations which will need to be applied during unparse.
    */
@@ -77,15 +79,20 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    *          The input row resolver of the previous operator.
    */
   public TypeCheckCtx(RowResolver inputRR) {
-    this(inputRR, false, true, true, true, true, true, true, true);
+    this(inputRR, true);
   }
 
-  public TypeCheckCtx(RowResolver inputRR, boolean allowStatefulFunctions,
+  public TypeCheckCtx(RowResolver inputRR, boolean useCaching) {
+    this(inputRR, useCaching, false, true, true, true, true, true, true, true);
+  }
+
+  public TypeCheckCtx(RowResolver inputRR, boolean useCaching, boolean allowStatefulFunctions,
       boolean allowDistinctFunctions, boolean allowGBExprElimination, boolean allowAllColRef,
       boolean allowFunctionStar, boolean allowWindowing,
       boolean allowIndexExpr, boolean allowSubQueryExpr) {
     setInputRR(inputRR);
     error = null;
+    this.useCaching = useCaching;
     this.allowStatefulFunctions = allowStatefulFunctions;
     this.allowDistinctFunctions = allowDistinctFunctions;
     this.allowGBExprElimination = allowGBExprElimination;
@@ -197,5 +204,9 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   public boolean getallowSubQueryExpr() {
     return allowSubQueryExpr;
+  }
+
+  public boolean isUseCaching() {
+    return useCaching;
   }
 }

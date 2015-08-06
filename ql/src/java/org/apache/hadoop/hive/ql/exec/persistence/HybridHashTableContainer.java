@@ -110,6 +110,7 @@ public class HybridHashTableContainer
     int threshold;                          // Used to create an empty BytesBytesMultiHashMap
     float loadFactor;                       // Same as above
     int wbSize;                             // Same as above
+    int rowsOnDisk;                         // How many rows saved to the on-disk hashmap (if on disk)
 
     /* It may happen that there's not enough memory to instantiate a hashmap for the partition.
      * In that case, we don't create the hashmap, but pretend the hashmap is directly "spilled".
@@ -148,6 +149,10 @@ public class HybridHashTableContainer
         if (initialCapacity > 0) {
           restoredHashMap.expandAndRehashToTarget(initialCapacity);
         }
+
+        // some bookkeeping
+        rowsOnDisk = 0;
+        hashMapOnDisk = false;
 
         input.close();
         inputStream.close();
@@ -197,6 +202,8 @@ public class HybridHashTableContainer
         } catch (Throwable ignored) {
         }
         hashMapLocalPath = null;
+        rowsOnDisk = 0;
+        hashMapOnDisk = false;
       }
 
       if (sidefileKVContainer != null) {
@@ -212,6 +219,16 @@ public class HybridHashTableContainer
       if (matchfileRowBytesContainer != null) {
         matchfileRowBytesContainer.clear();
         matchfileRowBytesContainer = null;
+      }
+    }
+
+    public int size() {
+      if (isHashMapOnDisk()) {
+        // Rows are in a combination of the on-disk hashmap and the sidefile
+        return rowsOnDisk + (sidefileKVContainer != null ? sidefileKVContainer.size() : 0);
+      } else {
+        // All rows should be in the in-memory hashmap
+        return hashMap.size();
       }
     }
   }
@@ -507,6 +524,7 @@ public class HybridHashTableContainer
     memoryUsed -= memFreed;
     LOG.info("Memory usage after spilling: " + memoryUsed);
 
+    partition.rowsOnDisk = inMemRowCount;
     totalInMemRowCount -= inMemRowCount;
     partition.hashMap.clear();
     return memFreed;
@@ -958,5 +976,14 @@ public class HybridHashTableContainer
     LOG.info("In memory partitions have been processed successfully: " +
         numPartitionsInMem + " partitions in memory have been processed; " +
         numPartitionsOnDisk + " partitions have been spilled to disk and will be processed next.");
+  }
+
+  @Override
+  public int size() {
+    int totalSize = 0;
+    for (HashPartition hashPartition : hashPartitions) {
+      totalSize += hashPartition.size();
+    }
+    return totalSize;
   }
 }

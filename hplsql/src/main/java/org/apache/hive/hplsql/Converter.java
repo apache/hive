@@ -35,22 +35,41 @@ public class Converter {
    * Convert a data type
    */
   String dataType(HplsqlParser.DtypeContext type, HplsqlParser.Dtype_lenContext len) {
-    String d = null;
-    if (type.T_VARCHAR2() != null) {
-      d = "STRING";
+    String t = exec.getText(type);
+    boolean enclosed = false;
+    if (t.charAt(0) == '[') {
+      t = t.substring(1, t.length() - 1);
+      enclosed = true;
     }
-    else if (type.T_NUMBER() != null) {
-      d = "DECIMAL";
+    if (t.equalsIgnoreCase("BIT")) {
+      t = "TINYINT";
+    }
+    else if (t.equalsIgnoreCase("DATETIME") || t.equalsIgnoreCase("SMALLDATETIME")) {
+      t = "TIMESTAMP";
+    }
+    else if ((t.equalsIgnoreCase("VARCHAR") || t.equalsIgnoreCase("NVARCHAR")) && len.T_MAX() != null) {
+      t = "STRING";
+    }
+    else if (t.equalsIgnoreCase("VARCHAR2") || t.equalsIgnoreCase("NCHAR") || t.equalsIgnoreCase("NVARCHAR")) {
+      t = "STRING";
+    }
+    else if (t.equalsIgnoreCase("NUMBER") || t.equalsIgnoreCase("NUMERIC")) {
+      t = "DECIMAL";
       if (len != null) {
-        d += exec.getText(len);
+        t += exec.getText(len);
       }
     }
-    if (d != null) {
-      return d;
-    }
     else if (len != null) {
-      return exec.getText(type, type.getStart(), len.getStop());
+      if (!enclosed) {
+        return exec.getText(type, type.getStart(), len.getStop());
+      }
+      else {
+        return t + exec.getText(len, len.getStart(), len.getStop());
+      }
     }
-    return exec.getText(type, type.getStart(), type.getStop());
+    else if (!enclosed) {
+      return exec.getText(type, type.getStart(), type.getStop());
+    }
+    return t;
   }
 }

@@ -1,0 +1,9 @@
+Ln:1 CREATE FUNCTION hello
+Ln:10 PRINT
+EXEC FUNCTION hello
+Ln:4 PRINT
+Start
+Ln:5 RETURN
+Hello, world!
+Ln:11 PRINT
+End of script

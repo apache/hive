@@ -1388,4 +1388,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     protected void initializeOp(Configuration conf) {
     }
   }
+
+  public void removeParents() {
+    for (Operator<?> parent : new ArrayList<Operator<?>>(getParentOperators())) {
+      removeParent(parent);
+    }
+  }
 }

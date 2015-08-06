@@ -18,8 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,14 +77,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class StatsRulesProcFactory {
 
@@ -259,7 +258,7 @@ public class StatsRulesProcFactory {
 
           // evaluate filter expression and update statistics
           long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
-              neededCols, fop);
+              neededCols, fop, 0);
           Statistics st = parentStats.clone();
 
           if (satisfyPrecondition(parentStats)) {
@@ -297,9 +296,12 @@ public class StatsRulesProcFactory {
 
     private long evaluateExpression(Statistics stats, ExprNodeDesc pred,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        FilterOperator fop) throws CloneNotSupportedException {
+        FilterOperator fop, long evaluatedRowCount) throws CloneNotSupportedException {
       long newNumRows = 0;
       Statistics andStats = null;
+
+      if (stats.getNumRows() <= 1 || stats.getDataSize() <= 0)
+        return 1;
 
       if (pred instanceof ExprNodeGenericFuncDesc) {
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) pred;
@@ -313,7 +315,7 @@ public class StatsRulesProcFactory {
           // evaluate children
           for (ExprNodeDesc child : genFunc.getChildren()) {
             newNumRows = evaluateChildExpr(aspCtx.getAndExprStats(), child,
-                aspCtx, neededCols, fop);
+                aspCtx, neededCols, fop, evaluatedRowCount);
             if (satisfyPrecondition(aspCtx.getAndExprStats())) {
               updateStats(aspCtx.getAndExprStats(), newNumRows, true, fop);
             } else {
@@ -321,17 +323,24 @@ public class StatsRulesProcFactory {
             }
           }
         } else if (udf instanceof GenericUDFOPOr) {
-          // for OR condition independently compute and update stats
+          // for OR condition independently compute and update stats.
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            newNumRows = StatsUtils.safeAdd(
-                evaluateChildExpr(stats, child, aspCtx, neededCols, fop), newNumRows);
+            // early exit if OR evaluation yields more rows than input rows
+            if (evaluatedRowCount >= stats.getNumRows()) {
+              evaluatedRowCount = stats.getNumRows();
+            } else {
+              newNumRows = StatsUtils.safeAdd(
+                  evaluateChildExpr(stats, child, aspCtx, neededCols, fop, evaluatedRowCount),
+                  newNumRows);
+              evaluatedRowCount = newNumRows;
+            }
           }
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols, fop);
         } else {
 
           // single predicate condition
-          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, fop);
+          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, fop, evaluatedRowCount);
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
@@ -378,7 +387,7 @@ public class StatsRulesProcFactory {
             long newNumRows = 0;
             for (ExprNodeDesc child : genFunc.getChildren()) {
               newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols,
-                  fop);
+                  fop, 0);
             }
             return numRows - newNumRows;
           } else if (leaf instanceof ExprNodeConstantDesc) {
@@ -436,7 +445,7 @@ public class StatsRulesProcFactory {
 
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        FilterOperator fop) throws CloneNotSupportedException {
+        FilterOperator fop, long evaluatedRowCount) throws CloneNotSupportedException {
 
       long numRows = stats.getNumRows();
 
@@ -522,7 +531,7 @@ public class StatsRulesProcFactory {
           return evaluateColEqualsNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
             || udf instanceof GenericUDFOPNot) {
-          return evaluateExpression(stats, genFunc, aspCtx, neededCols, fop);
+          return evaluateExpression(stats, genFunc, aspCtx, neededCols, fop, evaluatedRowCount);
         }
       }
 
@@ -1013,17 +1022,14 @@ public class StatsRulesProcFactory {
    */
   public static class JoinStatsRule extends DefaultStatsRule implements NodeProcessor {
 
-    private boolean pkfkInferred = false;
-    private long newNumRows = 0;
-    private List<Operator<? extends OperatorDesc>> parents;
-    private CommonJoinOperator<? extends JoinDesc> jop;
-    private int numAttr = 1;
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      jop = (CommonJoinOperator<? extends JoinDesc>) nd;
-      parents = jop.getParentOperators();
+      long newNumRows = 0;
+      CommonJoinOperator<? extends JoinDesc> jop = (CommonJoinOperator<? extends JoinDesc>) nd;
+      List<Operator<? extends OperatorDesc>> parents = jop.getParentOperators();
+      int numAttr = 1;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
       boolean allStatsAvail = true;
@@ -1062,7 +1068,7 @@ public class StatsRulesProcFactory {
           numAttr = keyExprs.size();
 
           // infer PK-FK relationship in single attribute join case
-          inferPKFKRelationship();
+          long inferredRowCount = inferPKFKRelationship(numAttr, parents, jop);
           // get the join keys from parent ReduceSink operators
           for (int pos = 0; pos < parents.size(); pos++) {
             ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
@@ -1149,7 +1155,7 @@ public class StatsRulesProcFactory {
 
           // update join statistics
           stats.setColumnStats(outColStats);
-          long newRowCount = pkfkInferred ? newNumRows : computeNewRowCount(rowCounts, denom);
+          long newRowCount = inferredRowCount !=-1 ? inferredRowCount : computeNewRowCount(rowCounts, denom);
           updateStatsForJoinType(stats, newRowCount, jop, rowCountParents);
           jop.setStatistics(stats);
 
@@ -1180,7 +1186,7 @@ public class StatsRulesProcFactory {
           }
 
           long maxDataSize = parentSizes.get(maxRowIdx);
-          long newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
+          newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
           long newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
           Statistics wcStats = new Statistics();
           wcStats.setNumRows(newNumRows);
@@ -1195,15 +1201,17 @@ public class StatsRulesProcFactory {
       return null;
     }
 
-    private void inferPKFKRelationship() {
+    private long inferPKFKRelationship(int numAttr, List<Operator<? extends OperatorDesc>> parents,
+        CommonJoinOperator<? extends JoinDesc> jop) {
+      long newNumRows = -1;
       if (numAttr == 1) {
         // If numAttr is 1, this means we join on one single key column.
         Map<Integer, ColStatistics> parentsWithPK = getPrimaryKeyCandidates(parents);
 
         // We only allow one single PK.
         if (parentsWithPK.size() != 1) {
-          LOG.debug("STATS-" + jop.toString() + ": detects multiple PK parents.");
-          return;
+          LOG.debug("STATS-" + jop.toString() + ": detects none/multiple PK parents.");
+          return newNumRows;
         }
         Integer pkPos = parentsWithPK.keySet().iterator().next();
         ColStatistics csPK = parentsWithPK.values().iterator().next();
@@ -1215,7 +1223,7 @@ public class StatsRulesProcFactory {
         // csfKs.size() + 1 == parents.size() means we have a single PK and all
         // the rest ops are FKs.
         if (csFKs.size() + 1 == parents.size()) {
-          getSelectivity(parents, pkPos, csPK, csFKs);
+          newNumRows = getCardinality(parents, pkPos, csPK, csFKs, jop);
 
           // some debug information
           if (isDebugEnabled) {
@@ -1236,16 +1244,17 @@ public class StatsRulesProcFactory {
           }
         }
       }
+      return newNumRows;
     }
 
     /**
-     * Get selectivity of reduce sink operators.
+     * Get cardinality of reduce sink operators.
      * @param csPK - ColStatistics for a single primary key
      * @param csFKs - ColStatistics for multiple foreign keys
      */
-    private void getSelectivity(List<Operator<? extends OperatorDesc>> ops, Integer pkPos, ColStatistics csPK,
-        Map<Integer, ColStatistics> csFKs) {
-      this.pkfkInferred = true;
+    private long getCardinality(List<Operator<? extends OperatorDesc>> ops, Integer pkPos,
+        ColStatistics csPK, Map<Integer, ColStatistics> csFKs,
+        CommonJoinOperator<? extends JoinDesc> jop) {
       double pkfkSelectivity = Double.MAX_VALUE;
       int fkInd = -1;
       // 1. We iterate through all the operators that have candidate FKs and
@@ -1290,13 +1299,15 @@ public class StatsRulesProcFactory {
           distinctVals.add(csFK.getCountDistint());
         }
       }
+      long newNumRows;
       if (csFKs.size() == 1) {
         // there is only one FK
-        this.newNumRows = newrows;
+        newNumRows = newrows;
       } else {
         // there is more than one FK
-        this.newNumRows = this.computeNewRowCount(rowCounts, getDenominator(distinctVals));
+        newNumRows = this.computeNewRowCount(rowCounts, getDenominator(distinctVals));
       }
+      return newNumRows;
     }
 
     private float getSelectivitySimpleTree(Operator<? extends OperatorDesc> op) {

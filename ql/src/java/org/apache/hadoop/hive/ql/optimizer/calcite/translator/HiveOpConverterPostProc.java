@@ -51,7 +51,7 @@ public class HiveOpConverterPostProc implements Transform {
   private static final Log LOG = LogFactory.getLog(HiveOpConverterPostProc.class);
 
   private ParseContext                                  pctx;
-  private Map<String, Operator<? extends OperatorDesc>> aliasToJoinOpInfo;
+  private Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -66,11 +66,12 @@ public class HiveOpConverterPostProc implements Transform {
 
     // 1. Initialize aux data structures
     this.pctx = pctx;
-    this.aliasToJoinOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();
+    this.aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();
 
     // 2. Trigger transformation
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", JoinOperator.getOperatorName() + "%"), new JoinAnnotate());
+    opRules.put(new RuleRegExp("R2", TableScanOperator.getOperatorName() + "%"), new TableScanAnnotate());
 
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
     GraphWalker ogw = new ForwardWalker(disp);
@@ -109,7 +110,7 @@ public class HiveOpConverterPostProc implements Transform {
       }
       joinOp.getConf().setBaseSrc(baseSrc);
       joinOp.getConf().setRightAliases(rightAliases);
-      joinOp.getConf().setAliasToOpInfo(aliasToJoinOpInfo);
+      joinOp.getConf().setAliasToOpInfo(aliasToOpInfo);
 
       // 2. Use self alias
       Set<String> aliases = joinOp.getSchema().getTableNames();
@@ -119,10 +120,35 @@ public class HiveOpConverterPostProc implements Transform {
                 .size() + " aliases for " + joinOp.toString());
       }
       final String joinOpAlias = aliases.iterator().next();;
-      aliasToJoinOpInfo.put(joinOpAlias, joinOp);
+      aliasToOpInfo.put(joinOpAlias, joinOp);
 
       // 3. Populate other data structures
       pctx.getJoinOps().add(joinOp);
+
+      return null;
+    }
+  }
+
+
+  private class TableScanAnnotate implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      TableScanOperator tableScanOp = (TableScanOperator) nd;
+
+      // 1. Get alias from topOps
+      String opAlias = null;
+      for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpEntry : pctx.getTopOps().entrySet()) {
+        if (topOpEntry.getValue() == tableScanOp) {
+          opAlias = topOpEntry.getKey();
+        }
+      }
+
+      assert opAlias != null;
+
+      // 2. Add alias to 1) aliasToOpInfo and 2) opToAlias
+      aliasToOpInfo.put(opAlias, tableScanOp);
 
       return null;
     }

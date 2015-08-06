@@ -29,7 +29,10 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -47,6 +50,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
   private static HiveOnTezCostModel INSTANCE;
 
   private static HiveAlgorithmsUtil algoUtils;
+
+  private static transient final Log LOG = LogFactory.getLog(HiveOnTezCostModel.class);
 
   synchronized public static HiveOnTezCostModel getCostModel(HiveConf conf) {
     if (INSTANCE == null) {
@@ -136,7 +141,13 @@ public class HiveOnTezCostModel extends HiveCostModel {
               add(leftRCount).
               add(rightRCount).
               build();
-      final double cpuCost = algoUtils.computeSortMergeCPUCost(cardinalities, join.getSortedInputs());
+      double cpuCost;
+      try {
+        cpuCost = algoUtils.computeSortMergeCPUCost(cardinalities, join.getSortedInputs());
+      } catch (CalciteSemanticException e) {
+        LOG.trace("Failed to compute sort merge cpu cost ", e);
+        return null;
+      }
       // 3. IO cost = cost of writing intermediary results to local FS +
       //              cost of reading from local FS for transferring to join +
       //              cost of transferring map outputs to Join operator
@@ -183,7 +194,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
       if (memoryWithinPhase == null || splitCount == null) {
         return null;
       }
-      
+
       return memoryWithinPhase / splitCount;
     }
 
@@ -289,7 +300,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
       if (join.getStreamingSide() != MapJoinStreamingRelation.LEFT_RELATION
               || join.getStreamingSide() != MapJoinStreamingRelation.RIGHT_RELATION) {
         return null;
-      }      
+      }
       return HiveAlgorithmsUtil.getJoinDistribution(join.getJoinPredicateInfo(),
               join.getStreamingSide());
     }
@@ -521,7 +532,13 @@ public class HiveOnTezCostModel extends HiveCostModel {
       for (int i=0; i<join.getInputs().size(); i++) {
         RelNode input = join.getInputs().get(i);
         // Is smbJoin possible? We need correct order
-        boolean orderFound = join.getSortedInputs().get(i);
+        boolean orderFound;
+        try {
+          orderFound = join.getSortedInputs().get(i);
+        } catch (CalciteSemanticException e) {
+          LOG.trace("Not possible to do SMB Join ",e);
+          return false;
+        }
         if (!orderFound) {
           return false;
         }
