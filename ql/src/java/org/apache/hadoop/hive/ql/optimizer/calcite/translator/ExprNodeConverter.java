@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
@@ -218,7 +220,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
     case DECIMAL:
       return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
-          lType.getScale()), literal.getValue3());
+          lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
     case VARCHAR:
       return new ExprNodeConstantDesc(TypeInfoFactory.getVarcharTypeInfo(lType.getPrecision()),
           new HiveVarchar((String) literal.getValue3(), lType.getPrecision()));
