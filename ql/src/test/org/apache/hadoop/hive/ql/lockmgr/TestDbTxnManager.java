@@ -17,12 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import junit.framework.Assert;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -31,16 +31,19 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit tests for {@link DbTxnManager}.
- * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
+ * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2}
  */
 public class TestDbTxnManager {
 
@@ -53,6 +56,7 @@ public class TestDbTxnManager {
   HashSet<WriteEntity> writeEntities;
 
   public TestDbTxnManager() throws Exception {
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 500, TimeUnit.MILLISECONDS);
     TxnDbUtil.setConfValues(conf);
     SessionState.start(conf);
     ctx = new Context(conf);
@@ -174,6 +178,51 @@ public class TestDbTxnManager {
     txnMgr.commitTxn();
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
+  }
+  @Test
+  public void testExceptions() throws Exception {
+    WriteEntity we = addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
+    QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.acquireLocks(qp, ctx, "PeterI");
+    txnMgr.openTxn("NicholasII");
+    Thread.sleep(1000);//let txn timeout
+    txnMgr.getValidTxns();
+    LockException exception = null;
+    try {
+      txnMgr.commitTxn();
+    }
+    catch(LockException ex) {
+      exception = ex;
+    }
+    Assert.assertNotNull("Expected exception1", exception);
+    Assert.assertEquals("Wrong Exception1", ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
+    exception = null;
+    txnMgr.openTxn("AlexanderIII");
+    Thread.sleep(1000);
+    txnMgr.getValidTxns();
+    try {
+      txnMgr.rollbackTxn();
+    }
+    catch (LockException ex) {
+      exception = ex;
+    }
+    Assert.assertNotNull("Expected exception2", exception);
+    Assert.assertEquals("Wrong Exception2", ErrorMsg.TXN_NO_SUCH_TRANSACTION, exception.getCanonicalErrorMsg());
+    exception = null;
+    txnMgr.openTxn("PeterI");
+    txnMgr.acquireLocks(qp, ctx, "PeterI");
+    List<HiveLock> locks = ctx.getHiveLocks();
+    Assert.assertThat("Unexpected lock count", locks.size(), is(1));
+    Thread.sleep(1000);
+    txnMgr.getValidTxns();
+    try {
+      txnMgr.heartbeat();
+    }
+    catch(LockException ex) {
+      exception = ex;
+    }
+    Assert.assertNotNull("Expected exception3", exception);
+    Assert.assertEquals("Wrong Exception3", ErrorMsg.LOCK_NO_SUCH_LOCK, exception.getCanonicalErrorMsg());
   }
 
   @Test

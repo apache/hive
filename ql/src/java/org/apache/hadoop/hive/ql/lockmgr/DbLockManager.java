@@ -48,7 +48,7 @@ public class DbLockManager implements HiveLockManager{
   private long nextSleep = 50;
 
   DbLockManager(IMetaStoreClient client) {
-    locks = new HashSet<DbHiveLock>();
+    locks = new HashSet<>();
     this.client = client;
   }
 
@@ -104,8 +104,8 @@ public class DbLockManager implements HiveLockManager{
       LOG.error("Metastore could not find txnid " + lock.getTxnid());
       throw new LockException(ErrorMsg.TXNMGR_NOT_INSTANTIATED.getMsg(), e);
     } catch (TxnAbortedException e) {
-      LOG.error("Transaction " + lock.getTxnid() + " already aborted.");
-      throw new LockException(ErrorMsg.TXN_ABORTED.getMsg(), e);
+      LOG.error("Transaction " + JavaUtils.txnIdToString(lock.getTxnid()) + " already aborted.");
+      throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(lock.getTxnid()));
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
@@ -135,10 +135,10 @@ public class DbLockManager implements HiveLockManager{
       boolean removed = locks.remove(hiveLock);
       LOG.debug("Removed a lock " + removed);
     } catch (NoSuchLockException e) {
-      LOG.error("Metastore could find no record of lock " + lockId);
-      throw new LockException(ErrorMsg.LOCK_NO_SUCH_LOCK.getMsg(), e);
+      LOG.error("Metastore could find no record of lock " + JavaUtils.lockIdToString(lockId));
+      throw new LockException(e, ErrorMsg.LOCK_NO_SUCH_LOCK, JavaUtils.lockIdToString(lockId));
     } catch (TxnOpenException e) {
-      throw new RuntimeException("Attempt to unlock lock " + lockId +
+      throw new RuntimeException("Attempt to unlock lock " + JavaUtils.lockIdToString(lockId) +
           "associated with an open transaction, " + e.getMessage(), e);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
