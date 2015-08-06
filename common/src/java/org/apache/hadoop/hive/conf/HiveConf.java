@@ -765,8 +765,8 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINBUCKETCACHESIZE("hive.mapjoin.bucket.cache.size", 100, ""),
 
     HIVEMAPJOINUSEOPTIMIZEDTABLE("hive.mapjoin.optimized.hashtable", true,
-        "Whether Hive should use memory-optimized hash table for MapJoin. Only works on Tez,\n" +
-        "because memory-optimized hashtable cannot be serialized."),
+        "Whether Hive should use memory-optimized hash table for MapJoin.\n" +
+        "Only works on Tez and Spark, because memory-optimized hashtable cannot be serialized."),
     HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", true, "Whether to use hybrid" +
         "grace hash join as the join method for mapjoin. Tez only."),
     HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ("hive.mapjoin.hybridgrace.memcheckfrequency", 1024, "For " +

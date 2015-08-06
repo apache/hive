@@ -195,7 +195,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
   @Override
   public void clear() {
-    throw new RuntimeException("Not applicable");
+    // Do nothing
   }
 
   @Override
