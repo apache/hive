@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
+import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -913,7 +914,12 @@ public class Vectorizer implements PhysicalPlanResolver {
       case FILESINK:
       case LIMIT:
       case EVENT:
+      case SPARKPRUNINGSINK:
         ret = true;
+        break;
+      case HASHTABLESINK:
+        ret = op instanceof SparkHashTableSinkOperator &&
+            validateSparkHashTableSinkOperator((SparkHashTableSinkOperator) op);
         break;
       default:
         ret = false;
@@ -955,7 +961,12 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
       case LIMIT:
       case EVENT:
+      case SPARKPRUNINGSINK:
         ret = true;
+        break;
+      case HASHTABLESINK:
+        ret = op instanceof SparkHashTableSinkOperator &&
+            validateSparkHashTableSinkOperator((SparkHashTableSinkOperator) op);
         break;
       default:
         ret = false;
@@ -1078,6 +1089,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
     return true;
+  }
+
+  private boolean validateSparkHashTableSinkOperator(SparkHashTableSinkOperator op) {
+    SparkHashTableSinkDesc desc = op.getConf();
+    byte tag = desc.getTag();
+    // it's essentially a MapJoinDesc
+    List<ExprNodeDesc> filterExprs = desc.getFilters().get(tag);
+    List<ExprNodeDesc> keyExprs = desc.getKeys().get(tag);
+    List<ExprNodeDesc> valueExprs = desc.getExprs().get(tag);
+    return validateExprNodeDesc(filterExprs, VectorExpressionDescriptor.Mode.FILTER) &&
+        validateExprNodeDesc(keyExprs) && validateExprNodeDesc(valueExprs);
   }
 
   private boolean validateReduceSinkOperator(ReduceSinkOperator op) {
@@ -1685,6 +1707,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case LIMIT:
       case EXTRACT:
       case EVENT:
+      case HASHTABLESINK:
         vectorOp = OperatorFactory.getVectorOperator(op.getConf(), vContext);
         break;
       default:

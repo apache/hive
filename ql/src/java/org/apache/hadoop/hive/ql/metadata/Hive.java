@@ -18,30 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
-import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
-import static org.apache.hadoop.hive.serde.serdeConstants.FIELD_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
-import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -122,7 +99,29 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
-import com.google.common.collect.Sets;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
+import static org.apache.hadoop.hive.serde.serdeConstants.FIELD_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 
 /**
@@ -172,17 +171,16 @@ public class Hive {
 
   public static void reloadFunctions() throws HiveException {
     Hive db = Hive.get();
-    for (String dbName : db.getAllDatabases()) {
-      for (String functionName : db.getFunctions(dbName, "*")) {
-        Function function = db.getFunction(dbName, functionName);
-        try {
-	  FunctionRegistry.registerPermanentFunction(
-	      FunctionUtils.qualifyFunctionName(functionName, dbName), function.getClassName(),
-	      false, FunctionTask.toFunctionResource(function.getResourceUris()));
-        } catch (Exception e) {
-          LOG.warn("Failed to register persistent function " +
-              functionName + ":" + function.getClassName() + ". Ignore and continue.");
-        }
+    for (Function function : db.getAllFunctions()) {
+      String functionName = function.getFunctionName();
+      try {
+        LOG.info("Registering function " + functionName + " " + function.getClassName());
+        FunctionRegistry.registerPermanentFunction(
+                FunctionUtils.qualifyFunctionName(functionName, function.getDbName()), function.getClassName(),
+                false, FunctionTask.toFunctionResource(function.getResourceUris()));
+      } catch (Exception e) {
+        LOG.warn("Failed to register persistent function " +
+                functionName + ":" + function.getClassName() + ". Ignore and continue.");
       }
     }
   }
@@ -1979,19 +1977,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
-      boolean deleteData, boolean ignoreProtection, boolean ifExists) throws HiveException {
+      boolean deleteData, boolean ifExists) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
-    return dropPartitions(
-        names[0], names[1], partSpecs, deleteData, ignoreProtection, ifExists);
+    return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData, boolean ignoreProtection,
+      List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData,
       boolean ifExists) throws HiveException {
     return dropPartitions(dbName, tblName, partSpecs,
                           PartitionDropOptions.instance()
                                               .deleteData(deleteData)
-                                              .ignoreProtection(ignoreProtection)
                                               .ifExists(ifExists));
   }
 
@@ -3243,6 +3239,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public Function getFunction(String dbName, String funcName) throws HiveException {
     try {
       return getMSC().getFunction(dbName, funcName);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public List<Function> getAllFunctions() throws HiveException {
+    try {
+      List<Function> functions = getMSC().getAllFunctions().getFunctions();
+      return functions == null ? new ArrayList<Function>() : functions;
     } catch (TException te) {
       throw new HiveException(te);
     }

@@ -81,18 +81,41 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public PartitionDesc(final Partition part) throws HiveException {
-    this.tableDesc = Utilities.getTableDesc(part.getTable());
+    PartitionDescConstructorHelper(part, Utilities.getTableDesc(part.getTable()), true);
     setProperties(part.getMetadataFromPartitionSchema());
-    partSpec = part.getSpec();
-    setInputFileFormatClass(part.getInputFormatClass());
-    setOutputFileFormatClass(part.getOutputFormatClass());
   }
 
-  public PartitionDesc(final Partition part,final TableDesc tblDesc) throws HiveException {
+  /** 
+   * @param part Partition
+   * @param tblDesc Table Descriptor
+   * @param usePartSchemaProperties Use Partition Schema Properties to set the
+   * partition descriptor properties. This is usually set to true by the caller
+   * if the table is partitioned, i.e. if the table has partition columns.
+   * @throws HiveException
+   */
+  public PartitionDesc(final Partition part,final TableDesc tblDesc,
+    boolean usePartSchemaProperties)
+    throws HiveException {
+    PartitionDescConstructorHelper(part,tblDesc, usePartSchemaProperties);
+    //We use partition schema properties to set the partition descriptor properties
+    // if usePartSchemaProperties is set to true.
+    if (usePartSchemaProperties) {
+      setProperties(part.getMetadataFromPartitionSchema());
+    } else {
+      // each partition maintains a large properties
+      setProperties(part.getSchemaFromTableSchema(tblDesc.getProperties()));
+    }
+  }
+
+  private void PartitionDescConstructorHelper(final Partition part,final TableDesc tblDesc, boolean setInputFileFormat)
+    throws HiveException {
     this.tableDesc = tblDesc;
-    setProperties(part.getSchemaFromTableSchema(tblDesc.getProperties())); // each partition maintains a large properties
-    partSpec = part.getSpec();
-    setOutputFileFormatClass(part.getInputFormatClass());
+    this.partSpec = part.getSpec();
+    if (setInputFileFormat) {
+      setInputFileFormatClass(part.getInputFormatClass());
+    } else {
+      setOutputFileFormatClass(part.getInputFormatClass());
+    }
     setOutputFileFormatClass(part.getOutputFormatClass());
   }
 

@@ -62,12 +62,12 @@ import static org.junit.Assert.assertNull;
 public class TestOrcRawRecordMerger {
 
   private static final Log LOG = LogFactory.getLog(TestOrcRawRecordMerger.class);
-
+//todo: why is statementId -1?
   @Test
   public void testOrdering() throws Exception {
     ReaderKey left = new ReaderKey(100, 200, 1200, 300);
     ReaderKey right = new ReaderKey();
-    right.setValues(100, 200, 1000, 200);
+    right.setValues(100, 200, 1000, 200,1);
     assertTrue(right.compareTo(left) < 0);
     assertTrue(left.compareTo(right) > 0);
     assertEquals(false, left.equals(right));
@@ -76,16 +76,16 @@ public class TestOrcRawRecordMerger {
     assertEquals(true, right.equals(left));
     right.setRowId(2000);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 4);
-    right.setValues(100, 2, 3, 4);
+    left.setValues(1, 2, 3, 4,-1);
+    right.setValues(100, 2, 3, 4,-1);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 4);
-    right.setValues(1, 100, 3, 4);
+    left.setValues(1, 2, 3, 4,-1);
+    right.setValues(1, 100, 3, 4,-1);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 100);
-    right.setValues(1, 2, 3, 4);
+    left.setValues(1, 2, 3, 100,-1);
+    right.setValues(1, 2, 3, 4,-1);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
 
@@ -177,7 +177,7 @@ public class TestOrcRawRecordMerger {
     RecordIdentifier minKey = new RecordIdentifier(10, 20, 30);
     RecordIdentifier maxKey = new RecordIdentifier(40, 50, 60);
     ReaderPair pair = new ReaderPair(key, reader, 20, minKey, maxKey,
-        new Reader.Options());
+        new Reader.Options(), 0);
     RecordReader recordReader = pair.recordReader;
     assertEquals(10, key.getTransactionId());
     assertEquals(20, key.getBucketId());
@@ -203,7 +203,7 @@ public class TestOrcRawRecordMerger {
     Reader reader = createMockReader();
 
     ReaderPair pair = new ReaderPair(key, reader, 20, null, null,
-        new Reader.Options());
+        new Reader.Options(), 0);
     RecordReader recordReader = pair.recordReader;
     assertEquals(10, key.getTransactionId());
     assertEquals(20, key.getBucketId());
@@ -489,7 +489,7 @@ public class TestOrcRawRecordMerger {
     // write the empty base
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .inspector(inspector).bucket(BUCKET).writingBase(true)
-        .maximumTransactionId(100);
+        .maximumTransactionId(100).finalDestination(root);
     of.getRecordUpdater(root, options).close(false);
 
     ValidTxnList txnList = new ValidReadTxnList("200:");
@@ -515,6 +515,10 @@ public class TestOrcRawRecordMerger {
    */
   @Test
   public void testNewBaseAndDelta() throws Exception {
+    testNewBaseAndDelta(false);
+    testNewBaseAndDelta(true);
+  }
+  private void testNewBaseAndDelta(boolean use130Format) throws Exception {
     final int BUCKET = 10;
     String[] values = new String[]{"first", "second", "third", "fourth",
                                    "fifth", "sixth", "seventh", "eighth",
@@ -532,7 +536,10 @@ public class TestOrcRawRecordMerger {
 
     // write the base
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
-        .inspector(inspector).bucket(BUCKET);
+        .inspector(inspector).bucket(BUCKET).finalDestination(root);
+    if(!use130Format) {
+      options.statementId(-1);
+    }
     RecordUpdater ru = of.getRecordUpdater(root,
         options.writingBase(true).maximumTransactionId(100));
     for(String v: values) {
@@ -554,7 +561,8 @@ public class TestOrcRawRecordMerger {
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
-    assertEquals(new Path(root, "delta_0000200_0000200"),
+    assertEquals(new Path(root, use130Format ?
+        AcidUtils.deltaSubdir(200,200,0) : AcidUtils.deltaSubdir(200,200)),
         directory.getCurrentDirectories().get(0).getPath());
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
@@ -829,7 +837,7 @@ public class TestOrcRawRecordMerger {
     // write a delta
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .writingBase(false).minimumTransactionId(1).maximumTransactionId(1)
-        .bucket(BUCKET).inspector(inspector).filesystem(fs).recordIdColumn(5);
+        .bucket(BUCKET).inspector(inspector).filesystem(fs).recordIdColumn(5).finalDestination(root);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     values = new String[]{"0.0", null, null, "1.1", null, null, null,
         "ignore.7"};
@@ -920,6 +928,7 @@ public class TestOrcRawRecordMerger {
     options.orcOptions(OrcFile.writerOptions(conf)
       .stripeSize(1).blockPadding(false).compress(CompressionKind.NONE)
       .memory(mgr));
+    options.finalDestination(root);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     String[] values= new String[]{"ignore.1", "0.1", "ignore.2", "ignore.3",
         "2.0", "2.1", "3.0", "ignore.4", "ignore.5", "ignore.6"};
@@ -1004,7 +1013,8 @@ public class TestOrcRawRecordMerger {
     AcidOutputFormat.Options options =
         new AcidOutputFormat.Options(conf)
             .bucket(BUCKET).inspector(inspector).filesystem(fs)
-            .writingBase(false).minimumTransactionId(1).maximumTransactionId(1);
+            .writingBase(false).minimumTransactionId(1).maximumTransactionId(1)
+          .finalDestination(root);
     RecordUpdater ru = of.getRecordUpdater(root, options);
     String[] values = new String[]{"a", "b", "c", "d", "e"};
     for(int i=0; i < values.length; ++i) {
@@ -1047,6 +1057,14 @@ public class TestOrcRawRecordMerger {
    */
   @Test
   public void testRecordReaderIncompleteDelta() throws Exception {
+    testRecordReaderIncompleteDelta(false);
+    testRecordReaderIncompleteDelta(true);
+  }
+  /**
+   * 
+   * @param use130Format true means use delta_0001_0001_0000 format, else delta_0001_00001
+   */
+  private void testRecordReaderIncompleteDelta(boolean use130Format) throws Exception {
     final int BUCKET = 1;
     Configuration conf = new Configuration();
     OrcOutputFormat of = new OrcOutputFormat();
@@ -1063,7 +1081,10 @@ public class TestOrcRawRecordMerger {
     AcidOutputFormat.Options options =
         new AcidOutputFormat.Options(conf)
             .writingBase(true).minimumTransactionId(0).maximumTransactionId(0)
-            .bucket(BUCKET).inspector(inspector).filesystem(fs);
+            .bucket(BUCKET).inspector(inspector).filesystem(fs).finalDestination(root);
+    if(!use130Format) {
+      options.statementId(-1);
+    }
     RecordUpdater ru = of.getRecordUpdater(root, options);
     String[] values= new String[]{"1", "2", "3", "4", "5"};
     for(int i=0; i < values.length; ++i) {
@@ -1110,8 +1131,8 @@ public class TestOrcRawRecordMerger {
     splits = inf.getSplits(job, 1);
     assertEquals(2, splits.length);
     rr = inf.getRecordReader(splits[0], job, Reporter.NULL);
-    Path sideFile = new Path(root +
-        "/delta_0000010_0000019/bucket_00001_flush_length");
+    Path sideFile = new Path(root + "/" + (use130Format ? AcidUtils.deltaSubdir(10,19,0) :
+      AcidUtils.deltaSubdir(10,19)) + "/bucket_00001_flush_length");
     assertEquals(true, fs.exists(sideFile));
     assertEquals(24, fs.getFileStatus(sideFile).getLen());
 

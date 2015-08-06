@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
@@ -842,7 +843,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     rps.setExprs(exprs);
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
     req.setDeleteData(options.deleteData);
-    req.setIgnoreProtection(options.ignoreProtection);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
     if (options.purgeData) {
@@ -854,13 +854,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists, boolean needResult) throws NoSuchObjectException, MetaException, TException {
 
     return dropPartitions(dbName, tblName, partExprs,
                           PartitionDropOptions.instance()
                                               .deleteData(deleteData)
-                                              .ignoreProtection(ignoreProtection)
                                               .ifExists(ifExists)
                                               .returnResults(needResult));
 
@@ -868,13 +867,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists) throws NoSuchObjectException, MetaException, TException {
     // By default, we need the results from dropPartitions();
     return dropPartitions(dbName, tblName, partExprs,
                           PartitionDropOptions.instance()
                                               .deleteData(deleteData)
-                                              .ignoreProtection(ignoreProtection)
                                               .ifExists(ifExists));
   }
 
@@ -2045,6 +2043,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException {
     return client.get_functions(dbName, pattern);
+  }
+
+  @Override
+  public GetAllFunctionsResponse getAllFunctions()
+          throws MetaException, TException {
+    return client.get_all_functions();
   }
 
   protected void create_table_with_environment_context(Table tbl, EnvironmentContext envContext)

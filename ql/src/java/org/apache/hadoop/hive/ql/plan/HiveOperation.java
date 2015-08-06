@@ -93,8 +93,6 @@ public enum HiveOperation {
   SHOW_ROLES("SHOW_ROLES", null, null),
   SHOW_ROLE_PRINCIPALS("SHOW_ROLE_PRINCIPALS", null, null),
   SHOW_ROLE_GRANT("SHOW_ROLE_GRANT", null, null),
-  ALTERTABLE_PROTECTMODE("ALTERTABLE_PROTECTMODE", new Privilege[]{Privilege.ALTER_METADATA}, null),
-  ALTERPARTITION_PROTECTMODE("ALTERPARTITION_PROTECTMODE", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_FILEFORMAT("ALTERTABLE_FILEFORMAT", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERPARTITION_FILEFORMAT("ALTERPARTITION_FILEFORMAT", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_LOCATION("ALTERTABLE_LOCATION", new Privilege[]{Privilege.ALTER_DATA}, null),
@@ -102,7 +100,7 @@ public enum HiveOperation {
   CREATETABLE("CREATETABLE", null, new Privilege[]{Privilege.CREATE}),
   TRUNCATETABLE("TRUNCATETABLE", null, new Privilege[]{Privilege.DROP}),
   CREATETABLE_AS_SELECT("CREATETABLE_AS_SELECT", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.CREATE}),
-  QUERY("QUERY", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA, Privilege.CREATE}),
+  QUERY("QUERY", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA, Privilege.CREATE}, true, false),
   ALTERINDEX_PROPS("ALTERINDEX_PROPS",null, null),
   ALTERDATABASE("ALTERDATABASE", null, null),
   ALTERDATABASE_OWNER("ALTERDATABASE_OWNER", null, null),
@@ -113,11 +111,16 @@ public enum HiveOperation {
   ALTERTBLPART_SKEWED_LOCATION("ALTERTBLPART_SKEWED_LOCATION",
       new Privilege[] {Privilege.ALTER_DATA}, null),
   ALTERTABLE_PARTCOLTYPE("ALTERTABLE_PARTCOLTYPE", new Privilege[] { Privilege.SELECT }, new Privilege[] { Privilege.ALTER_DATA }),
+  ALTERTABLE_EXCHANGEPARTITION("ALTERTABLE_EXCHANGEPARTITION", null, null),
   ALTERVIEW_RENAME("ALTERVIEW_RENAME", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERVIEW_AS("ALTERVIEW_AS", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERTABLE_COMPACT("ALTERTABLE_COMPACT", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA}),
   SHOW_COMPACTIONS("SHOW COMPACTIONS", null, null),
-  SHOW_TRANSACTIONS("SHOW TRANSACTIONS", null, null);
+  SHOW_TRANSACTIONS("SHOW TRANSACTIONS", null, null),
+  START_TRANSACTION("START TRANSACTION", null, null, false, false),
+  COMMIT("COMMIT", null, null, true, true),
+  ROLLBACK("ROLLBACK", null, null, true, true),
+  SET_AUTOCOMMIT("SET AUTOCOMMIT", null, null, true, false);
   ;
 
   private String operationName;
@@ -125,6 +128,12 @@ public enum HiveOperation {
   private Privilege[] inputRequiredPrivileges;
 
   private Privilege[] outputRequiredPrivileges;
+
+  /**
+   * Only a small set of operations is allowed inside an open transactions, e.g. DML
+   */
+  private final boolean allowedInTransaction;
+  private final boolean requiresOpenTransaction;
 
   public Privilege[] getInputRequiredPrivileges() {
     return inputRequiredPrivileges;
@@ -138,11 +147,26 @@ public enum HiveOperation {
     return operationName;
   }
 
+  public boolean isAllowedInTransaction() {
+    return allowedInTransaction;
+  }
+  public boolean isRequiresOpenTransaction() { return requiresOpenTransaction; }
+
   private HiveOperation(String operationName,
-      Privilege[] inputRequiredPrivileges, Privilege[] outputRequiredPrivileges) {
+                        Privilege[] inputRequiredPrivileges, Privilege[] outputRequiredPrivileges) {
+    this(operationName, inputRequiredPrivileges, outputRequiredPrivileges, false, false);
+  }
+  private HiveOperation(String operationName,
+      Privilege[] inputRequiredPrivileges, Privilege[] outputRequiredPrivileges,
+      boolean allowedInTransaction, boolean requiresOpenTransaction) {
     this.operationName = operationName;
     this.inputRequiredPrivileges = inputRequiredPrivileges;
     this.outputRequiredPrivileges = outputRequiredPrivileges;
+    this.requiresOpenTransaction = requiresOpenTransaction;
+    if(requiresOpenTransaction) {
+      allowedInTransaction = true;
+    }
+    this.allowedInTransaction = allowedInTransaction;
   }
 
   public static class PrivilegeAgreement {

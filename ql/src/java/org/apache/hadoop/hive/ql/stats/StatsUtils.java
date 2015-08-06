@@ -249,8 +249,14 @@ public class StatsUtils {
           partNames.add(part.getName());
         }
         neededColumns = processNeededColumns(schema, neededColumns);
-        AggrStats aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
-            neededColumns, partNames);
+        AggrStats aggrStats = null;
+        // We check the sizes of neededColumns and partNames here. If either
+        // size is 0, aggrStats is null after several retries. Thus, we can
+        // skip the step to connect to the metastore.
+        if (neededColumns.size() > 0 && partNames.size() > 0) {
+          aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
+              neededColumns, partNames);
+        }
         if (null == aggrStats || null == aggrStats.getColStats()
             || aggrStats.getColStatsSize() == 0) {
           // There are some partitions with no state (or we didn't fetch any state).

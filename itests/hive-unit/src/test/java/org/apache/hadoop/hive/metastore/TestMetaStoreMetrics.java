@@ -24,8 +24,10 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.service.server.HiveServer2;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -37,9 +39,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * Tests Hive Metastore Metrics.
+ *
  */
 public class TestMetaStoreMetrics {
 
@@ -49,9 +53,8 @@ public class TestMetaStoreMetrics {
   private static HiveConf hiveConf;
   private static Driver driver;
 
-
-  @Before
-  public void before() throws Exception {
+  @BeforeClass
+  public static void before() throws Exception {
 
     int port = MetaStoreUtils.findFreePort();
 
@@ -86,9 +89,58 @@ public class TestMetaStoreMetrics {
     ObjectMapper objectMapper = new ObjectMapper();
 
     JsonNode rootNode = objectMapper.readTree(jsonData);
-    JsonNode countersNode = rootNode.path("timers");
-    JsonNode methodCounterNode = countersNode.path("api_get_all_databases");
-    JsonNode countNode = methodCounterNode.path("count");
-    Assert.assertTrue(countNode.asInt() > 0);
+    JsonNode timersNode = rootNode.path("timers");
+    JsonNode methodCounterNode = timersNode.path("api_get_all_databases");
+    JsonNode methodCountNode = methodCounterNode.path("count");
+    Assert.assertTrue(methodCountNode.asInt() > 0);
+
+    JsonNode countersNode = rootNode.path("counters");
+    JsonNode committedJdoTxNode = countersNode.path("committed_jdo_transactions");
+    JsonNode committedCountNode = committedJdoTxNode.path("count");
+    Assert.assertTrue(committedCountNode.asInt() > 0);
+  }
+
+
+  @Test
+  public void testConnections() throws Exception {
+    byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode rootNode = objectMapper.readTree(jsonData);
+    JsonNode countersNode = rootNode.path("counters");
+    JsonNode openCnxNode = countersNode.path("open_connections");
+    JsonNode openCnxCountNode = openCnxNode.path("count");
+    Assert.assertTrue(openCnxCountNode.asInt() == 1);
+
+    //create a second connection
+    HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
+    HiveMetaStoreClient msc2 = new HiveMetaStoreClient(hiveConf);
+    Thread.sleep(2000);
+
+    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+    rootNode = objectMapper.readTree(jsonData);
+    countersNode = rootNode.path("counters");
+    openCnxNode = countersNode.path("open_connections");
+    openCnxCountNode = openCnxNode.path("count");
+    Assert.assertTrue(openCnxCountNode.asInt() == 3);
+
+    msc.close();
+    Thread.sleep(2000);
+
+    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+    rootNode = objectMapper.readTree(jsonData);
+    countersNode = rootNode.path("counters");
+    openCnxNode = countersNode.path("open_connections");
+    openCnxCountNode = openCnxNode.path("count");
+    Assert.assertTrue(openCnxCountNode.asInt() == 2);
+
+    msc2.close();
+    Thread.sleep(2000);
+
+    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+    rootNode = objectMapper.readTree(jsonData);
+    countersNode = rootNode.path("counters");
+    openCnxNode = countersNode.path("open_connections");
+    openCnxCountNode = openCnxNode.path("count");
+    Assert.assertTrue(openCnxCountNode.asInt() == 1);
   }
 }

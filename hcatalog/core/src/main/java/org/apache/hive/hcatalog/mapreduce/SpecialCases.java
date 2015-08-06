@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+import org.apache.hadoop.hive.ql.io.orc.OrcConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
@@ -85,10 +85,10 @@ public class SpecialCases {
       // them to job properties, so that it will be available in jobconf at runtime
       // See HIVE-5504 for details
       Map<String, String> tableProps = jobInfo.getTableInfo().getTable().getParameters();
-      for (OrcFile.OrcTableProperties property : OrcFile.OrcTableProperties.values()){
-        String propName = property.getPropName();
+      for (OrcConf property : OrcConf.values()){
+        String propName = property.getAttribute();
         if (tableProps.containsKey(propName)){
-          jobProperties.put(propName,tableProps.get(propName));
+          jobProperties.put(propName, tableProps.get(propName));
         }
       }
     } else if (ofclass == AvroContainerOutputFormat.class) {

@@ -173,8 +173,14 @@ public class TezTask extends Task<TezWork> {
       }
 
       // fetch the counters
-      Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
-      counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
+      try {
+        Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
+        counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
+      } catch (Exception err) {
+        // Don't fail execution due to counters - just don't print summary info
+        LOG.error("Failed to get counters: " + err, err);
+        counters = null;
+      }
       TezSessionPoolManager.getInstance().returnSession(session, getWork().getLlapMode());
 
       if (LOG.isInfoEnabled() && counters != null

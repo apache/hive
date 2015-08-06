@@ -488,8 +488,6 @@ public final class GenMapRedUtils {
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
 
     Path tblDir = null;
-    TableDesc tblDesc = null;
-
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
 
     if (partsList == null) {
@@ -576,6 +574,8 @@ public final class GenMapRedUtils {
     //This read entity is a direct read entity and not an indirect read (that is when
     // this is being read because it is a dependency of a view).
     boolean isDirectRead = (parentViewInfo == null);
+    TableDesc tblDesc = null;
+    boolean initTableDesc = false;
 
     for (Partition part : parts) {
       if (part.getTable().isPartitioned()) {
@@ -648,12 +648,18 @@ public final class GenMapRedUtils {
 
       // is it a partitioned table ?
       if (!part.getTable().isPartitioned()) {
-        assert ((tblDir == null) && (tblDesc == null));
+        assert (tblDir == null);
 
         tblDir = paths[0];
-        tblDesc = Utilities.getTableDesc(part.getTable());
+        if (!initTableDesc) {
+          tblDesc = Utilities.getTableDesc(part.getTable());
+          initTableDesc = true;
+        }
       } else if (tblDesc == null) {
-        tblDesc = Utilities.getTableDesc(part.getTable());
+        if (!initTableDesc) {
+          tblDesc = Utilities.getTableDesc(part.getTable());
+          initTableDesc = true;
+        }
       }
 
       if (props != null) {
@@ -679,7 +685,7 @@ public final class GenMapRedUtils {
             partDesc.add(Utilities.getPartitionDesc(part));
           }
           else {
-            partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part));
+            partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part, false));
           }
         } catch (HiveException e) {
           LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));

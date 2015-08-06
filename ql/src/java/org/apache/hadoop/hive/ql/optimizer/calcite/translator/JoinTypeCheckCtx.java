@@ -53,7 +53,7 @@ public class JoinTypeCheckCtx extends TypeCheckCtx {
 
   public JoinTypeCheckCtx(RowResolver leftRR, RowResolver rightRR, JoinType hiveJoinType)
       throws SemanticException {
-    super(RowResolver.getCombinedRR(leftRR, rightRR), false, false, false, false, false, false,
+    super(RowResolver.getCombinedRR(leftRR, rightRR), true, false, false, false, false, false, false,
         false, false);
     this.inputRRLst = ImmutableList.of(leftRR, rightRR);
     this.outerJoin = (hiveJoinType == JoinType.LEFTOUTER) || (hiveJoinType == JoinType.RIGHTOUTER)

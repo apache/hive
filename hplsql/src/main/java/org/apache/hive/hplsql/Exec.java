@@ -39,6 +39,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.io.FileUtils;
+import org.apache.hive.hplsql.Var.Type;
 import org.apache.hive.hplsql.functions.*;
 
 /**
@@ -63,6 +64,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   
   Stack<Var> stack = new Stack<Var>();
   Stack<String> labels = new Stack<String>();
+  Stack<String> callStack = new Stack<String>();
   
   Stack<Signal> signals = new Stack<Signal>();
   Signal currentSignal;
@@ -72,14 +74,16 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   HashMap<String, String> managedTables = new HashMap<String, String>();
   HashMap<String, String> objectMap = new HashMap<String, String>(); 
   HashMap<String, String> objectConnMap = new HashMap<String, String>();
+  HashMap<String, ArrayList<Var>> returnCursors = new HashMap<String, ArrayList<Var>>();
   
   public ArrayList<String> stmtConnList = new ArrayList<String>();
-  
+      
   Arguments arguments = new Arguments();
   public Conf conf;
   Expression expr;
   Function function;  
   Converter converter;
+  Meta meta;
   Select select;
   Stmt stmt;
   Conn conn;  
@@ -183,6 +187,32 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   /**
+   * Add a return cursor visible to procedure callers and clients
+   */
+  public void addReturnCursor(Var var) {
+    String routine = callStackPeek();
+    ArrayList<Var> cursors = returnCursors.get(routine);
+    if (cursors == null) {
+      cursors = new ArrayList<Var>();
+      returnCursors.put(routine, cursors);
+    }
+    cursors.add(var);
+  }
+  
+  /**
+   * Get the return cursor defined in the specified procedure
+   */
+  public Var consumeReturnCursor(String routine) {
+    ArrayList<Var> cursors = returnCursors.get(routine.toUpperCase());
+    if (cursors == null) {
+      return null;
+    }
+    Var var = cursors.get(0);
+    cursors.remove(0);
+    return var;
+  }
+  
+  /**
    * Push a value to the stack
    */
   public void stackPush(Var var) {
@@ -203,7 +233,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   /**
    * Push a boolean value to the stack
    */
-  public void stackPush(boolean val) {
+  public void stackPush(Boolean val) {
     exec.stack.push(new Var(val));  
   }
 
@@ -223,6 +253,33 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     return null;
   }    
+  
+  /**
+   * Push a value to the call stack
+   */
+  public void callStackPush(String val) {
+    exec.callStack.push(val.toUpperCase());  
+  }
+  
+  /**
+   * Select a value from the call stack, but not remove
+   */
+  public String callStackPeek() {
+    if (!exec.callStack.isEmpty()) {
+      return exec.callStack.peek();
+    }
+    return null;
+  }
+  
+  /**
+   * Pop a value from the call stack
+   */
+  public String callStackPop() {
+    if (!exec.callStack.isEmpty()) {
+      return exec.callStack.pop();
+    }
+    return null;
+  }  
   
   /** 
    * Find an existing variable by name 
@@ -247,6 +304,17 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   
   public Var findVariable(Var name) {
     return findVariable(name.getName());
+  }
+  
+  /**
+   * Find a cursor variable by name
+   */
+  public Var findCursor(String name) {
+    Var cursor = exec.findVariable(name);
+    if (cursor != null && cursor.type == Type.CURSOR) {
+      return cursor;
+    }    
+    return null;
   }
   
   /**
@@ -286,10 +354,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   public void signal(Signal.Type type, String value) {
+    setSqlCode(-1);
     signal(type, value, null);   
   }
   
   public void signal(Signal.Type type) {
+    setSqlCode(-1);
     signal(type, null, null);   
   }
   
@@ -413,7 +483,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       return query;
     }
     setSqlNoData();
-    trace(ctx, "Not executed - offline mode set");
+    info(ctx, "Not executed - offline mode set");
     return query;
   }
 
@@ -431,7 +501,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       exec.rowCount = query.getRowCount();
       return query;
     }
-    trace(ctx, "Not executed - offline mode set");
+    info(ctx, "Not executed - offline mode set");
     return new Query("");
   }  
   
@@ -480,20 +550,20 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       Entry<String,String> item = (Entry<String,String>)i.next();
       String key = (String)item.getKey();
       String value = (String)item.getValue();
-      if (key == null || value == null) {
+      if (key == null || value == null || !key.startsWith("hplsql.")) {
         continue;
       }
       else if (key.compareToIgnoreCase(Conf.CONN_DEFAULT) == 0) {
         exec.conf.defaultConnection = value;
       }
       else if (key.startsWith("hplsql.conn.init.")) {
-        exec.conn.addConnectionInit(key.substring(16), value);        
+        exec.conn.addConnectionInit(key.substring(17), value);        
       }
       else if (key.startsWith(Conf.CONN_CONVERT)) {
-        exec.conf.setConnectionConvert(key.substring(19), value);        
+        exec.conf.setConnectionConvert(key.substring(20), value);        
       }
       else if (key.startsWith("hplsql.conn.")) {
-        exec.conn.addConnection(key.substring(11), value);
+        exec.conn.addConnection(key.substring(12), value);
       }
       else if (key.startsWith("hplsql.")) {
         exec.conf.setOption(key, value);
@@ -602,14 +672,15 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     conf = new Conf();
     conf.init();    
-    conn = new Conn(this);   
+    conn = new Conn(this);
+    meta = new Meta();
     initOptions();
     
     expr = new Expression(this);
     select = new Select(this);
     stmt = new Stmt(this);
     converter = new Converter(this);
-    
+        
     function = new Function(this);
     new FunctionDatetime(this).register(function);
     new FunctionMisc(this).register(function);
@@ -763,7 +834,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     while (!signals.empty()) {
       Signal sig = signals.pop();
       if (sig.type == Signal.Type.SQLEXCEPTION) {
-        System.err.println("Unhandled exception in PL/HQL");
+        System.err.println("Unhandled exception in HPL/SQL");
       }
       if (sig.exception != null) {
         sig.exception.printStackTrace(); 
@@ -879,15 +950,26 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitSelect_options_item(HplsqlParser.Select_options_itemContext ctx) { 
     return exec.select.option(ctx); 
   }
-    
+
+  /**
+   * Column name
+   */
+  @Override 
+  public Integer visitColumn_name(HplsqlParser.Column_nameContext ctx) {
+    stackPush(meta.normalizeIdentifierPart(ctx.getText()));
+    return 0; 
+  }
+  
   /**
    * Table name
    */
   @Override 
   public Integer visitTable_name(HplsqlParser.Table_nameContext ctx) {
-    String name = ctx.getText().toUpperCase(); 
-    String actualName = exec.managedTables.get(name);
-    String conn = exec.objectConnMap.get(name);
+    String name = ctx.getText();
+    String nameUp = name.toUpperCase();
+    String nameNorm = meta.normalizeIdentifier(name);
+    String actualName = exec.managedTables.get(nameUp);
+    String conn = exec.objectConnMap.get(nameUp);
     if (conn == null) {
       conn = conf.defaultConnection;
     }
@@ -896,12 +978,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       stackPush(actualName);
       return 0;
     }
-    actualName = exec.objectMap.get(name);
+    actualName = exec.objectMap.get(nameUp);
     if (actualName != null) {
       stackPush(actualName);
       return 0;
     }
-    stackPush(ctx.getText());
+    stackPush(nameNorm);
     return 0; 
   }
 
@@ -940,7 +1022,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override
   public Integer visitDeclare_var_item(HplsqlParser.Declare_var_itemContext ctx) { 
-    String type = ctx.dtype().getText();
+    String type = getFormattedText(ctx.dtype());
     String len = null;
     String scale = null;
     Var default_ = null;
@@ -968,6 +1050,22 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
 	    }
 	  }	
 	  return 0;
+  }
+  
+  /**
+   * ALLOCATE CURSOR statement
+   */
+  @Override 
+  public Integer visitAllocate_cursor_stmt(HplsqlParser.Allocate_cursor_stmtContext ctx) { 
+    return exec.stmt.allocateCursor(ctx); 
+  }
+
+  /**
+   * ASSOCIATE LOCATOR statement
+   */
+  @Override 
+  public Integer visitAssociate_locator_stmt(HplsqlParser.Associate_locator_stmtContext ctx) { 
+    return exec.stmt.associateLocator(ctx); 
   }
 
   /**
@@ -1076,6 +1174,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitCreate_table_options_hive_item(HplsqlParser.Create_table_options_hive_itemContext ctx) { 
     return exec.stmt.createTableHiveOptions(ctx); 
+  }
+  
+  @Override 
+  public Integer visitCreate_table_options_mssql_item(HplsqlParser.Create_table_options_mssql_itemContext ctx) { 
+    return 0; 
   }
   
   /**
@@ -1233,6 +1336,15 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     else {
       exec.expr.execBoolUnary(ctx);
     }
+    return 0; 
+  }
+  
+  /**
+   * Cursor attribute %ISOPEN, %FOUND and %NOTFOUND
+   */
+  @Override 
+  public Integer visitExpr_cursor_attribute(HplsqlParser.Expr_cursor_attributeContext ctx) {
+    exec.expr.execCursorAttribute(ctx);
     return 0; 
   }
     
@@ -1412,6 +1524,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitReturn_stmt(HplsqlParser.Return_stmtContext ctx) {
     return exec.stmt.return_(ctx); 
   }  
+  
+  /** 
+   * SET session options
+   */
+  @Override 
+  public Integer visitSet_current_schema_option(HplsqlParser.Set_current_schema_optionContext ctx) { 
+    return exec.stmt.setCurrentSchema(ctx); 
+  }
   
   /**
    * MAP OBJECT statement
@@ -1644,7 +1764,16 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitLabel(HplsqlParser.LabelContext ctx) { 
-    exec.labels.push(ctx.L_ID().toString()); 
+    if (ctx.L_ID() != null) {
+      exec.labels.push(ctx.L_ID().toString());
+    }
+    else {
+      String label = ctx.L_LABEL().getText();
+      if (label.endsWith(":")) {
+        label = label.substring(0, label.length() - 1);
+      }
+      exec.labels.push(label);
+    }
     return 0;
   }
   
@@ -1934,6 +2063,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
 
   public Conf getConf() {
     return exec.conf;
+  }
+  
+  public Meta getMeta() {
+    return exec.meta;
   }
   
   public boolean getTrace() {

@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -99,6 +101,8 @@ public abstract class TestHiveMetaStore extends TestCase {
     hiveConf.set("hive.key2", "http://www.example.com");
     hiveConf.set("hive.key3", "");
     hiveConf.set("hive.key4", "0");
+
+    hiveConf.setIntVar(ConfVars.METASTORE_BATCH_RETRIEVE_MAX, 2);
   }
 
   public void testNameMethods() {
@@ -1330,7 +1334,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       tableNames.add(tblName2);
       List<Table> foundTables = client.getTableObjectsByName(dbName, tableNames);
 
-      assertEquals(foundTables.size(), 2);
+      assertEquals(2, foundTables.size());
       for (Table t: foundTables) {
         if (t.getTableName().equals(tblName2)) {
           assertEquals(t.getSd().getLocation(), tbl2.getSd().getLocation());
@@ -2530,6 +2534,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     String funcName = "test_func";
     String className = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper";
     String owner = "test_owner";
+    final int N_FUNCTIONS = 5;
     PrincipalType ownerType = PrincipalType.USER;
     int createTime = (int) (System.currentTimeMillis() / 1000);
     FunctionType funcType = FunctionType.JAVA;
@@ -2539,14 +2544,16 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       createDb(dbName);
 
-      createFunction(dbName, funcName, className, owner, ownerType, createTime, funcType, null);
+      for (int i = 0; i < N_FUNCTIONS; i++) {
+        createFunction(dbName, funcName + "_" + i, className, owner, ownerType, createTime, funcType, null);
+      }
 
       // Try the different getters
 
       // getFunction()
-      Function func = client.getFunction(dbName, funcName);
+      Function func = client.getFunction(dbName, funcName + "_0");
       assertEquals("function db name", dbName, func.getDbName());
-      assertEquals("function name", funcName, func.getFunctionName());
+      assertEquals("function name", funcName + "_0", func.getFunctionName());
       assertEquals("function class name", className, func.getClassName());
       assertEquals("function owner name", owner, func.getOwnerName());
       assertEquals("function owner type", PrincipalType.USER, func.getOwnerType());
@@ -2563,21 +2570,31 @@ public abstract class TestHiveMetaStore extends TestCase {
       }
       assertEquals(true, gotException);
 
+      // getAllFunctions()
+      GetAllFunctionsResponse response = client.getAllFunctions();
+      List<Function> allFunctions = response.getFunctions();
+      assertEquals(N_FUNCTIONS, allFunctions.size());
+      assertEquals(funcName + "_3", allFunctions.get(3).getFunctionName());
+
       // getFunctions()
-      List<String> funcs = client.getFunctions(dbName, "*_func");
-      assertEquals(1, funcs.size());
-      assertEquals(funcName, funcs.get(0));
+      List<String> funcs = client.getFunctions(dbName, "*_func_*");
+      assertEquals(N_FUNCTIONS, funcs.size());
+      assertEquals(funcName + "_0", funcs.get(0));
 
       funcs = client.getFunctions(dbName, "nonexistent_func");
       assertEquals(0, funcs.size());
 
       // dropFunction()
-      client.dropFunction(dbName, funcName);
+      for (int i = 0; i < N_FUNCTIONS; i++) {
+        client.dropFunction(dbName, funcName + "_" + i);
+      }
 
       // Confirm that the function is now gone
       funcs = client.getFunctions(dbName, funcName);
       assertEquals(0, funcs.size());
-
+      response = client.getAllFunctions();
+      allFunctions = response.getFunctions();
+      assertEquals(0, allFunctions.size());
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testConcurrentMetastores() failed.");
@@ -2698,6 +2715,26 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
     client.createType(typ1);
     return typ1;
+  }
+
+  /**
+   * Creates a simple table under specified database
+   * @param dbName    the database name that the table will be created under
+   * @param tableName the table name to be created
+   * @throws Exception
+   */
+  private void createTable(String dbName, String tableName)
+      throws Exception {
+    List<FieldSchema> columns = new ArrayList<FieldSchema>();
+    columns.add(new FieldSchema("foo", "string", ""));
+    columns.add(new FieldSchema("bar", "string", ""));
+
+    Map<String, String> serdParams = new HashMap<String, String>();
+    serdParams.put(serdeConstants.SERIALIZATION_FORMAT, "1");
+
+    StorageDescriptor sd =  createStorageDescriptor(tableName, columns, null, serdParams);
+
+    createTable(dbName, tableName, null, null, null, sd, 0);
   }
 
   private Table createTable(String dbName, String tblName, String owner,
@@ -2850,6 +2887,38 @@ public abstract class TestHiveMetaStore extends TestCase {
     client.alterDatabase(dbName, db);
     checkDbOwnerType(dbName, role1, PrincipalType.ROLE);
 
+  }
+
+  /**
+   * Test table objects can be retrieved in batches
+   * @throws Exception
+   */
+  @Test
+  public void testGetTableObjects() throws Exception {
+    String dbName = "db";
+    List<String> tableNames = Arrays.asList("table1", "table2", "table3", "table4", "table5");
+
+    // Setup
+    silentDropDatabase(dbName);
+
+    Database db = new Database();
+    db.setName(dbName);
+    client.createDatabase(db);
+    for (String tableName : tableNames) {
+      createTable(dbName, tableName);
+    }
+
+    // Test
+    List<Table> tableObjs = client.getTableObjectsByName(dbName, tableNames);
+
+    // Verify
+    assertEquals(tableNames.size(), tableObjs.size());
+    for(Table table : tableObjs) {
+      assertTrue(tableNames.contains(table.getTableName().toLowerCase()));
+    }
+
+    // Cleanup
+    client.dropDatabase(dbName, true, true, true);
   }
 
   private void checkDbOwnerType(String dbName, String ownerName, PrincipalType ownerType)

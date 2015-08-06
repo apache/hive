@@ -22,14 +22,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: s
-          Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (((hash(key) & 2147483647) % 5) = 0) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT s.key

@@ -151,7 +151,6 @@ TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
 TOK_ALTERTABLE_PARTCOLTYPE;
-TOK_ALTERTABLE_PROTECTMODE;
 TOK_ALTERTABLE_MERGEFILES;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
@@ -330,7 +329,6 @@ TOK_WINDOWDEF;
 TOK_WINDOWSPEC;
 TOK_WINDOWVALUES;
 TOK_WINDOWRANGE;
-TOK_IGNOREPROTECTION;
 TOK_SUBQUERY_EXPR;
 TOK_SUBQUERY_OP;
 TOK_SUBQUERY_OP_NOTIN;
@@ -356,6 +354,15 @@ TOK_ANONYMOUS;
 TOK_COL_NAME;
 TOK_URI_TYPE;
 TOK_SERVER_TYPE;
+TOK_START_TRANSACTION;
+TOK_ISOLATION_LEVEL;
+TOK_ISOLATION_SNAPSHOT;
+TOK_TXN_ACCESS_MODE;
+TOK_TXN_READ_ONLY;
+TOK_TXN_READ_WRITE;
+TOK_COMMIT;
+TOK_ROLLBACK;
+TOK_SET_AUTOCOMMIT;
 }
 
 
@@ -377,6 +384,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
   private static HashMap<String, String> xlateMap;
   static {
+    //this is used to support auto completion in CLI
     xlateMap = new HashMap<String, String>();
 
     // Keywords
@@ -695,6 +703,7 @@ execStatement
     | ddlStatement
     | deleteStatement
     | updateStatement
+    | sqlTransactionStatement
     ;
 
 loadStatement
@@ -808,13 +817,6 @@ orReplace
     : KW_OR KW_REPLACE
     -> ^(TOK_ORREPLACE)
     ;
-
-ignoreProtection
-@init { pushMsg("ignore protection clause", state); }
-@after { popMsg(state); }
-        : KW_IGNORE KW_PROTECTION
-        -> ^(TOK_IGNOREPROTECTION)
-        ;
 
 createDatabaseStatement
 @init { pushMsg("create database statement", state); }
@@ -1022,7 +1024,6 @@ alterTblPartitionStatementSuffix
 @after {popMsg(state);}
   : alterStatementSuffixFileFormat
   | alterStatementSuffixLocation
-  | alterStatementSuffixProtectMode
   | alterStatementSuffixMergeFiles
   | alterStatementSuffixSerdeProperties
   | alterStatementSuffixRenamePart
@@ -1166,9 +1167,9 @@ partitionLocation
 alterStatementSuffixDropPartitions[boolean table]
 @init { pushMsg("drop partition statement", state); }
 @after { popMsg(state); }
-    : KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection? KW_PURGE? replicationClause?
-    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection? KW_PURGE? replicationClause?)
-    ->            ^(TOK_ALTERVIEW_DROPPARTS dropPartitionSpec+ ifExists? ignoreProtection? replicationClause?)
+    : KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* KW_PURGE? replicationClause?
+    -> { table }? ^(TOK_ALTERTABLE_DROPPARTS dropPartitionSpec+ ifExists? KW_PURGE? replicationClause?)
+    ->            ^(TOK_ALTERVIEW_DROPPARTS dropPartitionSpec+ ifExists? replicationClause?)
     ;
 
 alterStatementSuffixProperties
@@ -1276,13 +1277,6 @@ alterStatementSuffixExchangePartition
     -> ^(TOK_ALTERTABLE_EXCHANGEPARTITION partitionSpec $exchangename)
     ;
 
-alterStatementSuffixProtectMode
-@init { pushMsg("alter partition protect mode statement", state); }
-@after { popMsg(state); }
-    : alterProtectMode
-    -> ^(TOK_ALTERTABLE_PROTECTMODE alterProtectMode)
-    ;
-
 alterStatementSuffixRenamePart
 @init { pushMsg("alter table rename partition statement", state); }
 @after { popMsg(state); }
@@ -1302,21 +1296,6 @@ alterStatementSuffixMergeFiles
 @after { popMsg(state); }
     : KW_CONCATENATE
     -> ^(TOK_ALTERTABLE_MERGEFILES)
-    ;
-
-alterProtectMode
-@init { pushMsg("protect mode specification enable", state); }
-@after { popMsg(state); }
-    : KW_ENABLE alterProtectModeMode  -> ^(TOK_ENABLE alterProtectModeMode)
-    | KW_DISABLE alterProtectModeMode  -> ^(TOK_DISABLE alterProtectModeMode)
-    ;
-
-alterProtectModeMode
-@init { pushMsg("protect mode specification enable", state); }
-@after { popMsg(state); }
-    : KW_OFFLINE  -> ^(TOK_OFFLINE)
-    | KW_NO_DROP KW_CASCADE? -> ^(TOK_NO_DROP KW_CASCADE?)
-    | KW_READONLY  -> ^(TOK_READONLY)
     ;
 
 alterStatementSuffixBucketNum
@@ -2395,3 +2374,62 @@ updateStatement
    :
    KW_UPDATE tableName setColumnsClause whereClause? -> ^(TOK_UPDATE_TABLE tableName setColumnsClause whereClause?)
    ;
+
+/*
+BEGIN user defined transaction boundaries; follows SQL 2003 standard exactly except for addition of
+"setAutoCommitStatement" which is not in the standard doc but is supported by most SQL engines.
+*/
+sqlTransactionStatement
+@init { pushMsg("transaction statement", state); }
+@after { popMsg(state); }
+  :
+  startTransactionStatement
+	|	commitStatement
+	|	rollbackStatement
+	| setAutoCommitStatement
+	;
+
+startTransactionStatement
+  :
+  KW_START KW_TRANSACTION ( transactionMode  ( COMMA transactionMode  )* )? -> ^(TOK_START_TRANSACTION transactionMode*)
+  ;
+
+transactionMode
+  :
+  isolationLevel
+  | transactionAccessMode -> ^(TOK_TXN_ACCESS_MODE transactionAccessMode)
+  ;
+
+transactionAccessMode
+  :
+  KW_READ KW_ONLY -> TOK_TXN_READ_ONLY
+  | KW_READ KW_WRITE -> TOK_TXN_READ_WRITE
+  ;
+
+isolationLevel
+  :
+  KW_ISOLATION KW_LEVEL levelOfIsolation -> ^(TOK_ISOLATION_LEVEL levelOfIsolation)
+  ;
+
+/*READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SERIALIZABLE may be supported later*/
+levelOfIsolation
+  :
+  KW_SNAPSHOT -> TOK_ISOLATION_SNAPSHOT
+  ;
+
+commitStatement
+  :
+  KW_COMMIT ( KW_WORK )? -> TOK_COMMIT
+  ;
+
+rollbackStatement
+  :
+  KW_ROLLBACK ( KW_WORK )? -> TOK_ROLLBACK
+  ;
+setAutoCommitStatement
+  :
+  KW_SET KW_AUTOCOMMIT booleanValueTok -> ^(TOK_SET_AUTOCOMMIT booleanValueTok)
+  ;
+/*
+END user defined transaction boundaries
+*/

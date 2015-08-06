@@ -213,6 +213,10 @@ public class JoinDesc extends AbstractOperatorDesc {
    */
   @Explain(displayName = "keys", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<Byte, String> getKeysString() {
+    if (joinKeys == null) {
+      return null;
+    }
+
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
     for (byte i = 0; i < joinKeys.length; i++) {
       keyMap.put(i, PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));

@@ -24,7 +24,6 @@ package org.apache.hadoop.hive.metastore;
 public class PartitionDropOptions {
 
   public boolean deleteData = true;
-  public boolean ignoreProtection = false;
   public boolean ifExists = false;
   public boolean returnResults = true;
   public boolean purgeData = false;
@@ -33,11 +32,6 @@ public class PartitionDropOptions {
 
   public PartitionDropOptions deleteData(boolean deleteData) {
     this.deleteData = deleteData;
-    return this;
-  }
-
-  public PartitionDropOptions ignoreProtection(boolean ignoreProtection) {
-    this.ignoreProtection = ignoreProtection;
     return this;
   }
 

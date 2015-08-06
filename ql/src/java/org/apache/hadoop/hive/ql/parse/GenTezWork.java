@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -165,8 +166,11 @@ public class GenTezWork implements NodeProcessor {
       mergeJoinWork.addMergedWork(work, null, context.leafOperatorToFollowingWork);
       Operator<? extends OperatorDesc> parentOp =
           getParentFromStack(context.currentMergeJoinOperator, stack);
+      // Set the big table position. Both the reduce work and merge join operator
+      // should be set with the same value.
       int pos = context.currentMergeJoinOperator.getTagForOperator(parentOp);
       work.setTag(pos);
+      context.currentMergeJoinOperator.getConf().setBigTablePosition(pos);
       tezWork.setVertexType(work, VertexType.MULTI_INPUT_UNINITIALIZED_EDGES);
       for (BaseWork parentWork : tezWork.getParents(work)) {
         TezEdgeProperty edgeProp = tezWork.getEdgeProperty(parentWork, work);
@@ -190,6 +194,50 @@ public class GenTezWork implements NodeProcessor {
     // remember which mapjoin operator links with which work
     if (!context.currentMapJoinOperators.isEmpty()) {
       for (MapJoinOperator mj: context.currentMapJoinOperators) {
+        // For dynamic partitioned hash join, ReduceSinkMapJoinProc rule may not get run for all
+        // of the ReduceSink parents, because the parents of the MapJoin operator get
+        // removed later on in this method. Keep track of the parent to mapjoin mapping
+        // so we can later run the same logic that is run in ReduceSinkMapJoinProc.
+        if (mj.getConf().isDynamicPartitionHashJoin()) {
+          // Since this is a dynamic partitioned hash join, the work for this join should be a ReduceWork
+          ReduceWork reduceWork = (ReduceWork) work;
+          int bigTablePosition = mj.getConf().getPosBigTable();
+          reduceWork.setTag(bigTablePosition);
+
+          // Use context.mapJoinParentMap to get the original RS parents, because
+          // the MapJoin's parents may have been replaced by dummy operator.
+          List<Operator<?>> mapJoinOriginalParents = context.mapJoinParentMap.get(mj);
+          if (mapJoinOriginalParents == null) {
+            throw new SemanticException("Unexpected error - context.mapJoinParentMap did not have an entry for " + mj);
+          }
+          for (int pos = 0; pos < mapJoinOriginalParents.size(); ++pos) {
+            // This processing only needs to happen for the small tables
+            if (pos == bigTablePosition) {
+              continue;
+            }
+            Operator<?> parentOp = mapJoinOriginalParents.get(pos);
+            context.smallTableParentToMapJoinMap.put(parentOp, mj);
+
+            ReduceSinkOperator parentRS = (ReduceSinkOperator) parentOp;
+
+            // TableDesc needed for dynamic partitioned hash join
+            GenMapRedUtils.setKeyAndValueDesc(reduceWork, parentRS);
+
+            // For small table RS parents that have already been processed, we need to
+            // add the tag to the RS work to the reduce work that contains this map join.
+            // This was not being done for normal mapjoins, where the small table typically
+            // has its ReduceSink parent removed.
+            if (!context.mapJoinToUnprocessedSmallTableReduceSinks.get(mj).contains(parentRS)) {
+              // This reduce sink has been processed already, so the work for the parentRS exists
+              BaseWork parentWork = ReduceSinkMapJoinProc.getMapJoinParentWork(context, parentRS);
+              int tag = parentRS.getConf().getTag();
+              tag = (tag == -1 ? 0 : tag);
+              reduceWork.getTagToInput().put(tag, parentWork.getName());
+            }
+
+          }
+        }
+
         LOG.debug("Processing map join: " + mj);
         // remember the mapping in case we scan another branch of the
         // mapjoin later
@@ -369,15 +417,44 @@ public class GenTezWork implements NodeProcessor {
         // remember the output name of the reduce sink
         rs.getConf().setOutputName(rWork.getName());
 
+        // For dynamic partitioned hash join, run the ReduceSinkMapJoinProc logic for any
+        // ReduceSink parents that we missed.
+        MapJoinOperator mj = context.smallTableParentToMapJoinMap.get(rs);
+        if (mj != null) {
+          // Only need to run the logic for tables we missed
+          if (context.mapJoinToUnprocessedSmallTableReduceSinks.get(mj).contains(rs)) {
+            // ReduceSinkMapJoinProc logic does not work unless the ReduceSink is connected as
+            // a parent of the MapJoin, but at this point we have already removed all of the
+            // parents from the MapJoin.
+            // Try temporarily adding the RS as a parent
+            ArrayList<Operator<?>> tempMJParents = new ArrayList<Operator<?>>();
+            tempMJParents.add(rs);
+            mj.setParentOperators(tempMJParents);
+            // ReduceSink also needs MapJoin as child
+            List<Operator<?>> rsChildren = rs.getChildOperators();
+            rsChildren.add(mj);
+
+            // Since the MapJoin has had all of its other parents removed at this point,
+            // it would be bad here if processReduceSinkToHashJoin() tries to do anything
+            // with the RS parent based on its position in the list of parents.
+            ReduceSinkMapJoinProc.processReduceSinkToHashJoin(rs, mj, context);
+
+            // Remove any parents from MapJoin again
+            mj.removeParents();
+            // TODO: do we also need to remove the MapJoin from the list of RS's children?
+          }
+        }
+
         if (!context.connectedReduceSinks.contains(rs)) {
           // add dependency between the two work items
           TezEdgeProperty edgeProp;
+          EdgeType edgeType = utils.determineEdgeType(work, followingWork);
           if (rWork.isAutoReduceParallelism()) {
             edgeProp =
-                new TezEdgeProperty(context.conf, EdgeType.SIMPLE_EDGE, true,
+                new TezEdgeProperty(context.conf, edgeType, true,
                     rWork.getMinReduceTasks(), rWork.getMaxReduceTasks(), bytesPerReducer);
           } else {
-            edgeProp = new TezEdgeProperty(EdgeType.SIMPLE_EDGE);
+            edgeProp = new TezEdgeProperty(edgeType);
           }
           tezWork.connect(work, followingWork, edgeProp);
           context.connectedReduceSinks.add(rs);

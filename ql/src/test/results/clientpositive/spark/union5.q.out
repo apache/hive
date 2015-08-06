@@ -23,27 +23,11 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 5 <- Map 4 (GROUP, 1)
+        Reducer 5 <- Map 1 (GROUP, 1)
         Reducer 3 <- Reducer 2 (GROUP, 2), Reducer 5 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s1
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count(1)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: s1
@@ -139,5 +123,5 @@ POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-tst1	1
 tst2	1
+tst1	1

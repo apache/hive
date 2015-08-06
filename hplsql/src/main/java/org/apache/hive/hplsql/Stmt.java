@@ -37,6 +37,7 @@ public class Stmt {
   Exec exec = null;
   Stack<Var> stack = null;
   Conf conf;
+  Meta meta;
   
   boolean trace = false; 
   
@@ -44,7 +45,60 @@ public class Stmt {
     exec = e;  
     stack = exec.getStack();
     conf = exec.getConf();
+    meta = exec.getMeta();
     trace = exec.getTrace();
+  }
+  
+  /**
+   * ALLOCATE CURSOR statement
+   */
+  public Integer allocateCursor(HplsqlParser.Allocate_cursor_stmtContext ctx) { 
+    trace(ctx, "ALLOCATE CURSOR");
+    String name = ctx.ident(0).getText();
+    Var cur = null;
+    if (ctx.T_PROCEDURE() != null) {
+      cur = exec.consumeReturnCursor(ctx.ident(1).getText());
+    }
+    else if (ctx.T_RESULT() != null) {
+      cur = exec.findVariable(ctx.ident(1).getText());
+      if (cur != null && cur.type != Type.RS_LOCATOR) {
+        cur = null;
+      }
+    }
+    if (cur == null) {
+      trace(ctx, "Cursor for procedure not found: " + name);
+      exec.signal(Signal.Type.SQLEXCEPTION);
+      return -1;
+    }
+    exec.addVariable(new Var(name, Type.CURSOR, cur.value)); 
+    return 0; 
+  }
+  
+  /**
+   * ASSOCIATE LOCATOR statement
+   */
+  public Integer associateLocator(HplsqlParser.Associate_locator_stmtContext ctx) { 
+    trace(ctx, "ASSOCIATE LOCATOR");
+    int cnt = ctx.ident().size();
+    if (cnt < 2) {
+      return -1;
+    }
+    String procedure = ctx.ident(cnt - 1).getText();
+    for (int i = 0; i < cnt - 1; i++) {
+      Var cur = exec.consumeReturnCursor(procedure);
+      if (cur != null) {
+        String name = ctx.ident(i).getText(); 
+        Var loc = exec.findVariable(name);
+        if (loc == null) {
+          loc = new Var(name, Type.RS_LOCATOR, cur.value);
+          exec.addVariable(loc);
+        }
+        else {
+          loc.setValue(cur.value);
+        }
+      }      
+    }
+    return 0; 
   }
   
   /**
@@ -62,7 +116,11 @@ public class Stmt {
     else if (ctx.select_stmt() != null) {
       query.setSelectCtx(ctx.select_stmt());
     }
-    exec.addVariable(new Var(name, Type.CURSOR, query));
+    if (ctx.cursor_with_return() != null) {
+      query.setWithReturn(true);
+    }
+    Var var = new Var(name, Type.CURSOR, query);
+    exec.addVariable(var);
     return 0; 
   }
   
@@ -72,7 +130,8 @@ public class Stmt {
   public Integer createTable(HplsqlParser.Create_table_stmtContext ctx) { 
     trace(ctx, "CREATE TABLE");
     StringBuilder sql = new StringBuilder();
-    sql.append(exec.getText(ctx, ctx.T_CREATE().getSymbol(), ctx.T_OPEN_P().getSymbol()));
+    sql.append(exec.getText(ctx, ctx.T_CREATE().getSymbol(), ctx.T_TABLE().getSymbol()));
+    sql.append(" " + evalPop(ctx.table_name()) + " (");
     int cnt = ctx.create_table_columns().create_table_columns_item().size();
     int cols = 0;
     for (int i = 0; i < cnt; i++) {
@@ -83,14 +142,17 @@ public class Stmt {
       if (cols > 0) {
         sql.append(",\n");
       }
-      sql.append(col.ident().getText());
+      sql.append(evalPop(col.column_name()));
       sql.append(" ");
       sql.append(exec.evalPop(col.dtype(), col.dtype_len()));
       cols++;
     }
     sql.append("\n)");
     if (ctx.create_table_options() != null) {
-      sql.append(" " + evalPop(ctx.create_table_options()).toString());
+      String opt = evalPop(ctx.create_table_options()).toString();
+      if (opt != null) {
+        sql.append(" " + opt);
+      }
     }
     trace(ctx, sql.toString());
     Query query = exec.executeSql(ctx, sql.toString(), exec.conf.defaultConnection);
@@ -224,18 +286,24 @@ public class Stmt {
     Var var = null;
     String cursor = ctx.L_ID().toString();   
     String sql = null;
-    // Dynamic SQL
-    if (ctx.T_FOR() != null) {
-      sql = evalPop(ctx.expr()).toString();
-      if (trace) {
-        trace(ctx, cursor + ": " + sql);
+    if (ctx.T_FOR() != null) {                             // SELECT statement or dynamic SQL
+      if (ctx.expr() != null) {
+        sql = evalPop(ctx.expr()).toString();
+      }
+      else {
+        sql = evalPop(ctx.select_stmt()).toString();
       }
       query = new Query(sql);
-      var = new Var(cursor, Type.CURSOR, query);
-      exec.addVariable(var);
+      var = exec.findCursor(cursor);                      // Can be a ref cursor variable
+      if (var == null) {
+        var = new Var(cursor, Type.CURSOR, query);
+        exec.addVariable(var);
+      }
+      else {
+        var.setValue(query);
+      }
     }
-    // Declared cursor
-    else {
+    else {                                                 // Declared cursor
       var = exec.findVariable(cursor);      
       if (var != null && var.type == Type.CURSOR) {
         query = (Query)var.value;
@@ -247,13 +315,12 @@ public class Stmt {
           sql = evalPop(query.sqlSelect).toString();
           query.setSql(sql);
         }
-        if (trace) {
-          trace(ctx, cursor + ": " + sql);
-        } 
       }
     }
-    // Open cursor now
     if (query != null) {
+      if (trace) {
+        trace(ctx, cursor + ": " + sql);
+      } 
       exec.executeQuery(ctx, query, exec.conf.defaultConnection);
       if (query.error()) {
         exec.signal(query);
@@ -261,6 +328,9 @@ public class Stmt {
       }
       else if (!exec.getOffline()) {
         exec.setSqlCode(0);
+      }
+      if (query.getWithReturn()) {
+        exec.addReturnCursor(var);
       }
     }
     else {
@@ -278,13 +348,19 @@ public class Stmt {
   public Integer fetch(HplsqlParser.Fetch_stmtContext ctx) { 
     trace(ctx, "FETCH");
     String name = ctx.L_ID(0).toString();
-    Var cursor = exec.findVariable(name);
-    if (cursor == null || cursor.type != Type.CURSOR) {
+    Var cursor = exec.findCursor(name);
+    if (cursor == null) {
       trace(ctx, "Cursor not found: " + name);
       exec.setSqlCode(-1);
       exec.signal(Signal.Type.SQLEXCEPTION);
       return 1;
-    }    
+    }  
+    else if (cursor.value == null) {
+      trace(ctx, "Cursor not open: " + name);
+      exec.setSqlCode(-1);
+      exec.signal(Signal.Type.SQLEXCEPTION);
+      return 1;
+    }  
     else if (exec.getOffline()) {
       exec.setSqlCode(100);
       exec.signal(Signal.Type.NOTFOUND);
@@ -301,6 +377,7 @@ public class Stmt {
       if(rs != null && rsm != null) {
         int cols = ctx.L_ID().size() - 1;
         if(rs.next()) {
+          query.setFetch(true);
           for(int i=1; i <= cols; i++) {
             Var var = exec.findVariable(ctx.L_ID(i).getText());
             if(var != null) {
@@ -318,9 +395,12 @@ public class Stmt {
           exec.setSqlSuccess();
         }
         else {
+          query.setFetch(false);
           exec.setSqlCode(100);
-          exec.signal(Signal.Type.NOTFOUND);
         }
+      }
+      else {
+        exec.setSqlCode(-1);
       }
     } 
     catch (SQLException e) {
@@ -578,12 +658,13 @@ public class Stmt {
    * USE statement
    */
   public Integer use(HplsqlParser.Use_stmtContext ctx) {
+    trace(ctx, "USE");
+    return use(ctx, ctx.T_USE().toString() + " " + meta.normalizeIdentifierPart(evalPop(ctx.expr()).toString()));
+  }
+  
+  public Integer use(ParserRuleContext ctx, String sql) {
     if(trace) {
-      trace(ctx, "USE");
-    }
-    String sql = ctx.T_USE().toString() + " " + evalPop(ctx.expr()).toString();
-    if(trace) {
-      trace(ctx, "Query: " + sql);
+      trace(ctx, "SQL statement: " + sql);
     }    
     Query query = exec.executeSql(ctx, sql, exec.conf.defaultConnection);
     if(query.error()) {
@@ -716,24 +797,25 @@ public class Stmt {
   }  
   
   /**
-   * EXEC, EXECUTE and EXECUTE IMMEDIATE statement to execute dynamic SQL
+   * EXEC, EXECUTE and EXECUTE IMMEDIATE statement to execute dynamic SQL or stored procedure
    */
   public Integer exec(HplsqlParser.Exec_stmtContext ctx) { 
-    if(trace) {
-      trace(ctx, "EXECUTE");
+    if (execProc(ctx)) {
+      return 0;
     }
+    trace(ctx, "EXECUTE");
     Var vsql = evalPop(ctx.expr());
     String sql = vsql.toString();
-    if(trace) {
-      trace(ctx, "Query: " + sql);
+    if (trace) {
+      trace(ctx, "SQL statement: " + sql);
     }
     Query query = exec.executeSql(ctx, sql, exec.conf.defaultConnection);
-    if(query.error()) {
+    if (query.error()) {
       exec.signal(query);
       return 1;
     }
     ResultSet rs = query.getResultSet();
-    if(rs != null) {
+    if (rs != null) {
       try {
         ResultSetMetaData rsm = rs.getMetaData();
         // Assign to variables
@@ -776,6 +858,16 @@ public class Stmt {
     }   
     exec.closeQuery(query, exec.conf.defaultConnection);
     return 0; 
+  }
+  
+  /**
+   * EXEC to execute a stored procedure
+   */
+  public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
+    if (exec.function.execProc(ctx.expr_func_params(), evalPop(ctx.expr()).toString())) {
+      return true;
+    }
+    return false;
   }
       
   /**
@@ -896,6 +988,14 @@ public class Stmt {
       System.out.println(stack.pop().toString());
     }
 	  return 0; 
+  }
+  
+  /** 
+   * SET current schema 
+   */
+  public Integer setCurrentSchema(HplsqlParser.Set_current_schema_optionContext ctx) { 
+    trace(ctx, "SET CURRENT SCHEMA");
+    return use(ctx, "USE " + meta.normalizeIdentifierPart(evalPop(ctx.expr()).toString()));
   }
   
   /**

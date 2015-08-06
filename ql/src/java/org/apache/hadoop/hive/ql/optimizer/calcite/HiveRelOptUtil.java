@@ -7,7 +7,6 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -17,11 +16,13 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-import com.google.common.collect.ImmutableList;
 
 public class HiveRelOptUtil extends RelOptUtil {
 
@@ -48,14 +49,15 @@ public class HiveRelOptUtil extends RelOptUtil {
    *                      join predicate are at the end of the key lists
    *                      returned
    * @return What's left, never null
+   * @throws CalciteSemanticException
    */
-  public static RexNode splitJoinCondition(
+  public static RexNode splitHiveJoinCondition(
       List<RelDataTypeField> sysFieldList,
       List<RelNode> inputs,
       RexNode condition,
       List<List<RexNode>> joinKeys,
       List<Integer> filterNulls,
-      List<SqlOperator> rangeOp) {
+      List<SqlOperator> rangeOp) throws CalciteSemanticException {
     final List<RexNode> nonEquiList = new ArrayList<>();
 
     splitJoinCondition(
@@ -79,11 +81,10 @@ public class HiveRelOptUtil extends RelOptUtil {
       List<List<RexNode>> joinKeys,
       List<Integer> filterNulls,
       List<SqlOperator> rangeOp,
-      List<RexNode> nonEquiList) {
+      List<RexNode> nonEquiList) throws CalciteSemanticException {
     final int sysFieldCount = sysFieldList.size();
     final RelOptCluster cluster = inputs.get(0).getCluster();
     final RexBuilder rexBuilder = cluster.getRexBuilder();
-    final RelDataTypeFactory typeFactory = cluster.getTypeFactory();
 
     final ImmutableBitSet[] inputsRange = new ImmutableBitSet[inputs.size()];
     int totalFieldCount = 0;
@@ -199,67 +200,31 @@ public class HiveRelOptUtil extends RelOptUtil {
           RelDataType rightKeyType = rightKey.getType();
 
           if (leftKeyType != rightKeyType) {
-            // perform casting
-            RelDataType targetKeyType =
-                typeFactory.leastRestrictive(
-                    ImmutableList.of(leftKeyType, rightKeyType));
+            // perform casting using Hive rules
+            TypeInfo rType = TypeConverter.convert(rightKeyType);
+            TypeInfo lType = TypeConverter.convert(leftKeyType);
+            TypeInfo tgtType = FunctionRegistry.getCommonClassForComparison(lType, rType);
 
-            if (targetKeyType == null) {
-              throw Util.newInternal(
+            if (tgtType == null) {
+              throw new CalciteSemanticException(
                   "Cannot find common type for join keys "
-                  + leftKey + " (type " + leftKeyType + ") and "
-                  + rightKey + " (type " + rightKeyType + ")");
+                      + leftKey + " (type " + leftKeyType + ") and "
+                      + rightKey + " (type " + rightKeyType + ")");
             }
+            RelDataType targetKeyType = TypeConverter.convert(tgtType, rexBuilder.getTypeFactory());
 
-            if (leftKeyType != targetKeyType) {
+            if (leftKeyType != targetKeyType && TypeInfoUtils.isConversionRequiredForComparison(tgtType, lType)) {
               leftKey =
                   rexBuilder.makeCast(targetKeyType, leftKey);
             }
 
-            if (rightKeyType != targetKeyType) {
+            if (rightKeyType != targetKeyType && TypeInfoUtils.isConversionRequiredForComparison(tgtType, rType)) {
               rightKey =
                   rexBuilder.makeCast(targetKeyType, rightKey);
             }
           }
         }
       }
-
-//      if ((rangeOp == null)
-//          && ((leftKey == null) || (rightKey == null))) {
-//        // no equality join keys found yet:
-//        // try transforming the condition to
-//        // equality "join" conditions, e.g.
-//        //     f(LHS) > 0 ===> ( f(LHS) > 0 ) = TRUE,
-//        // and make the RHS produce TRUE, but only if we're strictly
-//        // looking for equi-joins
-//        final ImmutableBitSet projRefs = InputFinder.bits(condition);
-//        leftKey = null;
-//        rightKey = null;
-//
-//        boolean foundInput = false;
-//        for (int i = 0; i < inputs.size() && !foundInput; i++) {
-//          final int lowerLimit = inputsRange[i].nextSetBit(0);
-//          final int upperLimit = inputsRange[i].length();
-//          if (projRefs.nextSetBit(lowerLimit) < upperLimit) {
-//            leftInput = i;
-//            leftFields = inputs.get(leftInput).getRowType().getFieldList();
-//
-//            leftKey = condition.accept(
-//                new RelOptUtil.RexInputConverter(
-//                    rexBuilder,
-//                    leftFields,
-//                    leftFields,
-//                    adjustments));
-//
-//            rightKey = rexBuilder.makeLiteral(true);
-//
-//            // effectively performing an equality comparison
-//            kind = SqlKind.EQUALS;
-//
-//            foundInput = true;
-//          }
-//        }
-//      }
 
       if ((leftKey != null) && (rightKey != null)) {
         // found suitable join keys

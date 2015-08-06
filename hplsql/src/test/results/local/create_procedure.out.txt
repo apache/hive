@@ -1,0 +1,8 @@
+Ln:1 CREATE PROCEDURE set_message
+Ln:6 DECLARE str STRING
+Ln:7 EXEC PROCEDURE set_message
+Ln:7 SET PARAM name = world
+Ln:7 SET PARAM result = null
+Ln:3 SET result = 'Hello, world!'
+Ln:8 PRINT
+Hello, world!

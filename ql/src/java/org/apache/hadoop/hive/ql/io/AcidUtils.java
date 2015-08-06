@@ -70,6 +70,15 @@ public class AcidUtils {
   };
   public static final String BUCKET_DIGITS = "%05d";
   public static final String DELTA_DIGITS = "%07d";
+  /**
+   * 10K statements per tx.  Probably overkill ... since that many delta files
+   * would not be good for performance
+   */
+  public static final String STATEMENT_DIGITS = "%04d";
+  /**
+   * This must be in sync with {@link #STATEMENT_DIGITS}
+   */
+  public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
   public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{5}");
   public static final PathFilter originalBucketFilter = new PathFilter() {
@@ -82,7 +91,7 @@ public class AcidUtils {
   private AcidUtils() {
     // NOT USED
   }
-  private static final Log LOG = LogFactory.getLog(AcidUtils.class.getName());
+  private static final Log LOG = LogFactory.getLog(AcidUtils.class);
 
   private static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");
@@ -107,9 +116,20 @@ public class AcidUtils {
         BUCKET_PREFIX + String.format(BUCKET_DIGITS, bucket));
   }
 
-  private static String deltaSubdir(long min, long max) {
+  /**
+   * This is format of delta dir name prior to Hive 1.3.x
+   */
+  public static String deltaSubdir(long min, long max) {
     return DELTA_PREFIX + String.format(DELTA_DIGITS, min) + "_" +
         String.format(DELTA_DIGITS, max);
+  }
+
+  /**
+   * Each write statement in a transaction creates its own delta dir.
+   * @since 1.3.x
+   */
+  public static String deltaSubdir(long min, long max, int statementId) {
+    return deltaSubdir(min, max) + "_" + String.format(STATEMENT_DIGITS, statementId);
   }
 
   /**
@@ -127,9 +147,15 @@ public class AcidUtils {
     } else if (options.isWritingBase()) {
       subdir = BASE_PREFIX + String.format(DELTA_DIGITS,
           options.getMaximumTransactionId());
+    } else if(options.getStatementId() == -1) {
+      //when minor compaction runs, we collapse per statement delta files inside a single
+      //transaction so we no longer need a statementId in the file name
+      subdir = deltaSubdir(options.getMinimumTransactionId(),
+        options.getMaximumTransactionId());
     } else {
       subdir = deltaSubdir(options.getMinimumTransactionId(),
-          options.getMaximumTransactionId());
+        options.getMaximumTransactionId(),
+        options.getStatementId());
     }
     return createBucketFile(new Path(directory, subdir), options.getBucket());
   }
@@ -217,14 +243,24 @@ public class AcidUtils {
   }
 
   public static class ParsedDelta implements Comparable<ParsedDelta> {
-    final long minTransaction;
-    final long maxTransaction;
-    final FileStatus path;
+    private final long minTransaction;
+    private final long maxTransaction;
+    private final FileStatus path;
+    //-1 is for internal (getAcidState()) purposes and means the delta dir
+    //had no statement ID
+    private final int statementId;
 
+    /**
+     * for pre 1.3.x delta files
+     */
     ParsedDelta(long min, long max, FileStatus path) {
+      this(min, max, path, -1);
+    }
+    ParsedDelta(long min, long max, FileStatus path, int statementId) {
       this.minTransaction = min;
       this.maxTransaction = max;
       this.path = path;
+      this.statementId = statementId;
     }
 
     public long getMinTransaction() {
@@ -239,6 +275,16 @@ public class AcidUtils {
       return path.getPath();
     }
 
+    public int getStatementId() {
+      return statementId == -1 ? 0 : statementId;
+    }
+
+    /**
+     * Compactions (Major/Minor) merge deltas/bases but delete of old files
+     * happens in a different process; thus it's possible to have bases/deltas with
+     * overlapping txnId boundaries.  The sort order helps figure out the "best" set of files
+     * to use to get data.
+     */
     @Override
     public int compareTo(ParsedDelta parsedDelta) {
       if (minTransaction != parsedDelta.minTransaction) {
@@ -253,7 +299,22 @@ public class AcidUtils {
         } else {
           return -1;
         }
-      } else {
+      }
+      else if(statementId != parsedDelta.statementId) {
+        /**
+         * We want deltas after minor compaction (w/o statementId) to sort
+         * earlier so that getAcidState() considers compacted files (into larger ones) obsolete
+         * Before compaction, include deltas with all statementIds for a given txnId
+         * in a {@link org.apache.hadoop.hive.ql.io.AcidUtils.Directory}
+         */
+        if(statementId < parsedDelta.statementId) {
+          return -1;
+        }
+        else {
+          return 1;
+        }
+      }
+      else {
         return path.compareTo(parsedDelta.path);
       }
     }
@@ -274,46 +335,72 @@ public class AcidUtils {
 
   /**
    * Convert the list of deltas into an equivalent list of begin/end
-   * transaction id pairs.
+   * transaction id pairs.  Assumes {@code deltas} is sorted.
    * @param deltas
    * @return the list of transaction ids to serialize
    */
-  public static List<Long> serializeDeltas(List<ParsedDelta> deltas) {
-    List<Long> result = new ArrayList<Long>(deltas.size() * 2);
-    for(ParsedDelta delta: deltas) {
-      result.add(delta.minTransaction);
-      result.add(delta.maxTransaction);
+  public static List<AcidInputFormat.DeltaMetaData> serializeDeltas(List<ParsedDelta> deltas) {
+    List<AcidInputFormat.DeltaMetaData> result = new ArrayList<>(deltas.size());
+    AcidInputFormat.DeltaMetaData last = null;
+    for(ParsedDelta parsedDelta : deltas) {
+      if(last != null && last.getMinTxnId() == parsedDelta.getMinTransaction() && last.getMaxTxnId() == parsedDelta.getMaxTransaction()) {
+        last.getStmtIds().add(parsedDelta.getStatementId());
+        continue;
+      }
+      last = new AcidInputFormat.DeltaMetaData(parsedDelta.getMinTransaction(), parsedDelta.getMaxTransaction(), new ArrayList<Integer>());
+      result.add(last);
+      if(parsedDelta.statementId >= 0) {
+        last.getStmtIds().add(parsedDelta.getStatementId());
+      }
     }
     return result;
   }
 
   /**
    * Convert the list of begin/end transaction id pairs to a list of delta
-   * directories.
+   * directories.  Note that there may be multiple delta files for the exact same txn range starting
+   * with 1.3.x;
+   * see {@link org.apache.hadoop.hive.ql.io.AcidUtils#deltaSubdir(long, long, int)}
    * @param root the root directory
    * @param deltas list of begin/end transaction id pairs
    * @return the list of delta paths
    */
-  public static Path[] deserializeDeltas(Path root, List<Long> deltas) {
-    int deltaSize = deltas.size() / 2;
-    Path[] result = new Path[deltaSize];
-    for(int i = 0; i < deltaSize; ++i) {
-      result[i] = new Path(root, deltaSubdir(deltas.get(i * 2),
-          deltas.get(i * 2 + 1)));
+  public static Path[] deserializeDeltas(Path root, final List<AcidInputFormat.DeltaMetaData> deltas) throws IOException {
+    List<Path> results = new ArrayList<Path>(deltas.size());
+    for(AcidInputFormat.DeltaMetaData dmd : deltas) {
+      if(dmd.getStmtIds().isEmpty()) {
+        results.add(new Path(root, deltaSubdir(dmd.getMinTxnId(), dmd.getMaxTxnId())));
+        continue;
+      }
+      for(Integer stmtId : dmd.getStmtIds()) {
+        results.add(new Path(root, deltaSubdir(dmd.getMinTxnId(), dmd.getMaxTxnId(), stmtId)));
+      }
     }
-    return result;
+    return results.toArray(new Path[results.size()]);
   }
 
-  static ParsedDelta parseDelta(FileStatus path) {
-    String filename = path.getPath().getName();
+  private static ParsedDelta parseDelta(FileStatus path) {
+    ParsedDelta p = parsedDelta(path.getPath());
+    return new ParsedDelta(p.getMinTransaction(),
+      p.getMaxTransaction(), path, p.statementId);
+  }
+  public static ParsedDelta parsedDelta(Path deltaDir) {
+    String filename = deltaDir.getName();
     if (filename.startsWith(DELTA_PREFIX)) {
       String rest = filename.substring(DELTA_PREFIX.length());
       int split = rest.indexOf('_');
+      int split2 = rest.indexOf('_', split + 1);//may be -1 if no statementId
       long min = Long.parseLong(rest.substring(0, split));
-      long max = Long.parseLong(rest.substring(split + 1));
-      return new ParsedDelta(min, max, path);
+      long max = split2 == -1 ?
+        Long.parseLong(rest.substring(split + 1)) :
+        Long.parseLong(rest.substring(split + 1, split2));
+      if(split2 == -1) {
+        return new ParsedDelta(min, max, null);
+      }
+      int statementId = Integer.parseInt(rest.substring(split2 + 1));
+      return new ParsedDelta(min, max, null, statementId);
     }
-    throw new IllegalArgumentException(path + " does not start with " +
+    throw new IllegalArgumentException(deltaDir + " does not start with " +
                                        DELTA_PREFIX);
   }
 
@@ -413,15 +500,24 @@ public class AcidUtils {
 
     Collections.sort(working);
     long current = bestBase.txn;
+    int lastStmtId = -1;
     for(ParsedDelta next: working) {
       if (next.maxTransaction > current) {
         // are any of the new transactions ones that we care about?
         if (txnList.isTxnRangeValid(current+1, next.maxTransaction) !=
-            ValidTxnList.RangeResponse.NONE) {
+          ValidTxnList.RangeResponse.NONE) {
           deltas.add(next);
           current = next.maxTransaction;
+          lastStmtId = next.statementId;
         }
-      } else {
+      }
+      else if(next.maxTransaction == current && lastStmtId >= 0) {
+        //make sure to get all deltas within a single transaction;  multi-statement txn
+        //generate multiple delta files with the same txnId range
+        //of course, if maxTransaction has already been minor compacted, all per statement deltas are obsolete
+        deltas.add(next);
+      }
+      else {
         obsolete.add(next.path);
       }
     }

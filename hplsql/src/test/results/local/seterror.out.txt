@@ -1,0 +1,6 @@
+Ln:2 SET plhql.onerror = NULL
+Ln:4 HOST
+Ln:4 HOST Command: abcd
+Ln:8 EXCEPTION HANDLER
+Ln:9 PRINT
+FAILED

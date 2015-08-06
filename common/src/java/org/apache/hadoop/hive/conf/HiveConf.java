@@ -1048,6 +1048,9 @@ public class HiveConf extends Configuration {
         "job, process those skewed keys. The same key need not be skewed for all the tables, and so,\n" +
         "the follow-up map-reduce job (for the skewed keys) would be much faster, since it would be a\n" +
         "map-join."),
+    HIVEDYNAMICPARTITIONHASHJOIN("hive.optimize.dynamic.partition.hashjoin", false,
+        "Whether to enable dynamically partitioned hash join optimization. \n" +
+        "This setting is also dependent on enabling hive.auto.convert.join"),
     HIVECONVERTJOIN("hive.auto.convert.join", true,
         "Whether Hive enables the optimization about converting common join into mapjoin based on the input file size"),
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true,
@@ -1727,8 +1730,8 @@ public class HiveConf extends Configuration {
         "Hive metrics subsystem implementation class."),
     HIVE_METRICS_REPORTER("hive.service.metrics.reporter", "JSON_FILE, JMX",
         "Reporter type for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics, comma separated list of JMX, CONSOLE, JSON_FILE"),
-    HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "file:///tmp/report.json",
-        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of JSON metrics file.  " +
+    HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "/tmp/report.json",
+        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of local JSON metrics file.  " +
         "This file will get overwritten at every interval."),
     HIVE_METRICS_JSON_FILE_INTERVAL("hive.service.metrics.file.frequency", "5s",
         new TimeValidator(TimeUnit.MILLISECONDS),
@@ -2114,8 +2117,8 @@ public class HiveConf extends Configuration {
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true, "Whether to generate consisten split" +
         "locations when generating splits in the AM"),
 
-    HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez (Hadoop 2 only)"),
-    HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez (Hadoop 2 only)"),
+    HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez/Spark (Hadoop 2 only)"),
+    HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez/Spark (Hadoop 2 only)"),
 
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false, ""),
@@ -2254,6 +2257,13 @@ public class HiveConf extends Configuration {
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
+    SPARK_DYNAMIC_PARTITION_PRUNING(
+        "hive.spark.dynamic.partition.pruning", false,
+        "When dynamic pruning is enabled, joins on partition keys will be processed by writing\n" +
+            "to a temporary HDFS file, and read later for removing unnecessary partitions."),
+    SPARK_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE(
+        "hive.spark.dynamic.partition.pruning.max.data.size", 100*1024*1024L,
+        "Maximum total data size in dynamic pruning."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),

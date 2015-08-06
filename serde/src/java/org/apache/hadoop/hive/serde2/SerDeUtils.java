@@ -27,6 +27,8 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -44,6 +46,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalDayTimeObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalYearMonthObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
@@ -201,7 +205,6 @@ public final class SerDeUtils {
 
 
   static void buildJSONString(StringBuilder sb, Object o, ObjectInspector oi, String nullStr) {
-
     switch (oi.getCategory()) {
     case PRIMITIVE: {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
@@ -284,6 +287,15 @@ public final class SerDeUtils {
           sb.append(((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o));
           break;
         }
+        case INTERVAL_YEAR_MONTH: {
+          sb.append(((HiveIntervalYearMonthObjectInspector) oi).getPrimitiveJavaObject(o));
+          break;
+        }
+        case INTERVAL_DAY_TIME: {
+          sb.append(((HiveIntervalDayTimeObjectInspector) oi).getPrimitiveJavaObject(o));
+          break;
+        }
+
         default:
           throw new RuntimeException("Unknown primitive type: "
               + poi.getPrimitiveCategory());

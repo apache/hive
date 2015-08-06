@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -1298,9 +1297,10 @@ public class TreeReaderFactory {
         } else {
           result = (HiveDecimalWritable) previous;
         }
-        result.set(HiveDecimal.create(SerializationUtils.readBigInteger(valueStream),
-            (int) scaleReader.next()));
-        return HiveDecimalUtils.enforcePrecisionScale(result, precision, scale);
+        result.set(HiveDecimal.create(SerializationUtils.readBigInteger
+                (valueStream), (int) scaleReader.next()));
+        return HiveDecimalWritable.enforcePrecisionScale(result, precision,
+            scale);
       }
       return null;
     }
@@ -1326,7 +1326,7 @@ public class TreeReaderFactory {
           BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
           short scaleInData = (short) scaleReader.next();
           HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
-          dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
+          dec = HiveDecimal.enforcePrecisionScale(dec, precision, scale);
           result.set(0, dec);
         }
       } else {
@@ -1338,7 +1338,7 @@ public class TreeReaderFactory {
             BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
             short scaleInData = (short) scratchScaleVector.vector[i];
             HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
-            dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
+            dec = HiveDecimal.enforcePrecisionScale(dec, precision, scale);
             result.set(i, dec);
           }
         }

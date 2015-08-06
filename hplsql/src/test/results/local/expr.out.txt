@@ -1,0 +1,29 @@
+Ln:1 PRINT
+ab
+Ln:2 PRINT
+a1b
+Ln:3 PRINT
+1ab
+Ln:4 PRINT
+ab
+Ln:5 PRINT
+ab
+Ln:6 PRINT
+null
+Ln:8 DECLARE c INT
+Ln:10 PRINT
+Integer increment
+Ln:11 SET c = 3
+Ln:12 SET c = 4
+Ln:13 PRINT
+4
+Ln:15 PRINT
+Integer decrement
+Ln:16 SET c = 3
+Ln:17 SET c = 2
+Ln:18 PRINT
+2
+Ln:20 PRINT
+Correct
+Ln:21 PRINT
+Correct

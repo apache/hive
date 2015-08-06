@@ -303,7 +303,8 @@ public class TestFileSinkOperator {
       Map<String, String> partColNames = new HashMap<String, String>(1);
       partColNames.put(PARTCOL_NAME, PARTCOL_NAME);
       dpCtx.setInputToDPCols(partColNames);
-      desc = new FileSinkDesc(basePath, tableDesc, false, 1, false, false, 1, 1, partCols, dpCtx);
+      //todo: does this need the finalDestination?
+      desc = new FileSinkDesc(basePath, tableDesc, false, 1, false, false, 1, 1, partCols, dpCtx, null);
     } else {
       desc = new FileSinkDesc(basePath, tableDesc, false);
     }

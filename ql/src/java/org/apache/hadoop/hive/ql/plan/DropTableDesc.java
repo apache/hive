@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * DropTableDesc.
@@ -55,7 +56,6 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   boolean expectView;
   boolean ifExists;
   boolean ifPurge;
-  boolean ignoreProtection;
   ReplicationSpec replicationSpec;
 
   public DropTableDesc() {
@@ -73,13 +73,11 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     this.expectView = expectView;
     this.ifExists = ifExists;
     this.ifPurge = ifPurge;
-    this.ignoreProtection = false;
     this.replicationSpec = replicationSpec;
   }
 
   public DropTableDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
-      boolean expectView, boolean ignoreProtection, boolean ifPurge,
-      ReplicationSpec replicationSpec) {
+      boolean expectView, boolean ifPurge, ReplicationSpec replicationSpec) {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartSpec>(partSpecs.size());
     for (Map.Entry<Integer, List<ExprNodeGenericFuncDesc>> partSpec : partSpecs.entrySet()) {
@@ -88,7 +86,6 @@ public class DropTableDesc extends DDLDesc implements Serializable {
         this.partSpecs.add(new PartSpec(expr, prefixLength));
       }
     }
-    this.ignoreProtection = ignoreProtection;
     this.expectView = expectView;
     this.ifPurge = ifPurge;
     this.replicationSpec = replicationSpec;
@@ -116,21 +113,6 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   public ArrayList<PartSpec> getPartSpecs() {
     return partSpecs;
   }
-
-  /**
-   * @return whether or not protection will be ignored for the partition
-   */
-  public boolean getIgnoreProtection() {
-    return ignoreProtection;
-  }
-
-  /**
-   * @param ignoreProtection
-   *          set whether or not protection will be ignored for the partition
-   */
-   public void setIgnoreProtection(boolean ignoreProtection) {
-     this.ignoreProtection = ignoreProtection;
-   }
 
   /**
    * @return whether to expect a view being dropped

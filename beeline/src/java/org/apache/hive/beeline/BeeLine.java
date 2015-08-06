@@ -792,7 +792,7 @@ public class BeeLine implements Closeable {
     FileInputStream initStream = null;
     try {
       initStream = new FileInputStream(fileName);
-      return execute(getConsoleReader(initStream), true);
+      return execute(getConsoleReader(initStream), !getOpts().getForce());
     } catch (Throwable t) {
       handleException(t);
       return ERRNO_OTHER;
@@ -1233,8 +1233,9 @@ public class BeeLine implements Closeable {
       return "beeline> ";
     } else {
       String printClosed = getDatabaseConnection().isClosed() ? " (closed)" : "";
-      return getPrompt(getDatabaseConnections().getIndex()
-          + ": " + getDatabaseConnection().getUrl()) + printClosed + "> ";
+      String url =  getOpts().getShowConnectedUrl() ? getDatabaseConnection().getConnectedUrl()
+          : getDatabaseConnection().getUrl();
+      return getPrompt(getDatabaseConnections().getIndex() + ": " + url) + printClosed + "> ";
     }
   }
 

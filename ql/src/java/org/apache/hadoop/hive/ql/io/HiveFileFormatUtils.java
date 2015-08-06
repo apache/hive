@@ -297,31 +297,32 @@ public final class HiveFileFormatUtils {
     // TODO not 100% sure about this.  This call doesn't set the compression type in the conf
     // file the way getHiveRecordWriter does, as ORC appears to read the value for itself.  Not
     // sure if this is correct or not.
-    return getRecordUpdater(jc, acidOutputFormat, conf.getCompressed(), conf.getTransactionId(),
-        bucket, inspector, tableInfo.getProperties(), outPath, reporter, rowIdColNum);
+    return getRecordUpdater(jc, acidOutputFormat,
+        bucket, inspector, tableInfo.getProperties(), outPath, reporter, rowIdColNum, conf);
   }
 
 
   private static RecordUpdater getRecordUpdater(JobConf jc,
                                                 AcidOutputFormat<?, ?> acidOutputFormat,
-                                                boolean isCompressed,
-                                                long txnId,
                                                 int bucket,
                                                 ObjectInspector inspector,
                                                 Properties tableProp,
                                                 Path outPath,
                                                 Reporter reporter,
-                                                int rowIdColNum) throws IOException {
+                                                int rowIdColNum,
+                                                FileSinkDesc conf) throws IOException {
     return acidOutputFormat.getRecordUpdater(outPath, new AcidOutputFormat.Options(jc)
-        .isCompressed(isCompressed)
+        .isCompressed(conf.getCompressed())
         .tableProperties(tableProp)
         .reporter(reporter)
         .writingBase(false)
-        .minimumTransactionId(txnId)
-        .maximumTransactionId(txnId)
+        .minimumTransactionId(conf.getTransactionId())
+        .maximumTransactionId(conf.getTransactionId())
         .bucket(bucket)
         .inspector(inspector)
-        .recordIdColumn(rowIdColNum));
+        .recordIdColumn(rowIdColNum)
+        .statementId(conf.getStatementId())
+        .finalDestination(conf.getDestPath()));
   }
 
   public static PartitionDesc getPartitionDescFromPathRecursively(

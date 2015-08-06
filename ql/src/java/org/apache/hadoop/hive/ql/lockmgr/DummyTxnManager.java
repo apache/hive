@@ -52,7 +52,19 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     // No-op
     return 0L;
   }
+  @Override
+  public boolean isTxnOpen() {
+    return false;
+  }
+  @Override
+  public long getCurrentTxnId() {
+    return 0L;
+  }
 
+  @Override
+  public int getStatementId() {
+    return 0;
+  }
   @Override
   public HiveLockManager getLockManager() throws LockException {
     if (lockMgr == null) {

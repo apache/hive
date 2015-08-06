@@ -315,8 +315,6 @@ Partition Value:    	[2008-04-08, 11]
 Database:           	default             	 
 Table:              	list_bucketing_static_part	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	6                   

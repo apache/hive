@@ -83,9 +83,9 @@ public class <ClassName> extends VectorExpression {
       outputColVector.noNulls = true;
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         outputColVector.isRepeating = true;
-        int ret = StringExpr.compare(vector1[0], start1[0], length1[0], 
+        <CompareOrEqualReturnType> ret = <CompareOrEqual>(vector1[0], start1[0], length1[0], 
                                          vector2[0], start2[0], length2[0]);
-        if (ret <OperatorSymbol> 0) {
+        if (ret<OptionalCompare>) {
           outVector[0] = 1;
         } else {
           outVector[0] = 0;
@@ -94,8 +94,8 @@ public class <ClassName> extends VectorExpression {
         if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                   vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                                   vector2[i], start2[i], length2[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -103,8 +103,8 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                   vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                                   vector2[i], start2[i], length2[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -115,8 +115,8 @@ public class <ClassName> extends VectorExpression {
         if (batch.selectedInUse) {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                   vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                   vector2[0], start2[0], length2[0])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -124,8 +124,8 @@ public class <ClassName> extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                   vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                   vector2[0], start2[0], length2[0])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -135,8 +135,8 @@ public class <ClassName> extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                 vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+          if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                 vector2[i], start2[i], length2[i])<OptionalCompare>) {
             outVector[i] = 1;
           } else {
             outVector[i] = 0;
@@ -144,8 +144,8 @@ public class <ClassName> extends VectorExpression {
         }
       } else {
         for(int i = 0; i != n; i++) {
-          if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                 vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+          if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                 vector2[i], start2[i], length2[i])<OptionalCompare>) {
             outVector[i] = 1;
           } else {
             outVector[i] = 0;
@@ -160,8 +160,8 @@ public class <ClassName> extends VectorExpression {
         outputColVector.isRepeating = true;
         outNull[0] = nullPos2[0];
         if (!nullPos2[0]) {
-          if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                               vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+          if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                               vector2[0], start2[0], length2[0])<OptionalCompare>) {
             outVector[0] = 1;
           } else {
             outVector[0] = 0;
@@ -175,8 +175,8 @@ public class <ClassName> extends VectorExpression {
             int i = sel[j];
             outNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -187,8 +187,8 @@ public class <ClassName> extends VectorExpression {
           for(int i = 0; i != n; i++) {
             outNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -207,8 +207,8 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             outNull[i] = false;
-            if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                   vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                   vector2[0], start2[0], length2[0])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -217,8 +217,8 @@ public class <ClassName> extends VectorExpression {
         } else {
           for(int i = 0; i != n; i++) {
             outNull[i] = false;
-            if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                   vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                   vector2[0], start2[0], length2[0])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -231,8 +231,8 @@ public class <ClassName> extends VectorExpression {
             int i = sel[j];
             outNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -243,8 +243,8 @@ public class <ClassName> extends VectorExpression {
           for(int i = 0; i != n; i++) {
             outNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -261,8 +261,8 @@ public class <ClassName> extends VectorExpression {
         outputColVector.isRepeating = true;
         outNull[0] = nullPos1[0];
         if (!nullPos1[0]) {
-          if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                               vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+          if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                               vector2[0], start2[0], length2[0])<OptionalCompare>) {
             outVector[0] = 1;
           } else {
             outVector[0] = 0;
@@ -279,8 +279,8 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             outNull[i] = false;
-            if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                   vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                                   vector2[i], start2[i], length2[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -289,8 +289,8 @@ public class <ClassName> extends VectorExpression {
         } else {
           for(int i = 0; i != n; i++) {
             outNull[i] = false;
-            if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                   vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                                   vector2[i], start2[i], length2[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -303,8 +303,8 @@ public class <ClassName> extends VectorExpression {
             int i = sel[j];
             outNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -315,8 +315,8 @@ public class <ClassName> extends VectorExpression {
           for(int i = 0; i != n; i++) {
             outNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -330,8 +330,8 @@ public class <ClassName> extends VectorExpression {
             int i = sel[j];
             outNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -342,8 +342,8 @@ public class <ClassName> extends VectorExpression {
           for(int i = 0; i != n; i++) {
             outNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -360,8 +360,8 @@ public class <ClassName> extends VectorExpression {
         outputColVector.isRepeating = true;
         outNull[0] = nullPos1[0] || nullPos2[0];
         if (!outNull[0]) {
-          if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                             vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+          if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                             vector2[0], start2[0], length2[0])<OptionalCompare>) {
             outVector[0] = 1;
           } else {
             outVector[0] = 0;
@@ -378,8 +378,8 @@ public class <ClassName> extends VectorExpression {
             int i = sel[j];
             outNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -390,8 +390,8 @@ public class <ClassName> extends VectorExpression {
           for(int i = 0; i != n; i++) {
             outNull[i] = nullPos2[i];
             if (!nullPos2[i]) {
-              if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -410,8 +410,8 @@ public class <ClassName> extends VectorExpression {
             int i = sel[j];
             outNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -422,8 +422,8 @@ public class <ClassName> extends VectorExpression {
           for(int i = 0; i != n; i++) {
             outNull[i] = nullPos1[i];
             if (!nullPos1[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -437,8 +437,8 @@ public class <ClassName> extends VectorExpression {
             int i = sel[j];
             outNull[i] = nullPos1[i] || nullPos2[i];
             if (!outNull[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;
@@ -449,8 +449,8 @@ public class <ClassName> extends VectorExpression {
           for(int i = 0; i != n; i++) {
             outNull[i] = nullPos1[i] || nullPos2[i];
             if (!outNull[i]) {
-              if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <OperatorSymbol> 0) {
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+                                     vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 outVector[i] = 1;
               } else {
                 outVector[i] = 0;

@@ -548,7 +548,9 @@ public class CompactorMR {
             .reporter(reporter)
             .minimumTransactionId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
             .maximumTransactionId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
-            .bucket(bucket);
+            .bucket(bucket)
+            .statementId(-1);//setting statementId == -1 makes compacted delta files use
+        //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
         @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class

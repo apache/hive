@@ -22,11 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.TableIterable;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
@@ -88,9 +91,11 @@ public class GetTablesOperation extends MetadataOperation {
       }
 
       String tablePattern = convertIdentifierPattern(tableName, true);
+      int maxBatchSize = SessionState.get().getConf().getIntVar(ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+
       for (String dbName : metastoreClient.getDatabases(schemaPattern)) {
         List<String> tableNames = metastoreClient.getTables(dbName, tablePattern);
-        for (Table table : metastoreClient.getTableObjectsByName(dbName, tableNames)) {
+        for (Table table : new TableIterable(metastoreClient, dbName, tableNames, maxBatchSize)) {
           Object[] rowData = new Object[] {
               DEFAULT_HIVE_CATALOG,
               table.getDbName(),

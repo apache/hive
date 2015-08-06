@@ -32,6 +32,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -57,14 +58,14 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return 1.0;
   }
 
-  public Double getSelectivity(HiveJoin j, RexNode predicate) {
+  public Double getSelectivity(HiveJoin j, RexNode predicate) throws CalciteSemanticException {
     if (j.getJoinType().equals(JoinRelType.INNER)) {
       return computeInnerJoinSelectivity(j, predicate);
     }
     return 1.0;
   }
 
-  private Double computeInnerJoinSelectivity(HiveJoin j, RexNode predicate) {
+  private Double computeInnerJoinSelectivity(HiveJoin j, RexNode predicate) throws CalciteSemanticException {
     double ndvCrossProduct = 1;
     Pair<Boolean, RexNode> predInfo =
         getCombinedPredicateForJoin(j, predicate);
@@ -183,7 +184,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
   }
 
   /**
-   * 
+   *
    * @param j
    * @param additionalPredicate
    * @return if predicate is the join condition return (true, joinCond)
@@ -206,7 +207,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
 
   /**
    * Compute Max NDV to determine Join Selectivity.
-   * 
+   *
    * @param jlpi
    * @param colStatMap
    *          Immutable Map of Projection Index (in Join Schema) to Column Stat
@@ -238,5 +239,5 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
 
     return maxNDVSoFar;
   }
-  
+
 }

@@ -17,39 +17,86 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinInfo;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.RelFactories.SemiJoinFactory;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableIntList;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+
+import com.google.common.collect.ImmutableList;
 
 public class HiveSemiJoin extends SemiJoin implements HiveRelNode {
 
   public static final SemiJoinFactory HIVE_SEMIJOIN_FACTORY = new HiveSemiJoinFactoryImpl();
 
-  public HiveSemiJoin(RelOptCluster cluster,
+  private final RexNode joinFilter;
+
+
+  public static HiveSemiJoin getSemiJoin(
+          RelOptCluster cluster,
           RelTraitSet traitSet,
           RelNode left,
           RelNode right,
           RexNode condition,
           ImmutableIntList leftKeys,
           ImmutableIntList rightKeys) {
+    try {
+      HiveSemiJoin semiJoin = new HiveSemiJoin(cluster, traitSet, left, right,
+              condition, leftKeys, rightKeys);
+      return semiJoin;
+    } catch (InvalidRelException | CalciteSemanticException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected HiveSemiJoin(RelOptCluster cluster,
+          RelTraitSet traitSet,
+          RelNode left,
+          RelNode right,
+          RexNode condition,
+          ImmutableIntList leftKeys,
+          ImmutableIntList rightKeys) throws InvalidRelException, CalciteSemanticException {
     super(cluster, traitSet, left, right, condition, leftKeys, rightKeys);
+    final List<RelDataTypeField> systemFieldList = ImmutableList.of();
+    List<List<RexNode>> joinKeyExprs = new ArrayList<List<RexNode>>();
+    List<Integer> filterNulls = new ArrayList<Integer>();
+    for (int i=0; i<this.getInputs().size(); i++) {
+      joinKeyExprs.add(new ArrayList<RexNode>());
+    }
+    this.joinFilter = HiveRelOptUtil.splitHiveJoinCondition(systemFieldList, this.getInputs(),
+            this.getCondition(), joinKeyExprs, filterNulls, null);
+  }
+
+  public RexNode getJoinFilter() {
+    return joinFilter;
   }
 
   @Override
   public SemiJoin copy(RelTraitSet traitSet, RexNode condition,
           RelNode left, RelNode right, JoinRelType joinType, boolean semiJoinDone) {
-    final JoinInfo joinInfo = JoinInfo.of(left, right, condition);
-    return new HiveSemiJoin(getCluster(), traitSet, left, right, condition,
-            joinInfo.leftKeys, joinInfo.rightKeys);
+    try {
+      final JoinInfo joinInfo = JoinInfo.of(left, right, condition);
+      return new HiveSemiJoin(getCluster(), traitSet, left, right, condition,
+              joinInfo.leftKeys, joinInfo.rightKeys);
+    } catch (InvalidRelException | CalciteSemanticException e) {
+      // Semantic error not possible. Must be a bug. Convert to
+      // internal error.
+      throw new AssertionError(e);
+    }
   }
 
   @Override
@@ -72,7 +119,7 @@ public class HiveSemiJoin extends SemiJoin implements HiveRelNode {
             RexNode condition) {
       final JoinInfo joinInfo = JoinInfo.of(left, right, condition);
       final RelOptCluster cluster = left.getCluster();
-      return new HiveSemiJoin(cluster, left.getTraitSet(), left, right, condition,
+      return getSemiJoin(cluster, left.getTraitSet(), left, right, condition,
           joinInfo.leftKeys, joinInfo.rightKeys);
     }
   }

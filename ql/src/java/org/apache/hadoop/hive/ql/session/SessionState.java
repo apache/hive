@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
@@ -115,7 +116,7 @@ public class SessionState {
   /**
    * current configuration.
    */
-  protected HiveConf conf;
+  private final HiveConf conf;
 
   /**
    * silent mode.
@@ -248,23 +249,6 @@ public class SessionState {
   private HiveTxnManager txnMgr = null;
 
   /**
-   * When {@link #setCurrentTxn(long)} is set to this or {@link #getCurrentTxn()}} returns this it
-   * indicates that there is not a current transaction in this session.
-  */
-  public static final long NO_CURRENT_TXN = -1L;
-
-  /**
-   * Transaction currently open
-   */
-  private long currentTxn = NO_CURRENT_TXN;
-
-  /**
-   * Whether we are in auto-commit state or not.  Currently we are always in auto-commit,
-   * so there are not setters for this yet.
-   */
-  private final boolean txnAutoCommit = true;
-
-  /**
    * store the jars loaded last time
    */
   private final Set<String> preReloadableAuxJars = new HashSet<String>();
@@ -292,9 +276,6 @@ public class SessionState {
     return conf;
   }
 
-  public void setConf(HiveConf conf) {
-    this.conf = conf;
-  }
 
   public File getTmpOutputFile() {
     return tmpOutputFile;
@@ -407,18 +388,6 @@ public class SessionState {
 
   public HiveTxnManager getTxnMgr() {
     return txnMgr;
-  }
-
-  public long getCurrentTxn() {
-    return currentTxn;
-  }
-
-  public void setCurrentTxn(long currTxn) {
-    currentTxn = currTxn;
-  }
-
-  public boolean isAutoCommit() {
-    return txnAutoCommit;
   }
 
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
@@ -764,8 +733,15 @@ public class SessionState {
     if (conf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
       return;
     }
+    String metastoreHook = conf.get(ConfVars.METASTORE_FILTER_HOOK.name());
+    if (!ConfVars.METASTORE_FILTER_HOOK.getDefaultValue().equals(metastoreHook) &&
+        !AuthorizationMetaStoreFilterHook.class.getName().equals(metastoreHook)) {
+      LOG.warn(ConfVars.METASTORE_FILTER_HOOK.name() +
+          " will be ignored, since hive.security.authorization.manager" +
+          " is set to instance of HiveAuthorizerFactory.");
+    }
     conf.setVar(ConfVars.METASTORE_FILTER_HOOK,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook");
+        AuthorizationMetaStoreFilterHook.class.getName());
 
     authorizerV2.applyAuthorizationConfigPolicy(conf);
     // update config in Hive thread local as well and init the metastore client

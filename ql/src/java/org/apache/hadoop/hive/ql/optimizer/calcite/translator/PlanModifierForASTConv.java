@@ -169,7 +169,7 @@ public class PlanModifierForASTConv {
     }
   }
 
-  private static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
+  public static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
       Pair<RelNode, RelNode> topSelparentPair, List<FieldSchema> resultSchema)
       throws CalciteSemanticException {
     RelNode parentOforiginalProjRel = topSelparentPair.getKey();

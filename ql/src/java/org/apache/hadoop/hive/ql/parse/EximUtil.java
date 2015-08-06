@@ -18,20 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-
 import com.google.common.base.Function;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -56,6 +42,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.annotation.Nullable;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 /**
  *
@@ -129,11 +127,6 @@ public class EximUtil {
   }
 
   static void validateTable(org.apache.hadoop.hive.ql.metadata.Table table) throws SemanticException {
-    if (table.isOffline()) {
-      throw new SemanticException(
-          ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(":Table "
-              + table.getTableName()));
-    }
     if (table.isView()) {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
     }

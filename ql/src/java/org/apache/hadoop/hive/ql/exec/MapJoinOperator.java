@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -148,7 +150,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     final ExecMapperContext mapContext = getExecContext();
     final MapredContext mrContext = MapredContext.get();
 
-    if (!conf.isBucketMapJoin()) {
+    if (!conf.isBucketMapJoin() && !conf.isDynamicPartitionHashJoin()) {
       /*
        * The issue with caching in case of bucket map join is that different tasks
        * process different buckets and if the container is reused to join a different bucket,
@@ -172,8 +174,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
                 }
               });
       asyncInitOperations.add(future);
-    } else if (mapContext == null || mapContext.getLocalWork() == null
-        || mapContext.getLocalWork().getInputFileChangeSensitive() == false) {
+    } else if (!isInputFileChangeSensitive(mapContext)) {
       loadHashTable(mapContext, mrContext);
       hashTblInitedOnce = true;
     }
@@ -279,9 +280,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
     loadCalled = true;
 
-    if (this.hashTblInitedOnce
-        && ((mapContext == null) || (mapContext.getLocalWork() == null) || (mapContext
-            .getLocalWork().getInputFileChangeSensitive() == false))) {
+    if (canSkipReload(mapContext)) {
       // no need to reload
       return new ImmutablePair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>(
           mapJoinTables, mapJoinTableSerdes);
@@ -308,6 +307,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       MapJoinTableContainerSerDe[]> (mapJoinTables, mapJoinTableSerdes);
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
+
+    if (canSkipJoinProcessing(mapContext)) {
+      LOG.info("Skipping big table join processing for " + this.toString());
+      this.setDone(true);
+    }
 
     return pair;
   }
@@ -615,7 +619,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
 
     container.setTotalInMemRowCount(container.getTotalInMemRowCount()
-        + restoredHashMap.getNumValues() + kvContainer.size());
+        + restoredHashMap.getNumValues());
     kvContainer.clear();
 
     spilledMapJoinTables[pos] = new MapJoinBytesTableContainer(restoredHashMap);
@@ -659,5 +663,48 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   @Override
   public OperatorType getType() {
     return OperatorType.MAPJOIN;
+  }
+
+  protected boolean isInputFileChangeSensitive(ExecMapperContext mapContext) {
+    return !(mapContext == null
+        || mapContext.getLocalWork() == null
+        || mapContext.getLocalWork().getInputFileChangeSensitive() == false);
+  }
+
+  protected boolean canSkipReload(ExecMapperContext mapContext) {
+    return (this.hashTblInitedOnce && !isInputFileChangeSensitive(mapContext));
+  }
+
+  // If the loaded hash table is empty, for some conditions we can skip processing the big table rows.
+  protected boolean canSkipJoinProcessing(ExecMapperContext mapContext) {
+    if (!canSkipReload(mapContext)) {
+      return false;
+    }
+
+    JoinCondDesc[] joinConds = getConf().getConds();
+    if (joinConds.length > 0) {
+      for (JoinCondDesc joinCond : joinConds) {
+        if (joinCond.getType() != JoinDesc.INNER_JOIN) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+
+    boolean skipJoinProcessing = false;
+    for (int idx = 0; idx < mapJoinTables.length; ++idx) {
+      if (idx == getConf().getPosBigTable()) {
+        continue;
+      }
+      MapJoinTableContainer mapJoinTable = mapJoinTables[idx];
+      if (mapJoinTable.size() == 0) {
+        // If any table is empty, an inner join involving the tables should yield 0 rows.
+        LOG.info("Hash table number " + idx + " is empty");
+        skipJoinProcessing = true;
+        break;
+      }
+    }
+    return skipJoinProcessing;
   }
 }

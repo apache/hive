@@ -18,16 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -54,6 +44,16 @@ import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 
 /**
@@ -357,8 +357,6 @@ public final class MetaDataFormatUtils {
     formatOutput("Owner:", tbl.getOwner(), tableInfo);
     formatOutput("CreateTime:", formatDate(tbl.getTTable().getCreateTime()), tableInfo);
     formatOutput("LastAccessTime:", formatDate(tbl.getTTable().getLastAccessTime()), tableInfo);
-    String protectMode = tbl.getProtectMode().toString();
-    formatOutput("Protect Mode:", protectMode == null ? "None" : protectMode, tableInfo);
     formatOutput("Retention:", Integer.toString(tbl.getRetention()), tableInfo);
     if (!tbl.isView()) {
       formatOutput("Location:", tbl.getDataLocation().toString(), tableInfo);
@@ -378,8 +376,6 @@ public final class MetaDataFormatUtils {
     formatOutput("CreateTime:", formatDate(part.getTPartition().getCreateTime()), tableInfo);
     formatOutput("LastAccessTime:", formatDate(part.getTPartition().getLastAccessTime()),
         tableInfo);
-    String protectMode = part.getProtectMode().toString();
-    formatOutput("Protect Mode:", protectMode == null ? "None" : protectMode, tableInfo);
     formatOutput("Location:", part.getLocation(), tableInfo);
 
     if (part.getTPartition().getParameters().size() > 0) {

@@ -52,6 +52,7 @@ import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
+import org.apache.tez.runtime.api.Reader;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
 
 import com.google.common.collect.Lists;
@@ -137,9 +138,10 @@ public class ReduceRecordProcessor  extends RecordProcessor{
         tagToReducerMap.put(mergeReduceWork.getTag(), mergeReduceWork);
       }
 
-      bigTablePosition = (byte) reduceWork.getTag();
       ((TezContext) MapredContext.get()).setDummyOpsMap(connectOps);
     }
+
+    bigTablePosition = (byte) reduceWork.getTag();
 
     ObjectInspector[] mainWorkOIs = null;
     ((TezContext) MapredContext.get()).setInputs(inputs);
@@ -235,10 +237,13 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     reducer.setParentOperators(null); // clear out any parents as reducer is the root
 
     TableDesc keyTableDesc = redWork.getKeyDesc();
-    KeyValuesReader reader = (KeyValuesReader) inputs.get(inputName).getReader();
+    Reader reader = inputs.get(inputName).getReader();
 
     sources[tag] = new ReduceRecordSource();
-    sources[tag].init(jconf, redWork.getReducer(), redWork.getVectorMode(), keyTableDesc,
+    // Only the big table input source should be vectorized (if applicable)
+    // Note this behavior may have to change if we ever implement a vectorized merge join
+    boolean vectorizedRecordSource = (tag == bigTablePosition) && redWork.getVectorMode();
+    sources[tag].init(jconf, redWork.getReducer(), vectorizedRecordSource, keyTableDesc,
         valueTableDesc, reader, tag == bigTablePosition, (byte) tag,
         redWork.getVectorScratchColumnTypeMap());
     ois[tag] = sources[tag].getObjectInspector();

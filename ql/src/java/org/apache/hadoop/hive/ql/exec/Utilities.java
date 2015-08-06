@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
 import java.beans.ExceptionListener;
@@ -83,6 +85,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import org.antlr.runtime.CommonToken;
+import org.apache.calcite.util.ChunkList;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
@@ -380,6 +383,7 @@ public final class Utilities {
           ClassLoader loader = Thread.currentThread().getContextClassLoader();
           ClassLoader newLoader = addToClassPath(loader, addedJars.split(";"));
           Thread.currentThread().setContextClassLoader(newLoader);
+          runtimeSerializationKryo.get().setClassLoader(newLoader);
         }
       }
 
@@ -450,7 +454,7 @@ public final class Utilities {
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
-      LOG.info("File not found: " + fnf.getMessage());
+      LOG.debug("File not found: " + fnf.getMessage());
       LOG.info("No plan file found: "+path);
       return null;
     } catch (Exception e) {
@@ -1227,9 +1231,9 @@ public final class Utilities {
     return (new PartitionDesc(part));
   }
 
-  public static PartitionDesc getPartitionDescFromTableDesc(TableDesc tblDesc, Partition part)
-      throws HiveException {
-    return new PartitionDesc(part, tblDesc);
+  public static PartitionDesc getPartitionDescFromTableDesc(TableDesc tblDesc, Partition part,
+    boolean usePartSchemaProperties) throws HiveException {
+    return new PartitionDesc(part, tblDesc, usePartSchemaProperties);
   }
 
   private static String getOpTreeSkel_helper(Operator<?> op, String indent) {

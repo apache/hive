@@ -104,11 +104,13 @@ public class Function {
     StringBuilder sql = new StringBuilder();
     sql.append(name);
     sql.append("(");
-    int cnt = ctx.expr().size();
-    for (int i = 0; i < cnt; i++) {
-      sql.append(evalPop(ctx.expr(i)));
-      if (i + 1 < cnt) {
-        sql.append(", ");
+    if (ctx != null) {
+      int cnt = ctx.func_param().size();
+      for (int i = 0; i < cnt; i++) {
+        sql.append(evalPop(ctx.func_param(i).expr()));
+        if (i + 1 < cnt) {
+          sql.append(", ");
+        }
       }
     }
     sql.append(")");
@@ -152,7 +154,7 @@ public class Function {
     sql.append("hplsql('");
     sql.append(name);
     sql.append("(");
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     for (int i = 0; i < cnt; i++) {
       sql.append(":" + (i + 1));
       if (i + 1 < cnt) {
@@ -164,7 +166,7 @@ public class Function {
       sql.append(", ");
     }
     for (int i = 0; i < cnt; i++) {
-      sql.append(evalPop(ctx.expr(i)));
+      sql.append(evalPop(ctx.func_param(i).expr()));
       if (i + 1 < cnt) {
         sql.append(", ");
       }
@@ -188,8 +190,12 @@ public class Function {
       return false;
     }    
     exec.enterScope(Scope.Type.ROUTINE);
-    setCallParameters(procCtx.create_routine_params());
-    visit(procCtx.single_block_stmt());
+    exec.callStackPush(name);
+    if (procCtx.create_routine_params() != null) {
+      setCallParameters(procCtx.create_routine_params());
+    }
+    visit(procCtx.proc_block());
+    exec.callStackPop();
     exec.leaveScope();       
     return true;
   }
@@ -208,8 +214,12 @@ public class Function {
     }    
     HashMap<String, Var> out = new HashMap<String, Var>();
     exec.enterScope(Scope.Type.ROUTINE);
-    setCallParameters(ctx, procCtx.create_routine_params(), out);
-    visit(procCtx.single_block_stmt());
+    exec.callStackPush(name);
+    if (procCtx.create_routine_params() != null) {
+      setCallParameters(ctx, procCtx.create_routine_params(), out);
+    }
+    visit(procCtx.proc_block());
+    exec.callStackPop();
     exec.leaveScope();       
     for (Map.Entry<String, Var> i : out.entrySet()) {      // Set OUT parameters
       exec.setVariable(i.getKey(), i.getValue());
@@ -223,14 +233,17 @@ public class Function {
   void setCallParameters(HplsqlParser.Expr_func_paramsContext actual, 
                          HplsqlParser.Create_routine_paramsContext formal,
                          HashMap<String, Var> out) {
-    int actualCnt = actual.expr().size();
+    if (actual == null || actual.func_param() == null) {
+      return;
+    }
+    int actualCnt = actual.func_param().size();
     int formalCnt = formal.create_routine_param_item().size();
     for (int i = 0; i < actualCnt; i++) {
       if (i >= formalCnt) {
         break;
       }
-      HplsqlParser.ExprContext a = actual.expr(i); 
-      HplsqlParser.Create_routine_param_itemContext p = formal.create_routine_param_item(i);
+      HplsqlParser.ExprContext a = actual.func_param(i).expr(); 
+      HplsqlParser.Create_routine_param_itemContext p = getCallParameter(actual, formal, i);
       String name = p.ident().getText();
       String type = p.dtype().getText();
       String len = null;
@@ -290,6 +303,26 @@ public class Function {
     exec.addVariable(var);    
     return var;
   }
+  
+  /**
+   * Get call parameter definition by name (if specified) or position
+   */
+  HplsqlParser.Create_routine_param_itemContext getCallParameter(HplsqlParser.Expr_func_paramsContext actual, 
+      HplsqlParser.Create_routine_paramsContext formal, int pos) {
+    String named = null;
+    int out_pos = pos;
+    if (actual.func_param(pos).ident() != null) {
+      named = actual.func_param(pos).ident().getText(); 
+      int cnt = formal.create_routine_param_item().size();
+      for (int i = 0; i < cnt; i++) {
+        if (named.equalsIgnoreCase(formal.create_routine_param_item(i).ident().getText())) {
+          out_pos = i;
+          break;
+        }
+      }
+    }
+    return formal.create_routine_param_item(out_pos);
+  }  
   
   /**
    * Add a user-defined function

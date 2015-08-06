@@ -29,6 +29,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
@@ -46,7 +48,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
   private boolean hasFooter;
   private boolean isOriginal;
   private boolean hasBase;
-  private final List<Long> deltas = new ArrayList<Long>();
+  private final List<AcidInputFormat.DeltaMetaData> deltas = new ArrayList<>();
   private OrcFile.WriterVersion writerVersion;
   private Long fileId;
   private long projColsUncompressedSize;
@@ -65,7 +67,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
 
   public OrcSplit(Path path, Long fileId, long offset, long length, String[] hosts,
       FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
-      List<Long> deltas, long projectedDataSize) {
+      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize) {
     super(path, offset, length, hosts);
     // We could avoid serializing file ID and just replace the path with inode-based path.
     // However, that breaks bunch of stuff because Hive later looks up things by split path.
@@ -89,8 +91,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
         (fileId != null ? HAS_FILEID_FLAG : 0);
     out.writeByte(flags);
     out.writeInt(deltas.size());
-    for(Long delta: deltas) {
-      out.writeLong(delta);
+    for(AcidInputFormat.DeltaMetaData delta: deltas) {
+      delta.write(out);
     }
     if (hasFooter) {
       // serialize FileMetaInfo fields
@@ -127,7 +129,9 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
     deltas.clear();
     int numDeltas = in.readInt();
     for(int i=0; i < numDeltas; i++) {
-      deltas.add(in.readLong());
+      AcidInputFormat.DeltaMetaData dmd = new AcidInputFormat.DeltaMetaData();
+      dmd.readFields(in);
+      deltas.add(dmd);
     }
     if (hasFooter) {
       // deserialize FileMetaInfo fields
@@ -166,7 +170,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
     return hasBase;
   }
 
-  public List<Long> getDeltas() {
+  public List<AcidInputFormat.DeltaMetaData> getDeltas() {
     return deltas;
   }
 

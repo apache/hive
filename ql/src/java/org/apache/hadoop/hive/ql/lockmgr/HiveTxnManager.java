@@ -18,9 +18,14 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
+import org.apache.hadoop.hive.ql.plan.LockTableDesc;
+import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
+import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 
 /**
  * An interface that allows Hive to manage transactions.  All classes
@@ -116,6 +121,46 @@ public interface HiveTxnManager {
   boolean supportsExplicitLock();
 
   /**
+   * This function is called to lock the table when explicit lock command is
+   * issued on a table.
+   * @param hiveDB    an object to communicate with the metastore
+   * @param lockTbl   table locking info, such as table name, locking mode
+   * @return 0 if the locking succeeds, 1 otherwise.
+   * @throws HiveException
+   */
+  int lockTable(Hive hiveDB, LockTableDesc lockTbl) throws HiveException;
+
+  /**
+   * This function is called to unlock the table when explicit unlock command is
+   * issued on a table.
+   * @param hiveDB    an object to communicate with the metastore
+   * @param unlockTbl table unlocking info, such as table name
+   * @return 0 if the locking succeeds, 1 otherwise.
+   * @throws HiveException
+   */
+  int unlockTable(Hive hiveDB, UnlockTableDesc unlockTbl) throws HiveException;
+
+  /**
+   * This function is called to lock the database when explicit lock command is
+   * issued on a database.
+   * @param hiveDB    an object to communicate with the metastore
+   * @param lockDb    database locking info, such as database name, locking mode
+   * @return 0 if the locking succeeds, 1 otherwise.
+   * @throws HiveException
+   */
+  int lockDatabase(Hive hiveDB, LockDatabaseDesc lockDb) throws HiveException;
+
+  /**
+   * This function is called to unlock the database when explicit unlock command
+   * is issued on a database.
+   * @param hiveDB    an object to communicate with the metastore
+   * @param unlockDb  database unlocking info, such as database name
+   * @return 0 if the locking succeeds, 1 otherwise.
+   * @throws HiveException
+   */
+  int unlockDatabase(Hive hiveDB, UnlockDatabaseDesc unlockDb) throws HiveException;
+
+  /**
    * Indicate whether this transaction manager returns information about locks in the new format
    * for show locks or the old one.
    * @return true if the new format should be used.
@@ -127,4 +172,28 @@ public interface HiveTxnManager {
    * @return true if this transaction manager does ACID
    */
   boolean supportsAcid();
+
+  /**
+   * This behaves exactly as
+   * https://docs.oracle.com/javase/6/docs/api/java/sql/Connection.html#setAutoCommit(boolean)
+   */
+  void setAutoCommit(boolean autoCommit) throws LockException;
+
+  /**
+   * This behaves exactly as
+   * https://docs.oracle.com/javase/6/docs/api/java/sql/Connection.html#getAutoCommit()
+   */
+  boolean getAutoCommit();
+
+  boolean isTxnOpen();
+  /**
+   * if {@code isTxnOpen()}, returns the currently active transaction ID
+   */
+  long getCurrentTxnId();
+
+  /**
+   * 0..N Id of current statement within currently opened transaction
+   */
+  int getStatementId();
+
 }

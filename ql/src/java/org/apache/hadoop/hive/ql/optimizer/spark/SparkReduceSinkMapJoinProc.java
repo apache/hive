@@ -283,7 +283,7 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
       parent.replaceChild(parentRS, hashTableSinkOp);
     }
     hashTableSinkOp.setParentOperators(rsParentOps);
-    hashTableSinkOp.setTag(tag);
+    hashTableSinkOp.getConf().setTag(tag);
     return true;
   }
 }

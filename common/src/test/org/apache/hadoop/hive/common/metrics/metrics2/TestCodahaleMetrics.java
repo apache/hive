@@ -22,7 +22,9 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.junit.After;
@@ -134,5 +136,45 @@ public class TestCodahaleMetrics {
     JsonNode methodCounterNode = countersNode.path("count2");
     JsonNode countNode = methodCounterNode.path("count");
     Assert.assertEquals(countNode.asInt(), 5);
+  }
+
+  class TestMetricsVariable implements MetricsVariable {
+    private int gaugeVal;
+
+    @Override
+    public Object getValue() {
+      return gaugeVal;
+    }
+    public void setValue(int gaugeVal) {
+      this.gaugeVal = gaugeVal;
+    }
+  };
+
+  @Test
+  public void testGauge() throws Exception {
+    TestMetricsVariable testVar = new TestMetricsVariable();
+    testVar.setValue(20);
+
+    MetricsFactory.getInstance().addGauge("gauge1", testVar);
+    Thread.sleep(2000);
+    byte[] jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    JsonNode rootNode = objectMapper.readTree(jsonData);
+    JsonNode gaugesNode = rootNode.path("gauges");
+    JsonNode methodGaugeNode = gaugesNode.path("gauge1");
+    JsonNode countNode = methodGaugeNode.path("value");
+    Assert.assertEquals(countNode.asInt(), testVar.getValue());
+
+    testVar.setValue(40);
+    Thread.sleep(2000);
+
+    jsonData = Files.readAllBytes(Paths.get(jsonReportFile.getAbsolutePath()));
+
+    rootNode = objectMapper.readTree(jsonData);
+    gaugesNode = rootNode.path("gauges");
+    methodGaugeNode = gaugesNode.path("gauge1");
+    countNode = methodGaugeNode.path("value");
+    Assert.assertEquals(countNode.asInt(), testVar.getValue());
   }
 }

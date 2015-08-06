@@ -18,13 +18,6 @@
  */
 package org.apache.hive.hcatalog.api;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -76,6 +69,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The HCatClientHMSImpl is the Hive Metastore client based implementation of
@@ -588,7 +587,6 @@ public class HCatClientHMSImpl extends HCatClient {
             Utilities.serializeExpressionToKryo(partitionExpression));
     hmsClient.dropPartitions(table.getDbName(), table.getTableName(), Arrays.asList(serializedPartitionExpression),
         deleteData && !isExternal(table),  // Delete data?
-        false,                             // Ignore Protection?
         ifExists,                          // Fail if table doesn't exist?
         false);                            // Need results back?
   }

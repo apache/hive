@@ -1,0 +1,10 @@
+Ln:1 PRINT
+Correct
+Ln:2 DECLARE HANDLER
+Ln:4 WHILE - ENTERED
+Ln:5 FETCH
+Ln:5 Cursor not found: cur
+Ln:4 WHILE - LEFT
+Ln:2 EXIT HANDLER
+Ln:3 PRINT
+Correct - Exception raised

@@ -98,7 +98,6 @@ state               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -147,7 +146,6 @@ state               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -196,7 +194,6 @@ state               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -286,7 +283,6 @@ state               	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -404,8 +400,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -448,8 +442,6 @@ state               	string
 Partition Value:    	[Or]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -506,8 +498,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -550,8 +540,6 @@ state               	string
 Partition Value:    	[Or]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -608,8 +596,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -652,8 +638,6 @@ state               	string
 Partition Value:    	[Or]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -755,8 +739,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -799,8 +781,6 @@ state               	string
 Partition Value:    	[Or]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -922,8 +902,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -966,8 +944,6 @@ state               	string
 Partition Value:    	[Or]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1024,8 +1000,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1068,8 +1042,6 @@ state               	string
 Partition Value:    	[Or]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1126,8 +1098,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1170,8 +1140,6 @@ state               	string
 Partition Value:    	[Or]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1279,8 +1247,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1323,8 +1289,6 @@ state               	string
 Partition Value:    	[Or]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
@@ -1491,8 +1455,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1535,8 +1497,6 @@ state               	string
 Partition Value:    	[OH]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
@@ -1595,8 +1555,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1639,8 +1597,6 @@ state               	string
 Partition Value:    	[OH]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
@@ -1699,8 +1655,6 @@ Partition Value:    	[Ca]
 Database:           	default             	 
 Table:              	orc_create_people   	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
@@ -1743,8 +1697,6 @@ state               	string
 Partition Value:    	[OH]                	 
 Database:           	default             	 
 Table:              	orc_create_people   	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -61,7 +62,10 @@ public class GenericUDFMapKeys extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     retArray.clear();
     Object mapObj = arguments[0].get();
-    retArray.addAll(mapOI.getMap(mapObj).keySet());
+    Map<?,?> mapVal = mapOI.getMap(mapObj);
+    if (mapVal != null) {
+      retArray.addAll(mapVal.keySet());
+    }
     return retArray;
   }
 

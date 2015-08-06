@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -640,7 +639,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           AuthorizationUtils.getHivePrincipalType(grantOrRevokeRoleDDL.getGrantorType()));
     }
     List<HivePrincipal> principals =
-        AuthorizationUtils.getHivePrincipals(grantOrRevokeRoleDDL.getPrincipalDesc());
+        authorizer.getHivePrincipals(grantOrRevokeRoleDDL.getPrincipalDesc());
     List<String> roles = grantOrRevokeRoleDDL.getRoles();
 
     boolean grantOption = grantOrRevokeRoleDDL.isGrantOption();
@@ -658,7 +657,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
           AuthorizationUtils.getHivePrincipal(showGrantDesc.getPrincipalDesc()),
-          AuthorizationUtils.getHivePrivilegeObject(showGrantDesc.getHiveObj()));
+          authorizer.getHivePrivilegeObject(showGrantDesc.getHiveObj()));
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
       writeToFile(writeGrantInfo(privInfos, testMode), showGrantDesc.getResFile());
     } catch (IOException e) {
@@ -675,9 +674,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     HiveAuthorizer authorizer = getSessionAuthorizer();
 
     //Convert to object types used by the authorization plugin interface
-    List<HivePrincipal> hivePrincipals = AuthorizationUtils.getHivePrincipals(principals);
-    List<HivePrivilege> hivePrivileges = AuthorizationUtils.getHivePrivileges(privileges);
-    HivePrivilegeObject hivePrivObject = AuthorizationUtils.getHivePrivilegeObject(privSubjectDesc);
+    List<HivePrincipal> hivePrincipals = authorizer.getHivePrincipals(principals);
+    List<HivePrivilege> hivePrivileges = authorizer.getHivePrivileges(privileges);
+    HivePrivilegeObject hivePrivObject = authorizer.getHivePrivilegeObject(privSubjectDesc);
 
     HivePrincipal grantorPrincipal = new HivePrincipal(
         grantor, AuthorizationUtils.getHivePrincipalType(grantorType));
@@ -2444,8 +2443,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         locks = lockMgr.getLocks(false, isExt);
       }
       else {
-        locks = lockMgr.getLocks(getHiveObject(showLocks.getTableName(),
-            showLocks.getPartSpec()),
+        locks = lockMgr.getLocks(HiveLockObject.createFrom(db,
+            showLocks.getTableName(), showLocks.getPartSpec()),
             true, isExt);
       }
 
@@ -2705,46 +2704,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int lockTable(LockTableDesc lockTbl) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    if (!txnManager.supportsExplicitLock()) {
-      throw new HiveException(ErrorMsg.LOCK_REQUEST_UNSUPPORTED,
-          conf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER));
-    }
-    HiveLockManager lockMgr = txnManager.getLockManager();
-    if (lockMgr == null) {
-      throw new HiveException("lock Table LockManager not specified");
-    }
-
-    HiveLockMode mode = HiveLockMode.valueOf(lockTbl.getMode());
-    String tabName = lockTbl.getTableName();
-    Table  tbl = db.getTable(tabName);
-    if (tbl == null) {
-      throw new HiveException("Table " + tabName + " does not exist ");
-    }
-
-    Map<String, String> partSpec = lockTbl.getPartSpec();
-    HiveLockObjectData lockData =
-        new HiveLockObjectData(lockTbl.getQueryId(),
-            String.valueOf(System.currentTimeMillis()),
-            "EXPLICIT",
-            lockTbl.getQueryStr());
-
-    if (partSpec == null) {
-      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true);
-      if (lck == null) {
-        return 1;
-      }
-      return 0;
-    }
-
-    Partition par = db.getPartition(tbl, partSpec, false);
-    if (par == null) {
-      throw new HiveException("Partition " + partSpec + " for table " + tabName + " does not exist");
-    }
-    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData), mode, true);
-    if (lck == null) {
-      return 1;
-    }
-    return 0;
+    return txnManager.lockTable(db, lockTbl);
   }
 
   /**
@@ -2759,33 +2719,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int lockDatabase(LockDatabaseDesc lockDb) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    if (!txnManager.supportsExplicitLock()) {
-      throw new HiveException(ErrorMsg.LOCK_REQUEST_UNSUPPORTED,
-          conf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER));
-    }
-    HiveLockManager lockMgr = txnManager.getLockManager();
-    if (lockMgr == null) {
-      throw new HiveException("lock Database LockManager not specified");
-    }
-
-    HiveLockMode mode = HiveLockMode.valueOf(lockDb.getMode());
-    String dbName = lockDb.getDatabaseName();
-
-    Database dbObj = db.getDatabase(dbName);
-    if (dbObj == null) {
-      throw new HiveException("Database " + dbName + " does not exist ");
-    }
-
-    HiveLockObjectData lockData =
-        new HiveLockObjectData(lockDb.getQueryId(),
-            String.valueOf(System.currentTimeMillis()),
-            "EXPLICIT", lockDb.getQueryStr());
-
-    HiveLock lck = lockMgr.lock(new HiveLockObject(dbObj.getName(), lockData), mode, true);
-    if (lck == null) {
-      return 1;
-    }
-    return 0;
+    return txnManager.lockDatabase(db, lockDb);
   }
 
   /**
@@ -2800,55 +2734,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int unlockDatabase(UnlockDatabaseDesc unlockDb) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    if (!txnManager.supportsExplicitLock()) {
-      throw new HiveException(ErrorMsg.LOCK_REQUEST_UNSUPPORTED,
-          conf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER));
-    }
-    HiveLockManager lockMgr = txnManager.getLockManager();
-    if (lockMgr == null) {
-      throw new HiveException("unlock Database LockManager not specified");
-    }
-
-    String dbName = unlockDb.getDatabaseName();
-
-    Database dbObj = db.getDatabase(dbName);
-    if (dbObj == null) {
-      throw new HiveException("Database " + dbName + " does not exist ");
-    }
-    HiveLockObject obj = new HiveLockObject(dbObj.getName(), null);
-
-    List<HiveLock> locks = lockMgr.getLocks(obj, false, false);
-    if ((locks == null) || (locks.isEmpty())) {
-      throw new HiveException("Database " + dbName + " is not locked ");
-    }
-
-    for (HiveLock lock: locks) {
-      lockMgr.unlock(lock);
-
-    }
-    return 0;
-  }
-
-  private HiveLockObject getHiveObject(String tabName,
-      Map<String, String> partSpec) throws HiveException {
-    Table  tbl = db.getTable(tabName);
-    if (tbl == null) {
-      throw new HiveException("Table " + tabName + " does not exist ");
-    }
-
-    HiveLockObject obj = null;
-
-    if  (partSpec == null) {
-      obj = new HiveLockObject(tbl, null);
-    }
-    else {
-      Partition par = db.getPartition(tbl, partSpec, false);
-      if (par == null) {
-        throw new HiveException("Partition " + partSpec + " for table " + tabName + " does not exist");
-      }
-      obj = new HiveLockObject(par, null);
-    }
-    return obj;
+    return txnManager.unlockDatabase(db, unlockDb);
   }
 
   /**
@@ -2863,29 +2749,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int unlockTable(UnlockTableDesc unlockTbl) throws HiveException {
     Context ctx = driverContext.getCtx();
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    if (!txnManager.supportsExplicitLock()) {
-      throw new HiveException(ErrorMsg.LOCK_REQUEST_UNSUPPORTED,
-          conf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER));
-    }
-    HiveLockManager lockMgr = txnManager.getLockManager();
-    if (lockMgr == null) {
-      throw new HiveException("unlock Table LockManager not specified");
-    }
-
-    String tabName = unlockTbl.getTableName();
-    HiveLockObject obj = getHiveObject(tabName, unlockTbl.getPartSpec());
-
-    List<HiveLock> locks = lockMgr.getLocks(obj, false, false);
-    if ((locks == null) || (locks.isEmpty())) {
-      throw new HiveException("Table " + tabName + " is not locked ");
-    }
-    Iterator<HiveLock> locksIter = locks.iterator();
-    while (locksIter.hasNext()) {
-      HiveLock lock = locksIter.next();
-      lockMgr.unlock(lock);
-    }
-
-    return 0;
+    return txnManager.unlockTable(db, unlockTbl);
   }
 
   /**
@@ -3345,17 +3209,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return builder;
   }
 
-  private void setAlterProtectMode(boolean protectModeEnable,
-      AlterTableDesc.ProtectModeType protectMode,
-      ProtectMode mode) {
-    if (protectMode == AlterTableDesc.ProtectModeType.OFFLINE) {
-      mode.offline = protectModeEnable;
-    } else if (protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
-      mode.noDrop = protectModeEnable;
-    } else if (protectMode == AlterTableDesc.ProtectModeType.NO_DROP_CASCADE) {
-      mode.noDropCascade = protectModeEnable;
-    }
-  }
   /**
    * Alter a given table.
    *
@@ -3588,20 +3441,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTbl.getSerdeName() != null) {
         sd.getSerdeInfo().setSerializationLib(alterTbl.getSerdeName());
       }
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
-      boolean protectModeEnable = alterTbl.isProtectModeEnable();
-      AlterTableDesc.ProtectModeType protectMode = alterTbl.getProtectModeType();
-
-      ProtectMode mode = null;
-      if (part != null) {
-        mode = part.getProtectMode();
-        setAlterProtectMode(protectModeEnable, protectMode, mode);
-        part.setProtectMode(mode);
-      } else {
-        mode = tbl.getProtectMode();
-        setAlterProtectMode(protectModeEnable,protectMode, mode);
-        tbl.setProtectMode(mode);
-      }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       // validate sort columns and bucket columns
@@ -3770,7 +3609,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                             dropTbl.getPartSpecs(),
                             PartitionDropOptions.instance()
                                                 .deleteData(true)
-                                                .ignoreProtection(dropTbl.getIgnoreProtection())
                                                 .ifExists(true)
                                                 .purgeData(dropTbl.getIfPurge()));
     for (Partition partition : droppedParts) {
@@ -3799,11 +3637,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               "Cannot drop a base table with DROP VIEW");
         }
       }
-    }
-
-    if (tbl != null && !tbl.canDrop()) {
-      throw new HiveException("Table " + tbl.getTableName() +
-          " is protected from being dropped");
     }
 
     ReplicationSpec replicationSpec = dropTbl.getReplicationSpec();
@@ -3848,24 +3681,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     int partitionBatchSize = HiveConf.getIntVar(conf,
         ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
-
-    // We should check that all the partitions of the table can be dropped
-    if (tbl != null && tbl.isPartitioned()) {
-      List<String> partitionNames = db.getPartitionNames(tbl.getDbName(), tbl.getTableName(), (short)-1);
-
-      for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
-        List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
-            partitionNames.size()));
-        List<Partition> listPartitions = db.getPartitionsByNames(tbl, partNames);
-        for (Partition p: listPartitions) {
-          if (!p.canDrop()) {
-            throw new HiveException("Table " + tbl.getTableName() +
-                " Partition" + p.getName() +
-                " is protected from being dropped");
-          }
-        }
-      }
-    }
 
     // drop the table
     db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());

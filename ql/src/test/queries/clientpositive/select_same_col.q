@@ -1,5 +1,6 @@
-
 set hive.cbo.enable=true;
+
+-- SORT_BEFORE_DIFF
 
 drop table srclimit;
 create table srclimit as select * from src limit 10;

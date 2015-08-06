@@ -206,12 +206,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // initialize destination table/partition
     TableSpec ts = new TableSpec(db, conf, (ASTNode) tableTree);
 
-    if (ts.tableHandle.isOffline()){
-      throw new SemanticException(
-          ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(":Table " + ts.tableName));
-    }
-
-    if (ts.tableHandle.isView()) {
+   if (ts.tableHandle.isView()) {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
     }
     if (ts.tableHandle.isNonNative()) {
@@ -255,10 +250,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       try{
         Partition part = Hive.get().getPartition(ts.tableHandle, partSpec, false);
         if (part != null) {
-          if (part.isOffline()) {
-            throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
-                getMsg(ts.tableName + ":" + part.getName()));
-          }
           if (isOverWrite){
             outputs.add(new WriteEntity(part, WriteEntity.WriteType.INSERT_OVERWRITE));
           } else {
@@ -335,7 +326,17 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void ensureFileFormatsMatch(TableSpec ts, URI fromURI) throws SemanticException {
-    Class<? extends InputFormat> destInputFormat = ts.tableHandle.getInputFormatClass();
+    final Class<? extends InputFormat> destInputFormat;
+    try {
+      if (ts.getPartSpec() == null || ts.getPartSpec().isEmpty()) {
+        destInputFormat = ts.tableHandle.getInputFormatClass();
+      } else {
+        destInputFormat = ts.partHandle.getInputFormatClass();
+      }
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
+
     // Other file formats should do similar check to make sure file formats match
     // when doing LOAD DATA .. INTO TABLE
     if (OrcInputFormat.class.equals(destInputFormat)) {

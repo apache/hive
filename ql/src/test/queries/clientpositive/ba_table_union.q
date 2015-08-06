@@ -7,7 +7,7 @@ describe extended ba_test;
 
 from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary);
 
-select * from ( select key  from src where key < 50 union all select cast(ba_key as string) as key from ba_test limit 50) unioned order by key limit 10;
+select * from ( select key  from src where key < 50 union all select cast(ba_key as string) as key from ba_test order by key limit 50) unioned order by key limit 10;
 
 drop table ba_test;
 

@@ -32,6 +32,7 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rex.RexNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
@@ -75,10 +76,18 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
     JoinPredicateInfo joinPredInfo;
     if (call.rel(0) instanceof HiveMultiJoin) {
       HiveMultiJoin multiJoin = call.rel(0);
-      joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(multiJoin);
+      try {
+        joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(multiJoin);
+      } catch (CalciteSemanticException e) {
+        throw new RuntimeException(e);
+      }
     } else if (call.rel(0) instanceof Join) {
       Join join = call.rel(0);
-      joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(join);
+      try {
+        joinPredInfo =  HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(join);
+      } catch (CalciteSemanticException e) {
+        throw new RuntimeException(e);
+      }
     } else {
       return;
     }

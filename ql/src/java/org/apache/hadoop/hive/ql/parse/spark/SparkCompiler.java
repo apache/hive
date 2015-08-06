@@ -19,10 +19,8 @@ package org.apache.hadoop.hive.ql.parse.spark;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +33,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -44,12 +43,14 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.ForwardWalker;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -58,7 +59,10 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
+import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
+import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruningBySize;
+import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
@@ -66,13 +70,14 @@ import org.apache.hadoop.hive.ql.optimizer.physical.SparkCrossProductCheck;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
+import org.apache.hadoop.hive.ql.optimizer.spark.CombineEquivalentWorkResolver;
 import org.apache.hadoop.hive.ql.optimizer.spark.SetSparkReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkJoinHintOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkJoinOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSkewJoinResolver;
-import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.spark.SplitSparkWorkResolver;
+import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -82,7 +87,6 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
@@ -101,21 +105,69 @@ public class SparkCompiler extends TaskCompiler {
   protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
     PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
-    // Sequence of TableScan operators to be walked
-    Deque<Operator<? extends OperatorDesc>> deque = new LinkedList<Operator<? extends OperatorDesc>>();
-    deque.addAll(pCtx.getTopOps().values());
 
-    OptimizeSparkProcContext procCtx = new OptimizeSparkProcContext(conf, pCtx, inputs, outputs, deque);
-    // create a walker which walks the tree in a DFS manner while maintaining
-    // the operator stack.
+    OptimizeSparkProcContext procCtx = new OptimizeSparkProcContext(conf, pCtx, inputs, outputs);
+
+    // Run Spark Dynamic Partition Pruning
+    runDynamicPartitionPruning(procCtx);
+
+    // Annotation OP tree with statistics
+    runStatsAnnotation(procCtx);
+
+    // Run Join releated optimizations
+    runJoinOptimizations(procCtx);
+
+    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
+  }
+
+  private void runStatsAnnotation(OptimizeSparkProcContext procCtx) throws SemanticException {
+    new AnnotateWithStatistics().transform(procCtx.getParseContext());
+    new AnnotateWithOpTraits().transform(procCtx.getParseContext());
+  }
+
+  private void runDynamicPartitionPruning(OptimizeSparkProcContext procCtx)
+      throws SemanticException {
+    if (!conf.getBoolVar(HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+      return;
+    }
+
+    ParseContext parseContext = procCtx.getParseContext();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(
+        new RuleRegExp(new String("Dynamic Partition Pruning"),
+            FilterOperator.getOperatorName() + "%"),
+        new DynamicPartitionPruningOptimization());
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    GraphWalker ogw = new ForwardWalker(disp);
+
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(parseContext.getTopOps().values());
+    ogw.startWalking(topNodes, null);
+
+    // need a new run of the constant folding because we might have created lots
+    // of "and true and true" conditions.
+    if(procCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      new ConstantPropagate().transform(parseContext);
+    }
+  }
+
+  private void runJoinOptimizations(OptimizeSparkProcContext procCtx) throws SemanticException {
+    ParseContext pCtx = procCtx.getParseContext();
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("Set parallelism - ReduceSink",
-      ReduceSinkOperator.getOperatorName() + "%"),
-      new SetSparkReducerParallelism());
+            ReduceSinkOperator.getOperatorName() + "%"),
+        new SetSparkReducerParallelism());
 
     opRules.put(new TypeRule(JoinOperator.class), new SparkJoinOptimizer(pCtx));
 
     opRules.put(new TypeRule(MapJoinOperator.class), new SparkJoinHintOptimizer(pCtx));
+
+    opRules.put(new RuleRegExp("Disabling Dynamic Partition Pruning By Size",
+        SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
+        new SparkRemoveDynamicPruningBySize());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -126,7 +178,6 @@ public class SparkCompiler extends TaskCompiler {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
     ogw.startWalking(topNodes, null);
-    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
 
   /**
@@ -137,19 +188,89 @@ public class SparkCompiler extends TaskCompiler {
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
     PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
-    GenSparkUtils.getUtils().resetSequenceNumber();
+
+    GenSparkUtils utils = GenSparkUtils.getUtils();
+    utils.resetSequenceNumber();
 
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
-    GenSparkWork genSparkWork = new GenSparkWork(GenSparkUtils.getUtils());
-
     GenSparkProcContext procCtx = new GenSparkProcContext(
         conf, tempParseContext, mvTask, rootTasks, inputs, outputs, pCtx.getTopOps());
 
+    // -------------------------------- First Pass ---------------------------------- //
+    // Identify SparkPartitionPruningSinkOperators, and break OP tree if necessary
+
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(new RuleRegExp("Clone OP tree for PartitionPruningSink",
+            SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
+        new SplitOpTreeForDPP());
+
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
+
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(pCtx.getTopOps().values());
+    ogw.startWalking(topNodes, null);
+
+    // -------------------------------- Second Pass ---------------------------------- //
+    // Process operator tree in two steps: first we process the extra op trees generated
+    // in the first pass. Then we process the main op tree, and the result task will depend
+    // on the task generated in the first pass.
+    topNodes.clear();
+    topNodes.addAll(procCtx.topOps.values());
+    generateTaskTreeHelper(procCtx, topNodes);
+
+    // If this set is not empty, it means we need to generate a separate task for collecting
+    // the partitions used.
+    if (!procCtx.clonedPruningTableScanSet.isEmpty()) {
+      SparkTask pruningTask = SparkUtilities.createSparkTask(conf);
+      SparkTask mainTask = procCtx.currentTask;
+      pruningTask.addDependentTask(procCtx.currentTask);
+      procCtx.rootTasks.remove(procCtx.currentTask);
+      procCtx.rootTasks.add(pruningTask);
+      procCtx.currentTask = pruningTask;
+
+      topNodes.clear();
+      topNodes.addAll(procCtx.clonedPruningTableScanSet);
+      generateTaskTreeHelper(procCtx, topNodes);
+
+      procCtx.currentTask = mainTask;
+    }
+
+    // -------------------------------- Post Pass ---------------------------------- //
+
+    // we need to clone some operator plans and remove union operators still
+    for (BaseWork w : procCtx.workWithUnionOperators) {
+      GenSparkUtils.getUtils().removeUnionOperators(conf, procCtx, w);
+    }
+
+    // we need to fill MapWork with 'local' work and bucket information for SMB Join.
+    GenSparkUtils.getUtils().annotateMapWork(procCtx);
+
+    // finally make sure the file sink operators are set up right
+    for (FileSinkOperator fileSink : procCtx.fileSinkSet) {
+      GenSparkUtils.getUtils().processFileSink(procCtx, fileSink);
+    }
+
+    // Process partition pruning sinks
+    for (Operator<?> prunerSink : procCtx.pruningSinkSet) {
+      utils.processPartitionPruningSink(procCtx, (SparkPartitionPruningSinkOperator) prunerSink);
+    }
+
+    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
+  }
+
+  private void generateTaskTreeHelper(GenSparkProcContext procCtx, List<Node> topNodes)
+    throws SemanticException {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    GenSparkWork genSparkWork = new GenSparkWork(GenSparkUtils.getUtils());
+
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"), genSparkWork);
+
+    opRules.put(new RuleRegExp("Split Work - SparkPartitionPruningSink",
+        SparkPartitionPruningSinkOperator.getOperatorName() + "%"), genSparkWork);
 
     opRules.put(new TypeRule(MapJoinOperator.class), new SparkReduceSinkMapJoinProc());
 
@@ -185,8 +306,10 @@ public class SparkCompiler extends TaskCompiler {
      *                         SMBJoinOP
      *
      * Some of the other processors are expecting only one traversal beyond SMBJoinOp.
-     * We need to traverse from the big-table path only, and stop traversing on the small-table path once we reach SMBJoinOp.
-     * Also add some SMB join information to the context, so we can properly annotate the MapWork later on.
+     * We need to traverse from the big-table path only, and stop traversing on the
+     * small-table path once we reach SMBJoinOp.
+     * Also add some SMB join information to the context, so we can properly annotate
+     * the MapWork later on.
      */
     opRules.put(new TypeRule(SMBMapJoinOperator.class),
       new NodeProcessor() {
@@ -218,25 +341,8 @@ public class SparkCompiler extends TaskCompiler {
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
-    List<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pCtx.getTopOps().values());
     GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
-
-    // we need to clone some operator plans and remove union operators still
-    for (BaseWork w: procCtx.workWithUnionOperators) {
-      GenSparkUtils.getUtils().removeUnionOperators(conf, procCtx, w);
-    }
-
-    // we need to fill MapWork with 'local' work and bucket information for SMB Join.
-    GenSparkUtils.getUtils().annotateMapWork(procCtx);
-
-    // finally make sure the file sink operators are set up right
-    for (FileSinkOperator fileSink: procCtx.fileSinkSet) {
-      GenSparkUtils.getUtils().processFileSink(procCtx, fileSink);
-    }
-
-    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
   }
 
   @Override
@@ -336,6 +442,8 @@ public class SparkCompiler extends TaskCompiler {
     } else {
       LOG.debug("Skipping stage id rearranger");
     }
+
+    new CombineEquivalentWorkResolver().resolve(physicalCtx);
 
     PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
     return;

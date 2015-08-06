@@ -143,4 +143,18 @@ public class JoinCondDesc implements Serializable {
 
     return sb.toString();
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof JoinCondDesc)) {
+      return false;
+    }
+
+    JoinCondDesc other = (JoinCondDesc) obj;
+    if (this.type != other.type || this.left != other.left ||
+      this.right != other.right || this.preserved != other.preserved) {
+      return false;
+    }
+    return true;
+  }
 }

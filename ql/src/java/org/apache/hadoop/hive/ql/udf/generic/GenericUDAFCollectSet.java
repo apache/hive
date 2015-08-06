@@ -17,13 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMkCollectionEvaluator.BufferType;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -31,8 +28,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 @Description(name = "collect_set", value = "_FUNC_(x) - Returns a set of objects with duplicate elements eliminated")
 public class GenericUDAFCollectSet extends AbstractGenericUDAFResolver {
-
-  static final Log LOG = LogFactory.getLog(GenericUDAFCollectSet.class.getName());
 
   public GenericUDAFCollectSet() {
   }

@@ -54,7 +54,6 @@ tmp_values_col2     	string
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
 Table Type:         	MANAGED_TABLE       	 

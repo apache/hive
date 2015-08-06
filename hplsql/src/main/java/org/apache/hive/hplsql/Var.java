@@ -32,7 +32,7 @@ import java.sql.Timestamp;
 public class Var {
 
 	// Data types
-	public enum Type {BOOL, CURSOR, DATE, DEC, FILE, IDENT, BIGINT, INTERVAL, STRING, STRINGLIST, TIMESTAMP, NULL};
+	public enum Type {BOOL, CURSOR, DATE, DECIMAL, FILE, IDENT, BIGINT, INTERVAL, RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL};
 	public static Var Empty = new Var();
 	public static Var Null = new Var(Type.NULL);
 	
@@ -61,7 +61,7 @@ public class Var {
 	}
 	
 	public Var(BigDecimal value) {
-    this.type = Type.DEC;
+    this.type = Type.DECIMAL;
     this.value = value;
   }
   
@@ -152,6 +152,11 @@ public class Var {
 	  else if (type == Type.STRING) {
 	    cast(val.toString());
 	  }
+	  else if (type == Type.DECIMAL) {
+	    if (val.type == Type.BIGINT) {
+	      value = BigDecimal.valueOf(val.longValue());
+	    }
+	  }
 	  else if (type == Type.DATE) {
 	    value = Utils.toDate(val.toString());
     }
@@ -194,6 +199,17 @@ public class Var {
     return this;
   }
 	
+	public Var setValue(Boolean val) {
+    if (type == Type.BOOL) {
+      value = val;
+    }
+    return this;
+  }
+	
+	public void setValue(Object value) {
+    this.value = value;
+  }
+	
 	/**
    * Set the new value from a result set
    */
@@ -202,8 +218,12 @@ public class Var {
     if (type == java.sql.Types.CHAR || type == java.sql.Types.VARCHAR) {
       cast(new Var(rs.getString(idx)));
     }
-    else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT) {
+    else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT ||
+        type == java.sql.Types.SMALLINT || type == java.sql.Types.TINYINT) {
       cast(new Var(new Long(rs.getLong(idx))));
+    }
+    else if (type == java.sql.Types.DECIMAL || type == java.sql.Types.NUMERIC) {
+      cast(new Var(rs.getBigDecimal(idx)));
     }
     return this;
   }
@@ -228,12 +248,16 @@ public class Var {
   public static Type defineType(String type) {
     if (type == null) {
       return Type.NULL;
-    }    
-    else if (type.equalsIgnoreCase("INT") || type.equalsIgnoreCase("INTEGER")) {
+    }
+    else if (type.equalsIgnoreCase("INT") || type.equalsIgnoreCase("INTEGER") || type.equalsIgnoreCase("BIGINT") ||
+      type.equalsIgnoreCase("SMALLINT") || type.equalsIgnoreCase("TINYINT")) {
       return Type.BIGINT;
     }
     else if (type.equalsIgnoreCase("CHAR") || type.equalsIgnoreCase("VARCHAR") || type.equalsIgnoreCase("STRING")) {
       return Type.STRING;
+    }
+    else if (type.equalsIgnoreCase("DEC") || type.equalsIgnoreCase("DECIMAL") || type.equalsIgnoreCase("NUMERIC")) {
+      return Type.DECIMAL;
     }
     else if (type.equalsIgnoreCase("DATE")) {
       return Type.DATE;
@@ -241,8 +265,14 @@ public class Var {
     else if (type.equalsIgnoreCase("TIMESTAMP")) {
       return Type.TIMESTAMP;
     }
+    else if (type.equalsIgnoreCase("SYS_REFCURSOR")) {
+      return Type.CURSOR;
+    }
     else if (type.equalsIgnoreCase("UTL_FILE.FILE_TYPE")) {
       return Type.FILE;
+    }
+    else if (type.toUpperCase().startsWith("RESULT_SET_LOCATOR")) {
+      return Type.RS_LOCATOR;
     }
     return Type.NULL;
   }
@@ -346,6 +376,16 @@ public class Var {
 	  }
 	  return -1;
 	}
+	
+	/**
+   * Return a long integer value
+   */
+  public long longValue() {
+    if (type == Type.BIGINT) {
+      return ((Long)value).longValue();
+    }
+    return -1;
+  }
 	
 	/**
 	 * Return true/false for BOOL type
