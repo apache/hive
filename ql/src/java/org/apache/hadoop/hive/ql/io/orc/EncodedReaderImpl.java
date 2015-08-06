@@ -374,8 +374,9 @@ public class EncodedReaderImpl implements EncodedReader {
     }
 
     if (!result.value) {
-      if (isDataReaderOpen) {
+      if (!isDataReaderOpen) {
         this.dataReader.open();
+        isDataReaderOpen = true;
       }
       dataReader.readFileData(toRead.next, stripeOffset, cache.getAllocator().isDirectAlloc());
     }
