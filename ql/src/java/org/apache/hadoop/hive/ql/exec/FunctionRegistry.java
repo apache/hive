@@ -1281,7 +1281,7 @@ public final class FunctionRegistry {
           bridge.getUdfClassName());
     } else if (genericUDF instanceof GenericUDFMacro) {
       GenericUDFMacro bridge = (GenericUDFMacro) genericUDF;
-      clonedUDF = new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),
+      clonedUDF = new GenericUDFMacro(bridge.getMacroName(), bridge.getBody().clone(),
           bridge.getColNames(), bridge.getColTypes());
     } else {
       clonedUDF = ReflectionUtils.newInstance(genericUDF.getClass(), null);
