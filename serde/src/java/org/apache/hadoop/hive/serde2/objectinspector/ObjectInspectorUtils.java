@@ -1073,6 +1073,21 @@ public final class ObjectInspectorUtils {
               ObjectInspectorCopyOption.WRITABLE
             ),
             (Map<?, ?>)writableValue);
+      case STRUCT:
+          StructObjectInspector soi = (StructObjectInspector) oi;
+          List<? extends StructField> fields = soi.getAllStructFieldRefs();
+          List<String> fieldNames = new ArrayList<String>(fields.size());
+          List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(
+            fields.size());
+          for (StructField f : fields) {
+            fieldNames.add(f.getFieldName());
+            fieldObjectInspectors.add(getStandardObjectInspector(f
+            .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE));
+          }
+          return ObjectInspectorFactory.getStandardConstantStructObjectInspector(
+            fieldNames,
+            fieldObjectInspectors,
+            (List<?>)writableValue);
       default:
        throw new IllegalArgumentException(
            writableOI.getCategory() + " not yet supported for constant OI");
@@ -1088,6 +1103,7 @@ public final class ObjectInspectorUtils {
       case PRIMITIVE:
       case LIST:
       case MAP:
+      case STRUCT:
         return true;
       default:
         return false;

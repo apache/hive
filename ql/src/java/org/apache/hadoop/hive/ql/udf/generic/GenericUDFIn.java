@@ -32,8 +32,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
+
+import com.esotericsoftware.minlog.Log;
 
 /**
  * GenericUDFIn
@@ -163,6 +166,14 @@ public class GenericUDFIn extends GenericUDF {
       case MAP: {
         if (constantInSet.contains(((MapObjectInspector) compareOI).getMap(conversionHelper
             .convertIfNecessary(arguments[0].get(), argumentOIs[0])))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
+      }
+      case STRUCT: {
+        if (constantInSet.contains(((StructObjectInspector) compareOI).getStructFieldsDataAsList(conversionHelper
+           .convertIfNecessary(arguments[0].get(), argumentOIs[0])))) {
           bw.set(true);
           return bw;
         }
