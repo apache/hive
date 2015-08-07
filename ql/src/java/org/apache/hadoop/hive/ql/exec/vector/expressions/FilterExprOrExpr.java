@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
@@ -28,10 +30,86 @@ public class FilterExprOrExpr extends VectorExpression {
   private static final long serialVersionUID = 1L;
   private transient final int[] initialSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
   private transient int[] unselected = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private transient int[] unselectedCopy = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private transient int[] difference = new int[VectorizedRowBatch.DEFAULT_SIZE];
   private transient final int[] tmp = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
   public FilterExprOrExpr() {
     super();
+  }
+
+  /**
+   * Remove (subtract) members from an array and produce the results into
+   * a difference array.
+
+   * @param all
+   *          The selected array containing all members.
+   * @param allSize
+   *          The size of all.
+   * @param remove
+   *          The indices to remove.  They must all be present in input selected array.
+   * @param removeSize
+   *          The size of remove.
+   * @param difference
+   *          The resulting difference -- the all array indices not in the
+   *          remove array.
+   * @return
+   *          The resulting size of the difference array.
+   */
+  private int subtract(int[] all, int allSize,
+      int[] remove, int removeSize, int[] difference) {
+
+    // UNDONE: Copied from VectorMapJoinOuterGenerateResultOperator.
+
+    Preconditions.checkState((all != remove) && (remove != difference) && (difference != all));
+    
+    // Comment out these checks when we are happy..
+    if (!verifyMonotonicallyIncreasing(all, allSize)) {
+      throw new RuntimeException("all is not in sort order and unique");
+    }
+    if (!verifyMonotonicallyIncreasing(remove, removeSize)) {
+      throw new RuntimeException("remove is not in sort order and unique");
+    }
+
+    int differenceCount = 0;
+
+    // Determine which rows are left.
+    int removeIndex = 0;
+    for (int i = 0; i < allSize; i++) {
+      int candidateIndex = all[i];
+      if (removeIndex < removeSize && candidateIndex == remove[removeIndex]) {
+        removeIndex++;
+      } else {
+        difference[differenceCount++] = candidateIndex;
+      }
+    }
+
+    if (removeIndex != removeSize) {
+      throw new RuntimeException("Not all batch indices removed");
+    }
+
+    if (!verifyMonotonicallyIncreasing(difference, differenceCount)) {
+      throw new RuntimeException("difference is not in sort order and unique");
+    }
+
+    return differenceCount;
+  }
+
+  public boolean verifyMonotonicallyIncreasing(int[] selected, int size) {
+
+    if (size == 0) {
+      return true;
+    }
+    int prevBatchIndex = selected[0];
+
+    for (int i = 1; i < size; i++) {
+      int batchIndex = selected[i];
+      if (batchIndex <= prevBatchIndex) {
+        return false;
+      }
+      prevBatchIndex = batchIndex;
+    }
+    return true;
   }
 
   @Override
@@ -42,7 +120,6 @@ public class FilterExprOrExpr extends VectorExpression {
     }
 
     VectorExpression childExpr1 = this.childExpressions[0];
-    VectorExpression childExpr2 = this.childExpressions[1];
 
     boolean prevSelectInUse = batch.selectedInUse;
 
@@ -80,17 +157,55 @@ public class FilterExprOrExpr extends VectorExpression {
       }
     }
 
-    // Evaluate second child expression over unselected ones only.
+    int newSize = sizeAfterFirstChild;
+
     batch.selected = unselected;
     batch.size = unselectedSize;
 
-    childExpr2.evaluate(batch);
+    if (unselectedSize > 0) {
 
-    // Merge the result of last evaluate to previous evaluate.
-    int newSize = batch.size + sizeAfterFirstChild;
-    for (int i = 0; i < batch.size; i++) {
-      tmp[batch.selected[i]] = 1;
+      // Evaluate subsequent child expression over unselected ones only.
+
+      final int childrenCount = this.childExpressions.length;
+      int childIndex = 1;
+      while (true) {
+  
+        boolean isLastChild = (childIndex + 1 >= childrenCount);
+  
+        // When we have yet another child beyond the current one... save unselected.
+        if (!isLastChild) {
+          System.arraycopy(batch.selected, 0, unselectedCopy, 0, unselectedSize);
+        }
+  
+        VectorExpression childExpr = this.childExpressions[childIndex];
+  
+        childExpr.evaluate(batch);
+  
+        // Merge the result of last evaluate to previous evaluate.
+        newSize += batch.size;
+        for (int i = 0; i < batch.size; i++) {
+          tmp[batch.selected[i]] = 1;
+        }
+
+        if (isLastChild) {
+          break;
+        }
+
+        unselectedSize = subtract(unselectedCopy, unselectedSize, batch.selected, batch.size,
+            difference);
+        if (unselectedSize == 0) {
+          break;
+        }
+        System.arraycopy(difference, 0, batch.selected, 0, unselectedSize);
+        batch.size = unselectedSize;
+
+        childIndex++;
+      }
     }
+
+    // Important: Restore the batch's selected array.
+    batch.selected = selectedAfterFirstChild;
+
     int k = 0;
     for (int j = 0; j < n; j++) {
       int i = initialSelected[j];
@@ -99,16 +214,11 @@ public class FilterExprOrExpr extends VectorExpression {
       }
     }
 
-
     batch.size = newSize;
     if (newSize == n) {
       // Filter didn't do anything
       batch.selectedInUse = prevSelectInUse;
     }
-
-    // unselected array is taken away by the row batch
-    // so take the row batch's original one.
-    unselected = selectedAfterFirstChild;
   }
 
   @Override
@@ -123,6 +233,10 @@ public class FilterExprOrExpr extends VectorExpression {
 
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
+
+    // IMPORTANT NOTE: For Multi-OR, the VectorizationContext class will catch cases with 3 or
+    //                 more parameters...
+
     return (new VectorExpressionDescriptor.Builder())
         .setMode(
             VectorExpressionDescriptor.Mode.FILTER)
