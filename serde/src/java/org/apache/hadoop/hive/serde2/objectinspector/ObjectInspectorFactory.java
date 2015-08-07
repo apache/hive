@@ -253,7 +253,6 @@ public final class ObjectInspectorFactory {
     return new StandardConstantListObjectInspector(listElementObjectInspector, constantValue);
   }
 
-
   static ConcurrentHashMap<List<ObjectInspector>, StandardMapObjectInspector> cachedStandardMapObjectInspector =
       new ConcurrentHashMap<List<ObjectInspector>, StandardMapObjectInspector>();
 
@@ -335,6 +334,12 @@ public final class ObjectInspectorFactory {
       }
     }
     return result;
+  }
+
+  public static StandardConstantStructObjectInspector getStandardConstantStructObjectInspector(
+    List<String> structFieldNames,
+    List<ObjectInspector> structFieldObjectInspectors,  List<?> value) {
+    return new StandardConstantStructObjectInspector(structFieldNames, structFieldObjectInspectors, value);
   }
 
   static ConcurrentHashMap<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector =

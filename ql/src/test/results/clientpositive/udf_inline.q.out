@@ -33,13 +33,13 @@ STAGE PLANS:
           Select Operator
             expressions: array(struct(1,'dude!'),struct(2,'Wheres'),struct(3,'my car?')) (type: array<struct<col1:int,col2:string>>)
             outputColumnNames: _col0
-            Statistics: Num rows: 500 Data size: 1220000 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 32000 Basic stats: COMPLETE Column stats: COMPLETE
             UDTF Operator
-              Statistics: Num rows: 500 Data size: 1220000 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 32000 Basic stats: COMPLETE Column stats: COMPLETE
               function name: inline
               Limit
                 Number of rows: 2
-                Statistics: Num rows: 2 Data size: 4880 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                 ListSink
 
 PREHOOK: query: SELECT inline( 
