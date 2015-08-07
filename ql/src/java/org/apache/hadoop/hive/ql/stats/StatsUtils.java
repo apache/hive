@@ -60,11 +60,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantMapObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
@@ -939,15 +941,21 @@ public class StatsUtils {
       }
       break;
     case STRUCT:
-      StructObjectInspector soi = (StructObjectInspector) oi;
+      if (oi instanceof StandardConstantStructObjectInspector) {
+        // constant map projection of known length
+        StandardConstantStructObjectInspector scsoi = (StandardConstantStructObjectInspector) oi;
+        result += getSizeOfStruct(scsoi);
+      }  else {
+        StructObjectInspector soi = (StructObjectInspector) oi;
 
-      // add constant object overhead for struct
-      result += JavaDataModel.get().object();
+        // add constant object overhead for struct
+        result += JavaDataModel.get().object();
 
-      // add constant struct field names references overhead
-      result += soi.getAllStructFieldRefs().size() * JavaDataModel.get().ref();
-      for (StructField field : soi.getAllStructFieldRefs()) {
-        result += getSizeOfComplexTypes(conf, field.getFieldObjectInspector());
+        // add constant struct field names references overhead
+        result += soi.getAllStructFieldRefs().size() * JavaDataModel.get().ref();
+        for (StructField field : soi.getAllStructFieldRefs()) {
+          result += getSizeOfComplexTypes(conf, field.getFieldObjectInspector());
+        }
       }
       break;
     case UNION:
@@ -1050,6 +1058,24 @@ public class StatsUtils {
     // add additional overhead of each map entries
     result += JavaDataModel.get().hashMap(map.entrySet().size());
     return result;
+  }
+
+  public static long getSizeOfStruct(StandardConstantStructObjectInspector soi) {
+	long result = 0;
+    // add constant object overhead for struct
+    result += JavaDataModel.get().object();
+
+    // add constant struct field names references overhead
+    result += soi.getAllStructFieldRefs().size() * JavaDataModel.get().ref();
+    List<?> value = soi.getWritableConstantValue();
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    if (value == null || value.size() != fields.size()) {
+      return result;
+    }
+    for (int i = 0; i < fields.size(); i++) {
+      result += getWritableSize(fields.get(i).getFieldObjectInspector(), value.get(i));
+    }
+	return result;
   }
 
   /**
