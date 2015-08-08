@@ -1279,8 +1279,16 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public void setReadOnly(boolean readOnly) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    // Per JDBC spec, if the connection is closed a SQLException should be thrown.
+    if (isClosed) {
+      throw new SQLException("Connection is closed");
+    }
+    // Per JDBC spec, the request defines a hint to the driver to enable database optimizations.
+    // The read-only mode for this connection is disabled and cannot be enabled (isReadOnly always returns false).
+    // The most correct behavior is to throw only if the request tries to enable the read-only mode.
+    if(readOnly) {
+      throw new SQLException("Enabling read-only mode not supported");
+    }
   }
 
   /*
