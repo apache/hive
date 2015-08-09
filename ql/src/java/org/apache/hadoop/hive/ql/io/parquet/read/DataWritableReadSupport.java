@@ -225,9 +225,13 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, tableSchema.toString());
 
       List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
-      MessageType requestedSchemaByUser = getSchemaByIndex(tableSchema, columnNamesList, indexColumnsWanted);
-
-      return new ReadContext(requestedSchemaByUser, contextMetadata);
+      if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
+        MessageType requestedSchemaByUser =
+            getSchemaByIndex(tableSchema, columnNamesList, indexColumnsWanted);
+        return new ReadContext(requestedSchemaByUser, contextMetadata);
+      } else {
+        return new ReadContext(tableSchema, contextMetadata);
+      }
     } else {
       contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, fileSchema.toString());
       return new ReadContext(fileSchema, contextMetadata);
