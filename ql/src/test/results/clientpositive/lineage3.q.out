@@ -1454,44 +1454,12 @@ POSTHOOK: LINEAGE: {
       "edgeType": "PROJECTION"
     },
     {
-      "sources": [
-        2
-      ],
-      "targets": [
-        0,
-        1
-      ],
-      "expression": "(UDFToDouble(a.key) > UDFToDouble(300))",
-      "edgeType": "PREDICATE"
-    },
-    {
-      "sources": [],
-      "targets": [
-        0,
-        1
-      ],
-      "expression": "sq_corr_0 is null",
-      "edgeType": "PREDICATE"
-    },
-    {
       "sources": [],
       "targets": [
         0,
         1
       ],
       "expression": "(1 = 1)",
-      "edgeType": "PREDICATE"
-    },
-    {
-      "sources": [
-        2,
-        4
-      ],
-      "targets": [
-        0,
-        1
-      ],
-      "expression": "(UDFToDouble(a.key) = UDFToDouble((UDFToInteger(b.ctinyint) + 300)))",
       "edgeType": "PREDICATE"
     },
     {
@@ -1503,6 +1471,29 @@ POSTHOOK: LINEAGE: {
         1
       ],
       "expression": "(UDFToInteger(b.ctinyint) + 300) is null",
+      "edgeType": "PREDICATE"
+    },
+    {
+      "sources": [
+        2
+      ],
+      "targets": [
+        0,
+        1
+      ],
+      "expression": "(UDFToDouble(a.key) > UDFToDouble(300))",
+      "edgeType": "PREDICATE"
+    },
+    {
+      "sources": [
+        4,
+        2
+      ],
+      "targets": [
+        0,
+        1
+      ],
+      "expression": "(UDFToDouble((UDFToInteger(b.ctinyint) + 300)) = UDFToDouble(a.key))",
       "edgeType": "PREDICATE"
     }
   ],
