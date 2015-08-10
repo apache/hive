@@ -27,12 +27,12 @@ EXPLAIN
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -101,9 +101,16 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -125,13 +132,6 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -140,18 +140,14 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col0 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -440,12 +436,12 @@ POSTHOOK: query: EXPLAIN
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -496,9 +492,16 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -514,13 +517,6 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -529,18 +525,14 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col0 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 3 Data size: 34 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Statistics: Num rows: 3 Data size: 37 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 3 Data size: 37 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
