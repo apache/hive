@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -449,6 +450,9 @@ final class SearchArgumentImpl implements SearchArgument {
         case LONG:
           return ((Number) lit.getValue()).longValue();
         case STRING:
+	  if (lit.getTypeInfo() instanceof CharTypeInfo) {
+            return ((HiveChar) lit.getValue()).getPaddedValue();
+          }
           return StringUtils.stripEnd(lit.getValue().toString(), null);
         case FLOAT:
           return Double.parseDouble(lit.getValue().toString());
