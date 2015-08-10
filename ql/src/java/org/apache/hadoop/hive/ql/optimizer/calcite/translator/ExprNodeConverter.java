@@ -225,23 +225,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     case DECIMAL:
       return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
           lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
-    case VARCHAR: {
-      int varcharLength = lType.getPrecision();
-      // If we cannot use Varchar due to type length restrictions, we use String
-      if (varcharLength < 1 || varcharLength > HiveVarchar.MAX_VARCHAR_LENGTH) {
-        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-      }
-      return new ExprNodeConstantDesc(TypeInfoFactory.getVarcharTypeInfo(varcharLength),
-          new HiveVarchar((String) literal.getValue3(), varcharLength));
-    }
+    case VARCHAR:
     case CHAR: {
-      int charLength = lType.getPrecision();
-      // If we cannot use Char due to type length restrictions, we use String
-      if (charLength < 1 || charLength > HiveChar.MAX_CHAR_LENGTH) {
-        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-      }
-      return new ExprNodeConstantDesc(TypeInfoFactory.getCharTypeInfo(charLength),
-          new HiveChar((String) literal.getValue3(), charLength));
+      return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
     }
     case INTERVAL_YEAR_MONTH: {
       BigDecimal monthsBd = (BigDecimal) literal.getValue();
