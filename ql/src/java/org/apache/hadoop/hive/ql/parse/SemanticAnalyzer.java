@@ -5381,8 +5381,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         GenericUDFOPOr or = new GenericUDFOPOr();
         List<ExprNodeDesc> expressions = new ArrayList<ExprNodeDesc>(2);
-        expressions.add(previous);
         expressions.add(current);
+        expressions.add(previous);
         ExprNodeDesc orExpr =
             new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, or, expressions);
         previous = orExpr;

@@ -64,7 +64,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200)) or ((value) IN ('val_400', 'val_500') and (key) IN (400, 450))) (type: boolean)
+                    predicate: (((value) IN ('val_400', 'val_500') and (key) IN (400, 450)) or ((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200))) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -236,7 +236,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null))) (type: boolean)
+                    predicate: ((((key + key) = 400) or (((key - 100) = 500) and value is not null)) or ((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
@@ -408,7 +408,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200)) or ((value) IN ('val_400', 'val_500') and (key) IN (400, 450))) (type: boolean)
+                    predicate: (((value) IN ('val_400', 'val_500') and (key) IN (400, 450)) or ((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200))) (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -580,7 +580,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null))) (type: boolean)
+                    predicate: ((((key + key) = 400) or (((key - 100) = 500) and value is not null)) or ((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
