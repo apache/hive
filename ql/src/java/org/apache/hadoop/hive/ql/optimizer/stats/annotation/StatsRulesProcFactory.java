@@ -18,8 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,14 +77,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class StatsRulesProcFactory {
 
@@ -259,7 +258,7 @@ public class StatsRulesProcFactory {
 
           // evaluate filter expression and update statistics
           long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
-              neededCols, fop);
+              neededCols, fop, 0);
           Statistics st = parentStats.clone();
 
           if (satisfyPrecondition(parentStats)) {
@@ -297,7 +296,7 @@ public class StatsRulesProcFactory {
 
     private long evaluateExpression(Statistics stats, ExprNodeDesc pred,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        FilterOperator fop) throws CloneNotSupportedException {
+        FilterOperator fop, long evaluatedRowCount) throws CloneNotSupportedException {
       long newNumRows = 0;
       Statistics andStats = null;
 
@@ -316,7 +315,7 @@ public class StatsRulesProcFactory {
           // evaluate children
           for (ExprNodeDesc child : genFunc.getChildren()) {
             newNumRows = evaluateChildExpr(aspCtx.getAndExprStats(), child,
-                aspCtx, neededCols, fop);
+                aspCtx, neededCols, fop, evaluatedRowCount);
             if (satisfyPrecondition(aspCtx.getAndExprStats())) {
               updateStats(aspCtx.getAndExprStats(), newNumRows, true, fop);
             } else {
@@ -324,17 +323,24 @@ public class StatsRulesProcFactory {
             }
           }
         } else if (udf instanceof GenericUDFOPOr) {
-          // for OR condition independently compute and update stats
+          // for OR condition independently compute and update stats.
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            newNumRows = StatsUtils.safeAdd(
-                evaluateChildExpr(stats, child, aspCtx, neededCols, fop), newNumRows);
+            // early exit if OR evaluation yields more rows than input rows
+            if (evaluatedRowCount >= stats.getNumRows()) {
+              evaluatedRowCount = stats.getNumRows();
+            } else {
+              newNumRows = StatsUtils.safeAdd(
+                  evaluateChildExpr(stats, child, aspCtx, neededCols, fop, evaluatedRowCount),
+                  newNumRows);
+              evaluatedRowCount = newNumRows;
+            }
           }
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols, fop);
         } else {
 
           // single predicate condition
-          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, fop);
+          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, fop, evaluatedRowCount);
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
@@ -381,7 +387,7 @@ public class StatsRulesProcFactory {
             long newNumRows = 0;
             for (ExprNodeDesc child : genFunc.getChildren()) {
               newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols,
-                  fop);
+                  fop, 0);
             }
             return numRows - newNumRows;
           } else if (leaf instanceof ExprNodeConstantDesc) {
@@ -439,7 +445,7 @@ public class StatsRulesProcFactory {
 
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        FilterOperator fop) throws CloneNotSupportedException {
+        FilterOperator fop, long evaluatedRowCount) throws CloneNotSupportedException {
 
       long numRows = stats.getNumRows();
 
@@ -525,7 +531,7 @@ public class StatsRulesProcFactory {
           return evaluateColEqualsNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
             || udf instanceof GenericUDFOPNot) {
-          return evaluateExpression(stats, genFunc, aspCtx, neededCols, fop);
+          return evaluateExpression(stats, genFunc, aspCtx, neededCols, fop, evaluatedRowCount);
         }
       }
 
