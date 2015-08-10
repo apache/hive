@@ -374,45 +374,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       }
       FileSystem inpFs = path.getFileSystem(job);
 
-      // Since there is no easy way of knowing whether MAPREDUCE-1597 is present in the tree or not,
-      // we use a configuration variable for the same
-      if (this.mrwork != null && !this.mrwork.getHadoopSupportsSplittable()) {
-        // The following code should be removed, once
-        // https://issues.apache.org/jira/browse/MAPREDUCE-1597 is fixed.
-        // Hadoop does not handle non-splittable files correctly for CombineFileInputFormat,
-        // so don't use CombineFileInputFormat for non-splittable files
-
-        //ie, dont't combine if inputformat is a TextInputFormat and has compression turned on
-
-        if (inputFormat instanceof TextInputFormat) {
-          Queue<Path> dirs = new LinkedList<Path>();
-          FileStatus fStats = inpFs.getFileStatus(path);
-
-          // If path is a directory
-          if (fStats.isDir()) {
-            dirs.offer(path);
-          } else if ((new CompressionCodecFactory(job)).getCodec(path) != null) {
-            //if compresssion codec is set, use HiveInputFormat.getSplits (don't combine)
-            splits = super.getSplits(job, numSplits);
-            return splits;
-          }
-
-          while (dirs.peek() != null) {
-            Path tstPath = dirs.remove();
-            FileStatus[] fStatus = inpFs.listStatus(tstPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-            for (int idx = 0; idx < fStatus.length; idx++) {
-              if (fStatus[idx].isDir()) {
-                dirs.offer(fStatus[idx].getPath());
-              } else if ((new CompressionCodecFactory(job)).getCodec(
-                  fStatus[idx].getPath()) != null) {
-                //if compresssion codec is set, use HiveInputFormat.getSplits (don't combine)
-                splits = super.getSplits(job, numSplits);
-                return splits;
-              }
-            }
-          }
-        }
-      }
       //don't combine if inputformat is a SymlinkTextInputFormat
       if (inputFormat instanceof SymlinkTextInputFormat) {
         splits = super.getSplits(job, numSplits);

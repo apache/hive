@@ -99,14 +99,7 @@ public final class PlanUtils {
 
   @SuppressWarnings("nls")
   public static MapredWork getMapRedWork() {
-    try {
-      MapredWork work = new MapredWork();
-      work.getMapWork().setHadoopSupportsSplittable(Hive.get().getConf().getBoolVar(
-          HiveConf.ConfVars.HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE));
-      return work;
-    } catch (HiveException ex) {
-      throw new RuntimeException(ex);
-    }
+    return new MapredWork();
   }
 
   public static TableDesc getDefaultTableDesc(CreateTableDesc directoryDesc,

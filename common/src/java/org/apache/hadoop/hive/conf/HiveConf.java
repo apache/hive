@@ -1175,8 +1175,6 @@ public class HiveConf extends Configuration {
     HIVEROWOFFSET("hive.exec.rowoffset", false,
         "Whether to provide the row offset virtual column"),
 
-    HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE("hive.hadoop.supports.splittable.combineinputformat", false, ""),
-
     // Optimizer
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false,
         "Whether to enable automatic use of indexes"),
