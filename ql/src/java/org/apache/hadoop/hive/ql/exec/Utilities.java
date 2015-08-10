@@ -382,7 +382,15 @@ public final class Utilities {
           in = new ByteArrayInputStream(planBytes);
           in = new InflaterInputStream(in);
         } else {
-          in = new FileInputStream(localPath.toUri().getPath());
+          try {
+            in = new FileInputStream(localPath.toUri().getPath());
+          } catch (FileNotFoundException fnf) {
+          }
+          // If it is on frontend, localPath does not exist, try
+          // to fetch it on hdfs
+          if (in == null) {
+            in = path.getFileSystem(conf).open(path);
+          }
         }
 
         if(MAP_PLAN_NAME.equals(name)){

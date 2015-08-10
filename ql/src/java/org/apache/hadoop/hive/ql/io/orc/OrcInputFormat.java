@@ -132,7 +132,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   @Override
   public boolean shouldSkipCombine(Path path,
                                    Configuration conf) throws IOException {
-    return (conf.get(AcidUtils.CONF_ACID_KEY) != null) || AcidUtils.isAcid(path, conf);
+    return (conf.getBoolean(AcidUtils.CONF_ACID_KEY, false)) || AcidUtils.isAcid(path, conf);
   }
 
   private static class OrcRecordReader
