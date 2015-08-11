@@ -402,7 +402,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   // This may be invoked before a container is ever assigned to a task. allocateTask... app decides
   // the task is no longer required, and asks for a de-allocation.
   @Override
-  public boolean deallocateTask(Object task, boolean taskSucceeded, TaskAttemptEndReason endReason) {
+  public boolean deallocateTask(Object task, boolean taskSucceeded, TaskAttemptEndReason endReason, String diagnostics) {
     writeLock.lock(); // Updating several local structures
     TaskInfo taskInfo;
     try {
@@ -471,11 +471,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         } else if (!taskSucceeded) {
           nodeInfo.registerUnsuccessfulTaskEnd(false);
           if (endReason != null && EnumSet
-              .of(TaskAttemptEndReason.SERVICE_BUSY, TaskAttemptEndReason.COMMUNICATION_ERROR)
+              .of(TaskAttemptEndReason.EXECUTOR_BUSY, TaskAttemptEndReason.COMMUNICATION_ERROR)
               .contains(endReason)) {
             if (endReason == TaskAttemptEndReason.COMMUNICATION_ERROR) {
               dagStats.registerCommFailure(taskInfo.assignedInstance.getHost());
-            } else if (endReason == TaskAttemptEndReason.SERVICE_BUSY) {
+            } else if (endReason == TaskAttemptEndReason.EXECUTOR_BUSY) {
               dagStats.registerTaskRejected(taskInfo.assignedInstance.getHost());
             }
           }

@@ -342,11 +342,11 @@ public class TestLlapTaskSchedulerService {
     }
 
     void deallocateTask(Object task, boolean succeeded, TaskAttemptEndReason endReason) {
-      ts.deallocateTask(task, succeeded, endReason);
+      ts.deallocateTask(task, succeeded, endReason, null);
     }
 
     void rejectExecution(Object task) {
-      ts.deallocateTask(task, false, TaskAttemptEndReason.SERVICE_BUSY);
+      ts.deallocateTask(task, false, TaskAttemptEndReason.EXECUTOR_BUSY, null);
     }
   }
 

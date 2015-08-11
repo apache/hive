@@ -176,8 +176,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   }
 
   @Override
-  public void registerContainerEnd(ContainerId containerId, ContainerEndReason endReason) {
-    super.registerContainerEnd(containerId, endReason);
+  public void registerContainerEnd(ContainerId containerId, ContainerEndReason endReason, String diagnostics) {
+    super.registerContainerEnd(containerId, endReason, diagnostics);
     if (endReason == ContainerEndReason.INTERNAL_PREEMPTION) {
       LOG.info("Processing containerEnd for container {} caused by internal preemption", containerId);
       TezTaskAttemptID taskAttemptId = entityTracker.getTaskAttemptIdForContainer(containerId);
@@ -257,7 +257,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                     "Unable to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                         containerId + ", Service Busy");
                 getContext().taskKilled(taskSpec.getTaskAttemptID(),
-                    TaskAttemptEndReason.SERVICE_BUSY, "Service Busy");
+                    TaskAttemptEndReason.EXECUTOR_BUSY, "Service Busy");
               } else {
                 // All others from the remote service cause the task to FAIL.
                 LOG.info(
@@ -291,8 +291,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   @Override
   public void unregisterRunningTaskAttempt(final TezTaskAttemptID taskAttemptId,
-                                           TaskAttemptEndReason endReason) {
-    super.unregisterRunningTaskAttempt(taskAttemptId, endReason);
+                                           TaskAttemptEndReason endReason,
+                                           String diagnostics) {
+    super.unregisterRunningTaskAttempt(taskAttemptId, endReason, diagnostics);
 
     if (endReason == TaskAttemptEndReason.INTERNAL_PREEMPTION) {
       LOG.info("Processing taskEnd for task {} caused by internal preemption", taskAttemptId);
