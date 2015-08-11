@@ -16,43 +16,45 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.orc.llap;
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
-public class OrcCacheKey extends OrcBatchKey {
-  public int colIx;
+public class OrcBatchKey {
+  public long file;
+  public int stripeIx, rgIx;
 
-  public OrcCacheKey(long file, int stripeIx, int rgIx, int colIx) {
-    super(file, stripeIx, rgIx);
-    this.colIx = colIx;
+  public OrcBatchKey(long file, int stripeIx, int rgIx) {
+    set(file, stripeIx, rgIx);
   }
 
-  public OrcCacheKey(OrcBatchKey batchKey, int colIx) {
-    super(batchKey.file, batchKey.stripeIx, batchKey.rgIx);
-    this.colIx = colIx;
-  }
-
-  public OrcBatchKey copyToPureBatchKey() {
-    return new OrcBatchKey(file, stripeIx, rgIx);
+  public void set(long file, int stripeIx, int rgIx) {
+    this.file = file;
+    this.stripeIx = stripeIx;
+    this.rgIx = rgIx;
   }
 
   @Override
   public String toString() {
-    return "[" + file + ", stripe " + stripeIx + ", rgIx " + rgIx + ", rgIx " + colIx + "]";
+    return "[" + file + ", stripe " + stripeIx + ", rgIx " + rgIx + "]";
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
-    return super.hashCode() * prime + colIx;
+    int result = prime + (int)(file ^ (file >>> 32));
+    return (prime * result + rgIx) * prime + stripeIx;
   }
 
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
-    if (!(obj instanceof OrcCacheKey)) return false;
-    OrcCacheKey other = (OrcCacheKey)obj;
+    if (!(obj instanceof OrcBatchKey)) return false;
+    OrcBatchKey other = (OrcBatchKey)obj;
     // Strings are interned and can thus be compared like this.
-    return stripeIx == other.stripeIx && rgIx == other.rgIx
-        && file == other.file && other.colIx == colIx;
+    return stripeIx == other.stripeIx && rgIx == other.rgIx && file == other.file;
+  }
+
+  @Override
+  public OrcBatchKey clone() throws CloneNotSupportedException {
+    return new OrcBatchKey(file, stripeIx, rgIx);
   }
 }

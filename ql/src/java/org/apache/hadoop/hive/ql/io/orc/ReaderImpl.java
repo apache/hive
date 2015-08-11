@@ -33,10 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache;
-import org.apache.hadoop.hive.common.io.storage_api.DataReader;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
 import org.apache.hadoop.hive.ql.io.FileFormatException;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
@@ -64,11 +61,11 @@ public class ReaderImpl implements Reader {
   protected final int bufferSize;
   private final List<OrcProto.StripeStatistics> stripeStats;
   private final int metadataSize;
-  private final List<OrcProto.Type> types;
+  protected final List<OrcProto.Type> types;
   private final List<OrcProto.UserMetadataItem> userMetadata;
   private final List<OrcProto.ColumnStatistics> fileStats;
   private final List<StripeInformation> stripes;
-  private final int rowIndexStride;
+  protected final int rowIndexStride;
   private final long contentLength, numberOfRows;
 
 
@@ -715,13 +712,6 @@ public class ReaderImpl implements Reader {
   @Override
   public MetadataReader metadata() throws IOException {
     return new MetadataReaderImpl(fileSystem, path, codec, bufferSize, types.size());
-  }
-
-  @Override
-  public EncodedReader encodedReader(
-      long fileId, DataCache dataCache, DataReader dataReader) throws IOException {
-    return new EncodedReaderImpl(fileId, types,
-        codec, bufferSize, rowIndexStride, dataCache, dataReader);
   }
 
   @Override

@@ -34,10 +34,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.CreateHelper;
-import org.apache.hadoop.hive.common.io.storage_api.DataReader;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -850,6 +849,10 @@ public class RecordReaderImpl implements RecordReader {
     public BufferChunk(ByteBuffer chunk, long offset) {
       super(offset, offset + chunk.remaining());
       this.chunk = chunk;
+    }
+
+    public ByteBuffer getChunk() {
+      return chunk;
     }
 
     @Override

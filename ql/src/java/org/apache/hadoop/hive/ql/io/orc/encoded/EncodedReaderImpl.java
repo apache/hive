@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,28 +25,28 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.CreateHelper;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache;
-import org.apache.hadoop.hive.common.io.storage_api.DataReader;
-import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch;
-import org.apache.hadoop.hive.common.io.storage_api.EncodedColumnBatch.ColumnStreamData;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache.BooleanRef;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache.DiskRangeListFactory;
-import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
+import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
+import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
+import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
+import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
+import org.apache.hadoop.hive.ql.io.orc.DataReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.OutStream;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
+import org.apache.hadoop.hive.ql.io.orc.StreamName;
+import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
-import org.apache.hadoop.hive.ql.io.orc.llap.Consumer;
-import org.apache.hadoop.hive.ql.io.orc.llap.OrcBatchKey;
-import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hive.common.util.FixedSizedObjectPool.PoolObjectHelper;
 
@@ -63,14 +63,14 @@ import com.google.common.annotations.VisibleForTesting;
  * cache as soon as possible. This is how we deal with this:
  *
  * For dictionary case:
- * 1) There's a separate refcount on the StreamBuffer object we send to the caller. In the
+ * 1) There's a separate refcount on the ColumnStreamData object we send to the caller. In the
  *    dictionary case, it's increased per RG, and callers don't release MBs if the containing
- *    StreamBuffer is not ready to be released. This is done because dictionary can have many
+ *    ColumnStreamData is not ready to be released. This is done because dictionary can have many
  *    buffers; decrefing all of them for all RGs is more expensive; plus, decrefing in cache
  *    may be more expensive due to cache policy/etc.
  *
  * For non-dictionary case:
- * 1) All the StreamBuffer-s for normal data always have refcount 1, because we return then once.
+ * 1) All the ColumnStreamData-s for normal data always have refcount 1; we return them once.
  * 2) At all times, every MB in such cases has +1 refcount for each time we return it as part of SB.
  * 3) When caller is done, it therefore decrefs SB to 0, and decrefs all the MBs involved.
  * 4) Additionally, we keep an extra +1 refcount "for the fetching thread". That way, if we return
@@ -715,7 +715,7 @@ public class EncodedReaderImpl implements EncodedReader {
    * @param start Ordered ranges containing file data. Helpful if they point close to cOffset.
    * @param cOffset Start offset to decompress.
    * @param endCOffset End offset to decompress; estimate, partial CBs will be ignored.
-   * @param streamBuffer Stream buffer, to add the results.
+   * @param csd Stream data, to add the results.
    * @param unlockUntilCOffset The offset until which the buffers can be unlocked in cache, as
    *                           they will not be used in future calls (see the class comment in
    *                           EncodedReaderImpl about refcounts).
@@ -723,12 +723,12 @@ public class EncodedReaderImpl implements EncodedReader {
    *         the master list, so they are safe to keep as iterators for various streams.
    */
   public DiskRangeList readEncodedStream(long baseOffset, DiskRangeList start, long cOffset,
-      long endCOffset, ColumnStreamData streamBuffer, long unlockUntilCOffset, long streamOffset)
+      long endCOffset, ColumnStreamData csd, long unlockUntilCOffset, long streamOffset)
           throws IOException {
-    if (streamBuffer.getCacheBuffers() == null) {
-      streamBuffer.setCacheBuffers(new ArrayList<MemoryBuffer>());
+    if (csd.getCacheBuffers() == null) {
+      csd.setCacheBuffers(new ArrayList<MemoryBuffer>());
     } else {
-      streamBuffer.getCacheBuffers().clear();
+      csd.getCacheBuffers().clear();
     }
     if (cOffset == endCOffset) return null;
     boolean isCompressed = codec != null;
@@ -752,9 +752,9 @@ public class EncodedReaderImpl implements EncodedReader {
     // 2. Go thru the blocks; add stuff to results and prepare the decompression work (see below).
     lastUncompressed = isCompressed ?
         prepareRangesForCompressedRead(cOffset, endCOffset, streamOffset,
-            unlockUntilCOffset, current, streamBuffer, toRelease, toDecompress)
+            unlockUntilCOffset, current, csd, toRelease, toDecompress)
       : prepareRangesForUncompressedRead(
-          cOffset, endCOffset, streamOffset, unlockUntilCOffset, current, streamBuffer);
+          cOffset, endCOffset, streamOffset, unlockUntilCOffset, current, csd);
 
     // 3. Allocate the buffers, prepare cache keys.
     // At this point, we have read all the CBs we need to read. cacheBuffers contains some cache
@@ -799,7 +799,7 @@ public class EncodedReaderImpl implements EncodedReader {
 
     // 6. Finally, put uncompressed data to cache.
     long[] collisionMask = cache.putFileData(fileId, cacheKeys, targetBuffers, baseOffset);
-    processCacheCollisions(collisionMask, toDecompress, targetBuffers, streamBuffer.getCacheBuffers());
+    processCacheCollisions(collisionMask, toDecompress, targetBuffers, csd.getCacheBuffers());
 
     // 7. It may happen that we know we won't use some compression buffers anymore.
     //    Release initial refcounts.
@@ -975,7 +975,7 @@ public class EncodedReaderImpl implements EncodedReader {
         }
         BufferChunk bc = (BufferChunk)current;
         if (!wasSplit && toRelease != null) {
-          toRelease.add(bc.chunk); // TODO: is it valid to give zcr the modified 2nd part?
+          toRelease.add(bc.getChunk()); // TODO: is it valid to give zcr the modified 2nd part?
         }
 
         // Track if we still have the entire part.
@@ -1094,7 +1094,7 @@ public class EncodedReaderImpl implements EncodedReader {
     ByteBuffer dest = buffer.getByteBufferRaw();
     CacheChunk tcc = TCC_POOL.take();
     tcc.init(buffer, bc.getOffset(), bc.getEnd());
-    copyUncompressedChunk(bc.chunk, dest);
+    copyUncompressedChunk(bc.getChunk(), dest);
     bc.replaceSelfWith(tcc);
     return tcc;
   }
@@ -1242,7 +1242,7 @@ public class EncodedReaderImpl implements EncodedReader {
    * @param current BufferChunk where compression block starts.
    * @param ranges Iterator of all chunks, pointing at current.
    * @param cacheBuffers The result buffer array to add pre-allocated target cache buffer.
-   * @param toDecompress The list of work to decompress - pairs of compressed buffers and the 
+   * @param toDecompress The list of work to decompress - pairs of compressed buffers and the
    *                     target buffers (same as the ones added to cacheBuffers).
    * @param toRelease The list of buffers to release to zcr because they are no longer in use.
    * @return The resulting cache chunk.
@@ -1251,7 +1251,7 @@ public class EncodedReaderImpl implements EncodedReader {
       List<MemoryBuffer> cacheBuffers, List<ProcCacheChunk> toDecompress,
       List<ByteBuffer> toRelease) throws IOException {
     ByteBuffer slice = null;
-    ByteBuffer compressed = current.chunk;
+    ByteBuffer compressed = current.getChunk();
     long cbStartOffset = current.getOffset();
     int b0 = compressed.get() & 0xff;
     int b1 = compressed.get() & 0xff;
@@ -1360,7 +1360,7 @@ public class EncodedReaderImpl implements EncodedReader {
    * @param lastRange The buffer from which the last (or all) bytes of fCB come.
    * @param lastChunkLength The number of compressed bytes consumed from last *chunk* into fullCompressionBlock.
    * @param ranges The iterator of all compressed ranges for the stream, pointing at lastRange.
-   * @param lastChunk 
+   * @param lastChunk
    * @param toDecompress See addOneCompressionBuffer.
    * @param cacheBuffers See addOneCompressionBuffer.
    * @return New cache buffer.
@@ -1381,10 +1381,10 @@ public class EncodedReaderImpl implements EncodedReader {
     if (isDebugTracingEnabled) {
       LOG.info("Adjusting " + lastChunk + " to consume " + lastChunkLength + " compressed bytes");
     }
-    lastChunk.chunk.position(lastChunk.chunk.position() + lastChunkLength);
+    lastChunk.getChunk().position(lastChunk.getChunk().position() + lastChunkLength);
     // Finally, put it in the ranges list for future use (if shared between RGs).
     // Before anyone else accesses it, it would have been allocated and decompressed locally.
-    if (lastChunk.chunk.remaining() <= 0) {
+    if (lastChunk.getChunk().remaining() <= 0) {
       if (isDebugTracingEnabled) {
         LOG.info("Replacing " + lastChunk + " with " + cc + " in the buffers");
       }

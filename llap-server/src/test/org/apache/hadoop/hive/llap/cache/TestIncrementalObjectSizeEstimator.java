@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Index;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
-import org.apache.hadoop.hive.ql.io.orc.llap.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.junit.Test;
 import org.mockito.Mockito;

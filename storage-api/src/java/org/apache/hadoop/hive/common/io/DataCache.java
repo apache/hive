@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.io.storage_api;
+package org.apache.hadoop.hive.common.io;
 
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
 /** An abstract data cache that IO formats can use to retrieve and cache data. */
 public interface DataCache {

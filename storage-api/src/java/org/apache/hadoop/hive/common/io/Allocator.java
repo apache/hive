@@ -15,7 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.common.io.storage_api;
+package org.apache.hadoop.hive.common.io;
+
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
 /** An allocator provided externally to storage classes to allocate MemoryBuffer-s. */
 public interface Allocator {

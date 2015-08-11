@@ -15,22 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
-package org.apache.hadoop.hive.llap.io.decode;
-
+import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
+import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl.OrcEncodedColumnBatch;
 
-/**
- * Entry point used by LlapInputFormat to create read pipeline to get data.
- */
-public interface ColumnVectorProducer {
-  ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, InputSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      QueryFragmentCounters counters);
+public interface EncodedReader {
+  // TODO#: document
+  void readEncodedColumns(int stripeIx, StripeInformation stripe,
+      RowIndex[] index, List<ColumnEncoding> encodings, List<Stream> streams,
+      boolean[] included, boolean[][] colRgs,
+      Consumer<OrcEncodedColumnBatch> consumer) throws IOException;
+
+  void close() throws IOException;
+
+  void setDebugTracing(boolean isEnabled);
 }

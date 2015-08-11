@@ -15,16 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.cache;
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
-import org.apache.hadoop.hive.common.io.Allocator;
-import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import java.io.IOException;
 
-/**
- * An allocator that has additional, internal-only call to deallocate evicted buffer.
- * When we evict buffers, we do not release memory to the system; that is because we want it for
- * ourselves, so we set the value atomically to account for both eviction and the new demand.
- */
-public interface EvictionAwareAllocator extends Allocator {
-  void deallocateEvicted(MemoryBuffer buffer);
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
+
+public class EncodedOrcFile {
+  public static Reader createReader(
+      Path path, ReaderOptions options) throws IOException {
+    return new ReaderImpl(path, options);
+  }
 }

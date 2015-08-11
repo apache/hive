@@ -29,11 +29,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.CreateHelper;
-import org.apache.hadoop.hive.common.DiskRangeList.MutateHelper;
-import org.apache.hadoop.hive.common.io.storage_api.DataReader;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
+import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -110,7 +109,7 @@ public class RecordReaderUtils {
     return new DefaultDataReader(fs, path, useZeroCopy, codec);
   }
 
-  static boolean[] findPresentStreamsByColumn(
+  public static boolean[] findPresentStreamsByColumn(
       List<OrcProto.Stream> streamList, List<OrcProto.Type> types) {
     boolean[] hasNull = new boolean[types.size()];
     for(OrcProto.Stream stream: streamList) {
@@ -136,12 +135,12 @@ public class RecordReaderUtils {
     return rightB >= leftA;
   }
 
-  static void addEntireStreamToRanges(
+  public static void addEntireStreamToRanges(
       long offset, long length, CreateHelper list, boolean doMergeBuffers) {
     list.addOrMerge(offset, offset + length, doMergeBuffers, false);
   }
 
-  static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
+  public static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
       boolean[] includedRowGroups, boolean isCompressed, OrcProto.RowIndex index,
       OrcProto.ColumnEncoding encoding, OrcProto.Type type, int compressionSize, boolean hasNull,
       long offset, long length, CreateHelper list, boolean doMergeBuffers) {
@@ -161,7 +160,7 @@ public class RecordReaderUtils {
     }
   }
 
-  static long estimateRgEndOffset(boolean isCompressed, boolean isLast,
+  public static long estimateRgEndOffset(boolean isCompressed, boolean isLast,
       long nextGroupOffset, long streamLength, int bufferSize) {
     // figure out the worst case last location
     // if adjacent groups have the same compressed block offset then stretch the slop
@@ -251,7 +250,7 @@ public class RecordReaderUtils {
    * Is this stream part of a dictionary?
    * @return is this part of a dictionary?
    */
-  static boolean isDictionary(OrcProto.Stream.Kind kind,
+  public static boolean isDictionary(OrcProto.Stream.Kind kind,
                               OrcProto.ColumnEncoding encoding) {
     assert kind != OrcProto.Stream.Kind.DICTIONARY_COUNT;
     OrcProto.ColumnEncoding.Kind encodingKind = encoding.getKind();

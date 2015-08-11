@@ -16,14 +16,12 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.io.storage_api;
+package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
 
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
 
 /** An abstract data reader that IO formats can use to read bytes from underlying storage. */
 public interface DataReader {

@@ -33,14 +33,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.CreateHelper;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache.DiskRangeListFactory;
-import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
-import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl.CacheChunk;
+import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl.CacheChunk;
 import org.junit.Test;
 
 public class TestLowLevelCacheImpl {

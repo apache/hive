@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 /**
  * The name of a stream within a stripe.
  */
-class StreamName implements Comparable<StreamName> {
+public class StreamName implements Comparable<StreamName> {
   private final int column;
   private final OrcProto.Stream.Kind kind;
 

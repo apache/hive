@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.common;
+package org.apache.hadoop.hive.common.io;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

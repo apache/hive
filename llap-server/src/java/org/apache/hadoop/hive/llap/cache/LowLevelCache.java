@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache.BooleanRef;
-import org.apache.hadoop.hive.common.io.storage_api.Allocator;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache.DiskRangeListFactory;
-import org.apache.hadoop.hive.common.io.storage_api.MemoryBuffer;
+import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
+import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
 public interface LowLevelCache {
   public enum Priority {
