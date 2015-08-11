@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -57,6 +59,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  * It also generates node by Modifying expr trees with partition conditions removed
  */
 public final class PcrExprProcFactory {
+
+  public static final Log LOG = LogFactory.getLog(PcrExprProcFactory.class.getName());
+
   static Object evalExprWithPart(ExprNodeDesc expr, Partition p, List<VirtualColumn> vcs)
       throws SemanticException {
     StructObjectInspector rowObjectInspector;
@@ -124,25 +129,39 @@ public final class PcrExprProcFactory {
     // prevent instantiation
   }
 
-  static Boolean opAnd(Boolean op1, Boolean op2) {
+  static Boolean opAnd(Boolean... ops) {
     // When people forget to quote a string, op1/op2 is null.
     // For example, select * from some_table where ds > 2012-12-1 and ds < 2012-12-2 .
-    if (op1 != null && op1.equals(Boolean.FALSE) || op2 != null && op2.equals(Boolean.FALSE)) {
-      return Boolean.FALSE;
+    boolean anyNull = false;
+    for (Boolean op : ops) {
+      if (op == null) {
+        anyNull = true;
+        continue;
+      }
+      if (op.equals(Boolean.FALSE)) {
+        return Boolean.FALSE;
+      }
     }
-    if (op1 == null || op2 == null) {
+    if (anyNull) {
       return null;
     }
     return Boolean.TRUE;
   }
 
-  static Boolean opOr(Boolean op1, Boolean op2) {
+  static Boolean opOr(Boolean... ops) {
     // When people forget to quote a string, op1/op2 is null.
     // For example, select * from some_table where ds > 2012-12-1 or ds < 2012-12-2 .
-    if (op1 != null && op1.equals(Boolean.TRUE) || op2 != null && op2.equals(Boolean.TRUE)) {
-      return Boolean.TRUE;
+    boolean anyNull = false;
+    for (Boolean op : ops) {
+      if (op == null) {
+        anyNull = true;
+        continue;
+      }
+      if (op.equals(Boolean.TRUE)) {
+        return Boolean.TRUE;
+      }
     }
-    if (op1 == null || op2 == null) {
+    if (anyNull) {
       return null;
     }
     return Boolean.FALSE;
@@ -255,51 +274,95 @@ public final class PcrExprProcFactory {
               getOutExpr(fd, nodeOutputs));
         }
       } else if (FunctionRegistry.isOpAnd(fd)) {
-        assert (nodeOutputs.length == 2);
-        NodeInfoWrapper c1 = (NodeInfoWrapper)nodeOutputs[0];
-        NodeInfoWrapper c2 = (NodeInfoWrapper)nodeOutputs[1];
-
-        if (c1.state == WalkState.FALSE) {
-          return c1;
-        } else if (c2.state == WalkState.FALSE) {
-          return c2;
-        } else if (c1.state == WalkState.TRUE) {
-          return c2;
-        } else if (c2.state == WalkState.TRUE) {
-          return c1;
-        } else if (c1.state == WalkState.UNKNOWN || c2.state == WalkState.UNKNOWN) {
-          return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs));
-        } else if (c1.state == WalkState.DIVIDED && c2.state == WalkState.DIVIDED) {
+        boolean anyUnknown = false; // Whether any of the node outputs is unknown
+        boolean allDivided = true; // Whether all of the node outputs are divided
+        List<NodeInfoWrapper> newNodeOutputsList =
+                new ArrayList<NodeInfoWrapper>(nodeOutputs.length);
+        for (int i = 0; i < nodeOutputs.length; i++) {
+          NodeInfoWrapper c = (NodeInfoWrapper)nodeOutputs[i];
+          if (c.state == WalkState.FALSE) {
+            return c;
+          }
+          if (c.state == WalkState.UNKNOWN) {
+            anyUnknown = true;
+          }
+          if (c.state != WalkState.DIVIDED) {
+            allDivided = false;
+          }
+          if (c.state != WalkState.TRUE) {
+            newNodeOutputsList.add(c);
+          }
+        }
+        // If all of them were true, return true
+        if (newNodeOutputsList.size() == 0) {
+          return new NodeInfoWrapper(WalkState.TRUE, null,
+                  new ExprNodeConstantDesc(fd.getTypeInfo(), Boolean.TRUE));
+        }
+        // If we are left with a single child, return the child
+        if (newNodeOutputsList.size() == 1) {
+          return newNodeOutputsList.get(0);
+        }
+        Object[] newNodeOutputs = newNodeOutputsList.toArray();
+        if (anyUnknown) {
+          return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, newNodeOutputs));
+        }
+        if (allDivided) {
           Boolean[] results = new Boolean[ctx.getPartList().size()];
           for (int i = 0; i < ctx.getPartList().size(); i++) {
-            results[i] = opAnd(c1.ResultVector[i], c2.ResultVector[i]);
+            Boolean[] andArray = new Boolean[newNodeOutputs.length];
+            for (int j = 0; j < newNodeOutputs.length; j++) {
+              andArray[j] = ((NodeInfoWrapper) newNodeOutputs[j]).ResultVector[i];
+            }
+            results[i] = opAnd(andArray);
           }
-          return getResultWrapFromResults(results, fd, nodeOutputs);
+          return getResultWrapFromResults(results, fd, newNodeOutputs);
         }
-        return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs));
+        return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, newNodeOutputs));
       } else if (FunctionRegistry.isOpOr(fd)) {
-        assert (nodeOutputs.length == 2);
-        NodeInfoWrapper c1 = (NodeInfoWrapper)nodeOutputs[0];
-        NodeInfoWrapper c2 = (NodeInfoWrapper)nodeOutputs[1];
-
-        if (c1.state == WalkState.TRUE) {
-          return c1;
-        } else if (c2.state == WalkState.TRUE) {
-          return c2;
-        } else if (c1.state == WalkState.FALSE) {
-          return c2;
-        } else if (c2.state == WalkState.FALSE) {
-          return c1;
-        } else if (c1.state == WalkState.UNKNOWN || c2.state == WalkState.UNKNOWN) {
-          return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs));
-        } else if (c1.state == WalkState.DIVIDED && c2.state == WalkState.DIVIDED) {
+        boolean anyUnknown = false; // Whether any of the node outputs is unknown
+        boolean allDivided = true; // Whether all of the node outputs are divided
+        List<NodeInfoWrapper> newNodeOutputsList =
+                new ArrayList<NodeInfoWrapper>(nodeOutputs.length);
+        for (int i = 0; i< nodeOutputs.length; i++) {
+          NodeInfoWrapper c = (NodeInfoWrapper)nodeOutputs[i];
+          if (c.state == WalkState.TRUE) {
+            return c;
+          }
+          if (c.state == WalkState.UNKNOWN) {
+            anyUnknown = true;
+          }
+          if (c.state != WalkState.DIVIDED) {
+            allDivided = false;
+          }
+          if (c.state != WalkState.FALSE) {
+            newNodeOutputsList.add(c);
+          }
+        }
+        // If all of them were false, return false
+        if (newNodeOutputsList.size() == 0) {
+          return new NodeInfoWrapper(WalkState.FALSE, null,
+                  new ExprNodeConstantDesc(fd.getTypeInfo(), Boolean.FALSE));
+        }
+        // If we are left with a single child, return the child
+        if (newNodeOutputsList.size() == 1) {
+          return newNodeOutputsList.get(0);
+        }
+        Object[] newNodeOutputs = newNodeOutputsList.toArray();
+        if (anyUnknown) {
+          return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, newNodeOutputs));
+        }
+        if (allDivided) {
           Boolean[] results = new Boolean[ctx.getPartList().size()];
           for (int i = 0; i < ctx.getPartList().size(); i++) {
-            results[i] = opOr(c1.ResultVector[i], c2.ResultVector[i]);
+            Boolean[] orArray = new Boolean[newNodeOutputs.length];
+            for (int j = 0; j < newNodeOutputs.length; j++) {
+              orArray[j] = ((NodeInfoWrapper) newNodeOutputs[j]).ResultVector[i];
+            }
+            results[i] = opOr(orArray);
           }
-          return getResultWrapFromResults(results, fd, nodeOutputs);
+          return getResultWrapFromResults(results, fd, newNodeOutputs);
         }
-        return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs));
+        return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, newNodeOutputs));
       } else if (!FunctionRegistry.isDeterministic(fd.getGenericUDF())) {
         // If it's a non-deterministic UDF, set unknown to true
         return new NodeInfoWrapper(WalkState.UNKNOWN, null,

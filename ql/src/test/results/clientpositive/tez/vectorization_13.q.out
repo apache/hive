@@ -86,7 +86,7 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((cfloat < 3569.0) and ((10.175 >= cdouble) and (cboolean1 <> 1))) or ((UDFToDouble(ctimestamp1) > 11.0) and ((UDFToDouble(ctimestamp2) <> 12.0) and (UDFToDouble(ctinyint) < 9763215.5639)))) (type: boolean)
+                    predicate: (((cfloat < 3569.0) and (10.175 >= cdouble) and (cboolean1 <> 1)) or ((UDFToDouble(ctimestamp1) > 11.0) and (UDFToDouble(ctimestamp2) <> 12.0) and (UDFToDouble(ctinyint) < 9763215.5639))) (type: boolean)
                     Statistics: Num rows: 2730 Data size: 586959 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string)
@@ -339,7 +339,7 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((cfloat < 3569.0) and ((10.175 >= cdouble) and (cboolean1 <> 1))) or ((UDFToDouble(ctimestamp1) > -1.388) and ((UDFToDouble(ctimestamp2) <> -1.3359999999999999) and (UDFToDouble(ctinyint) < 9763215.5639)))) (type: boolean)
+                    predicate: (((cfloat < 3569.0) and (10.175 >= cdouble) and (cboolean1 <> 1)) or ((UDFToDouble(ctimestamp1) > -1.388) and (UDFToDouble(ctimestamp2) <> -1.3359999999999999) and (UDFToDouble(ctinyint) < 9763215.5639))) (type: boolean)
                     Statistics: Num rows: 2730 Data size: 586959 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string)
