@@ -1,8 +1,10 @@
 set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
 SET hive.vectorized.execution.enabled = true;
 
 -- SORT_QUERY_RESULTS
 
+-- Currently, vectorization is not supported in fetch task (hive.fetch.task.conversion=none)
 -- Test type casting in vectorized mode to verify end-to-end functionality.
 
 explain 
@@ -68,6 +70,8 @@ select
   ,cast (cbigint * 0 as string)
   ,cast (ctimestamp1 as string)
   ,cast (cstring1 as string)
+  ,cast (cast (cstring1 as char(10)) as string)
+  ,cast (cast (cstring1 as varchar(10)) as string)
 -- nested and expression arguments
   ,cast (cast (cfloat as int) as float)
   ,cast (cint * 2 as double)
@@ -140,6 +144,8 @@ select
   ,cast (cbigint * 0 as string)
   ,cast (ctimestamp1 as string)
   ,cast (cstring1 as string)
+  ,cast (cast (cstring1 as char(10)) as string)
+  ,cast (cast (cstring1 as varchar(10)) as string)
 -- nested and expression arguments
   ,cast (cast (cfloat as int) as float)
   ,cast (cint * 2 as double)
