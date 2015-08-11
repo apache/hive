@@ -15,16 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.common.io.Allocator;
-import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
-/**
- * An allocator that has additional, internal-only call to deallocate evicted buffer.
- * When we evict buffers, we do not release memory to the system; that is because we want it for
- * ourselves, so we set the value atomically to account for both eviction and the new demand.
- */
-public interface EvictionAwareAllocator extends Allocator {
-  void deallocateEvicted(MemoryBuffer buffer);
+import java.io.IOException;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.ql.io.orc.DataReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
+import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl;
+
+
+class ReaderImpl extends org.apache.hadoop.hive.ql.io.orc.ReaderImpl implements Reader {
+
+  public ReaderImpl(Path path, ReaderOptions options) throws IOException {
+    super(path, options);
+  }
+
+  @Override
+  public EncodedReader encodedReader(
+      long fileId, DataCache dataCache, DataReader dataReader) throws IOException {
+    return new EncodedReaderImpl(fileId, types,
+        codec, bufferSize, rowIndexStride, dataCache, dataReader);
+  }
 }

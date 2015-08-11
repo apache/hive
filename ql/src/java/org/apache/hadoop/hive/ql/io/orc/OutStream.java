@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-class OutStream extends PositionedOutputStream {
+public class OutStream extends PositionedOutputStream {
 
   interface OutputReceiver {
     /**
@@ -31,7 +31,7 @@ class OutStream extends PositionedOutputStream {
     void output(ByteBuffer buffer) throws IOException;
   }
 
-  static final int HEADER_SIZE = 3;
+  public static final int HEADER_SIZE = 3;
   private final String name;
   private final OutputReceiver receiver;
   // if enabled the stream will be suppressed when writing stripe

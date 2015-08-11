@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.DiskRangeInfo;
+import org.apache.hadoop.hive.common.io.DiskRange;
 
 /**
  * An uncompressed stream whose underlying byte buffer can be set.

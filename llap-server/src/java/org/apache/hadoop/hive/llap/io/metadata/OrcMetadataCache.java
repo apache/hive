@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.MemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
-import org.apache.hadoop.hive.ql.io.orc.llap.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 
 public class OrcMetadataCache {
   private final ConcurrentHashMap<Long, OrcFileMetadata> metadata =

@@ -23,8 +23,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hive.common.io.storage_api.DataCache;
-import org.apache.hadoop.hive.common.io.storage_api.DataReader;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -347,9 +345,6 @@ public interface Reader {
                     String[] neededColumns) throws IOException;
 
   MetadataReader metadata() throws IOException;
-
-  EncodedReader encodedReader(
-      long fileId, DataCache dataCache, DataReader dataReader) throws IOException;
 
   List<Integer> getVersionList();
 

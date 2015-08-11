@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.llap;
 
-import org.apache.hadoop.hive.ql.io.orc.EncodedReaderImpl;
+import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl;
 
 /**
  * A class that contains debug methods; also allows enabling the logging of various

@@ -15,14 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
-package org.apache.hadoop.hive.common.io.storage_api;
-
-import java.nio.ByteBuffer;
-
-/** Abstract interface for any class wrapping a ByteBuffer. */
-public interface MemoryBuffer {
-  /** Note - raw buffer should not be modified. */
-  public ByteBuffer getByteBufferRaw();
-  public ByteBuffer getByteBufferDup();
+/**
+ * Data consumer; an equivalent of a data queue for an asynchronous data producer.
+ */
+public interface Consumer<T> {
+  /** Some data has been produced. */
+  public void consumeData(T data);
+  /** No more data will be produced; done */
+  public void setDone();
+  /** No more data will be produced; error during production */
+  public void setError(Throwable t);
 }

@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.common;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.common.io.DiskRange;
+
 import com.google.common.collect.Lists;
 
 /**

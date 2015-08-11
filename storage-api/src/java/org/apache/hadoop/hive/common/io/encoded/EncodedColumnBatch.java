@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.io.storage_api;
+package org.apache.hadoop.hive.common.io.encoded;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * A block of data for a given section of a file, similar to VRB but in encoded form.
