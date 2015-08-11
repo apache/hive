@@ -82,6 +82,10 @@ public final class FileDump {
     boolean printTimeZone = cli.hasOption('t');
     boolean jsonFormat = cli.hasOption('j');
     String[] files = cli.getArgs();
+    if (files.length == 0) {
+      System.err.println("Error : ORC files are not specified");
+      return;
+    }
     if (dumpData) {
       printData(Arrays.asList(files), conf);
     } else {
