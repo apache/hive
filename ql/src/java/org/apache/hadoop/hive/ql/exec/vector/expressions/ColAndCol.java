@@ -64,6 +64,8 @@ public class ColAndCol extends VectorExpression {
       return;
     }
 
+    long vector1Value = vector1[0];
+    long vector2Value = vector2[0];
     if (inputColVector1.noNulls && inputColVector2.noNulls) {
       if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
         // All must be selected otherwise size would be zero
@@ -74,11 +76,11 @@ public class ColAndCol extends VectorExpression {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
-            outputVector[i] = vector1[0] & vector2[i];
+            outputVector[i] = vector1Value & vector2[i];
           }
         } else {
           for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[0] & vector2[i];
+            outputVector[i] = vector1Value & vector2[i];
           }
         }
         outV.isRepeating = false;
@@ -86,11 +88,11 @@ public class ColAndCol extends VectorExpression {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
-            outputVector[i] = vector1[i] & vector2[0];
+            outputVector[i] = vector1[i] & vector2Value;
           }
         } else {
           for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2[0];
+            outputVector[i] = vector1[i] & vector2Value;
           }
         }
         outV.isRepeating = false;
@@ -120,12 +122,12 @@ public class ColAndCol extends VectorExpression {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
-            outputVector[i] = vector1[0] & vector2[i];
+            outputVector[i] = vector1Value & vector2[i];
             outV.isNull[i] = (vector1[0] == 1) && inputColVector2.isNull[i];
           }
         } else {
           for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[0] & vector2[i];
+            outputVector[i] = vector1Value & vector2[i];
             outV.isNull[i] = (vector1[0] == 1) && inputColVector2.isNull[i];
           }
         }
@@ -134,12 +136,12 @@ public class ColAndCol extends VectorExpression {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
-            outputVector[i] = vector1[i] & vector2[0];
+            outputVector[i] = vector1[i] & vector2Value;
             outV.isNull[i] = (vector1[i] == 1) && inputColVector2.isNull[0];
           }
         } else {
           for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2[0];
+            outputVector[i] = vector1[i] & vector2Value;
             outV.isNull[i] = (vector1[i] == 1) && inputColVector2.isNull[0];
           }
         }
@@ -172,12 +174,12 @@ public class ColAndCol extends VectorExpression {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
-            outputVector[i] = vector1[0] & vector2[i];
+            outputVector[i] = vector1Value & vector2[i];
             outV.isNull[i] = inputColVector1.isNull[0] && (vector2[i] == 1);
           }
         } else {
           for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[0] & vector2[i];
+            outputVector[i] = vector1Value & vector2[i];
             outV.isNull[i] = inputColVector1.isNull[0] && (vector2[i] == 1);
           }
         }
@@ -186,12 +188,12 @@ public class ColAndCol extends VectorExpression {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
-            outputVector[i] = vector1[i] & vector2[0];
+            outputVector[i] = vector1[i] & vector2Value;
             outV.isNull[i] = inputColVector1.isNull[i] && (vector2[0] == 1);
           }
         } else {
           for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2[0];
+            outputVector[i] = vector1[i] & vector2Value;
             outV.isNull[i] = inputColVector1.isNull[i] && (vector2[0] == 1);
           }
         }
@@ -226,14 +228,14 @@ public class ColAndCol extends VectorExpression {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
-            outputVector[i] = vector1[0] & vector2[i];
+            outputVector[i] = vector1Value & vector2[i];
             outV.isNull[i] = ((vector1[0] == 1) && inputColVector2.isNull[i])
                 || (inputColVector1.isNull[0] && (vector2[i] == 1))
                 || (inputColVector1.isNull[0] && inputColVector2.isNull[i]);
           }
         } else {
           for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[0] & vector2[i];
+            outputVector[i] = vector1Value & vector2[i];
             outV.isNull[i] = ((vector1[0] == 1) && inputColVector2.isNull[i])
                 || (inputColVector1.isNull[0] && (vector2[i] == 1))
                 || (inputColVector1.isNull[0] && inputColVector2.isNull[i]);
@@ -244,14 +246,14 @@ public class ColAndCol extends VectorExpression {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
-            outputVector[i] = vector1[i] & vector2[0];
+            outputVector[i] = vector1[i] & vector2Value;
             outV.isNull[i] = ((vector1[i] == 1) && inputColVector2.isNull[0])
                 || (inputColVector1.isNull[i] && (vector2[0] == 1))
                 || (inputColVector1.isNull[i] && inputColVector2.isNull[0]);
           }
         } else {
           for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2[0];
+            outputVector[i] = vector1[i] & vector2Value;
             outV.isNull[i] = ((vector1[i] == 1) && inputColVector2.isNull[0])
                 || (inputColVector1.isNull[i] && (vector2[0] == 1))
                 || (inputColVector1.isNull[i] && inputColVector2.isNull[0]);
