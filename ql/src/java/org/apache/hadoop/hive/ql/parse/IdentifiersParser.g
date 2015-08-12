@@ -614,7 +614,13 @@ principalIdentifier
     | QuotedIdentifier
     ;
 
-//the new version of nonReserved + sql11ReservedKeywordsUsedAsIdentifier = old version of nonReserved 
+//The new version of nonReserved + sql11ReservedKeywordsUsedAsIdentifier = old version of nonReserved
+//Non reserved keywords are basically the keywords that can be used as identifiers.
+//All the KW_* are automatically not only keywords, but also reserved keywords.
+//That means, they can NOT be used as identifiers.
+//If you would like to use them as identifiers, put them in the nonReserved list below.
+//If you are not sure, please refer to the SQL2011 column in
+//http://www.postgresql.org/docs/9.5/static/sql-keywords-appendix.html
 nonReserved
     :
     KW_ADD | KW_ADMIN | KW_AFTER | KW_ANALYZE | KW_ARCHIVE | KW_ASC | KW_BEFORE | KW_BUCKET | KW_BUCKETS
@@ -636,11 +642,7 @@ nonReserved
     | KW_TINYINT | KW_TOUCH | KW_TRANSACTIONS | KW_UNARCHIVE | KW_UNDO | KW_UNIONTYPE | KW_UNLOCK | KW_UNSET
     | KW_UNSIGNED | KW_URI | KW_USE | KW_UTC | KW_UTCTIMESTAMP | KW_VALUE_TYPE | KW_VIEW | KW_WHILE | KW_YEAR
     | KW_WORK
-    | KW_START
     | KW_TRANSACTION
-    | KW_COMMIT
-    | KW_ROLLBACK
-    | KW_ONLY
     | KW_WRITE
     | KW_ISOLATION
     | KW_LEVEL
@@ -648,13 +650,15 @@ nonReserved
     | KW_AUTOCOMMIT
 ;
 
-//The following SQL2011 reserved keywords are used as cast function name only, it is a subset of the sql11ReservedKeywordsUsedAsIdentifier.
+//The following SQL2011 reserved keywords are used as cast function name only, but not as identifiers.
 sql11ReservedKeywordsUsedAsCastFunctionName
     :
     KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_INT | KW_SMALLINT | KW_TIMESTAMP
     ;
 
 //The following SQL2011 reserved keywords are used as identifiers in many q tests, they may be added back due to backward compatibility.
+//We are planning to remove the following whole list after several releases.
+//Thus, please do not change the following list unless you know what to do.
 sql11ReservedKeywordsUsedAsIdentifier
     :
     KW_ALL | KW_ALTER | KW_ARRAY | KW_AS | KW_AUTHORIZATION | KW_BETWEEN | KW_BIGINT | KW_BINARY | KW_BOOLEAN 
