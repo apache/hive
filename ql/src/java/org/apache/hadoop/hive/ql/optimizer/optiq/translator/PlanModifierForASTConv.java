@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.OptiqSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveAggregateRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveProjectRel;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveSortRel;
+import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.eigenbase.rel.AggregateCall;
 import org.eigenbase.rel.AggregateRelBase;
@@ -53,6 +54,7 @@ import org.eigenbase.reltype.RelDataTypeFactory;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.sql.SqlKind;
 import org.eigenbase.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -94,6 +96,23 @@ public class PlanModifierForASTConv {
     return newTopNode;
   }
 
+  private static String getTblAlias(RelNode rel) {
+
+    if (null == rel) {
+      return null;
+    }
+    if (rel instanceof HiveTableScanRel) {
+      return ((RelOptHiveTable)((HiveTableScanRel)rel).getTable()).getTableAlias();
+    }
+    if (rel instanceof HiveProjectRel) {
+      return null;
+    }
+    if (rel.getInputs().size() == 1) {
+      return getTblAlias(rel.getInput(0));
+    }
+    return null;
+  }
+
   private static void convertOpTree(RelNode rel, RelNode parent) {
 
     if (rel instanceof EmptyRel) {
@@ -104,10 +123,14 @@ public class PlanModifierForASTConv {
       if (!validJoinParent(rel, parent)) {
         introduceDerivedTable(rel, parent);
       }
+      String leftChild = getTblAlias(((JoinRelBase)rel).getLeft());
+      if (null != leftChild && leftChild.equalsIgnoreCase(getTblAlias(((JoinRelBase)rel).getRight()))) {
+        // introduce derived table above one child, if this is self-join
+        // since user provided aliases are lost at this point.
+        introduceDerivedTable(((JoinRelBase)rel).getLeft(), rel);
+      }
     } else if (rel instanceof MultiJoinRel) {
-      throw new RuntimeException("Found MultiJoinRel");
-    } else if (rel instanceof OneRowRelBase) {
-      throw new RuntimeException("Found OneRowRelBase");
+      throw new RuntimeException("Found MultiJoin");
     } else if (rel instanceof RelSubset) {
       throw new RuntimeException("Found RelSubset");
     } else if (rel instanceof SetOpRel) {
