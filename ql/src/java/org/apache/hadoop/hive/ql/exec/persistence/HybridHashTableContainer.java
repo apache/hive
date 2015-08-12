@@ -118,6 +118,8 @@ public class HybridHashTableContainer
     public HashPartition(int threshold, float loadFactor, int wbSize, long memUsage,
                          boolean createHashMap) {
       if (createHashMap) {
+        // Hash map should be at least the size of our designated wbSize
+        memUsage = Math.max(memUsage, wbSize);
         hashMap = new BytesBytesMultiHashMap(threshold, loadFactor, wbSize, memUsage);
       } else {
         hashMapSpilledOnCreation = true;
