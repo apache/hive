@@ -29,7 +29,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: struct(1) (type: struct<col1:int>), struct(1,'a') (type: struct<col1:int,col2:string>), struct(1,'b',1.5).col1 (type: int), struct(1,struct('a',1.5)).col2.col1 (type: string)
+            expressions: const struct(1) (type: struct<col1:int>), const struct(1,'a') (type: struct<col1:int,col2:string>), struct(1,'b',1.5).col1 (type: int), struct(1,struct('a',1.5)).col2.col1 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 500 Data size: 184500 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

@@ -1084,6 +1084,9 @@ public final class ObjectInspectorUtils {
             fieldObjectInspectors.add(getStandardObjectInspector(f
             .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE));
           }
+          if (value != null && (writableValue.getClass().isArray())) {
+            writableValue = java.util.Arrays.asList((Object[])writableValue);
+          }
           return ObjectInspectorFactory.getStandardConstantStructObjectInspector(
             fieldNames,
             fieldObjectInspectors,

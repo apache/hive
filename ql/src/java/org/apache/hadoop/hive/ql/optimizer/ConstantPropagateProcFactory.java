@@ -75,10 +75,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -758,6 +762,10 @@ public final class ConstantPropagateProcFactory {
             return null;
           }
         }
+        if (constant.getTypeInfo().getCategory() != Category.PRIMITIVE) {
+          // nested complex types cannot be folded cleanly 
+          return null;
+        }
         Object value = constant.getValue();
         PrimitiveTypeInfo pti = (PrimitiveTypeInfo) constant.getTypeInfo();
         Object writableValue = null == value ? value :
@@ -774,6 +782,10 @@ public final class ConstantPropagateProcFactory {
           return null;
         }
         ExprNodeConstantDesc constant = (ExprNodeConstantDesc) evaluatedFn;
+        if (constant.getTypeInfo().getCategory() != Category.PRIMITIVE) {
+          // nested complex types cannot be folded cleanly
+          return null;
+        }
         Object writableValue = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
           (PrimitiveTypeInfo) constant.getTypeInfo()).getPrimitiveWritableObject(constant.getValue());
         arguments[i] = new DeferredJavaObject(writableValue);
@@ -790,28 +802,38 @@ public final class ConstantPropagateProcFactory {
         LOG.debug(udf.getClass().getName() + "(" + exprs + ")=" + o);
       }
       if (o == null) {
-        return new ExprNodeConstantDesc(TypeInfoUtils.getTypeInfoFromObjectInspector(oi), o);
+        return new ExprNodeConstantDesc(
+            TypeInfoUtils.getTypeInfoFromObjectInspector(oi), o);
       }
       Class<?> clz = o.getClass();
       if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(clz)) {
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
         TypeInfo typeInfo = poi.getTypeInfo();
         o = poi.getPrimitiveJavaObject(o);
-        if (typeInfo.getTypeName().contains(serdeConstants.DECIMAL_TYPE_NAME) ||
-            typeInfo.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME) ||
-            typeInfo.getTypeName().contains(serdeConstants.CHAR_TYPE_NAME)) {
+        if (typeInfo.getTypeName().contains(serdeConstants.DECIMAL_TYPE_NAME)
+            || typeInfo.getTypeName()
+                .contains(serdeConstants.VARCHAR_TYPE_NAME)
+            || typeInfo.getTypeName().contains(serdeConstants.CHAR_TYPE_NAME)) {
           return new ExprNodeConstantDesc(typeInfo, o);
         }
-      } else if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(clz)) {
-
-      } else {
+      } else if (udf instanceof GenericUDFStruct
+          && oi instanceof StandardConstantStructObjectInspector) {
+        // do not fold named_struct, only struct()
+        ConstantObjectInspector coi = (ConstantObjectInspector) oi;
+        TypeInfo structType = TypeInfoUtils.getTypeInfoFromObjectInspector(coi);
+        return new ExprNodeConstantDesc(structType,
+            ObjectInspectorUtils.copyToStandardJavaObject(o, coi));
+      } else if (!PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(clz)) {
         if (LOG.isErrorEnabled()) {
-          LOG.error("Unable to evaluate " + udf + ". Return value unrecoginizable.");
+          LOG.error("Unable to evaluate " + udf
+              + ". Return value unrecoginizable.");
         }
         return null;
+      } else {
+        // fall through
       }
       String constStr = null;
-      if(arguments.length == 1 && FunctionRegistry.isOpCast(udf)) {
+      if (arguments.length == 1 && FunctionRegistry.isOpCast(udf)) {
         // remember original string representation of constant.
         constStr = arguments[0].get().toString();
       }

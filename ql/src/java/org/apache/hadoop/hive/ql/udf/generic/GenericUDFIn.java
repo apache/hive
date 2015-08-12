@@ -60,7 +60,8 @@ import com.esotericsoftware.minlog.Log;
 public class GenericUDFIn extends GenericUDF {
 
   private transient ObjectInspector[] argumentOIs;
-  private Set<Object> constantInSet;
+  // this set is a copy of the arguments objects - avoid serializing
+  private transient Set<Object> constantInSet;
   private boolean isInSetConstant = true; //are variables from IN(...) constant
 
   private final BooleanWritable bw = new BooleanWritable();
