@@ -788,8 +788,6 @@ public class GenVectorCode extends Task {
 
       // IF conditional expression
       // fileHeader, resultType, arg2Type, arg3Type
-      {"IfExprColumnColumn", "long"},
-      {"IfExprColumnColumn", "double"},
       {"IfExprColumnScalar", "long", "long"},
       {"IfExprColumnScalar", "double", "long"},
       {"IfExprColumnScalar", "long", "double"},
@@ -1051,8 +1049,6 @@ public class GenVectorCode extends Task {
         generateFilterStringGroupColumnCompareStringGroupColumn(tdesc);
       } else if (tdesc[0].equals("StringGroupColumnCompareStringGroupColumn")) {
         generateStringGroupColumnCompareStringGroupColumn(tdesc);
-      } else if (tdesc[0].equals("IfExprColumnColumn")) {
-        generateIfExprColumnColumn(tdesc);
       } else if (tdesc[0].equals("IfExprColumnScalar")) {
         generateIfExprColumnScalar(tdesc);
       } else if (tdesc[0].equals("IfExprScalarColumn")) {
@@ -1640,33 +1636,6 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
     templateString = templateString.replaceAll("<VectorExprArgType>", vectorExprArgType);
-    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
-        className, templateString);
-  }
-
-  private void generateIfExprColumnColumn(String[] tdesc) throws Exception {
-    String operandType = tdesc[1];
-    String inputColumnVectorType = this.getColumnVectorType(operandType);
-    String outputColumnVectorType = inputColumnVectorType;
-    String returnType = operandType;
-    String className = "IfExpr" + getCamelCaseType(operandType) + "Column"
-        + getCamelCaseType(operandType) + "Column";
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
-    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
-    String templateString = readFile(templateFile);
-    // Expand, and write result
-    templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
-    templateString = templateString.replaceAll("<OperandType>", operandType);
-    String vectorExprArgType = operandType;
-
-    // Toss in timestamp and date.
-    if (operandType.equals("long")) {
-      // Let comparisons occur for DATE and TIMESTAMP, too.
-      vectorExprArgType = "int_datetime_interval_family";
-    }
-    templateString = templateString.replaceAll("<VectorExprArgType>", vectorExprArgType);
-
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
