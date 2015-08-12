@@ -22,13 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hive.common.util.FixedSizedObjectPool;
-import org.apache.hive.common.util.FixedSizedObjectPool.PoolObjectHelper;
 
 /**
  *
@@ -52,11 +52,14 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
     this.downstreamConsumer = consumer;
     this.queueMetrics = queueMetrics;
     cvbPool = new FixedSizedObjectPool<ColumnVectorBatch>(CVB_POOL_SIZE,
-        new PoolObjectHelper<ColumnVectorBatch>() {
-              @Override
-              public ColumnVectorBatch create() {
-                return new ColumnVectorBatch(colCount);
-              }
+        new Pool.PoolObjectHelper<ColumnVectorBatch>() {
+          @Override
+          public ColumnVectorBatch create() {
+            return new ColumnVectorBatch(colCount);
+          }
+          @Override
+          public void resetBeforeOffer(ColumnVectorBatch t) {
+          }
         });
   }
 

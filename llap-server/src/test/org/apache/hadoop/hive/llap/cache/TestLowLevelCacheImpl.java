@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
-import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl.CacheChunk;
+import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.junit.Test;
 
 public class TestLowLevelCacheImpl {

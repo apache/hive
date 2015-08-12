@@ -30,6 +30,7 @@ import java.util.concurrent.FutureTask;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.hadoop.hive.common.Pool;
 import org.junit.Test;
 
 public class TestFixedSizedObjectPool {
@@ -67,7 +68,7 @@ public class TestFixedSizedObjectPool {
 
     protected void doOneOp() {
       Object o = new Object();
-      if (pool.offer(o)) {
+      if (pool.tryOffer(o)) {
         objects.add(o);
       }
     }
@@ -87,18 +88,26 @@ public class TestFixedSizedObjectPool {
     }
   }
 
-  private static class DummyHelper extends FixedSizedObjectPool.PoolObjectHelper<Object> {
+  private static class DummyHelper implements Pool.PoolObjectHelper<Object> {
     @Override
     public Object create() {
       return new Object();
     }
+
+    @Override
+    public void resetBeforeOffer(Object t) {
+    }
   }
 
-  private static class OneObjHelper extends FixedSizedObjectPool.PoolObjectHelper<Object> {
+  private static class OneObjHelper implements Pool.PoolObjectHelper<Object> {
     public static final Object THE_OBJECT = new Object();
     @Override
     public Object create() {
       return THE_OBJECT;
+    }
+
+    @Override
+    public void resetBeforeOffer(Object t) {
     }
   }
 
@@ -111,9 +120,9 @@ public class TestFixedSizedObjectPool {
     for (int i = 0; i < SIZE; ++i) {
       Object obj = new Object();
       offered.add(obj);
-      assertTrue(pool.offer(obj));
+      assertTrue(pool.tryOffer(obj));
     }
-    assertFalse(pool.offer(newObj));
+    assertFalse(pool.tryOffer(newObj));
     for (int i = 0; i < SIZE; ++i) {
       Object obj = pool.take();
       assertTrue(offered.remove(obj));
@@ -166,7 +175,7 @@ public class TestFixedSizedObjectPool {
     for (int i = 0; i < (size >> 1); ++i) {
       Object o = new Object();
       allGiven.add(o);
-      assertTrue(pool.offer(o));
+      assertTrue(pool.tryOffer(o));
     }
     @SuppressWarnings("unchecked")
     FutureTask<Object>[] tasks = new FutureTask[TASK_COUNT];
@@ -217,9 +226,9 @@ public class TestFixedSizedObjectPool {
     // Verify that we can drain the pool, then cycle it, i.e. the state is not corrupted.
     while (pool.take() != OneObjHelper.THE_OBJECT);
     for (int i = 0; i < size; ++i) {
-      assertTrue(pool.offer(new Object()));
+      assertTrue(pool.tryOffer(new Object()));
     }
-    assertFalse(pool.offer(new Object()));
+    assertFalse(pool.tryOffer(new Object()));
     for (int i = 0; i < size; ++i) {
       assertTrue(OneObjHelper.THE_OBJECT != pool.take());
     }

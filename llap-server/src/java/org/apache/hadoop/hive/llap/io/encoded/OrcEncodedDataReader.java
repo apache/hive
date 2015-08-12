@@ -13,6 +13,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CallableWithNdc;
+import org.apache.hadoop.hive.common.Pool;
+import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
@@ -50,15 +52,16 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedOrcFile;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReader;
-import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcCacheKey;
-import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl.OrcEncodedColumnBatch;
+import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
+import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hive.common.util.FixedSizedObjectPool;
 
 /**
  * This produces EncodedColumnBatch via ORC EncodedDataImpl.
@@ -69,6 +72,44 @@ import org.apache.hadoop.mapred.InputSplit;
 public class OrcEncodedDataReader extends CallableWithNdc<Void>
     implements ConsumerFeedback<OrcEncodedColumnBatch>, Consumer<OrcEncodedColumnBatch> {
   private static final Log LOG = LogFactory.getLog(OrcEncodedDataReader.class);
+  public static final FixedSizedObjectPool<ColumnStreamData> CSD_POOL =
+      new FixedSizedObjectPool<>(8192, new PoolObjectHelper<ColumnStreamData>() {
+        @Override
+        public ColumnStreamData create() {
+          return new ColumnStreamData();
+        }
+        @Override
+        public void resetBeforeOffer(ColumnStreamData t) {
+          t.reset();
+        }
+      });
+  public static final FixedSizedObjectPool<OrcEncodedColumnBatch> ECB_POOL =
+      new FixedSizedObjectPool<>(1024, new PoolObjectHelper<OrcEncodedColumnBatch>() {
+        @Override
+        public OrcEncodedColumnBatch create() {
+          return new OrcEncodedColumnBatch();
+        }
+        @Override
+        public void resetBeforeOffer(OrcEncodedColumnBatch t) {
+          t.reset();
+        }
+      });
+  private static final PoolFactory POOL_FACTORY = new PoolFactory() {
+    @Override
+    public <T> Pool<T> createPool(int size, PoolObjectHelper<T> helper) {
+      return new FixedSizedObjectPool<>(size, helper);
+    }
+
+    @Override
+    public Pool<ColumnStreamData> createColumnStreamDataPool() {
+      return CSD_POOL;
+    }
+
+    @Override
+    public Pool<OrcEncodedColumnBatch> createEncodedColumnBatchPool() {
+      return ECB_POOL;
+    }
+  };
 
   private final OrcMetadataCache metadataCache;
   private final LowLevelCache lowLevelCache;
@@ -246,7 +287,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       ensureOrcReader();
       // Reader creating updates HDFS counters, don't do it here.
       DataWrapperForOrc dw = new DataWrapperForOrc();
-      stripeReader = orcReader.encodedReader(fileId, dw, dw);
+      stripeReader = orcReader.encodedReader(fileId, dw, dw, POOL_FACTORY);
       stripeReader.setDebugTracing(DebugUtils.isTraceOrcEnabled());
     } catch (Throwable t) {
       consumer.setError(t);
@@ -600,11 +641,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           }
         }
         lowLevelCache.releaseBuffers(data.getCacheBuffers());
-        EncodedReaderImpl.SB_POOL.offer(data);
+        CSD_POOL.offer(data);
       }
     }
     // We can offer ECB even with some streams not discarded; reset() will clear the arrays.
-    EncodedReaderImpl.ECB_POOL.offer(ecb);
+    ECB_POOL.offer(ecb);
   }
 
   /**
@@ -745,7 +786,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       boolean[] isMissingAnyRgs = new boolean[cols.length];
       int totalRgCount = getRgCount(fileMetadata.getStripes().get(key.stripeIx), rowIndexStride);
       for (int rgIx = 0; rgIx < totalRgCount; ++rgIx) {
-        OrcEncodedColumnBatch col = EncodedReaderImpl.ECB_POOL.take();
+        OrcEncodedColumnBatch col = ECB_POOL.take();
         col.init(fileId, key.stripeIx, rgIx, cols.length);
         boolean hasAnyCached = false;
         try {

@@ -24,16 +24,36 @@ import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
-import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl.OrcEncodedColumnBatch;
+import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 
 public interface EncodedReader {
-  // TODO#: document
+
+  /**
+   * Reads encoded data from ORC file.
+   * @param stripeIx Index of the stripe to read.
+   * @param stripe Externally provided metadata (from metadata reader or external cache).
+   * @param index Externally provided metadata (from metadata reader or external cache).
+   * @param encodings Externally provided metadata (from metadata reader or external cache).
+   * @param streams Externally provided metadata (from metadata reader or external cache).
+   * @param included The array of booleans indicating whether each column should be read.
+   * @param colRgs Arrays of rgs, per column set to true in included, that are to be read.
+   *               null in each respective position means all rgs for this column need to be read.
+   * @param consumer The sink for data that has been read.
+   */
   void readEncodedColumns(int stripeIx, StripeInformation stripe,
       RowIndex[] index, List<ColumnEncoding> encodings, List<Stream> streams,
       boolean[] included, boolean[][] colRgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException;
 
+  /**
+   * Closes the reader.
+   */
   void close() throws IOException;
 
+  /**
+   * Controls the low-level debug tracing. (Hopefully) allows for optimization where tracing
+   * checks are entirely eliminated because this method is called with constant value, similar
+   * to just checking the constant in the first place.
+   */
   void setDebugTracing(boolean isEnabled);
 }

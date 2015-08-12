@@ -21,24 +21,14 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.Pool;
 
 import com.google.common.annotations.VisibleForTesting;
 
 /** Simple object pool of limited size. Implemented as a lock-free ring buffer;
  * may fail to produce items if there are too many concurrent users. */
-public class FixedSizedObjectPool<T> {
+public class FixedSizedObjectPool<T> implements Pool<T> {
   public static final Log LOG = LogFactory.getLog(FixedSizedObjectPool.class);
-
-  /**
-   * Object helper for objects stored in the pool.
-   */
-  public static abstract class PoolObjectHelper<T> {
-    /** Called to create an object when one cannot be provided. */
-    protected abstract T create();
-    /** Called before the object is put in the pool (regardless of whether put succeeds),
-     *  if the pool size is not 0 . */
-    protected void resetBeforeOffer(T t) {}
-  }
 
   /**
    * Ring buffer has two "markers" - where objects are present ('objects' list), and where they are
@@ -141,12 +131,19 @@ public class FixedSizedObjectPool<T> {
     casLog = doTraceLog ? new CasLog() : null;
   }
 
+  @Override
   public T take() {
     T result = pool.length > 0 ? takeImpl() : null;
     return (result == null) ? helper.create() : result;
   }
 
-  public boolean offer(T t) {
+  @Override
+  public void offer(T t) {
+    tryOffer(t);
+  }
+
+  @VisibleForTesting
+  public boolean tryOffer(T t) {
     if (t == null || pool.length == 0) return false; // 0 size means no-pooling case - passthru.
     helper.resetBeforeOffer(t);
     return offerImpl(t);

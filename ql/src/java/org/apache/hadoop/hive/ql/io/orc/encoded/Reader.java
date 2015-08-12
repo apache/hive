@@ -20,13 +20,47 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.common.Pool;
+import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
+import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.ql.io.orc.DataReader;
 
 /**
  * The interface for reading encoded data from ORC files.
  */
 public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
+
+  /** The factory that can create (or return) the pools used by encoded reader. */
+  public interface PoolFactory {
+    <T> Pool<T> createPool(int size, PoolObjectHelper<T> helper);
+    Pool<OrcEncodedColumnBatch> createEncodedColumnBatchPool();
+    Pool<ColumnStreamData> createColumnStreamDataPool();
+  }
+
+  /** Implementation of EncodedColumnBatch for ORC. */
+  public static final class OrcEncodedColumnBatch extends EncodedColumnBatch<OrcBatchKey> {
+    /** RG index indicating the data applies for all RGs (e.g. a string dictionary). */
+    public static final int ALL_RGS = -1;
+    public void init(long fileId, int stripeIx, int rgIx, int columnCount) {
+      if (batchKey == null) {
+        batchKey = new OrcBatchKey(fileId, stripeIx, rgIx);
+      } else {
+        batchKey.set(fileId, stripeIx, rgIx);
+      }
+      resetColumnArrays(columnCount);
+    }
+  }
+
+  /**
+   * Creates the encoded reader.
+   * @param fileId File ID to read, to use for cache lookups and such.
+   * @param dataCache Data cache to use for cache lookups.
+   * @param dataReader Data reader to read data not found in cache (from disk, HDFS, and such).
+   * @param pf Pool factory to create object pools.
+   * @return The reader.
+   */
   EncodedReader encodedReader(
-      long fileId, DataCache dataCache, DataReader dataReader) throws IOException;
+      long fileId, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException;
 }
