@@ -290,6 +290,10 @@ public class HybridHashTableContainer
       }
     }
 
+    // Round to power of 2 here, as is required by WriteBuffers
+    writeBufferSize = Integer.bitCount(writeBufferSize) == 1 ?
+        writeBufferSize : Integer.highestOneBit(writeBufferSize);
+
     // Cap WriteBufferSize to avoid large preallocations
     writeBufferSize = writeBufferSize < minWbSize ? minWbSize : Math.min(maxWbSize, writeBufferSize);
     LOG.info("Write buffer size: " + writeBufferSize);
