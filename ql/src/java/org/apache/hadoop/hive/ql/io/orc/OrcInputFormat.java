@@ -487,7 +487,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private FileInfo verifyCachedFileInfo(FileStatus file) {
-      context.numFilesCounter.incrementAndGet();
       FileInfo fileInfo = Context.footerCache.getIfPresent(file.getPath());
       if (fileInfo != null) {
         if (LOG.isDebugEnabled()) {
@@ -675,6 +674,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
         int numFiles = children.size();
         long avgFileSize = totalFileSize / numFiles;
+        int totalFiles = context.numFilesCounter.addAndGet(numFiles);
         switch(context.splitStrategyKind) {
           case BI:
             // BI strategy requested through config
@@ -688,7 +688,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             break;
           default:
             // HYBRID strategy
-            if (avgFileSize > context.maxSize || numFiles <= context.minSplits) {
+            if (avgFileSize > context.maxSize || totalFiles <= context.minSplits) {
               splitStrategy = new ETLSplitStrategy(context, fs, dir, children, isOriginal, deltas,
                   covered);
             } else {
