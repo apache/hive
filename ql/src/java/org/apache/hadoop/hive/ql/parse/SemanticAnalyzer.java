@@ -6724,6 +6724,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       outColumnCnt += dpCtx.getNumDPCols();
     }
 
+    // The numbers of input columns and output columns should match for regular query
+    if (!updating() && !deleting() && inColumnCnt != outColumnCnt) {
+      String reason = "Table " + dest + " has " + outColumnCnt
+          + " columns, but query has " + inColumnCnt + " columns.";
+      throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
+          qb.getParseInfo().getDestForClause(dest), reason));
+    }
+
     // Check column types
     boolean converted = false;
     int columnNumber = tableFields.size();
@@ -6830,12 +6838,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         dpCtx.mapInputToDP(rowFields.subList(tableFields.size() + 1, rowFields.size()));
       }
     } else {
-      if (inColumnCnt != outColumnCnt) {
-        String reason = "Table " + dest + " has " + outColumnCnt
-            + " columns, but query has " + inColumnCnt + " columns.";
-        throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
-            qb.getParseInfo().getDestForClause(dest), reason));
-      } else if (dynPart && dpCtx != null) {
+      if (dynPart && dpCtx != null) {
         // create the mapping from input ExprNode to dest table DP column
         dpCtx.mapInputToDP(rowFields.subList(tableFields.size(), rowFields.size()));
       }
