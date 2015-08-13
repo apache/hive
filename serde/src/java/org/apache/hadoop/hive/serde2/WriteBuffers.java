@@ -56,7 +56,7 @@ public final class WriteBuffers implements RandomAccessOutput {
 
 
   public WriteBuffers(int wbSize, long maxSize) {
-    this.wbSize = Integer.bitCount(wbSize) == 1 ? wbSize : (Integer.highestOneBit(wbSize) << 1);
+    this.wbSize = Integer.bitCount(wbSize) == 1 ? wbSize : Integer.highestOneBit(wbSize);
     this.wbSizeLog2 = 31 - Integer.numberOfLeadingZeros(this.wbSize);
     this.offsetMask = this.wbSize - 1;
     this.maxSize = maxSize;
