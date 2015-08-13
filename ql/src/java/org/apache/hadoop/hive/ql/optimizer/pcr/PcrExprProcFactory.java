@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
@@ -379,7 +380,7 @@ public final class PcrExprProcFactory {
           }
         }
 
-        if (has_part_col) {
+        if (has_part_col && fd.getTypeInfo().getCategory() == Category.PRIMITIVE) {
           //  we need to evaluate result for every pruned partition
           if (fd.getTypeInfo().equals(TypeInfoFactory.booleanTypeInfo)) {
             // if the return type of the GenericUDF is boolean and all partitions agree on
