@@ -575,7 +575,8 @@ public class ReaderImpl implements Reader {
     return deserializedSize;
   }
 
-  private long getRawDataSizeFromColIndices(List<Integer> colIndices) {
+  @Override
+  public long getRawDataSizeFromColIndices(List<Integer> colIndices) {
     long result = 0;
     for (int colIdx : colIndices) {
       result += getRawDataSizeOfColumn(colIdx);
@@ -620,7 +621,7 @@ public class ReaderImpl implements Reader {
     case BYTE:
       return numVals * JavaDataModel.get().primitive1();
     default:
-      LOG.debug("Unknown primitive category.");
+      LOG.debug("Unknown primitive category: " + type.getKind());
       break;
     }
 
