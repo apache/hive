@@ -67,6 +67,7 @@ public class TestTaskExecutorService {
     conf = new Configuration();
   }
 
+
   @Test(timeout = 5000)
   public void testWaitQueueComparator() throws InterruptedException {
     TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100), false, 100000);
@@ -200,6 +201,42 @@ public class TestTaskExecutorService {
     assertEquals(r3, queue.take());
     assertEquals(r4, queue.take());
     assertEquals(r5, queue.take());
+  }
+
+  @Test(timeout = 5000)
+  public void testWaitQueueComparatorWithinDagPriority() throws InterruptedException {
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 0, 100, 10), false, 100000);
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 0, 100, 1), false, 100000);
+    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 0, 100, 5), false, 100000);
+
+    EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
+        new TaskExecutorService.ShortestJobFirstComparator(), 4);
+
+    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r3));
+
+    assertEquals(r2, queue.take());
+    assertEquals(r3, queue.take());
+    assertEquals(r1, queue.take());
+  }
+
+  @Test(timeout = 5000)
+  public void testWaitQueueComparatorParallelism() throws InterruptedException {
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 10, 3, 100, 1), false, 100000); // 7 pending
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 10, 7, 100, 1), false, 100000); // 3 pending
+    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 10, 5, 100, 1), false, 100000); // 5 pending
+
+    EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
+        new TaskExecutorService.ShortestJobFirstComparator(), 4);
+
+    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r3));
+
+    assertEquals(r2, queue.take());
+    assertEquals(r3, queue.take());
+    assertEquals(r1, queue.take());
   }
 
   @Test(timeout = 5000)
@@ -344,8 +381,15 @@ public class TestTaskExecutorService {
 
   // ----------- Helper classes and methods go after this point. Tests above this -----------
 
-  private SubmitWorkRequestProto createSubmitWorkRequestProto(int fragmentNumber, int parallelism,
+  // Create requests with the same within dag priority
+  private SubmitWorkRequestProto createSubmitWorkRequestProto(int fragmentNumber, int selfAndUpstreamParallelism,
                                                               long attemptStartTime) {
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, attemptStartTime, 1);
+  }
+
+  private SubmitWorkRequestProto createSubmitWorkRequestProto(int fragmentNumber, int selfAndUpstreamParallelism,
+                                                              int selfAndUpstreamComplete,
+                                                              long attemptStartTime, int withinDagPriority) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
@@ -360,7 +404,6 @@ public class TestTaskExecutorService {
                 .setDagName("MockDag")
                 .setFragmentNumber(fragmentNumber)
                 .setVertexName("MockVertex")
-                .setVertexParallelism(parallelism)
                 .setProcessorDescriptor(
                     EntityDescriptorProto.newBuilder().setClassName("MockProcessor").build())
                 .setFragmentIdentifierString(taId.toString()).build()).setAmHost("localhost")
@@ -371,6 +414,9 @@ public class TestTaskExecutorService {
             .FragmentRuntimeInfo
             .newBuilder()
             .setFirstAttemptStartTime(attemptStartTime)
+            .setNumSelfAndUpstreamTasks(selfAndUpstreamParallelism)
+            .setNumSelfAndUpstreamCompletedTasks(selfAndUpstreamComplete)
+            .setWithinDagPriority(withinDagPriority)
             .build())
         .build();
   }

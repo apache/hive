@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.tez.runtime.task.EndReason;
@@ -380,6 +381,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     try {
       synchronized (lock) {
         boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
+        LOG.info("Attempting to execute {}", taskWrapper);
         ListenableFuture<TaskRunner2Result> future = executorService.submit(taskWrapper.getTaskRunnerCallable());
         taskWrapper.setIsInWaitQueue(false);
         FutureCallback<TaskRunner2Result> wrappedCallback = createInternalCompletionListener(taskWrapper);
@@ -584,23 +586,41 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     public int compare(TaskWrapper t1, TaskWrapper t2) {
       TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
       TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
-      boolean newCanFinish = o1.canFinish();
-      boolean oldCanFinish = o2.canFinish();
-      if (newCanFinish == true && oldCanFinish == false) {
+      boolean o1CanFinish = o1.canFinish();
+      boolean o2CanFinish = o2.canFinish();
+      if (o1CanFinish == true && o2CanFinish == false) {
         return -1;
-      } else if (newCanFinish == false && oldCanFinish == true) {
+      } else if (o1CanFinish == false && o2CanFinish == true) {
         return 1;
       }
 
-      if (o1.getVertexParallelism() < o2.getVertexParallelism()) {
+      FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
+      FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
+
+      // Check if these belong to the same task, and work with withinDagPriority
+      if (o1.getQueryId().equals(o2.getQueryId())) {
+        // Same Query
+        // Within dag priority - lower values indicate higher priority.
+        if (fri1.getWithinDagPriority() < fri2.getWithinDagPriority()) {
+          return -1;
+        } else if (fri1.getWithinDagPriority() > fri2.getWithinDagPriority()){
+          return 1;
+        }
+      }
+
+      // Compute knownPending tasks. selfAndUpstream indicates task counts for current vertex and
+      // it's parent hierarchy. selfAndUpstreamComplete indicates how many of these have completed.
+      int knownPending1 = fri1.getNumSelfAndUpstreamTasks() - fri1.getNumSelfAndUpstreamCompletedTasks();
+      int knownPending2 = fri2.getNumSelfAndUpstreamTasks() - fri2.getNumSelfAndUpstreamCompletedTasks();
+      if (knownPending1 < knownPending2) {
         return -1;
-      } else if (o1.getVertexParallelism() > o2.getVertexParallelism()) {
+      } else if (knownPending1 > knownPending2) {
         return 1;
       }
 
-      if (o1.getFirstAttemptStartTime() < o2.getFirstAttemptStartTime()) {
+      if (fri1.getFirstAttemptStartTime() < fri2.getFirstAttemptStartTime()) {
         return -1;
-      } else if (o1.getFirstAttemptStartTime() > o2.getFirstAttemptStartTime()) {
+      } else if (fri1.getFirstAttemptStartTime() > fri2.getFirstAttemptStartTime()) {
         return 1;
       }
       return 0;
@@ -610,8 +630,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
   // if map tasks and reduce tasks are in finishable state then priority is given to the task in
   // the following order
   // 1) Dag start time
-  // 2) Attempt start time
-  // 3) Vertex parallelism
+  // 2) Within dag priority
+  // 3) Attempt start time
+  // 4) Vertex parallelism
   @VisibleForTesting
   public static class FirstInFirstOutComparator implements Comparator<TaskWrapper> {
 
@@ -619,29 +640,47 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     public int compare(TaskWrapper t1, TaskWrapper t2) {
       TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
       TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
-      boolean newCanFinish = o1.canFinish();
-      boolean oldCanFinish = o2.canFinish();
-      if (newCanFinish == true && oldCanFinish == false) {
+      boolean o1CanFinish = o1.canFinish();
+      boolean o2CanFinish = o2.canFinish();
+      if (o1CanFinish == true && o2CanFinish == false) {
         return -1;
-      } else if (newCanFinish == false && oldCanFinish == true) {
+      } else if (o1CanFinish == false && o2CanFinish == true) {
         return 1;
       }
 
-      if (o1.getDagStartTime() < o2.getDagStartTime()) {
+      FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
+      FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
+
+      if (fri1.getDagStartTime() < fri2.getDagStartTime()) {
         return -1;
-      } else if (o1.getDagStartTime() > o2.getDagStartTime()) {
+      } else if (fri1.getDagStartTime() > fri2.getDagStartTime()) {
         return 1;
       }
 
-      if (o1.getFirstAttemptStartTime() < o2.getFirstAttemptStartTime()) {
+      // Check if these belong to the same task, and work with withinDagPriority
+      if (o1.getQueryId().equals(o2.getQueryId())) {
+        // Same Query
+        // Within dag priority - lower values indicate higher priority.
+        if (fri1.getWithinDagPriority() < fri2.getWithinDagPriority()) {
+          return -1;
+        } else if (fri1.getWithinDagPriority() > fri2.getWithinDagPriority()){
+          return 1;
+        }
+      }
+
+      if (fri1.getFirstAttemptStartTime() < fri2.getFirstAttemptStartTime()) {
         return -1;
-      } else if (o1.getFirstAttemptStartTime() > o2.getFirstAttemptStartTime()) {
+      } else if (fri1.getFirstAttemptStartTime() > fri2.getFirstAttemptStartTime()) {
         return 1;
       }
 
-      if (o1.getVertexParallelism() < o2.getVertexParallelism()) {
+      // Compute knownPending tasks. selfAndUpstream indicates task counts for current vertex and
+      // it's parent hierarchy. selfAndUpstreamComplete indicates how many of these have completed.
+      int knownPending1 = fri1.getNumSelfAndUpstreamTasks() - fri1.getNumSelfAndUpstreamCompletedTasks();
+      int knownPending2 = fri2.getNumSelfAndUpstreamTasks() - fri2.getNumSelfAndUpstreamCompletedTasks();
+      if (knownPending1 < knownPending2) {
         return -1;
-      } else if (o1.getVertexParallelism() > o2.getVertexParallelism()) {
+      } else if (knownPending1 > knownPending2) {
         return 1;
       }
 
@@ -656,9 +695,12 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     public int compare(TaskWrapper t1, TaskWrapper t2) {
       TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
       TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
-      if (o1.getVertexParallelism() > o2.getVertexParallelism()) {
+      FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
+      FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
+
+      if (fri1.getNumSelfAndUpstreamTasks() > fri2.getNumSelfAndUpstreamTasks()) {
         return 1;
-      } else if (o1.getVertexParallelism() < o2.getVertexParallelism()) {
+      } else if (fri1.getNumSelfAndUpstreamTasks() < fri2.getNumSelfAndUpstreamTasks()) {
         return -1;
       }
       return 0;
@@ -738,8 +780,12 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
           ", inPreemptionQueue=" + inPreemptionQueue +
           ", registeredForNotifications=" + registeredForNotifications +
           ", canFinish=" + taskRunnerCallable.canFinish() +
-          ", firstAttemptStartTime=" + taskRunnerCallable.getFirstAttemptStartTime() +
-          ", vertexParallelism=" + taskRunnerCallable.getVertexParallelism() +
+          ", firstAttemptStartTime=" + taskRunnerCallable.getFragmentRuntimeInfo().getFirstAttemptStartTime() +
+          ", dagStartTime=" + taskRunnerCallable.getFragmentRuntimeInfo().getDagStartTime() +
+          ", withinDagPriority=" + taskRunnerCallable.getFragmentRuntimeInfo().getWithinDagPriority() +
+          ", vertexParallelism= " + taskRunnerCallable.getFragmentSpec().getVertexParallelism() +
+          ", selfAndUpstreamParallelism= " + taskRunnerCallable.getFragmentRuntimeInfo().getNumSelfAndUpstreamTasks() +
+          ", selfAndUpstreamComplete= " + taskRunnerCallable.getFragmentRuntimeInfo().getNumSelfAndUpstreamCompletedTasks() +
           '}';
     }
 

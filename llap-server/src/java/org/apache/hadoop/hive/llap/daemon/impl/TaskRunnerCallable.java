@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
@@ -96,6 +97,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private volatile String threadName;
   private final LlapDaemonExecutorMetrics metrics;
   private final String requestId;
+  private final String queryId;
   private boolean shouldRunTask = true;
   final Stopwatch runtimeWatch = new Stopwatch();
   final Stopwatch killtimerWatch = new Stopwatch();
@@ -129,7 +131,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         request.getUser(), jobToken, null, request.getFragmentSpec().getDagName());
     }
     this.metrics = metrics;
-    this.requestId = getRequestId(request);
+    this.requestId = request.getFragmentSpec().getFragmentIdentifierString();
+    // TODO Change this to the queryId/Name when that's available.
+    this.queryId = request.getFragmentSpec().getDagName();
     this.killedTaskHandler = killedTaskHandler;
     this.fragmentCompletionHanler = fragmentCompleteHandler;
   }
@@ -330,8 +334,13 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   @Override
   public String toString() {
     return requestId + " {canFinish: " + canFinish() +
-        " vertexParallelism: " + getVertexParallelism() +
-        " firstAttemptStartTime: " + getFirstAttemptStartTime() + "}";
+        ", vertexParallelism: " + request.getFragmentSpec().getVertexParallelism() +
+        ", selfAndUpstreamParallelism: " + request.getFragmentRuntimeInfo().getNumSelfAndUpstreamTasks() +
+        ", selfAndUpstreamComplete: " + request.getFragmentRuntimeInfo().getNumSelfAndUpstreamCompletedTasks() +
+        ", firstAttemptStartTime: " + getFragmentRuntimeInfo().getFirstAttemptStartTime() +
+        ", dagStartTime:" + getFragmentRuntimeInfo().getDagStartTime() +
+        ", withinDagPriority: " + getFragmentRuntimeInfo().getWithinDagPriority() +
+        "}";
   }
 
   @Override
@@ -347,12 +356,12 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     return requestId.equals(((TaskRunnerCallable) obj).getRequestId());
   }
 
-  public int getVertexParallelism() {
-    return request.getFragmentSpec().getVertexParallelism();
-  }
-
   public String getRequestId() {
     return requestId;
+  }
+
+  public String getQueryId() {
+    return queryId;
   }
 
   public QueryFragmentInfo getFragmentInfo() {
@@ -470,16 +479,11 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     return sb.toString();
   }
 
-  private static String getRequestId(SubmitWorkRequestProto request) {
-    return request.getFragmentSpec().getFragmentIdentifierString();
+  public FragmentRuntimeInfo getFragmentRuntimeInfo() {
+    return request.getFragmentRuntimeInfo();
   }
 
-  public long getFirstAttemptStartTime() {
-    return request.getFragmentRuntimeInfo().getFirstAttemptStartTime();
+  public FragmentSpecProto getFragmentSpec() {
+    return request.getFragmentSpec();
   }
-
-  public long getDagStartTime() {
-    return request.getFragmentRuntimeInfo().getDagStartTime();
-  }
-
 }
