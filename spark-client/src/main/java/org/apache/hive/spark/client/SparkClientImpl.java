@@ -423,6 +423,10 @@ class SparkClientImpl implements SparkClient {
       LOG.info("Running client driver with argv: {}", cmd);
       ProcessBuilder pb = new ProcessBuilder("sh", "-c", cmd);
 
+      // Prevent hive configurations from being visible in Spark.
+      pb.environment().remove("HIVE_HOME");
+      pb.environment().remove("HIVE_CONF_DIR");
+
       if (isTesting != null) {
         pb.environment().put("SPARK_TESTING", isTesting);
       }
