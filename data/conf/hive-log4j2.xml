@@ -70,7 +70,7 @@
 
   <Loggers>
     <Root level="${sys:hive.log.threshold}">
-      <AppenderRef ref="${sys:hive.root.logger}" level="{sys:hive.log.level}"/>
+      <AppenderRef ref="${sys:hive.root.logger}" level="${sys:hive.log.level}"/>
       <AppenderRef ref="EventCounter" />
     </Root>
 
