@@ -18,17 +18,17 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import com.google.common.primitives.UnsignedBytes;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.thrift.TFieldIdEnum;
-import org.apache.thrift.TUnion;
-import org.apache.thrift.meta_data.FieldMetaData;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.thrift.TFieldIdEnum;
+import org.apache.thrift.TUnion;
+import org.apache.thrift.meta_data.FieldMetaData;
+
+import com.google.common.primitives.UnsignedBytes;
 
 /**
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
@@ -37,7 +37,8 @@ import java.util.Map;
 public class ThriftUnionObjectInspector extends ReflectionStructObjectInspector implements UnionObjectInspector {
 
   private static final String FIELD_METADATA_MAP = "metaDataMap";
-  private  List<ObjectInspector> ois;
+  private List<ObjectInspector> ois;
+  private List<StandardStructObjectInspector.MyField> fields;
 
   @Override
   public boolean shouldIgnoreField(String name) {
@@ -88,10 +89,14 @@ public class ThriftUnionObjectInspector extends ReflectionStructObjectInspector 
 
     try {
       final Map<? extends TFieldIdEnum, FieldMetaData> fieldMap = (Map<? extends TFieldIdEnum, FieldMetaData>) fieldMetaData.get(null);
+      fields = new ArrayList<StandardStructObjectInspector.MyField>(fieldMap.size());
       this.ois = new ArrayList<ObjectInspector>();
       for(Map.Entry<? extends TFieldIdEnum, FieldMetaData> metadata : fieldMap.entrySet()) {
-        final Type fieldType = ThriftObjectInspectorUtils.getFieldType(objectClass, metadata.getValue().fieldName);
+        int fieldId = metadata.getKey().getThriftFieldId();
+        String fieldName = metadata.getValue().fieldName;
+        final Type fieldType = ThriftObjectInspectorUtils.getFieldType(objectClass, fieldName);
         final ObjectInspector reflectionObjectInspector = ObjectInspectorFactory.getReflectionObjectInspector(fieldType, options);
+        fields.add(new StandardStructObjectInspector.MyField(fieldId, fieldName, reflectionObjectInspector));
         this.ois.add(reflectionObjectInspector);
       }
     } catch (IllegalAccessException e) {
@@ -111,11 +116,6 @@ public class ThriftUnionObjectInspector extends ReflectionStructObjectInspector 
 
   public String getTypeName() {
     return ObjectInspectorUtils.getStandardUnionTypeName(this);
-  }
-
-  @Override
-  public Object create() {
-    return ReflectionUtils.newInstance(objectClass, null);
   }
 }
 
