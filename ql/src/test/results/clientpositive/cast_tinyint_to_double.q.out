@@ -1,0 +1,38 @@
+PREHOOK: query: drop table t
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table t
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE t(c tinyint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t(c tinyint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert overwrite table t select 10 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t
+POSTHOOK: query: insert overwrite table t select 10 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.c EXPRESSION []
+PREHOOK: query: select * from t where c = 10.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t where c = 10.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+10
+PREHOOK: query: select * from t where c = -10.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t where c = -10.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
