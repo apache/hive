@@ -27,7 +27,6 @@ import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -57,13 +56,14 @@ import org.apache.hadoop.hive.ql.exec.PartitionKeySampler;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
+import org.apache.hadoop.hive.ql.log.NullAppender;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -88,11 +88,12 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Appender;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.varia.NullAppender;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
 
 /**
  * ExecDriver is the central class in co-ordinating execution of any map-reduce task.
@@ -687,8 +688,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     if (noLog) {
       // If started from main(), and noLog is on, we should not output
       // any logs. To turn the log on, please set -Dtest.silent=false
-      BasicConfigurator.resetConfiguration();
-      BasicConfigurator.configure(new NullAppender());
+      Logger logger = org.apache.logging.log4j.LogManager.getRootLogger();
+      NullAppender appender = NullAppender.createNullAppender();
+      appender.addToLogger(logger.getName(), Level.ERROR);
+      appender.start();
     } else {
       setupChildLog4j(conf);
     }
@@ -703,10 +706,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     // print out the location of the log file for the user so
     // that it's easy to find reason for local mode execution failures
-    for (Appender appender : Collections.list((Enumeration<Appender>) LogManager.getRootLogger()
-        .getAllAppenders())) {
+    for (Appender appender : ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger())
+            .getAppenders().values()) {
       if (appender instanceof FileAppender) {
-        console.printInfo("Execution log at: " + ((FileAppender) appender).getFile());
+        console.printInfo("Execution log at: " + ((FileAppender) appender).getFileName());
+      } else if (appender instanceof RollingFileAppender) {
+        console.printInfo("Execution log at: " + ((RollingFileAppender) appender).getFileName());
       }
     }
 
