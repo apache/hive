@@ -102,7 +102,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
           deletePath = createTargetPath(targetPath, fs);
         }
-        if (!Hive.moveFile(conf, sourcePath, targetPath, fs, true, false)) {
+        if (!Hive.moveFile(conf, sourcePath, targetPath, true, false)) {
           try {
             if (deletePath != null) {
               fs.delete(deletePath, true);
@@ -380,7 +380,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getHoldDDLTime(),
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
-                SessionState.get().getCurrentTxn());
+                SessionState.get().getTxnMgr().getCurrentTxnId());
             console.printInfo("\t Time taken for load dynamic partitions : "  +
                 (System.currentTimeMillis() - startTime));
 

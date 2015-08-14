@@ -192,6 +192,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("size", GenericUDFSize.class);
 
     system.registerGenericUDF("round", GenericUDFRound.class);
+    system.registerGenericUDF("bround", GenericUDFBRound.class);
     system.registerGenericUDF("floor", GenericUDFFloor.class);
     system.registerUDF("sqrt", UDFSqrt.class, false);
     system.registerGenericUDF("cbrt", GenericUDFCbrt.class);
@@ -1281,7 +1282,7 @@ public final class FunctionRegistry {
           bridge.getUdfClassName());
     } else if (genericUDF instanceof GenericUDFMacro) {
       GenericUDFMacro bridge = (GenericUDFMacro) genericUDF;
-      clonedUDF = new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),
+      clonedUDF = new GenericUDFMacro(bridge.getMacroName(), bridge.getBody().clone(),
           bridge.getColNames(), bridge.getColTypes());
     } else {
       clonedUDF = ReflectionUtils.newInstance(genericUDF.getClass(), null);

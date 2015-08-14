@@ -16,14 +16,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alltypesorc
-          Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (cdouble / 0.0) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 100
-              Statistics: Num rows: 100 Data size: 3000 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: select cdouble / 0.0 from alltypesorc limit 100

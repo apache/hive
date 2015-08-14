@@ -54,14 +54,11 @@ STAGE PLANS:
         TableScan
           alias: src_union_1
           filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key = 86) (type: boolean)
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: 86 (type: int), value (type: string), '1' (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 STAGE DEPENDENCIES:
@@ -75,14 +72,11 @@ STAGE PLANS:
         TableScan
           alias: src_union_2
           filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
-          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key = 86) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: 86 (type: int), value (type: string), '2' (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 STAGE DEPENDENCIES:
@@ -96,14 +90,11 @@ STAGE PLANS:
         TableScan
           alias: src_union_3
           filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
-          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key = 86) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: 86 (type: int), value (type: string), '3' (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 86	val_86	1
@@ -650,6 +641,8 @@ STAGE PLANS:
                   filterExpr: (ds = '1') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
+                    expressions: '1' (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -672,6 +665,8 @@ STAGE PLANS:
                     predicate: (ds = '1') (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: '1' (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -694,6 +689,8 @@ STAGE PLANS:
                     predicate: (ds = '1') (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: '1' (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -748,6 +745,8 @@ STAGE PLANS:
                     predicate: (ds = '2') (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: '2' (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -767,6 +766,8 @@ STAGE PLANS:
                   filterExpr: (ds = '2') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
+                    expressions: '2' (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -789,6 +790,8 @@ STAGE PLANS:
                     predicate: (ds = '2') (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: '2' (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -843,6 +846,8 @@ STAGE PLANS:
                     predicate: (ds = '3') (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: '3' (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -865,6 +870,8 @@ STAGE PLANS:
                     predicate: (ds = '3') (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: '3' (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -884,6 +891,8 @@ STAGE PLANS:
                   filterExpr: (ds = '3') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
+                    expressions: '3' (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -1030,6 +1039,8 @@ STAGE PLANS:
                     predicate: (ds = '4') (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: '4' (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1052,6 +1063,8 @@ STAGE PLANS:
                     predicate: (ds = '4') (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
+                      expressions: '4' (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
                         Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1071,6 +1084,8 @@ STAGE PLANS:
                   filterExpr: (ds = '4') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
+                    expressions: '4' (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

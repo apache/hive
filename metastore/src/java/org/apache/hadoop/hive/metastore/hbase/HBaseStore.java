@@ -2061,6 +2061,22 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
+  public List<Function> getAllFunctions() throws MetaException {
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<Function> funcs = getHBase().scanFunctions(null, ".*");
+      commit = true;
+      return funcs;
+    } catch (IOException e) {
+      LOG.error("Unable to get functions" + e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  @Override
   public List<String> getFunctions(String dbName, String pattern) throws MetaException {
     boolean commit = false;
     openTransaction();

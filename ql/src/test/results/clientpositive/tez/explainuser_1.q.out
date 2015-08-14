@@ -2909,7 +2909,7 @@ Stage-0
       Select Operator [SEL_2]
          outputColumnNames:["_col0"]
          Filter Operator [FIL_4]
-            predicate:((c_int = -6) or (c_int = 6)) (type: boolean)
+            predicate:(c_int) IN (-6, 6) (type: boolean)
             TableScan [TS_0]
                alias:cbo_t1
 
@@ -6931,13 +6931,12 @@ Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 
 Stage-0
    Fetch Operator
       limit:-1
       Stage-1
-         Reducer 5
+         Reducer 4
          File Output Operator [FS_14]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6948,52 +6947,42 @@ Stage-0
                PTF Operator [PTF_11]
                   Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col0","name:":"windowingtablefunction","order by:":"_col1"}]
                   Statistics:Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator [SEL_10]
+                  Group By Operator [GBY_8]
+                  |  keys:KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                   |  outputColumnNames:["_col0","_col1","_col2"]
                   |  Statistics:Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                  |<-Reducer 4 [SIMPLE_EDGE]
-                     Reduce Output Operator [RS_9]
-                        key expressions:_col0 (type: string), _col1 (type: string)
+                  |<-Reducer 3 [SIMPLE_EDGE]
+                     Reduce Output Operator [RS_7]
+                        key expressions:_col0 (type: string), _col1 (type: string), _col2 (type: int)
                         Map-reduce partition columns:_col0 (type: string)
-                        sort order:++
+                        sort order:+++
                         Statistics:Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions:_col2 (type: int)
-                        Group By Operator [GBY_8]
+                        Group By Operator [GBY_6]
                         |  keys:KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                         |  outputColumnNames:["_col0","_col1","_col2"]
                         |  Statistics:Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                        |<-Reducer 3 [SIMPLE_EDGE]
-                           Reduce Output Operator [RS_7]
-                              key expressions:_col0 (type: string), _col1 (type: string), _col2 (type: int)
-                              Map-reduce partition columns:_col0 (type: string), _col1 (type: string), _col2 (type: int)
+                        |<-Reducer 2 [SIMPLE_EDGE]
+                           Reduce Output Operator [RS_5]
+                              key expressions:_col2 (type: string), _col1 (type: string), _col5 (type: int)
+                              Map-reduce partition columns:rand() (type: double)
                               sort order:+++
-                              Statistics:Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                              Group By Operator [GBY_6]
-                              |  keys:KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
-                              |  outputColumnNames:["_col0","_col1","_col2"]
-                              |  Statistics:Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                              |<-Reducer 2 [SIMPLE_EDGE]
-                                 Reduce Output Operator [RS_5]
-                                    key expressions:_col2 (type: string), _col1 (type: string), _col5 (type: int)
-                                    Map-reduce partition columns:rand() (type: double)
-                                    sort order:+++
-                                    Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
-                                    PTF Operator [PTF_3]
-                                       Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
-                                       Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
-                                       Select Operator [SEL_2]
-                                       |  outputColumnNames:["_col1","_col2","_col5"]
-                                       |  Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
-                                       |<-Map 1 [SIMPLE_EDGE]
-                                          Reduce Output Operator [RS_1]
-                                             key expressions:p_mfgr (type: string), p_name (type: string)
-                                             Map-reduce partition columns:p_mfgr (type: string)
-                                             sort order:++
-                                             Statistics:Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
-                                             value expressions:p_size (type: int)
-                                             TableScan [TS_0]
-                                                alias:part
-                                                Statistics:Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                              PTF Operator [PTF_3]
+                                 Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                                 Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                                 Select Operator [SEL_2]
+                                 |  outputColumnNames:["_col1","_col2","_col5"]
+                                 |  Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
+                                 |<-Map 1 [SIMPLE_EDGE]
+                                    Reduce Output Operator [RS_1]
+                                       key expressions:p_mfgr (type: string), p_name (type: string)
+                                       Map-reduce partition columns:p_mfgr (type: string)
+                                       sort order:++
+                                       Statistics:Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
+                                       value expressions:p_size (type: int)
+                                       TableScan [TS_0]
+                                          alias:part
+                                          Statistics:Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
 
 PREHOOK: query: explain
 select abc.* 

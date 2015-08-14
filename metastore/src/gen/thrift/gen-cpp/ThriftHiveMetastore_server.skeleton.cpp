@@ -462,6 +462,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_function\n");
   }
 
+  void get_all_functions(GetAllFunctionsResponse& _return) {
+    // Your implementation goes here
+    printf("get_all_functions\n");
+  }
+
   bool create_role(const Role& role) {
     // Your implementation goes here
     printf("create_role\n");

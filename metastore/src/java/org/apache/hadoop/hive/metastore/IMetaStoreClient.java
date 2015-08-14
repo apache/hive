@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
@@ -1129,6 +1130,9 @@ public interface IMetaStoreClient {
 
   List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
+
+  GetAllFunctionsResponse getAllFunctions()
+          throws MetaException, TException;
 
   /**
    * Get a structure that details valid transactions.

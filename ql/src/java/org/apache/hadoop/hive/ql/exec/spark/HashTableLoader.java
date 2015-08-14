@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
@@ -35,6 +36,8 @@ import org.apache.hadoop.hive.ql.exec.TemporaryHashSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -43,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkBucketMapJoinContext;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
@@ -93,10 +97,28 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       }
       FileSystem fs = FileSystem.get(baseDir.toUri(), hconf);
       BucketMapJoinContext mapJoinCtx = localWork.getBucketMapjoinContext();
+      boolean firstContainer = true;
+      boolean useOptimizedContainer = HiveConf.getBoolVar(
+          hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
       for (int pos = 0; pos < mapJoinTables.length; pos++) {
         if (pos == desc.getPosBigTable() || mapJoinTables[pos] != null) {
           continue;
         }
+        if (useOptimizedContainer) {
+          MapJoinObjectSerDeContext keyCtx = mapJoinTableSerdes[pos].getKeyContext();
+          ObjectInspector keyOI = keyCtx.getSerDe().getObjectInspector();
+          if (!MapJoinBytesTableContainer.isSupportedKey(keyOI)) {
+            if (firstContainer) {
+              LOG.warn("Not using optimized table container." +
+                  "Only a subset of mapjoin keys is supported.");
+              useOptimizedContainer = false;
+              HiveConf.setBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE, false);
+            } else {
+              throw new HiveException("Only a subset of mapjoin keys is supported.");
+            }
+          }
+        }
+        firstContainer = false;
         String bigInputPath = currentInputPath;
         if (currentInputPath != null && mapJoinCtx != null) {
           if (!desc.isBucketMapJoin()) {
@@ -124,14 +146,14 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       MapJoinTableContainerSerDe mapJoinTableSerde) throws HiveException {
     LOG.info("\tLoad back all hashtable files from tmp folder uri:" + path);
     if (!SparkUtilities.isDedicatedCluster(hconf)) {
-      return mapJoinTableSerde.load(fs, path);
+      return mapJoinTableSerde.load(fs, path, hconf);
     }
     MapJoinTableContainer mapJoinTable = SmallTableCache.get(path);
     if (mapJoinTable == null) {
       synchronized (path.toString().intern()) {
         mapJoinTable = SmallTableCache.get(path);
         if (mapJoinTable == null) {
-          mapJoinTable = mapJoinTableSerde.load(fs, path);
+          mapJoinTable = mapJoinTableSerde.load(fs, path, hconf);
           SmallTableCache.cache(path, mapJoinTable);
         }
       }

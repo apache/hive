@@ -18,26 +18,22 @@
 
 package org.apache.hadoop.hive.common;
 
-import java.net.URL;
 import java.io.File;
-import java.io.IOException;
-import java.io.FileNotFoundException;
+import java.net.URL;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.logging.log4j.core.config.Configurator;
 
 /**
  * Utilities common to logging operations.
  */
 public class LogUtils {
 
-  private static final String HIVE_L4J = "hive-log4j.properties";
-  private static final String HIVE_EXEC_L4J = "hive-exec-log4j.properties";
+  private static final String HIVE_L4J = "hive-log4j2.xml";
+  private static final String HIVE_EXEC_L4J = "hive-exec-log4j2.xml";
   private static final Log l4j = LogFactory.getLog(LogUtils.class);
 
   @SuppressWarnings("serial")
@@ -95,8 +91,7 @@ public class LogUtils {
           }
           System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
         }
-        LogManager.resetConfiguration();
-        PropertyConfigurator.configure(log4jFileName);
+        Configurator.initialize(null, log4jFileName);
         logConfigLocation(conf);
         return ("Logging initialized using configuration in " + log4jConfigFile);
       }
@@ -123,8 +118,7 @@ public class LogUtils {
         break;
     }
     if (hive_l4j != null) {
-      LogManager.resetConfiguration();
-      PropertyConfigurator.configure(hive_l4j);
+      Configurator.initialize(null, hive_l4j.toString());
       logConfigLocation(conf);
       return (logMessage + "\n" + "Logging initialized using configuration in " + hive_l4j);
     } else {

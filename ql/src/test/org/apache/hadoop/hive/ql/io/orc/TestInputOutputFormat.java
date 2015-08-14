@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -66,6 +67,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitStrategy;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -103,7 +105,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Output;
+
 public class TestInputOutputFormat {
+
+  public static String toKryo(SearchArgument sarg) {
+    Output out = new Output(4 * 1024, 10 * 1024 * 1024);
+    new Kryo().writeObject(out, sarg);
+    out.close();
+    return Base64.encodeBase64String(out.toBytes());
+  }
 
   Path workDir = new Path(System.getProperty("test.tmp.dir","target/tmp"));
   static final int MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
@@ -890,14 +902,25 @@ public class TestInputOutputFormat {
     }
     fill(buffer, offset);
     footer.addTypes(OrcProto.Type.newBuilder()
-                     .setKind(OrcProto.Type.Kind.STRUCT)
-                     .addFieldNames("col1")
-                     .addSubtypes(1));
+        .setKind(OrcProto.Type.Kind.STRUCT)
+        .addFieldNames("col1")
+        .addSubtypes(1));
     footer.addTypes(OrcProto.Type.newBuilder()
         .setKind(OrcProto.Type.Kind.STRING));
     footer.setNumberOfRows(1000 * stripeLengths.length)
           .setHeaderLength(headerLen)
           .setContentLength(offset - headerLen);
+    footer.addStatistics(OrcProto.ColumnStatistics.newBuilder()
+        .setNumberOfValues(1000 * stripeLengths.length).build());
+    footer.addStatistics(OrcProto.ColumnStatistics.newBuilder()
+        .setNumberOfValues(1000 * stripeLengths.length)
+        .setStringStatistics(
+            OrcProto.StringStatistics.newBuilder()
+                .setMaximum("zzz")
+                .setMinimum("aaa")
+                .setSum(1000 * 3 * stripeLengths.length)
+                .build()
+        ).build());
     footer.build().writeTo(buffer);
     int footerEnd = buffer.getLength();
     OrcProto.PostScript ps =
@@ -998,6 +1021,78 @@ public class TestInputOutputFormat {
       assertEquals("checking stripe " + i + " size",
           stripeSizes[i], results.get(i).getLength());
     }
+  }
+
+  @Test
+  public void testProjectedColumnSize() throws Exception {
+    long[] stripeSizes =
+        new long[]{200, 200, 200, 200, 100};
+    MockFileSystem fs = new MockFileSystem(conf,
+        new MockFile("mock:/a/file", 500,
+            createMockOrcFile(stripeSizes),
+            new MockBlock("host1-1", "host1-2", "host1-3"),
+            new MockBlock("host2-1", "host0", "host2-3"),
+            new MockBlock("host0", "host3-2", "host3-3"),
+            new MockBlock("host4-1", "host4-2", "host4-3"),
+            new MockBlock("host5-1", "host5-2", "host5-3")));
+    conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 300);
+    conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 200);
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
+    OrcInputFormat.SplitGenerator splitter =
+        new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
+            fs.getFileStatus(new Path("/a/file")), null, true,
+            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null));
+    List<OrcSplit> results = splitter.call();
+    OrcSplit result = results.get(0);
+    assertEquals(3, results.size());
+    assertEquals(3, result.getStart());
+    assertEquals(400, result.getLength());
+    assertEquals(167468, result.getProjectedColumnsUncompressedSize());
+    result = results.get(1);
+    assertEquals(403, result.getStart());
+    assertEquals(400, result.getLength());
+    assertEquals(167468, result.getProjectedColumnsUncompressedSize());
+    result = results.get(2);
+    assertEquals(803, result.getStart());
+    assertEquals(100, result.getLength());
+    assertEquals(41867, result.getProjectedColumnsUncompressedSize());
+
+    // test min = 0, max = 0 generates each stripe
+    conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 0);
+    conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 0);
+    context = new OrcInputFormat.Context(conf);
+    splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
+        fs.getFileStatus(new Path("/a/file")), null, true,
+        new ArrayList<AcidInputFormat.DeltaMetaData>(),
+        true, null, null));
+    results = splitter.call();
+    assertEquals(5, results.size());
+    for (int i = 0; i < stripeSizes.length; ++i) {
+      assertEquals("checking stripe " + i + " size",
+          stripeSizes[i], results.get(i).getLength());
+      if (i == stripeSizes.length - 1) {
+        assertEquals(41867, results.get(i).getProjectedColumnsUncompressedSize());
+      } else {
+        assertEquals(83734, results.get(i).getProjectedColumnsUncompressedSize());
+      }
+    }
+
+    // single split
+    conf.setInt(OrcInputFormat.MIN_SPLIT_SIZE, 100000);
+    conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 1000);
+    context = new OrcInputFormat.Context(conf);
+    splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
+        fs.getFileStatus(new Path("/a/file")), null, true,
+        new ArrayList<AcidInputFormat.DeltaMetaData>(),
+        true, null, null));
+    results = splitter.call();
+    assertEquals(1, results.size());
+    result = results.get(0);
+    assertEquals(3, result.getStart());
+    assertEquals(900, result.getLength());
+    assertEquals(376804, result.getProjectedColumnsUncompressedSize());
   }
 
   @Test
@@ -1541,8 +1636,11 @@ public class TestInputOutputFormat {
       assertEquals("checking long " + i, i, longColumn.vector[i]);
       assertEquals("checking float " + i, i, floatColumn.vector[i], 0.0001);
       assertEquals("checking double " + i, i, doubleCoulmn.vector[i], 0.0001);
+      Text strValue = new Text();
+      strValue.set(stringColumn.vector[i], stringColumn.start[i],
+          stringColumn.length[i]);
       assertEquals("checking string " + i, new Text(Long.toHexString(i)),
-          stringColumn.getWritableObject(i));
+          strValue);
       assertEquals("checking decimal " + i, HiveDecimal.create(i),
           decimalColumn.vector[i].getHiveDecimal());
       assertEquals("checking date " + i, i, dateColumn.vector[i]);
@@ -1746,8 +1844,8 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
-        .startAnd().isNull("cost").end().build();
-    conf.set(SearchArgumentFactory.SARG_PUSHDOWN, isNull.toKryo());
+        .startAnd().isNull("cost", PredicateLeaf.Type.INTEGER).end().build();
+    conf.set(ConvertAstToSearchArg.SARG_PUSHDOWN, toKryo(isNull));
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
     options.include(new boolean[]{true, true, false, true, false});
@@ -1791,10 +1889,10 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", new Integer(0))
+            .lessThan("z", PredicateLeaf.Type.INTEGER, new Integer(0))
             .end()
             .build();
-    conf.set("sarg.pushdown", sarg.toKryo());
+    conf.set("sarg.pushdown", toKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z,r");
     properties.setProperty("columns", "z,r");
     properties.setProperty("columns.types", "int:struct<x:int,y:int>");
@@ -1833,10 +1931,10 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", new String("foo"))
+            .lessThan("z", PredicateLeaf.Type.STRING, new String("foo"))
             .end()
             .build();
-    conf.set("sarg.pushdown", sarg.toKryo());
+    conf.set("sarg.pushdown", toKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z");
     properties.setProperty("columns", "z");
     properties.setProperty("columns.types", "string");

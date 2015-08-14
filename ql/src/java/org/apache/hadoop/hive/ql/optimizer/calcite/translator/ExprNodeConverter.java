@@ -44,6 +44,7 @@ import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -223,24 +224,10 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
     case DECIMAL:
       return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
-          lType.getScale()), literal.getValue3());
-    case VARCHAR: {
-      int varcharLength = lType.getPrecision();
-      // If we cannot use Varchar due to type length restrictions, we use String
-      if (varcharLength < 1 || varcharLength > HiveVarchar.MAX_VARCHAR_LENGTH) {
-        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-      }
-      return new ExprNodeConstantDesc(TypeInfoFactory.getVarcharTypeInfo(varcharLength),
-          new HiveVarchar((String) literal.getValue3(), varcharLength));
-    }
+          lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
+    case VARCHAR:
     case CHAR: {
-      int charLength = lType.getPrecision();
-      // If we cannot use Char due to type length restrictions, we use String
-      if (charLength < 1 || charLength > HiveChar.MAX_CHAR_LENGTH) {
-        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-      }
-      return new ExprNodeConstantDesc(TypeInfoFactory.getCharTypeInfo(charLength),
-          new HiveChar((String) literal.getValue3(), charLength));
+      return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
     }
     case INTERVAL_YEAR_MONTH: {
       BigDecimal monthsBd = (BigDecimal) literal.getValue();

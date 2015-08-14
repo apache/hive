@@ -68,7 +68,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((ctinyint <> 0) and ((UDFToDouble(ctimestamp1) <= 0.0) or ((UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')))) and ((988888.0 < cdouble) or ((UDFToDouble(ctimestamp2) > -15.0) and (3569.0 >= cdouble)))) (type: boolean)
+              predicate: (((ctinyint <> 0) and ((UDFToDouble(ctimestamp1) <= 0.0) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss'))) and ((988888.0 < cdouble) or ((UDFToDouble(ctimestamp2) > -15.0) and (3569.0 >= cdouble)))) (type: boolean)
               Statistics: Num rows: 7281 Data size: 1565441 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cboolean1 (type: boolean), cbigint (type: bigint), csmallint (type: smallint), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cstring1 (type: string), (cbigint + cbigint) (type: bigint), (UDFToInteger(csmallint) % -257) (type: int), (- csmallint) (type: smallint), (- ctinyint) (type: tinyint), (UDFToInteger((- ctinyint)) + 17) (type: int), (cbigint * UDFToLong((- csmallint))) (type: bigint), (cint % UDFToInteger(csmallint)) (type: int), (- ctinyint) (type: tinyint), ((- ctinyint) % ctinyint) (type: tinyint)
@@ -250,7 +250,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((ctinyint <> 0) and ((UDFToDouble(ctimestamp1) <= 0.0) or ((UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')))) and ((988888.0 < cdouble) or ((UDFToDouble(ctimestamp2) > 7.6850000000000005) and (3569.0 >= cdouble)))) (type: boolean)
+              predicate: (((ctinyint <> 0) and ((UDFToDouble(ctimestamp1) <= 0.0) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss'))) and ((988888.0 < cdouble) or ((UDFToDouble(ctimestamp2) > 7.6850000000000005) and (3569.0 >= cdouble)))) (type: boolean)
               Statistics: Num rows: 7281 Data size: 1565441 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cboolean1 (type: boolean), cbigint (type: bigint), csmallint (type: smallint), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cstring1 (type: string), (cbigint + cbigint) (type: bigint), (UDFToInteger(csmallint) % -257) (type: int), (- csmallint) (type: smallint), (- ctinyint) (type: tinyint), (UDFToInteger((- ctinyint)) + 17) (type: int), (cbigint * UDFToLong((- csmallint))) (type: bigint), (cint % UDFToInteger(csmallint)) (type: int), (- ctinyint) (type: tinyint), ((- ctinyint) % ctinyint) (type: tinyint)

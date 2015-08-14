@@ -33,8 +33,12 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
@@ -116,6 +120,8 @@ public final class OperatorFactory {
         AppMasterEventOperator.class));
     opvec.add(new OpTuple<DynamicPruningEventDesc>(DynamicPruningEventDesc.class,
         AppMasterEventOperator.class));
+    opvec.add(new OpTuple<SparkPartitionPruningSinkDesc>(SparkPartitionPruningSinkDesc.class,
+        SparkPartitionPruningSinkOperator.class));
     opvec.add(new OpTuple<RCFileMergeDesc>(RCFileMergeDesc.class,
         RCFileMergeOperator.class));
     opvec.add(new OpTuple<OrcFileMergeDesc>(OrcFileMergeDesc.class,
@@ -132,6 +138,9 @@ public final class OperatorFactory {
         VectorAppMasterEventOperator.class));
     vectorOpvec.add(new OpTuple<DynamicPruningEventDesc>(DynamicPruningEventDesc.class,
         VectorAppMasterEventOperator.class));
+    vectorOpvec.add(new OpTuple<SparkPartitionPruningSinkDesc>(
+        SparkPartitionPruningSinkDesc.class,
+        VectorSparkPartitionPruningSinkOperator.class));
     vectorOpvec.add(new OpTuple<SelectDesc>(SelectDesc.class, VectorSelectOperator.class));
     vectorOpvec.add(new OpTuple<GroupByDesc>(GroupByDesc.class, VectorGroupByOperator.class));
     vectorOpvec.add(new OpTuple<MapJoinDesc>(MapJoinDesc.class, VectorMapJoinOperator.class));
@@ -141,6 +150,8 @@ public final class OperatorFactory {
     vectorOpvec.add(new OpTuple<FileSinkDesc>(FileSinkDesc.class, VectorFileSinkOperator.class));
     vectorOpvec.add(new OpTuple<FilterDesc>(FilterDesc.class, VectorFilterOperator.class));
     vectorOpvec.add(new OpTuple<LimitDesc>(LimitDesc.class, VectorLimitOperator.class));
+    vectorOpvec.add(new OpTuple<SparkHashTableSinkDesc>(SparkHashTableSinkDesc.class,
+        VectorSparkHashTableSinkOperator.class));
   }
 
   private static final class OpTuple<T extends OperatorDesc> {

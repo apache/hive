@@ -1134,11 +1134,15 @@ STAGE PLANS:
           alias: alterdynamic_part_table
           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
-          Select Operator
-            expressions: intcol (type: string)
-            outputColumnNames: _col0
+          Filter Operator
+            isSamplingPred: false
+            predicate: (struct(partcol1,partcol2)) IN (const struct(2,'1'), const struct(1,'__HIVE_DEFAULT_PARTITION__')) (type: boolean)
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
-            ListSink
+            Select Operator
+              expressions: intcol (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+              ListSink
 
 PREHOOK: query: select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
 PREHOOK: type: QUERY

@@ -1,0 +1,151 @@
+PREHOOK: query: -- 17. SubQueries In
+-- non agg, non corr
+select * 
+from src_cbo 
+where src_cbo.key in (select key from src_cbo s1 where s1.key > '9') order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: -- 17. SubQueries In
+-- non agg, non corr
+select * 
+from src_cbo 
+where src_cbo.key in (select key from src_cbo s1 where s1.key > '9') order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- agg, corr
+-- add back once rank issue fixed for cbo
+
+-- distinct, corr
+select * 
+from src_cbo b 
+where b.key in
+        (select distinct a.key 
+         from src_cbo a 
+         where b.value = a.value and a.key > '9'
+        ) order by b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: -- agg, corr
+-- add back once rank issue fixed for cbo
+
+-- distinct, corr
+select * 
+from src_cbo b 
+where b.key in
+        (select distinct a.key 
+         from src_cbo a 
+         where b.value = a.value and a.key > '9'
+        ) order by b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- non agg, corr, with join in Parent Query
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+ order by p.p_partkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: -- non agg, corr, with join in Parent Query
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+ order by p.p_partkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+4297	1798
+108570	8571
+PREHOOK: query: -- where and having
+-- Plan is:
+-- Stage 1: b semijoin sq1:src_cbo (subquery in where)
+-- Stage 2: group by Stage 1 o/p
+-- Stage 5: group by on sq2:src_cbo (subquery in having)
+-- Stage 6: Stage 2 o/p semijoin Stage 5
+select key, value, count(*) 
+from src_cbo b
+where b.key in (select key from src_cbo where src_cbo.key > '8')
+group by key, value
+having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by s1.key ) order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: -- where and having
+-- Plan is:
+-- Stage 1: b semijoin sq1:src_cbo (subquery in where)
+-- Stage 2: group by Stage 1 o/p
+-- Stage 5: group by on sq2:src_cbo (subquery in having)
+-- Stage 6: Stage 2 o/p semijoin Stage 5
+select key, value, count(*) 
+from src_cbo b
+where b.key in (select key from src_cbo where src_cbo.key > '8')
+group by key, value
+having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by s1.key ) order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+80	val_80	1
+82	val_82	1
+83	val_83	2
+84	val_84	2
+85	val_85	1
+86	val_86	1
+87	val_87	1
+9	val_9	1
+90	val_90	3
+92	val_92	1
+95	val_95	2
+96	val_96	1
+97	val_97	2
+98	val_98	2
+PREHOOK: query: -- non agg, non corr, windowing
+select p_mfgr, p_name, avg(p_size) 
+from part 
+group by p_mfgr, p_name
+having p_name in 
+  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part) order by p_mfgr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- non agg, non corr, windowing
+select p_mfgr, p_name, avg(p_size) 
+from part 
+group by p_mfgr, p_name
+having p_name in 
+  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part) order by p_mfgr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	almond antique burnished rose metallic	2.0
+Manufacturer#2	almond aquamarine midnight light salmon	2.0
+Manufacturer#3	almond antique misty red olive	1.0
+Manufacturer#4	almond aquamarine yellow dodger mint	7.0
+Manufacturer#5	almond antique sky peru orange	2.0

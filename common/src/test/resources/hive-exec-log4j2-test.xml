@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<Configuration status="info" strict="true" name="HiveExecLog4j2Test"
+ packages="org.apache.hadoop.hive.ql.log">
+
+  <Properties>
+    <Property name="hive.log.threshold">DEBUG</Property>
+    <Property name="hive.log.level">INFO</Property>
+    <Property name="hive.root.logger">FA</Property>
+    <Property name="hive.log.dir">${sys:test.tmp.dir}/${sys:user.name}-TestHiveLogging</Property>
+    <Property name="hive.log.file">hiveExecLog4j2Test.log</Property>
+  </Properties>
+
+  <Appenders>
+    <Console name="console" target="SYSTEM_ERR">
+      <PatternLayout pattern="%d{yy/MM/dd HH:mm:ss} [%t]: %p %c{2}: %m%n"/>
+    </Console>
+
+    <File name="FA" fileName="${sys:hive.log.dir}/${sys:hive.log.file}">
+      <PatternLayout pattern="%d{ISO8601} %-5p %c{2} (%F:%M(%L)) - %m%n" />
+    </File>
+
+    <!-- HiveEventCounter appender is loaded from Configuration packages attribute.Sends counts of logging messages at different severity levels to Hadoop Metrics. -->
+    <HiveEventCounter name="EventCounter"/>
+  </Appenders>
+
+  <Loggers>
+    <Root level="${sys:hive.log.threshold}">
+      <AppenderRef ref="${sys:hive.root.logger}" level="${sys:hive.log.level}"/>
+      <AppenderRef ref="EventCounter" />
+    </Root>
+
+    <!-- Silence useless ZK logs -->
+    <Logger name="org.apache.zookeeper.server.NIOServerCnxn" level="WARN">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.zookeeper.ClientCnxnSocketNIO" level="WARN">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+
+    <Logger name="DataNucleus" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="Datastore" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="Datastore.Schema" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="JPOX.Datastore" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="JPOX.Plugin" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="JPOX.Metadata" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="JPOX.Query" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="JPOX.General" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="JPOX.Enhancer" level="ERROR">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+  </Loggers>
+
+</Configuration>

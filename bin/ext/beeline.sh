@@ -31,7 +31,7 @@ beeline () {
     hadoopClasspath="${HADOOP_CLASSPATH}:"
   fi
   export HADOOP_CLASSPATH="${hadoopClasspath}${HIVE_CONF_DIR}:${beelineJarPath}:${superCsvJarPath}:${jlineJarPath}:${jdbcStandaloneJarPath}"
-  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configuration=beeline-log4j.properties "
+  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=beeline-log4j2.xml "
 
   exec $HADOOP jar ${beelineJarPath} $CLASS $HIVE_OPTS "$@"
 }

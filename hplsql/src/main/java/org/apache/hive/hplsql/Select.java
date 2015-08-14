@@ -21,6 +21,7 @@ package org.apache.hive.hplsql;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Stack;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -83,13 +84,13 @@ public class Select {
       if (rs != null) {
         rm = rs.getMetaData();
       }
-      HplsqlParser.Into_clauseContext into = getIntoClause(ctx);
-      if (into != null) {
+      int into_cnt = getIntoCount(ctx);
+      if (into_cnt > 0) {
         trace(ctx, "SELECT INTO statement executed");
-        int cols = into.ident().size();          
         if (rs.next()) {
-          for (int i = 1; i <= cols; i++) {
-            Var var = exec.findVariable(into.ident(i-1).getText());
+          for (int i = 1; i <= into_cnt; i++) {
+            String into_name = getIntoVariable(ctx, i - 1);
+            Var var = exec.findVariable(into_name);
             if (var != null) {
               var.setValue(rs, rm, i);
               if (trace) {
@@ -97,8 +98,8 @@ public class Select {
                 trace(ctx, "SET " + var.getName() + " = " + var.toString());
               }            
             } 
-            else if(trace) {
-              trace(ctx, "Variable not found: " + into.ident(i-1).getText());
+            else {
+              trace(ctx, "Variable not found: " + into_name);
             }
           }
           exec.incRowCount();
@@ -233,7 +234,7 @@ public class Select {
     int cnt = ctx.select_list_item().size();
     for (int i = 0; i < cnt; i++) {
       if (ctx.select_list_item(i).select_list_asterisk() == null) {
-        sql.append(evalPop(ctx.select_list_item(i)));
+        sql.append(evalPop(ctx.select_list_item(i).expr()));
         if (ctx.select_list_item(i).select_list_alias() != null) {
           sql.append(" " + exec.getText(ctx.select_list_item(i).select_list_alias()));
         }
@@ -349,6 +350,36 @@ public class Select {
   HplsqlParser.Into_clauseContext getIntoClause(HplsqlParser.Select_stmtContext ctx) {
     if (ctx.fullselect_stmt().fullselect_stmt_item(0).subselect_stmt() != null) {
       return ctx.fullselect_stmt().fullselect_stmt_item(0).subselect_stmt().into_clause();
+    }
+    return null;
+  }
+  
+  /**
+   * Get number of elements in INTO or var=col assignment clause
+   */
+  int getIntoCount(HplsqlParser.Select_stmtContext ctx) {
+    HplsqlParser.Into_clauseContext into = getIntoClause(ctx);
+    if (into != null) {
+      return into.ident().size();
+    }
+    List<HplsqlParser.Select_list_itemContext> sl = ctx.fullselect_stmt().fullselect_stmt_item(0).subselect_stmt().select_list().select_list_item(); 
+    if (sl.get(0).T_EQUAL() != null) {
+      return sl.size();
+    }
+    return 0;
+  }
+  
+  /**
+   * Get variable name assigned in INTO or var=col clause by index 
+   */
+  String getIntoVariable(HplsqlParser.Select_stmtContext ctx, int idx) {
+    HplsqlParser.Into_clauseContext into = getIntoClause(ctx);
+    if (into != null) {
+      return into.ident(idx).getText();
+    }
+    HplsqlParser.Select_list_itemContext sl = ctx.fullselect_stmt().fullselect_stmt_item(0).subselect_stmt().select_list().select_list_item(idx); 
+    if (sl != null) {
+      return sl.ident().getText();
     }
     return null;
   }

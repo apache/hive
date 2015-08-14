@@ -109,6 +109,8 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -170,6 +172,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -641,14 +644,50 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-            introduceProjectIfNeeded(optimizedOptiqPlan), topLevelFieldSchema);
+        introduceProjectIfNeeded(optimizedOptiqPlan), topLevelFieldSchema, this.getQB()
+            .getTableDesc() != null);
 
     LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
     Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps,
         conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")).convert(modifiedOptimizedOptiqPlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
-    return genFileSinkPlan(getQB().getParseInfo().getClauseNames().iterator().next(), getQB(), hiveRoot);
+    String dest = getQB().getParseInfo().getClauseNames().iterator().next();
+    if (getQB().getParseInfo().getDestSchemaForClause(dest) != null
+        && this.getQB().getTableDesc() == null) {
+      Operator<?> selOp = handleInsertStatement(dest, hiveRoot, hiveRootRR, getQB());
+      return genFileSinkPlan(dest, getQB(), selOp);
+    } else {
+      return genFileSinkPlan(dest, getQB(), hiveRoot);
+    }
+  }
+
+  // This function serves as the wrapper of handleInsertStatementSpec in
+  // SemanticAnalyzer
+  Operator<?> handleInsertStatement(String dest, Operator<?> input, RowResolver inputRR, QB qb)
+      throws SemanticException {
+    ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
+    ArrayList<ColumnInfo> columns = inputRR.getColumnInfos();
+    for (int i = 0; i < columns.size(); i++) {
+      ColumnInfo col = columns.get(i);
+      colList.add(new ExprNodeColumnDesc(col));
+    }
+    ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
+
+    RowResolver out_rwsch = handleInsertStatementSpec(colList, dest, inputRR, inputRR, qb,
+        selExprList);
+
+    ArrayList<String> columnNames = new ArrayList<String>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+    for (int i = 0; i < colList.size(); i++) {
+      String outputCol = getColumnInternalName(i);
+      colExprMap.put(outputCol, colList.get(i));
+      columnNames.add(outputCol);
+    }
+    Operator<?> output = putOpInsertMap(OperatorFactory.getAndMakeChild(new SelectDesc(colList,
+        columnNames), new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
+    output.setColumnExprMap(colExprMap);
+    return output;
   }
 
   private RelNode introduceProjectIfNeeded(RelNode optimizedOptiqPlan)
@@ -924,7 +963,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       //0. Distinct aggregate rewrite
       // Run this optimization early, since it is expanding the operator pipeline.
-      if (conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") &&
+      if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
           conf.getBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEDISTINCTREWRITE)) {
         // Its not clear, if this rewrite is always performant on MR, since extra map phase
         // introduced for 2nd MR job may offset gains of this multi-stage aggregation.

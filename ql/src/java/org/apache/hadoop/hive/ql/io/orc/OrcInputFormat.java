@@ -54,10 +54,10 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -305,7 +305,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       options.searchArgument(null, null);
       return;
     }
-    SearchArgument sarg = SearchArgumentFactory.createFromConf(conf);
+    SearchArgument sarg = ConvertAstToSearchArg.createFromConf(conf);
     if (sarg == null) {
       LOG.debug("No ORC pushdown predicate");
       options.searchArgument(null, null);
@@ -483,7 +483,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private FileInfo verifyCachedFileInfo(FileStatus file) {
-      context.numFilesCounter.incrementAndGet();
       FileInfo fileInfo = Context.footerCache.getIfPresent(file.getPath());
       if (fileInfo != null) {
         if (isDebugEnabled) {
@@ -671,6 +670,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
         int numFiles = children.size();
         long avgFileSize = totalFileSize / numFiles;
+        int totalFiles = context.numFilesCounter.addAndGet(numFiles);
         switch(context.splitStrategyKind) {
           case BI:
             // BI strategy requested through config
@@ -684,7 +684,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             break;
           default:
             // HYBRID strategy
-            if (avgFileSize > context.maxSize || numFiles <= context.minSplits) {
+            if (avgFileSize > context.maxSize || totalFiles <= context.minSplits) {
               splitStrategy = new ETLSplitStrategy(context, fs, dir, children, isOriginal, deltas,
                   covered);
             } else {
@@ -717,6 +717,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private ReaderImpl.FileMetaInfo fileMetaInfo;
     private Metadata metadata;
     private List<OrcProto.Type> types;
+    private boolean[] includedCols;
     private final boolean isOriginal;
     private final List<DeltaMetaData> deltas;
     private final boolean hasBase;
@@ -830,8 +831,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         hosts = new String[hostList.size()];
         hostList.toArray(hosts);
       }
+
+      // scale the raw data size to split level based on ratio of split wrt to file length
+      final long fileLen = file.getLen();
+      final double splitRatio = (double) length / (double) fileLen;
+      final long scaledProjSize = projColsUncompressedSize > 0 ?
+          (long) (splitRatio * projColsUncompressedSize) : fileLen;
       return new OrcSplit(file.getPath(), offset, length, hosts, fileMetaInfo,
-          isOriginal, hasBase, deltas, projColsUncompressedSize);
+          isOriginal, hasBase, deltas, scaledProjSize);
     }
 
     /**
@@ -845,11 +852,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
       // figure out which stripes we need to read
       boolean[] includeStripe = null;
+
       // we can't eliminate stripes if there are deltas because the
       // deltas may change the rows making them match the predicate.
       if (deltas.isEmpty()) {
         Reader.Options options = new Reader.Options();
-        options.include(genIncludedColumns(types, context.conf, isOriginal));
+        options.include(includedCols);
         setSearchArgument(options, types, context.conf, isOriginal);
         // only do split pruning if HIVE-8732 has been fixed in the writer
         if (options.getSearchArgument() != null &&
@@ -930,8 +938,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private void populateAndCacheStripeDetails() throws IOException {
       Reader orcReader = OrcFile.createReader(file.getPath(),
           OrcFile.readerOptions(context.conf).filesystem(fs));
-      List<String> projCols = ColumnProjectionUtils.getReadColumnNames(context.conf);
-      // TODO: produce projColsUncompressedSize from projCols
       if (fileInfo != null) {
         stripes = fileInfo.stripeInfos;
         fileMetaInfo = fileInfo.fileMetaInfo;
@@ -959,6 +965,22 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                   metadata, types, fileMetaInfo, writerVersion));
         }
       }
+      includedCols = genIncludedColumns(types, context.conf, isOriginal);
+      projColsUncompressedSize = computeProjectionSize(orcReader, includedCols, isOriginal);
+    }
+
+    private long computeProjectionSize(final Reader orcReader, final boolean[] includedCols,
+        final boolean isOriginal) {
+      final int rootIdx = getRootColumn(isOriginal);
+      List<Integer> internalColIds = Lists.newArrayList();
+      if (includedCols != null) {
+        for (int i = 0; i < includedCols.length; i++) {
+          if (includedCols[i]) {
+            internalColIds.add(rootIdx + i);
+          }
+        }
+      }
+      return orcReader.getRawDataSizeFromColIndices(internalColIds);
     }
 
     private boolean isStripeSatisfyPredicate(StripeStatistics stripeStatistics,

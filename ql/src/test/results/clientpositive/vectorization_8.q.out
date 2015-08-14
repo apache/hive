@@ -64,7 +64,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((cstring2 is not null and ((UDFToDouble(ctimestamp1) <= 10.0) and (UDFToDouble(ctimestamp2) <> 16.0))) or ((cfloat < -6432.0) or (cboolean1 is not null and (cdouble = 988888.0)))) (type: boolean)
+              predicate: ((cstring2 is not null and (UDFToDouble(ctimestamp1) <= 10.0) and (UDFToDouble(ctimestamp2) <> 16.0)) or (cfloat < -6432.0) or (cboolean1 is not null and (cdouble = 988888.0))) (type: boolean)
               Statistics: Num rows: 9216 Data size: 1981473 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15 - cdouble) (type: double), (cdouble * -257.0) (type: double), (UDFToFloat(cint) + cfloat) (type: float), ((- cdouble) + UDFToDouble(cbigint)) (type: double), (- cdouble) (type: double), (-1.389 - UDFToDouble(cfloat)) (type: double), (- cfloat) (type: float), ((-5638.15 - cdouble) + UDFToDouble((UDFToFloat(cint) + cfloat))) (type: double)
@@ -233,7 +233,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((cstring2 is not null and ((UDFToDouble(ctimestamp1) <= 12.503) and (UDFToDouble(ctimestamp2) <> 11.998))) or ((cfloat < -6432.0) or (cboolean1 is not null and (cdouble = 988888.0)))) (type: boolean)
+              predicate: ((cstring2 is not null and (UDFToDouble(ctimestamp1) <= 12.503) and (UDFToDouble(ctimestamp2) <> 11.998)) or (cfloat < -6432.0) or (cboolean1 is not null and (cdouble = 988888.0))) (type: boolean)
               Statistics: Num rows: 9216 Data size: 1981473 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15 - cdouble) (type: double), (cdouble * -257.0) (type: double), (UDFToFloat(cint) + cfloat) (type: float), ((- cdouble) + UDFToDouble(cbigint)) (type: double), (- cdouble) (type: double), (-1.389 - UDFToDouble(cfloat)) (type: double), (- cfloat) (type: float), ((-5638.15 - cdouble) + UDFToDouble((UDFToFloat(cint) + cfloat))) (type: double)

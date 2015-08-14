@@ -25,7 +25,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo.BaseColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Dependency;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Predicate;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
@@ -59,7 +62,11 @@ public class LineageCtx implements NodeProcessorCtx {
      */
     private final Map<Operator<? extends OperatorDesc>, Set<Predicate>> condMap;
 
-    private SelectOperator finalSelectOp;
+    /**
+     * A map from a final select operator id to the select operator
+     * and the corresponding target table in case an insert into query.
+     */
+    private LinkedHashMap<String, ObjectPair<SelectOperator, Table>> finalSelectOps;
 
     /**
      * Constructor.
@@ -69,6 +76,8 @@ public class LineageCtx implements NodeProcessorCtx {
         new LinkedHashMap<Operator<? extends OperatorDesc>,
                           LinkedHashMap<ColumnInfo, Dependency>>();
       condMap = new HashMap<Operator<? extends OperatorDesc>, Set<Predicate>>();
+      finalSelectOps =
+        new LinkedHashMap<String, ObjectPair<SelectOperator, Table>>();
     }
 
     /**
@@ -146,7 +155,7 @@ public class LineageCtx implements NodeProcessorCtx {
         old_dep.setType(new_type);
         Set<BaseColumnInfo> bci_set = new LinkedHashSet<BaseColumnInfo>(old_dep.getBaseCols());
         bci_set.addAll(dep.getBaseCols());
-        old_dep.setBaseCols(new ArrayList<BaseColumnInfo>(bci_set));
+        old_dep.setBaseCols(bci_set);
         // TODO: Fix the expressions later.
         old_dep.setExpr(null);
       }
@@ -179,16 +188,27 @@ public class LineageCtx implements NodeProcessorCtx {
       return condMap.get(op);
     }
 
-    public void setFinalSelectOp(SelectOperator sop) {
-      finalSelectOp = sop;
+    public void addFinalSelectOp(
+        SelectOperator sop, Operator<? extends OperatorDesc> sinkOp) {
+      String operatorId = sop.getOperatorId();
+      if (!finalSelectOps.containsKey(operatorId)) {
+        Table table = null;
+        if (sinkOp instanceof FileSinkOperator) {
+          FileSinkOperator fso = (FileSinkOperator) sinkOp;
+          table = fso.getConf().getTable();
+        }
+        finalSelectOps.put(operatorId,
+          new ObjectPair<SelectOperator, Table>(sop, table));
+      }
     }
 
-    public SelectOperator getFinalSelectOp() {
-      return finalSelectOp;
+    public LinkedHashMap<String,
+        ObjectPair<SelectOperator, Table>> getFinalSelectOps() {
+      return finalSelectOps;
     }
 
     public void clear() {
-      finalSelectOp = null;
+      finalSelectOps.clear();
       depMap.clear();
     }
   }

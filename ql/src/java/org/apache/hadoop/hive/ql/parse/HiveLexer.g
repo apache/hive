@@ -301,6 +301,17 @@ KW_DAY: 'DAY';
 KW_HOUR: 'HOUR';
 KW_MINUTE: 'MINUTE';
 KW_SECOND: 'SECOND';
+KW_START: 'START';
+KW_TRANSACTION: 'TRANSACTION';
+KW_COMMIT: 'COMMIT';
+KW_ROLLBACK: 'ROLLBACK';
+KW_WORK: 'WORK';
+KW_ONLY: 'ONLY';
+KW_WRITE: 'WRITE';
+KW_ISOLATION: 'ISOLATION';
+KW_LEVEL: 'LEVEL';
+KW_SNAPSHOT: 'SNAPSHOT';
+KW_AUTOCOMMIT: 'AUTOCOMMIT';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

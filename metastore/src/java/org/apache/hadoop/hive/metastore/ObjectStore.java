@@ -51,6 +51,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.logging.Log;
@@ -6401,7 +6402,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private void validateTableCols(Table table, List<String> colNames) throws MetaException {
+  @VisibleForTesting
+  public void validateTableCols(Table table, List<String> colNames) throws MetaException {
     List<FieldSchema> colList = table.getSd().getCols();
     for (String colName : colNames) {
       boolean foundCol = false;
@@ -6412,7 +6414,8 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       if (!foundCol) {
-        throw new MetaException("Column " + colName + " doesn't exist.");
+        throw new MetaException("Column " + colName + " doesn't exist in table "
+            + table.getTableName() + " in database " + table.getDbName());
       }
     }
   }
@@ -7243,6 +7246,17 @@ public class ObjectStore implements RawStore, Configurable {
     return func;
   }
 
+  private List<Function> convertToFunctions(List<MFunction> mfuncs) {
+    if (mfuncs == null) {
+      return null;
+    }
+    List<Function> functions = new ArrayList<>();
+    for (MFunction mfunc : mfuncs) {
+      functions.add(convertToFunction(mfunc));
+    }
+    return functions;
+  }
+
   private MFunction convertToMFunction(Function func) throws InvalidObjectException {
     if (func == null) {
       return null;
@@ -7399,6 +7413,23 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return func;
+  }
+
+  @Override
+  public List<Function> getAllFunctions() throws MetaException {
+    boolean commited = false;
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MFunction.class);
+      List<MFunction> allFunctions = (List<MFunction>) query.execute();
+      pm.retrieveAll(allFunctions);
+      commited = commitTransaction();
+      return convertToFunctions(allFunctions);
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
   }
 
   @Override

@@ -114,73 +114,8 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     }
   }
 
-  /**
-   * Helper method to get a parameter first from props if present, falling back to JobConf if not.
-   * Returns null if key is present in neither.
-   */
-  private String getSettingFromPropsFallingBackToConf(String key, Properties props, JobConf conf){
-    if ((props != null) && props.containsKey(key)){
-      return props.getProperty(key);
-    } else if(conf != null) {
-      // If conf is not null, and the key is not present, Configuration.get() will
-      // return null for us. So, we don't have to check if it contains it.
-      return conf.get(key);
-    } else {
-      return null;
-    }
-  }
-
   private OrcFile.WriterOptions getOptions(JobConf conf, Properties props) {
-    OrcFile.WriterOptions options = OrcFile.writerOptions(conf);
-    String propVal ;
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.STRIPE_SIZE.getPropName(),props,conf)) != null){
-      options.stripeSize(Long.parseLong(propVal));
-    }
-
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.COMPRESSION.getPropName(),props,conf)) != null){
-      options.compress(CompressionKind.valueOf(propVal));
-    }
-
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.COMPRESSION_BLOCK_SIZE.getPropName(),props,conf)) != null){
-      options.bufferSize(Integer.parseInt(propVal));
-    }
-
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.ROW_INDEX_STRIDE.getPropName(),props,conf)) != null){
-      options.rowIndexStride(Integer.parseInt(propVal));
-    }
-
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.ENABLE_INDEXES.getPropName(),props,conf)) != null){
-      if ("false".equalsIgnoreCase(propVal)) {
-        options.rowIndexStride(0);
-      }
-    }
-
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.BLOCK_PADDING.getPropName(),props,conf)) != null){
-      options.blockPadding(Boolean.parseBoolean(propVal));
-    }
-
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.ENCODING_STRATEGY.getPropName(),props,conf)) != null){
-      options.encodingStrategy(EncodingStrategy.valueOf(propVal));
-    }
-
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.BLOOM_FILTER_COLUMNS.getPropName(), props, conf)) != null) {
-      options.bloomFilterColumns(propVal);
-    }
-
-    if ((propVal = getSettingFromPropsFallingBackToConf(
-        OrcFile.OrcTableProperties.BLOOM_FILTER_FPP.getPropName(), props, conf)) != null) {
-      options.bloomFilterFpp(Double.parseDouble(propVal));
-    }
-
-    return options;
+    return OrcFile.writerOptions(props, conf);
   }
 
   @Override

@@ -82,7 +82,7 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((cstring2 like '%ss%') or ((cstring1 like '10%') or ((cint >= -75) and ((UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0))))) (type: boolean)
+                    predicate: ((cstring2 like '%ss%') or (cstring1 like '10%') or ((cint >= -75) and (UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cfloat (type: float), cboolean1 (type: boolean), cdouble (type: double), cstring1 (type: string), ctinyint (type: tinyint), cint (type: int), ctimestamp1 (type: timestamp)

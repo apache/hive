@@ -2,9 +2,9 @@ PREHOOK: query: DESCRIBE FUNCTION or
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION or
 POSTHOOK: type: DESCFUNCTION
-a or b - Logical or
+a1 or a2 or ... or an - Logical or
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED or
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED or
 POSTHOOK: type: DESCFUNCTION
-a or b - Logical or
+a1 or a2 or ... or an - Logical or

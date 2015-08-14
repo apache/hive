@@ -1,0 +1,36 @@
+Ln:1 CREATE PROCEDURE spResultSet1
+Ln:7 DECLARE c1 SYS_REFCURSOR
+Ln:8 DECLARE v1 VARCHAR
+Ln:10 IF
+Ln:10 ELSE executed
+%ISOPEN correct
+Ln:16 EXEC PROCEDURE spResultSet1
+Ln:16 SET PARAM cur = null
+Ln:3 OPEN
+Ln:3 cur: SELECT 'A' FROM src LIMIT 1
+Ln:18 IF
+Ln:18 IF TRUE executed
+%ISOPEN correct
+Ln:24 IF
+Ln:24 IF TRUE executed
+%FOUND correct
+Ln:30 IF
+Ln:30 IF TRUE executed
+%NOTFOUND correct
+Ln:36 FETCH
+Ln:36 COLUMN: _c0, string
+Ln:36 SET v1 = A
+Ln:38 IF
+Ln:38 IF TRUE executed
+%FOUND correct
+Ln:44 IF
+Ln:44 ELSE executed
+%NOTFOUND correct
+Ln:50 FETCH
+Ln:52 IF
+Ln:52 ELSE executed
+%FOUND correct
+Ln:58 IF
+Ln:58 IF TRUE executed
+%NOTFOUND correct
+Ln:64 CLOSE

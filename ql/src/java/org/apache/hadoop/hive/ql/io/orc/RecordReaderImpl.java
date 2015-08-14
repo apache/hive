@@ -47,8 +47,8 @@ import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory.TreeReader;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.hadoop.io.Text;
@@ -376,7 +376,7 @@ class RecordReaderImpl implements RecordReader {
       Object predObj = getBaseObjectForComparison(predicate.getType(), baseObj);
 
       result = evaluatePredicateMinMax(predicate, predObj, minValue, maxValue, hasNull);
-      if (bloomFilter != null && result != TruthValue.NO_NULL && result != TruthValue.NO) {
+      if (shouldEvaluateBloomFilter(predicate, result, bloomFilter)) {
         result = evaluatePredicateBloomFilter(predicate, predObj, bloomFilter, hasNull);
       }
       // in case failed conversion, return the default YES_NO_NULL truth value
@@ -392,6 +392,22 @@ class RecordReaderImpl implements RecordReader {
       }
     }
     return result;
+  }
+
+  private static boolean shouldEvaluateBloomFilter(PredicateLeaf predicate,
+      TruthValue result, BloomFilterIO bloomFilter) {
+    // evaluate bloom filter only when
+    // 1) Bloom filter is available
+    // 2) Min/Max evaluation yield YES or MAYBE
+    // 3) Predicate is EQUALS or IN list
+    if (bloomFilter != null
+        && result != TruthValue.NO_NULL && result != TruthValue.NO
+        && (predicate.getOperator().equals(PredicateLeaf.Operator.EQUALS)
+            || predicate.getOperator().equals(PredicateLeaf.Operator.NULL_SAFE_EQUALS)
+            || predicate.getOperator().equals(PredicateLeaf.Operator.IN))) {
+      return true;
+    }
+    return false;
   }
 
   private static TruthValue evaluatePredicateMinMax(PredicateLeaf predicate, Object predObj,
@@ -523,7 +539,8 @@ class RecordReaderImpl implements RecordReader {
         result = TruthValue.YES_NO_NULL;
       }
     } else if (predObj instanceof String || predObj instanceof Text ||
-        predObj instanceof HiveDecimal || predObj instanceof BigDecimal) {
+        predObj instanceof HiveDecimalWritable ||
+        predObj instanceof BigDecimal) {
       if (bf.testString(predObj.toString())) {
         result = TruthValue.YES_NO_NULL;
       }
@@ -560,11 +577,7 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static Object getBaseObjectForComparison(PredicateLeaf.Type type, Object obj) {
-    if (obj != null) {
-      if (obj instanceof ExprNodeConstantDesc) {
-        obj = ((ExprNodeConstantDesc) obj).getValue();
-      }
-    } else {
+    if (obj == null) {
       return null;
     }
     switch (type) {
@@ -588,20 +601,23 @@ class RecordReaderImpl implements RecordReader {
         break;
       case DECIMAL:
         if (obj instanceof Boolean) {
-          return ((Boolean) obj).booleanValue() ? HiveDecimal.ONE : HiveDecimal.ZERO;
+          return new HiveDecimalWritable(((Boolean) obj).booleanValue() ?
+              HiveDecimal.ONE : HiveDecimal.ZERO);
         } else if (obj instanceof Integer) {
-          return HiveDecimal.create(((Integer) obj).intValue());
+          return new HiveDecimalWritable(((Integer) obj).intValue());
         } else if (obj instanceof Long) {
-          return HiveDecimal.create(((Long) obj));
+          return new HiveDecimalWritable(((Long) obj));
         } else if (obj instanceof Float || obj instanceof Double ||
             obj instanceof String) {
-          return HiveDecimal.create(obj.toString());
+          return new HiveDecimalWritable(obj.toString());
         } else if (obj instanceof BigDecimal) {
-          return HiveDecimal.create((BigDecimal) obj);
+          return new HiveDecimalWritable(HiveDecimal.create((BigDecimal) obj));
         } else if (obj instanceof HiveDecimal) {
+          return new HiveDecimalWritable((HiveDecimal) obj);
+        } else if (obj instanceof HiveDecimalWritable) {
           return obj;
         } else if (obj instanceof Timestamp) {
-          return HiveDecimal.create(
+          return new HiveDecimalWritable(
               new Double(new TimestampWritable((Timestamp) obj).getDouble()).toString());
         }
         break;
@@ -641,12 +657,16 @@ class RecordReaderImpl implements RecordReader {
       case TIMESTAMP:
         if (obj instanceof Timestamp) {
           return obj;
+        } else if (obj instanceof Integer) {
+          return TimestampWritable.longToTimestamp(((Number) obj).longValue(), false);
         } else if (obj instanceof Float) {
           return TimestampWritable.doubleToTimestamp(((Float) obj).doubleValue());
         } else if (obj instanceof Double) {
           return TimestampWritable.doubleToTimestamp(((Double) obj).doubleValue());
         } else if (obj instanceof HiveDecimal) {
           return TimestampWritable.decimalToTimestamp((HiveDecimal) obj);
+        } else if (obj instanceof HiveDecimalWritable) {
+          return TimestampWritable.decimalToTimestamp(((HiveDecimalWritable) obj).getHiveDecimal());
         } else if (obj instanceof Date) {
           return new Timestamp(((Date) obj).getTime());
         }

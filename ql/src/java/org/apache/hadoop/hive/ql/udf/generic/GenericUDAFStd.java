@@ -55,6 +55,8 @@ public class GenericUDAFStd extends GenericUDAFVariance {
     case FLOAT:
     case DOUBLE:
     case STRING:
+    case VARCHAR:
+    case CHAR:
     case TIMESTAMP:
     case DECIMAL:
       return new GenericUDAFStdEvaluator();

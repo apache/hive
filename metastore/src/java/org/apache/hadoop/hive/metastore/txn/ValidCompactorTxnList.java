@@ -88,7 +88,7 @@ public class ValidCompactorTxnList extends ValidReadTxnList {
 
   @Override
   public void readFromString(String src) {
-    if (src == null) {
+    if (src == null || src.length() == 0) {
       highWatermark = Long.MAX_VALUE;
       exceptions = new long[0];
     } else {

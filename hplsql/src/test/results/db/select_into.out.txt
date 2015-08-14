@@ -1,0 +1,19 @@
+Ln:1 DECLARE v_int INT
+Ln:2 DECLARE v_dec DECIMAL
+Ln:3 DECLARE v_dec0 DECIMAL
+Ln:5 SELECT
+Ln:5 SELECT CAST(1 AS INT), CAST(1.1 AS DECIMAL(18,2)), CAST(1.1 AS DECIMAL(18,0)) FROM src LIMIT 1
+Ln:5 SELECT completed successfully
+Ln:5 SELECT INTO statement executed
+Ln:5 COLUMN: _c0, int
+Ln:5 SET v_int = 1
+Ln:5 COLUMN: _c1, decimal
+Ln:5 SET v_dec = 1.1
+Ln:5 COLUMN: _c2, decimal
+Ln:5 SET v_dec0 = 1
+Ln:15 PRINT
+INT: 1
+Ln:16 PRINT
+DECIMAL: 1.1
+Ln:17 PRINT
+DECIMAL0: 1

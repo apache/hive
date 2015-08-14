@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
@@ -1052,14 +1053,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
 
         int startIndex = 0;
-        int endIndex = -1;
         // retrieve the tables from the metastore in batches to alleviate memory constraints
-        while (endIndex < allTables.size() - 1) {
-          startIndex = endIndex + 1;
-          endIndex = endIndex + tableBatchSize;
-          if (endIndex >= allTables.size()) {
-            endIndex = allTables.size() - 1;
-          }
+        while (startIndex < allTables.size()) {
+          int endIndex = Math.min(startIndex + tableBatchSize, allTables.size());
 
           List<Table> tables = null;
           try {
@@ -1095,6 +1091,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // Drop the table but not its data
               drop_table(name, table.getTableName(), false);
             }
+
+            startIndex = endIndex;
           }
         }
 
@@ -5446,6 +5444,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GetAllFunctionsResponse get_all_functions()
+            throws MetaException {
+      GetAllFunctionsResponse response = new GetAllFunctionsResponse();
+      startFunction("get_all_functions");
+      RawStore ms = getMS();
+      List<Function> allFunctions = null;
+      Exception ex = null;
+      try {
+        allFunctions = ms.getAllFunctions();
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_all_functions", allFunctions != null, ex);
+      }
+      response.setFunctions(allFunctions);
+      return response;
+    }
+
+    @Override
     public Function get_function(String dbName, String funcName)
         throws MetaException, NoSuchObjectException, TException {
       startFunction("get_function", ": " + dbName + "." + funcName);
@@ -5813,7 +5831,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // If the log4j.configuration property hasn't already been explicitly set,
     // use Hive's default log4j configuration
-    if (System.getProperty("log4j.configuration") == null) {
+    if (System.getProperty("log4j.configurationFile") == null) {
       // NOTE: It is critical to do this here so that log4j is reinitialized
       // before any of the other core hive classes are loaded
       try {

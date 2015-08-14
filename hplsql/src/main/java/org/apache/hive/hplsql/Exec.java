@@ -83,6 +83,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   Expression expr;
   Function function;  
   Converter converter;
+  Meta meta;
   Select select;
   Stmt stmt;
   Conn conn;  
@@ -232,7 +233,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   /**
    * Push a boolean value to the stack
    */
-  public void stackPush(boolean val) {
+  public void stackPush(Boolean val) {
     exec.stack.push(new Var(val));  
   }
 
@@ -482,7 +483,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       return query;
     }
     setSqlNoData();
-    trace(ctx, "Not executed - offline mode set");
+    info(ctx, "Not executed - offline mode set");
     return query;
   }
 
@@ -500,7 +501,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       exec.rowCount = query.getRowCount();
       return query;
     }
-    trace(ctx, "Not executed - offline mode set");
+    info(ctx, "Not executed - offline mode set");
     return new Query("");
   }  
   
@@ -669,16 +670,19 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (!parseArguments(args)) {
       return 1;
     }
+    // specify the default log4j2 properties file.
+    System.setProperty("log4j.configurationFile", "hive-log4j2.xml");
     conf = new Conf();
     conf.init();    
-    conn = new Conn(this);   
+    conn = new Conn(this);
+    meta = new Meta();
     initOptions();
     
     expr = new Expression(this);
     select = new Select(this);
     stmt = new Stmt(this);
     converter = new Converter(this);
-    
+        
     function = new Function(this);
     new FunctionDatetime(this).register(function);
     new FunctionMisc(this).register(function);
@@ -832,7 +836,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     while (!signals.empty()) {
       Signal sig = signals.pop();
       if (sig.type == Signal.Type.SQLEXCEPTION) {
-        System.err.println("Unhandled exception in PL/HQL");
+        System.err.println("Unhandled exception in HPL/SQL");
       }
       if (sig.exception != null) {
         sig.exception.printStackTrace(); 
@@ -948,15 +952,26 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitSelect_options_item(HplsqlParser.Select_options_itemContext ctx) { 
     return exec.select.option(ctx); 
   }
-    
+
+  /**
+   * Column name
+   */
+  @Override 
+  public Integer visitColumn_name(HplsqlParser.Column_nameContext ctx) {
+    stackPush(meta.normalizeIdentifierPart(ctx.getText()));
+    return 0; 
+  }
+  
   /**
    * Table name
    */
   @Override 
   public Integer visitTable_name(HplsqlParser.Table_nameContext ctx) {
-    String name = ctx.getText().toUpperCase(); 
-    String actualName = exec.managedTables.get(name);
-    String conn = exec.objectConnMap.get(name);
+    String name = ctx.getText();
+    String nameUp = name.toUpperCase();
+    String nameNorm = meta.normalizeIdentifier(name);
+    String actualName = exec.managedTables.get(nameUp);
+    String conn = exec.objectConnMap.get(nameUp);
     if (conn == null) {
       conn = conf.defaultConnection;
     }
@@ -965,12 +980,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       stackPush(actualName);
       return 0;
     }
-    actualName = exec.objectMap.get(name);
+    actualName = exec.objectMap.get(nameUp);
     if (actualName != null) {
       stackPush(actualName);
       return 0;
     }
-    stackPush(ctx.getText());
+    stackPush(nameNorm);
     return 0; 
   }
 
@@ -1163,6 +1178,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     return exec.stmt.createTableHiveOptions(ctx); 
   }
   
+  @Override 
+  public Integer visitCreate_table_options_mssql_item(HplsqlParser.Create_table_options_mssql_itemContext ctx) { 
+    return 0; 
+  }
+  
   /**
    * CREATE LOCAL TEMPORARY | VOLATILE TABLE statement 
    */
@@ -1318,6 +1338,15 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     else {
       exec.expr.execBoolUnary(ctx);
     }
+    return 0; 
+  }
+  
+  /**
+   * Cursor attribute %ISOPEN, %FOUND and %NOTFOUND
+   */
+  @Override 
+  public Integer visitExpr_cursor_attribute(HplsqlParser.Expr_cursor_attributeContext ctx) {
+    exec.expr.execCursorAttribute(ctx);
     return 0; 
   }
     
@@ -1497,6 +1526,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitReturn_stmt(HplsqlParser.Return_stmtContext ctx) {
     return exec.stmt.return_(ctx); 
   }  
+  
+  /** 
+   * SET session options
+   */
+  @Override 
+  public Integer visitSet_current_schema_option(HplsqlParser.Set_current_schema_optionContext ctx) { 
+    return exec.stmt.setCurrentSchema(ctx); 
+  }
   
   /**
    * MAP OBJECT statement
@@ -2028,6 +2065,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
 
   public Conf getConf() {
     return exec.conf;
+  }
+  
+  public Meta getMeta() {
+    return exec.meta;
   }
   
   public boolean getTrace() {

@@ -1215,8 +1215,6 @@ public class HiveConf extends Configuration {
     HIVEROWOFFSET("hive.exec.rowoffset", false,
         "Whether to provide the row offset virtual column"),
 
-    HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE("hive.hadoop.supports.splittable.combineinputformat", false, ""),
-
     // Optimizer
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false,
         "Whether to enable automatic use of indexes"),
@@ -1228,6 +1226,8 @@ public class HiveConf extends Configuration {
         "Whether to transitively replicate predicate filters over equijoin conditions."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
         "Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false."),
+    HIVEPOINTLOOKUPOPTIMIZER("hive.optimize.point.lookup", true,
+         "Whether to transform OR clauses in Filter operators into IN clauses"),
     // Constant propagation optimizer
     HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
     HIVEIDENTITYPROJECTREMOVER("hive.optimize.remove.identity.project", true, "Removes identity project from operator tree"),
@@ -1736,13 +1736,13 @@ public class HiveConf extends Configuration {
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
-        "If the property is not set, then logging will be initialized using hive-log4j.properties found on the classpath.\n" +
-        "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
+        "If the property is not set, then logging will be initialized using hive-log4j2.xml found on the classpath.\n" +
+        "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.xml\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
     HIVE_EXEC_LOG4J_FILE("hive.exec.log4j.file", "",
         "Hive log4j configuration file for execution mode(sub command).\n" +
-        "If the property is not set, then logging will be initialized using hive-exec-log4j.properties found on the classpath.\n" +
-        "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
+        "If the property is not set, then logging will be initialized using hive-exec-log4j2.xml found on the classpath.\n" +
+        "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.xml\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
 
     HIVE_LOG_EXPLAIN_OUTPUT("hive.log.explain.output", false,
@@ -1910,6 +1910,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_LONG_POLLING_TIMEOUT("hive.server2.long.polling.timeout", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Time that HiveServer2 will wait before responding to asynchronous calls that use long polling"),
+
+    HIVE_SESSION_IMPL_CLASSNAME("hive.session.impl.classname", null, "Classname for custom implementation of hive session"),
+    HIVE_SESSION_IMPL_WITH_UGI_CLASSNAME("hive.session.impl.withugi.classname", null, "Classname for custom implementation of hive session with UGI"),
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
@@ -2149,8 +2152,8 @@ public class HiveConf extends Configuration {
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true,
         "Whether to generate the splits locally or in the AM (tez only)"),
 
-    HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez (Hadoop 2 only)"),
-    HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez (Hadoop 2 only)"),
+    HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez/Spark (Hadoop 2 only)"),
+    HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez/Spark (Hadoop 2 only)"),
 
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false, ""),
@@ -2253,6 +2256,13 @@ public class HiveConf extends Configuration {
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
+    SPARK_DYNAMIC_PARTITION_PRUNING(
+        "hive.spark.dynamic.partition.pruning", false,
+        "When dynamic pruning is enabled, joins on partition keys will be processed by writing\n" +
+            "to a temporary HDFS file, and read later for removing unnecessary partitions."),
+    SPARK_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE(
+        "hive.spark.dynamic.partition.pruning.max.data.size", 100*1024*1024L,
+        "Maximum total data size in dynamic pruning."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
@@ -2756,6 +2766,7 @@ public class HiveConf extends Configuration {
     super(other);
     hiveJar = other.hiveJar;
     auxJars = other.auxJars;
+    isSparkConfigUpdated = other.isSparkConfigUpdated;
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
     modWhiteListPattern = other.modWhiteListPattern;

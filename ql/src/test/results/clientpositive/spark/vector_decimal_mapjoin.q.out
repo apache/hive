@@ -102,6 +102,7 @@ STAGE PLANS:
                         1 dec (type: decimal(6,2))
             Local Work:
               Map Reduce Local Work
+            Execution mode: vectorized
 
   Stage: Stage-1
     Spark

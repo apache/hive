@@ -33,6 +33,7 @@ import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -147,6 +148,7 @@ public class LineageLogger implements ExecuteWithHookContext {
           // Don't emit user/timestamp info in test mode,
           // so that the test golden output file is fixed.
           long queryTime = plan.getQueryStartTime().longValue();
+          if (queryTime == 0) queryTime = System.currentTimeMillis();
           writer.name("user").value(hookContext.getUgi().getUserName());
           writer.name("timestamp").value(queryTime/1000);
           writer.name("jobIds");
@@ -209,23 +211,28 @@ public class LineageLogger implements ExecuteWithHookContext {
    * For each target column, find out its sources based on the dependency index.
    */
   private List<Edge> getEdges(QueryPlan plan, Index index) {
-    List<FieldSchema> fieldSchemas = plan.getResultSchema().getFieldSchemas();
-    int fields = fieldSchemas == null ? 0 : fieldSchemas.size();
-    SelectOperator finalSelOp = index.getFinalSelectOp();
+    LinkedHashMap<String, ObjectPair<SelectOperator,
+      org.apache.hadoop.hive.ql.metadata.Table>> finalSelOps = index.getFinalSelectOps();
+    Set<Vertex> allTargets = new LinkedHashSet<Vertex>();
+    Map<String, Vertex> allSources = new LinkedHashMap<String, Vertex>();
     List<Edge> edges = new ArrayList<Edge>();
-    if (finalSelOp != null && fields > 0) {
-      Map<ColumnInfo, Dependency> colMap = index.getDependencies(finalSelOp);
-      List<Dependency> dependencies = colMap != null ? Lists.newArrayList(colMap.values()) : null;
-      if (dependencies == null || dependencies.size() != fields) {
-        log("Result schema has " + fields
-          + " fields, but we don't get as many dependencies");
+    for (ObjectPair<SelectOperator,
+        org.apache.hadoop.hive.ql.metadata.Table> pair: finalSelOps.values()) {
+      List<FieldSchema> fieldSchemas = plan.getResultSchema().getFieldSchemas();
+      SelectOperator finalSelOp = pair.getFirst();
+      org.apache.hadoop.hive.ql.metadata.Table t = pair.getSecond();
+      String destTableName = null;
+      List<String> colNames = null;
+      if (t != null) {
+        destTableName = t.getDbName() + "." + t.getTableName();
+        fieldSchemas = t.getCols();
       } else {
-        String destTableName = null;
-        List<String> colNames = null;
         // Based on the plan outputs, find out the target table name and column names.
         for (WriteEntity output : plan.getOutputs()) {
-          if (output.getType() == Entity.Type.TABLE) {
-            org.apache.hadoop.hive.ql.metadata.Table t = output.getTable();
+          Entity.Type entityType = output.getType();
+          if (entityType == Entity.Type.TABLE
+              || entityType == Entity.Type.PARTITION) {
+            t = output.getTable();
             destTableName = t.getDbName() + "." + t.getTableName();
             List<FieldSchema> cols = t.getCols();
             if (cols != null && !cols.isEmpty()) {
@@ -234,10 +241,15 @@ public class LineageLogger implements ExecuteWithHookContext {
             break;
           }
         }
-
+      }
+      int fields = fieldSchemas.size();
+      Map<ColumnInfo, Dependency> colMap = index.getDependencies(finalSelOp);
+      List<Dependency> dependencies = colMap != null ? Lists.newArrayList(colMap.values()) : null;
+      if (dependencies == null || dependencies.size() != fields) {
+        log("Result schema has " + fields
+          + " fields, but we don't get as many dependencies");
+      } else {
         // Go through each target column, generate the lineage edges.
-        Set<Vertex> allTargets = new LinkedHashSet<Vertex>();
-        Map<String, Vertex> allSources = new LinkedHashMap<String, Vertex>();
         for (int i = 0; i < fields; i++) {
           Vertex target = new Vertex(
             getTargetFieldName(i, destTableName, colNames, fieldSchemas));
