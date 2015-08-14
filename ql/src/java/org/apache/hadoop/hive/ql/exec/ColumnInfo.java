@@ -237,4 +237,19 @@ public class ColumnInfo implements Serializable {
   public void setObjectinspector(ObjectInspector writableObjectInspector) {
     this.objectInspector = writableObjectInspector;
   }
+
+  public boolean internalEquals(ColumnInfo dest) {
+    if (dest == null) {
+      return false;
+    }
+
+    if ((!checkEquals(internalName, dest.getInternalName()))
+        || (!checkEquals(getType(), dest.getType())) || (isSkewedCol != dest.isSkewedCol())
+        || (isVirtualCol != dest.getIsVirtualCol())
+        || (isHiddenVirtualCol != dest.isHiddenVirtualCol())) {
+      return false;
+    }
+
+    return true;
+  }
 }
