@@ -75,5 +75,6 @@
     <Logger name="org.apache.zookeeper.ClientCnxnSocketNIO" level="WARN">
       <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
     </Logger>
+  </Loggers>
 
 </Configuration>
