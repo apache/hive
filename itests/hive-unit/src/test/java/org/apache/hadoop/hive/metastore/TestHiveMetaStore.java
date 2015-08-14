@@ -2966,4 +2966,70 @@ public abstract class TestHiveMetaStore extends TestCase {
     };
     return hookLoader;
   }
+
+  public void testValidateTableCols() throws Throwable {
+
+    try {
+      String dbName = "compdb";
+      String tblName = "comptbl";
+
+      client.dropTable(dbName, tblName);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      db.setDescription("Validate Table Columns test");
+      client.createDatabase(db);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+      cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName);
+      StorageDescriptor sd = new StorageDescriptor();
+      tbl.setSd(sd);
+      sd.setCols(cols);
+      sd.setCompressed(false);
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.getSerdeInfo().setName(tbl.getTableName());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.getSerdeInfo().getParameters()
+          .put(serdeConstants.SERIALIZATION_FORMAT, "1");
+      sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
+      sd.setSortCols(new ArrayList<Order>());
+
+      client.createTable(tbl);
+      if (isThriftClient) {
+        tbl = client.getTable(dbName, tblName);
+      }
+
+      List<String> expectedCols = Lists.newArrayList();
+      expectedCols.add("name");
+      ObjectStore objStore = new ObjectStore();
+      try {
+        objStore.validateTableCols(tbl, expectedCols);
+      } catch (MetaException ex) {
+        throw new RuntimeException(ex);
+      }
+
+      expectedCols.add("doesntExist");
+      boolean exceptionFound = false;
+      try {
+        objStore.validateTableCols(tbl, expectedCols);
+      } catch (MetaException ex) {
+        assertEquals(ex.getMessage(),
+            "Column doesntExist doesn't exist in table comptbl in database compdb");
+        exceptionFound = true;
+      }
+      assertTrue(exceptionFound);
+
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testValidateTableCols() failed.");
+      throw e;
+    }
+  }
 }
