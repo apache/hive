@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
@@ -223,7 +224,12 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
     int ret = 0;
 
     try {
-      List<Partition> partitions = getPartitionsList();
+      Collection<Partition> partitions = null;
+      if (work.getPrunedPartitionList() == null) {
+        partitions = getPartitionsList();
+      } else {
+        partitions = work.getPrunedPartitionList().getPartitions();
+      }
 
       // non-partitioned table
       if (partitions == null) {

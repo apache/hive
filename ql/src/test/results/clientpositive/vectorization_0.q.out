@@ -27,11 +27,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ctinyint (type: tinyint)
               outputColumnNames: ctinyint
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: min(ctinyint), max(ctinyint), count(ctinyint), count()
                 mode: hash
@@ -127,11 +127,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ctinyint (type: tinyint)
               outputColumnNames: ctinyint
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(ctinyint)
                 mode: hash
@@ -236,11 +236,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ctinyint (type: tinyint)
               outputColumnNames: ctinyint
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: avg(ctinyint), variance(ctinyint), var_pop(ctinyint), var_samp(ctinyint), std(ctinyint), stddev(ctinyint), stddev_pop(ctinyint), stddev_samp(ctinyint)
                 mode: hash
@@ -352,11 +352,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cbigint (type: bigint)
               outputColumnNames: cbigint
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: min(cbigint), max(cbigint), count(cbigint), count()
                 mode: hash
@@ -452,11 +452,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cbigint (type: bigint)
               outputColumnNames: cbigint
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(cbigint)
                 mode: hash
@@ -561,11 +561,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cbigint (type: bigint)
               outputColumnNames: cbigint
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: avg(cbigint), variance(cbigint), var_pop(cbigint), var_samp(cbigint), std(cbigint), stddev(cbigint), stddev_pop(cbigint), stddev_samp(cbigint)
                 mode: hash
@@ -677,11 +677,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cfloat (type: float)
               outputColumnNames: cfloat
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: min(cfloat), max(cfloat), count(cfloat), count()
                 mode: hash
@@ -777,11 +777,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cfloat (type: float)
               outputColumnNames: cfloat
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(cfloat)
                 mode: hash
@@ -886,11 +886,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cfloat (type: float)
               outputColumnNames: cfloat
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: avg(cfloat), variance(cfloat), var_pop(cfloat), var_samp(cfloat), std(cfloat), stddev(cfloat), stddev_pop(cfloat), stddev_samp(cfloat)
                 mode: hash
@@ -1040,14 +1040,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((cstring2 like '%b%') or ((79.553 <> cint) or (cbigint < cdouble))) (type: boolean)
-              Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cbigint (type: bigint), cfloat (type: float), ctinyint (type: tinyint)
                 outputColumnNames: cbigint, cfloat, ctinyint
-                Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: avg(cbigint), stddev_pop(cbigint), var_samp(cbigint), count(), sum(cfloat), min(ctinyint)
                   mode: hash
