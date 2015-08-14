@@ -20,7 +20,7 @@
  packages="org.apache.hadoop.hive.ql.log">
 
   <Properties>
-    <Property name="hive.ptest.log.threshold">ALL</Property>
+    <Property name="hive.ptest.log.threshold">DEBUG</Property>
     <Property name="hive.ptest.log.level">DEBUG</Property>
     <Property name="hive.ptest.root.logger">FILE</Property>
     <Property name="hive.ptest.log.dir">target</Property>

@@ -20,7 +20,7 @@
  packages="org.apache.hadoop.hive.ql.log">
 
   <Properties>
-    <Property name="webhcat.log.threshold">ALL</Property>
+    <Property name="webhcat.log.threshold">DEBUG</Property>
     <Property name="webhcat.log.level">INFO</Property>
     <Property name="webhcat.root.logger">standard</Property>
     <Property name="webhcat.log.dir">.</Property>

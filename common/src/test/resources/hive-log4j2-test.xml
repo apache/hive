@@ -20,7 +20,7 @@
  packages="org.apache.hadoop.hive.ql.log">
 
   <Properties>
-    <Property name="hive.log.threshold">ALL</Property>
+    <Property name="hive.log.threshold">DEBUG</Property>
     <Property name="hive.log.level">WARN</Property>
     <Property name="hive.root.logger">DRFA</Property>
     <Property name="hive.log.dir">${sys:test.tmp.dir}/${sys:user.name}-TestHiveLogging</Property>
