@@ -986,7 +986,8 @@ public class TestTxnHandler {
       LockRequest req = new LockRequest(components, "me", "localhost");
       LockResponse res = txnHandler.lock(req);
       assertTrue(res.getState() == LockState.ACQUIRED);
-      Thread.currentThread().sleep(10);
+      Thread.sleep(10);
+      txnHandler.performTimeOuts();
       txnHandler.checkLock(new CheckLockRequest(res.getLockid()));
       fail("Told there was a lock, when it should have timed out.");
     } catch (NoSuchLockException e) {
@@ -1000,8 +1001,8 @@ public class TestTxnHandler {
     long timeout = txnHandler.setTimeout(1);
     try {
       txnHandler.openTxns(new OpenTxnRequest(503, "me", "localhost"));
-      Thread.currentThread().sleep(10);
-      txnHandler.getOpenTxns();
+      Thread.sleep(10);
+      txnHandler.performTimeOuts();
       GetOpenTxnsInfoResponse rsp = txnHandler.getOpenTxnsInfo();
       int numAborted = 0;
       for (TxnInfo txnInfo : rsp.getOpen_txns()) {

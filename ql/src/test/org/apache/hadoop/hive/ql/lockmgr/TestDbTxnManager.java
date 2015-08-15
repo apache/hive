@@ -29,10 +29,10 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,6 +49,7 @@ public class TestDbTxnManager {
 
   private HiveConf conf = new HiveConf();
   private HiveTxnManager txnMgr;
+  private AcidHouseKeeperService houseKeeperService = null;
   private Context ctx;
   private int nextInput;
   private int nextOutput;
@@ -56,7 +57,6 @@ public class TestDbTxnManager {
   HashSet<WriteEntity> writeEntities;
 
   public TestDbTxnManager() throws Exception {
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 500, TimeUnit.MILLISECONDS);
     TxnDbUtil.setConfValues(conf);
     SessionState.start(conf);
     ctx = new Context(conf);
@@ -179,14 +179,30 @@ public class TestDbTxnManager {
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
+
+  /**
+   * aborts timed out transactions
+   */
+  private void runReaper() throws Exception {
+    int lastCount = houseKeeperService.getIsAliveCounter();
+    houseKeeperService.start(conf);
+    while(houseKeeperService.getIsAliveCounter() <= lastCount) {
+      try {
+        Thread.sleep(100);//make sure it has run at least once
+      }
+      catch(InterruptedException ex) {
+        //...
+      }
+    }
+    houseKeeperService.stop();
+  }
   @Test
   public void testExceptions() throws Exception {
     WriteEntity we = addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "PeterI");
     txnMgr.openTxn("NicholasII");
-    Thread.sleep(1000);//let txn timeout
-    txnMgr.getValidTxns();
+    runReaper();
     LockException exception = null;
     try {
       txnMgr.commitTxn();
@@ -198,8 +214,7 @@ public class TestDbTxnManager {
     Assert.assertEquals("Wrong Exception1", ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
     exception = null;
     txnMgr.openTxn("AlexanderIII");
-    Thread.sleep(1000);
-    txnMgr.getValidTxns();
+    runReaper();
     try {
       txnMgr.rollbackTxn();
     }
@@ -213,8 +228,7 @@ public class TestDbTxnManager {
     txnMgr.acquireLocks(qp, ctx, "PeterI");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertThat("Unexpected lock count", locks.size(), is(1));
-    Thread.sleep(1000);
-    txnMgr.getValidTxns();
+    runReaper();
     try {
       txnMgr.heartbeat();
     }
@@ -341,7 +355,6 @@ public class TestDbTxnManager {
     Assert.assertTrue(sawException);
   }
 
-
   @Before
   public void setUp() throws Exception {
     TxnDbUtil.prepDb();
@@ -351,10 +364,14 @@ public class TestDbTxnManager {
     nextOutput = 1;
     readEntities = new HashSet<ReadEntity>();
     writeEntities = new HashSet<WriteEntity>();
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.MILLISECONDS);
+    houseKeeperService = new AcidHouseKeeperService();
   }
 
   @After
   public void tearDown() throws Exception {
+    if(houseKeeperService != null) houseKeeperService.stop();
     if (txnMgr != null) txnMgr.closeTxnManager();
     TxnDbUtil.cleanDb();
   }

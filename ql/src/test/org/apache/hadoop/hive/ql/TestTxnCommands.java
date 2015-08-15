@@ -9,6 +9,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.orc.FileDump;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The LockManager is not ready, but for no-concurrency straight-line path we can 
@@ -387,6 +389,25 @@ public class TestTxnCommands {
     List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     int[][] updatedData = {{1,7},{3,7},{5,2},{5,3}};
     Assert.assertEquals("Bulk update failed", stringifyValues(updatedData), rs);
+  }
+  @Test
+  public void testTimeOutReaper() throws Exception {
+    runStatementOnDriver("set autocommit false");
+    runStatementOnDriver("start transaction");
+    runStatementOnDriver("delete from " + Table.ACIDTBL + " where a = 5");
+    //make sure currently running txn is considered aborted by housekeeper
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.MILLISECONDS);
+    AcidHouseKeeperService houseKeeperService = new AcidHouseKeeperService();
+    //this will abort the txn
+    houseKeeperService.start(hiveConf);
+    while(houseKeeperService.getIsAliveCounter() <= Integer.MIN_VALUE) {
+      Thread.sleep(100);//make sure it has run at least once
+    }
+    houseKeeperService.stop();
+    //this should fail because txn aborted due to timeout
+    CommandProcessorResponse cpr = runStatementOnDriverNegative("delete from " + Table.ACIDTBL + " where a = 5");
+    Assert.assertTrue("Actual: " + cpr.getErrorMessage(), cpr.getErrorMessage().contains("Transaction manager has aborted the transaction txnid:1"));
   }
 
   /**

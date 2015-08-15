@@ -46,6 +46,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * A handler to answer transaction related calls that come into the metastore
  * server.
+ *
+ * Note on log messages:  Please include txnid:X and lockid info
+ * {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
+ * The txnid:X and lockid:Y matches how Thrift object toString() methods are generated,
+ * so keeping the format consistent makes grep'ing the logs much easier.
  */
 public class TxnHandler {
   // Compactor states
@@ -212,7 +217,6 @@ public class TxnHandler {
       Statement stmt = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        timeOutTxns(dbConn);
         stmt = dbConn.createStatement();
         String s = "select ntxn_next - 1 from NEXT_TXN_ID";
         LOG.debug("Going to execute query <" + s + ">");
@@ -463,8 +467,6 @@ public class TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
         long extLockId = rqst.getLockid();
-        // Clean up timed out locks
-        timeOutLocks(dbConn);
 
         // Heartbeat on the lockid first, to assure that our lock is still valid.
         // Then look up the lock info (hopefully in the cache).  If these locks
@@ -1361,8 +1363,6 @@ public class TxnHandler {
     // and prevent other operations (such as committing transactions, showing locks,
     // etc.) that should not interfere with this one.
     synchronized (lockLock) {
-      // Clean up timed out locks before we attempt to acquire any.
-      timeOutLocks(dbConn);
       Statement stmt = null;
       try {
         stmt = dbConn.createStatement();
@@ -1732,15 +1732,22 @@ public class TxnHandler {
       LOG.debug("Going to execute query <" + s + ">");
       ResultSet rs = stmt.executeQuery(s);
       if (!rs.next()) {
+        s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
+        ResultSet rs2 = stmt.executeQuery(s);
+        boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
         LOG.debug("Going to rollback");
         dbConn.rollback();
+        if(alreadyCommitted) {
+          //makes the message more informative - helps to find bugs in client code
+          throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
+        }
         throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
       }
       if (rs.getString(1).charAt(0) == TXN_ABORTED) {
         LOG.debug("Going to rollback");
         dbConn.rollback();
         throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
-          " already aborted");
+          " already aborted");//todo: add time of abort, which is not currently tracked
       }
       s = "update TXNS set txn_last_heartbeat = " + now +
         " where txn_id = " + txnid;
@@ -1802,61 +1809,121 @@ public class TxnHandler {
     }
   }
 
-  // Clean time out locks from the database.  This does a commit,
+  // Clean time out locks from the database not associated with a transactions, i.e. locks
+  // for read-only autoCommit=true statements.  This does a commit,
   // and thus should be done before any calls to heartbeat that will leave
   // open transactions.
-  private void timeOutLocks(Connection dbConn) throws SQLException, MetaException {
-    long now = getDbTime(dbConn);
+  private void timeOutLocks(Connection dbConn) {
     Statement stmt = null;
     try {
+      long now = getDbTime(dbConn);
       stmt = dbConn.createStatement();
       // Remove any timed out locks from the table.
       String s = "delete from HIVE_LOCKS where hl_last_heartbeat < " +
-        (now - timeout);
+        (now - timeout) + " and (hl_txnid = 0 or hl_txnid is NULL)";//when txnid is > 0, the lock is
+      //associated with a txn and is handled by performTimeOuts()
+      //want to avoid expiring locks for a txn w/o expiring the txn itself
       LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
+      int deletedLocks = stmt.executeUpdate(s);
+      if(deletedLocks > 0) {
+        LOG.info("Deleted " + deletedLocks + " locks from HIVE_LOCKS due to timeout");
+      }
       LOG.debug("Going to commit");
       dbConn.commit();
+    }
+    catch(SQLException ex) {
+      LOG.error("Failed to purge timedout locks due to: " + getMessage(ex), ex);
+    }
+    catch(Exception ex) {
+      LOG.error("Failed to purge timedout locks due to: " + ex.getMessage(), ex);
     } finally {
       closeStmt(stmt);
     }
   }
 
-  // Abort timed out transactions.  This does a commit,
-  // and thus should be done before any calls to heartbeat that will leave
-  // open transactions on the underlying database.
-  private void timeOutTxns(Connection dbConn) throws SQLException, MetaException, RetryException {
-    long now = getDbTime(dbConn);
+  /**
+   * Suppose you have a query "select a,b from T" and you want to limit the result set
+   * to the first 5 rows.  The mechanism to do that differs in different DB.
+   * Make {@code noSelectsqlQuery} to be "a,b from T" and this method will return the
+   * appropriately modified row limiting query.
+   */
+  private String addLimitClause(Connection dbConn, int numRows, String noSelectsqlQuery) throws MetaException {
+    DatabaseProduct prod = determineDatabaseProduct(dbConn);
+    switch (prod) {
+      case DERBY:
+        //http://db.apache.org/derby/docs/10.7/ref/rrefsqljoffsetfetch.html
+        return "select " + noSelectsqlQuery + " fetch first " + numRows + " rows only";
+      case MYSQL:
+        //http://www.postgresql.org/docs/7.3/static/queries-limit.html
+      case POSTGRES:
+        //https://dev.mysql.com/doc/refman/5.0/en/select.html
+        return "select " + noSelectsqlQuery + " limit " + numRows;
+      case ORACLE:
+        //newer versions (12c and later) support OFFSET/FETCH
+        return "select * from (select " + noSelectsqlQuery + ") where rownum <= " + numRows;
+      case SQLSERVER:
+        //newer versions (2012 and later) support OFFSET/FETCH
+        //https://msdn.microsoft.com/en-us/library/ms189463.aspx
+        return "select TOP(" + numRows + ") " + noSelectsqlQuery;
+      default:
+        String msg = "Unrecognized database product name <" + prod + ">";
+        LOG.error(msg);
+        throw new MetaException(msg);
+    }
+  }
+  /**
+   * This will find transactions that have timed out and abort them.
+   * Will also delete locks which are not associated with a transaction and have timed out
+   * Tries to keep transactions (against metastore db) small to reduce lock contention.
+   */
+  public void performTimeOuts() {
+    Connection dbConn = null;
     Statement stmt = null;
+    ResultSet rs = null;
     try {
-      stmt = dbConn.createStatement();
-      // Abort any timed out locks from the table.
-      String s = "select txn_id from TXNS where txn_state = '" + TXN_OPEN +
-        "' and txn_last_heartbeat <  " + (now - timeout);
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      List<Long> deadTxns = new ArrayList<Long>();
-      // Limit the number of timed out transactions we do in one pass to keep from generating a
-      // huge delete statement
-      do {
-        deadTxns.clear();
-        for (int i = 0; i <  TIMED_OUT_TXN_ABORT_BATCH_SIZE && rs.next(); i++) {
-          deadTxns.add(rs.getLong(1));
+      dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      long now = getDbTime(dbConn);
+      timeOutLocks(dbConn);
+      while(true) {
+        stmt = dbConn.createStatement();
+        String s = " txn_id from TXNS where txn_state = '" + TXN_OPEN +
+          "' and txn_last_heartbeat <  " + (now - timeout);
+        s = addLimitClause(dbConn, 2500, s);
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if(!rs.next()) {
+          return;//no more timedout txns
         }
-        // We don't care whether all of the transactions get deleted or not,
-        // if some didn't it most likely means someone else deleted them in the interum
-        if (deadTxns.size() > 0) abortTxns(dbConn, deadTxns);
-      } while (deadTxns.size() > 0);
-      LOG.debug("Going to commit");
-      dbConn.commit();
-    } catch (SQLException e) {
-      LOG.debug("Going to rollback");
-      rollbackDBConn(dbConn);
-      checkRetryable(dbConn, e, "abortTxn");
-      throw new MetaException("Unable to update transaction database "
-        + StringUtils.stringifyException(e));
-    } finally {
-      closeStmt(stmt);
+        List<List<Long>> timedOutTxns = new ArrayList<>();
+        List<Long> currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+        timedOutTxns.add(currentBatch);
+        do {
+          currentBatch.add(rs.getLong(1));
+          if(currentBatch.size() == TIMED_OUT_TXN_ABORT_BATCH_SIZE) {
+            currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+            timedOutTxns.add(currentBatch);
+          }
+        } while(rs.next());
+        close(rs, stmt, null);
+        dbConn.commit();
+        for(List<Long> batchToAbort : timedOutTxns) {
+          abortTxns(dbConn, batchToAbort);
+          dbConn.commit();
+          //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
+          LOG.info("Aborted the following transactions due to timeout: " + timedOutTxns.toString());
+        }
+        int numTxnsAborted = (timedOutTxns.size() - 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE +
+          timedOutTxns.get(timedOutTxns.size() - 1).size();
+        LOG.info("Aborted " + numTxnsAborted + " transactions due to timeout");
+      }
+    } catch (SQLException ex) {
+      LOG.warn("Aborting timedout transactions failed due to " + getMessage(ex), ex);
+    }
+    catch(MetaException e) {
+      LOG.warn("Aborting timedout transactions failed due to " + e.getMessage(), e);
+    }
+    finally {
+      close(rs, stmt, dbConn);
     }
   }
 
