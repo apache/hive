@@ -39,8 +39,6 @@ public class TestOperationLoggingLayout {
     tableName = "TestOperationLoggingLayout_table";
     hiveConf = new HiveConf();
     hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "execution");
-    // We need to set the below parameter to test performance level logging
-    hiveConf.set("hive.ql.log.PerfLogger.level", "INFO,DRFA");
     miniHS2 = new MiniHS2(hiveConf);
     confOverlay = new HashMap<String, String>();
     confOverlay.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
