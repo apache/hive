@@ -108,7 +108,7 @@ public class DefaultGraphWalker implements GraphWalker {
     while (toWalk.size() > 0) {
       Node nd = toWalk.remove(0);
       walk(nd);
-      if (nodeOutput != null) {
+      if (nodeOutput != null && getDispatchedList().contains(nd)) {
         nodeOutput.put(nd, retMap.get(nd));
       }
     }

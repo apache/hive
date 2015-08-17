@@ -143,9 +143,11 @@ public class ASTNode extends CommonTree implements Node,Serializable {
       retNode = (ASTNode) retNode.parent;
     }
     rootNode=retNode;
-    rootNode.astStr = new StringBuffer();
-    rootNode.toStringTree(rootNode);
-    rootNode.isValidASTStr = true;
+    if (!rootNode.isValidASTStr) {
+      rootNode.astStr = new StringBuffer();
+      rootNode.toStringTree(rootNode);
+      rootNode.isValidASTStr = true;
+    }
     return retNode;
   }
 
@@ -159,9 +161,6 @@ public class ASTNode extends CommonTree implements Node,Serializable {
       rootNode.astStr = null;
       rootNode.isValidASTStr = false;
     }
-    // The root might have changed because of tree modifications.
-    // Compute the new root for this tree and set the astStr.
-    getRootNodeWithValidASTStr(false);
   }
 
   private int getMemoizedStringLen() {
@@ -225,9 +224,10 @@ public class ASTNode extends CommonTree implements Node,Serializable {
 
   @Override
   public String toStringTree() {
-    // The tree modifier functions invalidate the old astStr, rootNode, etc.
-    // Hence, we can use the memoized root node and string values here.
-    ASTNode rootNode = (ASTNode)this.getRootNodeWithValidASTStr(true);
+
+    // The root might have changed because of tree modifications.
+    // Compute the new root for this tree and set the astStr.
+    getRootNodeWithValidASTStr(true);
 
     // If rootNotModified is false, then startIndx and endIndx will be stale.
     if (startIndx >= 0 && endIndx <= rootNode.getMemoizedStringLen()) {
