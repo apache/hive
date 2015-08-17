@@ -264,7 +264,7 @@ public class Worker extends CompactorThread {
         sb.append(colName).append(",");
       }
       sb.setLength(sb.length() - 1);//remove trailing ,
-      LOG.debug("running '" + sb.toString() + "'");
+      LOG.info("running '" + sb.toString() + "'");
       Driver d = new Driver(conf, userName);
       SessionState localSession = null;
       if(SessionState.get() == null) {

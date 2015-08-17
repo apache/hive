@@ -983,11 +983,19 @@ public class Driver implements CommandProcessor {
         return 10;
       }
 
-      boolean existingTxn = txnMgr.isTxnOpen();
+      boolean initiatingTransaction = false;
+      boolean readOnlyQueryInAutoCommit = false;
       if((txnMgr.getAutoCommit() && haveAcidWrite()) || plan.getOperation() == HiveOperation.START_TRANSACTION ||
         (!txnMgr.getAutoCommit() && startTxnImplicitly)) {
+        if(txnMgr.isTxnOpen()) {
+          throw new RuntimeException("Already have an open transaction txnid:" + txnMgr.getCurrentTxnId());
+        }
         // We are writing to tables in an ACID compliant way, so we need to open a transaction
         txnMgr.openTxn(userFromUGI);
+        initiatingTransaction = true;
+      }
+      else {
+        readOnlyQueryInAutoCommit = txnMgr.getAutoCommit() && plan.getOperation() == HiveOperation.QUERY && !haveAcidWrite();
       }
       // Set the transaction id in all of the acid file sinks
       if (haveAcidWrite()) {
@@ -1003,9 +1011,9 @@ public class Driver implements CommandProcessor {
       For multi-stmt txns this is not sufficient and will be managed via WriteSet tracking
       in the lock manager.*/
       txnMgr.acquireLocks(plan, ctx, userFromUGI);
-      if(!existingTxn) {
+      if(initiatingTransaction || readOnlyQueryInAutoCommit) {
         //For multi-stmt txns we should record the snapshot when txn starts but
-        // don't update it after that until txn completes.  Thus the check for {@code existingTxn}
+        // don't update it after that until txn completes.  Thus the check for {@code initiatingTransaction}
         //For autoCommit=true, Read-only statements, txn is implicit, i.e. lock in the snapshot
         //for each statement.
         recordValidTxns();
@@ -1300,6 +1308,7 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {
+    //console.printError(cpr.toString());
     try {
       releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), false);
     }

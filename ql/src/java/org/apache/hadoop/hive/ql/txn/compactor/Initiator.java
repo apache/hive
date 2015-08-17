@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 
@@ -52,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
+ * It's critical that there exactly 1 of these in a given warehouse.
  */
 public class Initiator extends CompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
@@ -222,7 +224,7 @@ public class Initiator extends CompactorThread {
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(location, conf, txns);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(location, conf, txns, false);
     Path base = dir.getBaseDirectory();
     long baseSize = 0;
     FileStatus stat = null;
@@ -235,9 +237,9 @@ public class Initiator extends CompactorThread {
       baseSize = sumDirSize(fs, base);
     }
 
-    List<FileStatus> originals = dir.getOriginalFiles();
-    for (FileStatus origStat : originals) {
-      baseSize += origStat.getLen();
+    List<HdfsFileStatusWithId> originals = dir.getOriginalFiles();
+    for (HdfsFileStatusWithId origStat : originals) {
+      baseSize += origStat.getFileStatus().getLen();
     }
 
     long deltaSize = 0;

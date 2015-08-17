@@ -483,7 +483,7 @@ public class TestInputOutputFormat {
           final OrcInputFormat.Context context = new OrcInputFormat.Context(
               conf, n);
           OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
-              context, fs, new MockPath(fs, "mock:/a/b"));
+              context, fs, new MockPath(fs, "mock:/a/b"), false);
           final SplitStrategy splitStrategy = gen.call();
           assertTrue(
               String.format(
@@ -507,7 +507,7 @@ public class TestInputOutputFormat {
         new MockFile("mock:/a/b/part-04", 1000, new byte[0]));
     OrcInputFormat.FileGenerator gen =
       new OrcInputFormat.FileGenerator(context, fs,
-          new MockPath(fs, "mock:/a/b"));
+          new MockPath(fs, "mock:/a/b"), false);
     SplitStrategy splitStrategy = gen.call();
     assertEquals(true, splitStrategy instanceof OrcInputFormat.BISplitStrategy);
 
@@ -520,7 +520,7 @@ public class TestInputOutputFormat {
         new MockFile("mock:/a/b/.part-03", 1000, new byte[1000]),
         new MockFile("mock:/a/b/part-04", 1000, new byte[1000]));
     gen = new OrcInputFormat.FileGenerator(context, fs,
-            new MockPath(fs, "mock:/a/b"));
+            new MockPath(fs, "mock:/a/b"), false);
     splitStrategy = gen.call();
     assertEquals(true, splitStrategy instanceof OrcInputFormat.ETLSplitStrategy);
 
