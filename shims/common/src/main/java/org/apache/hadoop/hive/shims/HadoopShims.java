@@ -256,6 +256,10 @@ public interface HadoopShims {
   List<FileStatus> listLocatedStatus(FileSystem fs, Path path,
                                      PathFilter filter) throws IOException;
 
+
+  List<HdfsFileStatusWithId> listLocatedHdfsStatus(
+      FileSystem fs, Path path, PathFilter filter) throws IOException;
+
   /**
    * For file status returned by listLocatedStatus, convert them into a list
    * of block locations.
@@ -314,6 +318,11 @@ public interface HadoopShims {
   public interface HdfsFileStatus {
     public FileStatus getFileStatus();
     public void debugLog();
+  }
+
+  public interface HdfsFileStatusWithId {
+    public FileStatus getFileStatus();
+    public Long getFileId();
   }
 
   public HCatHadoopShims getHCatShim();
@@ -731,4 +740,10 @@ public interface HadoopShims {
    * @throws IOException If an error occurred on adding the token.
    */
   public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException;
+
+  /**
+   * Gets file ID. Only supported on hadoop-2.
+   * @return inode ID of the file.
+   */
+  long getFileId(FileSystem fs, String path) throws IOException;
 }

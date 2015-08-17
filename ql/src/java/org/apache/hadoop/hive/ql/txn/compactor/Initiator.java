@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 
@@ -223,7 +224,7 @@ public class Initiator extends CompactorThread {
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
     FileSystem fs = location.getFileSystem(conf);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(location, conf, txns);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(location, conf, txns, false);
     Path base = dir.getBaseDirectory();
     long baseSize = 0;
     FileStatus stat = null;
@@ -236,9 +237,9 @@ public class Initiator extends CompactorThread {
       baseSize = sumDirSize(fs, base);
     }
 
-    List<FileStatus> originals = dir.getOriginalFiles();
-    for (FileStatus origStat : originals) {
-      baseSize += origStat.getLen();
+    List<HdfsFileStatusWithId> originals = dir.getOriginalFiles();
+    for (HdfsFileStatusWithId origStat : originals) {
+      baseSize += origStat.getFileStatus().getLen();
     }
 
     long deltaSize = 0;

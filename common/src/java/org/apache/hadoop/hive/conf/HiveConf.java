@@ -1024,6 +1024,8 @@ public class HiveConf extends Configuration {
         "data is read remotely (from the client or HS2 machine) and sent to all the tasks."),
     HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE("hive.orc.cache.stripe.details.size", 10000,
         "Max cache size for keeping meta info about orc splits cached in the client."),
+    HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS("hive.orc.splits.include.fileid", true,
+        "Include file ID in splits on file systems thaty support it."),
     HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS("hive.orc.compute.splits.num.threads", 10,
         "How many threads orc should use to create splits in parallel."),
     HIVE_ORC_SKIP_CORRUPT_DATA("hive.exec.orc.skip.corrupt.data", false,
