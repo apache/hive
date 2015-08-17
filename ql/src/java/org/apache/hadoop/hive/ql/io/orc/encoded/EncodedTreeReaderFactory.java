@@ -15,21 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
-import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
+import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind;
+import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
+import org.apache.hadoop.hive.ql.io.orc.SettableUncompressedStream;
+import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory;
 
-/**
- *
- */
 public class EncodedTreeReaderFactory extends TreeReaderFactory {
+  /**
+   * We choose to use a toy programming language, so we cannot use multiple inheritance.
+   * If we could, we could have this inherit TreeReader to contain the common impl, and then
+   * have e.g. SettableIntTreeReader inherit both Settable... and Int.. TreeReader-s.
+   * Instead, we have a settable interface that the caller will cast to and call setBuffers.
+   */
+  public interface SettableTreeReader {
+    void setBuffers(ColumnStreamData[] streamBuffers, boolean sameStripe) throws IOException;
+  }
 
-  protected static class TimestampStreamReader extends TimestampTreeReader {
+  protected static class TimestampStreamReader extends TimestampTreeReader
+      implements SettableTreeReader {
     private boolean isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _secondsStream;
@@ -72,17 +84,16 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_secondsStream != null) {
-        _secondsStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _secondsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
       if (_nanosStream != null) {
-        _nanosStream.setBuffers(StreamUtils.createDiskRangeInfo(secondaryStreamBuffer));
+        _nanosStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.SECONDARY_VALUE]));
       }
     }
 
@@ -160,7 +171,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class StringStreamReader extends StringTreeReader {
+  protected static class StringStreamReader extends StringTreeReader
+      implements SettableTreeReader {
     private boolean _isFileCompressed;
     private boolean _isDictionaryEncoding;
     private SettableUncompressedStream _presentStream;
@@ -187,7 +199,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.present.seek(index);
+        reader.getPresent().seek(index);
       }
 
       if (_isDictionaryEncoding) {
@@ -199,7 +211,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDictionaryTreeReader) reader).reader.seek(index);
+          ((StringDictionaryTreeReader) reader).getReader().seek(index);
         }
       } else {
         // DIRECT encoding
@@ -210,41 +222,40 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDirectTreeReader) reader).stream.seek(index);
+          ((StringDirectTreeReader) reader).getStream().seek(index);
         }
 
         if (_lengthStream.available() > 0) {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDirectTreeReader) reader).lengths.seek(index);
+          ((StringDirectTreeReader) reader).getLengths().seek(index);
         }
       }
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(dictionaryStreamBuffer));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
@@ -327,7 +338,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
   }
 
-  protected static class ShortStreamReader extends ShortTreeReader {
+  protected static class ShortStreamReader extends ShortTreeReader implements SettableTreeReader {
     private boolean isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -361,14 +372,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
     }
 
@@ -430,7 +440,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class LongStreamReader extends LongTreeReader {
+  protected static class LongStreamReader extends LongTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -464,14 +474,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
     }
 
@@ -539,7 +548,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class IntStreamReader extends IntTreeReader {
+  protected static class IntStreamReader extends IntTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -573,14 +582,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
     }
 
@@ -643,7 +651,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
   }
 
-  protected static class FloatStreamReader extends FloatTreeReader {
+  protected static class FloatStreamReader extends FloatTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -676,14 +684,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
     }
 
@@ -739,7 +746,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
   }
 
-  protected static class DoubleStreamReader extends DoubleTreeReader {
+  protected static class DoubleStreamReader extends DoubleTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -772,14 +779,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
     }
 
@@ -834,7 +840,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class DecimalStreamReader extends DecimalTreeReader {
+  protected static class DecimalStreamReader extends DecimalTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _valueStream;
@@ -879,17 +885,16 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_valueStream != null) {
-        _valueStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _valueStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
       if (_scaleStream != null) {
-        _scaleStream.setBuffers(StreamUtils.createDiskRangeInfo(secondaryStreamBuffer));
+        _scaleStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.SECONDARY_VALUE]));
       }
     }
 
@@ -971,7 +976,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class DateStreamReader extends DateTreeReader {
+  protected static class DateStreamReader extends DateTreeReader implements SettableTreeReader {
     private boolean isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -1005,14 +1010,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
     }
 
@@ -1075,7 +1079,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class CharStreamReader extends CharTreeReader {
+  protected static class CharStreamReader extends CharTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private boolean _isDictionaryEncoding;
     private SettableUncompressedStream _presentStream;
@@ -1103,7 +1107,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.present.seek(index);
+        reader.getPresent().seek(index);
       }
 
       if (_isDictionaryEncoding) {
@@ -1115,7 +1119,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDictionaryTreeReader) reader).reader.seek(index);
+          ((StringDictionaryTreeReader) reader).getReader().seek(index);
         }
       } else {
         // DIRECT encoding
@@ -1126,41 +1130,40 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDirectTreeReader) reader).stream.seek(index);
+          ((StringDirectTreeReader) reader).getStream().seek(index);
         }
 
         if (_lengthStream.available() > 0) {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDirectTreeReader) reader).lengths.seek(index);
+          ((StringDirectTreeReader) reader).getLengths().seek(index);
         }
       }
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(dictionaryStreamBuffer));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
@@ -1249,7 +1252,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
   }
 
-  protected static class VarcharStreamReader extends VarcharTreeReader {
+  protected static class VarcharStreamReader extends VarcharTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private boolean _isDictionaryEncoding;
     private SettableUncompressedStream _presentStream;
@@ -1277,7 +1280,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.present.seek(index);
+        reader.getPresent().seek(index);
       }
 
       if (_isDictionaryEncoding) {
@@ -1289,7 +1292,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDictionaryTreeReader) reader).reader.seek(index);
+          ((StringDictionaryTreeReader) reader).getReader().seek(index);
         }
       } else {
         // DIRECT encoding
@@ -1300,41 +1303,40 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDirectTreeReader) reader).stream.seek(index);
+          ((StringDirectTreeReader) reader).getStream().seek(index);
         }
 
         if (_lengthStream.available() > 0) {
           if (_isFileCompressed) {
             index.getNext();
           }
-          ((StringDirectTreeReader) reader).lengths.seek(index);
+          ((StringDirectTreeReader) reader).getLengths().seek(index);
         }
       }
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(dictionaryStreamBuffer));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
@@ -1423,7 +1425,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
   }
 
-  protected static class ByteStreamReader extends ByteTreeReader {
+  protected static class ByteStreamReader extends ByteTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -1456,14 +1458,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
     }
 
@@ -1518,7 +1519,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class BinaryStreamReader extends BinaryTreeReader {
+  protected static class BinaryStreamReader extends BinaryTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -1562,17 +1563,16 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
       if (_lengthsStream != null) {
-        _lengthsStream.setBuffers(StreamUtils.createDiskRangeInfo(lengthsStreamBuffer));
+        _lengthsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
       }
     }
 
@@ -1641,7 +1641,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class BooleanStreamReader extends BooleanTreeReader {
+  protected static class BooleanStreamReader extends BooleanTreeReader implements SettableTreeReader {
     private boolean _isFileCompressed;
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
@@ -1674,14 +1674,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void setBuffers(ColumnStreamData[] buffers, boolean sameStripe)
+    public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
-      super.setBuffers(buffers, sameStripe);
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(presentStreamBuffer));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(dataStreamBuffer));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
       }
     }
 
@@ -1757,37 +1756,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       OrcProto.ColumnEncoding columnEncoding = encodings.get(columnIndex);
 
       // stream buffers are arranged in enum order of stream kind
-      ColumnStreamData present = null;
-      ColumnStreamData data = null;
-      ColumnStreamData dictionary = null;
-      ColumnStreamData lengths = null;
-      ColumnStreamData secondary = null;
-      for (ColumnStreamData streamBuffer : streamBuffers) {
-        switch (streamBuffer.getStreamKind()) {
-          case 0:
-            // PRESENT stream
-            present = streamBuffer;
-            break;
-          case 1:
-            // DATA stream
-            data = streamBuffer;
-            break;
-          case 2:
-            // LENGTH stream
-            lengths = streamBuffer;
-            break;
-          case 3:
-            // DICTIONARY_DATA stream
-            dictionary = streamBuffer;
-            break;
-          case 5:
-            // SECONDARY stream
-            secondary = streamBuffer;
-            break;
-          default:
-            throw new IOException("Unexpected stream kind: " + streamBuffer.getStreamKind());
-        }
-      }
+      ColumnStreamData present = streamBuffers[Kind.PRESENT_VALUE],
+        data = streamBuffers[Kind.DATA_VALUE],
+        dictionary = streamBuffers[Kind.DICTIONARY_DATA_VALUE],
+        lengths = streamBuffers[Kind.LENGTH_VALUE],
+        secondary = streamBuffers[Kind.SECONDARY_VALUE];
 
       switch (columnType.getKind()) {
         case BINARY:

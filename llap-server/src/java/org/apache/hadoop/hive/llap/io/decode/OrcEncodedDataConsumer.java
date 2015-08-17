@@ -30,16 +30,18 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory;
+import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory.SettableTreeReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
-import org.apache.hadoop.hive.ql.io.orc.EncodedTreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 
 public class OrcEncodedDataConsumer
   extends EncodedDataConsumer<OrcBatchKey, OrcEncodedColumnBatch> {
-  private EncodedTreeReaderFactory.TreeReader[] columnReaders;
+  private TreeReaderFactory.TreeReader[] columnReaders;
   private int previousStripeIndex = -1;
   private OrcFileMetadata fileMetadata; // We assume one request is only for one file.
   private CompressionCodec codec;
@@ -127,7 +129,7 @@ public class OrcEncodedDataConsumer
     }
   }
 
-  private void positionInStreams(EncodedTreeReaderFactory.TreeReader[] columnReaders,
+  private void positionInStreams(TreeReaderFactory.TreeReader[] columnReaders,
       EncodedColumnBatch<OrcBatchKey> batch, int numCols,
       OrcStripeMetadata stripeMetadata) throws IOException {
     for (int i = 0; i < numCols; i++) {
@@ -139,7 +141,7 @@ public class OrcEncodedDataConsumer
     }
   }
 
-  private void repositionInStreams(EncodedTreeReaderFactory.TreeReader[] columnReaders,
+  private void repositionInStreams(TreeReaderFactory.TreeReader[] columnReaders,
       EncodedColumnBatch<OrcBatchKey> batch, boolean sameStripe, int numCols,
       OrcStripeMetadata stripeMetadata) throws IOException {
     for (int i = 0; i < numCols; i++) {
@@ -148,7 +150,7 @@ public class OrcEncodedDataConsumer
       ColumnStreamData[] streamBuffers = batch.getColumnData()[i];
       OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[columnIndex];
       OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rowGroupIndex);
-      columnReaders[i].setBuffers(streamBuffers, sameStripe);
+      ((SettableTreeReader)columnReaders[i]).setBuffers(streamBuffers, sameStripe);
       columnReaders[i].seek(new RecordReaderImpl.PositionProviderImpl(rowIndexEntry));
     }
   }

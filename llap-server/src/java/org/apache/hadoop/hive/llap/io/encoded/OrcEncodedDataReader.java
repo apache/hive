@@ -633,8 +633,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @Override
   public void returnData(OrcEncodedColumnBatch ecb) {
     for (ColumnStreamData[] datas : ecb.getColumnData()) {
+      if (datas == null) continue;
       for (ColumnStreamData data : datas) {
-        if (data.decRef() != 0) continue;
+        if (data == null || data.decRef() != 0) continue;
         if (DebugUtils.isTraceLockingEnabled()) {
           for (MemoryBuffer buf : data.getCacheBuffers()) {
             LlapIoImpl.LOG.info("Unlocking " + buf + " at the end of processing");
@@ -802,6 +803,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
               isMissingAnyRgs[colIxMod] = true;
               continue;
             }
+            assert cached.length == OrcEncodedColumnBatch.MAX_DATA_STREAMS;
             col.setAllStreamsData(colIxMod, key.colIx, cached);
             hasAnyCached = true;
             if (readMask == SargApplier.READ_ALL_RGS) {
@@ -847,7 +849,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   public void consumeData(OrcEncodedColumnBatch data) {
     // Store object in cache; create new key object - cannot be reused.
     assert cache != null;
-    for (int i = 0; i < data.getColumnData().length; ++i) {
+    throw new UnsupportedOperationException("not implemented");
+    /*for (int i = 0; i < data.getColumnData().length; ++i) {
       OrcCacheKey key = new OrcCacheKey(data.getBatchKey(), data.getColumnIxs()[i]);
       ColumnStreamData[] toCache = data.getColumnData()[i];
       ColumnStreamData[] cached = cache.cacheOrGet(key, toCache);
@@ -859,7 +862,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         data.getColumnData()[i] = cached;
       }
     }
-    consumer.consumeData(data);
+    consumer.consumeData(data);*/
   }
 
   @Override

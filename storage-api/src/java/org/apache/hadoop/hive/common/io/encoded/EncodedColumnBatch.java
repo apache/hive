@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.common.io.encoded;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 /**
  * A block of data for a given section of a file, similar to VRB but in encoded form.
  * Stores a set of buffers for each encoded stream that is a part of each column.
@@ -36,21 +35,15 @@ public class EncodedColumnBatch<BatchKey> {
     private List<MemoryBuffer> cacheBuffers;
     /** Base offset from the beginning of the indexable unit; for example, for ORC,
      * offset from the CB in a compressed file, from the stream in uncompressed file. */
-    private int indexBaseOffset;
-    /** Stream type; format-specific. */
-    private int streamKind;
+    private int indexBaseOffset = 0;
 
     /** Reference count. */
     private AtomicInteger refCount = new AtomicInteger(0);
 
-    public void init(int kind) {
-      streamKind = kind;
-      indexBaseOffset = 0;
-    }
-
     public void reset() {
       cacheBuffers.clear();
       refCount.set(0);
+      indexBaseOffset = 0;
     }
 
     public void incRef() {
@@ -78,15 +71,14 @@ public class EncodedColumnBatch<BatchKey> {
     public void setIndexBaseOffset(int indexBaseOffset) {
       this.indexBaseOffset = indexBaseOffset;
     }
-
-    public int getStreamKind() {
-      return streamKind;
-    }
   }
 
   /** The key that is used to map this batch to source location. */
   protected BatchKey batchKey;
-  /** Stream data for each stream, for each included column. */
+  /**
+   * Stream data for each stream, for each included column.
+   * For each column, streams are indexed by kind, with missing elements being null.
+   */
   protected ColumnStreamData[][] columnData;
   /** Column indexes included in the batch. Correspond to columnData elements. */
   protected int[] columnIxs;
@@ -99,20 +91,24 @@ public class EncodedColumnBatch<BatchKey> {
   public int version = Integer.MIN_VALUE;
 
   public void reset() {
-    if (columnData != null) {
-      for (int i = 0; i < columnData.length; ++i) {
-        columnData[i] = null;
+    if (columnData == null) return;
+    for (int i = 0; i < columnData.length; ++i) {
+      if (columnData[i] == null) continue;
+      for (int j = 0; j < columnData[i].length; ++j) {
+        columnData[i][j] = null;
       }
     }
   }
 
   public void initColumn(int colIxMod, int colIx, int streamCount) {
     columnIxs[colIxMod] = colIx;
-    columnData[colIxMod] = new ColumnStreamData[streamCount];
+    if (columnData[colIxMod] == null || columnData[colIxMod].length != streamCount) {
+      columnData[colIxMod] = new ColumnStreamData[streamCount];
+    }
   }
 
-  public void setStreamData(int colIxMod, int streamIx, ColumnStreamData sb) {
-    columnData[colIxMod][streamIx] = sb;
+  public void setStreamData(int colIxMod, int streamKind, ColumnStreamData csd) {
+    columnData[colIxMod][streamKind] = csd;
   }
 
   public void setAllStreamsData(int colIxMod, int colIx, ColumnStreamData[] sbs) {
@@ -135,6 +131,12 @@ public class EncodedColumnBatch<BatchKey> {
   protected void resetColumnArrays(int columnCount) {
     if (columnIxs != null && columnCount == columnIxs.length) return;
     columnIxs = new int[columnCount];
-    columnData = new ColumnStreamData[columnCount][];
+    ColumnStreamData[][] columnData = new ColumnStreamData[columnCount][];
+    if (this.columnData != null) {
+      for (int i = 0; i < Math.min(columnData.length, this.columnData.length); ++i) {
+        columnData[i] = this.columnData[i];
+      }
+    }
+    this.columnData = columnData;
   }
 }
