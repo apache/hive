@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -23,6 +23,9 @@ import java.nio.ByteBuffer;
 import org.apache.hadoop.hive.common.DiskRangeInfo;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+import org.apache.hadoop.hive.ql.io.orc.SettableUncompressedStream;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 
 /**
  * Stream utility.
@@ -56,7 +59,7 @@ public class StreamUtils {
    */
   public static DiskRangeInfo createDiskRangeInfo(ColumnStreamData streamBuffer) {
     DiskRangeInfo diskRangeInfo = new DiskRangeInfo(streamBuffer.getIndexBaseOffset());
-    long offset = diskRangeInfo.getTotalLength(); // See ctor comment.
+    long offset = streamBuffer.getIndexBaseOffset(); // See ctor comment.
     // TODO: we should get rid of this
     for (MemoryBuffer memoryBuffer : streamBuffer.getCacheBuffers()) {
       ByteBuffer buffer = memoryBuffer.getByteBufferDup();

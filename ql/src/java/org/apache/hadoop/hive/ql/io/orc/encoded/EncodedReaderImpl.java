@@ -348,7 +348,7 @@ class EncodedReaderImpl implements EncodedReader {
         ColumnReadContext ctx = colCtxs[colIxMod];
         RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),
             nextIndex = isLastRg ? null : ctx.rowIndex.getEntry(rgIx + 1);
-        ecb.initColumn(colIxMod, ctx.colIx, ctx.streamCount);
+        ecb.initColumn(colIxMod, ctx.colIx, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
         for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
           StreamContext sctx = ctx.streams[streamIx];
           ColumnStreamData cb = null;
@@ -360,7 +360,6 @@ class EncodedReaderImpl implements EncodedReader {
             }
             if (sctx.stripeLevelStream == null) {
               sctx.stripeLevelStream = POOLS.csdPool.take();
-              sctx.stripeLevelStream.init(sctx.kind.getNumber());
               // We will be using this for each RG while also sending RGs to processing.
               // To avoid buffers being unlocked, run refcount one ahead; we will not increase
               // it when building the last RG, so each RG processing will decref once, and the
@@ -399,7 +398,7 @@ class EncodedReaderImpl implements EncodedReader {
               sctx.bufferIter = iter = lastCached;
             }
           }
-          ecb.setStreamData(colIxMod, streamIx, cb);
+          ecb.setStreamData(colIxMod, sctx.kind.getNumber(), cb);
         }
       }
       if (isRGSelected) {
@@ -431,9 +430,7 @@ class EncodedReaderImpl implements EncodedReader {
 
   private ColumnStreamData createRgColumnStreamData(int rgIx, boolean isLastRg,
       int colIx, StreamContext sctx, long cOffset, long endCOffset, boolean isCompressed) {
-    ColumnStreamData cb;
-    cb = POOLS.csdPool.take();
-    cb.init(sctx.kind.getNumber());
+    ColumnStreamData cb = POOLS.csdPool.take();
     cb.incRef();
     if (isDebugTracingEnabled) {
       LOG.info("Getting data for column "+ colIx + " " + (isLastRg ? "last " : "")

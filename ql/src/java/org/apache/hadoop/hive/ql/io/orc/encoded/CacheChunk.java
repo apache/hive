@@ -35,7 +35,7 @@ public class CacheChunk extends DiskRangeList {
 
   @Override
   public ByteBuffer getData() {
-    // Callers duplicate the buffer, they have to for BufferChunk
+    // Callers duplicate the buffer, they have to for BufferChunk; so we don't have to.
     return buffer.getByteBufferRaw();
   }
 
