@@ -34,6 +34,7 @@ import com.google.common.primitives.UnsignedBytes;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
+@SuppressWarnings("unchecked")
 public class ThriftUnionObjectInspector extends ReflectionStructObjectInspector implements UnionObjectInspector {
 
   private static final String FIELD_METADATA_MAP = "metaDataMap";
@@ -73,8 +74,10 @@ public class ThriftUnionObjectInspector extends ReflectionStructObjectInspector 
    * to allow recursive types.
    */
   @Override
-  protected void init(Class<?> objectClass,
+  protected void init(Type type, Class<?> objectClass,
                       ObjectInspectorFactory.ObjectInspectorOptions options) {
+    this.type = type;
+
     verifyObjectClassType(objectClass);
     this.objectClass = objectClass;
     final Field fieldMetaData;
@@ -89,15 +92,18 @@ public class ThriftUnionObjectInspector extends ReflectionStructObjectInspector 
 
     try {
       final Map<? extends TFieldIdEnum, FieldMetaData> fieldMap = (Map<? extends TFieldIdEnum, FieldMetaData>) fieldMetaData.get(null);
-      fields = new ArrayList<StandardStructObjectInspector.MyField>(fieldMap.size());
-      this.ois = new ArrayList<ObjectInspector>();
-      for(Map.Entry<? extends TFieldIdEnum, FieldMetaData> metadata : fieldMap.entrySet()) {
-        int fieldId = metadata.getKey().getThriftFieldId();
-        String fieldName = metadata.getValue().fieldName;
-        final Type fieldType = ThriftObjectInspectorUtils.getFieldType(objectClass, fieldName);
-        final ObjectInspector reflectionObjectInspector = ObjectInspectorFactory.getReflectionObjectInspector(fieldType, options);
-        fields.add(new StandardStructObjectInspector.MyField(fieldId, fieldName, reflectionObjectInspector));
-        this.ois.add(reflectionObjectInspector);
+      synchronized (this) {
+        fields = new ArrayList<StandardStructObjectInspector.MyField>(fieldMap.size());
+        this.ois = new ArrayList<ObjectInspector>();
+        for(Map.Entry<? extends TFieldIdEnum, FieldMetaData> metadata : fieldMap.entrySet()) {
+          int fieldId = metadata.getKey().getThriftFieldId();
+          String fieldName = metadata.getValue().fieldName;
+          final Type fieldType = ThriftObjectInspectorUtils.getFieldType(objectClass, fieldName);
+          final ObjectInspector reflectionObjectInspector = ObjectInspectorFactory.getReflectionObjectInspector(fieldType, options, false);
+          fields.add(new StandardStructObjectInspector.MyField(fieldId, fieldName, reflectionObjectInspector));
+          this.ois.add(reflectionObjectInspector);
+        }
+        inited = true;
       }
     } catch (IllegalAccessException e) {
       throw new RuntimeException("Unable to find field metadata for thrift union field ", e);
@@ -110,7 +116,7 @@ public class ThriftUnionObjectInspector extends ReflectionStructObjectInspector 
   }
 
   @Override
-  public List<? extends StructField> getAllStructFieldRefs() {
+  public synchronized List<? extends StructField> getAllStructFieldRefs() {
     return fields;
   }
 
