@@ -55,6 +55,14 @@ import org.apache.hadoop.io.Writable;
  * Currently field.delim can be multiple character while collection.delim
  * and mapkey.delim should be just single character.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
+    serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
+    serdeConstants.ESCAPE_CHAR,
+    serdeConstants.SERIALIZATION_ENCODING,
+    LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS})
 public class MultiDelimitSerDe extends AbstractSerDe {
   private static final Log LOG = LogFactory.getLog(MultiDelimitSerDe.class.getName());
   private static final byte[] DEFAULT_SEPARATORS = {(byte) 1, (byte) 2, (byte) 3};

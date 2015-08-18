@@ -31,6 +31,8 @@ import org.apache.hadoop.io.Writable;
  */
 public abstract class AbstractSerDe implements SerDe {
 
+  protected String configErrors;
+
   /**
    * Initialize the SerDe. By default, this will use one set of properties, either the
    * table properties or the partition properties. If a SerDe needs access to both sets,
@@ -101,4 +103,13 @@ public abstract class AbstractSerDe implements SerDe {
    * structure of the Object returned from deserialize(...).
    */
   public abstract ObjectInspector getObjectInspector() throws SerDeException;
+
+  /**
+   * Get the error messages during the Serde configuration
+   *
+   * @return The error messages in the configuration which are empty if no error occurred
+   */
+  public String getConfigurationErrors() {
+    return configErrors == null ? "" : configErrors;
+  }
 }

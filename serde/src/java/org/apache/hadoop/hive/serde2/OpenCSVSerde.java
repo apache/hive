@@ -49,6 +49,9 @@ import au.com.bytecode.opencsv.CSVWriter;
  * quote("), and escape characters(\) are the same as the opencsv library.
  *
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS,
+    OpenCSVSerde.SEPARATORCHAR, OpenCSVSerde.QUOTECHAR, OpenCSVSerde.ESCAPECHAR})
 public final class OpenCSVSerde extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(OpenCSVSerde.class.getName());
@@ -69,7 +72,7 @@ public final class OpenCSVSerde extends AbstractSerDe {
   public void initialize(final Configuration conf, final Properties tbl) throws SerDeException {
 
     final List<String> columnNames = Arrays.asList(tbl.getProperty(serdeConstants.LIST_COLUMNS)
-            .split(","));
+        .split(","));
 
     numCols = columnNames.size();
 

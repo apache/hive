@@ -28,9 +28,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
@@ -42,6 +44,27 @@ import org.apache.hadoop.mapred.JobConf;
  * HBaseSerDe can be used to serialize object into an HBase table and
  * deserialize objects from an HBase table.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
+    serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
+    serdeConstants.ESCAPE_CHAR,
+    serdeConstants.SERIALIZATION_ENCODING,
+    LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS,
+    HBaseSerDe.HBASE_COLUMNS_MAPPING,
+    HBaseSerDe.HBASE_TABLE_NAME,
+    HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE,
+    HBaseSerDe.HBASE_KEY_COL,
+    HBaseSerDe.HBASE_PUT_TIMESTAMP,
+    HBaseSerDe.HBASE_COMPOSITE_KEY_CLASS,
+    HBaseSerDe.HBASE_COMPOSITE_KEY_TYPES,
+    HBaseSerDe.HBASE_COMPOSITE_KEY_FACTORY,
+    HBaseSerDe.HBASE_STRUCT_SERIALIZER_CLASS,
+    HBaseSerDe.HBASE_SCAN_CACHE,
+    HBaseSerDe.HBASE_SCAN_CACHEBLOCKS,
+    HBaseSerDe.HBASE_SCAN_BATCH,
+    HBaseSerDe.HBASE_AUTOGENERATE_STRUCT})
 public class HBaseSerDe extends AbstractSerDe {
   public static final Log LOG = LogFactory.getLog(HBaseSerDe.class);
 
@@ -53,6 +76,7 @@ public class HBaseSerDe extends AbstractSerDe {
   public static final String HBASE_COMPOSITE_KEY_CLASS = "hbase.composite.key.class";
   public static final String HBASE_COMPOSITE_KEY_TYPES = "hbase.composite.key.types";
   public static final String HBASE_COMPOSITE_KEY_FACTORY = "hbase.composite.key.factory";
+  public static final String HBASE_STRUCT_SERIALIZER_CLASS = "hbase.struct.serialization.class";
   public static final String HBASE_SCAN_CACHE = "hbase.scan.cache";
   public static final String HBASE_SCAN_CACHEBLOCKS = "hbase.scan.cacheblock";
   public static final String HBASE_SCAN_BATCH = "hbase.scan.batch";

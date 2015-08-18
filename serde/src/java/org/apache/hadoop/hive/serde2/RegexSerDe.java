@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -70,9 +69,15 @@ import com.google.common.collect.Lists;
  * writableStringObjectInspector. We should switch to that when we have a UTF-8
  * based Regex library.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    RegexSerDe.INPUT_REGEX, RegexSerDe.INPUT_REGEX_CASE_SENSITIVE })
 public class RegexSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(RegexSerDe.class.getName());
+
+  public static final String INPUT_REGEX = "input.regex";
+  public static final String INPUT_REGEX_CASE_SENSITIVE = "input.regex.case.insensitive";
 
   int numColumns;
   String inputRegex;
@@ -95,11 +100,11 @@ public class RegexSerDe extends AbstractSerDe {
     // We can get the table definition from tbl.
 
     // Read the configuration parameters
-    inputRegex = tbl.getProperty("input.regex");
+    inputRegex = tbl.getProperty(INPUT_REGEX);
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     boolean inputRegexIgnoreCase = "true".equalsIgnoreCase(tbl
-        .getProperty("input.regex.case.insensitive"));
+        .getProperty(INPUT_REGEX_CASE_SENSITIVE));
 
     // output format string is not supported anymore, warn user of deprecation
     if (null != tbl.getProperty("output.format.string")) {

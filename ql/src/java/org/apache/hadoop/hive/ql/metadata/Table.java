@@ -34,7 +34,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -192,7 +191,7 @@ public class Table implements Serializable {
           "at least one column must be specified for the table");
     }
     if (!isView()) {
-      if (null == getDeserializerFromMetaStore()) {
+      if (null == getDeserializerFromMetaStore(false)) {
         throw new HiveException("must specify a non-null serDe");
       }
       if (null == getInputFormatClass()) {
@@ -253,12 +252,23 @@ public class Table implements Serializable {
 
   final public Deserializer getDeserializer() {
     if (deserializer == null) {
-      deserializer = getDeserializerFromMetaStore();
+      deserializer = getDeserializerFromMetaStore(false);
     }
     return deserializer;
   }
 
-  private Deserializer getDeserializerFromMetaStore() {
+  final public Class<? extends Deserializer> getDeserializerClass() throws Exception {
+    return MetaStoreUtils.getDeserializerClass(Hive.get().getConf(), tTable);
+  }
+
+  final public Deserializer getDeserializer(boolean skipConfError) {
+    if (deserializer == null) {
+      deserializer = getDeserializerFromMetaStore(skipConfError);
+    }
+    return deserializer;
+  }
+
+  final public Deserializer getDeserializerFromMetaStore(boolean skipConfError) {
     try {
       return MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable);
     } catch (MetaException e) {

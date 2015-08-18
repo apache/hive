@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -50,6 +51,9 @@ import org.apache.thrift.transport.TIOStreamTransport;
  * DynamicSerDe.
  *
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.SERIALIZATION_DDL, serdeConstants.SERIALIZATION_FORMAT,
+    DynamicSerDe.META_TABLE_NAME})
 public class DynamicSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(DynamicSerDe.class.getName());

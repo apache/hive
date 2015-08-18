@@ -42,6 +42,11 @@ import org.apache.hadoop.io.Writable;
  * MetadataTypedColumnsetSerDe.
  *
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.SERIALIZATION_FORMAT,
+    serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_LIB,
+    serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST })
 public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory

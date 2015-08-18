@@ -26,8 +26,10 @@ import org.apache.avro.Schema;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -37,8 +39,17 @@ import org.apache.hadoop.io.Writable;
 /**
  * Read or write Avro data from Hive.
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    AvroSerDe.LIST_COLUMN_COMMENTS, AvroSerDe.TABLE_NAME, AvroSerDe.TABLE_COMMENT,
+    AvroSerdeUtils.SCHEMA_LITERAL, AvroSerdeUtils.SCHEMA_URL,
+    AvroSerdeUtils.SCHEMA_NAMESPACE, AvroSerdeUtils.SCHEMA_NAME, AvroSerdeUtils.SCHEMA_DOC})
 public class AvroSerDe extends AbstractSerDe {
   private static final Log LOG = LogFactory.getLog(AvroSerDe.class);
+
+  public static final String TABLE_NAME = "name";
+  public static final String TABLE_COMMENT = "comment";
+  public static final String LIST_COLUMN_COMMENTS = "columns.comments";
 
   public static final String DECIMAL_TYPE_NAME = "decimal";
   public static final String CHAR_TYPE_NAME = "char";
@@ -57,8 +68,6 @@ public class AvroSerDe extends AbstractSerDe {
   private AvroSerializer avroSerializer = null;
 
   private boolean badSchema = false;
-  private static String TABLE_NAME = "name";
-  private static String TABLE_COMMENT = "comment";
 
   @Override
   public void initialize(Configuration configuration, Properties tableProperties,
@@ -79,9 +88,9 @@ public class AvroSerDe extends AbstractSerDe {
     columnNames = null;
     columnTypes = null;
 
-    final String columnNameProperty = properties.getProperty("columns");
-    final String columnTypeProperty = properties.getProperty("columns.types");
-    final String columnCommentProperty = properties.getProperty("columns.comments","");
+    final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS);
 
     if (properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()) != null
         || properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_URL.getPropName()) != null

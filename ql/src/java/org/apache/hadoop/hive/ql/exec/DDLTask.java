@@ -156,6 +156,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -189,6 +190,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -3986,7 +3988,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int createTableLike(Hive db, CreateTableLikeDesc crtTbl) throws HiveException {
+  private int createTableLike(Hive db, CreateTableLikeDesc crtTbl) throws Exception {
     // Get the existing table
     Table oldtbl = db.getTable(crtTbl.getLikeTableName());
     Table tbl;
@@ -4052,12 +4054,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.unsetDataLocation();
       }
 
+      Class<? extends Deserializer> serdeClass = oldtbl.getDeserializerClass();
+
       Map<String, String> params = tbl.getParameters();
       // We should copy only those table parameters that are specified in the config.
+      SerDeSpec spec = AnnotationUtils.getAnnotation(serdeClass, SerDeSpec.class);
       String paramsStr = HiveConf.getVar(conf, HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
+
+      Set<String> retainer = new HashSet<String>();
+      if (spec != null && spec.schemaProps() != null) {
+        retainer.addAll(Arrays.asList(spec.schemaProps()));
+      }
       if (paramsStr != null) {
-        List<String> paramsList = Arrays.asList(paramsStr.split(","));
-        params.keySet().retainAll(paramsList);
+        retainer.addAll(Arrays.asList(paramsStr.split(",")));
+      }
+      if (!retainer.isEmpty()) {
+        params.keySet().retainAll(retainer);
       } else {
         params.clear();
       }

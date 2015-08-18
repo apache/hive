@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.MetadataListStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -44,9 +45,16 @@ import com.google.common.collect.Lists;
  * TestSerDe.
  *
  */
+@SerDeSpec(schemaProps = {
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    TestSerDe.COLUMNS, TestSerDe.COLUMNS_COMMENTS, TestSerDe.DEFAULT_SERIALIZATION_FORMAT})
 public class TestSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(TestSerDe.class.getName());
+
+  public static final String COLUMNS = "columns";
+  public static final String COLUMNS_COMMENTS = "columns.comments";
+  public static final String DEFAULT_SERIALIZATION_FORMAT = "testserde.default.serialization.format";
 
   public String getShortName() {
     return shortName();
@@ -76,7 +84,7 @@ public class TestSerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration job, Properties tbl) throws SerDeException {
     separator = DefaultSeparator;
-    String altSep = tbl.getProperty("testserde.default.serialization.format");
+    String altSep = tbl.getProperty(DEFAULT_SERIALIZATION_FORMAT);
     if (altSep != null && altSep.length() > 0) {
       try {
         byte[] b = new byte[1];
@@ -87,7 +95,7 @@ public class TestSerDe extends AbstractSerDe {
       }
     }
 
-    String columnProperty = tbl.getProperty("columns");
+    String columnProperty = tbl.getProperty(COLUMNS);
     if (columnProperty == null || columnProperty.length() == 0) {
       // Hack for tables with no columns
       // Treat it as a table with a single column called "col"
@@ -97,7 +105,7 @@ public class TestSerDe extends AbstractSerDe {
     } else {
       columnNames = Arrays.asList(columnProperty.split(","));
       cachedObjectInspector = MetadataListStructObjectInspector
-          .getInstance(columnNames,Lists.newArrayList(Splitter.on('\0').split(tbl.getProperty("columns.comments"))));
+          .getInstance(columnNames,Lists.newArrayList(Splitter.on('\0').split(tbl.getProperty(COLUMNS_COMMENTS))));
     }
     LOG.info(getClass().getName() + ": initialized with columnNames: "
         + columnNames);

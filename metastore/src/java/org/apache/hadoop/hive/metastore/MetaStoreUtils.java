@@ -380,6 +380,12 @@ public class MetaStoreUtils {
     }
   }
 
+  public static Class<? extends Deserializer> getDeserializerClass(
+      Configuration conf, org.apache.hadoop.hive.metastore.api.Table table) throws Exception {
+    String lib = table.getSd().getSerdeInfo().getSerializationLib();
+    return lib == null ? null : conf.getClassByName(lib).asSubclass(Deserializer.class);
+  }
+
   /**
    * getDeserializer
    *

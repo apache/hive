@@ -74,11 +74,11 @@ public class AvroSerdeUtils {
     }
   }
 
-  @Deprecated public static final String SCHEMA_LITERAL = AvroTableProperties.SCHEMA_LITERAL.getPropName();
-  @Deprecated public static final String SCHEMA_URL = AvroTableProperties.SCHEMA_URL.getPropName();
-  @Deprecated public static final String SCHEMA_NAMESPACE = AvroTableProperties.SCHEMA_NAMESPACE.getPropName();
-  @Deprecated public static final String SCHEMA_NAME = AvroTableProperties.SCHEMA_NAME.getPropName();
-  @Deprecated public static final String SCHEMA_DOC = AvroTableProperties.SCHEMA_DOC.getPropName();
+  @Deprecated public static final String SCHEMA_LITERAL = "avro.schema.literal";
+  @Deprecated public static final String SCHEMA_URL = "avro.schema.url";
+  @Deprecated public static final String SCHEMA_NAMESPACE = "avro.schema.namespace";
+  @Deprecated public static final String SCHEMA_NAME = "avro.schema.name";
+  @Deprecated public static final String SCHEMA_DOC = "avro.schema.doc";
   @Deprecated public static final String AVRO_SERDE_SCHEMA = AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName();
   @Deprecated public static final String SCHEMA_RETRIEVER = AvroTableProperties.SCHEMA_RETRIEVER.getPropName();
   public static final String SCHEMA_NONE = "none";
