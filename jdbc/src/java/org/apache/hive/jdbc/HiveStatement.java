@@ -59,7 +59,7 @@ public class HiveStatement implements java.sql.Statement {
   private TOperationHandle stmtHandle = null;
   private final TSessionHandle sessHandle;
   Map<String,String> sessConf = new HashMap<String,String>();
-  private int fetchSize = 50;
+  private int fetchSize = 1000;
   private boolean isScrollableResultset = false;
   /**
    * We need to keep a reference to the result set to support the following:
