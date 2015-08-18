@@ -5122,7 +5122,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // insert a select operator here used by the ColumnPruner to reduce
     // the data to shuffle
-    Operator select = insertSelectAllPlanForGroupBy(selectInput);
+    Operator select = genSelectAllDesc(selectInput);
 
     // Generate ReduceSinkOperator
     ReduceSinkOperator reduceSinkOperatorInfo =
@@ -8395,8 +8395,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return type;
   }
 
-  private Operator insertSelectAllPlanForGroupBy(Operator input)
-      throws SemanticException {
+  private Operator genSelectAllDesc(Operator input) throws SemanticException {
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
     ArrayList<ColumnInfo> columns = inputRR.getColumnInfos();
@@ -8410,9 +8409,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       columnNames.add(col.getInternalName());
       columnExprMap.put(col.getInternalName(), new ExprNodeColumnDesc(col));
     }
+    RowResolver outputRR = inputRR.duplicate();
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new SelectDesc(colList, columnNames, true), new RowSchema(inputRR
-            .getColumnInfos()), input), inputRR);
+        new SelectDesc(colList, columnNames, true), 
+        outputRR.getRowSchema(), input), outputRR);
     output.setColumnExprMap(columnExprMap);
     return output;
   }
@@ -8857,9 +8857,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   throw new SemanticException(ErrorMsg.UNSUPPORTED_MULTIPLE_DISTINCTS.
                       getMsg());
                 }
-                // insert a select operator here used by the ColumnPruner to reduce
-                // the data to shuffle
-                curr = insertSelectAllPlanForGroupBy(curr);
+              // insert a select operator here used by the ColumnPruner to reduce
+              // the data to shuffle
+              curr = genSelectAllDesc(curr);
                 if (conf.getBoolVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)) {
                   if (!conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
                     curr = genGroupByPlanMapAggrNoSkew(dest, qb, curr);
@@ -12198,6 +12198,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
           new RowSchema(ptfOpRR.getColumnInfos()),
           input), ptfOpRR);
+      input = genSelectAllDesc(input);
       rr = ptfOpRR;
     }
 
