@@ -46,12 +46,15 @@ import org.apache.hadoop.io.Text;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 public class ReaderImpl implements Reader {
 
   private static final Log LOG = LogFactory.getLog(ReaderImpl.class);
 
   private static final int DIRECTORY_SIZE_GUESS = 16 * 1024;
+  private static final int DEFAULT_PROTOBUF_MESSAGE_LIMIT = 64 << 20;  // 64MB
+  private static final int PROTOBUF_MESSAGE_MAX_LIMIT = 1024 << 20; // 1GB
 
   protected final FileSystem fileSystem;
   protected final Path path;
@@ -468,7 +471,36 @@ public class ReaderImpl implements Reader {
 
       InputStream instream = InStream.create("metadata", Lists.<DiskRange>newArrayList(
           new BufferChunk(footerBuffer, 0)), metadataSize, codec, bufferSize);
-      this.metadata = OrcProto.Metadata.parseFrom(instream);
+      CodedInputStream in = CodedInputStream.newInstance(instream);
+      int msgLimit = DEFAULT_PROTOBUF_MESSAGE_LIMIT;
+      OrcProto.Metadata meta = null;
+      do {
+        try {
+          in.setSizeLimit(msgLimit);
+          meta = OrcProto.Metadata.parseFrom(in);
+        } catch (InvalidProtocolBufferException e) {
+          if (e.getMessage().contains("Protocol message was too large")) {
+            LOG.warn("Metadata section is larger than " + msgLimit + " bytes. Increasing the max" +
+                " size of the coded input stream." );
+
+            msgLimit = msgLimit << 1;
+            if (msgLimit > PROTOBUF_MESSAGE_MAX_LIMIT) {
+              LOG.error("Metadata section exceeds max protobuf message size of " +
+                  PROTOBUF_MESSAGE_MAX_LIMIT + " bytes.");
+              throw e;
+            }
+
+            // we must have failed in the middle of reading instream and instream doesn't support
+            // resetting the stream
+            instream = InStream.create("metadata", Lists.<DiskRange>newArrayList(
+                new BufferChunk(footerBuffer, 0)), metadataSize, codec, bufferSize);
+            in = CodedInputStream.newInstance(instream);
+          } else {
+            throw e;
+          }
+        }
+      } while (meta == null);
+      this.metadata = meta;
 
       footerBuffer.position(position + metadataSize);
       footerBuffer.limit(position + metadataSize + footerBufferSize);
