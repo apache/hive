@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -168,6 +171,90 @@ public class TestObjectInspectorConverters extends TestCase {
           {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
           baConverter.convert(new Text("hive")));
       assertEquals("BAConverter", null, baConverter.convert(null));
+
+      // Union
+      ArrayList<String> fieldNames = new ArrayList<String>();
+      fieldNames.add("firstInteger");
+      fieldNames.add("secondString");
+      fieldNames.add("thirdBoolean");
+      ArrayList<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>();
+      fieldObjectInspectors
+          .add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+      fieldObjectInspectors
+          .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      fieldObjectInspectors
+          .add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
+
+      ArrayList<String> fieldNames2 = new ArrayList<String>();
+      fieldNames2.add("firstString");
+      fieldNames2.add("secondInteger");
+      fieldNames2.add("thirdBoolean");
+      ArrayList<ObjectInspector> fieldObjectInspectors2 = new ArrayList<ObjectInspector>();
+      fieldObjectInspectors2
+          .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      fieldObjectInspectors2
+          .add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+      fieldObjectInspectors2
+          .add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
+
+      Converter unionConverter0 = ObjectInspectorConverters.getConverter(ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors),
+          ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors2));
+
+      Object convertedObject0 = unionConverter0.convert(new StandardUnionObjectInspector.StandardUnion((byte)0, 1));
+      List<String> expectedObject0 = new ArrayList<String>();
+      expectedObject0.add("1");
+
+      assertEquals(expectedObject0, convertedObject0);
+
+      Converter unionConverter1 = ObjectInspectorConverters.getConverter(ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors),
+		  ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors2));
+
+      Object convertedObject1 = unionConverter1.convert(new StandardUnionObjectInspector.StandardUnion((byte)1, "1"));
+      List<Integer> expectedObject1 = new ArrayList<Integer>();
+      expectedObject1.add(1);
+
+      assertEquals(expectedObject1, convertedObject1);
+
+      Converter unionConverter2 = ObjectInspectorConverters.getConverter(ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors),
+          ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors2));
+
+      Object convertedObject2 = unionConverter2.convert(new StandardUnionObjectInspector.StandardUnion((byte)2, true));
+      List<Boolean> expectedObject2 = new ArrayList<Boolean>();
+      expectedObject2.add(true);
+
+      assertEquals(expectedObject2, convertedObject2);
+
+      // Union (extra fields)
+      ArrayList<String> fieldNamesExtra = new ArrayList<String>();
+      fieldNamesExtra.add("firstInteger");
+      fieldNamesExtra.add("secondString");
+      fieldNamesExtra.add("thirdBoolean");
+      ArrayList<ObjectInspector> fieldObjectInspectorsExtra = new ArrayList<ObjectInspector>();
+      fieldObjectInspectorsExtra
+          .add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+      fieldObjectInspectorsExtra
+          .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      fieldObjectInspectorsExtra
+          .add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
+
+      ArrayList<String> fieldNamesExtra2 = new ArrayList<String>();
+      fieldNamesExtra2.add("firstString");
+      fieldNamesExtra2.add("secondInteger");
+      ArrayList<ObjectInspector> fieldObjectInspectorsExtra2 = new ArrayList<ObjectInspector>();
+      fieldObjectInspectorsExtra2
+          .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      fieldObjectInspectorsExtra2
+          .add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+
+      Converter unionConverterExtra = ObjectInspectorConverters.getConverter(ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectorsExtra),
+          ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectorsExtra2));
+
+      Object convertedObjectExtra = unionConverterExtra.convert(new StandardUnionObjectInspector.StandardUnion((byte)2, true));
+      List<Object> expectedObjectExtra = new ArrayList<Object>();
+      expectedObjectExtra.add(null);
+
+      assertEquals(expectedObjectExtra, convertedObjectExtra); // we should get back null
+
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
