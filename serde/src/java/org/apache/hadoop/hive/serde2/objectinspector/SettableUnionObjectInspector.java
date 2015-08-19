@@ -29,6 +29,6 @@ public abstract class SettableUnionObjectInspector implements
   /* Create an empty object */
   public abstract Object create();
 
-  /* Add fields to the object */
-  public abstract Object addField(Object union, ObjectInspector oi);
+  /* Add field to the object */
+  public abstract Object addField(Object union, Object field);
 }
