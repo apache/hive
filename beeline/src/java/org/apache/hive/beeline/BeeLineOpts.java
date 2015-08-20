@@ -219,7 +219,6 @@ class BeeLineOpts implements Completer {
     loadProperties(p);
   }
 
-
   public void loadProperties(Properties props) {
     for (Object element : props.keySet()) {
       String key = element.toString();
