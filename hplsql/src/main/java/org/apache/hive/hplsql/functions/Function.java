@@ -71,6 +71,9 @@ public class Function {
     if (execUser(ctx, name)) {
       return;
     }
+    else if (isProc(name) && execProc(ctx, name)) {
+      return;
+    }
     if (name.indexOf(".") != -1) {               // Name can be qualified and spaces are allowed between parts
       String[] parts = name.split("\\.");
       StringBuilder str = new StringBuilder();
@@ -198,6 +201,16 @@ public class Function {
     exec.callStackPop();
     exec.leaveScope();       
     return true;
+  }
+  
+  /**
+   * Check if the stored procedure with the specified name is defined
+   */
+  public boolean isProc(String name) {
+    if (procMap.get(name.toUpperCase()) != null) {
+      return true;
+    }
+    return false;
   }
   
   /**

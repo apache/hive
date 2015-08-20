@@ -18,12 +18,106 @@
 
 package org.apache.hive.hplsql;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * Metadata
  */
 public class Meta {
+    
+  HashMap<String, HashMap<String, Row>> dataTypes = new HashMap<String, HashMap<String, Row>>();
+  
+  Exec exec;
+  boolean trace = false;  
+  boolean info = false;
+  
+  Meta(Exec e) {
+    exec = e;  
+    trace = exec.getTrace();
+    info = exec.getInfo();
+  }
+  
+  /**
+   * Get the data type of column (column name is qualified i.e. schema.table.column)
+   */
+  String getDataType(ParserRuleContext ctx, String conn, String column) {
+    String type = null;
+    HashMap<String, Row> map = dataTypes.get(conn);
+    if (map == null) {
+      map = new HashMap<String, Row>();
+      dataTypes.put(conn, map);
+    }
+    ArrayList<String> twoparts = splitIdentifierToTwoParts(column);
+    if (twoparts != null) {
+      String tab = twoparts.get(0);
+      String col = twoparts.get(1).toUpperCase();
+      Row row = map.get(tab);
+      if (row != null) {
+        type = row.getType(col);
+      }
+      else {
+        row = readColumns(ctx, conn, tab, map);
+        if (row != null) {
+          type = row.getType(col);
+        }
+      }
+    }
+    return type;
+  }
+  
+  /**
+   * Get data types for all columns of the table
+   */
+  Row getRowDataType(ParserRuleContext ctx, String conn, String table) {
+    HashMap<String, Row> map = dataTypes.get(conn);
+    if (map == null) {
+      map = new HashMap<String, Row>();
+      dataTypes.put(conn, map);
+    }
+    Row row = map.get(table);
+    if (row == null) {
+      row = readColumns(ctx, conn, table, map);
+    }
+    return row;
+  }
+  
+  /**
+   * Read the column data from the database and cache it
+   */
+  Row readColumns(ParserRuleContext ctx, String conn, String table, HashMap<String, Row> map) {
+    Row row = null;
+    String sql = null;
+    Conn.Type connType = exec.getConnectionType(conn); 
+    if (connType == Conn.Type.HIVE) {
+      sql = "DESCRIBE " + table;
+    }
+    if (sql != null) {
+      Query query = new Query(sql);
+      exec.executeQuery(ctx, query, conn); 
+      if (!query.error()) {
+        ResultSet rs = query.getResultSet();
+        try {
+          while (rs.next()) {
+            String col = rs.getString(1);
+            String typ = rs.getString(2);
+            if (row == null) {
+              row = new Row();
+            }
+            row.addColumn(col.toUpperCase(), typ);
+          } 
+          map.put(table, row);
+        } 
+        catch (Exception e) {}
+      }
+      exec.closeQuery(query, conn);
+    }
+    return row;
+  }
+  
   /**
    * Normalize identifier name (convert "" [] to `` i.e.)
    */
@@ -52,6 +146,30 @@ public class Meta {
       return '`' + name.substring(1, name.length() - 1) + '`'; 
     }
     return name;
+  }
+  
+  /**
+   * Split qualified object to 2 parts: schema.tab.col -> schema.tab|col; tab.col -> tab|col 
+   */
+  public ArrayList<String> splitIdentifierToTwoParts(String name) {
+    ArrayList<String> parts = splitIdentifier(name);    
+    ArrayList<String> twoparts = null;
+    if (parts != null) {
+      StringBuilder id = new StringBuilder();
+      int i = 0;
+      for (; i < parts.size() - 1; i++) {
+        id.append(parts.get(i));
+        if (i + 1 < parts.size() - 1) {
+          id.append(".");
+        }
+      }
+      twoparts = new ArrayList<String>();
+      twoparts.add(id.toString());
+      id.setLength(0);
+      id.append(parts.get(i));
+      twoparts.add(id.toString());
+    }
+    return twoparts;
   }
   
   /**

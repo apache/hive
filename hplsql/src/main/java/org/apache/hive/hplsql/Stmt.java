@@ -381,11 +381,15 @@ public class Stmt {
           for(int i=1; i <= cols; i++) {
             Var var = exec.findVariable(ctx.L_ID(i).getText());
             if(var != null) {
-              var.setValue(rs, rsm, i);
-              if(trace) {
-                trace(ctx, "COLUMN: " + rsm.getColumnName(i) + ", " + rsm.getColumnTypeName(i));
-                trace(ctx, "SET " + var.getName() + " = " + var.toString());
-              }            
+              if (var.type != Var.Type.ROW) {
+                var.setValue(rs, rsm, i);
+              }
+              else {
+                var.setValues(rs, rsm);
+              }
+              if (trace) {
+                trace(ctx, var, rs, rsm, i);
+              }
             } 
             else if(trace) {
               trace(ctx, "Variable not found: " + ctx.L_ID(i).getText());
@@ -738,19 +742,16 @@ public class Stmt {
       if (rs != null) {
         ResultSetMetaData rm = rs.getMetaData();
         int cols = rm.getColumnCount();
-        Var[] vars = new Var[cols];
-        for (int i = 0; i < cols; i++) {
-          vars[i] = new Var();
-          vars[i].setName(cursor + "." + rm.getColumnName(i + 1));
-          vars[i].setType(rm.getColumnType(i + 1));          
-          exec.addVariable(vars[i]);
-          if (trace) {
-            trace(ctx, "Column: " + vars[i].getName() + " " + rm.getColumnTypeName(i + 1));
-          }
-        }                
+        Row row = new Row();
+        for (int i = 1; i <= cols; i++) {
+          row.addColumn(rm.getColumnName(i), rm.getColumnTypeName(i));
+        }
+        Var var = new Var(cursor, row);
+        exec.addVariable(var);
         while (rs.next()) {
-          for (int i = 0; i < cols; i++) {
-            vars[i].setValue(rs, rm, i + 1);
+          var.setValues(rs, rm);
+          if (trace) {
+            trace(ctx, var, rs, rm, 0);
           }
           visit(ctx.block());
           exec.incRowCount();
@@ -817,21 +818,24 @@ public class Stmt {
     ResultSet rs = query.getResultSet();
     if (rs != null) {
       try {
-        ResultSetMetaData rsm = rs.getMetaData();
-        // Assign to variables
-        if(ctx.T_INTO() != null) {
+        ResultSetMetaData rm = rs.getMetaData();
+        if (ctx.T_INTO() != null) {
           int cols = ctx.L_ID().size();
-          if(rs.next()) {
-            for(int i=0; i < cols; i++) {
+          if (rs.next()) {
+            for (int i = 0; i < cols; i++) {
               Var var = exec.findVariable(ctx.L_ID(i).getText());
-              if(var != null) {
-                var.setValue(rs, rsm, i+1);
-                if(trace) {
-                  trace(ctx, "COLUMN: " + rsm.getColumnName(i+1) + ", " + rsm.getColumnTypeName(i+1));
-                  trace(ctx, "SET " + var.getName() + " = " + var.toString());
+              if (var != null) {
+                if (var.type != Var.Type.ROW) {
+                  var.setValue(rs, rm, i + 1);
+                }
+                else {
+                  var.setValues(rs, rm);
+                }
+                if (trace) {
+                  trace(ctx, var, rs, rm, i + 1);
                 }
               } 
-              else if(trace) {
+              else if (trace) {
                 trace(ctx, "Variable not found: " + ctx.L_ID(i).getText());
               }
             }
@@ -840,7 +844,7 @@ public class Stmt {
         }
         // Print the results
         else {
-          int cols = rsm.getColumnCount();
+          int cols = rm.getColumnCount();
           while(rs.next()) {
             for(int i = 1; i <= cols; i++) {
               if(i > 1) {
@@ -864,8 +868,11 @@ public class Stmt {
    * EXEC to execute a stored procedure
    */
   public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
-    if (exec.function.execProc(ctx.expr_func_params(), evalPop(ctx.expr()).toString())) {
-      return true;
+    String name = evalPop(ctx.expr()).toString();
+    if (exec.function.isProc(name)) {
+      if (exec.function.execProc(ctx.expr_func_params(), name)) {
+        return true;
+      }
     }
     return false;
   }
@@ -1117,5 +1124,9 @@ public class Stmt {
    */
   void trace(ParserRuleContext ctx, String message) {
 	  exec.trace(ctx, message);
+  }
+  
+  void trace(ParserRuleContext ctx, Var var, ResultSet rs, ResultSetMetaData rm, int idx) throws SQLException {
+    exec.trace(ctx, var, rs, rm, idx);
   }
 }

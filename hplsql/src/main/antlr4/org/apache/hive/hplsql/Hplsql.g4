@@ -138,7 +138,7 @@ break_stmt :
      ;
      
 call_stmt :
-       T_CALL ident (T_OPEN_P expr_func_params T_CLOSE_P | expr_func_params)?
+       T_CALL ident (T_OPEN_P expr_func_params? T_CLOSE_P | expr_func_params)?
      ;
      
 declare_stmt :          // Declaration statement
@@ -211,11 +211,18 @@ create_table_column_inline_cons :
        dtype_default
      | T_NOT? T_NULL
      | T_PRIMARY T_KEY
+     | T_UNIQUE
+     | T_REFERENCES table_name T_OPEN_P ident T_CLOSE_P create_table_fk_action*
      | T_IDENTITY T_OPEN_P L_INT (T_COMMA L_INT)* T_CLOSE_P
      ;
      
 create_table_column_cons :
-       T_PRIMARY T_KEY T_CLUSTERED? T_OPEN_P ident (T_ASC | T_DESC)? (T_COMMA ident (T_ASC | T_DESC)?)*  T_CLOSE_P index_storage_clause?
+       T_PRIMARY T_KEY T_CLUSTERED? T_OPEN_P ident (T_ASC | T_DESC)? (T_COMMA ident (T_ASC | T_DESC)?)* T_CLOSE_P index_storage_clause?
+     | T_FOREIGN T_KEY T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P T_REFERENCES table_name T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P create_table_fk_action* 
+    ;
+    
+create_table_fk_action :
+       T_ON (T_UPDATE | T_DELETE) (T_NO T_ACTION | T_RESTRICT | T_SET T_NULL | T_SET T_DEFAULT | T_CASCADE)
      ;
 
 create_table_options :
@@ -224,9 +231,19 @@ create_table_options :
      
 create_table_options_item :
        T_ON T_COMMIT (T_DELETE | T_PRESERVE) T_ROWS 
+     | create_table_options_ora_item
      | create_table_options_db2_item  
      | create_table_options_hive_item  
      | create_table_options_mssql_item  
+     ;
+
+create_table_options_ora_item :
+       T_SEGMENT T_CREATION (T_IMMEDIATE | T_DEFERRED)
+     | (T_PCTFREE | T_PCTUSED | T_INITRANS | T_MAXTRANS) L_INT 
+     | T_NOCOMPRESS 
+     | (T_LOGGING | T_NOLOGGING)
+     | T_STORAGE T_OPEN_P (ident | L_INT)+ T_CLOSE_P
+     | T_TABLESPACE ident
      ;
 
 create_table_options_db2_item :
@@ -282,11 +299,11 @@ dtype :                  // Data types
      | T_TINYINT
      | T_VARCHAR
      | T_VARCHAR2
-     | L_ID             // User-defined data type
+     | L_ID ('%' (T_TYPE | T_ROWTYPE))?             // User-defined or derived data type
      ;
      
 dtype_len :             // Data type length or size specification
-       T_OPEN_P (L_INT | T_MAX) (T_COMMA L_INT)? T_CLOSE_P
+       T_OPEN_P (L_INT | T_MAX) (T_CHAR | T_BYTE)? (T_COMMA L_INT)? T_CLOSE_P
      ;
      
 dtype_attr :
@@ -300,7 +317,7 @@ dtype_default :         // Default clause in variable declaration
      ;
      
 create_function_stmt : 
-      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE) T_FUNCTION ident create_routine_params? create_function_return (T_AS | T_IS)? single_block_stmt 
+      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE)? T_FUNCTION ident create_routine_params? create_function_return (T_AS | T_IS)? single_block_stmt 
     ;
      
 create_function_return :
@@ -308,7 +325,7 @@ create_function_return :
      ;
 
 create_procedure_stmt : 
-      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE) (T_PROCEDURE | T_PROC) ident create_routine_params? create_routine_options? (T_AS | T_IS)? label? proc_block (ident T_SEMICOLON)? 
+      (T_ALTER | T_CREATE (T_OR T_REPLACE)? | T_REPLACE)? (T_PROCEDURE | T_PROC) ident create_routine_params? create_routine_options? (T_AS | T_IS)? label? proc_block (ident T_SEMICOLON)? 
     ;
 
 create_routine_params :
@@ -598,7 +615,7 @@ select_list_item :
      ;
      
 select_list_alias :
-       T_AS? L_ID
+       {!_input.LT(1).getText().equalsIgnoreCase("FROM")}? T_AS? ident
      | T_OPEN_P T_TITLE L_S_STRING T_CLOSE_P
      ;
      
@@ -899,7 +916,7 @@ expr_func_params :
      ;
 
 func_param : 
-       (ident T_EQUAL T_GREATER?)? expr  
+       {!_input.LT(1).getText().equalsIgnoreCase("INTO")}? (ident T_EQUAL T_GREATER?)? expr  
      ;     
      
 hive :
@@ -963,7 +980,8 @@ null_const :                              // NULL constant
      ;
      
 non_reserved_words :                      // Tokens that are not reserved words and can be used as identifiers
-       T_ACTIVITY_COUNT
+       T_ACTION 
+     | T_ACTIVITY_COUNT
      | T_ALL 
      | T_ALLOCATE
      | T_ALTER
@@ -982,8 +1000,10 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_BIT
      | T_BREAK   
      | T_BY    
+     | T_BYTE
      | T_CALL     
-     | T_CALLER      
+     | T_CALLER 
+     | T_CASCADE     
      | T_CASE   
      | T_CASESPECIFIC
      | T_CAST
@@ -1002,6 +1022,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_COUNT   
      | T_COUNT_BIG   
      | T_CREATE
+     | T_CREATION
      | T_CREATOR
      | T_CS
      | T_CUME_DIST
@@ -1019,6 +1040,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_DECIMAL  
      | T_DECLARE 
      | T_DEFAULT  
+     | T_DEFERRED
      | T_DEFINED
      | T_DEFINER
      | T_DELETE
@@ -1049,6 +1071,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_FIRST_VALUE     
      | T_FLOAT        
      | T_FOR  
+     | T_FOREIGN
      | T_FORMAT     
      | T_FOUND        
      | T_FROM   
@@ -1071,6 +1094,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_IN   
      | T_INCLUDE
      | T_INDEX     
+     | T_INITRANS
      | T_INNER
      | T_INOUT
      | T_INSERT
@@ -1097,11 +1121,13 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_LOCAL     
      | T_LOCATOR
      | T_LOCATORS
-     | T_LOGGED     
+     | T_LOGGED    
+     | T_LOGGING     
      | T_LOOP    
      | T_MAP  
      | T_MATCHED     
-     | T_MAX     
+     | T_MAX   
+     | T_MAXTRANS     
      | T_MERGE
      | T_MESSAGE_TEXT
      | T_MICROSECOND
@@ -1110,7 +1136,10 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_MULTISET
      | T_NCHAR
      | T_NVARCHAR
+     | T_NO
+     | T_NOCOMPRESS
      | T_NOCOUNT
+     | T_NOLOGGING
      | T_NOT         
      | T_NOTFOUND     
      // T_NULL reserved word       
@@ -1129,18 +1158,22 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_OVERWRITE
      | T_OWNER
      | T_PART_LOC 
-     | T_PARTITION     
+     | T_PARTITION  
+     | T_PCTFREE
+     | T_PCTUSED     
      | T_PRESERVE
      | T_PRIMARY
      | T_PRINT 
      | T_PROC
      | T_PROCEDURE   
      | T_QUOTED_IDENTIFIER
-     | T_RANK    
+     | T_RANK  
+     | T_REFERENCES     
      | T_REGEXP
      | T_RR     
      | T_REPLACE
      | T_RESIGNAL
+     | T_RESTRICT
      | T_RESULT
      | T_RESULT_SET_LOCATOR
      | T_RETURN       
@@ -1156,6 +1189,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_ROW_NUMBER
      | T_SCHEMA
      | T_SECURITY
+     | T_SEGMENT
      | T_SEL          
      | T_SELECT       
      | T_SET 
@@ -1170,12 +1204,14 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_SQLWARNING   
      | T_STEP    
      | T_STDEV     
+     | T_STORAGE
      | T_STRING    
      | T_SUBSTRING
      | T_SUM
      | T_SYSDATE 
      | T_SYS_REFCURSOR     
      | T_TABLE
+     | T_TABLESPACE
      | T_TEMPORARY
      | T_TERMINATED
      | T_TEXTIMAGE_ON
@@ -1210,6 +1246,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      ;
 
 // Lexer rules
+T_ACTION          : A C T I O N ; 
 T_ALL             : A L L ;
 T_ALLOCATE        : A L L O C A T E ;
 T_ALTER           : A L T E R ;
@@ -1228,8 +1265,10 @@ T_BIGINT          : B I G I N T ;
 T_BIT             : B I T ;
 T_BREAK           : B R E A K ;
 T_BY              : B Y ;
+T_BYTE            : B Y T E ; 
 T_CALL            : C A L L ;
 T_CALLER          : C A L L E R ;
+T_CASCADE         : C A S C A D E ; 
 T_CASE            : C A S E ;
 T_CASESPECIFIC    : C A S E S P E C I F I C ; 
 T_CAST            : C A S T ;
@@ -1248,6 +1287,7 @@ T_CONTINUE        : C O N T I N U E ;
 T_COUNT           : C O U N T ;
 T_COUNT_BIG       : C O U N T '_' B I G;
 T_CREATE          : C R E A T E ;
+T_CREATION        : C R E A T I O N ; 
 T_CREATOR         : C R E A T O R ;
 T_CS              : C S;
 T_CURRENT         : C U R R E N T ;
@@ -1261,6 +1301,7 @@ T_DEC             : D E C ;
 T_DECIMAL         : D E C I M A L ;
 T_DECLARE         : D E C L A R E ;
 T_DEFAULT         : D E F A U L T ;
+T_DEFERRED        : D E F E R R E D ; 
 T_DEFINED         : D E F I N E D ; 
 T_DEFINER         : D E F I N E R ;
 T_DELETE          : D E L E T E ;
@@ -1289,6 +1330,7 @@ T_FIELDS          : F I E L D S ;
 T_FILE            : F I L E ;
 T_FLOAT           : F L O A T ;
 T_FOR             : F O R ;
+T_FOREIGN         : F O R E I G N ; 
 T_FORMAT          : F O R M A T ;
 T_FOUND           : F O U N D ;
 T_FROM            : F R O M ; 
@@ -1311,6 +1353,7 @@ T_IMMEDIATE       : I M M E D I A T E ;
 T_IN              : I N ;
 T_INCLUDE         : I N C L U D E ;
 T_INDEX           : I N D E X ;
+T_INITRANS        : I N I T R A N S ;
 T_INNER           : I N N E R ; 
 T_INOUT           : I N O U T;
 T_INSERT          : I N S E R T ;
@@ -1335,10 +1378,12 @@ T_LOCAL           : L O C A L ;
 T_LOCATOR         : L O C A T O R ; 
 T_LOCATORS        : L O C A T O R S ; 
 T_LOGGED          : L O G G E D ; 
+T_LOGGING         : L O G G I N G ; 
 T_LOOP            : L O O P ;
 T_MAP             : M A P ; 
 T_MATCHED         : M A T C H E D ; 
 T_MAX             : M A X ;
+T_MAXTRANS        : M A X T R A N S ; 
 T_MERGE           : M E R G E ; 
 T_MESSAGE_TEXT    : M E S S A G E '_' T E X T ;
 T_MICROSECOND     : M I C R O S E C O N D ;
@@ -1347,7 +1392,10 @@ T_MIN             : M I N ;
 T_MULTISET        : M U L T I S E T ; 
 T_NCHAR           : N C H A R ; 
 T_NVARCHAR        : N V A R C H A R ; 
+T_NO              : N O ;
 T_NOCOUNT         : N O C O U N T ;
+T_NOCOMPRESS      : N O C O M P R E S S ; 
+T_NOLOGGING       : N O L O G G I N G ;
 T_NOT             : N O T ;
 T_NOTFOUND        : N O T F O U N D ; 
 T_NULL            : N U L L ;
@@ -1366,15 +1414,19 @@ T_OVER            : O V E R ;
 T_OVERWRITE       : O V E R W R I T E ; 
 T_OWNER           : O W N E R ; 
 T_PARTITION       : P A R T I T I O N ; 
+T_PCTFREE         : P C T F R E E ; 
+T_PCTUSED         : P C T U S E D ;
 T_PRESERVE        : P R E S E R V E ; 
 T_PRIMARY         : P R I M A R Y ;
 T_PRINT           : P R I N T ; 
 T_PROC            : P R O C ;
 T_PROCEDURE       : P R O C E D U R E;
 T_QUOTED_IDENTIFIER : Q U O T E D '_' I D E N T I F I E R ;
+T_REFERENCES      : R E F E R E N C E S ; 
 T_REGEXP          : R E G E X P ;
 T_REPLACE         : R E P L A C E ; 
 T_RESIGNAL        : R E S I G N A L ;
+T_RESTRICT        : R E S T R I C T ; 
 T_RESULT          : R E S U L T ; 
 T_RESULT_SET_LOCATOR : R E S U L T '_' S E T '_' L O C A T O R ;
 T_RETURN          : R E T U R N ;
@@ -1385,12 +1437,14 @@ T_RLIKE           : R L I K E ;
 T_ROLLBACK        : R O L L B A C K ;
 T_ROW             : R O W ; 
 T_ROWS            : R O W S ; 
+T_ROWTYPE         : R O W T Y P E ; 
 T_ROW_COUNT       : R O W '_' C O U N T ;
 T_RR              : R R;
 T_RS              : R S ;
 T_TRIM            : T R I M ;
 T_SCHEMA          : S C H E M A ;
 T_SECURITY        : S E C U R I T Y ; 
+T_SEGMENT         : S E G M E N T ; 
 T_SEL             : S E L ;
 T_SELECT          : S E L E C T ; 
 T_SET             : S E T ;
@@ -1404,11 +1458,13 @@ T_SQLINSERT       : S Q L I N S E R T ;
 T_SQLSTATE        : S Q L S T A T E ;
 T_SQLWARNING      : S Q L W A R N I N G ;
 T_STEP            : S T E P ; 
+T_STORAGE         : S T O R A G E ; 
 T_STRING          : S T R I N G ;
 T_SUBSTRING       : S U B S T R I N G ; 
 T_SUM             : S U M ;
 T_SYS_REFCURSOR   : S Y S '_' R E F C U R S O R ; 
 T_TABLE           : T A B L E ;
+T_TABLESPACE      : T A B L E S P A C E ; 
 T_TEMPORARY       : T E M P O R A R Y ;
 T_TERMINATED      : T E R M I N A T E D ; 
 T_TEXTIMAGE_ON    : T E X T I M A G E '_' O N ;
@@ -1418,6 +1474,7 @@ T_TINYINT         : T I N Y I N T ;
 T_TITLE           : T I T L E ;
 T_TO              : T O ; 
 T_TOP             : T O P ;
+T_TYPE            : T Y P E ; 
 T_UNION           : U N I O N ;
 T_UNIQUE          : U N I Q U E ;
 T_UPDATE          : U P D A T E ; 
