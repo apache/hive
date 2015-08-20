@@ -107,7 +107,7 @@ public class TestHiveCli {
 
   @Test
   public void testDatabaseOptions() {
-    verifyCMD("\nshow tables;\nquit;", "testTbl", os, new String[] { "--database", "test" },
+    verifyCMD("\nshow tables;\nquit;", "testtbl", os, new String[] { "--database", "test" },
         ERRNO_OK);
   }
 
@@ -134,7 +134,7 @@ public class TestHiveCli {
 
   @Test
   public void testSqlFromCmdWithDBName() {
-    verifyCMD(null, "testTbl", os, new String[] { "-e", "show tables;", "--database", "test" },
+    verifyCMD(null, "testtbl", os, new String[] { "-e", "show tables;", "--database", "test" },
         ERRNO_OK);
   }
 
@@ -162,6 +162,12 @@ public class TestHiveCli {
         "set hiveconf:zzz=" + f.getAbsolutePath() + ";\nsource ${hiveconf:zzz};\ndesc testSrcTbl2;",
         "sc2", os, new String[] { "--database", "test" }, ERRNO_OK);
     f.delete();
+  }
+
+  @Test
+  public void testErrOutput() {
+    verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;",
+        "cannot recognize input near 'lss' '<EOF>' '<EOF>'", errS, null, ERRNO_OK);
   }
 
   private void redirectOutputStream() {
@@ -200,8 +206,8 @@ public class TestHiveCli {
   @Before
   public void setup() {
     cli = new HiveCli();
-    redirectOutputStream();
     initFromFile();
+    redirectOutputStream();
   }
 
   @After

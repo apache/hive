@@ -161,6 +161,11 @@ public class SessionState {
   protected File tmpOutputFile;
 
   /**
+   * Temporary file name used to store error output of executing non-Hive commands (e.g., set, dfs)
+   */
+  protected File tmpErrOutputFile;
+
+  /**
    * type of the command.
    */
   private HiveOperation commandType;
@@ -303,6 +308,14 @@ public class SessionState {
 
   public void setTmpOutputFile(File f) {
     tmpOutputFile = f;
+  }
+
+  public File getTmpErrOutputFile() {
+    return tmpErrOutputFile;
+  }
+
+  public void setTmpErrOutputFile(File tmpErrOutputFile) {
+    this.tmpErrOutputFile = tmpErrOutputFile;
   }
 
   public boolean getIsSilent() {
@@ -525,6 +538,14 @@ public class SessionState {
         }
       }
 
+      // Set temp file containing error output to be sent to client
+      if (startSs.getTmpErrOutputFile() == null) {
+        try {
+          startSs.setTmpErrOutputFile(createTempFile(startSs.getConf()));
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
     } catch (Exception e) {
       // Catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise

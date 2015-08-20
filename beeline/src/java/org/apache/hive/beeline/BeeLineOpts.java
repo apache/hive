@@ -228,7 +228,7 @@ class BeeLineOpts implements Completer {
   public void updateBeeLineOptsFromConf() {
     if (!beeLine.isBeeLine()) {
       if (conf == null) {
-        conf = beeLine.getCommands().getHiveConf(true);
+        conf = beeLine.getCommands().getHiveConf(false);
       }
       setForce(HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS));
     }

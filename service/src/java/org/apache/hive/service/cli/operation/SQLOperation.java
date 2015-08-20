@@ -296,6 +296,10 @@ public class SQLOperation extends ExecuteStatementOperation {
     if (ss.getTmpOutputFile() != null) {
       ss.getTmpOutputFile().delete();
     }
+
+    if (ss.getTmpErrOutputFile() != null) {
+      ss.getTmpErrOutputFile().delete();
+    }
   }
 
   @Override
