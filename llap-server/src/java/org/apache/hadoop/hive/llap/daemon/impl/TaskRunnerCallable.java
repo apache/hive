@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
@@ -105,7 +106,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final AtomicBoolean isCompleted = new AtomicBoolean(false);
   private final AtomicBoolean killInvoked = new AtomicBoolean(false);
 
-  TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
+  @VisibleForTesting
+  public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
                      Configuration conf,
                      ExecutionContext executionContext, Map<String, String> envMap,
                      Credentials credentials,

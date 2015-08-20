@@ -140,9 +140,10 @@ public class LlapConfiguration extends Configuration {
       LLAP_DAEMON_PREFIX + "task.scheduler.wait.queue.size";
   public static final int LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE_DEFAULT = 10;
 
-  public static final String LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_FAIR_ORDERING =
-      LLAP_DAEMON_PREFIX + "task.scheduler.wait.queue.fair.ordering";
-  public static final boolean LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_FAIR_ORDERING_DEFAULT = false;
+  public static final String LLAP_DAEMON_WAIT_QUEUE_SCHEDULER_CLASS_NAME =
+      LLAP_DAEMON_PREFIX + "wait.queue.comparator.class.name";
+  public static final String LLAP_DAEMON_WAIT_QUEUE_SCHEDULER_CLASS_NAME_DEFAULT =
+      "org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator";
 
   public static final String LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION =
       LLAP_DAEMON_PREFIX + "task.scheduler.enable.preemption";

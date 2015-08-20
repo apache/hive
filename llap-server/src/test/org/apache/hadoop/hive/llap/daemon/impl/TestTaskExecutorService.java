@@ -17,227 +17,31 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createMockRequest;
+import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createSubmitWorkRequestProto;
+import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createTaskWrapper;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
-import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService.TaskWrapper;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
-import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
-import org.apache.hadoop.security.Credentials;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
-import org.apache.tez.dag.records.TezDAGID;
-import org.apache.tez.dag.records.TezTaskAttemptID;
-import org.apache.tez.dag.records.TezTaskID;
-import org.apache.tez.dag.records.TezVertexID;
-import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
-import org.apache.tez.runtime.task.EndReason;
+import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.MockRequest;
+import org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator;
 import org.apache.tez.runtime.task.TaskRunner2Result;
-import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestTaskExecutorService {
-  private static Configuration conf;
-  private static Credentials cred = new Credentials();
-  private static final Logger LOG = LoggerFactory.getLogger(TestTaskExecutorService.class);
-
-  @Before
-  public void setup() {
-    conf = new Configuration();
-  }
-
-
-  @Test(timeout = 5000)
-  public void testWaitQueueComparator() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100), false, 100000);
-    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200), false, 100000);
-    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300), false, 1000000);
-    TaskWrapper r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400), false, 1000000);
-    TaskWrapper r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500), false, 1000000);
-    EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-    assertNull(queue.offer(r1));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // this offer will be rejected
-    assertEquals(r5, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r2, queue.take());
-    assertEquals(r3, queue.take());
-    assertEquals(r4, queue.take());
-
-    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100), true, 100000);
-    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200), true, 100000);
-    r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300), true, 1000000);
-    r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400), true, 1000000);
-    r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-    assertNull(queue.offer(r1));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // this offer will be rejected
-    assertEquals(r5, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r2, queue.take());
-    assertEquals(r3, queue.take());
-    assertEquals(r4, queue.take());
-
-    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 100), true, 100000);
-    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 200), false, 100000);
-    r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 300), true, 1000000);
-    r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 1, 400), false, 1000000);
-    r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-    assertNull(queue.offer(r1));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // offer accepted and r4 gets evicted
-    assertEquals(r4, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r3, queue.take());
-    assertEquals(r5, queue.take());
-    assertEquals(r2, queue.take());
-
-    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100), true, 100000);
-    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200), false, 100000);
-    r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300), true, 1000000);
-    r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400), false, 1000000);
-    r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-    assertNull(queue.offer(r1));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // offer accepted and r4 gets evicted
-    assertEquals(r4, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r3, queue.take());
-    assertEquals(r5, queue.take());
-    assertEquals(r2, queue.take());
-
-    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100), true, 100000);
-    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200), false, 100000);
-    r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300), false, 1000000);
-    r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400), false, 1000000);
-    r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-    assertNull(queue.offer(r1));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r4));
-    assertEquals(r1, queue.peek());
-    // offer accepted and r4 gets evicted
-    assertEquals(r4, queue.offer(r5));
-    assertEquals(r1, queue.take());
-    assertEquals(r5, queue.take());
-    assertEquals(r2, queue.take());
-    assertEquals(r3, queue.take());
-
-    r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100), false, 100000);
-    r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200), true, 100000);
-    r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300), true, 1000000);
-    r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400), true, 1000000);
-    r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-    assertNull(queue.offer(r1));
-    assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
-    assertEquals(r2, queue.peek());
-    assertNull(queue.offer(r3));
-    assertEquals(r2, queue.peek());
-    assertNull(queue.offer(r4));
-    assertEquals(r2, queue.peek());
-    // offer accepted, r1 evicted
-    assertEquals(r1, queue.offer(r5));
-    assertEquals(r2, queue.take());
-    assertEquals(r3, queue.take());
-    assertEquals(r4, queue.take());
-    assertEquals(r5, queue.take());
-  }
-
-  @Test(timeout = 5000)
-  public void testWaitQueueComparatorWithinDagPriority() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 0, 100, 10), false, 100000);
-    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 0, 100, 1), false, 100000);
-    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 0, 100, 5), false, 100000);
-
-    EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-
-    assertNull(queue.offer(r1));
-    assertNull(queue.offer(r2));
-    assertNull(queue.offer(r3));
-
-    assertEquals(r2, queue.take());
-    assertEquals(r3, queue.take());
-    assertEquals(r1, queue.take());
-  }
-
-  @Test(timeout = 5000)
-  public void testWaitQueueComparatorParallelism() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 10, 3, 100, 1), false, 100000); // 7 pending
-    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 10, 7, 100, 1), false, 100000); // 3 pending
-    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 10, 5, 100, 1), false, 100000); // 5 pending
-
-    EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
-
-    assertNull(queue.offer(r1));
-    assertNull(queue.offer(r2));
-    assertNull(queue.offer(r3));
-
-    assertEquals(r2, queue.take());
-    assertEquals(r3, queue.take());
-    assertEquals(r1, queue.take());
-  }
 
   @Test(timeout = 5000)
   public void testPreemptionQueueComparator() throws InterruptedException {
@@ -265,8 +69,9 @@ public class TestTaskExecutorService {
   public void testFinishablePreeptsNonFinishable() throws InterruptedException {
     MockRequest r1 = createMockRequest(1, 1, 100, false, 5000l);
     MockRequest r2 = createMockRequest(2, 1, 100, true, 1000l);
-    TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(1, 2, false, true);
-    taskExecutorService.init(conf);
+    TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(1, 2,
+        ShortestJobFirstComparator.class.getName(), true);
+    taskExecutorService.init(new Configuration());
     taskExecutorService.start();
 
     try {
@@ -306,8 +111,8 @@ public class TestTaskExecutorService {
     MockRequest r5 = createMockRequest(5, 1, 500, true, 20000l);
 
     TaskExecutorServiceForTest taskExecutorService =
-        new TaskExecutorServiceForTest(1, 2, false, true);
-    taskExecutorService.init(conf);
+        new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true);
+    taskExecutorService.init(new Configuration());
     taskExecutorService.start();
 
     try {
@@ -379,197 +184,12 @@ public class TestTaskExecutorService {
   }
 
 
-  // ----------- Helper classes and methods go after this point. Tests above this -----------
 
-  // Create requests with the same within dag priority
-  private SubmitWorkRequestProto createSubmitWorkRequestProto(int fragmentNumber, int selfAndUpstreamParallelism,
-                                                              long attemptStartTime) {
-    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, attemptStartTime, 1);
-  }
-
-  private SubmitWorkRequestProto createSubmitWorkRequestProto(int fragmentNumber, int selfAndUpstreamParallelism,
-                                                              int selfAndUpstreamComplete,
-                                                              long attemptStartTime, int withinDagPriority) {
-    ApplicationId appId = ApplicationId.newInstance(9999, 72);
-    TezDAGID dagId = TezDAGID.getInstance(appId, 1);
-    TezVertexID vId = TezVertexID.getInstance(dagId, 35);
-    TezTaskID tId = TezTaskID.getInstance(vId, 389);
-    TezTaskAttemptID taId = TezTaskAttemptID.getInstance(tId, fragmentNumber);
-    return SubmitWorkRequestProto
-        .newBuilder()
-        .setFragmentSpec(
-            FragmentSpecProto
-                .newBuilder()
-                .setAttemptNumber(0)
-                .setDagName("MockDag")
-                .setFragmentNumber(fragmentNumber)
-                .setVertexName("MockVertex")
-                .setProcessorDescriptor(
-                    EntityDescriptorProto.newBuilder().setClassName("MockProcessor").build())
-                .setFragmentIdentifierString(taId.toString()).build()).setAmHost("localhost")
-        .setAmPort(12345).setAppAttemptNumber(0).setApplicationIdString("MockApp_1")
-        .setContainerIdString("MockContainer_1").setUser("MockUser")
-        .setTokenIdentifier("MockToken_1")
-        .setFragmentRuntimeInfo(LlapDaemonProtocolProtos
-            .FragmentRuntimeInfo
-            .newBuilder()
-            .setFirstAttemptStartTime(attemptStartTime)
-            .setNumSelfAndUpstreamTasks(selfAndUpstreamParallelism)
-            .setNumSelfAndUpstreamCompletedTasks(selfAndUpstreamComplete)
-            .setWithinDagPriority(withinDagPriority)
-            .build())
-        .build();
-  }
-
-  private MockRequest createMockRequest(int fragmentNum, int parallelism, long startTime,
-                                        boolean canFinish, long workTime) {
-    SubmitWorkRequestProto requestProto = createSubmitWorkRequestProto(fragmentNum, parallelism,
-        startTime);
-    MockRequest mockRequest = new MockRequest(requestProto, canFinish, workTime);
-    return mockRequest;
-  }
-
-  private TaskWrapper createTaskWrapper(SubmitWorkRequestProto request, boolean canFinish, int workTime) {
-    MockRequest mockRequest = new MockRequest(request, canFinish, workTime);
-    TaskWrapper taskWrapper = new TaskWrapper(mockRequest, null);
-    return taskWrapper;
-  }
-
-  private static void logInfo(String message, Throwable t) {
-    LOG.info(message, t);
-  }
-
-  private static void logInfo(String message) {
-    logInfo(message, null);
-  }
-
-  private static class MockRequest extends TaskRunnerCallable {
-    private final long workTime;
-    private final boolean canFinish;
-
-    private final AtomicBoolean isStarted = new AtomicBoolean(false);
-    private final AtomicBoolean isFinished = new AtomicBoolean(false);
-    private final AtomicBoolean wasKilled = new AtomicBoolean(false);
-    private final AtomicBoolean wasInterrupted = new AtomicBoolean(false);
-
-    private final ReentrantLock lock = new ReentrantLock();
-    private final Condition startedCondition = lock.newCondition();
-    private final Condition sleepCondition = lock.newCondition();
-    private final Condition finishedCondition = lock.newCondition();
-
-    public MockRequest(LlapDaemonProtocolProtos.SubmitWorkRequestProto requestProto,
-                       boolean canFinish, long workTime) {
-      super(requestProto, mock(QueryFragmentInfo.class), conf,
-          new ExecutionContextImpl("localhost"), null, cred, 0, null, null, mock(
-              LlapDaemonExecutorMetrics.class),
-          mock(KilledTaskHandler.class), mock(
-              FragmentCompletionHandler.class));
-      this.workTime = workTime;
-      this.canFinish = canFinish;
-    }
-
-    @Override
-    protected TaskRunner2Result callInternal() {
-      try {
-        logInfo(super.getRequestId() + " is executing..", null);
-        lock.lock();
-        try {
-          isStarted.set(true);
-          startedCondition.signal();
-        } finally {
-          lock.unlock();
-        }
-
-        lock.lock();
-        try {
-          sleepCondition.await(workTime, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-          wasInterrupted.set(true);
-          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
-        } finally {
-          lock.unlock();
-        }
-        if (wasKilled.get()) {
-          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
-        } else {
-          return new TaskRunner2Result(EndReason.SUCCESS, null, false);
-        }
-      } finally {
-        lock.lock();
-        try {
-          isFinished.set(true);
-          finishedCondition.signal();
-        } finally {
-          lock.unlock();
-        }
-      }
-    }
-
-    @Override
-    public void killTask() {
-      lock.lock();
-      try {
-        wasKilled.set(true);
-        sleepCondition.signal();
-      } finally {
-        lock.unlock();
-      }
-    }
-
-    boolean hasStarted() {
-      return isStarted.get();
-    }
-
-    boolean hasFinished() {
-      return isFinished.get();
-    }
-
-    boolean wasPreempted() {
-      return wasKilled.get();
-    }
-
-    void complete() {
-      lock.lock();
-      try {
-        sleepCondition.signal();
-      } finally {
-        lock.unlock();
-      }
-    }
-
-    void awaitStart() throws InterruptedException {
-      lock.lock();
-      try {
-        while (!isStarted.get()) {
-          startedCondition.await();
-        }
-      } finally {
-        lock.unlock();
-      }
-    }
-
-    void awaitEnd() throws InterruptedException {
-      lock.lock();
-      try {
-        while (!isFinished.get()) {
-          finishedCondition.await();
-        }
-      } finally {
-        lock.unlock();
-      }
-    }
-
-
-    @Override
-    public boolean canFinish() {
-      return canFinish;
-    }
-  }
 
   private static class TaskExecutorServiceForTest extends TaskExecutorService {
-    public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize, boolean useFairOrdering,
+    public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize, String waitQueueComparatorClassName,
                                       boolean enablePreemption) {
-      super(numExecutors, waitQueueSize, useFairOrdering, enablePreemption);
+      super(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption);
     }
 
     private ConcurrentMap<String, InternalCompletionListenerForTest> completionListeners = new ConcurrentHashMap<>();
