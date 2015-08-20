@@ -96,9 +96,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
     this.queryTracker = new QueryTracker(conf, localDirsBase);
     addIfService(queryTracker);
-    boolean useFairOrdering = conf.getBoolean(LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_FAIR_ORDERING,
-        LlapConfiguration.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_FAIR_ORDERING_DEFAULT);
-    this.executorService = new TaskExecutorService(numExecutors, waitQueueSize, useFairOrdering,
+    String waitQueueSchedulerClassName =
+        conf.get(LlapConfiguration.LLAP_DAEMON_WAIT_QUEUE_SCHEDULER_CLASS_NAME,
+            LlapConfiguration.LLAP_DAEMON_WAIT_QUEUE_SCHEDULER_CLASS_NAME_DEFAULT);
+    this.executorService = new TaskExecutorService(numExecutors, waitQueueSize, waitQueueSchedulerClassName,
         enablePreemption);
     AuxiliaryServiceHelper.setServiceDataIntoEnv(
         TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,

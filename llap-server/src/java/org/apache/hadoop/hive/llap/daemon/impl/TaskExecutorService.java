@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -103,14 +105,32 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
   private final Object lock = new Object();
 
-  public TaskExecutorService(int numExecutors, int waitQueueSize, boolean useFairOrdering,
+  public TaskExecutorService(int numExecutors, int waitQueueSize, String waitQueueComparatorClassName,
       boolean enablePreemption) {
     super(TaskExecutorService.class.getSimpleName());
+    LOG.info("TaskExecutorService is being setup with parameters: "
+        + "numExecutors=" + numExecutors
+        + ", waitQueueSize=" + waitQueueSize
+        + ", waitQueueComparatorClassName=" + waitQueueComparatorClassName
+        + ", enablePreemption=" + enablePreemption);
+
     final Comparator<TaskWrapper> waitQueueComparator;
-    if (useFairOrdering) {
-      waitQueueComparator = new FirstInFirstOutComparator();
-    } else {
-      waitQueueComparator = new ShortestJobFirstComparator();
+    try {
+      Class<? extends Comparator> waitQueueComparatorClazz =
+          (Class<? extends Comparator>) Class.forName(
+              waitQueueComparatorClassName);
+      Constructor<? extends Comparator> ctor = waitQueueComparatorClazz.getConstructor(null);
+      waitQueueComparator = ctor.newInstance(null);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(
+          "Failed to load wait queue comparator, class=" + waitQueueComparatorClassName, e);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException("Failed to find constructor for wait queue comparator, class=" +
+          waitQueueComparatorClassName, e);
+    } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException(
+          "Failed to find instantiate wait queue comparator, class=" + waitQueueComparatorClassName,
+          e);
     }
     this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
     this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
@@ -137,10 +157,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
     Futures.addCallback(future, new WaitQueueWorkerCallback());
 
-    LOG.info("TaskExecutorService started with parameters: "
-            + "numExecutors=" + numExecutors
-            + ", waitQueueSize=" + waitQueueSize
-            + ", enablePreemption=" + enablePreemption);
+
   }
 
   @Override
@@ -577,116 +594,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     }
   }
 
-  // if map tasks and reduce tasks are in finishable state then priority is given to the task
-  // that has less number of pending tasks (shortest job)
-  @VisibleForTesting
-  public static class ShortestJobFirstComparator implements Comparator<TaskWrapper> {
 
-    @Override
-    public int compare(TaskWrapper t1, TaskWrapper t2) {
-      TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
-      TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
-      boolean o1CanFinish = o1.canFinish();
-      boolean o2CanFinish = o2.canFinish();
-      if (o1CanFinish == true && o2CanFinish == false) {
-        return -1;
-      } else if (o1CanFinish == false && o2CanFinish == true) {
-        return 1;
-      }
-
-      FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
-      FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
-
-      // Check if these belong to the same task, and work with withinDagPriority
-      if (o1.getQueryId().equals(o2.getQueryId())) {
-        // Same Query
-        // Within dag priority - lower values indicate higher priority.
-        if (fri1.getWithinDagPriority() < fri2.getWithinDagPriority()) {
-          return -1;
-        } else if (fri1.getWithinDagPriority() > fri2.getWithinDagPriority()){
-          return 1;
-        }
-      }
-
-      // Compute knownPending tasks. selfAndUpstream indicates task counts for current vertex and
-      // it's parent hierarchy. selfAndUpstreamComplete indicates how many of these have completed.
-      int knownPending1 = fri1.getNumSelfAndUpstreamTasks() - fri1.getNumSelfAndUpstreamCompletedTasks();
-      int knownPending2 = fri2.getNumSelfAndUpstreamTasks() - fri2.getNumSelfAndUpstreamCompletedTasks();
-      if (knownPending1 < knownPending2) {
-        return -1;
-      } else if (knownPending1 > knownPending2) {
-        return 1;
-      }
-
-      if (fri1.getFirstAttemptStartTime() < fri2.getFirstAttemptStartTime()) {
-        return -1;
-      } else if (fri1.getFirstAttemptStartTime() > fri2.getFirstAttemptStartTime()) {
-        return 1;
-      }
-      return 0;
-    }
-  }
-
-  // if map tasks and reduce tasks are in finishable state then priority is given to the task in
-  // the following order
-  // 1) Dag start time
-  // 2) Within dag priority
-  // 3) Attempt start time
-  // 4) Vertex parallelism
-  @VisibleForTesting
-  public static class FirstInFirstOutComparator implements Comparator<TaskWrapper> {
-
-    @Override
-    public int compare(TaskWrapper t1, TaskWrapper t2) {
-      TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
-      TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
-      boolean o1CanFinish = o1.canFinish();
-      boolean o2CanFinish = o2.canFinish();
-      if (o1CanFinish == true && o2CanFinish == false) {
-        return -1;
-      } else if (o1CanFinish == false && o2CanFinish == true) {
-        return 1;
-      }
-
-      FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
-      FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
-
-      if (fri1.getDagStartTime() < fri2.getDagStartTime()) {
-        return -1;
-      } else if (fri1.getDagStartTime() > fri2.getDagStartTime()) {
-        return 1;
-      }
-
-      // Check if these belong to the same task, and work with withinDagPriority
-      if (o1.getQueryId().equals(o2.getQueryId())) {
-        // Same Query
-        // Within dag priority - lower values indicate higher priority.
-        if (fri1.getWithinDagPriority() < fri2.getWithinDagPriority()) {
-          return -1;
-        } else if (fri1.getWithinDagPriority() > fri2.getWithinDagPriority()){
-          return 1;
-        }
-      }
-
-      if (fri1.getFirstAttemptStartTime() < fri2.getFirstAttemptStartTime()) {
-        return -1;
-      } else if (fri1.getFirstAttemptStartTime() > fri2.getFirstAttemptStartTime()) {
-        return 1;
-      }
-
-      // Compute knownPending tasks. selfAndUpstream indicates task counts for current vertex and
-      // it's parent hierarchy. selfAndUpstreamComplete indicates how many of these have completed.
-      int knownPending1 = fri1.getNumSelfAndUpstreamTasks() - fri1.getNumSelfAndUpstreamCompletedTasks();
-      int knownPending2 = fri2.getNumSelfAndUpstreamTasks() - fri2.getNumSelfAndUpstreamCompletedTasks();
-      if (knownPending1 < knownPending2) {
-        return -1;
-      } else if (knownPending1 > knownPending2) {
-        return 1;
-      }
-
-      return 0;
-    }
-  }
 
   @VisibleForTesting
   public static class PreemptionQueueComparator implements Comparator<TaskWrapper> {

@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.daemon.impl;
+package org.apache.hadoop.hive.llap.daemon.impl.comparator;
 
+import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createTaskWrapper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
@@ -24,7 +25,10 @@ import static org.mockito.Mockito.mock;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
+import org.apache.hadoop.hive.llap.daemon.impl.EvictingPriorityBlockingQueue;
+import org.apache.hadoop.hive.llap.daemon.impl.QueryFragmentInfo;
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService.TaskWrapper;
+import org.apache.hadoop.hive.llap.daemon.impl.TaskRunnerCallable;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
@@ -41,7 +45,7 @@ import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestTaskExecutorService2 {
+public class TestFirstInFirstOutComparator {
   private static Configuration conf;
   private static Credentials cred = new Credentials();
 
@@ -130,7 +134,7 @@ public class TestTaskExecutorService2 {
     TaskWrapper r4 = createTaskWrapper(createRequest(4, 8, 2, 400), false, 1000000);
     TaskWrapper r5 = createTaskWrapper(createRequest(5, 10, 1, 500), false, 1000000);
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
-        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
@@ -152,7 +156,7 @@ public class TestTaskExecutorService2 {
     r4 = createTaskWrapper(createRequest(4, 8, 2, 400), true, 1000000);
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
@@ -174,7 +178,7 @@ public class TestTaskExecutorService2 {
     r4 = createTaskWrapper(createRequest(4, 1, 2, 400), false, 1000000);
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
@@ -196,7 +200,7 @@ public class TestTaskExecutorService2 {
     r4 = createTaskWrapper(createRequest(4, 8, 2, 400), false, 1000000);
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
@@ -218,7 +222,7 @@ public class TestTaskExecutorService2 {
     r4 = createTaskWrapper(createRequest(4, 8, 2, 400), false, 1000000);
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
@@ -240,7 +244,7 @@ public class TestTaskExecutorService2 {
     r4 = createTaskWrapper(createRequest(4, 8, 2, 400), true, 1000000);
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
@@ -262,7 +266,7 @@ public class TestTaskExecutorService2 {
     r4 = createTaskWrapper(createRequest(4, 8, 2, 400), true, 1000000);
     r5 = createTaskWrapper(createRequest(5, 10, 2, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
-        new TaskExecutorService.FirstInFirstOutComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
     assertNull(queue.offer(r1));
     assertEquals(r1, queue.peek());
     assertNull(queue.offer(r2));
@@ -286,7 +290,7 @@ public class TestTaskExecutorService2 {
     TaskWrapper r3 = createTaskWrapper(createRequest(3, 1, 0, 100, 100, 5), false, 100000);
 
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
 
     assertNull(queue.offer(r1));
     assertNull(queue.offer(r2));
@@ -304,7 +308,7 @@ public class TestTaskExecutorService2 {
     TaskWrapper r3 = createTaskWrapper(createRequest(3, 10, 5, 100, 100, 1), false, 100000);
 
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
-        new TaskExecutorService.ShortestJobFirstComparator(), 4);
+        new FirstInFirstOutComparator(), 4);
 
     assertNull(queue.offer(r1));
     assertNull(queue.offer(r2));
@@ -313,12 +317,5 @@ public class TestTaskExecutorService2 {
     assertEquals(r2, queue.take());
     assertEquals(r3, queue.take());
     assertEquals(r1, queue.take());
-  }
-
-
-  private TaskWrapper createTaskWrapper(SubmitWorkRequestProto request, boolean canFinish, int workTime) {
-    MockRequest mockRequest = new MockRequest(request, canFinish, workTime);
-    TaskWrapper taskWrapper = new TaskWrapper(mockRequest, null);
-    return taskWrapper;
   }
 }
