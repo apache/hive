@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstance;
@@ -36,11 +37,16 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
 
   private static final Logger LOG = Logger.getLogger(LlapFixedRegistryImpl.class);
 
+  @InterfaceAudience.Private
+  // This is primarily for testing to avoid the host lookup
+  public static final String FIXED_REGISTRY_RESOLVE_HOST_NAMES = "fixed.registry.resolve.host.names";
+
   private final int port;
   private final int shuffle;
   private final String[] hosts;
   private final int memory;
   private final int vcores;
+  private final boolean resolveHosts;
 
   private final Map<String, String> srv = new HashMap<String, String>();
 
@@ -52,6 +58,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     this.shuffle =
         conf.getInt(LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT,
             LlapConfiguration.LLAP_DAEMON_YARN_SHUFFLE_PORT_DEFAULT);
+    this.resolveHosts = conf.getBoolean(FIXED_REGISTRY_RESOLVE_HOST_NAMES, true);
 
     for (Map.Entry<String, String> kv : conf) {
       if (kv.getKey().startsWith(LlapConfiguration.LLAP_DAEMON_PREFIX)
@@ -100,17 +107,19 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     private final String host;
 
     public FixedServiceInstance(String host) {
-      try {
-        InetAddress inetAddress = InetAddress.getByName(host);
-        if (NetUtils.isLocalAddress(inetAddress)) {
-          InetSocketAddress socketAddress = new InetSocketAddress(0);
-          socketAddress = NetUtils.getConnectAddress(socketAddress);
-          LOG.info("Adding host identified as local: " + host + " as "
-              + socketAddress.getHostName());
-          host = socketAddress.getHostName();
+      if (resolveHosts) {
+        try {
+          InetAddress inetAddress = InetAddress.getByName(host);
+          if (NetUtils.isLocalAddress(inetAddress)) {
+            InetSocketAddress socketAddress = new InetSocketAddress(0);
+            socketAddress = NetUtils.getConnectAddress(socketAddress);
+            LOG.info("Adding host identified as local: " + host + " as "
+                + socketAddress.getHostName());
+            host = socketAddress.getHostName();
+          }
+        } catch (UnknownHostException e) {
+          LOG.warn("Ignoring resolution issues for host: " + host, e);
         }
-      } catch (UnknownHostException e) {
-        LOG.warn("Ignoring resolution issues for host: " + host, e);
       }
       this.host = host;
     }
