@@ -915,7 +915,7 @@ public class TypeCheckProcFactory {
               // we'll try again to convert it to double
               // however, if we already tried this, or the column is NUMBER type and
               // the operator is EQUAL, return false due to the type mismatch
-              if (triedDouble ||
+              if (triedDouble &&
                   (genericUDF instanceof GenericUDFOPEqual
                   && !columnType.equals(serdeConstants.STRING_TYPE_NAME))) {
                 return new ExprNodeConstantDesc(false);

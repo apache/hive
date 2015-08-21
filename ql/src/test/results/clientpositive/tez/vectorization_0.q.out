@@ -1026,7 +1026,7 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((cstring2 like '%b%') or ((79.553 <> cint) or (cbigint < cdouble))) (type: boolean)
+                    predicate: (((cstring2 like '%b%') or ((79.553 <> cint) or (cbigint < cdouble))) or ((ctinyint >= csmallint) and ((cboolean2 = 1) and (3569.0 = ctinyint)))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cbigint (type: bigint), cfloat (type: float), ctinyint (type: tinyint)
