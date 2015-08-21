@@ -27,6 +27,7 @@ import java.net.URI;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -85,6 +86,8 @@ import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.tools.DistCp;
+import org.apache.hadoop.tools.DistCpOptions;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -1135,35 +1138,17 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
-    int rc;
-
-    // Creates the command-line parameters for distcp
-    String[] params = {"-update", "-skipcrccheck", src.toString(), dst.toString()};
-
+    DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
+    options.setSyncFolder(true);
+    options.setSkipCRC(true);
+    options.preserve(DistCpOptions.FileAttribute.BLOCKSIZE);
     try {
-      Class clazzDistCp = Class.forName("org.apache.hadoop.tools.DistCp");
-      Tool distcp;
-      if (org.apache.hadoop.mapred.MRVersion.isMR2()) {
-        Constructor c = clazzDistCp.getConstructor();
-        c.setAccessible(true);
-        distcp = (Tool)c.newInstance();
-        distcp.setConf(conf);
-      } else {
-        Constructor c = clazzDistCp.getConstructor(Configuration.class);
-        c.setAccessible(true);
-        distcp = (Tool)c.newInstance(conf);
-      }
-
-      rc = distcp.run(params);
-    } catch (ClassNotFoundException e) {
-      throw new IOException("Cannot find DistCp class package: " + e.getMessage());
-    } catch (NoSuchMethodException e) {
-      throw new IOException("Cannot get DistCp constructor: " + e.getMessage());
+      DistCp distcp = new DistCp(conf, options);
+      distcp.execute();
+      return true;
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: " + e, e);
     }
-
-    return (0 == rc);
   }
 
   public class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
