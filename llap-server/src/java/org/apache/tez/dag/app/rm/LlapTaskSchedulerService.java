@@ -1111,6 +1111,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     int numRequestedAllocations = 0;
     int numRequestsWithLocation = 0;
     int numRequestsWithoutLocation = 0;
+    int numTotalAllocations = 0;
     int numLocalAllocations = 0;
     int numNonLocalAllocations = 0;
     int numAllocationsNoLocalityRequest = 0;
@@ -1129,6 +1130,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       sb.append("NumRequestsWithlocation=").append(numRequestsWithLocation).append(", ");
       sb.append("NumLocalAllocations=").append(numLocalAllocations).append(",");
       sb.append("NumNonLocalAllocations=").append(numNonLocalAllocations).append(",");
+      sb.append("NumTotalAllocations=").append(numTotalAllocations).append(",");
       sb.append("NumRequestsWithoutLocation=").append(numRequestsWithoutLocation).append(", ");
       sb.append("NumRejectedTasks=").append(numRejectedTasks).append(", ");
       sb.append("NumCommFailures=").append(numCommFailures).append(", ");
@@ -1163,6 +1165,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       } else {
         numAllocationsNoLocalityRequest++;
       }
+      numTotalAllocations++;
       _registerAllocationInHostMap(allocatedHost, numAllocationsPerHost);
     }
 
