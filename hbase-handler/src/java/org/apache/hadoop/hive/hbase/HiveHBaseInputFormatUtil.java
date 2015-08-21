@@ -18,21 +18,24 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
+import org.apache.hadoop.hbase.filter.KeyOnlyFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.JobConf;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Util code common between HiveHBaseTableInputFormat and HiveHBaseTableSnapshotInputFormat.
@@ -95,26 +98,27 @@ class HiveHBaseInputFormatUtil {
       }
     }
 
-    // The HBase table's row key maps to a Hive table column. In the corner case when only the
-    // row key column is selected in Hive, the HBase Scan will be empty i.e. no column family/
-    // column qualifier will have been added to the scan. We arbitrarily add at least one column
-    // to the HBase scan so that we can retrieve all of the row keys and return them as the Hive
-    // tables column projection.
+    // If we have cases where we are running a query like count(key) or count(*),
+    // in such cases, the readColIDs is either empty(for count(*)) or has just the
+    // key column in it. In either case, nothing gets added to the scan. So if readAllColumns is
+    // true, we are going to add all columns. Else we are just going to add a key filter to run a
+    // count only on the keys
     if (empty) {
-      for (ColumnMapping colMap: columnMappings) {
-        if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
-          continue;
-        }
+      if (readAllColumns) {
+        for (ColumnMapping colMap: columnMappings) {
+          if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
+            continue;
+          }
 
-        if (colMap.qualifierName == null) {
-          scan.addFamily(colMap.familyNameBytes);
-        } else {
-          scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+          if (colMap.qualifierName == null) {
+            scan.addFamily(colMap.familyNameBytes);
+          } else {
+            scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+          }
         }
-
-        if (!readAllColumns) {
-          break;
-        }
+      } else {
+        // Add a filter to just do a scan on the keys so that we pick up everything
+        scan.setFilter(new FilterList(new FirstKeyOnlyFilter(), new KeyOnlyFilter()));
       }
     }
 
