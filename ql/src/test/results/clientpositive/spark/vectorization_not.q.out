@@ -1,4 +1,5 @@
 WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT AVG(cbigint),
        (-(AVG(cbigint))),
        (-6432 + AVG(cbigint)),

@@ -213,10 +213,22 @@ public abstract class GenericUDF implements Closeable {
   }
 
   /**
-   * Some functions are affected by appearing order of arguments (comparisons, for example)
+   * Some functions like comparisons may be affected by appearing order of arguments.
+   * This is to convert a function, such as 3 > x to x < 3. The flip function of
+   * GenericUDFOPGreaterThan is GenericUDFOPLessThan.
    */
   public GenericUDF flip() {
     return this;
+  }
+
+  /**
+   * Gets the negative function of the current one. E.g., GenericUDFOPNotEqual for
+   * GenericUDFOPEqual, or GenericUDFOPNull for GenericUDFOPNotNull.
+   * @return Negative function
+   * @throws UDFArgumentException
+   */
+  public GenericUDF negative() {
+    throw new UnsupportedOperationException("Negative function doesn't exist for " + getFuncName());
   }
 
   public String getUdfName() {
