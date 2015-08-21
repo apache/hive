@@ -18,6 +18,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,6 +71,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
@@ -94,6 +99,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
@@ -223,6 +229,65 @@ public final class ConstantPropagateProcFactory {
   }
 
   /**
+   * Combines the logical not() operator with the child operator if possible.
+   * @param desc the expression to be evaluated
+   * @return  the new expression to be replaced
+   * @throws UDFArgumentException
+   */
+  private static ExprNodeDesc foldNegative(ExprNodeDesc desc) throws UDFArgumentException {
+    if (desc instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) desc;
+
+      GenericUDF udf = funcDesc.getGenericUDF();
+      if (udf instanceof GenericUDFOPNot) {
+        ExprNodeDesc child = funcDesc.getChildren().get(0);
+        if (child instanceof ExprNodeGenericFuncDesc) {
+          ExprNodeGenericFuncDesc childDesc = (ExprNodeGenericFuncDesc)child;
+          GenericUDF childUDF = childDesc.getGenericUDF();
+          List<ExprNodeDesc> grandChildren = child.getChildren();
+
+          if (childUDF instanceof GenericUDFBaseCompare ||
+              childUDF instanceof GenericUDFOPNull ||
+              childUDF instanceof GenericUDFOPNotNull) {
+            List<ExprNodeDesc> newGrandChildren = new ArrayList<ExprNodeDesc>();
+            for(ExprNodeDesc grandChild : grandChildren) {
+              newGrandChildren.add(foldNegative(grandChild));
+            }
+
+            return ExprNodeGenericFuncDesc.newInstance(
+                childUDF.negative(),
+                newGrandChildren);
+          } else if (childUDF instanceof GenericUDFOPAnd ||
+              childUDF instanceof GenericUDFOPOr) {
+            List<ExprNodeDesc> newGrandChildren = new ArrayList<ExprNodeDesc>();
+            for(ExprNodeDesc grandChild : grandChildren) {
+              newGrandChildren.add(foldNegative(
+                  ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(),
+                      Arrays.asList(grandChild))));
+            }
+
+            return ExprNodeGenericFuncDesc.newInstance(
+                childUDF.negative(),
+                newGrandChildren);
+          }else if (childUDF instanceof GenericUDFOPNot) {
+            return foldNegative(child.getChildren().get(0));
+          } else {
+            // For operator like if() that cannot be handled, leave not() as it
+            // is and continue processing the children
+            List<ExprNodeDesc> newGrandChildren = new ArrayList<ExprNodeDesc>();
+            for(ExprNodeDesc grandChild : grandChildren) {
+              newGrandChildren.add(foldNegative(grandChild));
+            }
+            childDesc.setChildren(newGrandChildren);
+            return funcDesc;
+          }
+        }
+      }
+    }
+    return desc;
+  }
+
+  /**
    * Fold input expression desc, only performing short-cutting.
    *
    * Unnecessary AND/OR operations involving a constant true/false value will be eliminated.
@@ -238,6 +303,11 @@ public final class ConstantPropagateProcFactory {
   private static ExprNodeDesc foldExprShortcut(ExprNodeDesc desc, Map<ColumnInfo, ExprNodeDesc> constants,
       ConstantPropagateProcCtx cppCtx, Operator<? extends Serializable> op, int tag,
       boolean propagate) throws UDFArgumentException {
+    // Combine NOT operator with the child operator. Otherwise, the following optimization
+    // from bottom up could lead to incorrect result, such as not(x > 3 and x is not null),
+    // should not be optimized to not(x > 3), but (x <=3 or x is null).
+    desc = foldNegative(desc);
+
     if (desc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) desc;
 
@@ -249,10 +319,10 @@ public final class ConstantPropagateProcFactory {
         newExprs.add(foldExpr(childExpr, constants, cppCtx, op, tag, propagateNext));
       }
 
-      // Don't evalulate nondeterministic function since the value can only calculate during runtime.
+      // Don't evaluate nondeterministic function since the value can only calculate during runtime.
       if (!isDeterministicUdf(udf)) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evalulating immediately.");
+          LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evalulate immediately.");
         }
         ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
         return desc;
@@ -276,11 +346,11 @@ public final class ConstantPropagateProcFactory {
    *
    * This function recursively checks if any subexpression of a specified expression
    * can be evaluated to be constant and replaces such subexpression with the constant.
-   * If the expression is a derterministic UDF and all the subexpressions are constants,
+   * If the expression is a deterministic UDF and all the subexpressions are constants,
    * the value will be calculated immediately (during compilation time vs. runtime).
    * e.g.:
    *   concat(year, month) => 200112 for year=2001, month=12 since concat is deterministic UDF
-   *   unix_timestamp(time) => unix_timestamp(123) for time=123 since unix_timestamp is nonderministic UDF
+   *   unix_timestamp(time) => unix_timestamp(123) for time=123 since unix_timestamp is nondeterministic UDF
    * @param desc folding expression
    * @param constants current propagated constant map
    * @param cppCtx
@@ -292,6 +362,11 @@ public final class ConstantPropagateProcFactory {
   private static ExprNodeDesc foldExprFull(ExprNodeDesc desc, Map<ColumnInfo, ExprNodeDesc> constants,
       ConstantPropagateProcCtx cppCtx, Operator<? extends Serializable> op, int tag,
       boolean propagate) throws UDFArgumentException {
+    // Combine NOT operator with the child operator. Otherwise, the following optimization
+    // from bottom up could lead to incorrect result, such as not(x > 3 and x is not null),
+    // should not be optimized to not(x > 3), but (x <=3 or x is null).
+    desc = foldNegative(desc);
+
     if (desc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) desc;
 
@@ -303,10 +378,10 @@ public final class ConstantPropagateProcFactory {
         newExprs.add(foldExpr(childExpr, constants, cppCtx, op, tag, propagateNext));
       }
 
-      // Don't evalulate nondeterministic function since the value can only calculate during runtime.
+      // Don't evaluate nondeterministic function since the value can only calculate during runtime.
       if (!isDeterministicUdf(udf)) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evalulating immediately.");
+          LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evaluate immediately.");
         }
         ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
         return desc;
@@ -460,7 +535,6 @@ public final class ConstantPropagateProcFactory {
 
   private static ExprNodeDesc shortcutFunction(GenericUDF udf, List<ExprNodeDesc> newExprs,
     Operator<? extends Serializable> op) throws UDFArgumentException {
-
     if (udf instanceof GenericUDFOPEqual) {
      assert newExprs.size() == 2;
      boolean foundUDFInFirst = false;
@@ -511,6 +585,7 @@ public final class ConstantPropagateProcFactory {
        return null;
      }
     }
+
     if (udf instanceof GenericUDFOPAnd) {
       final BitSet positionsToRemove = new BitSet();
       final List<ExprNodeDesc> notNullExprs = new ArrayList<ExprNodeDesc>();
@@ -532,9 +607,13 @@ public final class ConstantPropagateProcFactory {
                 childExpr.getChildren().get(0) instanceof ExprNodeColumnDesc) {
           notNullExprs.add(childExpr.getChildren().get(0));
           notNullExprsPositions.add(i);
-        } else if (childExpr instanceof ExprNodeGenericFuncDesc
-                && ((ExprNodeGenericFuncDesc)childExpr).getGenericUDF() instanceof GenericUDFBaseCompare
-                && childExpr.getChildren().size() == 2) {
+        } else if (childExpr instanceof ExprNodeGenericFuncDesc &&
+              ((ExprNodeGenericFuncDesc)childExpr).getGenericUDF() instanceof GenericUDFBaseCompare &&
+              !(((ExprNodeGenericFuncDesc)childExpr).getGenericUDF() instanceof GenericUDFOPNotEqual) &&
+              childExpr.getChildren().size() == 2) {
+          // Try to fold (key <op> 86) and (key is not null) to (key <op> 86)
+          // where <op> can be "=", ">=", "<=", ">", "<".
+          // Note: (key <> 86) and (key is not null) cannot be folded
           ExprNodeColumnDesc colDesc = getColumnExpr(childExpr.getChildren().get(0));
           if (null == colDesc) {
             colDesc = getColumnExpr(childExpr.getChildren().get(1));
@@ -646,6 +725,7 @@ public final class ConstantPropagateProcFactory {
         }
       }
     }
+
     if (udf instanceof GenericUDFCase) {
       // HIVE-9644 Attempt to fold expression like :
       // where (case ss_sold_date when '1998-01-01' then 1=1 else null=1 end);
