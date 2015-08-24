@@ -959,15 +959,13 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Connection is closed");
     }
-    Statement stmt = createStatement();
-    ResultSet res = stmt.executeQuery("SELECT current_database()");
-    if (!res.next()) {
-      throw new SQLException("Failed to get schema information");
+    try (Statement stmt = createStatement();
+         ResultSet res = stmt.executeQuery("SELECT current_database()")) {
+      if (!res.next()) {
+        throw new SQLException("Failed to get schema information");
+      }
+      return res.getString(1);
     }
-    String schemaName = res.getString(1);
-    res.close();
-    stmt.close();
-    return schemaName;
   }
 
   /*
