@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2238,5 +2239,35 @@ public class HBaseStore implements RawStore {
 
   @VisibleForTesting HBaseReadWrite backdoor() {
     return getHBase();
+  }
+
+  @Override
+  public ByteBuffer[] getFileMetadata(List<Long> fileIds) throws MetaException {
+    openTransaction();
+    boolean commit = true;
+    try {
+      return getHBase().getFileMetadata(fileIds);
+    } catch (IOException e) {
+      commit = false;
+      LOG.error("Unable to get file metadata", e);
+      throw new MetaException("Error reading file metadata " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  @Override
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws MetaException {
+    openTransaction();
+    boolean commit = false;
+    try {
+      getHBase().storeFileMetadata(fileIds, metadata);
+      commit = true;
+    } catch (IOException | InterruptedException e) {
+      LOG.error("Unable to store file metadata", e);
+      throw new MetaException("Error storing file metadata " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 }

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -777,6 +778,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   }
 
+  @Override
+  public ByteBuffer[] getFileMetadata(List<Long> fileIds) {
+    return null;
+  }
+
+  @Override
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
+  }
 }
 
 

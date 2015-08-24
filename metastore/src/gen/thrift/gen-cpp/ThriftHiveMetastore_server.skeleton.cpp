@@ -647,6 +647,26 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("flushCache\n");
   }
 
+  void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) {
+    // Your implementation goes here
+    printf("get_file_metadata_by_expr\n");
+  }
+
+  void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("get_file_metadata\n");
+  }
+
+  void put_file_metadata(PutFileMetadataResult& _return, const PutFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("put_file_metadata\n");
+  }
+
+  void clear_file_metadata(ClearFileMetadataResult& _return, const ClearFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("clear_file_metadata\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

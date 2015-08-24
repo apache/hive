@@ -27,17 +27,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Row;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.filter.RowFilter;
+import org.apache.hadoop.hbase.protobuf.generated.ClientProtos.MultiRequest;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -58,6 +61,7 @@ import org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator;
 import org.apache.hive.common.util.BloomFilter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -88,6 +92,7 @@ public class HBaseReadWrite {
   @VisibleForTesting final static String SEQUENCES_TABLE = "HBMS_SEQUENCES";
   @VisibleForTesting final static String TABLE_TABLE = "HBMS_TBLS";
   @VisibleForTesting final static String USER_TO_ROLE_TABLE = "HBMS_USER_TO_ROLE";
+  @VisibleForTesting final static String FILE_METADATA_TABLE = "HBMS_FILE_METADATA";
   @VisibleForTesting final static byte[] CATALOG_CF = "c".getBytes(HBaseUtils.ENCODING);
   @VisibleForTesting final static byte[] STATS_CF = "s".getBytes(HBaseUtils.ENCODING);
   @VisibleForTesting final static String NO_CACHE_CONF = "no.use.cache";
@@ -96,7 +101,8 @@ public class HBaseReadWrite {
    */
   public final static String[] tableNames = { AGGR_STATS_TABLE, DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE,
                                        PART_TABLE, USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE,
-                                       SECURITY_TABLE, SEQUENCES_TABLE, TABLE_TABLE};
+                                       SECURITY_TABLE, SEQUENCES_TABLE, TABLE_TABLE,
+                                       FILE_METADATA_TABLE };
   public final static Map<String, List<byte[]>> columnFamilies =
       new HashMap<String, List<byte[]>> (tableNames.length);
 
@@ -112,6 +118,8 @@ public class HBaseReadWrite {
     columnFamilies.put(SECURITY_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(SEQUENCES_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(TABLE_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
+    // Stats CF will contain PPD stats.
+    columnFamilies.put(FILE_METADATA_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
   }
 
   /**
@@ -1714,6 +1722,37 @@ public class HBaseReadWrite {
   }
 
   /**********************************************************************************************
+   * File metadata related methods
+   *********************************************************************************************/
+
+  /**
+   * @param fileIds file ID list.
+   * @return Serialized file metadata.
+   */
+  ByteBuffer[] getFileMetadata(List<Long> fileIds) throws IOException {
+    byte[][] keys = new byte[fileIds.size()][];
+    for (int i = 0; i < fileIds.size(); ++i) {
+      keys[i] = HBaseUtils.makeLongKey(fileIds.get(i));
+    }
+    ByteBuffer[] result = new ByteBuffer[keys.length];
+    multiRead(FILE_METADATA_TABLE, CATALOG_CF, CATALOG_COL, keys, result);
+    return result;
+  }
+
+  /**
+   * @param fileIds file ID list.
+   * @param metadata Serialized file metadata.
+   */
+  void storeFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata)
+      throws IOException, InterruptedException {
+    byte[][] keys = new byte[fileIds.size()][];
+    for (int i = 0; i < fileIds.size(); ++i) {
+      keys[i] = HBaseUtils.makeLongKey(fileIds.get(i));
+    }
+    multiModify(FILE_METADATA_TABLE, keys, CATALOG_CF, CATALOG_COL, metadata);
+  }
+
+  /**********************************************************************************************
    * Security related methods
    *********************************************************************************************/
 
@@ -1897,6 +1936,49 @@ public class HBaseReadWrite {
     g.addColumn(colFam, colName);
     Result res = htab.get(g);
     return res.getValue(colFam, colName);
+  }
+
+  private void multiRead(String table, byte[] colFam, byte[] colName,
+      byte[][] keys, ByteBuffer[] resultDest) throws IOException {
+    assert keys.length == resultDest.length;
+    @SuppressWarnings("deprecation")
+    HTableInterface htab = conn.getHBaseTable(table);
+    List<Get> gets = new ArrayList<>(keys.length);
+    for (byte[] key : keys) {
+      Get g = new Get(key);
+      g.addColumn(colFam, colName);
+      gets.add(g);
+    }
+    Result[] results = htab.get(gets);
+    for (int i = 0; i < results.length; ++i) {
+      Result r = results[i];
+      resultDest[i] = (r.isEmpty() ? null : r.getValueAsByteBuffer(colFam, colName));
+    }
+  }
+
+  private void multiModify(String table, byte[][] keys, byte[] colFam,
+      byte[] colName, List<ByteBuffer> values) throws IOException, InterruptedException {
+    assert values == null || keys.length == values.size();
+    // HBase APIs are weird. To supply bytebuffer value, you have to also have bytebuffer
+    // column name, but not column family. So there. Perhaps we should add these to constants too.
+    ByteBuffer colNameBuf = ByteBuffer.wrap(colName);
+    @SuppressWarnings("deprecation")
+    HTableInterface htab = conn.getHBaseTable(table);
+    List<Row> actions = new ArrayList<>(keys.length);
+    for (int i = 0; i < keys.length; ++i) {
+      ByteBuffer value = (values != null) ? values.get(i) : null;
+      if (value == null) {
+        actions.add(new Delete(keys[i]));
+      } else {
+        Put p = new Put(keys[i]);
+        p.addColumn(colFam, colNameBuf, HConstants.LATEST_TIMESTAMP, value);
+        actions.add(p);
+      }
+    }
+    Object[] results = new Object[keys.length];
+    htab.batch(actions, results);
+    // TODO: should we check results array? we don't care about partial results
+    conn.flush(htab);
   }
 
   private Result read(String table, byte[] key, byte[] colFam, byte[][] colNames)

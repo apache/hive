@@ -22,6 +22,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
@@ -592,4 +593,8 @@ public interface RawStore extends Configurable {
    * flush statistics objects.  This should be called at the beginning of each query.
    */
   public void flushCache();
+
+  ByteBuffer[] getFileMetadata(List<Long> fileIds) throws MetaException;
+
+  void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws MetaException;
 }

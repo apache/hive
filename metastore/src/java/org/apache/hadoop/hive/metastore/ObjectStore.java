@@ -23,6 +23,7 @@ import static org.apache.commons.lang.StringUtils.join;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -7614,5 +7615,15 @@ public class ObjectStore implements RawStore, Configurable {
     event.setTableName(dbEvent.getTableName());
     event.setMessage((dbEvent.getMessage()));
     return event;
+  }
+
+  @Override
+  public ByteBuffer[] getFileMetadata(List<Long> fileIds) {
+    return null; // Not supported for now; callers have to handle this accordingly.
+  }
+
+  @Override
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
+    // Not supported for now.
   }
 }
