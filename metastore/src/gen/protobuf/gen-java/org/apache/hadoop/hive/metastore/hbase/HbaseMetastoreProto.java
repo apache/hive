@@ -30617,6 +30617,3675 @@ public final class HbaseMetastoreProto {
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.Table)
   }
 
+  public interface PartitionKeyComparatorOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string names = 1;
+    /**
+     * <code>required string names = 1;</code>
+     */
+    boolean hasNames();
+    /**
+     * <code>required string names = 1;</code>
+     */
+    java.lang.String getNames();
+    /**
+     * <code>required string names = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNamesBytes();
+
+    // required string types = 2;
+    /**
+     * <code>required string types = 2;</code>
+     */
+    boolean hasTypes();
+    /**
+     * <code>required string types = 2;</code>
+     */
+    java.lang.String getTypes();
+    /**
+     * <code>required string types = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getTypesBytes();
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator> 
+        getOpList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator getOp(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    int getOpCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder> 
+        getOpOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder getOpOrBuilder(
+        int index);
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range> 
+        getRangeList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range getRange(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    int getRangeCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder> 
+        getRangeOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder getRangeOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator}
+   */
+  public static final class PartitionKeyComparator extends
+      com.google.protobuf.GeneratedMessage
+      implements PartitionKeyComparatorOrBuilder {
+    // Use PartitionKeyComparator.newBuilder() to construct.
+    private PartitionKeyComparator(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private PartitionKeyComparator(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final PartitionKeyComparator defaultInstance;
+    public static PartitionKeyComparator getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public PartitionKeyComparator getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private PartitionKeyComparator(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              names_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              types_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                op_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              op_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.PARSER, extensionRegistry));
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                range_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range>();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              range_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          op_ = java.util.Collections.unmodifiableList(op_);
+        }
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+          range_ = java.util.Collections.unmodifiableList(range_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<PartitionKeyComparator> PARSER =
+        new com.google.protobuf.AbstractParser<PartitionKeyComparator>() {
+      public PartitionKeyComparator parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new PartitionKeyComparator(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<PartitionKeyComparator> getParserForType() {
+      return PARSER;
+    }
+
+    public interface MarkOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required string value = 1;
+      /**
+       * <code>required string value = 1;</code>
+       */
+      boolean hasValue();
+      /**
+       * <code>required string value = 1;</code>
+       */
+      java.lang.String getValue();
+      /**
+       * <code>required string value = 1;</code>
+       */
+      com.google.protobuf.ByteString
+          getValueBytes();
+
+      // required bool inclusive = 2;
+      /**
+       * <code>required bool inclusive = 2;</code>
+       */
+      boolean hasInclusive();
+      /**
+       * <code>required bool inclusive = 2;</code>
+       */
+      boolean getInclusive();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark}
+     */
+    public static final class Mark extends
+        com.google.protobuf.GeneratedMessage
+        implements MarkOrBuilder {
+      // Use Mark.newBuilder() to construct.
+      private Mark(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private Mark(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final Mark defaultInstance;
+      public static Mark getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public Mark getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private Mark(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                bitField0_ |= 0x00000001;
+                value_ = input.readBytes();
+                break;
+              }
+              case 16: {
+                bitField0_ |= 0x00000002;
+                inclusive_ = input.readBool();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<Mark> PARSER =
+          new com.google.protobuf.AbstractParser<Mark>() {
+        public Mark parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Mark(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<Mark> getParserForType() {
+        return PARSER;
+      }
+
+      private int bitField0_;
+      // required string value = 1;
+      public static final int VALUE_FIELD_NUMBER = 1;
+      private java.lang.Object value_;
+      /**
+       * <code>required string value = 1;</code>
+       */
+      public boolean hasValue() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string value = 1;</code>
+       */
+      public java.lang.String getValue() {
+        java.lang.Object ref = value_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            value_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string value = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getValueBytes() {
+        java.lang.Object ref = value_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          value_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // required bool inclusive = 2;
+      public static final int INCLUSIVE_FIELD_NUMBER = 2;
+      private boolean inclusive_;
+      /**
+       * <code>required bool inclusive = 2;</code>
+       */
+      public boolean hasInclusive() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required bool inclusive = 2;</code>
+       */
+      public boolean getInclusive() {
+        return inclusive_;
+      }
+
+      private void initFields() {
+        value_ = "";
+        inclusive_ = false;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasValue()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasInclusive()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeBytes(1, getValueBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeBool(2, inclusive_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(1, getValueBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(2, inclusive_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          value_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          inclusive_ = false;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.value_ = value_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.inclusive_ = inclusive_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance()) return this;
+          if (other.hasValue()) {
+            bitField0_ |= 0x00000001;
+            value_ = other.value_;
+            onChanged();
+          }
+          if (other.hasInclusive()) {
+            setInclusive(other.getInclusive());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasValue()) {
+            
+            return false;
+          }
+          if (!hasInclusive()) {
+            
+            return false;
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required string value = 1;
+        private java.lang.Object value_ = "";
+        /**
+         * <code>required string value = 1;</code>
+         */
+        public boolean hasValue() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string value = 1;</code>
+         */
+        public java.lang.String getValue() {
+          java.lang.Object ref = value_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            value_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string value = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getValueBytes() {
+          java.lang.Object ref = value_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            value_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string value = 1;</code>
+         */
+        public Builder setValue(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          value_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string value = 1;</code>
+         */
+        public Builder clearValue() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          value_ = getDefaultInstance().getValue();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string value = 1;</code>
+         */
+        public Builder setValueBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          value_ = value;
+          onChanged();
+          return this;
+        }
+
+        // required bool inclusive = 2;
+        private boolean inclusive_ ;
+        /**
+         * <code>required bool inclusive = 2;</code>
+         */
+        public boolean hasInclusive() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required bool inclusive = 2;</code>
+         */
+        public boolean getInclusive() {
+          return inclusive_;
+        }
+        /**
+         * <code>required bool inclusive = 2;</code>
+         */
+        public Builder setInclusive(boolean value) {
+          bitField0_ |= 0x00000002;
+          inclusive_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required bool inclusive = 2;</code>
+         */
+        public Builder clearInclusive() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          inclusive_ = false;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark)
+      }
+
+      static {
+        defaultInstance = new Mark(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark)
+    }
+
+    public interface RangeOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required string key = 1;
+      /**
+       * <code>required string key = 1;</code>
+       */
+      boolean hasKey();
+      /**
+       * <code>required string key = 1;</code>
+       */
+      java.lang.String getKey();
+      /**
+       * <code>required string key = 1;</code>
+       */
+      com.google.protobuf.ByteString
+          getKeyBytes();
+
+      // optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+       */
+      boolean hasStart();
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark getStart();
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder getStartOrBuilder();
+
+      // optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+       */
+      boolean hasEnd();
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark getEnd();
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder getEndOrBuilder();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range}
+     */
+    public static final class Range extends
+        com.google.protobuf.GeneratedMessage
+        implements RangeOrBuilder {
+      // Use Range.newBuilder() to construct.
+      private Range(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private Range(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final Range defaultInstance;
+      public static Range getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public Range getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private Range(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                bitField0_ |= 0x00000001;
+                key_ = input.readBytes();
+                break;
+              }
+              case 18: {
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                  subBuilder = start_.toBuilder();
+                }
+                start_ = input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(start_);
+                  start_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000002;
+                break;
+              }
+              case 26: {
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                  subBuilder = end_.toBuilder();
+                }
+                end_ = input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(end_);
+                  end_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000004;
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<Range> PARSER =
+          new com.google.protobuf.AbstractParser<Range>() {
+        public Range parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Range(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<Range> getParserForType() {
+        return PARSER;
+      }
+
+      private int bitField0_;
+      // required string key = 1;
+      public static final int KEY_FIELD_NUMBER = 1;
+      private java.lang.Object key_;
+      /**
+       * <code>required string key = 1;</code>
+       */
+      public boolean hasKey() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string key = 1;</code>
+       */
+      public java.lang.String getKey() {
+        java.lang.Object ref = key_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            key_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string key = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getKeyBytes() {
+        java.lang.Object ref = key_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          key_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;
+      public static final int START_FIELD_NUMBER = 2;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark start_;
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+       */
+      public boolean hasStart() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark getStart() {
+        return start_;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder getStartOrBuilder() {
+        return start_;
+      }
+
+      // optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;
+      public static final int END_FIELD_NUMBER = 3;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark end_;
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+       */
+      public boolean hasEnd() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark getEnd() {
+        return end_;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder getEndOrBuilder() {
+        return end_;
+      }
+
+      private void initFields() {
+        key_ = "";
+        start_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+        end_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasKey()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (hasStart()) {
+          if (!getStart().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        if (hasEnd()) {
+          if (!getEnd().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeBytes(1, getKeyBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeMessage(2, start_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeMessage(3, end_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(1, getKeyBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(2, start_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(3, end_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+            getStartFieldBuilder();
+            getEndFieldBuilder();
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          key_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          if (startBuilder_ == null) {
+            start_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+          } else {
+            startBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000002);
+          if (endBuilder_ == null) {
+            end_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+          } else {
+            endBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000004);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.key_ = key_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          if (startBuilder_ == null) {
+            result.start_ = start_;
+          } else {
+            result.start_ = startBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          if (endBuilder_ == null) {
+            result.end_ = end_;
+          } else {
+            result.end_ = endBuilder_.build();
+          }
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.getDefaultInstance()) return this;
+          if (other.hasKey()) {
+            bitField0_ |= 0x00000001;
+            key_ = other.key_;
+            onChanged();
+          }
+          if (other.hasStart()) {
+            mergeStart(other.getStart());
+          }
+          if (other.hasEnd()) {
+            mergeEnd(other.getEnd());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasKey()) {
+            
+            return false;
+          }
+          if (hasStart()) {
+            if (!getStart().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasEnd()) {
+            if (!getEnd().isInitialized()) {
+              
+              return false;
+            }
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required string key = 1;
+        private java.lang.Object key_ = "";
+        /**
+         * <code>required string key = 1;</code>
+         */
+        public boolean hasKey() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string key = 1;</code>
+         */
+        public java.lang.String getKey() {
+          java.lang.Object ref = key_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            key_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string key = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getKeyBytes() {
+          java.lang.Object ref = key_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            key_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string key = 1;</code>
+         */
+        public Builder setKey(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          key_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string key = 1;</code>
+         */
+        public Builder clearKey() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          key_ = getDefaultInstance().getKey();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string key = 1;</code>
+         */
+        public Builder setKeyBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          key_ = value;
+          onChanged();
+          return this;
+        }
+
+        // optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;
+        private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark start_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder> startBuilder_;
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        public boolean hasStart() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark getStart() {
+          if (startBuilder_ == null) {
+            return start_;
+          } else {
+            return startBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        public Builder setStart(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark value) {
+          if (startBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            start_ = value;
+            onChanged();
+          } else {
+            startBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000002;
+          return this;
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        public Builder setStart(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder builderForValue) {
+          if (startBuilder_ == null) {
+            start_ = builderForValue.build();
+            onChanged();
+          } else {
+            startBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000002;
+          return this;
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        public Builder mergeStart(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark value) {
+          if (startBuilder_ == null) {
+            if (((bitField0_ & 0x00000002) == 0x00000002) &&
+                start_ != org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance()) {
+              start_ =
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.newBuilder(start_).mergeFrom(value).buildPartial();
+            } else {
+              start_ = value;
+            }
+            onChanged();
+          } else {
+            startBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000002;
+          return this;
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        public Builder clearStart() {
+          if (startBuilder_ == null) {
+            start_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+            onChanged();
+          } else {
+            startBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder getStartBuilder() {
+          bitField0_ |= 0x00000002;
+          onChanged();
+          return getStartFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder getStartOrBuilder() {
+          if (startBuilder_ != null) {
+            return startBuilder_.getMessageOrBuilder();
+          } else {
+            return start_;
+          }
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark start = 2;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder> 
+            getStartFieldBuilder() {
+          if (startBuilder_ == null) {
+            startBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder>(
+                    start_,
+                    getParentForChildren(),
+                    isClean());
+            start_ = null;
+          }
+          return startBuilder_;
+        }
+
+        // optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;
+        private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark end_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder> endBuilder_;
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        public boolean hasEnd() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark getEnd() {
+          if (endBuilder_ == null) {
+            return end_;
+          } else {
+            return endBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        public Builder setEnd(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark value) {
+          if (endBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            end_ = value;
+            onChanged();
+          } else {
+            endBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000004;
+          return this;
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        public Builder setEnd(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder builderForValue) {
+          if (endBuilder_ == null) {
+            end_ = builderForValue.build();
+            onChanged();
+          } else {
+            endBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000004;
+          return this;
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        public Builder mergeEnd(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark value) {
+          if (endBuilder_ == null) {
+            if (((bitField0_ & 0x00000004) == 0x00000004) &&
+                end_ != org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance()) {
+              end_ =
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.newBuilder(end_).mergeFrom(value).buildPartial();
+            } else {
+              end_ = value;
+            }
+            onChanged();
+          } else {
+            endBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000004;
+          return this;
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        public Builder clearEnd() {
+          if (endBuilder_ == null) {
+            end_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.getDefaultInstance();
+            onChanged();
+          } else {
+            endBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000004);
+          return this;
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder getEndBuilder() {
+          bitField0_ |= 0x00000004;
+          onChanged();
+          return getEndFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder getEndOrBuilder() {
+          if (endBuilder_ != null) {
+            return endBuilder_.getMessageOrBuilder();
+          } else {
+            return end_;
+          }
+        }
+        /**
+         * <code>optional .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Mark end = 3;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder> 
+            getEndFieldBuilder() {
+          if (endBuilder_ == null) {
+            endBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Mark.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.MarkOrBuilder>(
+                    end_,
+                    getParentForChildren(),
+                    isClean());
+            end_ = null;
+          }
+          return endBuilder_;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range)
+      }
+
+      static {
+        defaultInstance = new Range(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range)
+    }
+
+    public interface OperatorOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;</code>
+       */
+      boolean hasType();
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type getType();
+
+      // required string key = 2;
+      /**
+       * <code>required string key = 2;</code>
+       */
+      boolean hasKey();
+      /**
+       * <code>required string key = 2;</code>
+       */
+      java.lang.String getKey();
+      /**
+       * <code>required string key = 2;</code>
+       */
+      com.google.protobuf.ByteString
+          getKeyBytes();
+
+      // required string val = 3;
+      /**
+       * <code>required string val = 3;</code>
+       */
+      boolean hasVal();
+      /**
+       * <code>required string val = 3;</code>
+       */
+      java.lang.String getVal();
+      /**
+       * <code>required string val = 3;</code>
+       */
+      com.google.protobuf.ByteString
+          getValBytes();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator}
+     */
+    public static final class Operator extends
+        com.google.protobuf.GeneratedMessage
+        implements OperatorOrBuilder {
+      // Use Operator.newBuilder() to construct.
+      private Operator(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private Operator(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final Operator defaultInstance;
+      public static Operator getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public Operator getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private Operator(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 8: {
+                int rawValue = input.readEnum();
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type value = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type.valueOf(rawValue);
+                if (value == null) {
+                  unknownFields.mergeVarintField(1, rawValue);
+                } else {
+                  bitField0_ |= 0x00000001;
+                  type_ = value;
+                }
+                break;
+              }
+              case 18: {
+                bitField0_ |= 0x00000002;
+                key_ = input.readBytes();
+                break;
+              }
+              case 26: {
+                bitField0_ |= 0x00000004;
+                val_ = input.readBytes();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<Operator> PARSER =
+          new com.google.protobuf.AbstractParser<Operator>() {
+        public Operator parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Operator(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<Operator> getParserForType() {
+        return PARSER;
+      }
+
+      /**
+       * Protobuf enum {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type}
+       */
+      public enum Type
+          implements com.google.protobuf.ProtocolMessageEnum {
+        /**
+         * <code>LIKE = 0;</code>
+         */
+        LIKE(0, 0),
+        /**
+         * <code>NOTEQUALS = 1;</code>
+         */
+        NOTEQUALS(1, 1),
+        ;
+
+        /**
+         * <code>LIKE = 0;</code>
+         */
+        public static final int LIKE_VALUE = 0;
+        /**
+         * <code>NOTEQUALS = 1;</code>
+         */
+        public static final int NOTEQUALS_VALUE = 1;
+
+
+        public final int getNumber() { return value; }
+
+        public static Type valueOf(int value) {
+          switch (value) {
+            case 0: return LIKE;
+            case 1: return NOTEQUALS;
+            default: return null;
+          }
+        }
+
+        public static com.google.protobuf.Internal.EnumLiteMap<Type>
+            internalGetValueMap() {
+          return internalValueMap;
+        }
+        private static com.google.protobuf.Internal.EnumLiteMap<Type>
+            internalValueMap =
+              new com.google.protobuf.Internal.EnumLiteMap<Type>() {
+                public Type findValueByNumber(int number) {
+                  return Type.valueOf(number);
+                }
+              };
+
+        public final com.google.protobuf.Descriptors.EnumValueDescriptor
+            getValueDescriptor() {
+          return getDescriptor().getValues().get(index);
+        }
+        public final com.google.protobuf.Descriptors.EnumDescriptor
+            getDescriptorForType() {
+          return getDescriptor();
+        }
+        public static final com.google.protobuf.Descriptors.EnumDescriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.getDescriptor().getEnumTypes().get(0);
+        }
+
+        private static final Type[] VALUES = values();
+
+        public static Type valueOf(
+            com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+          if (desc.getType() != getDescriptor()) {
+            throw new java.lang.IllegalArgumentException(
+              "EnumValueDescriptor is not for this type.");
+          }
+          return VALUES[desc.getIndex()];
+        }
+
+        private final int index;
+        private final int value;
+
+        private Type(int index, int value) {
+          this.index = index;
+          this.value = value;
+        }
+
+        // @@protoc_insertion_point(enum_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type)
+      }
+
+      private int bitField0_;
+      // required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;
+      public static final int TYPE_FIELD_NUMBER = 1;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type type_;
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type getType() {
+        return type_;
+      }
+
+      // required string key = 2;
+      public static final int KEY_FIELD_NUMBER = 2;
+      private java.lang.Object key_;
+      /**
+       * <code>required string key = 2;</code>
+       */
+      public boolean hasKey() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string key = 2;</code>
+       */
+      public java.lang.String getKey() {
+        java.lang.Object ref = key_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            key_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string key = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getKeyBytes() {
+        java.lang.Object ref = key_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          key_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // required string val = 3;
+      public static final int VAL_FIELD_NUMBER = 3;
+      private java.lang.Object val_;
+      /**
+       * <code>required string val = 3;</code>
+       */
+      public boolean hasVal() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required string val = 3;</code>
+       */
+      public java.lang.String getVal() {
+        java.lang.Object ref = val_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            val_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string val = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getValBytes() {
+        java.lang.Object ref = val_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          val_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      private void initFields() {
+        type_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type.LIKE;
+        key_ = "";
+        val_ = "";
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasType()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasKey()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasVal()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeEnum(1, type_.getNumber());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeBytes(2, getKeyBytes());
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBytes(3, getValBytes());
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeEnumSize(1, type_.getNumber());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(2, getKeyBytes());
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(3, getValBytes());
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          type_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type.LIKE;
+          bitField0_ = (bitField0_ & ~0x00000001);
+          key_ = "";
+          bitField0_ = (bitField0_ & ~0x00000002);
+          val_ = "";
+          bitField0_ = (bitField0_ & ~0x00000004);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.type_ = type_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.key_ = key_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.val_ = val_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.getDefaultInstance()) return this;
+          if (other.hasType()) {
+            setType(other.getType());
+          }
+          if (other.hasKey()) {
+            bitField0_ |= 0x00000002;
+            key_ = other.key_;
+            onChanged();
+          }
+          if (other.hasVal()) {
+            bitField0_ |= 0x00000004;
+            val_ = other.val_;
+            onChanged();
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasType()) {
+            
+            return false;
+          }
+          if (!hasKey()) {
+            
+            return false;
+          }
+          if (!hasVal()) {
+            
+            return false;
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;
+        private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type type_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type.LIKE;
+        /**
+         * <code>required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;</code>
+         */
+        public boolean hasType() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type getType() {
+          return type_;
+        }
+        /**
+         * <code>required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;</code>
+         */
+        public Builder setType(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type value) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bitField0_ |= 0x00000001;
+          type_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator.Type type = 1;</code>
+         */
+        public Builder clearType() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          type_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type.LIKE;
+          onChanged();
+          return this;
+        }
+
+        // required string key = 2;
+        private java.lang.Object key_ = "";
+        /**
+         * <code>required string key = 2;</code>
+         */
+        public boolean hasKey() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required string key = 2;</code>
+         */
+        public java.lang.String getKey() {
+          java.lang.Object ref = key_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            key_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string key = 2;</code>
+         */
+        public com.google.protobuf.ByteString
+            getKeyBytes() {
+          java.lang.Object ref = key_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            key_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string key = 2;</code>
+         */
+        public Builder setKey(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          key_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string key = 2;</code>
+         */
+        public Builder clearKey() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          key_ = getDefaultInstance().getKey();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string key = 2;</code>
+         */
+        public Builder setKeyBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          key_ = value;
+          onChanged();
+          return this;
+        }
+
+        // required string val = 3;
+        private java.lang.Object val_ = "";
+        /**
+         * <code>required string val = 3;</code>
+         */
+        public boolean hasVal() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>required string val = 3;</code>
+         */
+        public java.lang.String getVal() {
+          java.lang.Object ref = val_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            val_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string val = 3;</code>
+         */
+        public com.google.protobuf.ByteString
+            getValBytes() {
+          java.lang.Object ref = val_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            val_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string val = 3;</code>
+         */
+        public Builder setVal(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          val_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string val = 3;</code>
+         */
+        public Builder clearVal() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          val_ = getDefaultInstance().getVal();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string val = 3;</code>
+         */
+        public Builder setValBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          val_ = value;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator)
+      }
+
+      static {
+        defaultInstance = new Operator(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator)
+    }
+
+    private int bitField0_;
+    // required string names = 1;
+    public static final int NAMES_FIELD_NUMBER = 1;
+    private java.lang.Object names_;
+    /**
+     * <code>required string names = 1;</code>
+     */
+    public boolean hasNames() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string names = 1;</code>
+     */
+    public java.lang.String getNames() {
+      java.lang.Object ref = names_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          names_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string names = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNamesBytes() {
+      java.lang.Object ref = names_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        names_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required string types = 2;
+    public static final int TYPES_FIELD_NUMBER = 2;
+    private java.lang.Object types_;
+    /**
+     * <code>required string types = 2;</code>
+     */
+    public boolean hasTypes() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required string types = 2;</code>
+     */
+    public java.lang.String getTypes() {
+      java.lang.Object ref = types_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          types_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string types = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTypesBytes() {
+      java.lang.Object ref = types_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        types_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;
+    public static final int OP_FIELD_NUMBER = 3;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator> op_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator> getOpList() {
+      return op_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder> 
+        getOpOrBuilderList() {
+      return op_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    public int getOpCount() {
+      return op_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator getOp(int index) {
+      return op_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder getOpOrBuilder(
+        int index) {
+      return op_.get(index);
+    }
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;
+    public static final int RANGE_FIELD_NUMBER = 4;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range> range_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range> getRangeList() {
+      return range_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder> 
+        getRangeOrBuilderList() {
+      return range_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    public int getRangeCount() {
+      return range_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range getRange(int index) {
+      return range_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder getRangeOrBuilder(
+        int index) {
+      return range_.get(index);
+    }
+
+    private void initFields() {
+      names_ = "";
+      types_ = "";
+      op_ = java.util.Collections.emptyList();
+      range_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasNames()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasTypes()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      for (int i = 0; i < getOpCount(); i++) {
+        if (!getOp(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      for (int i = 0; i < getRangeCount(); i++) {
+        if (!getRange(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getNamesBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getTypesBytes());
+      }
+      for (int i = 0; i < op_.size(); i++) {
+        output.writeMessage(3, op_.get(i));
+      }
+      for (int i = 0; i < range_.size(); i++) {
+        output.writeMessage(4, range_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getNamesBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getTypesBytes());
+      }
+      for (int i = 0; i < op_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, op_.get(i));
+      }
+      for (int i = 0; i < range_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, range_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparatorOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getOpFieldBuilder();
+          getRangeFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        names_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        types_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        if (opBuilder_ == null) {
+          op_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        } else {
+          opBuilder_.clear();
+        }
+        if (rangeBuilder_ == null) {
+          range_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+        } else {
+          rangeBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.names_ = names_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.types_ = types_;
+        if (opBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            op_ = java.util.Collections.unmodifiableList(op_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.op_ = op_;
+        } else {
+          result.op_ = opBuilder_.build();
+        }
+        if (rangeBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+            range_ = java.util.Collections.unmodifiableList(range_);
+            bitField0_ = (bitField0_ & ~0x00000008);
+          }
+          result.range_ = range_;
+        } else {
+          result.range_ = rangeBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.getDefaultInstance()) return this;
+        if (other.hasNames()) {
+          bitField0_ |= 0x00000001;
+          names_ = other.names_;
+          onChanged();
+        }
+        if (other.hasTypes()) {
+          bitField0_ |= 0x00000002;
+          types_ = other.types_;
+          onChanged();
+        }
+        if (opBuilder_ == null) {
+          if (!other.op_.isEmpty()) {
+            if (op_.isEmpty()) {
+              op_ = other.op_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureOpIsMutable();
+              op_.addAll(other.op_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.op_.isEmpty()) {
+            if (opBuilder_.isEmpty()) {
+              opBuilder_.dispose();
+              opBuilder_ = null;
+              op_ = other.op_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+              opBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getOpFieldBuilder() : null;
+            } else {
+              opBuilder_.addAllMessages(other.op_);
+            }
+          }
+        }
+        if (rangeBuilder_ == null) {
+          if (!other.range_.isEmpty()) {
+            if (range_.isEmpty()) {
+              range_ = other.range_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+            } else {
+              ensureRangeIsMutable();
+              range_.addAll(other.range_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.range_.isEmpty()) {
+            if (rangeBuilder_.isEmpty()) {
+              rangeBuilder_.dispose();
+              rangeBuilder_ = null;
+              range_ = other.range_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+              rangeBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getRangeFieldBuilder() : null;
+            } else {
+              rangeBuilder_.addAllMessages(other.range_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasNames()) {
+          
+          return false;
+        }
+        if (!hasTypes()) {
+          
+          return false;
+        }
+        for (int i = 0; i < getOpCount(); i++) {
+          if (!getOp(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        for (int i = 0; i < getRangeCount(); i++) {
+          if (!getRange(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string names = 1;
+      private java.lang.Object names_ = "";
+      /**
+       * <code>required string names = 1;</code>
+       */
+      public boolean hasNames() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string names = 1;</code>
+       */
+      public java.lang.String getNames() {
+        java.lang.Object ref = names_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          names_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string names = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNamesBytes() {
+        java.lang.Object ref = names_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          names_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string names = 1;</code>
+       */
+      public Builder setNames(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        names_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string names = 1;</code>
+       */
+      public Builder clearNames() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        names_ = getDefaultInstance().getNames();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string names = 1;</code>
+       */
+      public Builder setNamesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        names_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required string types = 2;
+      private java.lang.Object types_ = "";
+      /**
+       * <code>required string types = 2;</code>
+       */
+      public boolean hasTypes() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string types = 2;</code>
+       */
+      public java.lang.String getTypes() {
+        java.lang.Object ref = types_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          types_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string types = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTypesBytes() {
+        java.lang.Object ref = types_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          types_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string types = 2;</code>
+       */
+      public Builder setTypes(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        types_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string types = 2;</code>
+       */
+      public Builder clearTypes() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        types_ = getDefaultInstance().getTypes();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string types = 2;</code>
+       */
+      public Builder setTypesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        types_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator> op_ =
+        java.util.Collections.emptyList();
+      private void ensureOpIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          op_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator>(op_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder> opBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator> getOpList() {
+        if (opBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(op_);
+        } else {
+          return opBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public int getOpCount() {
+        if (opBuilder_ == null) {
+          return op_.size();
+        } else {
+          return opBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator getOp(int index) {
+        if (opBuilder_ == null) {
+          return op_.get(index);
+        } else {
+          return opBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder setOp(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator value) {
+        if (opBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureOpIsMutable();
+          op_.set(index, value);
+          onChanged();
+        } else {
+          opBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder setOp(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder builderForValue) {
+        if (opBuilder_ == null) {
+          ensureOpIsMutable();
+          op_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          opBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder addOp(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator value) {
+        if (opBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureOpIsMutable();
+          op_.add(value);
+          onChanged();
+        } else {
+          opBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder addOp(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator value) {
+        if (opBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureOpIsMutable();
+          op_.add(index, value);
+          onChanged();
+        } else {
+          opBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder addOp(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder builderForValue) {
+        if (opBuilder_ == null) {
+          ensureOpIsMutable();
+          op_.add(builderForValue.build());
+          onChanged();
+        } else {
+          opBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder addOp(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder builderForValue) {
+        if (opBuilder_ == null) {
+          ensureOpIsMutable();
+          op_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          opBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder addAllOp(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator> values) {
+        if (opBuilder_ == null) {
+          ensureOpIsMutable();
+          super.addAll(values, op_);
+          onChanged();
+        } else {
+          opBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder clearOp() {
+        if (opBuilder_ == null) {
+          op_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+        } else {
+          opBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public Builder removeOp(int index) {
+        if (opBuilder_ == null) {
+          ensureOpIsMutable();
+          op_.remove(index);
+          onChanged();
+        } else {
+          opBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder getOpBuilder(
+          int index) {
+        return getOpFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder getOpOrBuilder(
+          int index) {
+        if (opBuilder_ == null) {
+          return op_.get(index);  } else {
+          return opBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder> 
+           getOpOrBuilderList() {
+        if (opBuilder_ != null) {
+          return opBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(op_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder addOpBuilder() {
+        return getOpFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder addOpBuilder(
+          int index) {
+        return getOpFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator op = 3;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder> 
+           getOpBuilderList() {
+        return getOpFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder> 
+          getOpFieldBuilder() {
+        if (opBuilder_ == null) {
+          opBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.OperatorOrBuilder>(
+                  op_,
+                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  getParentForChildren(),
+                  isClean());
+          op_ = null;
+        }
+        return opBuilder_;
+      }
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range> range_ =
+        java.util.Collections.emptyList();
+      private void ensureRangeIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          range_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range>(range_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder> rangeBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range> getRangeList() {
+        if (rangeBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(range_);
+        } else {
+          return rangeBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public int getRangeCount() {
+        if (rangeBuilder_ == null) {
+          return range_.size();
+        } else {
+          return rangeBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range getRange(int index) {
+        if (rangeBuilder_ == null) {
+          return range_.get(index);
+        } else {
+          return rangeBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder setRange(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range value) {
+        if (rangeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRangeIsMutable();
+          range_.set(index, value);
+          onChanged();
+        } else {
+          rangeBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder setRange(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder builderForValue) {
+        if (rangeBuilder_ == null) {
+          ensureRangeIsMutable();
+          range_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          rangeBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder addRange(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range value) {
+        if (rangeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRangeIsMutable();
+          range_.add(value);
+          onChanged();
+        } else {
+          rangeBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder addRange(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range value) {
+        if (rangeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRangeIsMutable();
+          range_.add(index, value);
+          onChanged();
+        } else {
+          rangeBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder addRange(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder builderForValue) {
+        if (rangeBuilder_ == null) {
+          ensureRangeIsMutable();
+          range_.add(builderForValue.build());
+          onChanged();
+        } else {
+          rangeBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder addRange(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder builderForValue) {
+        if (rangeBuilder_ == null) {
+          ensureRangeIsMutable();
+          range_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          rangeBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder addAllRange(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range> values) {
+        if (rangeBuilder_ == null) {
+          ensureRangeIsMutable();
+          super.addAll(values, range_);
+          onChanged();
+        } else {
+          rangeBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder clearRange() {
+        if (rangeBuilder_ == null) {
+          range_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+          onChanged();
+        } else {
+          rangeBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public Builder removeRange(int index) {
+        if (rangeBuilder_ == null) {
+          ensureRangeIsMutable();
+          range_.remove(index);
+          onChanged();
+        } else {
+          rangeBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder getRangeBuilder(
+          int index) {
+        return getRangeFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder getRangeOrBuilder(
+          int index) {
+        if (rangeBuilder_ == null) {
+          return range_.get(index);  } else {
+          return rangeBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder> 
+           getRangeOrBuilderList() {
+        if (rangeBuilder_ != null) {
+          return rangeBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(range_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder addRangeBuilder() {
+        return getRangeFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder addRangeBuilder(
+          int index) {
+        return getRangeFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Range range = 4;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder> 
+           getRangeBuilderList() {
+        return getRangeFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder> 
+          getRangeFieldBuilder() {
+        if (rangeBuilder_ == null) {
+          rangeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Range.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.RangeOrBuilder>(
+                  range_,
+                  ((bitField0_ & 0x00000008) == 0x00000008),
+                  getParentForChildren(),
+                  isClean());
+          range_ = null;
+        }
+        return rangeBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator)
+    }
+
+    static {
+      defaultInstance = new PartitionKeyComparator(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor;
   private static
@@ -30792,6 +34461,26 @@ public final class HbaseMetastoreProto {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_metastore_hbase_Table_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -30942,8 +34631,23 @@ public final class HbaseMetastoreProto {
       "\022\022\n\ntable_type\030\014 \001(\t\022Q\n\nprivileges\030\r \001(\013" +
       "2=.org.apache.hadoop.hive.metastore.hbas",
       "e.PrincipalPrivilegeSet\022\024\n\014is_temporary\030" +
-      "\016 \001(\010*#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE" +
-      "\020\001"
+      "\016 \001(\010\"\353\004\n\026PartitionKeyComparator\022\r\n\005name" +
+      "s\030\001 \002(\t\022\r\n\005types\030\002 \002(\t\022S\n\002op\030\003 \003(\0132G.org" +
+      ".apache.hadoop.hive.metastore.hbase.Part" +
+      "itionKeyComparator.Operator\022S\n\005range\030\004 \003" +
+      "(\0132D.org.apache.hadoop.hive.metastore.hb" +
+      "ase.PartitionKeyComparator.Range\032(\n\004Mark" +
+      "\022\r\n\005value\030\001 \002(\t\022\021\n\tinclusive\030\002 \002(\010\032\272\001\n\005R" +
+      "ange\022\013\n\003key\030\001 \002(\t\022R\n\005start\030\002 \001(\0132C.org.a" +
+      "pache.hadoop.hive.metastore.hbase.Partit",
+      "ionKeyComparator.Mark\022P\n\003end\030\003 \001(\0132C.org" +
+      ".apache.hadoop.hive.metastore.hbase.Part" +
+      "itionKeyComparator.Mark\032\241\001\n\010Operator\022Z\n\004" +
+      "type\030\001 \002(\0162L.org.apache.hadoop.hive.meta" +
+      "store.hbase.PartitionKeyComparator.Opera" +
+      "tor.Type\022\013\n\003key\030\002 \002(\t\022\013\n\003val\030\003 \002(\t\"\037\n\004Ty" +
+      "pe\022\010\n\004LIKE\020\000\022\r\n\tNOTEQUALS\020\001*#\n\rPrincipal" +
+      "Type\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -31160,6 +34864,30 @@ public final class HbaseMetastoreProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor,
               new java.lang.String[] { "Owner", "CreateTime", "LastAccessTime", "Retention", "Location", "SdParameters", "SdHash", "PartitionKeys", "Parameters", "ViewOriginalText", "ViewExpandedText", "TableType", "Privileges", "IsTemporary", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor =
+            getDescriptor().getMessageTypes().get(21);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor,
+              new java.lang.String[] { "Names", "Types", "Op", "Range", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Mark_descriptor,
+              new java.lang.String[] { "Value", "Inclusive", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor.getNestedTypes().get(1);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Range_descriptor,
+              new java.lang.String[] { "Key", "Start", "End", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor.getNestedTypes().get(2);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_descriptor,
+              new java.lang.String[] { "Type", "Key", "Val", });
           return null;
         }
       };

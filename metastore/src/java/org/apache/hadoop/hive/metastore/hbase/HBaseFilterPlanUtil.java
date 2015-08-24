@@ -20,15 +20,30 @@ package org.apache.hadoop.hive.metastore.hbase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.RowFilter;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -147,7 +162,7 @@ class HBaseFilterPlanUtil {
   public static class ScanPlan extends FilterPlan {
 
     public static class ScanMarker {
-      final byte[] bytes;
+      final String value;
       /**
        * If inclusive = true, it means that the
        * marker includes those bytes.
@@ -155,20 +170,24 @@ class HBaseFilterPlanUtil {
        * or ends at the next possible byte array
        */
       final boolean isInclusive;
-      ScanMarker(byte [] b, boolean i){
-        this.bytes = b;
+      final String type;
+      ScanMarker(String obj, boolean i, String type){
+        this.value = obj;
         this.isInclusive = i;
+        this.type = type;
       }
       @Override
       public String toString() {
-        return "ScanMarker [bytes=" + Arrays.toString(bytes) + ", isInclusive=" + isInclusive + "]";
+        return "ScanMarker [" + "value=" + value.toString() + ", isInclusive=" + isInclusive +
+            ", type=" + type + "]";
       }
       @Override
       public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + Arrays.hashCode(bytes);
+        result = prime * result + value.hashCode();
         result = prime * result + (isInclusive ? 1231 : 1237);
+        result = prime * result + type.hashCode();
         return result;
       }
       @Override
@@ -180,48 +199,118 @@ class HBaseFilterPlanUtil {
         if (getClass() != obj.getClass())
           return false;
         ScanMarker other = (ScanMarker) obj;
-        if (!Arrays.equals(bytes, other.bytes))
+        if (!value.equals(other.value))
           return false;
         if (isInclusive != other.isInclusive)
+          return false;
+        if (type != other.type)
           return false;
         return true;
       }
     }
-    // represent Scan start
-    private ScanMarker startMarker = new ScanMarker(null, false);
-    // represent Scan end
-    private ScanMarker endMarker = new ScanMarker(null, false);
+    public static class ScanMarkerPair {
+      public ScanMarkerPair(ScanMarker startMarker, ScanMarker endMarker) {
+        this.startMarker = startMarker;
+        this.endMarker = endMarker;
+      }
+      ScanMarker startMarker;
+      ScanMarker endMarker;
+    }
+    // represent Scan start, partition key name -> scanMarkerPair
+    Map<String, ScanMarkerPair> markers = new HashMap<String, ScanMarkerPair>();
+    List<Operator> ops = new ArrayList<Operator>();
 
-    private ScanFilter filter;
+    // Get the number of partition key prefixes which can be used in the scan range.
+    // For example, if partition key is (year, month, state)
+    // 1. year = 2015 and month >= 1 and month < 5
+    //    year + month can be used in scan range, majorParts = 2
+    // 2. year = 2015 and state = 'CA'
+    //    only year can be used in scan range, majorParts = 1
+    // 3. month = 10 and state = 'CA'
+    //    nothing can be used in scan range, majorParts = 0
+    private int getMajorPartsCount(List<FieldSchema> parts) {
+      int majorPartsCount = 0;
+      while (majorPartsCount<parts.size() && markers.containsKey(parts.get(majorPartsCount).getName())) {
+        ScanMarkerPair pair = markers.get(parts.get(majorPartsCount).getName());
+        majorPartsCount++;
+        if (pair.startMarker!=null && pair.endMarker!=null && pair.startMarker.value.equals(pair
+            .endMarker.value) && pair.startMarker.isInclusive && pair.endMarker.isInclusive) {
+          // is equal
+          continue;
+        } else {
+          break;
+        }
+      }
+      return majorPartsCount;
+    }
+    public Filter getFilter(List<FieldSchema> parts) {
+      int majorPartsCount = getMajorPartsCount(parts);
+      Set<String> majorKeys = new HashSet<String>();
+      for (int i=0;i<majorPartsCount;i++) {
+        majorKeys.add(parts.get(i).getName());
+      }
 
-    public ScanFilter getFilter() {
-      return filter;
+      List<String> names = HBaseUtils.getPartitionNames(parts);
+      List<PartitionKeyComparator.Range> ranges = new ArrayList<PartitionKeyComparator.Range>();
+      for (Map.Entry<String, ScanMarkerPair> entry : markers.entrySet()) {
+        if (names.contains(entry.getKey()) && !majorKeys.contains(entry.getKey())) {
+          PartitionKeyComparator.Mark startMark = null;
+          if (entry.getValue().startMarker != null) {
+            startMark = new PartitionKeyComparator.Mark(entry.getValue().startMarker.value,
+                entry.getValue().startMarker.isInclusive);
+          }
+          PartitionKeyComparator.Mark endMark = null;
+          if (entry.getValue().endMarker != null) {
+            startMark = new PartitionKeyComparator.Mark(entry.getValue().endMarker.value,
+                entry.getValue().endMarker.isInclusive);
+          }
+          PartitionKeyComparator.Range range = new PartitionKeyComparator.Range(
+              entry.getKey(), startMark, endMark);
+          ranges.add(range);
+        }
+      }
+
+      if (ranges.isEmpty() && ops.isEmpty()) {
+        return null;
+      } else {
+        return new RowFilter(CompareFilter.CompareOp.EQUAL, new PartitionKeyComparator(
+            StringUtils.join(names, ","), StringUtils.join(HBaseUtils.getPartitionKeyTypes(parts), ","),
+            ranges, ops));
+      }
     }
 
-    public void setFilter(ScanFilter filter) {
-      this.filter = filter;
+    public void setStartMarker(String keyName, String keyType, String start, boolean isInclusive) {
+      if (markers.containsKey(keyName)) {
+        markers.get(keyName).startMarker = new ScanMarker(start, isInclusive, keyType);
+      } else {
+        ScanMarkerPair marker = new ScanMarkerPair(new ScanMarker(start, isInclusive, keyType), null);
+        markers.put(keyName, marker);
+      }
     }
 
-    public ScanMarker getStartMarker() {
-      return startMarker;
+    public ScanMarker getStartMarker(String keyName) {
+      if (markers.containsKey(keyName)) {
+        return markers.get(keyName).startMarker;
+      } else {
+        return null;
+      }
     }
 
-    public void setStartMarker(ScanMarker startMarker) {
-      this.startMarker = startMarker;
-    }
-    public void setStartMarker(byte[] start, boolean isInclusive) {
-      setStartMarker(new ScanMarker(start, isInclusive));
-    }
-
-    public ScanMarker getEndMarker() {
-      return endMarker;
+    public void setEndMarker(String keyName, String keyType, String end, boolean isInclusive) {
+      if (markers.containsKey(keyName)) {
+        markers.get(keyName).endMarker = new ScanMarker(end, isInclusive, keyType);
+      } else {
+        ScanMarkerPair marker = new ScanMarkerPair(null, new ScanMarker(end, isInclusive, keyType));
+        markers.put(keyName, marker);
+      }
     }
 
-    public void setEndMarker(ScanMarker endMarker) {
-      this.endMarker = endMarker;
-    }
-    public void setEndMarker(byte[] end, boolean isInclusive) {
-      setEndMarker(new ScanMarker(end, isInclusive));
+    public ScanMarker getEndMarker(String keyName) {
+      if (markers.containsKey(keyName)) {
+        return markers.get(keyName).endMarker;
+      } else {
+        return null;
+      }
     }
 
     @Override
@@ -236,26 +325,31 @@ class HBaseFilterPlanUtil {
     private ScanPlan and(ScanPlan other) {
       // create combined FilterPlan based on existing lhs and rhs plan
       ScanPlan newPlan = new ScanPlan();
+      newPlan.markers.putAll(markers);
 
-      // create new scan start
-      ScanMarker greaterStartMarker = getComparedMarker(this.getStartMarker(),
-          other.getStartMarker(), true);
-      newPlan.setStartMarker(greaterStartMarker);
+      for (String keyName : other.markers.keySet()) {
+        if (newPlan.markers.containsKey(keyName)) {
+          // create new scan start
+          ScanMarker greaterStartMarker = getComparedMarker(this.getStartMarker(keyName),
+              other.getStartMarker(keyName), true);
+          if (greaterStartMarker != null) {
+            newPlan.setStartMarker(keyName, greaterStartMarker.type, greaterStartMarker.value, greaterStartMarker.isInclusive);
+          }
 
-      // create new scan end
-      ScanMarker lesserEndMarker = getComparedMarker(this.getEndMarker(), other.getEndMarker(),
-          false);
-      newPlan.setEndMarker(lesserEndMarker);
+          // create new scan end
+          ScanMarker lesserEndMarker = getComparedMarker(this.getEndMarker(keyName), other.getEndMarker(keyName),
+              false);
+          if (lesserEndMarker != null) {
+            newPlan.setEndMarker(keyName, lesserEndMarker.type, lesserEndMarker.value, lesserEndMarker.isInclusive);
+          }
+        } else {
+          newPlan.markers.put(keyName, other.markers.get(keyName));
+        }
+      }
 
-      // create new filter plan
-      newPlan.setFilter(createCombinedFilter(this.getFilter(), other.getFilter()));
-
+      newPlan.ops.addAll(ops);
+      newPlan.ops.addAll(other.ops);
       return newPlan;
-    }
-
-    private ScanFilter createCombinedFilter(ScanFilter filter1, ScanFilter filter2) {
-      // TODO create combined filter - filter1 && filter2
-      return null;
     }
 
     /**
@@ -268,13 +362,23 @@ class HBaseFilterPlanUtil {
     static ScanMarker getComparedMarker(ScanMarker lStartMarker, ScanMarker rStartMarker,
         boolean getGreater) {
       // if one of them has null bytes, just return other
-      if(lStartMarker.bytes == null) {
+      if(lStartMarker == null) {
         return rStartMarker;
-      } else if (rStartMarker.bytes == null) {
+      } else if (rStartMarker == null) {
         return lStartMarker;
       }
+      TypeInfo expectedType =
+          TypeInfoUtils.getTypeInfoFromTypeString(lStartMarker.type);
+      ObjectInspector outputOI =
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(expectedType);
+      Converter lConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector, outputOI);
+      Converter rConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector, outputOI);
+      Comparable lValue = (Comparable)lConverter.convert(lStartMarker.value);
+      Comparable rValue = (Comparable)rConverter.convert(rStartMarker.value);
 
-      int compareRes = compare(lStartMarker.bytes, rStartMarker.bytes);
+      int compareRes = lValue.compareTo(rValue);
       if (compareRes == 0) {
         // bytes are equal, now compare the isInclusive flags
         if (lStartMarker.isInclusive == rStartMarker.isInclusive) {
@@ -287,7 +391,7 @@ class HBaseFilterPlanUtil {
           isInclusive = false;
         }
         // else
-        return new ScanMarker(lStartMarker.bytes, isInclusive);
+        return new ScanMarker(lStartMarker.value, isInclusive, lStartMarker.type);
       }
       if (getGreater) {
         return compareRes == 1 ? lStartMarker : rStartMarker;
@@ -313,39 +417,71 @@ class HBaseFilterPlanUtil {
     /**
      * @return row suffix - This is appended to db + table, to generate start row for the Scan
      */
-    public byte[] getStartRowSuffix() {
-      if (startMarker.isInclusive) {
-        return startMarker.bytes;
-      } else {
-        return HBaseUtils.getEndPrefix(startMarker.bytes);
+    public byte[] getStartRowSuffix(String dbName, String tableName, List<FieldSchema> parts) {
+      int majorPartsCount = getMajorPartsCount(parts);
+      List<String> majorPartTypes = new ArrayList<String>();
+      List<String> components = new ArrayList<String>();
+      boolean endPrefix = false;
+      for (int i=0;i<majorPartsCount;i++) {
+        majorPartTypes.add(parts.get(i).getType());
+        ScanMarker marker = markers.get(parts.get(i).getName()).startMarker;
+        if (marker != null) {
+          components.add(marker.value);
+          if (i==majorPartsCount-1) {
+            endPrefix = !marker.isInclusive;
+          }
+        } else {
+          components.add(null);
+          if (i==majorPartsCount-1) {
+            endPrefix = false;
+          }
+        }
       }
+      byte[] bytes = HBaseUtils.buildPartitionKey(dbName, tableName, majorPartTypes, components, endPrefix);
+      return bytes;
     }
 
     /**
      * @return row suffix - This is appended to db + table, to generate end row for the Scan
      */
-    public byte[] getEndRowSuffix() {
-      if (endMarker.isInclusive) {
-        return HBaseUtils.getEndPrefix(endMarker.bytes);
-      } else {
-        return endMarker.bytes;
+    public byte[] getEndRowSuffix(String dbName, String tableName, List<FieldSchema> parts) {
+      int majorPartsCount = getMajorPartsCount(parts);
+      List<String> majorPartTypes = new ArrayList<String>();
+      List<String> components = new ArrayList<String>();
+      boolean endPrefix = false;
+      for (int i=0;i<majorPartsCount;i++) {
+        majorPartTypes.add(parts.get(i).getType());
+        ScanMarker marker = markers.get(parts.get(i).getName()).endMarker;
+        if (marker != null) {
+          components.add(marker.value);
+          if (i==majorPartsCount-1) {
+            endPrefix = marker.isInclusive;
+          }
+        } else {
+          components.add(null);
+          if (i==majorPartsCount-1) {
+            endPrefix = true;
+          }
+        }
       }
+      byte[] bytes = HBaseUtils.buildPartitionKey(dbName, tableName, majorPartTypes, components, endPrefix);
+      if (components.isEmpty()) {
+        bytes[bytes.length-1]++;
+      }
+      return bytes;
     }
 
     @Override
     public String toString() {
-      return "ScanPlan [startMarker=" + startMarker + ", endMarker=" + endMarker + ", filter="
-          + filter + "]";
+      StringBuffer sb = new StringBuffer();
+      sb.append("ScanPlan:\n");
+      for (Map.Entry<String, ScanMarkerPair> entry : markers.entrySet()) {
+        sb.append("key=" + entry.getKey() + "[startMarker=" + entry.getValue().startMarker
+            + ", endMarker=" + entry.getValue().endMarker + "]");
+      }
+      return sb.toString();
     }
 
-  }
-
-  /**
-   * represent a plan that can be used to create a hbase filter and then set in
-   * Scan.setFilter()
-   */
-  public static class ScanFilter {
-    // TODO: implement this
   }
 
   /**
@@ -369,9 +505,12 @@ class HBaseFilterPlanUtil {
     // temporary params for current left and right side plans, for AND, OR
     private FilterPlan rPlan;
 
-    private final String firstPartcolumn;
-    public PartitionFilterGenerator(String firstPartitionColumn) {
-      this.firstPartcolumn = firstPartitionColumn;
+    private Map<String, String> nameToType = new HashMap<String, String>();
+
+    public PartitionFilterGenerator(List<FieldSchema> parts) {
+      for (FieldSchema part : parts) {
+        nameToType.put(part.getName(), part.getType());
+      }
     }
 
     FilterPlan getPlan() {
@@ -414,61 +553,35 @@ class HBaseFilterPlanUtil {
     public void visit(LeafNode node) throws MetaException {
       ScanPlan leafPlan = new ScanPlan();
       curPlan = leafPlan;
-      if (!isFirstParitionColumn(node.keyName)) {
-        leafPlan.setFilter(generateScanFilter(node));
-        return;
-      }
-      if (!(node.value instanceof String)) {
-        // only string type is supported currently
-        // treat conditions on other types as true
-        return;
-      }
 
       // this is a condition on first partition column, so might influence the
       // start and end of the scan
       final boolean INCLUSIVE = true;
       switch (node.operator) {
       case EQUALS:
-        leafPlan.setStartMarker(toBytes(node.value), INCLUSIVE);
-        leafPlan.setEndMarker(toBytes(node.value), INCLUSIVE);
+        leafPlan.setStartMarker(node.keyName, nameToType.get(node.keyName), node.value.toString(), INCLUSIVE);
+        leafPlan.setEndMarker(node.keyName, nameToType.get(node.keyName), node.value.toString(), INCLUSIVE);
         break;
       case GREATERTHAN:
-        leafPlan.setStartMarker(toBytes(node.value), !INCLUSIVE);
+        leafPlan.setStartMarker(node.keyName, nameToType.get(node.keyName), node.value.toString(), !INCLUSIVE);
         break;
       case GREATERTHANOREQUALTO:
-        leafPlan.setStartMarker(toBytes(node.value), INCLUSIVE);
+        leafPlan.setStartMarker(node.keyName, nameToType.get(node.keyName), node.value.toString(), INCLUSIVE);
         break;
       case LESSTHAN:
-        leafPlan.setEndMarker(toBytes(node.value), !INCLUSIVE);
+        leafPlan.setEndMarker(node.keyName, nameToType.get(node.keyName), node.value.toString(), !INCLUSIVE);
         break;
       case LESSTHANOREQUALTO:
-        leafPlan.setEndMarker(toBytes(node.value), INCLUSIVE);
+        leafPlan.setEndMarker(node.keyName, nameToType.get(node.keyName), node.value.toString(), INCLUSIVE);
         break;
       case LIKE:
+        leafPlan.ops.add(new Operator(Operator.Type.LIKE, node.keyName, node.value.toString()));
+        break;
       case NOTEQUALS:
       case NOTEQUALS2:
-        // TODO: create filter plan for these
-        hasUnsupportedCondition = true;
+        leafPlan.ops.add(new Operator(Operator.Type.NOTEQUALS, node.keyName, node.value.toString()));
         break;
       }
-    }
-
-    @VisibleForTesting
-    static byte[] toBytes(Object value) {
-      // TODO: actually implement this
-      // We need to determine the actual type and use appropriate
-      // serialization format for that type
-      return ((String) value).getBytes(HBaseUtils.ENCODING);
-    }
-
-    private ScanFilter generateScanFilter(LeafNode node) {
-      // TODO Auto-generated method stub
-      hasUnsupportedCondition = true;
-      return null;
-    }
-
-    private boolean isFirstParitionColumn(String keyName) {
-      return keyName.equalsIgnoreCase(firstPartcolumn);
     }
 
     private boolean hasUnsupportedCondition() {
@@ -486,12 +599,12 @@ class HBaseFilterPlanUtil {
     }
   }
 
-  public static PlanResult getFilterPlan(ExpressionTree exprTree, String firstPartitionColumn) throws MetaException {
+  public static PlanResult getFilterPlan(ExpressionTree exprTree, List<FieldSchema> parts) throws MetaException {
     if (exprTree == null) {
       // TODO: if exprTree is null, we should do what ObjectStore does. See HIVE-10102
       return new PlanResult(new ScanPlan(), true);
     }
-    PartitionFilterGenerator pGenerator = new PartitionFilterGenerator(firstPartitionColumn);
+    PartitionFilterGenerator pGenerator = new PartitionFilterGenerator(parts);
     exprTree.accept(pGenerator);
     return new PlanResult(pGenerator.getPlan(), pGenerator.hasUnsupportedCondition());
   }

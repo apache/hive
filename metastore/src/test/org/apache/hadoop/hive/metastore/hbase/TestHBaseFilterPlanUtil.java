@@ -18,12 +18,17 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import org.apache.hadoop.hbase.filter.RowFilter;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.FilterPlan;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.MultiScanPlan;
-import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PartitionFilterGenerator;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan.ScanMarker;
@@ -34,6 +39,8 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.google.common.primitives.Shorts;
 
 public class TestHBaseFilterPlanUtil {
   final boolean INCLUSIVE = true;
@@ -68,31 +75,28 @@ public class TestHBaseFilterPlanUtil {
     ScanMarker r;
 
     // equal plans
-    l = new ScanMarker(new byte[] { 1, 2 }, INCLUSIVE);
-    r = new ScanMarker(new byte[] { 1, 2 }, INCLUSIVE);
+    l = new ScanMarker("1", INCLUSIVE, "int");
+    r = new ScanMarker("1", INCLUSIVE, "int");
     assertFirstGreater(l, r);
 
-    l = new ScanMarker(new byte[] { 1, 2 }, !INCLUSIVE);
-    r = new ScanMarker(new byte[] { 1, 2 }, !INCLUSIVE);
+    l = new ScanMarker("1", !INCLUSIVE, "int");
+    r = new ScanMarker("1", !INCLUSIVE, "int");
     assertFirstGreater(l, r);
 
-    l = new ScanMarker(null, !INCLUSIVE);
-    r = new ScanMarker(null, !INCLUSIVE);
-    assertFirstGreater(l, r);
+    assertFirstGreater(null, null);
 
     // create l is greater because of inclusive flag
-    l = new ScanMarker(new byte[] { 1, 2 }, !INCLUSIVE);
-    r = new ScanMarker(null, !INCLUSIVE);
+    l = new ScanMarker("1", !INCLUSIVE, "int");
     // the rule for null vs non-null is different
     // non-null is both smaller and greater than null
-    Assert.assertEquals(l, ScanPlan.getComparedMarker(l, r, true));
-    Assert.assertEquals(l, ScanPlan.getComparedMarker(r, l, true));
-    Assert.assertEquals(l, ScanPlan.getComparedMarker(l, r, false));
-    Assert.assertEquals(l, ScanPlan.getComparedMarker(r, l, false));
+    Assert.assertEquals(l, ScanPlan.getComparedMarker(l, null, true));
+    Assert.assertEquals(l, ScanPlan.getComparedMarker(null, l, true));
+    Assert.assertEquals(l, ScanPlan.getComparedMarker(l, null, false));
+    Assert.assertEquals(l, ScanPlan.getComparedMarker(null, l, false));
 
     // create l that is greater because of the bytes
-    l = new ScanMarker(new byte[] { 1, 2, 0 }, INCLUSIVE);
-    r = new ScanMarker(new byte[] { 1, 2 }, INCLUSIVE);
+    l = new ScanMarker("2", INCLUSIVE, "int");
+    r = new ScanMarker("1", INCLUSIVE, "int");
     assertFirstGreater(l, r);
 
   }
@@ -111,36 +115,30 @@ public class TestHBaseFilterPlanUtil {
   public void testScanPlanAnd() {
     ScanPlan l = new ScanPlan();
     ScanPlan r = new ScanPlan();
-    l.setStartMarker(new ScanMarker(new byte[] { 10 }, INCLUSIVE));
-    r.setStartMarker(new ScanMarker(new byte[] { 10 }, INCLUSIVE));
+    l.setStartMarker("a", "int", "10", INCLUSIVE);
+    r.setStartMarker("a", "int", "10", INCLUSIVE);
 
     ScanPlan res;
     // both equal
     res = l.and(r).getPlans().get(0);
-    Assert.assertEquals(new ScanMarker(new byte[] { 10 }, INCLUSIVE), res.getStartMarker());
+    Assert.assertEquals(new ScanMarker("10", INCLUSIVE, "int"), res.markers.get("a").startMarker);
 
     // add equal end markers as well, and test AND again
-    l.setEndMarker(new ScanMarker(new byte[] { 20 }, INCLUSIVE));
-    r.setEndMarker(new ScanMarker(new byte[] { 20 }, INCLUSIVE));
+    l.setEndMarker("a", "int", "20", INCLUSIVE);
+    r.setEndMarker("a", "int", "20", INCLUSIVE);
     res = l.and(r).getPlans().get(0);
-    Assert.assertEquals(new ScanMarker(new byte[] { 10 }, INCLUSIVE), res.getStartMarker());
-    Assert.assertEquals(new ScanMarker(new byte[] { 20 }, INCLUSIVE), res.getEndMarker());
+    Assert.assertEquals(new ScanMarker("10", INCLUSIVE, "int"), res.markers.get("a").startMarker);
+    Assert.assertEquals(new ScanMarker("20", INCLUSIVE, "int"), res.markers.get("a").endMarker);
 
-    l.setEndMarker(new ScanMarker(null, INCLUSIVE));
-    r.setStartMarker(new ScanMarker(null, !INCLUSIVE));
-    // markers with non null bytes are both lesser and greator
-    Assert.assertEquals(l.getStartMarker(), res.getStartMarker());
-    Assert.assertEquals(r.getEndMarker(), res.getEndMarker());
+    l.setStartMarker("a", "int", "10", !INCLUSIVE);
+    l.setEndMarker("a", "int", "20", INCLUSIVE);
 
-    l.setStartMarker(new ScanMarker(new byte[] { 10, 11 }, !INCLUSIVE));
-    l.setEndMarker(new ScanMarker(new byte[] { 20, 21 }, INCLUSIVE));
-
-    r.setStartMarker(new ScanMarker(new byte[] { 10, 10 }, INCLUSIVE));
-    r.setEndMarker(new ScanMarker(new byte[] { 15 }, INCLUSIVE));
+    r.setStartMarker("a", "int", "10", INCLUSIVE);
+    r.setEndMarker("a", "int", "15", INCLUSIVE);
     res = l.and(r).getPlans().get(0);
     // start of l is greater, end of r is smaller
-    Assert.assertEquals(l.getStartMarker(), res.getStartMarker());
-    Assert.assertEquals(r.getEndMarker(), res.getEndMarker());
+    Assert.assertEquals(l.markers.get("a").startMarker, res.markers.get("a").startMarker);
+    Assert.assertEquals(r.markers.get("a").endMarker, res.markers.get("a").endMarker);
 
   }
 
@@ -151,13 +149,13 @@ public class TestHBaseFilterPlanUtil {
   public void testScanPlanOr() {
     ScanPlan l = new ScanPlan();
     ScanPlan r = new ScanPlan();
-    l.setStartMarker(new ScanMarker(new byte[] { 10 }, INCLUSIVE));
-    r.setStartMarker(new ScanMarker(new byte[] { 11 }, INCLUSIVE));
+    l.setStartMarker("a", "int", "1", INCLUSIVE);
+    r.setStartMarker("a", "int", "11", INCLUSIVE);
 
     FilterPlan res1 = l.or(r);
     Assert.assertEquals(2, res1.getPlans().size());
-    res1.getPlans().get(0).getStartMarker().equals(l.getStartMarker());
-    res1.getPlans().get(1).getStartMarker().equals(r.getStartMarker());
+    res1.getPlans().get(0).markers.get("a").startMarker.equals(l.markers.get("a").startMarker);
+    res1.getPlans().get(1).markers.get("a").startMarker.equals(r.markers.get("a").startMarker);
 
     FilterPlan res2 = res1.or(r);
     Assert.assertEquals(3, res2.getPlans().size());
@@ -223,72 +221,71 @@ public class TestHBaseFilterPlanUtil {
 
     final String KEY = "k1";
     final String VAL = "v1";
-    final byte[] VAL_BYTES = PartitionFilterGenerator.toBytes(VAL);
+    final String OTHERKEY = "k2";
     LeafNode l = new LeafNode();
     l.keyName = KEY;
     l.value = VAL;
-    final ScanMarker DEFAULT_SCANMARKER = new ScanMarker(null, false);
+    final ScanMarker DEFAULT_SCANMARKER = null;
+    List<FieldSchema> parts = new ArrayList<FieldSchema>();
+    parts.add(new FieldSchema(KEY, "int", null));
+    parts.add(new FieldSchema(OTHERKEY, "int", null));
 
     l.operator = Operator.EQUALS;
-    verifyPlan(l, KEY, new ScanMarker(VAL_BYTES, INCLUSIVE), new ScanMarker(VAL_BYTES, INCLUSIVE));
+    verifyPlan(l, parts, KEY, new ScanMarker(VAL, INCLUSIVE, "int"), new ScanMarker(VAL, INCLUSIVE, "int"));
 
     l.operator = Operator.GREATERTHAN;
-    verifyPlan(l, KEY, new ScanMarker(VAL_BYTES, !INCLUSIVE), DEFAULT_SCANMARKER);
+    verifyPlan(l, parts, KEY, new ScanMarker(VAL, !INCLUSIVE, "int"), DEFAULT_SCANMARKER);
 
     l.operator = Operator.GREATERTHANOREQUALTO;
-    verifyPlan(l, KEY, new ScanMarker(VAL_BYTES, INCLUSIVE), DEFAULT_SCANMARKER);
+    verifyPlan(l, parts, KEY, new ScanMarker(VAL, INCLUSIVE, "int"), DEFAULT_SCANMARKER);
 
     l.operator = Operator.LESSTHAN;
-    verifyPlan(l, KEY, DEFAULT_SCANMARKER, new ScanMarker(VAL_BYTES, !INCLUSIVE));
+    verifyPlan(l, parts, KEY, DEFAULT_SCANMARKER, new ScanMarker(VAL, !INCLUSIVE, "int"));
 
     l.operator = Operator.LESSTHANOREQUALTO;
-    verifyPlan(l, KEY, DEFAULT_SCANMARKER, new ScanMarker(VAL_BYTES, INCLUSIVE));
-
-    // following leaf node plans should currently have true for 'has unsupported condition',
-    // because of the unsupported operator
-    l.operator = Operator.NOTEQUALS;
-    verifyPlan(l, KEY, DEFAULT_SCANMARKER, DEFAULT_SCANMARKER, true);
-
-    l.operator = Operator.NOTEQUALS2;
-    verifyPlan(l, KEY, DEFAULT_SCANMARKER, DEFAULT_SCANMARKER, true);
-
-    l.operator = Operator.LIKE;
-    verifyPlan(l, KEY, DEFAULT_SCANMARKER, DEFAULT_SCANMARKER, true);
+    verifyPlan(l, parts, KEY, DEFAULT_SCANMARKER, new ScanMarker(VAL, INCLUSIVE, "int"));
 
     // following leaf node plans should currently have true for 'has unsupported condition',
     // because of the condition is not on first key
     l.operator = Operator.EQUALS;
-    verifyPlan(l, "NOT_FIRST_PART", DEFAULT_SCANMARKER, DEFAULT_SCANMARKER, true);
-
-    l.operator = Operator.NOTEQUALS;
-    verifyPlan(l, "NOT_FIRST_PART", DEFAULT_SCANMARKER, DEFAULT_SCANMARKER, true);
+    verifyPlan(l, parts, OTHERKEY, DEFAULT_SCANMARKER, DEFAULT_SCANMARKER, false);
 
     // if tree is null, it should return equivalent of full scan, and true
     // for 'has unsupported condition'
-    verifyPlan(null, KEY, DEFAULT_SCANMARKER, DEFAULT_SCANMARKER, true);
+    verifyPlan(null, parts, KEY, DEFAULT_SCANMARKER, DEFAULT_SCANMARKER, true);
 
   }
 
-  private void verifyPlan(TreeNode l, String keyName, ScanMarker startMarker, ScanMarker endMarker)
+  private void verifyPlan(TreeNode l, List<FieldSchema> parts, String keyName, ScanMarker startMarker, ScanMarker endMarker)
       throws MetaException {
-    verifyPlan(l, keyName, startMarker, endMarker, false);
+    verifyPlan(l, parts, keyName, startMarker, endMarker, false);
   }
 
-  private void verifyPlan(TreeNode l, String keyName, ScanMarker startMarker, ScanMarker endMarker,
+  private void verifyPlan(TreeNode l, List<FieldSchema> parts, String keyName, ScanMarker startMarker, ScanMarker endMarker,
       boolean hasUnsupportedCondition) throws MetaException {
     ExpressionTree e = null;
     if (l != null) {
       e = new ExpressionTree();
       e.setRootForTest(l);
     }
-    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(e, keyName);
+    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(e, parts);
     FilterPlan plan = planRes.plan;
     Assert.assertEquals("Has unsupported condition", hasUnsupportedCondition,
         planRes.hasUnsupportedCondition);
     Assert.assertEquals(1, plan.getPlans().size());
     ScanPlan splan = plan.getPlans().get(0);
-    Assert.assertEquals(startMarker, splan.getStartMarker());
-    Assert.assertEquals(endMarker, splan.getEndMarker());
+    if (startMarker != null) {
+      Assert.assertEquals(startMarker, splan.markers.get(keyName).startMarker);
+    } else {
+      Assert.assertTrue(splan.markers.get(keyName)==null ||
+          splan.markers.get(keyName).startMarker==null);
+    }
+    if (endMarker != null) {
+      Assert.assertEquals(endMarker, splan.markers.get(keyName).endMarker);
+    } else {
+      Assert.assertTrue(splan.markers.get(keyName)==null ||
+          splan.markers.get(keyName).endMarker==null);
+    }
   }
 
   /**
@@ -302,12 +299,13 @@ public class TestHBaseFilterPlanUtil {
     final String KEY = "k1";
     final String VAL1 = "10";
     final String VAL2 = "11";
-    final byte[] VAL1_BYTES = PartitionFilterGenerator.toBytes(VAL1);
-    final byte[] VAL2_BYTES = PartitionFilterGenerator.toBytes(VAL2);
     LeafNode l = new LeafNode();
     l.keyName = KEY;
     l.value = VAL1;
-    final ScanMarker DEFAULT_SCANMARKER = new ScanMarker(null, false);
+    final ScanMarker DEFAULT_SCANMARKER = null;
+
+    List<FieldSchema> parts = new ArrayList<FieldSchema>();
+    parts.add(new FieldSchema("k1", "int", null));
 
     LeafNode r = new LeafNode();
     r.keyName = KEY;
@@ -318,19 +316,19 @@ public class TestHBaseFilterPlanUtil {
     // verify plan for - k1 >= '10' and k1 < '11'
     l.operator = Operator.GREATERTHANOREQUALTO;
     r.operator = Operator.LESSTHAN;
-    verifyPlan(tn, KEY, new ScanMarker(VAL1_BYTES, INCLUSIVE), new ScanMarker(VAL2_BYTES,
-        !INCLUSIVE));
+    verifyPlan(tn, parts, KEY, new ScanMarker(VAL1, INCLUSIVE, "int"), new ScanMarker(VAL2,
+        !INCLUSIVE, "int"));
 
     // verify plan for - k1 >= '10' and k1 > '11'
     l.operator = Operator.GREATERTHANOREQUALTO;
     r.operator = Operator.GREATERTHAN;
-    verifyPlan(tn, KEY, new ScanMarker(VAL2_BYTES, !INCLUSIVE), DEFAULT_SCANMARKER);
+    verifyPlan(tn, parts, KEY, new ScanMarker(VAL2, !INCLUSIVE, "int"), DEFAULT_SCANMARKER);
 
     // verify plan for - k1 >= '10' or k1 > '11'
     tn = new TreeNode(l, LogicalOperator.OR, r);
     ExpressionTree e = new ExpressionTree();
     e.setRootForTest(tn);
-    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(e, KEY);
+    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(e, parts);
     Assert.assertEquals(2, planRes.plan.getPlans().size());
     Assert.assertEquals(false, planRes.hasUnsupportedCondition);
 
@@ -338,7 +336,7 @@ public class TestHBaseFilterPlanUtil {
     TreeNode tn2 = new TreeNode(l, LogicalOperator.AND, tn);
     e = new ExpressionTree();
     e.setRootForTest(tn2);
-    planRes = HBaseFilterPlanUtil.getFilterPlan(e, KEY);
+    planRes = HBaseFilterPlanUtil.getFilterPlan(e, parts);
     Assert.assertEquals(2, planRes.plan.getPlans().size());
     Assert.assertEquals(false, planRes.hasUnsupportedCondition);
 
@@ -351,11 +349,135 @@ public class TestHBaseFilterPlanUtil {
     TreeNode tn3 = new TreeNode(tn2, LogicalOperator.OR, klike);
     e = new ExpressionTree();
     e.setRootForTest(tn3);
-    planRes = HBaseFilterPlanUtil.getFilterPlan(e, KEY);
+    planRes = HBaseFilterPlanUtil.getFilterPlan(e, parts);
     Assert.assertEquals(3, planRes.plan.getPlans().size());
-    Assert.assertEquals(true, planRes.hasUnsupportedCondition);
+    Assert.assertEquals(false, planRes.hasUnsupportedCondition);
 
 
   }
 
+  @Test
+  public void testPartitionKeyScannerAllString() throws Exception {
+    List<FieldSchema> parts = new ArrayList<FieldSchema>();
+    parts.add(new FieldSchema("year", "string", null));
+    parts.add(new FieldSchema("month", "string", null));
+    parts.add(new FieldSchema("state", "string", null));
+
+    // One prefix key and one minor key range
+    ExpressionTree exprTree = PartFilterExprUtil.getFilterParser("year = 2015 and state = 'CA'").tree;
+    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(exprTree, parts);
+
+    Assert.assertEquals(planRes.plan.getPlans().size(), 1);
+
+    ScanPlan sp = planRes.plan.getPlans().get(0);
+    byte[] startRowSuffix = sp.getStartRowSuffix("testdb", "testtb", parts);
+    byte[] endRowSuffix = sp.getEndRowSuffix("testdb", "testtb", parts);
+    RowFilter filter = (RowFilter)sp.getFilter(parts);
+
+    // scan range contains the major key year, rowfilter contains minor key state
+    Assert.assertTrue(Bytes.contains(startRowSuffix, "2015".getBytes()));
+    Assert.assertTrue(Bytes.contains(endRowSuffix, "2015".getBytes()));
+    Assert.assertFalse(Bytes.contains(startRowSuffix, "CA".getBytes()));
+    Assert.assertFalse(Bytes.contains(endRowSuffix, "CA".getBytes()));
+
+    PartitionKeyComparator comparator = (PartitionKeyComparator)filter.getComparator();
+    Assert.assertEquals(comparator.ranges.size(), 1);
+    Assert.assertEquals(comparator.ranges.get(0).keyName, "state");
+
+    // Two prefix key and one LIKE operator
+    exprTree = PartFilterExprUtil.getFilterParser("year = 2015 and month > 10 "
+        + "and month <= 11 and state like 'C%'").tree;
+    planRes = HBaseFilterPlanUtil.getFilterPlan(exprTree, parts);
+
+    Assert.assertEquals(planRes.plan.getPlans().size(), 1);
+
+    sp = planRes.plan.getPlans().get(0);
+    startRowSuffix = sp.getStartRowSuffix("testdb", "testtb", parts);
+    endRowSuffix = sp.getEndRowSuffix("testdb", "testtb", parts);
+    filter = (RowFilter)sp.getFilter(parts);
+
+    // scan range contains the major key value year/month, rowfilter contains LIKE operator
+    Assert.assertTrue(Bytes.contains(startRowSuffix, "2015".getBytes()));
+    Assert.assertTrue(Bytes.contains(endRowSuffix, "2015".getBytes()));
+    Assert.assertTrue(Bytes.contains(startRowSuffix, "10".getBytes()));
+    Assert.assertTrue(Bytes.contains(endRowSuffix, "11".getBytes()));
+
+    comparator = (PartitionKeyComparator)filter.getComparator();
+    Assert.assertEquals(comparator.ops.size(), 1);
+    Assert.assertEquals(comparator.ops.get(0).keyName, "state");
+
+    // One prefix key, one minor key range and one LIKE operator
+    exprTree = PartFilterExprUtil.getFilterParser("year >= 2014 and month > 10 "
+        + "and month <= 11 and state like 'C%'").tree;
+    planRes = HBaseFilterPlanUtil.getFilterPlan(exprTree, parts);
+
+    Assert.assertEquals(planRes.plan.getPlans().size(), 1);
+
+    sp = planRes.plan.getPlans().get(0);
+    startRowSuffix = sp.getStartRowSuffix("testdb", "testtb", parts);
+    endRowSuffix = sp.getEndRowSuffix("testdb", "testtb", parts);
+    filter = (RowFilter)sp.getFilter(parts);
+
+    // scan range contains the major key value year (low bound), rowfilter contains minor key state
+    // and LIKE operator
+    Assert.assertTrue(Bytes.contains(startRowSuffix, "2014".getBytes()));
+
+    comparator = (PartitionKeyComparator)filter.getComparator();
+    Assert.assertEquals(comparator.ranges.size(), 1);
+    Assert.assertEquals(comparator.ranges.get(0).keyName, "month");
+    Assert.assertEquals(comparator.ops.size(), 1);
+    Assert.assertEquals(comparator.ops.get(0).keyName, "state");
+
+    // Condition contains or
+    exprTree = PartFilterExprUtil.getFilterParser("year = 2014 and (month > 10 "
+        + "or month < 3)").tree;
+    planRes = HBaseFilterPlanUtil.getFilterPlan(exprTree, parts);
+
+    sp = planRes.plan.getPlans().get(0);
+    startRowSuffix = sp.getStartRowSuffix("testdb", "testtb", parts);
+    endRowSuffix = sp.getEndRowSuffix("testdb", "testtb", parts);
+    filter = (RowFilter)sp.getFilter(parts);
+
+    // The first ScanPlan contains year = 2014 and month > 10
+    Assert.assertTrue(Bytes.contains(startRowSuffix, "2014".getBytes()));
+    Assert.assertTrue(Bytes.contains(endRowSuffix, "2014".getBytes()));
+    Assert.assertTrue(Bytes.contains(startRowSuffix, "10".getBytes()));
+
+    sp = planRes.plan.getPlans().get(1);
+    startRowSuffix = sp.getStartRowSuffix("testdb", "testtb", parts);
+    endRowSuffix = sp.getEndRowSuffix("testdb", "testtb", parts);
+    filter = (RowFilter)sp.getFilter(parts);
+
+    // The first ScanPlan contains year = 2014 and month < 3
+    Assert.assertTrue(Bytes.contains(startRowSuffix, "2014".getBytes()));
+    Assert.assertTrue(Bytes.contains(endRowSuffix, "2014".getBytes()));
+    Assert.assertTrue(Bytes.contains(endRowSuffix, "3".getBytes()));
+  }
+
+  @Test
+  public void testPartitionKeyScannerMixedType() throws Exception {
+    List<FieldSchema> parts = new ArrayList<FieldSchema>();
+    parts.add(new FieldSchema("year", "int", null));
+    parts.add(new FieldSchema("month", "int", null));
+    parts.add(new FieldSchema("state", "string", null));
+
+    // One prefix key and one minor key range
+    ExpressionTree exprTree = PartFilterExprUtil.getFilterParser("year = 2015 and state = 'CA'").tree;
+    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(exprTree, parts);
+
+    Assert.assertEquals(planRes.plan.getPlans().size(), 1);
+
+    ScanPlan sp = planRes.plan.getPlans().get(0);
+    byte[] startRowSuffix = sp.getStartRowSuffix("testdb", "testtb", parts);
+    byte[] endRowSuffix = sp.getEndRowSuffix("testdb", "testtb", parts);
+    RowFilter filter = (RowFilter)sp.getFilter(parts);
+
+    // scan range contains the major key year, rowfilter contains minor key state
+    Assert.assertTrue(Bytes.contains(startRowSuffix, Shorts.toByteArray((short)2015)));
+    Assert.assertTrue(Bytes.contains(endRowSuffix, Shorts.toByteArray((short)2016)));
+
+    PartitionKeyComparator comparator = (PartitionKeyComparator)filter.getComparator();
+    Assert.assertEquals(comparator.ranges.size(), 1);
+    Assert.assertEquals(comparator.ranges.get(0).keyName, "state");
+  }
 }

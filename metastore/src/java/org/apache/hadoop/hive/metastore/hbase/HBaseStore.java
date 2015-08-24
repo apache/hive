@@ -541,7 +541,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Partition> oldParts = getHBase().getPartitions(db_name, tbl_name, part_vals_list);
+      List<Partition> oldParts = getHBase().getPartitions(db_name, tbl_name,
+          HBaseUtils.getPartitionKeyTypes(getTable(db_name, tbl_name).getPartitionKeys()), part_vals_list);
       getHBase().replacePartitions(oldParts, new_parts);
       for (List<String> part_vals : part_vals_list) {
         getHBase().getStatsCache().invalidate(db_name, tbl_name,
@@ -634,10 +635,8 @@ public class HBaseStore implements RawStore {
     if (table == null) {
       throw new NoSuchObjectException("Unable to find table " + dbName + "." + tblName);
     }
-    String firstPartitionColumn = table.getPartitionKeys().get(0).getName();
     // general hbase filter plan from expression tree
-    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(exprTree, firstPartitionColumn);
-
+    PlanResult planRes = HBaseFilterPlanUtil.getFilterPlan(exprTree, table.getPartitionKeys());
     if (LOG.isDebugEnabled()) {
       LOG.debug("Hbase Filter Plan generated : " + planRes.plan);
     }
@@ -648,7 +647,9 @@ public class HBaseStore implements RawStore {
     for (ScanPlan splan : planRes.plan.getPlans()) {
       try {
         List<Partition> parts = getHBase().scanPartitions(dbName, tblName,
-            splan.getStartRowSuffix(), splan.getEndRowSuffix(), null, -1);
+            splan.getStartRowSuffix(dbName, tblName, table.getPartitionKeys()),
+            splan.getEndRowSuffix(dbName, tblName, table.getPartitionKeys()),
+            splan.getFilter(table.getPartitionKeys()), -1);
         boolean reachedMax = false;
         for (Partition part : parts) {
           mergedParts.put(part.getValues(), part);

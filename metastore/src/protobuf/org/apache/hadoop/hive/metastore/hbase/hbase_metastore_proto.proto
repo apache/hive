@@ -255,3 +255,28 @@ message Table {
   optional PrincipalPrivilegeSet privileges = 13;
   optional bool is_temporary = 14;
 }
+
+message PartitionKeyComparator {
+  required string names = 1;
+  required string types = 2;
+  message Mark {
+    required string value = 1;
+    required bool inclusive = 2;
+  }
+  message Range {
+    required string key = 1;
+    optional Mark start = 2;
+    optional Mark end = 3;
+  }
+  message Operator {
+    enum Type {
+      LIKE = 0;
+      NOTEQUALS = 1;
+    }
+    required Type type = 1;
+    required string key = 2;
+    required string val = 3;
+  }
+  repeated Operator op = 3;
+  repeated Range range = 4;
+}

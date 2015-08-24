@@ -18,11 +18,14 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
@@ -50,6 +53,19 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDeWithEndPrefix;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.BloomFilter;
 
 import java.io.IOException;
@@ -63,6 +79,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -712,15 +729,31 @@ class HBaseUtils {
     return sd;
   }
 
+  static List<String> getPartitionKeyTypes(List<FieldSchema> parts) {
+    com.google.common.base.Function<FieldSchema, String> fieldSchemaToType =
+        new com.google.common.base.Function<FieldSchema, String>() {
+      public String apply(FieldSchema fs) { return fs.getType(); }
+    };
+    return Lists.transform(parts, fieldSchemaToType);
+  }
+
+  static List<String> getPartitionNames(List<FieldSchema> parts) {
+    com.google.common.base.Function<FieldSchema, String> fieldSchemaToName =
+        new com.google.common.base.Function<FieldSchema, String>() {
+      public String apply(FieldSchema fs) { return fs.getName(); }
+    };
+    return Lists.transform(parts, fieldSchemaToName);
+  }
+
   /**
    * Serialize a partition
    * @param part partition object
    * @param sdHash hash that is being used as a key for the enclosed storage descriptor
    * @return First element is the key, second is the serialized partition
    */
-  static byte[][] serializePartition(Partition part, byte[] sdHash) {
+  static byte[][] serializePartition(Partition part, List<String> partTypes, byte[] sdHash) {
     byte[][] result = new byte[2][];
-    result[0] = buildPartitionKey(part.getDbName(), part.getTableName(), part.getValues());
+    result[0] = buildPartitionKey(part.getDbName(), part.getTableName(), partTypes, part.getValues());
     HbaseMetastoreProto.Partition.Builder builder = HbaseMetastoreProto.Partition.newBuilder();
     builder
         .setCreateTime(part.getCreateTime())
@@ -735,11 +768,54 @@ class HBaseUtils {
     return result;
   }
 
-  static byte[] buildPartitionKey(String dbName, String tableName, List<String> partVals) {
-    Deque<String> keyParts = new ArrayDeque<>(partVals);
-    keyParts.addFirst(tableName);
-    keyParts.addFirst(dbName);
-    return buildKey(keyParts.toArray(new String[keyParts.size()]));
+  static byte[] buildPartitionKey(String dbName, String tableName, List<String> partTypes, List<String> partVals) {
+    return buildPartitionKey(dbName, tableName, partTypes, partVals, false);
+  }
+
+  static byte[] buildPartitionKey(String dbName, String tableName, List<String> partTypes, List<String> partVals, boolean endPrefix) {
+    Object[] components = new Object[partVals.size()];
+    for (int i=0;i<partVals.size();i++) {
+      TypeInfo expectedType =
+          TypeInfoUtils.getTypeInfoFromTypeString(partTypes.get(i));
+      ObjectInspector outputOI =
+          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(expectedType);
+      Converter converter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector, outputOI);
+      components[i] = converter.convert(partVals.get(i));
+    }
+
+    return buildSerializedPartitionKey(dbName, tableName, partTypes, components, endPrefix);
+  }
+
+  static byte[] buildSerializedPartitionKey(String dbName, String tableName, List<String> partTypes, Object[] components, boolean endPrefix) {
+    ObjectInspector javaStringOI =
+        PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING);
+    Object[] data = new Object[components.length+2];
+    List<ObjectInspector> fois = new ArrayList<ObjectInspector>(components.length+2);
+    boolean[] endPrefixes = new boolean[components.length+2];
+
+    data[0] = dbName;
+    fois.add(javaStringOI);
+    endPrefixes[0] = false;
+    data[1] = tableName;
+    fois.add(javaStringOI);
+    endPrefixes[1] = false;
+
+    for (int i = 0; i < components.length; i++) {
+      data[i+2] = components[i];
+      TypeInfo expectedType =
+          TypeInfoUtils.getTypeInfoFromTypeString(partTypes.get(i));
+      ObjectInspector outputOI =
+          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(expectedType);
+      fois.add(outputOI);
+    }
+    Output output = new Output();
+    try {
+      BinarySortableSerDeWithEndPrefix.serializeStruct(output, data, fois, endPrefix);
+    } catch (SerDeException e) {
+      throw new RuntimeException("Cannot serialize partition " + StringUtils.join(components, ","));
+    }
+    return Arrays.copyOf(output.getData(), output.getLength());
   }
 
   static class StorageDescriptorParts {
@@ -771,11 +847,10 @@ class HBaseUtils {
    * @param serialized the value fetched from HBase
    * @return A struct that contains the partition plus parts of the storage descriptor
    */
-  static StorageDescriptorParts deserializePartition(byte[] key, byte[] serialized)
-      throws InvalidProtocolBufferException {
-    String[] keys = deserializeKey(key);
-    return deserializePartition(keys[0], keys[1],
-        Arrays.asList(Arrays.copyOfRange(keys, 2, keys.length)), serialized);
+  static StorageDescriptorParts deserializePartition(String dbName, String tableName, List<FieldSchema> partitions,
+      byte[] key, byte[] serialized) throws InvalidProtocolBufferException {
+    List keys = deserializePartitionKey(partitions, key);
+    return deserializePartition(dbName, tableName, keys, serialized);
   }
 
   /**
@@ -809,6 +884,36 @@ class HBaseUtils {
   private static String[] deserializeKey(byte[] key) {
     String k = new String(key, ENCODING);
     return k.split(KEY_SEPARATOR_STR);
+  }
+
+  private static List<String> deserializePartitionKey(List<FieldSchema> partitions, byte[] key) {
+    StringBuffer names = new StringBuffer();
+    names.append("dbName,tableName,");
+    StringBuffer types = new StringBuffer();
+    types.append("string,string,");
+    for (int i=0;i<partitions.size();i++) {
+      names.append(partitions.get(i).getName());
+      types.append(TypeInfoUtils.getTypeInfoFromTypeString(partitions.get(i).getType()));
+      if (i!=partitions.size()-1) {
+        names.append(",");
+        types.append(",");
+      }
+    }
+    BinarySortableSerDe serDe = new BinarySortableSerDe();
+    Properties props = new Properties();
+    props.setProperty(serdeConstants.LIST_COLUMNS, names.toString());
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, types.toString());
+    try {
+      serDe.initialize(new Configuration(), props);
+      List deserializedkeys = ((List)serDe.deserialize(new BytesWritable(key))).subList(2, partitions.size()+2);
+      List<String> partitionKeys = new ArrayList<String>();
+      for (Object deserializedKey : deserializedkeys) {
+        partitionKeys.add(deserializedKey.toString());
+      }
+      return partitionKeys;
+    } catch (SerDeException e) {
+      throw new RuntimeException("Error when deserialize key", e);
+    }
   }
 
   /**

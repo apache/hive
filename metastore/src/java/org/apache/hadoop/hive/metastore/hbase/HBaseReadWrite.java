@@ -19,8 +19,10 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -51,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator;
 import org.apache.hive.common.util.BloomFilter;
 
 import java.io.IOException;
@@ -493,12 +497,12 @@ public class HBaseReadWrite {
    * @return a list of partition objects.
    * @throws IOException
    */
-   List<Partition> getPartitions(String dbName, String tableName, List<List<String>> partValLists)
-       throws IOException {
+   List<Partition> getPartitions(String dbName, String tableName, List<String> partTypes,
+       List<List<String>> partValLists) throws IOException {
      List<Partition> parts = new ArrayList<>(partValLists.size());
      List<Get> gets = new ArrayList<>(partValLists.size());
      for (List<String> partVals : partValLists) {
-       byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
+       byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partTypes, partVals);
        Get get = new Get(key);
        get.addColumn(CATALOG_CF, CATALOG_COL);
        gets.add(get);
@@ -526,7 +530,8 @@ public class HBaseReadWrite {
    */
   void putPartition(Partition partition) throws IOException {
     byte[] hash = putStorageDescriptor(partition.getSd());
-    byte[][] serialized = HBaseUtils.serializePartition(partition, hash);
+    byte[][] serialized = HBaseUtils.serializePartition(partition,
+        HBaseUtils.getPartitionKeyTypes(getTable(partition.getDbName(), partition.getTableName()).getPartitionKeys()), hash);
     store(PART_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
     partCache.put(partition.getDbName(), partition.getTableName(), partition);
   }
@@ -547,7 +552,8 @@ public class HBaseReadWrite {
       decrementStorageDescriptorRefCount(oldPart.getSd());
       hash = putStorageDescriptor(newPart.getSd());
     }
-    byte[][] serialized = HBaseUtils.serializePartition(newPart, hash);
+    byte[][] serialized = HBaseUtils.serializePartition(newPart,
+        HBaseUtils.getPartitionKeyTypes(getTable(newPart.getDbName(), newPart.getTableName()).getPartitionKeys()), hash);
     store(PART_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
     partCache.put(newPart.getDbName(), newPart.getTableName(), newPart);
     if (!oldPart.getTableName().equals(newPart.getTableName())) {
@@ -565,7 +571,9 @@ public class HBaseReadWrite {
     List<Put> puts = new ArrayList<>(partitions.size());
     for (Partition partition : partitions) {
       byte[] hash = putStorageDescriptor(partition.getSd());
-      byte[][] serialized = HBaseUtils.serializePartition(partition, hash);
+      List<String> partTypes = HBaseUtils.getPartitionKeyTypes(
+          getTable(partition.getDbName(), partition.getTableName()).getPartitionKeys());
+      byte[][] serialized = HBaseUtils.serializePartition(partition, partTypes, hash);
       Put p = new Put(serialized[0]);
       p.add(CATALOG_CF, CATALOG_COL, serialized[1]);
       puts.add(p);
@@ -591,7 +599,9 @@ public class HBaseReadWrite {
         decrementStorageDescriptorRefCount(oldParts.get(i).getSd());
         hash = putStorageDescriptor(newParts.get(i).getSd());
       }
-      byte[][] serialized = HBaseUtils.serializePartition(newParts.get(i), hash);
+      Partition newPart = newParts.get(i);
+      byte[][] serialized = HBaseUtils.serializePartition(newPart,
+          HBaseUtils.getPartitionKeyTypes(getTable(newPart.getDbName(), newPart.getTableName()).getPartitionKeys()), hash);
       Put p = new Put(serialized[0]);
       p.add(CATALOG_CF, CATALOG_COL, serialized[1]);
       puts.add(p);
@@ -624,8 +634,9 @@ public class HBaseReadWrite {
           ? new ArrayList<>(cached).subList(0, maxPartitions)
           : new ArrayList<>(cached);
     }
-    byte[] keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName, tableName);
-    List<Partition> parts = scanPartitionsWithFilter(keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), -1, null);
+    byte[] keyPrefix = HBaseUtils.buildPartitionKey(dbName, tableName, new ArrayList<String>(),
+        new ArrayList<String>(), false);
+    List<Partition> parts = scanPartitionsWithFilter(dbName, tableName, keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), -1, null);
     partCache.put(dbName, tableName, parts, true);
     return maxPartitions < parts.size() ? parts.subList(0, maxPartitions) : parts;
   }
@@ -672,72 +683,68 @@ public class HBaseReadWrite {
     if (table == null) {
       throw new NoSuchObjectException("Unable to find table " + dbName + "." + tableName);
     }
-    if (partVals.size() == table.getPartitionKeys().size()) {
-      keyPrefix = HBaseUtils.buildKey(keyElements.toArray(new String[keyElements.size()]));
-    } else {
-      keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(keyElements.toArray(
-          new String[keyElements.size()]));
-    }
+    keyPrefix = HBaseUtils.buildPartitionKey(dbName, tableName,
+        HBaseUtils.getPartitionKeyTypes(table.getPartitionKeys().subList(0, keyElements.size()-2)),
+          keyElements.subList(0, keyElements.size()-2));
 
     // Now, build a filter out of the remaining keys
-    String regex = null;
+    List<PartitionKeyComparator.Range> ranges = new ArrayList<PartitionKeyComparator.Range>();
+    List<Operator> ops = new ArrayList<Operator>();
     if (!(partVals.size() == table.getPartitionKeys().size() && firstStar == -1)) {
-      StringBuilder buf = new StringBuilder(".*");
+
       for (int i = Math.max(0, firstStar);
            i < table.getPartitionKeys().size() && i < partVals.size(); i++) {
-        buf.append(HBaseUtils.KEY_SEPARATOR);
+
         if ("*".equals(partVals.get(i))) {
-          buf.append("[^");
-          buf.append(HBaseUtils.KEY_SEPARATOR);
-          buf.append("]+");
+          PartitionKeyComparator.Range range = new PartitionKeyComparator.Range(
+              table.getPartitionKeys().get(i).getName(),
+              new PartitionKeyComparator.Mark(partVals.get(i), true),
+              new PartitionKeyComparator.Mark(partVals.get(i), true));
+          ranges.add(range);
         } else {
-          buf.append(partVals.get(i));
+          PartitionKeyComparator.Operator op = new PartitionKeyComparator.Operator(
+              PartitionKeyComparator.Operator.Type.LIKE,
+              table.getPartitionKeys().get(i).getName(),
+              ".*");
         }
       }
-      if (partVals.size() < table.getPartitionKeys().size()) {
-        buf.append(HBaseUtils.KEY_SEPARATOR);
-        buf.append(".*");
-      }
-      regex = buf.toString();
     }
 
     Filter filter = null;
-    if (regex != null) {
-      filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    if (!ranges.isEmpty() || !ops.isEmpty()) {
+      filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new PartitionKeyComparator(
+          StringUtils.join(HBaseUtils.getPartitionNames(table.getPartitionKeys()), ","),
+          StringUtils.join(HBaseUtils.getPartitionKeyTypes(table.getPartitionKeys()), ","),
+          ranges, ops));
     }
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Scanning partitions with prefix <" + new String(keyPrefix) + "> and filter <" +
-          regex + ">");
+          filter + ">");
     }
 
-    List<Partition> parts = scanPartitionsWithFilter(keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), maxPartitions, filter);
+    List<Partition> parts = scanPartitionsWithFilter(dbName, tableName, keyPrefix,
+        HBaseUtils.getEndPrefix(keyPrefix), maxPartitions, filter);
     partCache.put(dbName, tableName, parts, false);
     return parts;
   }
 
   List<Partition> scanPartitions(String dbName, String tableName, byte[] keyStart, byte[] keyEnd,
       Filter filter, int maxPartitions) throws IOException, NoSuchObjectException {
-    List<String> keyElements = new ArrayList<>();
-    keyElements.add(dbName);
-    keyElements.add(tableName);
-
-    byte[] keyPrefix =
-        HBaseUtils.buildKeyWithTrailingSeparator(keyElements.toArray(new String[keyElements.size()]));
-    byte[] startRow = ArrayUtils.addAll(keyPrefix, keyStart);
+    byte[] startRow = keyStart;
     byte[] endRow;
     if (keyEnd == null || keyEnd.length == 0) {
       // stop when current db+table entries are over
-      endRow = HBaseUtils.getEndPrefix(keyPrefix);
+      endRow = HBaseUtils.getEndPrefix(startRow);
     } else {
-      endRow = ArrayUtils.addAll(keyPrefix, keyEnd);
+      endRow = keyEnd;
     }
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Scanning partitions with start row <" + new String(startRow) + "> and end row <"
           + new String(endRow) + ">");
     }
-    return scanPartitionsWithFilter(startRow, endRow, maxPartitions, filter);
+    return scanPartitionsWithFilter(dbName, tableName, startRow, endRow, maxPartitions, filter);
   }
 
 
@@ -762,7 +769,8 @@ public class HBaseReadWrite {
       Partition p = getPartition(dbName, tableName, partVals, false);
       decrementStorageDescriptorRefCount(p.getSd());
     }
-    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
+    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName,
+        HBaseUtils.getPartitionKeyTypes(getTable(dbName, tableName).getPartitionKeys()), partVals);
     delete(PART_TABLE, key, null, null);
   }
 
@@ -770,7 +778,8 @@ public class HBaseReadWrite {
                                  boolean populateCache) throws IOException {
     Partition cached = partCache.get(dbName, tableName, partVals);
     if (cached != null) return cached;
-    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partVals);
+    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName,
+        HBaseUtils.getPartitionKeyTypes(getTable(dbName, tableName).getPartitionKeys()), partVals);
     byte[] serialized = read(PART_TABLE, key, CATALOG_CF, CATALOG_COL);
     if (serialized == null) return null;
     HBaseUtils.StorageDescriptorParts sdParts =
@@ -781,17 +790,18 @@ public class HBaseReadWrite {
     return sdParts.containingPartition;
   }
 
-  private List<Partition> scanPartitionsWithFilter(byte[] startRow, byte [] endRow,
-      int maxResults, Filter filter)
+  private List<Partition> scanPartitionsWithFilter(String dbName, String tableName,
+      byte[] startRow, byte [] endRow, int maxResults, Filter filter)
       throws IOException {
     Iterator<Result> iter =
         scan(PART_TABLE, startRow, endRow, CATALOG_CF, CATALOG_COL, filter);
+    List<FieldSchema> tablePartitions = getTable(dbName, tableName).getPartitionKeys();
     List<Partition> parts = new ArrayList<>();
     int numToFetch = maxResults < 0 ? Integer.MAX_VALUE : maxResults;
     for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
       Result result = iter.next();
-      HBaseUtils.StorageDescriptorParts sdParts = HBaseUtils.deserializePartition(result.getRow(),
-          result.getValue(CATALOG_CF, CATALOG_COL));
+      HBaseUtils.StorageDescriptorParts sdParts = HBaseUtils.deserializePartition(dbName, tableName,
+          tablePartitions, result.getRow(), result.getValue(CATALOG_CF, CATALOG_COL));
       StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
       HBaseUtils.assembleStorageDescriptor(sd, sdParts);
       parts.add(sdParts.containingPartition);
@@ -1558,7 +1568,9 @@ public class HBaseReadWrite {
 
     for (int i = 0; i < partNames.size(); i++) {
       valToPartMap.put(partVals.get(i), partNames.get(i));
-      byte[] partKey = HBaseUtils.buildPartitionKey(dbName, tblName, partVals.get(i));
+      byte[] partKey = HBaseUtils.buildPartitionKey(dbName, tblName,
+          HBaseUtils.getPartitionKeyTypes(getTable(dbName, tblName).getPartitionKeys()),
+          partVals.get(i));
       Get get = new Get(partKey);
       for (byte[] colName : colNameBytes) {
         get.addColumn(STATS_CF, colName);
@@ -1690,9 +1702,11 @@ public class HBaseReadWrite {
     return keys;
   }
 
-  private byte[] getStatisticsKey(String dbName, String tableName, List<String> partVals) {
+  private byte[] getStatisticsKey(String dbName, String tableName, List<String> partVals) throws IOException {
     return partVals == null ? HBaseUtils.buildKey(dbName, tableName) : HBaseUtils
-        .buildPartitionKey(dbName, tableName, partVals);
+        .buildPartitionKey(dbName, tableName,
+            HBaseUtils.getPartitionKeyTypes(getTable(dbName, tableName).getPartitionKeys()),
+            partVals);
   }
 
   private String getStatisticsTable(List<String> partVals) {
