@@ -1683,22 +1683,6 @@ public class HiveConf extends Configuration {
         "to construct a list exception handlers to handle exceptions thrown\n" +
         "by record readers"),
 
-    // operation log configuration
-    HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
-        "When true, HS2 will save operation logs and make them available for clients"),
-    HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION("hive.server2.logging.operation.log.location",
-        "${system:java.io.tmpdir}" + File.separator + "${system:user.name}" + File.separator +
-            "operation_logs",
-        "Top level directory where operation logs are stored if logging functionality is enabled"),
-    HIVE_SERVER2_LOGGING_OPERATION_LEVEL("hive.server2.logging.operation.level", "EXECUTION",
-        new StringSet("NONE", "EXECUTION", "PERFORMANCE", "VERBOSE"),
-        "HS2 operation logging mode available to clients to be set at session level.\n" +
-        "For this to work, hive.server2.logging.operation.enabled should be set to true.\n" +
-        "  NONE: Ignore any logging\n" +
-        "  EXECUTION: Log completion of tasks\n" +
-        "  PERFORMANCE: Execution + Performance logs \n" +
-        "  VERBOSE: All logs" ),
-    HIVE_SERVER2_METRICS_ENABLED("hive.server2.metrics.enabled", false, "Enable metrics on the HiveServer2."),
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
@@ -1790,6 +1774,7 @@ public class HiveConf extends Configuration {
         "hive.zookeeper.quorum in their connection string."),
     HIVE_SERVER2_ZOOKEEPER_NAMESPACE("hive.server2.zookeeper.namespace", "hiveserver2",
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
+
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
         "Either the location of a HS2 global init file or a directory containing a .hiverc file. If the \n" +
@@ -1800,6 +1785,39 @@ public class HiveConf extends Configuration {
         "Bind host on which to run the HiveServer2 Thrift service."),
     HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
         "enable parallel compilation between sessions on HiveServer2. The default is false."),
+
+    // Tez session settings
+    HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
+        "A list of comma separated values corresponding to YARN queues of the same name.\n" +
+        "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +
+        "for multiple Tez sessions to run in parallel on the cluster."),
+    HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE("hive.server2.tez.sessions.per.default.queue", 1,
+        "A positive integer that determines the number of Tez sessions that should be\n" +
+        "launched on each of the queues specified by \"hive.server2.tez.default.queues\".\n" +
+        "Determines the parallelism on each queue."),
+    HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS("hive.server2.tez.initialize.default.sessions", false,
+        "This flag is used in HiveServer2 to enable a user to use HiveServer2 without\n" +
+        "turning on Tez for HiveServer2. The user could potentially want to run queries\n" +
+        "over Tez without the pool of sessions."),
+
+    // Operation log configuration
+    HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
+        "When true, HS2 will save operation logs and make them available for clients"),
+    HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION("hive.server2.logging.operation.log.location",
+        "${system:java.io.tmpdir}" + File.separator + "${system:user.name}" + File.separator +
+            "operation_logs",
+        "Top level directory where operation logs are stored if logging functionality is enabled"),
+    HIVE_SERVER2_LOGGING_OPERATION_LEVEL("hive.server2.logging.operation.level", "EXECUTION",
+        new StringSet("NONE", "EXECUTION", "PERFORMANCE", "VERBOSE"),
+        "HS2 operation logging mode available to clients to be set at session level.\n" +
+        "For this to work, hive.server2.logging.operation.enabled should be set to true.\n" +
+        "  NONE: Ignore any logging\n" +
+        "  EXECUTION: Log completion of tasks\n" +
+        "  PERFORMANCE: Execution + Performance logs \n" +
+        "  VERBOSE: All logs" ),
+
+    // Enable metric collection for HiveServer2
+    HIVE_SERVER2_METRICS_ENABLED("hive.server2.metrics.enabled", false, "Enable metrics on the HiveServer2."),
 
     // http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001,
@@ -1816,7 +1834,7 @@ public class HiveConf extends Configuration {
         "Keepalive time for an idle http worker thread. When the number of workers exceeds min workers, " +
         "excessive threads are killed after this time interval."),
 
-    // Cookie based authentication
+    // Cookie based authentication when using HTTP Transport
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED("hive.server2.thrift.http.cookie.auth.enabled", true,
         "When true, HiveServer2 in HTTP transport mode, will use cookie based authentication mechanism."),
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE("hive.server2.thrift.http.cookie.max.age", "86400s",
@@ -1963,6 +1981,8 @@ public class HiveConf extends Configuration {
         "  HIVE : Exposes Hive's native table types like MANAGED_TABLE, EXTERNAL_TABLE, VIRTUAL_VIEW\n" +
         "  CLASSIC : More generic types like TABLE and VIEW"),
     HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", "", ""),
+
+    // SSL settings
     HIVE_SERVER2_USE_SSL("hive.server2.use.SSL", false,
         "Set this to true for using SSL encryption in HiveServer2."),
     HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "",
@@ -1983,9 +2003,6 @@ public class HiveConf extends Configuration {
          "Comma separated list of udfs names. These udfs will not be allowed in queries." +
          " The udf black list takes precedence over udf white list"),
 
-    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
-        "Comma separated list of non-SQL Hive commands users are authorized to execute"),
-
     HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "6h",
         new TimeValidator(TimeUnit.MILLISECONDS, 3000l, true, null, false),
         "The check interval for session/operation timeout, which can be disabled by setting to zero or negative value."),
@@ -2002,6 +2019,8 @@ public class HiveConf extends Configuration {
         " This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
         "(hive.server2.session.check.interval) are enabled."),
 
+    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
+        "Comma separated list of non-SQL Hive commands users are authorized to execute"),
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
         "Comma separated list of configuration options which are immutable at runtime"),
@@ -2126,19 +2145,6 @@ public class HiveConf extends Configuration {
 
     HIVECOUNTERGROUP("hive.counters.group.name", "HIVE",
         "The name of counter group for internal Hive variables (CREATED_FILE, FATAL_ERROR, etc.)"),
-
-    HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
-        "A list of comma separated values corresponding to YARN queues of the same name.\n" +
-        "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +
-        "for multiple Tez sessions to run in parallel on the cluster."),
-    HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE("hive.server2.tez.sessions.per.default.queue", 1,
-        "A positive integer that determines the number of Tez sessions that should be\n" +
-        "launched on each of the queues specified by \"hive.server2.tez.default.queues\".\n" +
-        "Determines the parallelism on each queue."),
-    HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS("hive.server2.tez.initialize.default.sessions", false,
-        "This flag is used in HiveServer2 to enable a user to use HiveServer2 without\n" +
-        "turning on Tez for HiveServer2. The user could potentially want to run queries\n" +
-        "over Tez without the pool of sessions."),
 
     HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
         new StringSet("none", "column"),

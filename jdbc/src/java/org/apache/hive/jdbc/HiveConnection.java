@@ -211,13 +211,13 @@ public class HiveConnection implements java.sql.Connection {
         break;
       } catch (TTransportException e) {
         LOG.info("Could not open client transport with JDBC Uri: " + jdbcUriString);
-        // We'll retry till we exhaust all HiveServer2 uris from ZooKeeper
+        // We'll retry till we exhaust all HiveServer2 nodes from ZooKeeper
         if ((sessConfMap.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE) != null)
             && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(sessConfMap
                 .get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE)))) {
           try {
             // Update jdbcUriString, host & port variables in connParams
-            // Throw an exception if all HiveServer2 uris have been exhausted,
+            // Throw an exception if all HiveServer2 nodes have been exhausted,
             // or if we're unable to connect to ZooKeeper.
             Utils.updateConnParamsFromZooKeeper(connParams);
           } catch (ZooKeeperHiveClientException ze) {
