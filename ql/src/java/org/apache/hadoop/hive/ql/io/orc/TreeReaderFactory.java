@@ -48,6 +48,8 @@ import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims.TextReaderShim;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -1486,6 +1488,7 @@ public class TreeReaderFactory {
    */
   protected static class StringDirectTreeReader extends TreeReader {
     protected InStream stream;
+    protected TextReaderShim data;
     protected IntegerReader lengths;
     private final LongColumnVector scratchlcv;
 
@@ -1500,6 +1503,7 @@ public class TreeReaderFactory {
       this.stream = data;
       if (length != null && encoding != null) {
         this.lengths = createIntegerReader(encoding, length, false, false);
+        this.data = ShimLoader.getHadoopShims().getTextReaderShim(this.stream);
       }
     }
 
@@ -1520,6 +1524,7 @@ public class TreeReaderFactory {
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
       stream = streams.get(name);
+      data = ShimLoader.getHadoopShims().getTextReaderShim(this.stream);
       lengths = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
           streams.get(new StreamName(columnId, OrcProto.Stream.Kind.LENGTH)),
           false, false);
@@ -1534,6 +1539,7 @@ public class TreeReaderFactory {
     public void seek(PositionProvider index) throws IOException {
       super.seek(index);
       stream.seek(index);
+      // don't seek data stream
       lengths.seek(index);
     }
 
@@ -1548,17 +1554,7 @@ public class TreeReaderFactory {
           result = (Text) previous;
         }
         int len = (int) lengths.next();
-        int offset = 0;
-        byte[] bytes = new byte[len];
-        while (len > 0) {
-          int written = stream.read(bytes, offset, len);
-          if (written < 0) {
-            throw new EOFException("Can't finish byte read from " + stream);
-          }
-          len -= written;
-          offset += written;
-        }
-        result.set(bytes);
+        data.read(result, len);
       }
       return result;
     }

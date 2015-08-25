@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
@@ -67,7 +69,9 @@ import org.apache.hadoop.hdfs.protocol.BlockStoragePolicy;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
+import org.apache.hadoop.hive.shims.HadoopShims.TextReaderShim;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -108,10 +112,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   HadoopShims.MiniDFSShim cluster = null;
   final boolean zeroCopy;
   final boolean storagePolicy;
+  final boolean fastread;
 
   public Hadoop23Shims() {
     boolean zcr = false;
     boolean storage = false;
+    boolean fastread = false;
     try {
       Class.forName("org.apache.hadoop.fs.CacheFlag", false,
           ShimLoader.class.getClassLoader());
@@ -128,8 +134,18 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       } catch (ClassNotFoundException ce) {
       }
     }
+
+    if (storage) {
+      for (Method m : Text.class.getMethods()) {
+        if ("readWithKnownLength".equals(m.getName())) {
+          fastread = true;
+        }
+      }
+    }
+
     this.storagePolicy = storage;
     this.zeroCopy = zcr;
+    this.fastread = fastread;
   }
 
   @Override
@@ -1343,8 +1359,31 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     return result;
   }
+
+  @Override
   public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
     // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
     fs.addDelegationTokens(uname, cred);
+  }
+
+  private final class FastTextReaderShim implements TextReaderShim {
+    private final DataInputStream din;
+
+    public FastTextReaderShim(InputStream in) {
+      this.din = new DataInputStream(in);
+    }
+
+    @Override
+    public void read(Text txt, int len) throws IOException {
+      txt.readWithKnownLength(din, len);
+    }
+  }
+
+  @Override
+  public TextReaderShim getTextReaderShim(InputStream in) throws IOException {
+    if (!fastread) {
+      return super.getTextReaderShim(in);
+    }
+    return new FastTextReaderShim(in);
   }
 }
