@@ -1,0 +1,43 @@
+PREHOOK: query: create table over1k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
+POSTHOOK: query: create table over1k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k
+PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over1k
+POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over1k
+FAILED: SemanticException [Error 10016]: Line 4:14 Argument type mismatch 'true': The first and seconds arguments of function NLV should have the same type, but they are different: "tinyint" and "boolean"

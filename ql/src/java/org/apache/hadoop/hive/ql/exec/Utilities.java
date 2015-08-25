@@ -1892,7 +1892,7 @@ public final class Utilities {
       if (fs.exists(tmpPath)) {
         // remove any tmp file or double-committed output files
         ArrayList<String> emptyBuckets =
-            Utilities.removeTempOrDuplicateFiles(fs, tmpPath, dpCtx);
+            Utilities.removeTempOrDuplicateFiles(fs, tmpPath, dpCtx, conf, hconf);
         // create empty buckets if necessary
         if (emptyBuckets.size() > 0) {
           createEmptyBuckets(hconf, emptyBuckets, conf, reporter);
@@ -1961,7 +1961,7 @@ public final class Utilities {
    * Remove all temporary files and duplicate (double-committed) files from a given directory.
    */
   public static void removeTempOrDuplicateFiles(FileSystem fs, Path path) throws IOException {
-    removeTempOrDuplicateFiles(fs, path, null);
+    removeTempOrDuplicateFiles(fs, path, null,null,null);
   }
 
   /**
@@ -1970,15 +1970,15 @@ public final class Utilities {
    * @return a list of path names corresponding to should-be-created empty buckets.
    */
   public static ArrayList<String> removeTempOrDuplicateFiles(FileSystem fs, Path path,
-      DynamicPartitionCtx dpCtx) throws IOException {
+      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf) throws IOException {
     if (path == null) {
       return null;
     }
 
     ArrayList<String> result = new ArrayList<String>();
+    HashMap<String, FileStatus> taskIDToFile = null;
     if (dpCtx != null) {
       FileStatus parts[] = HiveStatsUtils.getFileStatusRecurse(path, dpCtx.getNumDPCols(), fs);
-      HashMap<String, FileStatus> taskIDToFile = null;
 
       for (int i = 0; i < parts.length; ++i) {
         assert parts[i].isDir() : "dynamic partition " + parts[i].getPath()
@@ -2014,8 +2014,24 @@ public final class Utilities {
       }
     } else {
       FileStatus[] items = fs.listStatus(path);
-      removeTempOrDuplicateFiles(items, fs);
+      taskIDToFile = removeTempOrDuplicateFiles(items, fs);
+      if(taskIDToFile != null && taskIDToFile.size() > 0 && conf != null && conf.getTable() != null
+          && (conf.getTable().getNumBuckets() > taskIDToFile.size())
+          && (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+          // get the missing buckets and generate empty buckets for non-dynamic partition
+        String taskID1 = taskIDToFile.keySet().iterator().next();
+        Path bucketPath = taskIDToFile.values().iterator().next().getPath();
+        for (int j = 0; j < conf.getTable().getNumBuckets(); ++j) {
+          String taskID2 = replaceTaskId(taskID1, j);
+          if (!taskIDToFile.containsKey(taskID2)) {
+            // create empty bucket, file name should be derived from taskID2
+            String path2 = replaceTaskIdFromFilename(bucketPath.toUri().getPath().toString(), j);
+            result.add(path2);
+          }
+        }
+      }
     }
+
     return result;
   }
 

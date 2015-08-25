@@ -21,11 +21,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.common.util.HiveTestUtils;
+
+import junit.framework.TestCase;
 
 /**
  * TestHiveLogging
@@ -104,9 +104,9 @@ public class TestHiveLogging extends TestCase {
     // customized log4j config log file to be: /${test.tmp.dir}/TestHiveLogging/hiveLog4jTest.log
     File customLogPath = new File(new File(System.getProperty("test.tmp.dir")),
         System.getProperty("user.name") + "-TestHiveLogging/");
-    String customLogName = "hiveLog4jTest.log";
+    String customLogName = "hiveLog4j2Test.log";
     File customLogFile = new File(customLogPath, customLogName);
     RunTest(customLogFile,
-      "hive-log4j-test.properties", "hive-exec-log4j-test.properties");
+      "hive-log4j2-test.xml", "hive-exec-log4j2-test.xml");
   }
 }

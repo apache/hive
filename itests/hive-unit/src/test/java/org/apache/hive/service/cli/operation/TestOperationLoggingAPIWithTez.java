@@ -40,8 +40,6 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
     };
     hiveConf = new HiveConf();
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-    // We need to set the below parameter to test performance level logging
-    hiveConf.set("hive.ql.log.PerfLogger.level", "INFO,DRFA");
     // Change the engine to tez
     hiveConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     // Set tez execution summary to false.

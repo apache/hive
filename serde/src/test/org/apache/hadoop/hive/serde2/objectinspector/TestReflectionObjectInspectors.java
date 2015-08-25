@@ -17,15 +17,24 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
-
+import org.apache.commons.lang.mutable.MutableObject;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.thrift.test.Complex;
+
+import junit.framework.TestCase;
 
 /**
  * TestReflectionObjectInspectors.
@@ -98,6 +107,64 @@ public class TestReflectionObjectInspectors extends TestCase {
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
+    }
+  }
+
+  public void testObjectInspectorThreadSafety() throws InterruptedException {
+    final int workerCount = 5; // 5 workers to run getReflectionObjectInspector concurrently
+    final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(workerCount);
+    final MutableObject exception = new MutableObject();
+    Thread runner = new Thread(new Runnable() {
+      @Override
+      @SuppressWarnings("unchecked")
+      public void run() {
+        Future<ObjectInspector>[] results = (Future<ObjectInspector>[])new Future[workerCount];
+        ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions>[] types =
+          (ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions>[])new ObjectPair[] {
+             new ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions>(Complex.class,
+               ObjectInspectorFactory.ObjectInspectorOptions.THRIFT),
+             new ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions>(MyStruct.class,
+               ObjectInspectorFactory.ObjectInspectorOptions.JAVA),
+          };
+        try {
+          for (int i = 0; i < 20; i++) { // repeat 20 times
+            for (final ObjectPair<Type, ObjectInspectorFactory.ObjectInspectorOptions> t: types) {
+              ObjectInspectorFactory.objectInspectorCache.clear();
+              for (int k = 0; k < workerCount; k++) {
+                results[k] = executorService.schedule(new Callable<ObjectInspector>() {
+                  @Override
+                  public ObjectInspector call() throws Exception {
+                    return ObjectInspectorFactory.getReflectionObjectInspector(
+                      t.getFirst(), t.getSecond());
+                  }
+                }, 50, TimeUnit.MILLISECONDS);
+              }
+              ObjectInspector oi = results[0].get();
+              for (int k = 1; k < workerCount; k++) {
+                assertEquals(oi, results[k].get());
+              }
+            }
+          }
+        } catch (Throwable e) {
+          exception.setValue(e);
+        }
+      }
+    });
+    try {
+      runner.start();
+      long endTime = System.currentTimeMillis() + 300000; // timeout in 5 minutes
+      while (runner.isAlive()) {
+        if (System.currentTimeMillis() > endTime) {
+          runner.interrupt(); // Interrupt the runner thread
+          fail("Timed out waiting for the runner to finish");
+        }
+        runner.join(10000);
+      }
+      if (exception.getValue() != null) {
+        fail("Got exception: " + exception.getValue());
+      }
+    } finally {
+      executorService.shutdownNow();
     }
   }
 }

@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
+import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer.WalkerCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -61,7 +61,7 @@ import org.apache.hadoop.hive.serde2.NullStructSerDe;
 public class NullScanTaskDispatcher implements Dispatcher {
 
   static final Log LOG = LogFactory.getLog(NullScanTaskDispatcher.class.getName());
-  
+
   private final PhysicalContext physicalContext;
   private final Map<Rule, NodeProcessor> rules;
 
@@ -177,7 +177,7 @@ public class NullScanTaskDispatcher implements Dispatcher {
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along
       Dispatcher disp = new DefaultRuleDispatcher(null, rules, walkerCtx);
-      GraphWalker ogw = new PreOrderWalker(disp);
+      GraphWalker ogw = new PreOrderOnceWalker(disp);
 
       // Create a list of topOp nodes
       ArrayList<Node> topNodes = new ArrayList<Node>();

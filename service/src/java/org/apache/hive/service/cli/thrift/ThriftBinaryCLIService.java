@@ -93,7 +93,6 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
       // TCP Server
       server = new TThreadPoolServer(sargs);
       server.setServerEventHandler(serverEventHandler);
-      server.serve();
       String msg = "Starting " + ThriftBinaryCLIService.class.getSimpleName() + " on port "
           + portNum + " with " + minWorkerThreads + "..." + maxWorkerThreads + " worker threads";
       LOG.info(msg);

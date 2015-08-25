@@ -1,0 +1,9 @@
+PREHOOK: query: create table mismatch_columns(key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mismatch_columns
+POSTHOOK: query: create table mismatch_columns(key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mismatch_columns
+FAILED: SemanticException [Error 10044]: Line 3:23 Cannot insert into target table because column number/types are different 'mismatch_columns': Table insclause-0 has 2 columns, but query has 1 columns.

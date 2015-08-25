@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication.ReduceSinkDeduplicateProcCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -163,10 +165,10 @@ public final class CorrelationUtilities {
     return type.isInstance(parent) ? (T)parent : null;
   }
 
-  protected static Operator<?> getStartForGroupBy(ReduceSinkOperator cRS)
+  protected static Operator<?> getStartForGroupBy(ReduceSinkOperator cRS, ReduceSinkDeduplicateProcCtx dedupCtx)
       throws SemanticException {
     Operator<? extends Serializable> parent = getSingleParent(cRS);
-    return parent instanceof GroupByOperator ? parent : cRS;  // skip map-aggr GBY
+    return parent instanceof GroupByOperator && dedupCtx.isMapAggr() ? parent : cRS;  // skip map-aggr GBY
   }
 
 
@@ -240,6 +242,7 @@ public final class CorrelationUtilities {
           || cursor instanceof FilterOperator
           || cursor instanceof ForwardOperator
           || cursor instanceof ScriptOperator
+          || cursor instanceof GroupByOperator
           || cursor instanceof ReduceSinkOperator)) {
         return null;
       }
@@ -395,7 +398,7 @@ public final class CorrelationUtilities {
 
     Operator<?> parent = getSingleParent(cRS);
 
-    if (parent instanceof GroupByOperator) {
+    if ((parent instanceof GroupByOperator) && procCtx.isMapAggr()) {
       // pRS-cGBYm-cRS-cGBYr (map aggregation) --> pRS-cGBYr(COMPLETE)
       // copies desc of cGBYm to cGBYr and remove cGBYm and cRS
       GroupByOperator cGBYm = (GroupByOperator) parent;
@@ -440,7 +443,7 @@ public final class CorrelationUtilities {
     removeOperator(cRS, cGBYr, parent, context);
     procCtx.addRemovedOperator(cRS);
 
-    if (parent instanceof GroupByOperator) {
+    if ((parent instanceof GroupByOperator) && procCtx.isMapAggr()) {
       removeOperator(parent, cGBYr, getSingleParent(parent), context);
       procCtx.addRemovedOperator(cGBYr);
     }

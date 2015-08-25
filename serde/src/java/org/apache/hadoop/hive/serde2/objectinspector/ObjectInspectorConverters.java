@@ -424,8 +424,9 @@ public final class ObjectInspectorConverters {
     UnionObjectInspector inputOI;
     SettableUnionObjectInspector outputOI;
 
-    List<? extends ObjectInspector> inputFields;
-    List<? extends ObjectInspector> outputFields;
+    // Object inspectors for the tags for the input and output unionss
+    List<? extends ObjectInspector> inputTagsOIs;
+    List<? extends ObjectInspector> outputTagsOIs;
 
     ArrayList<Converter> fieldConverters;
 
@@ -436,14 +437,14 @@ public final class ObjectInspectorConverters {
       if (inputOI instanceof UnionObjectInspector) {
         this.inputOI = (UnionObjectInspector)inputOI;
         this.outputOI = outputOI;
-        inputFields = this.inputOI.getObjectInspectors();
-        outputFields = outputOI.getObjectInspectors();
+        inputTagsOIs = this.inputOI.getObjectInspectors();
+        outputTagsOIs = outputOI.getObjectInspectors();
 
         // If the output has some extra fields, set them to NULL in convert().
-        int minFields = Math.min(inputFields.size(), outputFields.size());
+        int minFields = Math.min(inputTagsOIs.size(), outputTagsOIs.size());
         fieldConverters = new ArrayList<Converter>(minFields);
         for (int f = 0; f < minFields; f++) {
-          fieldConverters.add(getConverter(inputFields.get(f), outputFields.get(f)));
+          fieldConverters.add(getConverter(inputTagsOIs.get(f), outputTagsOIs.get(f)));
         }
 
         // Create an empty output object which will be populated when convert() is invoked.
@@ -461,17 +462,17 @@ public final class ObjectInspectorConverters {
         return null;
       }
 
-      int minFields = Math.min(inputFields.size(), outputFields.size());
-      // Convert the fields
-      for (int f = 0; f < minFields; f++) {
-        Object outputFieldValue = fieldConverters.get(f).convert(inputOI);
-        outputOI.addField(output, (ObjectInspector)outputFieldValue);
+      Object inputFieldValue = inputOI.getField(input);
+      Object inputFieldTag = inputOI.getTag(input);
+      Object outputFieldValue = null;
+
+      int inputFieldTagIndex = ((Byte)inputFieldTag).intValue();
+
+      if (inputFieldTagIndex >= 0 && inputFieldTagIndex < fieldConverters.size()) {
+         outputFieldValue = fieldConverters.get(inputFieldTagIndex).convert(inputFieldValue);
       }
 
-      // set the extra fields to null
-      for (int f = minFields; f < outputFields.size(); f++) {
-        outputOI.addField(output, null);
-      }
+      outputOI.addField(output, outputFieldValue);
 
       return output;
     }

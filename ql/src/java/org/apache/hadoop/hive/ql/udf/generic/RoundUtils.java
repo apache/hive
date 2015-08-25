@@ -49,12 +49,26 @@ public class RoundUtils {
     return BigDecimal.valueOf(input).setScale(scale, RoundingMode.HALF_UP).doubleValue();
   }
 
+  public static double bround(double input, int scale) {
+    if (Double.isNaN(input) || Double.isInfinite(input)) {
+      return input;
+    }
+    return BigDecimal.valueOf(input).setScale(scale, RoundingMode.HALF_EVEN).doubleValue();
+  }
+
   public static long round(long input, int scale) {
     return BigDecimal.valueOf(input).setScale(scale, RoundingMode.HALF_UP).longValue();
+  }
+
+  public static long bround(long input, int scale) {
+    return BigDecimal.valueOf(input).setScale(scale, RoundingMode.HALF_EVEN).longValue();
   }
 
   public static HiveDecimal round(HiveDecimal input, int scale) {
     return input.setScale(scale, HiveDecimal.ROUND_HALF_UP);
   }
 
+  public static HiveDecimal bround(HiveDecimal input, int scale) {
+    return input.setScale(scale, HiveDecimal.ROUND_HALF_EVEN);
+  }
 }

@@ -18,14 +18,15 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.List;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -51,9 +52,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.List;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
 
 public class ConvertAstToSearchArg {
   private static final Log LOG = LogFactory.getLog(ConvertAstToSearchArg.class);
@@ -145,7 +145,7 @@ public class ConvertAstToSearchArg {
         return ((Number) lit).longValue();
       case STRING:
         if (lit instanceof HiveChar) {
-          lit = ((HiveChar) lit).getPaddedValue();
+          return ((HiveChar) lit).getPaddedValue();
         } else if (lit instanceof String) {
           return lit;
         } else {

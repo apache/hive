@@ -94,8 +94,8 @@ public abstract class GenericUDFBasePad extends GenericUDF {
   private Converter checkTextArguments(ObjectInspector[] arguments, int i)
     throws UDFArgumentException {
     if (arguments[i].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(i + 1, "Only primitive type arguments are accepted but "
-      + arguments[i].getTypeName() + " is passed. as  arguments");
+      throw new UDFArgumentTypeException(i, "Only primitive type arguments are accepted but "
+      + arguments[i].getTypeName() + " is passed.");
     }
 
     Converter converter = ObjectInspectorConverters.getConverter((PrimitiveObjectInspector) arguments[i],
@@ -107,8 +107,8 @@ public abstract class GenericUDFBasePad extends GenericUDF {
   private Converter checkIntArguments(ObjectInspector[] arguments, int i)
     throws UDFArgumentException {
     if (arguments[i].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(i + 1, "Only primitive type arguments are accepted but "
-      + arguments[i].getTypeName() + " is passed. as  arguments");
+      throw new UDFArgumentTypeException(i, "Only primitive type arguments are accepted but "
+      + arguments[i].getTypeName() + " is passed.");
     }
     PrimitiveCategory inputType = ((PrimitiveObjectInspector) arguments[i]).getPrimitiveCategory();
     Converter converter;

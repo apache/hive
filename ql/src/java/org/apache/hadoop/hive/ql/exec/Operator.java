@@ -804,31 +804,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
   }
 
-  // Remove the operators till a certain depth.
-  // Return true if the remove was successful, false otherwise
-  public boolean removeChildren(int depth) {
-    Operator<? extends OperatorDesc> currOp = this;
-    for (int i = 0; i < depth; i++) {
-      // If there are more than 1 children at any level, don't do anything
-      if ((currOp.getChildOperators() == null) || (currOp.getChildOperators().isEmpty()) ||
-          (currOp.getChildOperators().size() > 1)) {
-        return false;
-      }
-      currOp = currOp.getChildOperators().get(0);
-    }
-
-    setChildOperators(currOp.getChildOperators());
-
-    List<Operator<? extends OperatorDesc>> parentOps =
-      new ArrayList<Operator<? extends OperatorDesc>>();
-    parentOps.add(this);
-
-    for (Operator<? extends OperatorDesc> op : currOp.getChildOperators()) {
-      op.setParentOperators(parentOps);
-    }
-    return true;
-  }
-
   /**
    * Replace one parent with another at the same position. Chilren of the new
    * parent are not updated

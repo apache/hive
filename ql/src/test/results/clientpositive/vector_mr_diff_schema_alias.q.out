@@ -320,7 +320,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col22, _col26, _col50, _col58
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
-            predicate: (((_col0 = _col58) and (_col22 = _col26)) and (_col50) IN ('KS', 'AL', 'MN', 'AL', 'SC', 'VT')) (type: boolean)
+            predicate: ((_col0 = _col58) and (_col22 = _col26) and (_col50) IN ('KS', 'AL', 'MN', 'AL', 'SC', 'VT')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: _col50 (type: string)

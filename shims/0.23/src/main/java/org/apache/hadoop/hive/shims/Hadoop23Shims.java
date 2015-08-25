@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -28,12 +27,12 @@ import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -93,8 +92,9 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.tools.DistCp;
+import org.apache.hadoop.tools.DistCpOptions;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.test.MiniTezCluster;
 
@@ -121,7 +121,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       zcr = true;
     } catch (ClassNotFoundException ce) {
     }
-    
+
     if (zcr) {
       // in-memory HDFS is only available after zcr
       try {
@@ -576,11 +576,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
                                                                                 org.apache.hadoop.mapred.TaskAttemptID taskId, Progressable progressable) {
       org.apache.hadoop.mapred.TaskAttemptContext newContext = null;
       try {
-        java.lang.reflect.Constructor construct = org.apache.hadoop.mapred.TaskAttemptContextImpl.class.getDeclaredConstructor(
+        java.lang.reflect.Constructor<org.apache.hadoop.mapred.TaskAttemptContextImpl> construct = org.apache.hadoop.mapred.TaskAttemptContextImpl.class.getDeclaredConstructor(
                 org.apache.hadoop.mapred.JobConf.class, org.apache.hadoop.mapred.TaskAttemptID.class,
                 Reporter.class);
         construct.setAccessible(true);
-        newContext = (org.apache.hadoop.mapred.TaskAttemptContext) construct.newInstance(
+        newContext = construct.newInstance(
                 new JobConf(conf), taskId, progressable);
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -913,6 +913,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      * Cannot add Override annotation since FileSystem.access() may not exist in
      * the version of hadoop used to build Hive.
      */
+    @Override
     public void access(Path path, FsAction action) throws AccessControlException,
         FileNotFoundException, IOException {
       Path underlyingFsPath = swizzleParamPath(path);
@@ -1179,7 +1180,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     }
   }
-    
+
 
   @Override
   public HadoopShims.StoragePolicyShim getStoragePolicyShim(FileSystem fs) {
@@ -1195,27 +1196,17 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
-    int rc;
 
-    // Creates the command-line parameters for distcp
-    String[] params = {"-update", "-skipcrccheck", src.toString(), dst.toString()};
-
+    DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
+    options.setSkipCRC(true);
+    options.setSyncFolder(true);
     try {
-      Class clazzDistCp = Class.forName("org.apache.hadoop.tools.DistCp");
-      Constructor c = clazzDistCp.getConstructor();
-      c.setAccessible(true);
-      Tool distcp = (Tool)c.newInstance();
-      distcp.setConf(conf);
-      rc = distcp.run(params);
-    } catch (ClassNotFoundException e) {
-      throw new IOException("Cannot find DistCp class package: " + e.getMessage());
-    } catch (NoSuchMethodException e) {
-      throw new IOException("Cannot get DistCp constructor: " + e.getMessage());
+      DistCp distcp = new DistCp(conf, options);
+      distcp.execute();
+      return true;
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: " + e, e);
     }
-
-    return (0 == rc);
   }
 
   private static Boolean hdfsEncryptionSupport;
@@ -1250,7 +1241,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     private KeyProvider keyProvider = null;
 
-    private Configuration conf;
+    private final Configuration conf;
 
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
       DistributedFileSystem dfs = (DistributedFileSystem)FileSystem.get(uri, conf);
@@ -1409,6 +1400,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     return result;
   }
+  @Override
   public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
     // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
     fs.addDelegationTokens(uname, cred);

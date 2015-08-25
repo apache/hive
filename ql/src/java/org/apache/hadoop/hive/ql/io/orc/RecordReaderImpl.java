@@ -370,7 +370,7 @@ public class RecordReaderImpl implements RecordReader {
       Object predObj = getBaseObjectForComparison(predicate.getType(), baseObj);
 
       result = evaluatePredicateMinMax(predicate, predObj, minValue, maxValue, hasNull);
-      if (bloomFilter != null && result != TruthValue.NO_NULL && result != TruthValue.NO) {
+      if (shouldEvaluateBloomFilter(predicate, result, bloomFilter)) {
         result = evaluatePredicateBloomFilter(predicate, predObj, bloomFilter, hasNull);
       }
       // in case failed conversion, return the default YES_NO_NULL truth value
@@ -386,6 +386,22 @@ public class RecordReaderImpl implements RecordReader {
       }
     }
     return result;
+  }
+
+  private static boolean shouldEvaluateBloomFilter(PredicateLeaf predicate,
+      TruthValue result, BloomFilterIO bloomFilter) {
+    // evaluate bloom filter only when
+    // 1) Bloom filter is available
+    // 2) Min/Max evaluation yield YES or MAYBE
+    // 3) Predicate is EQUALS or IN list
+    if (bloomFilter != null
+        && result != TruthValue.NO_NULL && result != TruthValue.NO
+        && (predicate.getOperator().equals(PredicateLeaf.Operator.EQUALS)
+            || predicate.getOperator().equals(PredicateLeaf.Operator.NULL_SAFE_EQUALS)
+            || predicate.getOperator().equals(PredicateLeaf.Operator.IN))) {
+      return true;
+    }
+    return false;
   }
 
   private static TruthValue evaluatePredicateMinMax(PredicateLeaf predicate, Object predObj,

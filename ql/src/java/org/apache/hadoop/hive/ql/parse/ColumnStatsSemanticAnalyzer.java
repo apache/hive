@@ -175,7 +175,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         } else {
           whereClause.append(" and ");
         }
-        whereClause.append(partKey).append(" = ").append(genPartValueString(partKey, value));
+        whereClause.append("`").append(partKey).append("` = ").append(genPartValueString(partKey, value));
       }
     }
 
@@ -308,9 +308,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       if (i > 0) {
         rewrittenQueryBuilder.append(" , ");
       }
-      rewrittenQueryBuilder.append("compute_stats(");
+      rewrittenQueryBuilder.append("compute_stats(`");
       rewrittenQueryBuilder.append(colNames.get(i));
-      rewrittenQueryBuilder.append(" , ");
+      rewrittenQueryBuilder.append("` , ");
       rewrittenQueryBuilder.append(numBitVectors);
       rewrittenQueryBuilder.append(" )");
     }

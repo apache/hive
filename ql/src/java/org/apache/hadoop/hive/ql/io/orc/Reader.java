@@ -52,6 +52,13 @@ public interface Reader {
   long getRawDataSizeOfColumns(List<String> colNames);
 
   /**
+   * Get the deserialized data size of the specified columns ids
+   * @param colIds - internal column id (check orcfiledump for column ids)
+   * @return raw data size of columns
+   */
+  long getRawDataSizeFromColIndices(List<Integer> colIds);
+
+  /**
    * Get the user metadata keys.
    * @return the set of metadata keys
    */

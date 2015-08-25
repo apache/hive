@@ -1,0 +1,104 @@
+PREHOOK: query: CREATE TABLE IF NOT EXISTS bucketinput( 
+data string 
+) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketinput
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS bucketinput( 
+data string 
+) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucketinput
+PREHOOK: query: CREATE TABLE IF NOT EXISTS bucketoutput1( 
+data string 
+)CLUSTERED BY(data) 
+INTO 2 BUCKETS 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketoutput1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS bucketoutput1( 
+data string 
+)CLUSTERED BY(data) 
+INTO 2 BUCKETS 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucketoutput1
+PREHOOK: query: CREATE TABLE IF NOT EXISTS bucketoutput2( 
+data string 
+)CLUSTERED BY(data) 
+INTO 2 BUCKETS 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketoutput2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS bucketoutput2( 
+data string 
+)CLUSTERED BY(data) 
+INTO 2 BUCKETS 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucketoutput2
+PREHOOK: query: insert into table bucketinput values ("firstinsert1")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@bucketinput
+POSTHOOK: query: insert into table bucketinput values ("firstinsert1")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@bucketinput
+POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table bucketinput values ("firstinsert2")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@bucketinput
+POSTHOOK: query: insert into table bucketinput values ("firstinsert2")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@bucketinput
+POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table bucketinput values ("firstinsert3")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@bucketinput
+POSTHOOK: query: insert into table bucketinput values ("firstinsert3")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@bucketinput
+POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert overwrite table bucketoutput1 select * from bucketinput where data like 'first%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketinput
+PREHOOK: Output: default@bucketoutput1
+POSTHOOK: query: insert overwrite table bucketoutput1 select * from bucketinput where data like 'first%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketinput
+POSTHOOK: Output: default@bucketoutput1
+POSTHOOK: Lineage: bucketoutput1.data SIMPLE [(bucketinput)bucketinput.FieldSchema(name:data, type:string, comment:null), ]
+PREHOOK: query: select * from bucketoutput1 a join bucketoutput2 b on (a.data=b.data)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketoutput1
+PREHOOK: Input: default@bucketoutput2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from bucketoutput1 a join bucketoutput2 b on (a.data=b.data)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketoutput1
+POSTHOOK: Input: default@bucketoutput2
+#### A masked pattern was here ####
+PREHOOK: query: drop table buckettestinput
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table buckettestinput
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table buckettestoutput1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table buckettestoutput1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table buckettestoutput2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table buckettestoutput2
+POSTHOOK: type: DROPTABLE

@@ -359,6 +359,7 @@ STAGE PLANS:
                     value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: string)
       Local Work:
         Map Reduce Local Work
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(10)), VALUE._col1 (type: int), VALUE._col2 (type: string)

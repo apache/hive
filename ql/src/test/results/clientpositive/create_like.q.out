@@ -579,3 +579,69 @@ POSTHOOK: query: drop table table5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table5
 POSTHOOK: Output: default@table5
+PREHOOK: query: create table orc_table (
+time string)
+stored as ORC tblproperties ("orc.compress"="SNAPPY")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: create table orc_table (
+time string)
+stored as ORC tblproperties ("orc.compress"="SNAPPY")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table
+PREHOOK: query: create table orc_table_using_like like orc_table
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table_using_like
+POSTHOOK: query: create table orc_table_using_like like orc_table
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table_using_like
+PREHOOK: query: describe formatted orc_table_using_like
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_table_using_like
+POSTHOOK: query: describe formatted orc_table_using_like
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_table_using_like
+# col_name            	data_type           	comment             
+	 	 
+time                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	orc.compress        	SNAPPY              
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table orc_table_using_like
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_table_using_like
+PREHOOK: Output: default@orc_table_using_like
+POSTHOOK: query: drop table orc_table_using_like
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_table_using_like
+POSTHOOK: Output: default@orc_table_using_like
+PREHOOK: query: drop table orc_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_table
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: drop table orc_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_table
+POSTHOOK: Output: default@orc_table

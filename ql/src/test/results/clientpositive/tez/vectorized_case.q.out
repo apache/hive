@@ -45,7 +45,7 @@ STAGE PLANS:
         TableScan
           alias: alltypesorc
           Filter Operator
-            predicate: ((csmallint = 418) or ((csmallint = 12205) or (csmallint = 10583))) (type: boolean)
+            predicate: (csmallint) IN (418, 12205, 10583) (type: boolean)
             Select Operator
               expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END (type: string), CASE (csmallint) WHEN (418) THEN ('a') WHEN (12205) THEN ('b') ELSE ('c') END (type: string)
               outputColumnNames: _col0, _col1, _col2

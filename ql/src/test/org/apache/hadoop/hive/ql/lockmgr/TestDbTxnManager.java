@@ -17,35 +17,39 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import junit.framework.Assert;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit tests for {@link DbTxnManager}.
- * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
+ * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2}
  */
 public class TestDbTxnManager {
 
   private HiveConf conf = new HiveConf();
   private HiveTxnManager txnMgr;
+  private AcidHouseKeeperService houseKeeperService = null;
   private Context ctx;
   private int nextInput;
   private int nextOutput;
@@ -176,6 +180,65 @@ public class TestDbTxnManager {
     Assert.assertEquals(0, locks.size());
   }
 
+  /**
+   * aborts timed out transactions
+   */
+  private void runReaper() throws Exception {
+    int lastCount = houseKeeperService.getIsAliveCounter();
+    houseKeeperService.start(conf);
+    while(houseKeeperService.getIsAliveCounter() <= lastCount) {
+      try {
+        Thread.sleep(100);//make sure it has run at least once
+      }
+      catch(InterruptedException ex) {
+        //...
+      }
+    }
+    houseKeeperService.stop();
+  }
+  @Test
+  public void testExceptions() throws Exception {
+    WriteEntity we = addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
+    QueryPlan qp = new MockQueryPlan(this);
+    txnMgr.acquireLocks(qp, ctx, "PeterI");
+    txnMgr.openTxn("NicholasII");
+    runReaper();
+    LockException exception = null;
+    try {
+      txnMgr.commitTxn();
+    }
+    catch(LockException ex) {
+      exception = ex;
+    }
+    Assert.assertNotNull("Expected exception1", exception);
+    Assert.assertEquals("Wrong Exception1", ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
+    exception = null;
+    txnMgr.openTxn("AlexanderIII");
+    runReaper();
+    try {
+      txnMgr.rollbackTxn();
+    }
+    catch (LockException ex) {
+      exception = ex;
+    }
+    Assert.assertNotNull("Expected exception2", exception);
+    Assert.assertEquals("Wrong Exception2", ErrorMsg.TXN_NO_SUCH_TRANSACTION, exception.getCanonicalErrorMsg());
+    exception = null;
+    txnMgr.openTxn("PeterI");
+    txnMgr.acquireLocks(qp, ctx, "PeterI");
+    List<HiveLock> locks = ctx.getHiveLocks();
+    Assert.assertThat("Unexpected lock count", locks.size(), is(1));
+    runReaper();
+    try {
+      txnMgr.heartbeat();
+    }
+    catch(LockException ex) {
+      exception = ex;
+    }
+    Assert.assertNotNull("Expected exception3", exception);
+    Assert.assertEquals("Wrong Exception3", ErrorMsg.LOCK_NO_SUCH_LOCK, exception.getCanonicalErrorMsg());
+  }
+
   @Test
   public void testReadWrite() throws Exception {
     Table t = newTable(true);
@@ -292,7 +355,6 @@ public class TestDbTxnManager {
     Assert.assertTrue(sawException);
   }
 
-
   @Before
   public void setUp() throws Exception {
     TxnDbUtil.prepDb();
@@ -302,10 +364,14 @@ public class TestDbTxnManager {
     nextOutput = 1;
     readEntities = new HashSet<ReadEntity>();
     writeEntities = new HashSet<WriteEntity>();
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.MILLISECONDS);
+    houseKeeperService = new AcidHouseKeeperService();
   }
 
   @After
   public void tearDown() throws Exception {
+    if(houseKeeperService != null) houseKeeperService.stop();
     if (txnMgr != null) txnMgr.closeTxnManager();
     TxnDbUtil.cleanDb();
   }

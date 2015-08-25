@@ -241,12 +241,6 @@
 </property>
 
 <property>
-  <name>hive.ql.log.PerfLogger.level</name>
-  <value>WARN,DRFA</value>
-  <description>Used to change the perflogger level</description>
-</property>
-
-<property>
   <name>hive.fetch.task.conversion</name>
   <value>minimal</value>
 </property>

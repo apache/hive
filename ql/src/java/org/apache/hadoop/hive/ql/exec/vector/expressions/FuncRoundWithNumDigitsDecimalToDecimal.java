@@ -73,7 +73,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
       // All must be selected otherwise size would be zero
       // Repeating property will not change.
       outputIsNull[0] = inputIsNull[0];
-      DecimalUtil.round(0, vector[0], decimalPlaces, outputColVector);
+      round(0, vector[0], decimalPlaces, outputColVector);
       outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
@@ -82,14 +82,14 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
 
           // Set isNull because decimal operation can yield a null.
           outputIsNull[i] = false;
-          DecimalUtil.round(i, vector[i], decimalPlaces, outputColVector);
+          round(i, vector[i], decimalPlaces, outputColVector);
         }
       } else {
 
         // Set isNull because decimal operation can yield a null.
         Arrays.fill(outputIsNull, 0, n, false);
         for(int i = 0; i != n; i++) {
-          DecimalUtil.round(i, vector[i], decimalPlaces, outputColVector);
+          round(i, vector[i], decimalPlaces, outputColVector);
         }
       }
       outputColVector.isRepeating = false;
@@ -98,12 +98,12 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputIsNull[i] = inputIsNull[i];
-          DecimalUtil.round(i, vector[i], decimalPlaces, outputColVector);
+          round(i, vector[i], decimalPlaces, outputColVector);
         }
       } else {
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
-          DecimalUtil.round(i, vector[i], decimalPlaces, outputColVector);
+          round(i, vector[i], decimalPlaces, outputColVector);
         }
       }
       outputColVector.isRepeating = false;
@@ -132,5 +132,9 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
+  }
+
+  protected void round(int i, HiveDecimalWritable input, int decimalPlaces, DecimalColumnVector outputColVector) {
+    DecimalUtil.round(i, input, decimalPlaces, outputColVector);
   }
 }

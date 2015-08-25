@@ -20,6 +20,7 @@ analyze table over1k compute statistics;
 analyze table over1k compute statistics for columns;
 
 set hive.stats.fetch.column.stats=true;
+set hive.optimize.point.lookup=false;
 explain select count(*) from over1k where (
 (t=1 and si=2)
 or (t=2 and si=3)

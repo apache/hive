@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.junit.Assert;
 import org.junit.Test;
@@ -399,6 +402,157 @@ public class TestVectorLogicalExpressions {
     Assert.assertEquals(initialSize, batch.size);
   }
 
+  // A do nothing vectorized expression that passes all rows through.
+  public class SelectColumnAll extends VectorExpression {
+    private static final long serialVersionUID = 1L;
+    private int colNum1;
+
+    public SelectColumnAll(int colNum1) {
+      this();
+      this.colNum1 = colNum1;
+    }
+
+    public SelectColumnAll() {
+      super();
+    }
+
+    @Override
+    public void evaluate(VectorizedRowBatch batch) {
+
+      if (childExpressions != null) {
+        super.evaluateChildren(batch);
+      }
+
+      // Do nothing.
+    }
+
+    @Override
+    public int getOutputColumn() {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    @Override
+    public Descriptor getDescriptor() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+  }
+
+  // A vectorized expression that we don't expect will be called due to short-circuit evaluation.
+  public class SelectColumnNotExpected extends VectorExpression {
+    private static final long serialVersionUID = 1L;
+    private int colNum1;
+
+    public SelectColumnNotExpected(int colNum1) {
+      this();
+      this.colNum1 = colNum1;
+    }
+
+    public SelectColumnNotExpected() {
+      super();
+    }
+
+    @Override
+    public void evaluate(VectorizedRowBatch batch) {
+
+      if (childExpressions != null) {
+        super.evaluateChildren(batch);
+      }
+
+      assertFalse(true);
+    }
+
+    @Override
+    public int getOutputColumn() {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    @Override
+    public Descriptor getDescriptor() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+  }
+
+  // A vectorized expression that selects no rows.
+  public class SelectColumnNothing extends VectorExpression {
+    private static final long serialVersionUID = 1L;
+    private int colNum1;
+
+    public SelectColumnNothing(int colNum1) {
+      this();
+      this.colNum1 = colNum1;
+    }
+
+    public SelectColumnNothing() {
+      super();
+    }
+
+    @Override
+    public void evaluate(VectorizedRowBatch batch) {
+
+      if (childExpressions != null) {
+        super.evaluateChildren(batch);
+      }
+
+      batch.size = 0;
+    }
+
+    @Override
+    public int getOutputColumn() {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    @Override
+    public Descriptor getDescriptor() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+  }
+
+  // A vectorized expression that selects no rows.
+  public class SelectColumnOne extends VectorExpression {
+    private static final long serialVersionUID = 1L;
+    private int colNum1;
+    private int batchIndex;
+
+    public SelectColumnOne(int colNum1, int batchIndex) {
+      this();
+      this.colNum1 = colNum1;
+      this.batchIndex = batchIndex;
+    }
+
+    public SelectColumnOne() {
+      super();
+    }
+
+    @Override
+    public void evaluate(VectorizedRowBatch batch) {
+
+      if (childExpressions != null) {
+        super.evaluateChildren(batch);
+      }
+
+      batch.selected[0] = batchIndex;
+      batch.size = 1;
+    }
+
+    @Override
+    public int getOutputColumn() {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    @Override
+    public Descriptor getDescriptor() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+  }
+
   @Test
   public void testFilterExprOrExpr() {
     VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
@@ -438,6 +592,134 @@ public class TestVectorLogicalExpressions {
     assertEquals(3, batch1.selected[2]);
     assertEquals(4, batch1.selected[3]);
     assertEquals(7, batch1.selected[4]);
+  }
+
+  @Test
+  public void testFilterExprMultiOrExpr() {
+
+    // Select all with the first expression and expect the other 2 children to not be invoked.
+
+    VectorizedRowBatch batch1a = getBatchThreeBooleanCols();
+
+    SelectColumnAll expr1a = new SelectColumnAll(0);
+    SelectColumnNotExpected expr2a = new SelectColumnNotExpected(1);
+    SelectColumnNotExpected expr3a = new SelectColumnNotExpected(1);
+
+    FilterExprOrExpr orExpr = new FilterExprOrExpr();
+    orExpr.setChildExpressions(new VectorExpression[] {expr1a, expr2a, expr3a});
+
+    orExpr.evaluate(batch1a);
+
+    assertEquals(BOOLEAN_COLUMN_TEST_SIZE, batch1a.size);
+    for (int i = 0; i < BOOLEAN_COLUMN_TEST_SIZE; i++) {
+      assertEquals(i, batch1a.selected[i]);
+    }
+
+    // Select all with the is null and is not null as 2 child expressions, and then
+    // expect the 3rd child to not be invoked.
+
+    VectorizedRowBatch batch1b = getBatchThreeBooleanCols();
+
+    SelectColumnIsNotNull expr1b = new SelectColumnIsNotNull(0);
+    SelectColumnIsNull expr2b = new SelectColumnIsNull(0);
+    SelectColumnNotExpected expr3b = new SelectColumnNotExpected(0);
+
+    FilterExprOrExpr orExpr2 = new FilterExprOrExpr();
+    orExpr2.setChildExpressions(new VectorExpression[] {expr1b, expr2b, expr3b});
+
+    orExpr2.evaluate(batch1b);
+
+    assertEquals(BOOLEAN_COLUMN_TEST_SIZE, batch1b.size);
+    for (int i = 0; i < BOOLEAN_COLUMN_TEST_SIZE; i++) {
+      assertEquals(i, batch1b.selected[i]);
+    }
+
+    // Select all with a is not null child, none as 2nd child, and is null with 3rd, and then
+    // expect the 3rd child to not be invoked.
+
+    VectorizedRowBatch batch1c = getBatchThreeBooleanCols();
+
+    SelectColumnIsNotNull expr1c = new SelectColumnIsNotNull(0);
+    SelectColumnNothing expr2c = new SelectColumnNothing(0);
+    SelectColumnIsNull expr3c = new SelectColumnIsNull(0);
+    SelectColumnNotExpected expr4c = new SelectColumnNotExpected(0);
+
+    FilterExprOrExpr orExpr3 = new FilterExprOrExpr();
+    orExpr3.setChildExpressions(new VectorExpression[] {expr1c, expr2c, expr3c, expr4c});
+
+    orExpr3.evaluate(batch1c);
+
+    assertEquals(BOOLEAN_COLUMN_TEST_SIZE, batch1c.size);
+    for (int i = 0; i < BOOLEAN_COLUMN_TEST_SIZE; i++) {
+      assertEquals(i, batch1c.selected[i]);
+    }
+
+    // Select true fields child, none as 2nd child, and none as 3rd.
+
+    VectorizedRowBatch batch1d = getBatchThreeBooleanCols();
+
+    SelectColumnIsTrue expr1d = new SelectColumnIsTrue(0);
+    SelectColumnNothing expr2d = new SelectColumnNothing(0);
+    SelectColumnNothing expr3d = new SelectColumnNothing(0);
+
+    FilterExprOrExpr orExpr4 = new FilterExprOrExpr();
+    orExpr4.setChildExpressions(new VectorExpression[] {expr1d, expr3d, expr3d});
+
+    orExpr4.evaluate(batch1d);
+
+    int[] expected4 = {2,3,7};
+    assertEquals(expected4.length, batch1d.size);
+    for (int i = 0; i < expected4.length; i++) {
+      assertEquals(expected4[i], batch1d.selected[i]);
+    }
+
+
+    // Select none in 1st child, none as 2nd child, and none as 3rd.
+
+    VectorizedRowBatch batch1e = getBatchThreeBooleanCols();
+
+    SelectColumnNothing expr1e = new SelectColumnNothing(0);
+    SelectColumnNothing expr2e = new SelectColumnNothing(0);
+    SelectColumnNothing expr3e = new SelectColumnNothing(0);
+
+    FilterExprOrExpr orExpr5 = new FilterExprOrExpr();
+    orExpr5.setChildExpressions(new VectorExpression[] {expr1e, expr2e, expr3e});
+
+    orExpr5.evaluate(batch1e);
+
+    assertEquals(0, batch1e.size);
+
+    // Select one in 1st child, none as 2nd child, and none as 3rd.
+
+    VectorizedRowBatch batch1f = getBatchThreeBooleanCols();
+
+    SelectColumnOne expr1f = new SelectColumnOne(0, 4);
+    SelectColumnNothing expr2f = new SelectColumnNothing(0);
+    SelectColumnNothing expr3f = new SelectColumnNothing(0);
+
+    FilterExprOrExpr orExpr6 = new FilterExprOrExpr();
+    orExpr6.setChildExpressions(new VectorExpression[] {expr1f, expr2f, expr3f});
+
+    orExpr6.evaluate(batch1f);
+
+    assertEquals(1, batch1f.size);
+    assertEquals(4, batch1f.selected[0]);
+
+    // Select none in 1st child, one as 2nd child, and none as 3rd.
+
+    VectorizedRowBatch batch1g = getBatchThreeBooleanCols();
+
+    SelectColumnNothing expr1g = new SelectColumnNothing(0);
+    SelectColumnOne expr2g = new SelectColumnOne(0, 2);
+    SelectColumnNothing expr3g = new SelectColumnNothing(0);
+
+    FilterExprOrExpr orExpr7 = new FilterExprOrExpr();
+    orExpr7.setChildExpressions(new VectorExpression[] {expr1g, expr2g, expr3g});
+
+    orExpr7.evaluate(batch1g);
+
+    assertEquals(1, batch1g.size);
+    assertEquals(2, batch1g.selected[0]);
   }
 
   @Test

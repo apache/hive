@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessControlException;
@@ -3882,7 +3883,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @see #handleInsertStatementSpecPhase1(ASTNode, QBParseInfo, org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx)
    * @throws SemanticException
    */
-  private RowResolver handleInsertStatementSpec(List<ExprNodeDesc> col_list, String dest,
+  public RowResolver handleInsertStatementSpec(List<ExprNodeDesc> col_list, String dest,
                                          RowResolver outputRR, RowResolver inputRR, QB qb,
                                          ASTNode selExprList) throws SemanticException {
     //(z,x)
@@ -5369,8 +5370,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         GenericUDFOPOr or = new GenericUDFOPOr();
         List<ExprNodeDesc> expressions = new ArrayList<ExprNodeDesc>(2);
-        expressions.add(previous);
         expressions.add(current);
+        expressions.add(previous);
         ExprNodeDesc orExpr =
             new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, or, expressions);
         previous = orExpr;
@@ -6723,6 +6724,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       outColumnCnt += dpCtx.getNumDPCols();
     }
 
+    // The numbers of input columns and output columns should match for regular query
+    if (!updating() && !deleting() && inColumnCnt != outColumnCnt) {
+      String reason = "Table " + dest + " has " + outColumnCnt
+          + " columns, but query has " + inColumnCnt + " columns.";
+      throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
+          qb.getParseInfo().getDestForClause(dest), reason));
+    }
+
     // Check column types
     boolean converted = false;
     int columnNumber = tableFields.size();
@@ -6829,12 +6838,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         dpCtx.mapInputToDP(rowFields.subList(tableFields.size() + 1, rowFields.size()));
       }
     } else {
-      if (inColumnCnt != outColumnCnt) {
-        String reason = "Table " + dest + " has " + outColumnCnt
-            + " columns, but query has " + inColumnCnt + " columns.";
-        throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
-            qb.getParseInfo().getDestForClause(dest), reason));
-      } else if (dynPart && dpCtx != null) {
+      if (dynPart && dpCtx != null) {
         // create the mapping from input ExprNode to dest table DP column
         dpCtx.mapInputToDP(rowFields.subList(tableFields.size(), rowFields.size()));
       }
@@ -10958,6 +10962,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
+      }
+
+      if(location != null && location.length() != 0) {
+        Path locPath = new Path(location);
+        FileSystem curFs = null;
+        FileStatus locStats = null;
+        try {
+          curFs = locPath.getFileSystem(conf);
+          if(curFs != null) {
+            locStats = curFs.getFileStatus(locPath);
+          }
+          if(locStats != null && locStats.isDir()) {
+            FileStatus[] lStats = curFs.listStatus(locPath);
+            if(lStats != null && lStats.length != 0) {
+              throw new SemanticException(ErrorMsg.CTAS_LOCATION_NONEMPTY.getMsg(location));
+            }
+          }
+        } catch (FileNotFoundException nfe) {
+          //we will create the folder if it does not exist.
+        } catch (IOException ioE) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Exception when validate folder ",ioE);
+          }
+
+        }
       }
 
       tblProps = addDefaultProperties(tblProps);

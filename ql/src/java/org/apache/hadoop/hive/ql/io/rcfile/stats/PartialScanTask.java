@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.io.rcfile.stats;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -59,9 +57,11 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.LogManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
 
 /**
  * PartialScanTask.
@@ -335,14 +335,14 @@ public class PartialScanTask extends Task<PartialScanWork> implements
 
     // print out the location of the log file for the user so
     // that it's easy to find reason for local mode execution failures
-    for (Appender appender : Collections
-        .list((Enumeration<Appender>) LogManager.getRootLogger()
-            .getAllAppenders())) {
+    for (Appender appender : ((Logger) LogManager.getRootLogger()).getAppenders().values()) {
       if (appender instanceof FileAppender) {
-        console.printInfo("Execution log at: "
-            + ((FileAppender) appender).getFile());
+        console.printInfo("Execution log at: " + ((FileAppender) appender).getFileName());
+      } else if (appender instanceof RollingFileAppender) {
+        console.printInfo("Execution log at: " + ((RollingFileAppender) appender).getFileName());
       }
     }
+
 
     PartialScanWork mergeWork = new PartialScanWork(inputPaths);
     DriverContext driverCxt = new DriverContext();
