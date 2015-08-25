@@ -31,6 +31,8 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -300,12 +302,17 @@ public class TypeConverter {
     case DECIMAL:
       return TypeInfoFactory.getDecimalTypeInfo(rType.getPrecision(), rType.getScale());
     case VARCHAR:
-      if (rType.getPrecision() == Integer.MAX_VALUE)
+      int varcharLength = rType.getPrecision();
+      if (varcharLength < 1 || varcharLength > HiveVarchar.MAX_VARCHAR_LENGTH)
         return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
       else
-        return TypeInfoFactory.getVarcharTypeInfo(rType.getPrecision());
+        return TypeInfoFactory.getVarcharTypeInfo(varcharLength);
     case CHAR:
-      return TypeInfoFactory.getCharTypeInfo(rType.getPrecision());
+      int charLength = rType.getPrecision();
+      if (charLength < 1 || charLength > HiveChar.MAX_CHAR_LENGTH)
+        return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
+      else
+        return TypeInfoFactory.getCharTypeInfo(charLength);
     case OTHER:
     default:
       return TypeInfoFactory.voidTypeInfo;

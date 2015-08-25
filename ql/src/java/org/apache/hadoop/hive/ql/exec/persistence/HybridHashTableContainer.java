@@ -118,6 +118,8 @@ public class HybridHashTableContainer
     public HashPartition(int threshold, float loadFactor, int wbSize, long memUsage,
                          boolean createHashMap) {
       if (createHashMap) {
+        // Hash map should be at least the size of our designated wbSize
+        memUsage = Math.max(memUsage, wbSize);
         hashMap = new BytesBytesMultiHashMap(threshold, loadFactor, wbSize, memUsage);
       } else {
         hashMapSpilledOnCreation = true;
@@ -287,6 +289,10 @@ public class HybridHashTableContainer
         writeBufferSize = (int)(memoryThreshold / numPartitions);
       }
     }
+
+    // Round to power of 2 here, as is required by WriteBuffers
+    writeBufferSize = Integer.bitCount(writeBufferSize) == 1 ?
+        writeBufferSize : Integer.highestOneBit(writeBufferSize);
 
     // Cap WriteBufferSize to avoid large preallocations
     writeBufferSize = writeBufferSize < minWbSize ? minWbSize : Math.min(maxWbSize, writeBufferSize);

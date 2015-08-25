@@ -101,34 +101,37 @@ public class GenericUDFRound extends GenericUDF {
         break;
       case BYTE:
         if (!(scaleOI instanceof WritableConstantByteObjectInspector)) {
-          throw new UDFArgumentTypeException(1, "ROUND second argument only takes constant");
+          throw new UDFArgumentTypeException(1, getFuncName().toUpperCase() + " second argument only takes constant");
         }
         scale = ((WritableConstantByteObjectInspector)scaleOI).getWritableConstantValue().get();
         break;
       case SHORT:
         if (!(scaleOI instanceof WritableConstantShortObjectInspector)) {
-          throw new UDFArgumentTypeException(1, "ROUND second argument only takes constant");
+          throw new UDFArgumentTypeException(1, getFuncName().toUpperCase() + " second argument only takes constant");
         }
         scale = ((WritableConstantShortObjectInspector)scaleOI).getWritableConstantValue().get();
         break;
       case INT:
         if (!(scaleOI instanceof WritableConstantIntObjectInspector)) {
-          throw new UDFArgumentTypeException(1, "ROUND second argument only takes constant");
+          throw new UDFArgumentTypeException(1, getFuncName().toUpperCase() + " second argument only takes constant");
         }
         scale = ((WritableConstantIntObjectInspector)scaleOI).getWritableConstantValue().get();
         break;
       case LONG:
         if (!(scaleOI instanceof WritableConstantLongObjectInspector)) {
-          throw new UDFArgumentTypeException(1, "ROUND second argument only takes constant");
+          throw new UDFArgumentTypeException(1, getFuncName().toUpperCase()
+              + " second argument only takes constant");
         }
         long l = ((WritableConstantLongObjectInspector)scaleOI).getWritableConstantValue().get();
         if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
-          throw new UDFArgumentException("ROUND scale argument out of allowed range");
+          throw new UDFArgumentException(getFuncName().toUpperCase()
+              + " scale argument out of allowed range");
         }
         scale = (int)l;
         break;
       default:
-        throw new UDFArgumentTypeException(1, "ROUND second argument only takes integer constant");
+        throw new UDFArgumentTypeException(1, getFuncName().toUpperCase()
+            + " second argument only takes integer constant");
       }
     }
 
@@ -199,7 +202,7 @@ public class GenericUDFRound extends GenericUDF {
       return null;
     case DECIMAL:
       HiveDecimalWritable decimalWritable = (HiveDecimalWritable) inputOI.getPrimitiveWritableObject(input);
-      HiveDecimal dec = RoundUtils.round(decimalWritable.getHiveDecimal(), scale);
+      HiveDecimal dec = round(decimalWritable.getHiveDecimal(), scale);
       if (dec == null) {
         return null;
       }
@@ -209,32 +212,32 @@ public class GenericUDFRound extends GenericUDF {
       if (scale >= 0) {
         return byteWritable;
       } else {
-        return new ByteWritable((byte)RoundUtils.round(byteWritable.get(), scale));
+        return new ByteWritable((byte)round(byteWritable.get(), scale));
       }
     case SHORT:
       ShortWritable shortWritable = (ShortWritable)inputOI.getPrimitiveWritableObject(input);
       if (scale >= 0) {
         return shortWritable;
       } else {
-        return new ShortWritable((short)RoundUtils.round(shortWritable.get(), scale));
+        return new ShortWritable((short)round(shortWritable.get(), scale));
       }
     case INT:
       IntWritable intWritable = (IntWritable)inputOI.getPrimitiveWritableObject(input);
       if (scale >= 0) {
         return intWritable;
       } else {
-        return new IntWritable((int)RoundUtils.round(intWritable.get(), scale));
+        return new IntWritable((int)round(intWritable.get(), scale));
       }
     case LONG:
       LongWritable longWritable = (LongWritable)inputOI.getPrimitiveWritableObject(input);
       if (scale >= 0) {
         return longWritable;
       } else {
-        return new LongWritable(RoundUtils.round(longWritable.get(), scale));
+        return new LongWritable(round(longWritable.get(), scale));
       }
     case FLOAT:
       float f = ((FloatWritable)inputOI.getPrimitiveWritableObject(input)).get();
-      return new FloatWritable((float)RoundUtils.round(f, scale));
+      return new FloatWritable((float)round(f, scale));
      case DOUBLE:
        return round(((DoubleWritable)inputOI.getPrimitiveWritableObject(input)), scale);
     case STRING:
@@ -252,7 +255,19 @@ public class GenericUDFRound extends GenericUDF {
     }
   }
 
-  private static DoubleWritable round(DoubleWritable input, int scale) {
+  protected HiveDecimal round(HiveDecimal input, int scale) {
+    return RoundUtils.round(input, scale);
+  }
+
+  protected long round(long input, int scale) {
+    return RoundUtils.round(input, scale);
+  }
+
+  protected double round(double input, int scale) {
+    return RoundUtils.round(input, scale);
+  }
+
+  protected DoubleWritable round(DoubleWritable input, int scale) {
     double d = input.get();
     if (Double.isNaN(d) || Double.isInfinite(d)) {
       return new DoubleWritable(d);

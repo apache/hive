@@ -43,11 +43,11 @@ EXPLAIN SELECT
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
-  FROM over1korc GROUP BY i LIMIT 10;
+  FROM over1korc GROUP BY i ORDER BY i LIMIT 10;
 
 SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
-  FROM over1korc GROUP BY i LIMIT 10;
+  FROM over1korc GROUP BY i ORDER BY i LIMIT 10;

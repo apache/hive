@@ -6,6 +6,10 @@ set user.name=hive_admin_user;
 create table src_autho_test (key STRING, value STRING) ;
 
 set hive.security.authorization.enabled=true;
+
+--select dummy table
+select 1;
+
 set  role ADMIN; 
 --table grant to user
 

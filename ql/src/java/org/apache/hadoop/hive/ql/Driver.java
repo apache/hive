@@ -441,8 +441,11 @@ public class Driver implements CommandProcessor {
       // to avoid returning sensitive data
       String queryStr = HookUtils.redactLogString(conf, command);
 
+      // get the output schema
+      schema = getSchema(sem, conf);
+
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
-        SessionState.get().getHiveOperation(), getSchema(sem, conf));
+        SessionState.get().getHiveOperation(), schema);
 
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
@@ -453,9 +456,6 @@ public class Driver implements CommandProcessor {
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(conf, plan, null);
       }
-
-      // get the output schema
-      schema = getSchema(sem, conf);
 
       //do the authorization check
       if (!sem.skipAuthorization() &&
@@ -787,7 +787,10 @@ public class Driver implements CommandProcessor {
     for(Entity privObject : privObjects){
       HivePrivilegeObjectType privObjType =
           AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
-
+      if(privObject.isDummy()) {
+        //do not authorize dummy readEntity or writeEntity
+        continue;
+      }
       if(privObject instanceof ReadEntity && !((ReadEntity)privObject).isDirect()){
         // In case of views, the underlying views or tables are not direct dependencies
         // and are not used for authorization checks.
@@ -974,11 +977,19 @@ public class Driver implements CommandProcessor {
         return 10;
       }
 
-      boolean existingTxn = txnMgr.isTxnOpen();
+      boolean initiatingTransaction = false;
+      boolean readOnlyQueryInAutoCommit = false;
       if((txnMgr.getAutoCommit() && haveAcidWrite()) || plan.getOperation() == HiveOperation.START_TRANSACTION ||
         (!txnMgr.getAutoCommit() && startTxnImplicitly)) {
+        if(txnMgr.isTxnOpen()) {
+          throw new RuntimeException("Already have an open transaction txnid:" + txnMgr.getCurrentTxnId());
+        }
         // We are writing to tables in an ACID compliant way, so we need to open a transaction
         txnMgr.openTxn(userFromUGI);
+        initiatingTransaction = true;
+      }
+      else {
+        readOnlyQueryInAutoCommit = txnMgr.getAutoCommit() && plan.getOperation() == HiveOperation.QUERY && !haveAcidWrite();
       }
       // Set the transaction id in all of the acid file sinks
       if (haveAcidWrite()) {
@@ -994,9 +1005,9 @@ public class Driver implements CommandProcessor {
       For multi-stmt txns this is not sufficient and will be managed via WriteSet tracking
       in the lock manager.*/
       txnMgr.acquireLocks(plan, ctx, userFromUGI);
-      if(!existingTxn) {
+      if(initiatingTransaction || readOnlyQueryInAutoCommit) {
         //For multi-stmt txns we should record the snapshot when txn starts but
-        // don't update it after that until txn completes.  Thus the check for {@code existingTxn}
+        // don't update it after that until txn completes.  Thus the check for {@code initiatingTransaction}
         //For autoCommit=true, Read-only statements, txn is implicit, i.e. lock in the snapshot
         //for each statement.
         recordValidTxns();
@@ -1291,6 +1302,7 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {
+    //console.printError(cpr.toString());
     try {
       releaseLocksAndCommitOrRollback(ctx.getHiveLocks(), false);
     }

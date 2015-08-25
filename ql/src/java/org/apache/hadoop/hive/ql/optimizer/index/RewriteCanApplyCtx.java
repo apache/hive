@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
+import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -75,7 +75,7 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
   private String baseTableName;
   private String indexTableName;
   private String aggFunction;
-  
+
   private TableScanOperator tableScanOperator;
   private List<SelectOperator> selectOperators;
   private List<GroupByOperator> groupByOperators;
@@ -156,7 +156,7 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
   /**
    * This method walks all the nodes starting from topOp TableScanOperator node
    * and invokes methods from {@link RewriteCanApplyProcFactory} for each of the rules
-   * added to the opRules map. We use the {@link PreOrderWalker} for a pre-order
+   * added to the opRules map. We use the {@link PreOrderOnceWalker} for a pre-order
    * traversal of the operator tree.
    *
    * The methods from {@link RewriteCanApplyProcFactory} set appropriate values in
@@ -180,7 +180,7 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules, this);
-    GraphWalker ogw = new PreOrderWalker(disp);
+    GraphWalker ogw = new PreOrderOnceWalker(disp);
 
     // Create a list of topop nodes
     List<Node> topNodes = new ArrayList<Node>();

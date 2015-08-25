@@ -140,17 +140,23 @@ public class HiveSchemaTool {
     } else {
       versionQuery = "select t.SCHEMA_VERSION from VERSION t";
     }
-    try {
-      Statement stmt = metastoreConn.createStatement();
-      ResultSet res = stmt.executeQuery(versionQuery);
+    try(Statement stmt = metastoreConn.createStatement();
+        ResultSet res = stmt.executeQuery(versionQuery)) {
       if (!res.next()) {
         throw new HiveMetaException("Didn't find version data in metastore");
       }
       String currentSchemaVersion = res.getString(1);
-      metastoreConn.close();
       return currentSchemaVersion;
     } catch (SQLException e) {
       throw new HiveMetaException("Failed to get schema version.", e);
+    }
+    finally {
+      try {
+        metastoreConn.close();
+      } catch (SQLException e) {
+        System.err.println("Failed to close the metastore connection");
+        e.printStackTrace(System.err);
+      }
     }
   }
 

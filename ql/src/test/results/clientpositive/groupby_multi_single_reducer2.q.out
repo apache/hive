@@ -43,7 +43,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((substr(key, 1, 1) >= 5) or (substr(key, 1, 1) < 5)) (type: boolean)
+              predicate: ((substr(key, 1, 1) < 5) or (substr(key, 1, 1) >= 5)) (type: boolean)
               Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: substr(key, 1, 1) (type: string), key (type: string)

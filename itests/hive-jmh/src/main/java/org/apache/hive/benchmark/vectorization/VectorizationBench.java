@@ -17,7 +17,10 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NotCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColAddDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleColumn;
@@ -124,6 +127,34 @@ public class VectorizationBench {
       return columnVector;
     }
 
+    protected LongColumnVector getBooleanLongColumnVector() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      Random random = new Random();
+      for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+        columnVector.vector[i] = random.nextInt(2);
+      }
+      return columnVector;
+    }
+
+    protected LongColumnVector getBooleanRepeatingLongColumnVector() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      columnVector.fill(1);
+      return columnVector;
+    }
+
+    protected LongColumnVector getBooleanLongColumnVectorWithNull() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      columnVector.noNulls = false;
+      Random random = new Random();
+      for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+        if (i % 100 == 0) {
+          columnVector.isNull[i] = true;
+        }
+        columnVector.vector[i] = random.nextInt(2);
+      }
+      return columnVector;
+    }
+
     protected DoubleColumnVector getDoubleColumnVector() {
       DoubleColumnVector columnVector = new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
       Random random = new Random();
@@ -206,6 +237,68 @@ public class VectorizationBench {
       rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getLongColumnVector(),
         getRepeatingLongColumnVector());
       expression = new LongColDivideLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class ColAndColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
+        getBooleanLongColumnVector());
+      expression = new ColAndCol(0, 1, 2);
+    }
+  }
+
+  public static class ColAndRepeatingColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
+          getBooleanRepeatingLongColumnVector());
+      expression = new ColAndCol(0, 1, 2);
+    }
+  }
+
+  public static class RepeatingColAndColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanRepeatingLongColumnVector(),
+          getBooleanLongColumnVector());
+      expression = new ColAndCol(0, 1, 2);
+    }
+  }
+
+  public static class ColOrColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
+          getBooleanLongColumnVector());
+      expression = new ColOrCol(0, 1, 2);
+    }
+  }
+
+  public static class ColOrRepeatingColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
+          getBooleanRepeatingLongColumnVector());
+      expression = new ColOrCol(0, 1, 2);
+    }
+  }
+
+  public static class RepeatingColOrColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanRepeatingLongColumnVector(),
+          getBooleanLongColumnVector());
+      expression = new ColOrCol(0, 1, 2);
+    }
+  }
+
+  public static class NotColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getBooleanLongColumnVector());
+      expression = new NotCol(0, 1);
     }
   }
 

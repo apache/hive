@@ -153,7 +153,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -175,7 +175,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -342,7 +342,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -364,7 +364,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -568,7 +568,7 @@ STAGE PLANS:
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
-                                numFiles 1
+                                numFiles 2
                                 numRows 5
                                 rawDataSize 15
                                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -599,7 +599,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -621,7 +621,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -651,7 +651,7 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
-                numFiles 1
+                numFiles 2
                 numRows 5
                 rawDataSize 15
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -791,7 +791,7 @@ STAGE PLANS:
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
-                                numFiles 1
+                                numFiles 2
                                 numRows 5
                                 rawDataSize 15
                                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -822,7 +822,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -844,7 +844,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -874,7 +874,7 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
-                numFiles 1
+                numFiles 2
                 numRows 5
                 rawDataSize 15
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -1036,7 +1036,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -1058,7 +1058,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -1229,7 +1229,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -1251,7 +1251,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -1456,7 +1456,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -1478,7 +1478,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -1522,7 +1522,7 @@ STAGE PLANS:
                           columns.types int:int:int
 #### A masked pattern was here ####
                           name default.outputtbl3
-                          numFiles 1
+                          numFiles 2
                           numRows 5
                           rawDataSize 25
                           serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
@@ -1552,7 +1552,7 @@ STAGE PLANS:
                 columns.types int:int:int
 #### A masked pattern was here ####
                 name default.outputtbl3
-                numFiles 1
+                numFiles 2
                 numRows 5
                 rawDataSize 25
                 serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
@@ -1729,7 +1729,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -1751,7 +1751,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -1795,7 +1795,7 @@ STAGE PLANS:
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
-                          numFiles 1
+                          numFiles 2
                           numRows 5
                           rawDataSize 15
                           serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -1825,7 +1825,7 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
-                numFiles 1
+                numFiles 2
                 numRows 5
                 rawDataSize 15
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -2023,7 +2023,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -2045,7 +2045,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -2127,7 +2127,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -2149,7 +2149,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -2368,7 +2368,7 @@ STAGE PLANS:
                                   columns.types int:int
 #### A masked pattern was here ####
                                   name default.outputtbl1
-                                  numFiles 2
+                                  numFiles 4
                                   numRows 10
                                   rawDataSize 30
                                   serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -2399,7 +2399,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -2421,7 +2421,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -2476,7 +2476,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -2498,7 +2498,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -2542,7 +2542,7 @@ STAGE PLANS:
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
-                          numFiles 2
+                          numFiles 4
                           numRows 10
                           rawDataSize 30
                           serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -2572,7 +2572,7 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
-                numFiles 2
+                numFiles 4
                 numRows 10
                 rawDataSize 30
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -2780,7 +2780,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -2802,7 +2802,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -2857,7 +2857,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -2879,7 +2879,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -2925,7 +2925,7 @@ STAGE PLANS:
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
-                          numFiles 3
+                          numFiles 4
                           numRows 10
                           rawDataSize 32
                           serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -2955,7 +2955,7 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
-                numFiles 3
+                numFiles 4
                 numRows 10
                 rawDataSize 32
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -3145,7 +3145,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -3167,7 +3167,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}
@@ -3222,7 +3222,7 @@ STAGE PLANS:
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.t1
-                    numFiles 1
+                    numFiles 2
                     numRows 6
                     rawDataSize 24
                     serialization.ddl struct t1 { string key, string val}
@@ -3244,7 +3244,7 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.t1
-                      numFiles 1
+                      numFiles 2
                       numRows 6
                       rawDataSize 24
                       serialization.ddl struct t1 { string key, string val}

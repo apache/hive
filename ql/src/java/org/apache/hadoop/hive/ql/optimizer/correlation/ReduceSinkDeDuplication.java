@@ -500,7 +500,7 @@ public class ReduceSinkDeDuplication implements Transform {
     public Object process(ReduceSinkOperator cRS, GroupByOperator cGBY,
         ReduceSinkDeduplicateProcCtx dedupCtx)
         throws SemanticException {
-      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS);
+      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       GroupByOperator pGBY =
           CorrelationUtilities.findPossibleParent(
               start, GroupByOperator.class, dedupCtx.trustScript());
@@ -547,7 +547,7 @@ public class ReduceSinkDeDuplication implements Transform {
     public Object process(ReduceSinkOperator cRS, GroupByOperator cGBY,
         ReduceSinkDeduplicateProcCtx dedupCtx)
         throws SemanticException {
-      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS);
+      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       JoinOperator pJoin =
           CorrelationUtilities.findPossibleParent(
               start, JoinOperator.class, dedupCtx.trustScript());
@@ -590,7 +590,7 @@ public class ReduceSinkDeDuplication implements Transform {
     public Object process(ReduceSinkOperator cRS, GroupByOperator cGBY,
         ReduceSinkDeduplicateProcCtx dedupCtx)
         throws SemanticException {
-      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS);
+      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       ReduceSinkOperator pRS =
           CorrelationUtilities.findPossibleParent(
               start, ReduceSinkOperator.class, dedupCtx.trustScript());

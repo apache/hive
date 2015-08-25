@@ -51,6 +51,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.logging.Log;
@@ -6261,7 +6262,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private void validateTableCols(Table table, List<String> colNames) throws MetaException {
+  @VisibleForTesting
+  public void validateTableCols(Table table, List<String> colNames) throws MetaException {
     List<FieldSchema> colList = table.getSd().getCols();
     for (String colName : colNames) {
       boolean foundCol = false;
@@ -6272,7 +6274,8 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       if (!foundCol) {
-        throw new MetaException("Column " + colName + " doesn't exist.");
+        throw new MetaException("Column " + colName + " doesn't exist in table "
+            + table.getTableName() + " in database " + table.getDbName());
       }
     }
   }

@@ -50,8 +50,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
   private boolean hasBase;
   private final List<AcidInputFormat.DeltaMetaData> deltas = new ArrayList<>();
   private OrcFile.WriterVersion writerVersion;
-  private Long fileId;
   private long projColsUncompressedSize;
+  private transient Long fileId;
 
   static final int HAS_FILEID_FLAG = 8;
   static final int BASE_FLAG = 4;
@@ -174,6 +174,10 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
     return deltas;
   }
 
+  public long getProjectedColumnsUncompressedSize() {
+    return projColsUncompressedSize;
+  }
+
   public Long getFileId() {
     return fileId;
   }
@@ -182,5 +186,4 @@ public class OrcSplit extends FileSplit implements ColumnarSplit {
   public long getColumnarProjectionSize() {
     return projColsUncompressedSize;
   }
-
 }

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<Configuration status="info" strict="true" name="PTest2Log4j2"
+ packages="org.apache.hadoop.hive.ql.log">
+
+  <Properties>
+    <Property name="hive.ptest.log.threshold">DEBUG</Property>
+    <Property name="hive.ptest.log.level">DEBUG</Property>
+    <Property name="hive.ptest.root.logger">FILE</Property>
+    <Property name="hive.ptest.log.dir">target</Property>
+    <Property name="hive.ptest.log.file">ptest.log</Property>
+  </Properties>
+
+  <Appenders>
+    <Console name="console" target="SYSTEM_ERR">
+      <PatternLayout pattern="%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n"/>
+    </Console>
+
+    <!-- Size based Rolling File Appender -->
+    <RollingFile name="FILE" fileName="${sys:hive.ptest.log.dir}/${sys:hive.ptest.log.file}"
+     filePattern="${sys:hive.ptest.log.dir}/${sys:hive.ptest.log.file}.%i">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n" />
+      <Policies>
+        <SizeBasedTriggeringPolicy size="50 MB" />
+      </Policies>
+      <DefaultRolloverStrategy max="1"/>
+    </RollingFile>
+
+  </Appenders>
+
+  <Loggers>
+    <Root level="${sys:hive.ptest.log.threshold}">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}" level="${sys:hive.ptest.log.level}"/>
+    </Root>
+
+    <Logger name="org.apache.http" level="INFO">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
+    </Logger>
+    <Logger name="org.springframework" level="INFO">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
+    </Logger>
+    <Logger name="org.jclouds" level="INFO">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
+    </Logger>
+    <Logger name="jclouds" level="INFO">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.hive" level="DEBUG">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.http" level="TRACE">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
+    </Logger>
+
+    <!-- Silence useless ZK logs -->
+    <Logger name="org.apache.zookeeper.server.NIOServerCnxn" level="WARN">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.zookeeper.ClientCnxnSocketNIO" level="WARN">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
+    </Logger>
+  </Loggers>
+
+</Configuration>

@@ -40,4 +40,4 @@ POSTHOOK: query: load data local inpath '../../data/files/over1k' into table ove
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@over1k
-FAILED: SemanticException [Error 10016]: Line 7:26 Argument type mismatch '4': Only primitive type arguments are accepted but array<int> is passed. as  arguments
+FAILED: SemanticException [Error 10016]: Line 7:12 Argument type mismatch '3': Only primitive type arguments are accepted but array<int> is passed.

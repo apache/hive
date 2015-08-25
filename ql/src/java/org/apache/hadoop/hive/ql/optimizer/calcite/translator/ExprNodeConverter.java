@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,11 +42,9 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
@@ -139,29 +136,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         && SqlTypeUtil.equalSansNullability(dTFactory, call.getType(),
             call.operands.get(0).getType())) {
       return args.get(0);
-    } else if (ASTConverter.isFlat(call)) {
-      // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
-      // exprnode
-      GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), 2);
-      ArrayList<ExprNodeDesc> tmpExprArgs = new ArrayList<ExprNodeDesc>();
-      tmpExprArgs.addAll(args.subList(0, 2));
-      try {
-        gfDesc = ExprNodeGenericFuncDesc.newInstance(hiveUdf, tmpExprArgs);
-      } catch (UDFArgumentException e) {
-        LOG.error(e);
-        throw new RuntimeException(e);
-      }
-      for (int i = 2; i < call.operands.size(); i++) {
-        tmpExprArgs = new ArrayList<ExprNodeDesc>();
-        tmpExprArgs.add(gfDesc);
-        tmpExprArgs.add(args.get(i));
-        try {
-          gfDesc = ExprNodeGenericFuncDesc.newInstance(hiveUdf, tmpExprArgs);
-        } catch (UDFArgumentException e) {
-          LOG.error(e);
-          throw new RuntimeException(e);
-        }
-      }
     } else {
       GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(),
           args.size());
@@ -225,23 +199,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     case DECIMAL:
       return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
           lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
-    case VARCHAR: {
-      int varcharLength = lType.getPrecision();
-      // If we cannot use Varchar due to type length restrictions, we use String
-      if (varcharLength < 1 || varcharLength > HiveVarchar.MAX_VARCHAR_LENGTH) {
-        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-      }
-      return new ExprNodeConstantDesc(TypeInfoFactory.getVarcharTypeInfo(varcharLength),
-          new HiveVarchar((String) literal.getValue3(), varcharLength));
-    }
+    case VARCHAR:
     case CHAR: {
-      int charLength = lType.getPrecision();
-      // If we cannot use Char due to type length restrictions, we use String
-      if (charLength < 1 || charLength > HiveChar.MAX_CHAR_LENGTH) {
-        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-      }
-      return new ExprNodeConstantDesc(TypeInfoFactory.getCharTypeInfo(charLength),
-          new HiveChar((String) literal.getValue3(), charLength));
+      return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
     }
     case INTERVAL_YEAR_MONTH: {
       BigDecimal monthsBd = (BigDecimal) literal.getValue();

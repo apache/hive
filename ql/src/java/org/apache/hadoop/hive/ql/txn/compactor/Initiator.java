@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
+ * It's critical that there exactly 1 of these in a given warehouse.
  */
 public class Initiator extends CompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();

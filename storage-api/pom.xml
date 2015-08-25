@@ -32,13 +32,6 @@
   </properties>
 
   <dependencies>
-    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
-    <!-- inter-project -->
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>${log4j.version}</version>
-    </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>

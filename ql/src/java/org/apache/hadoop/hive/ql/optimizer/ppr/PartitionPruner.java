@@ -277,35 +277,64 @@ public class PartitionPruner implements Transform {
       GenericUDF udf = ((ExprNodeGenericFuncDesc)expr).getGenericUDF();
       boolean isAnd = udf instanceof GenericUDFOPAnd;
       boolean isOr = udf instanceof GenericUDFOPOr;
+      List<ExprNodeDesc> children = expr.getChildren();
 
-      if (isAnd || isOr) {
-        List<ExprNodeDesc> children = expr.getChildren();
-        ExprNodeDesc left = compactExpr(children.get(0));
-        ExprNodeDesc right = compactExpr(children.get(1));
+      if (isAnd) {
         // Non-partition expressions are converted to nulls.
-        if (left == null && right == null) {
-          return null;
-        } else if (left == null) {
-          return isAnd ? right : null;
-        } else if (right == null) {
-          return isAnd ? left : null;
+        List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
+        boolean allTrue = true;
+        for (ExprNodeDesc child : children) {
+          ExprNodeDesc compactChild = compactExpr(child);
+          if (compactChild != null) {
+            if (!isTrueExpr(compactChild)) {
+              newChildren.add(compactChild);
+              allTrue = false;
+            }
+            if (isFalseExpr(compactChild)) {
+              return new ExprNodeConstantDesc(Boolean.FALSE);
+            }
+          } else {
+            allTrue = false;
+          }
         }
-        // Handle boolean expressions
-        boolean isLeftFalse = isFalseExpr(left), isRightFalse = isFalseExpr(right),
-            isLeftTrue = isTrueExpr(left), isRightTrue = isTrueExpr(right);
-        if ((isRightTrue && isLeftTrue) || (isOr && (isLeftTrue || isRightTrue))) {
+
+        if (newChildren.size() == 0) {
+          return null;
+        }
+        if (newChildren.size() == 1) {
+          return newChildren.get(0);
+        }
+        if (allTrue) {
           return new ExprNodeConstantDesc(Boolean.TRUE);
-        } else if ((isRightFalse && isLeftFalse) || (isAnd && (isLeftFalse || isRightFalse))) {
-          return new ExprNodeConstantDesc(Boolean.FALSE);
-        } else if ((isAnd && isLeftTrue) || (isOr && isLeftFalse)) {
-          return right;
-        } else if ((isAnd && isRightTrue) || (isOr && isRightFalse)) {
-          return left;
         }
         // Nothing to compact, update expr with compacted children.
-        children.set(0, left);
-        children.set(1, right);
+        ((ExprNodeGenericFuncDesc) expr).setChildren(newChildren);
+      } else if (isOr) {
+        // Non-partition expressions are converted to nulls.
+        List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
+        boolean allFalse = true;
+        for (ExprNodeDesc child : children) {
+          ExprNodeDesc compactChild = compactExpr(child);
+          if (compactChild != null) {
+            if (isTrueExpr(compactChild)) {
+              return new ExprNodeConstantDesc(Boolean.TRUE);
+            }
+            if (!isFalseExpr(compactChild)) {
+              newChildren.add(compactChild);
+              allFalse = false;
+            }
+          } else {
+            return null;
+          }
+        }
+
+        if (allFalse) {
+          return new ExprNodeConstantDesc(Boolean.FALSE);
+        }
+        // Nothing to compact, update expr with compacted children.
+        ((ExprNodeGenericFuncDesc) expr).setChildren(newChildren);
       }
+
       return expr;
     } else {
       throw new IllegalStateException("Unexpected type of ExprNodeDesc: " + expr.getExprString());

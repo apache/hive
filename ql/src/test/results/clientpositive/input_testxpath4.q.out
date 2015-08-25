@@ -24,7 +24,7 @@ STAGE PLANS:
             alias: src_thrift
             Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null) (type: boolean)
+              predicate: (mstringstring['key_9'] is not null and lintstring.myint is not null and lintstring is not null) (type: boolean)
               Statistics: Num rows: 2 Data size: 558 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: mstringstring['key_9'] (type: string), lintstring.myint (type: array<int>)

@@ -211,13 +211,13 @@ public class HiveConnection implements java.sql.Connection {
         break;
       } catch (TTransportException e) {
         LOG.info("Could not open client transport with JDBC Uri: " + jdbcUriString);
-        // We'll retry till we exhaust all HiveServer2 uris from ZooKeeper
+        // We'll retry till we exhaust all HiveServer2 nodes from ZooKeeper
         if ((sessConfMap.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE) != null)
             && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(sessConfMap
                 .get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE)))) {
           try {
             // Update jdbcUriString, host & port variables in connParams
-            // Throw an exception if all HiveServer2 uris have been exhausted,
+            // Throw an exception if all HiveServer2 nodes have been exhausted,
             // or if we're unable to connect to ZooKeeper.
             Utils.updateConnParamsFromZooKeeper(connParams);
           } catch (ZooKeeperHiveClientException ze) {
@@ -959,15 +959,13 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Connection is closed");
     }
-    Statement stmt = createStatement();
-    ResultSet res = stmt.executeQuery("SELECT current_database()");
-    if (!res.next()) {
-      throw new SQLException("Failed to get schema information");
+    try (Statement stmt = createStatement();
+         ResultSet res = stmt.executeQuery("SELECT current_database()")) {
+      if (!res.next()) {
+        throw new SQLException("Failed to get schema information");
+      }
+      return res.getString(1);
     }
-    String schemaName = res.getString(1);
-    res.close();
-    stmt.close();
-    return schemaName;
   }
 
   /*
@@ -1279,8 +1277,16 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public void setReadOnly(boolean readOnly) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    // Per JDBC spec, if the connection is closed a SQLException should be thrown.
+    if (isClosed) {
+      throw new SQLException("Connection is closed");
+    }
+    // Per JDBC spec, the request defines a hint to the driver to enable database optimizations.
+    // The read-only mode for this connection is disabled and cannot be enabled (isReadOnly always returns false).
+    // The most correct behavior is to throw only if the request tries to enable the read-only mode.
+    if(readOnly) {
+      throw new SQLException("Enabling read-only mode not supported");
+    }
   }
 
   /*

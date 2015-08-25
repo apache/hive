@@ -122,8 +122,8 @@ public class QTestUtil {
 
   private static final Log LOG = LogFactory.getLog("QTestUtil");
   private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
-  private final String defaultInitScript = "q_test_init.sql";
-  private final String defaultCleanupScript = "q_test_cleanup.sql";
+  private final static String defaultInitScript = "q_test_init.sql";
+  private final static String defaultCleanupScript = "q_test_cleanup.sql";
   private final String[] testOnlyCommands = new String[]{"crypto"};
 
   private String testWarehouse;
@@ -150,7 +150,6 @@ public class QTestUtil {
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private HadoopShims.HdfsEncryptionShim hes = null;
-  private boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
   private SparkSession sparkSession = null;
@@ -210,7 +209,7 @@ public class QTestUtil {
           continue;
         }
 
-        if (file.isDir()) {
+        if (file.isDirectory()) {
           if (!destFs.exists(local_path)) {
             destFs.mkdirs(local_path);
           }
@@ -429,14 +428,9 @@ public class QTestUtil {
     if (scriptsDir == null) {
       scriptsDir = new File(".").getAbsolutePath() + "/data/scripts";
     }
-    if (initScript.isEmpty()) {
-      initScript = defaultInitScript;
-    }
-    if (cleanupScript.isEmpty()) {
-      cleanupScript = defaultCleanupScript;
-    }
-    this.initScript = scriptsDir + "/" + initScript;
-    this.cleanupScript = scriptsDir + "/" + cleanupScript;
+
+    this.initScript = scriptsDir + File.separator + initScript;
+    this.cleanupScript = scriptsDir + File.separator + cleanupScript;
 
     overWrite = "true".equalsIgnoreCase(System.getProperty("test.output.overwrite"));
 
@@ -724,7 +718,7 @@ public class QTestUtil {
       FileSystem fileSystem = p.getFileSystem(conf);
       if (fileSystem.exists(p)) {
         for (FileStatus status : fileSystem.listStatus(p)) {
-          if (status.isDir() && !srcTables.contains(status.getPath().getName())) {
+          if (status.isDirectory() && !srcTables.contains(status.getPath().getName())) {
             fileSystem.delete(status.getPath(), true);
           }
         }
@@ -774,16 +768,19 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearKeysCreatedInTests();
 
-    SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", true);
-
-    String cleanupCommands = readEntireFileIntoString(new File(cleanupScript));
-    LOG.info("Cleanup (" + cleanupScript + "):\n" + cleanupCommands);
-    if(cliDriver == null) {
-      cliDriver = new CliDriver();
+    File cleanupFile = new File(cleanupScript);
+    if (cleanupFile.isFile()) {
+      String cleanupCommands = readEntireFileIntoString(cleanupFile);
+      LOG.info("Cleanup (" + cleanupScript + "):\n" + cleanupCommands);
+      if(cliDriver == null) {
+        cliDriver = new CliDriver();
+      }
+      SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", true);
+      cliDriver.processLine(cleanupCommands);
+      SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", false);
+    } else {
+      LOG.info("No cleanup script detected. Skipping.");
     }
-    cliDriver.processLine(cleanupCommands);
-
-    SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", false);
 
     // delete any contents in the warehouse dir
     Path p = new Path(testWarehouse);
@@ -828,14 +825,21 @@ public class QTestUtil {
     if(!isSessionStateStarted) {
       startSessionState();
     }
-    conf.setBoolean("hive.test.init.phase", true);
 
-    String initCommands = readEntireFileIntoString(new File(this.initScript));
-    LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
     if(cliDriver == null) {
       cliDriver = new CliDriver();
     }
     cliDriver.processLine("set test.data.dir=" + testFiles + ";");
+    File scriptFile = new File(this.initScript);
+    if (!scriptFile.isFile()) {
+      LOG.info("No init script detected. Skipping");
+      return;
+    }
+    conf.setBoolean("hive.test.init.phase", true);
+
+    String initCommands = readEntireFileIntoString(scriptFile);
+    LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
+
     cliDriver.processLine(initCommands);
 
     conf.setBoolean("hive.test.init.phase", false);
@@ -1154,11 +1158,6 @@ public class QTestUtil {
     newCommands.append(commands.substring(lastMatchEnd, commands.length()));
     commands = newCommands.toString();
     return commands;
-  }
-
-  private boolean isComment(final String line) {
-    String lineTrimmed = line.trim();
-    return lineTrimmed.startsWith("#") || lineTrimmed.startsWith("--");
   }
 
   public boolean shouldBeSkipped(String tname) {
@@ -1836,8 +1835,8 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(
-          resDir, logDir, MiniClusterType.none, null, null, "0.20", "", false);
+      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
+          defaultInitScript, defaultCleanupScript, false);
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

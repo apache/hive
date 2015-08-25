@@ -1408,11 +1408,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER) &&
             !MetaStoreUtils.isView(tbl)) {
-          if (tbl.getPartitionKeysSize() == 0)  { // Unpartitioned table
-            MetaStoreUtils.updateUnpartitionedTableStatsFast(db, tbl, wh, madeDir);
-          } else { // Partitioned table with no partitions.
-            MetaStoreUtils.updateUnpartitionedTableStatsFast(db, tbl, wh, true);
-          }
+          MetaStoreUtils.updateTableStatsFast(db, tbl, wh, madeDir);
         }
 
         // set create time
@@ -5931,7 +5927,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // If the log4j.configuration property hasn't already been explicitly set,
     // use Hive's default log4j configuration
-    if (System.getProperty("log4j.configuration") == null) {
+    if (System.getProperty("log4j.configurationFile") == null) {
       // NOTE: It is critical to do this here so that log4j is reinitialized
       // before any of the other core hive classes are loaded
       try {
@@ -6225,6 +6221,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startCompactorInitiator(conf);
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
+          startHouseKeeperService(conf);
         } catch (Throwable e) {
           LOG.error("Failure when starting the compactor, compactions may not happen, " +
               StringUtils.stringifyException(e));
@@ -6283,5 +6280,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     thread.setThreadId(nextThreadId++);
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
+  }
+  private static void startHouseKeeperService(HiveConf conf) throws Exception {
+    if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_INITIATOR_ON)) {
+      return;
+    }
+    Class c = Class.forName("org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService");
+    //todo: when metastore adds orderly-shutdown logic, houseKeeper.stop()
+    //should be called form it
+    HouseKeeperService houseKeeper = (HouseKeeperService)c.newInstance();
+    try {
+      houseKeeper.start(conf);
+    }
+    catch (Exception ex) {
+      LOG.fatal("Failed to start " + houseKeeper.getClass() +
+        ".  The system will not handle " + houseKeeper.getServiceDescription()  +
+        ".  Root Cause: ", ex);
+    }
   }
 }

@@ -215,11 +215,11 @@ else
 fi
 
 if [[ -z "$WEBHCAT_LOG4J" ]]; then
-  WEBHCAT_LOG4J="file://$base_dir/etc/webhcat/webhcat-log4j.properties";
+  WEBHCAT_LOG4J="file://$base_dir/etc/webhcat/webhcat-log4j2.xml";
 fi
 
 export HADOOP_USER_CLASSPATH_FIRST=true
-export HADOOP_OPTS="${HADOOP_OPTS} -Dwebhcat.log.dir=$WEBHCAT_LOG_DIR -Dlog4j.configuration=$WEBHCAT_LOG4J"
+export HADOOP_OPTS="${HADOOP_OPTS} -Dwebhcat.log.dir=$WEBHCAT_LOG_DIR -Dlog4j.configurationFile=$WEBHCAT_LOG4J"
 
 start_cmd="$HADOOP_PREFIX/bin/hadoop jar $JAR org.apache.hive.hcatalog.templeton.Main  "
 

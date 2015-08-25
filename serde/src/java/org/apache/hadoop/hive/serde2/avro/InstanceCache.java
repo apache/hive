@@ -17,20 +17,21 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
- * Cache for objects whose creation only depends on some other set of objects
- * and therefore can be used against other equivalent versions of those
- * objects.  Essentially memoizes instance creation.
+ * Cache for objects whose creation only depends on some other set of objects and therefore can be
+ * used against other equivalent versions of those objects. Essentially memoizes instance creation.
  *
- * @param <SeedObject>  Object that determines the instance
- * @param <Instance>  Instance that will be created from SeedObject.
+ * @param <SeedObject> Object that determines the instance. The cache uses this object as a key for
+ *          its hash which is why it is imperative to have appropriate equals and hashcode
+ *          implementation for this object for the cache to work properly
+ * @param <Instance> Instance that will be created from SeedObject.
  */
 public abstract class InstanceCache<SeedObject, Instance> {
   private static final Log LOG = LogFactory.getLog(InstanceCache.class);

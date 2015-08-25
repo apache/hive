@@ -32,6 +32,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BRoundWithNumDigitsDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DoubleColumnInList;
@@ -94,6 +95,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterVarCharColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterVarCharColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterCharColumnBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterCharColumnNotBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncBRoundDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRoundDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
@@ -114,6 +116,7 @@ import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBRound;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
@@ -500,6 +503,84 @@ public class TestVectorizationContext {
     assertEquals(veOr.getClass(), FilterExprOrExpr.class);
     assertEquals(veOr.getChildExpressions()[0].getClass(), FilterLongColGreaterLongScalar.class);
     assertEquals(veOr.getChildExpressions()[1].getClass(), FilterDoubleColLessDoubleScalar.class);
+  }
+
+  @Test
+  public void testVectorizeFilterMultiAndOrExpression() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(Integer.class, "col1", "table", false);
+    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(new Integer(10));
+
+    GenericUDFOPGreaterThan udf = new GenericUDFOPGreaterThan();
+    ExprNodeGenericFuncDesc greaterExprDesc = new ExprNodeGenericFuncDesc();
+    greaterExprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    greaterExprDesc.setGenericUDF(udf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
+    children1.add(col1Expr);
+    children1.add(constDesc);
+    greaterExprDesc.setChildren(children1);
+
+    ExprNodeColumnDesc col2Expr = new ExprNodeColumnDesc(Float.class, "col2", "table", false);
+    ExprNodeConstantDesc const2Desc = new ExprNodeConstantDesc(new Float(1.0));
+
+    GenericUDFOPLessThan udf2 = new GenericUDFOPLessThan();
+    ExprNodeGenericFuncDesc lessExprDesc = new ExprNodeGenericFuncDesc();
+    lessExprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    lessExprDesc.setGenericUDF(udf2);
+    List<ExprNodeDesc> children2 = new ArrayList<ExprNodeDesc>(2);
+    children2.add(col2Expr);
+    children2.add(const2Desc);
+    lessExprDesc.setChildren(children2);
+
+    ExprNodeColumnDesc col3Expr = new ExprNodeColumnDesc(Integer.class, "col3", "table", false);
+    ExprNodeConstantDesc const3Desc = new ExprNodeConstantDesc(new Integer(10));
+
+    GenericUDFOPGreaterThan udf3 = new GenericUDFOPGreaterThan();
+    ExprNodeGenericFuncDesc greaterExprDesc3 = new ExprNodeGenericFuncDesc();
+    greaterExprDesc3.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    greaterExprDesc3.setGenericUDF(udf3);
+    List<ExprNodeDesc> children3 = new ArrayList<ExprNodeDesc>(2);
+    children3.add(col3Expr);
+    children3.add(const3Desc);
+    greaterExprDesc3.setChildren(children3);
+
+    GenericUDFOPAnd andUdf = new GenericUDFOPAnd();
+    ExprNodeGenericFuncDesc andExprDesc = new ExprNodeGenericFuncDesc();
+    andExprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    andExprDesc.setGenericUDF(andUdf);
+    List<ExprNodeDesc> children4 = new ArrayList<ExprNodeDesc>(2);
+    children4.add(greaterExprDesc);
+    children4.add(lessExprDesc);
+    children4.add(greaterExprDesc3);
+    andExprDesc.setChildren(children4);
+
+    List<String> columns = new ArrayList<String>();
+    columns.add("col0");
+    columns.add("col1");
+    columns.add("col2");
+    columns.add("col3");
+    VectorizationContext vc = new VectorizationContext("name", columns);
+
+    VectorExpression ve = vc.getVectorExpression(andExprDesc, VectorExpressionDescriptor.Mode.FILTER);
+
+    assertEquals(ve.getClass(), FilterExprAndExpr.class);
+    assertEquals(ve.getChildExpressions()[0].getClass(), FilterLongColGreaterLongScalar.class);
+    assertEquals(ve.getChildExpressions()[1].getClass(), FilterDoubleColLessDoubleScalar.class);
+    assertEquals(ve.getChildExpressions()[2].getClass(), FilterLongColGreaterLongScalar.class);
+
+    GenericUDFOPOr orUdf = new GenericUDFOPOr();
+    ExprNodeGenericFuncDesc orExprDesc = new ExprNodeGenericFuncDesc();
+    orExprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    orExprDesc.setGenericUDF(orUdf);
+    List<ExprNodeDesc> children5 = new ArrayList<ExprNodeDesc>(2);
+    children5.add(greaterExprDesc);
+    children5.add(lessExprDesc);
+    children5.add(greaterExprDesc3);
+    orExprDesc.setChildren(children5);
+    VectorExpression veOr = vc.getVectorExpression(orExprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertEquals(veOr.getClass(), FilterExprOrExpr.class);
+    assertEquals(veOr.getChildExpressions()[0].getClass(), FilterLongColGreaterLongScalar.class);
+    assertEquals(veOr.getChildExpressions()[1].getClass(), FilterDoubleColLessDoubleScalar.class);
+    assertEquals(ve.getChildExpressions()[2].getClass(), FilterLongColGreaterLongScalar.class);
   }
 
   @Test
@@ -911,6 +992,12 @@ public class TestVectorizationContext {
     ve = vc.getVectorExpression(mathFuncExpr);
     Assert.assertEquals(FuncRoundDoubleToDouble.class, ve.getClass());
 
+    // BRound without digits
+    GenericUDFBRound udfBRound = new GenericUDFBRound();
+    mathFuncExpr.setGenericUDF(udfBRound);
+    ve = vc.getVectorExpression(mathFuncExpr);
+    Assert.assertEquals(FuncBRoundDoubleToDouble.class, ve.getClass());
+
     // Round with digits
     mathFuncExpr.setGenericUDF(udfRound);
     children2.add(new ExprNodeConstantDesc(4));
@@ -918,6 +1005,12 @@ public class TestVectorizationContext {
     ve = vc.getVectorExpression(mathFuncExpr);
     Assert.assertEquals(RoundWithNumDigitsDoubleToDouble.class, ve.getClass());
     Assert.assertEquals(4, ((RoundWithNumDigitsDoubleToDouble) ve).getDecimalPlaces().get());
+
+    // BRound with digits
+    mathFuncExpr.setGenericUDF(udfBRound);
+    ve = vc.getVectorExpression(mathFuncExpr);
+    Assert.assertEquals(BRoundWithNumDigitsDoubleToDouble.class, ve.getClass());
+    Assert.assertEquals(4, ((BRoundWithNumDigitsDoubleToDouble) ve).getDecimalPlaces().get());
 
     // Log with int base
     gudfBridge = new GenericUDFBridge("log", false, UDFLog.class.getName());

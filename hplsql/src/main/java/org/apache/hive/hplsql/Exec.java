@@ -670,6 +670,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (!parseArguments(args)) {
       return 1;
     }
+    // specify the default log4j2 properties file.
+    System.setProperty("log4j.configurationFile", "hive-log4j2.xml");
     conf = new Conf();
     conf.init();    
     conn = new Conn(this);

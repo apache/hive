@@ -386,7 +386,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
 
     org.apache.hadoop.hive.metastore.api.Table newtCopy = deepCopyAndLowerCaseTable(newt);
-    MetaStoreUtils.updateUnpartitionedTableStatsFast(newtCopy,
+    MetaStoreUtils.updateTableStatsFast(newtCopy,
         getWh().getFileStatusesForSD(newtCopy.getSd()), false, true);
     Table newTable = new Table(newtCopy);
     String newDbName = newTable.getDbName();
