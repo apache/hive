@@ -75,14 +75,18 @@ public class HBaseImport {
 
   static final private Log LOG = LogFactory.getLog(HBaseImport.class.getName());
 
-  public static void main(String[] args) {
+  public static int main(String[] args) {
     try {
-      HBaseImport tool = new HBaseImport(args);
+      HBaseImport tool = new HBaseImport();
+      int rv = tool.init(args);
+      if (rv != 0) return rv;
       tool.run();
     } catch (Exception e) {
       System.err.println("Caught exception " + e.getClass().getName() + " with message <" +
           e.getMessage() + ">");
+      return 1;
     }
+    return 0;
   }
 
   private ThreadLocal<RawStore> rdbmsStore = new ThreadLocal<RawStore>() {
@@ -121,8 +125,14 @@ public class HBaseImport {
   private int parallel;
   private int batchSize;
 
+  private HBaseImport() {}
+
   @VisibleForTesting
-  HBaseImport(String... args) throws ParseException {
+  public HBaseImport(String... args) throws ParseException {
+    init(args);
+  }
+
+  private int init(String... args) throws ParseException {
     Options options = new Options();
 
     doAll = doKerberos = false;
@@ -185,37 +195,44 @@ public class HBaseImport {
 
     // Process help, if it was asked for, this must be done first
     if (cli.hasOption('h')) {
-      HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("hbaseschematool", options);
-      // returning here results in nothing else happening, because none of the other flags have
-      // been set.
-      return;
+      printHelp(options);
+      return 1;
     }
 
+    boolean hasCmd = false;
     // Now process the other command line args
     if (cli.hasOption('a')) {
+      hasCmd = true;
       doAll = true;
     }
     if (cli.hasOption('b')) {
       batchSize = Integer.valueOf(cli.getOptionValue('b'));
     }
     if (cli.hasOption('d')) {
+      hasCmd = true;
       dbsToImport = Arrays.asList(cli.getOptionValues('d'));
     }
     if (cli.hasOption('f')) {
+      hasCmd = true;
       functionsToImport = Arrays.asList(cli.getOptionValues('f'));
     }
     if (cli.hasOption('p')) {
       parallel = Integer.valueOf(cli.getOptionValue('p'));
     }
     if (cli.hasOption('r')) {
+      hasCmd = true;
       rolesToImport = Arrays.asList(cli.getOptionValues('r'));
     }
     if (cli.hasOption('k')) {
       doKerberos = true;
     }
     if (cli.hasOption('t')) {
+      hasCmd = true;
       tablesToImport = Arrays.asList(cli.getOptionValues('t'));
+    }
+    if (!hasCmd) {
+      printHelp(options);
+      return 1;
     }
 
     dbs = new ArrayList<>();
@@ -225,6 +242,11 @@ public class HBaseImport {
 
     // Bound the size of this queue so we don't get too much in memory.
     partQueue = new ArrayBlockingQueue<>(parallel * 2);
+    return 0;
+  }
+
+  private void printHelp(Options options) {
+    (new HelpFormatter()).printHelp("hbaseschematool", options);
   }
 
   @VisibleForTesting
