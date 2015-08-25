@@ -95,6 +95,13 @@ public class TestHiveCli {
   }
 
   @Test
+  public void testSetHeaderValue() {
+    verifyCMD(
+        "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b string);\nset hive.cli.print.header=true;\n select * from test.testTbl;\n",
+        "testtbl.a testtbl.b", os, null, ERRNO_OK);
+  }
+
+  @Test
   public void testHelp() {
     verifyCMD(null, "usage: hive", os, new String[] { "-H" }, ERRNO_ARGS);
   }
