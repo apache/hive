@@ -21,7 +21,9 @@ package org.apache.hive.service.server;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +71,8 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 
+import com.google.common.base.Joiner;
+
 /**
  * HiveServer2.
  *
@@ -100,7 +104,12 @@ public class HiveServer2 extends CompositeService {
     }
     addService(thriftCLIService);
     super.init(hiveConf);
-
+    // Set host name in hiveConf
+    try {
+      hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, getServerHost());
+    } catch (Throwable t) {
+      throw new Error("Unable to intitialize HiveServer2", t);
+    }
     // Add a shutdown hook for catching SIGTERM & SIGINT
     final HiveServer2 hiveServer2 = this;
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -117,6 +126,14 @@ public class HiveServer2 extends CompositeService {
       transportMode = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     }
     if (transportMode != null && (transportMode.equalsIgnoreCase("http"))) {
+      return true;
+    }
+    return false;
+  }
+
+  public static boolean isKerberosAuthMode(HiveConf hiveConf) {
+    String authMode = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
+    if (authMode != null && (authMode.equalsIgnoreCase("KERBEROS"))) {
       return true;
     }
     return false;
@@ -158,9 +175,12 @@ public class HiveServer2 extends CompositeService {
   private void addServerInstanceToZooKeeper(HiveConf hiveConf) throws Exception {
     String zooKeeperEnsemble = ZooKeeperHiveHelper.getQuorumServers(hiveConf);
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
-    String instanceURI = getServerInstanceURI(hiveConf);
-    byte[] znodeDataUTF8 = instanceURI.getBytes(Charset.forName("UTF-8"));
+    String instanceURI = getServerInstanceURI();
     setUpZooKeeperAuth(hiveConf);
+    // HiveServer2 configs that this instance will publish to ZooKeeper,
+    // so that the clients can read these and configure themselves properly.
+    Map<String, String> confsToPublish = new HashMap<String, String>();
+    addConfsToPublish(hiveConf, confsToPublish);
     int sessionTimeout =
         (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT,
             TimeUnit.MILLISECONDS);
@@ -193,6 +213,10 @@ public class HiveServer2 extends CompositeService {
           ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
               + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "serverUri=" + instanceURI + ";"
               + "version=" + HiveVersionInfo.getVersion() + ";" + "sequence=";
+      String znodeData = "";
+      // Publish configs for this instance as the data on the node
+      znodeData = Joiner.on(';').withKeyValueSeparator("=").join(confsToPublish);
+      byte[] znodeDataUTF8 = znodeData.getBytes(Charset.forName("UTF-8"));
       znode =
           new PersistentEphemeralNode(zooKeeperClient,
               PersistentEphemeralNode.Mode.EPHEMERAL_SEQUENTIAL, pathPrefix, znodeDataUTF8);
@@ -217,6 +241,41 @@ public class HiveServer2 extends CompositeService {
       }
       throw (e);
     }
+  }
+
+  /**
+   * Add conf keys, values that HiveServer2 will publish to ZooKeeper.
+   * @param hiveConf
+   */
+  private void addConfsToPublish(HiveConf hiveConf, Map<String, String> confsToPublish) {
+    // Hostname
+    confsToPublish.put(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname,
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST));
+    // Transport mode
+    confsToPublish.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname,
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE));
+    // Transport specific confs
+    if (isHTTPTransportMode(hiveConf)) {
+      confsToPublish.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname,
+          hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT));
+      confsToPublish.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname,
+          hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH));
+    } else {
+      confsToPublish.put(ConfVars.HIVE_SERVER2_THRIFT_PORT.varname,
+          hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_PORT));
+      confsToPublish.put(ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP.varname,
+          hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP));
+    }
+    // Auth specific confs
+    confsToPublish.put(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION));
+    if (isKerberosAuthMode(hiveConf)) {
+      confsToPublish.put(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname,
+          hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
+    }
+    // SSL conf
+    confsToPublish.put(ConfVars.HIVE_SERVER2_USE_SSL.varname,
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_USE_SSL));
   }
 
   /**
@@ -289,12 +348,19 @@ public class HiveServer2 extends CompositeService {
     this.registeredWithZooKeeper = registeredWithZooKeeper;
   }
 
-  private String getServerInstanceURI(HiveConf hiveConf) throws Exception {
+  private String getServerInstanceURI() throws Exception {
     if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }
     return thriftCLIService.getServerIPAddress().getHostName() + ":"
         + thriftCLIService.getPortNumber();
+  }
+
+  private String getServerHost() throws Exception {
+    if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
+      throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
+    }
+    return thriftCLIService.getServerIPAddress().getHostName();
   }
 
   @Override
