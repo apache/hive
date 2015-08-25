@@ -409,7 +409,14 @@ class BeeLineOpts implements Completer {
   }
 
   public boolean getShowHeader() {
-    return showHeader;
+    if (beeLine.isBeeLine()) {
+      return showHeader;
+    } else {
+      boolean header;
+      HiveConf conf = beeLine.getCommands().getHiveConf(true);
+      header = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER);
+      return header;
+    }
   }
 
   public void setHeaderInterval(int headerInterval) {
