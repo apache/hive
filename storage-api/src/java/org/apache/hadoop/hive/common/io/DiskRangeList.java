@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.common.io;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /** Java linked list iterator interface is convoluted, and moreover concurrent modifications
  * of the same list by multiple iterators are impossible. Hence, this.
  * Java also doesn't support multiple inheritance, so this cannot be done as "aspect"... */
@@ -118,7 +116,7 @@ public class DiskRangeList extends DiskRange {
     return next != null && end == next.offset;
   }
 
-  @VisibleForTesting
+  // @VisibleForTesting
   public int listSize() {
     int result = 1;
     DiskRangeList current = this.next;
@@ -139,7 +137,7 @@ public class DiskRangeList extends DiskRange {
     return totalLength;
   }
 
-  @VisibleForTesting
+  // @VisibleForTesting
   public DiskRangeList[] listToArray() {
     DiskRangeList[] result = new DiskRangeList[listSize()];
     int i = 0;
