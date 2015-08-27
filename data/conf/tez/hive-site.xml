@@ -253,5 +253,9 @@
   </description>
 </property>
 
+<property>
+  <name>hive.tez.java.opts</name>
+  <value> -Dlog4j.configurationFile=tez-container-log4j2.xml -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
 
 </configuration>
