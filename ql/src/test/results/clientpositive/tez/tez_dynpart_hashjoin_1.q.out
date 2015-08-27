@@ -384,10 +384,10 @@ order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-10782	1
--3799	1
--8915	1
 -13036	1
+-8915	1
+-3799	1
+10782	1
 NULL	6
 PREHOOK: query: -- Try with dynamically partitioned hashjoin
 explain
@@ -784,8 +784,8 @@ order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-10782	1
--3799	1
 -8915	1
+-3799	1
+10782	1
 -13036	1
 NULL	6
