@@ -1960,7 +1960,6 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: false
         Reducer 3 
-            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
