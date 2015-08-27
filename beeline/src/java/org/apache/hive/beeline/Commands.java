@@ -921,6 +921,11 @@ public class Commands {
       return true;
     }
 
+    ClientHook hook = null;
+    if (!beeLine.isBeeLine()) {
+      hook = ClientCommandHookFactory.get().getHook(sql);
+    }
+
     try {
       Statement stmnt = null;
       boolean hasResults;
@@ -988,6 +993,9 @@ public class Commands {
       return beeLine.error(e);
     }
     beeLine.showWarnings();
+    if (hook != null) {
+      hook.postHook(beeLine);
+    }
     return true;
   }
 
