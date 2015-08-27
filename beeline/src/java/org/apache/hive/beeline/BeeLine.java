@@ -97,6 +97,8 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+
 /**
  * A console SQL shell with command completion.
  * <p>
@@ -135,6 +137,7 @@ public class BeeLine implements Closeable {
   private List<String> batch = null;
   private final Reflector reflector;
   private String dbName = null;
+  private String currentDatabase = null;
 
   private History history;
   private boolean isBeeLine = true;
@@ -1170,32 +1173,8 @@ public class BeeLine implements Closeable {
       return cmdMap.values().iterator().next()
           .execute(line);
     } else {
-      boolean needsUpdate = isConfNeedsUpdate(line);
-      boolean res = commands.sql(line, getOpts().getEntireLineAsCommand());
-      if (needsUpdate) {
-        getOpts().setHiveConf(getCommands().getHiveConf(false));
-      }
-      return res;
+      return commands.sql(line, getOpts().getEntireLineAsCommand());
     }
-  }
-
-  /**
-   * Update the configurations for the CLI mode in the client side
-   *
-   * @param line
-   */
-  private boolean isConfNeedsUpdate(String line) {
-    if (isBeeLine) {
-      return false;
-    }
-    String[] cmds = line.split(";");
-    boolean containsSetCMD = false;
-    for (String s : cmds) {
-      if (s.toLowerCase().startsWith("set")) {
-        return true;
-      }
-    }
-    return containsSetCMD;
   }
 
   /**
@@ -1459,7 +1438,27 @@ public class BeeLine implements Closeable {
     HiveConf conf = getCommands().getHiveConf(true);
     prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
     prompt = getCommands().substituteVariables(conf, prompt);
-    return prompt + "> ";
+    return prompt + getFormattedDb(conf) + "> ";
+  }
+
+  /**
+   * Retrieve the current database name string to display, based on the
+   * configuration value.
+   *
+   * @param conf storing whether or not to show current db
+   * @return String to show user for current db value
+   */
+  String getFormattedDb(HiveConf conf) {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIPRINTCURRENTDB)) {
+      return "";
+    }
+    String currDb = getCurrentDatabase();
+
+    if (currDb == null) {
+      return "";
+    }
+
+    return " (" + currDb + ")";
   }
 
   String getPromptForBeeline() {
@@ -2210,5 +2209,16 @@ public class BeeLine implements Closeable {
 
   public void setBeeLine(boolean isBeeLine) {
     this.isBeeLine = isBeeLine;
+  }
+
+  public String getCurrentDatabase() {
+    if (currentDatabase == null) {
+      currentDatabase = DEFAULT_DATABASE_NAME;
+    }
+    return currentDatabase;
+  }
+
+  public void setCurrentDatabase(String currentDatabase) {
+    this.currentDatabase = currentDatabase;
   }
 }
