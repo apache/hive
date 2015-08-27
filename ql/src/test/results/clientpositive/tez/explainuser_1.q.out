@@ -2909,7 +2909,7 @@ Stage-0
       Select Operator [SEL_2]
          outputColumnNames:["_col0"]
          Filter Operator [FIL_4]
-            predicate:(c_int) IN (-6, 6) (type: boolean)
+            predicate:((c_int = -6) or (c_int = 6)) (type: boolean)
             TableScan [TS_0]
                alias:cbo_t1
 
