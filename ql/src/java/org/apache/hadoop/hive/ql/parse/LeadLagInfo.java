@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +53,7 @@ public class LeadLagInfo {
   public void addLLFuncExprForTopExpr(ExprNodeDesc topExpr, ExprNodeGenericFuncDesc llFuncExpr) {
     addLeadLagExpr(llFuncExpr);
     mapTopExprToLLFunExprs = mapTopExprToLLFunExprs == null ?
-        new HashMap<ExprNodeDesc, List<ExprNodeGenericFuncDesc>>() : mapTopExprToLLFunExprs;
+        new IdentityHashMap<ExprNodeDesc, List<ExprNodeGenericFuncDesc>>() : mapTopExprToLLFunExprs;
     List<ExprNodeGenericFuncDesc> funcList = mapTopExprToLLFunExprs.get(topExpr);
     if (funcList == null) {
       funcList = new ArrayList<ExprNodeGenericFuncDesc>();
