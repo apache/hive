@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.ppd;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -98,17 +99,17 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   public ExprWalkerInfo() {
     pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
     nonFinalPreds = new HashMap<String, List<ExprNodeDesc>>();
-    exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
-    newToOldExprMap = new HashMap<ExprNodeDesc, ExprNodeDesc>();
+    exprInfoMap = new IdentityHashMap<ExprNodeDesc, ExprInfo>();
+    newToOldExprMap = new IdentityHashMap<ExprNodeDesc, ExprNodeDesc>();
   }
 
   public ExprWalkerInfo(Operator<? extends OperatorDesc> op) {
     this.op = op;
 
     pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
-    exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
+    exprInfoMap = new IdentityHashMap<ExprNodeDesc, ExprInfo>();
     nonFinalPreds = new HashMap<String, List<ExprNodeDesc>>();
-    newToOldExprMap = new HashMap<ExprNodeDesc, ExprNodeDesc>();
+    newToOldExprMap = new IdentityHashMap<ExprNodeDesc, ExprNodeDesc>();
   }
 
   /**

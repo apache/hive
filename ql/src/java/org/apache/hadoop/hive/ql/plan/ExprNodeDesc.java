@@ -60,6 +60,14 @@ public abstract class ExprNodeDesc implements Serializable, Node {
     return typeInfo.hashCode();
   }
 
+  @Override
+  public final boolean equals(Object o) {
+    // prevent equals from being overridden in sub-classes
+    // always use ExprNodeDescEqualityWrapper
+    // if you need any other equality than Object.equals()
+    return (o == this);
+  }
+
   public TypeInfo getTypeInfo() {
     return typeInfo;
   }
