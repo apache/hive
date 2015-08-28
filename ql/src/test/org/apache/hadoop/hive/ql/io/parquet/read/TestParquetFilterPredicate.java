@@ -35,9 +35,9 @@ public class TestParquetFilterPredicate {
     SearchArgument sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("a", PredicateLeaf.Type.INTEGER)
-        .between("y", PredicateLeaf.Type.INTEGER, 10, 20) // Column will be removed from filter
-        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3) // Column will be removed from filter
+        .isNull("a", PredicateLeaf.Type.LONG)
+        .between("y", PredicateLeaf.Type.LONG, 10L, 20L) // Column will be removed from filter
+        .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L) // Column will be removed from filter
         .nullSafeEquals("a", PredicateLeaf.Type.STRING, "stinger")
         .end()
         .end()

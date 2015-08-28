@@ -1844,7 +1844,7 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
-        .startAnd().isNull("cost", PredicateLeaf.Type.INTEGER).end().build();
+        .startAnd().isNull("cost", PredicateLeaf.Type.LONG).end().build();
     conf.set(ConvertAstToSearchArg.SARG_PUSHDOWN, toKryo(isNull));
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
@@ -1889,7 +1889,7 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", PredicateLeaf.Type.INTEGER, new Integer(0))
+            .lessThan("z", PredicateLeaf.Type.LONG, new Long(0))
             .end()
             .build();
     conf.set("sarg.pushdown", toKryo(sarg));
