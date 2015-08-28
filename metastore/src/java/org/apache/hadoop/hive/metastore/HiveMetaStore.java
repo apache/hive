@@ -4281,8 +4281,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       try {
         ColumnStatistics cs = getMS().getTableColumnStatistics(dbName, tblName, lowerCaseColNames);
-        result = new TableStatsResult(
-            cs == null ? Lists.<ColumnStatisticsObj>newArrayList() : cs.getStatsObj());
+        result = new TableStatsResult((cs == null || cs.getStatsObj() == null)
+            ? Lists.<ColumnStatisticsObj>newArrayList() : cs.getStatsObj());
       } finally {
         endFunction("get_table_statistics_req: ", result == null, null, tblName);
       }

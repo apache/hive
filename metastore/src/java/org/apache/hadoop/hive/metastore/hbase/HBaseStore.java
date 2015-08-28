@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -1693,9 +1694,11 @@ public class HBaseStore implements RawStore {
       partVals.add(partNameToVals(partName));
     }
     boolean commit = false;
+    boolean hasAnyStats = false;
     openTransaction();
     try {
       AggrStats aggrStats = new AggrStats();
+      aggrStats.setPartsFound(0);
       for (String colName : colNames) {
         try {
           AggrStats oneCol =
@@ -1704,6 +1707,7 @@ public class HBaseStore implements RawStore {
             assert oneCol.getColStatsSize() == 1;
             aggrStats.setPartsFound(oneCol.getPartsFound());
             aggrStats.addToColStats(oneCol.getColStats().get(0));
+            hasAnyStats = true;
           }
         } catch (CacheLoader.InvalidCacheLoadException e) {
           LOG.debug("Found no stats for column " + colName);
@@ -1712,6 +1716,10 @@ public class HBaseStore implements RawStore {
         }
       }
       commit = true;
+      if (!hasAnyStats) {
+        // Set the required field.
+        aggrStats.setColStats(new ArrayList<ColumnStatisticsObj>());
+      }
       return aggrStats;
     } catch (IOException e) {
       LOG.error("Unable to fetch aggregate column statistics", e);
