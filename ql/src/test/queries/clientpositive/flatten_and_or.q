@@ -1,3 +1,5 @@
+set hive.optimize.point.lookup=false;
+
 explain
 SELECT key
 FROM src
