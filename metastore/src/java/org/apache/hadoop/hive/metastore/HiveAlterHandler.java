@@ -668,17 +668,19 @@ public class HiveAlterHandler implements AlterHandler {
           }
 
           List<ColumnStatisticsObj> statsObjs = cs.getStatsObj();
-          for (ColumnStatisticsObj statsObj : statsObjs) {
-            boolean found = false;
-            for (FieldSchema newCol : newCols) {
-              if (statsObj.getColName().equalsIgnoreCase(newCol.getName())
-                  && statsObj.getColType().equals(newCol.getType())) {
-                found = true;
-                break;
+          if (statsObjs != null) {
+            for (ColumnStatisticsObj statsObj : statsObjs) {
+              boolean found = false;
+              for (FieldSchema newCol : newCols) {
+                if (statsObj.getColName().equalsIgnoreCase(newCol.getName())
+                    && statsObj.getColType().equals(newCol.getType())) {
+                  found = true;
+                  break;
+                }
               }
-            }
-            if (!found) {
-              msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
+              if (!found) {
+                msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
+              }
             }
           }
         }

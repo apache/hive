@@ -99,7 +99,7 @@ class StatsCache {
                   for (ColumnStatisticsObj cso : cs.getStatsObj()) {
                     if (statsObj == null) {
                       statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(key.colName,
-                          cso.getStatsData().getSetField());
+                          cso.getColType(), cso.getStatsData().getSetField());
                     }
                     if (aggregator == null) {
                       aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(

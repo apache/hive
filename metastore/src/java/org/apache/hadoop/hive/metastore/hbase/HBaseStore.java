@@ -20,15 +20,18 @@ package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheLoader;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -64,6 +67,9 @@ import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
@@ -71,6 +77,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -150,7 +157,7 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      Database db = getHBase().getDb(name);
+      Database db = getHBase().getDb(HiveStringUtils.normalizeIdentifier(name));
       if (db == null) {
         throw new NoSuchObjectException("Unable to find db " + name);
       }
@@ -169,7 +176,7 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().deleteDb(dbname);
+      getHBase().deleteDb(HiveStringUtils.normalizeIdentifier(dbname));
       commit = true;
       return true;
     } catch (IOException e) {
@@ -259,7 +266,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().deleteTable(dbName, tableName);
+      getHBase().deleteTable(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tableName));
       commit = true;
       return true;
     } catch (IOException e) {
@@ -275,7 +283,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      Table table = getHBase().getTable(dbName, tableName);
+      Table table = getHBase().getTable(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tableName));
       if (table == null) {
         LOG.debug("Unable to find table " + tableNameForErrorMsg(dbName, tableName));
       }
@@ -334,7 +343,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      Partition part = getHBase().getPartition(dbName, tableName, part_vals);
+      Partition part = getHBase().getPartition(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tableName), part_vals);
       if (part == null) {
         throw new NoSuchObjectException("Unable to find partition " +
             partNameForErrorMsg(dbName, tableName, part_vals));
@@ -355,7 +365,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      boolean exists = getHBase().getPartition(dbName, tableName, part_vals) != null;
+      boolean exists = getHBase().getPartition(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tableName), part_vals) != null;
       commit = true;
       return exists;
     } catch (IOException e) {
@@ -372,9 +383,11 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().deletePartition(dbName, tableName, part_vals);
+      getHBase().deletePartition(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tableName), part_vals);
       // Drop any cached stats that reference this partitions
-      getHBase().getStatsCache().invalidate(dbName, tableName,
+      getHBase().getStatsCache().invalidate(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tableName),
           buildExternalPartName(dbName, tableName, part_vals));
       commit = true;
       return true;
@@ -393,7 +406,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Partition> parts = getHBase().scanPartitionsInTable(dbName, tableName, max);
+      List<Partition> parts = getHBase().scanPartitionsInTable(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tableName), max);
       commit = true;
       return parts;
     } catch (IOException e) {
@@ -410,7 +424,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().replaceTable(getHBase().getTable(dbname, name), newTable);
+      getHBase().replaceTable(getHBase().getTable(HiveStringUtils.normalizeIdentifier(dbname),
+          HiveStringUtils.normalizeIdentifier(name)), newTable);
       if (newTable.getPartitionKeys() != null && newTable.getPartitionKeys().size() > 0
           && !name.equals(newTable.getTableName())) {
         // They renamed the table, so we need to change each partition as well, since it changes
@@ -443,7 +458,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Table> tables = getHBase().scanTables(dbName, likeToRegex(pattern));
+      List<Table> tables = getHBase().scanTables(HiveStringUtils.normalizeIdentifier(dbName),
+          likeToRegex(pattern));
       List<String> tableNames = new ArrayList<String>(tables.size());
       for (Table table : tables) tableNames.add(table.getTableName());
       commit = true;
@@ -462,7 +478,12 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Table> tables = getHBase().getTables(dbname, tableNames);
+      List<String> normalizedTableNames = new ArrayList<String>(tableNames.size());
+      for (String tableName : tableNames) {
+        normalizedTableNames.add(HiveStringUtils.normalizeIdentifier(tableName));
+      }
+      List<Table> tables = getHBase().getTables(HiveStringUtils.normalizeIdentifier(dbname),
+          normalizedTableNames);
       commit = true;
       return tables;
     } catch (IOException e) {
@@ -491,10 +512,12 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Partition> parts = getHBase().scanPartitionsInTable(db_name, tbl_name, max_parts);
+      List<Partition> parts = getHBase().scanPartitionsInTable(HiveStringUtils.normalizeIdentifier(db_name),
+          HiveStringUtils.normalizeIdentifier(tbl_name), max_parts);
       if (parts == null) return null;
       List<String> names = new ArrayList<String>(parts.size());
-      Table table = getHBase().getTable(db_name, tbl_name);
+      Table table = getHBase().getTable(HiveStringUtils.normalizeIdentifier(db_name),
+          HiveStringUtils.normalizeIdentifier(tbl_name));
       for (Partition p : parts) {
         names.add(buildExternalPartName(table, p));
       }
@@ -521,10 +544,12 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      Partition oldPart = getHBase().getPartition(db_name, tbl_name, part_vals);
+      Partition oldPart = getHBase().getPartition(HiveStringUtils.normalizeIdentifier(db_name),
+          HiveStringUtils.normalizeIdentifier(tbl_name), part_vals);
       getHBase().replacePartition(oldPart, new_part);
       // Drop any cached stats that reference this partitions
-      getHBase().getStatsCache().invalidate(db_name, tbl_name,
+      getHBase().getStatsCache().invalidate(HiveStringUtils.normalizeIdentifier(db_name),
+          HiveStringUtils.normalizeIdentifier(tbl_name),
           buildExternalPartName(db_name, tbl_name, part_vals));
       commit = true;
     } catch (IOException e) {
@@ -542,11 +567,14 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Partition> oldParts = getHBase().getPartitions(db_name, tbl_name,
-          HBaseUtils.getPartitionKeyTypes(getTable(db_name, tbl_name).getPartitionKeys()), part_vals_list);
+      List<Partition> oldParts = getHBase().getPartitions(HiveStringUtils.normalizeIdentifier(db_name),
+          HiveStringUtils.normalizeIdentifier(tbl_name),
+          HBaseUtils.getPartitionKeyTypes(getTable(HiveStringUtils.normalizeIdentifier(db_name),
+          HiveStringUtils.normalizeIdentifier(tbl_name)).getPartitionKeys()), part_vals_list);
       getHBase().replacePartitions(oldParts, new_parts);
       for (List<String> part_vals : part_vals_list) {
-        getHBase().getStatsCache().invalidate(db_name, tbl_name,
+        getHBase().getStatsCache().invalidate(HiveStringUtils.normalizeIdentifier(db_name),
+            HiveStringUtils.normalizeIdentifier(tbl_name),
             buildExternalPartName(db_name, tbl_name, part_vals));
       }
       commit = true;
@@ -604,7 +632,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
+      getPartitionsByExprInternal(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tblName), exprTree, maxParts, result);
       return result;
     } finally {
       commitOrRoleBack(commit);
@@ -616,22 +645,62 @@ public class HBaseStore implements RawStore {
                                      String defaultPartitionName, short maxParts,
                                      List<Partition> result) throws TException {
     final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr);
-    // TODO: investigate if there should be any role for defaultPartitionName in this
-    // implementation. direct sql code path in ObjectStore does not use it.
-
+    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tblName = HiveStringUtils.normalizeIdentifier(tblName);
+    Table table = getTable(dbName, tblName);
     boolean commit = false;
     openTransaction();
     try {
-      return getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
+      if (exprTree == null) {
+        List<String> partNames = new LinkedList<String>();
+        boolean hasUnknownPartitions = getPartitionNamesPrunedByExprNoTxn(
+            table, expr, defaultPartitionName, maxParts, partNames);
+        result.addAll(getPartitionsByNames(dbName, tblName, partNames));
+        return hasUnknownPartitions;
+      } else {
+        return getPartitionsByExprInternal(dbName, tblName, exprTree, maxParts, result);
+      }
     } finally {
       commitOrRoleBack(commit);
     }
+  }
+
+  /**
+   * Gets the partition names from a table, pruned using an expression.
+   * @param table Table.
+   * @param expr Expression.
+   * @param defaultPartName Default partition name from job config, if any.
+   * @param maxParts Maximum number of partition names to return.
+   * @param result The resulting names.
+   * @return Whether the result contains any unknown partitions.
+   * @throws NoSuchObjectException
+   */
+  private boolean getPartitionNamesPrunedByExprNoTxn(Table table, byte[] expr,
+      String defaultPartName, short maxParts, List<String> result) throws MetaException, NoSuchObjectException {
+    List<Partition> parts = getPartitions(
+        table.getDbName(), table.getTableName(), maxParts);
+    for (Partition part : parts) {
+      result.add(Warehouse.makePartName(table.getPartitionKeys(), part.getValues()));
+    }
+    List<String> columnNames = new ArrayList<String>();
+    List<PrimitiveTypeInfo> typeInfos = new ArrayList<PrimitiveTypeInfo>();
+    for (FieldSchema fs : table.getPartitionKeys()) {
+      columnNames.add(fs.getName());
+      typeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()));
+    }
+    if (defaultPartName == null || defaultPartName.isEmpty()) {
+      defaultPartName = HiveConf.getVar(getConf(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    }
+    return expressionProxy.filterPartitionsByExpr(
+        columnNames, typeInfos, expr, defaultPartName, result);
   }
 
   private boolean getPartitionsByExprInternal(String dbName, String tblName,
       ExpressionTree exprTree, short maxParts, List<Partition> result) throws MetaException,
       NoSuchObjectException {
 
+    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tblName = HiveStringUtils.normalizeIdentifier(tblName);
     Table table = getTable(dbName, tblName);
     if (table == null) {
       throw new NoSuchObjectException("Unable to find table " + dbName + "." + tblName);
@@ -1453,7 +1522,8 @@ public class HBaseStore implements RawStore {
         listPartitionsPsWithAuth(db_name, tbl_name, part_vals, max_parts, null, null);
     List<String> partNames = new ArrayList<String>(parts.size());
     for (Partition part : parts) {
-      partNames.add(buildExternalPartName(db_name, tbl_name, part.getValues()));
+      partNames.add(buildExternalPartName(HiveStringUtils.normalizeIdentifier(db_name),
+          HiveStringUtils.normalizeIdentifier(tbl_name), part.getValues()));
     }
     return partNames;
   }
@@ -1468,7 +1538,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Partition> parts = getHBase().scanPartitions(db_name, tbl_name, part_vals, max_parts);
+      List<Partition> parts = getHBase().scanPartitions(HiveStringUtils.normalizeIdentifier(db_name),
+          HiveStringUtils.normalizeIdentifier(tbl_name), part_vals, max_parts);
       commit = true;
       return parts;
     } catch (IOException e) {
@@ -1596,7 +1667,7 @@ public class HBaseStore implements RawStore {
               getHBase().getStatsCache().get(dbName, tblName, partNames, colName);
           if (oneCol.getColStatsSize() > 0) {
             assert oneCol.getColStatsSize() == 1;
-            aggrStats.setPartsFound(aggrStats.getPartsFound() + oneCol.getPartsFound());
+            aggrStats.setPartsFound(oneCol.getPartsFound());
             aggrStats.addToColStats(oneCol.getColStats().get(0));
           }
         } catch (CacheLoader.InvalidCacheLoadException e) {
@@ -2204,7 +2275,7 @@ public class HBaseStore implements RawStore {
     List<String> vals = new ArrayList<String>();
     String[] kvp = name.split("/");
     for (String kv : kvp) {
-      vals.add(kv.substring(kv.indexOf('=') + 1));
+      vals.add(FileUtils.unescapePathName(kv.substring(kv.indexOf('=') + 1)));
     }
     return vals;
   }

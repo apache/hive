@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
@@ -67,6 +68,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.BloomFilter;
+import org.apache.hive.common.util.HiveStringUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -115,9 +117,22 @@ class HBaseUtils {
     return protoKey.getBytes(ENCODING);
   }
 
-  static String[] parseKey(byte[] serialized) {
-    String munged = new String(serialized, ENCODING);
-    return munged.split(KEY_SEPARATOR_STR);
+  static List<String> parseKey(byte[] serialized, List<String> partNames, List<String> partTypes) {
+    BinarySortableSerDe serDe = new BinarySortableSerDe();
+    Properties props = new Properties();
+    props.setProperty(serdeConstants.LIST_COLUMNS, "dbName,tableName," + StringUtils.join(partNames, ","));
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string,string," + StringUtils.join(partTypes, ","));
+    List<String> partVals = null;
+    try {
+      serDe.initialize(new Configuration(), props);
+      List deserializedkeys = ((List)serDe.deserialize(new BytesWritable(serialized)));
+      partVals = new ArrayList<String>();
+      for (Object deserializedkey : deserializedkeys) {
+        partVals.add(deserializedkey.toString());
+      }
+    } catch (SerDeException e) {
+    }
+    return partVals;
   }
 
   private static HbaseMetastoreProto.Parameters buildParameters(Map<String, String> params) {
@@ -240,9 +255,16 @@ class HBaseUtils {
 
   private static PrincipalPrivilegeSet buildPrincipalPrivilegeSet(
       HbaseMetastoreProto.PrincipalPrivilegeSet proto) throws InvalidProtocolBufferException {
-    PrincipalPrivilegeSet pps = new PrincipalPrivilegeSet();
-    pps.setUserPrivileges(convertPrincipalPrivilegeSetEntries(proto.getUsersList()));
-    pps.setRolePrivileges(convertPrincipalPrivilegeSetEntries(proto.getRolesList()));
+    PrincipalPrivilegeSet pps = null;
+    if (!proto.getUsersList().isEmpty() || !proto.getRolesList().isEmpty()) {
+      pps = new PrincipalPrivilegeSet();
+      if (!proto.getUsersList().isEmpty()) {
+        pps.setUserPrivileges(convertPrincipalPrivilegeSetEntries(proto.getUsersList()));
+      }
+      if (!proto.getRolesList().isEmpty()) {
+        pps.setRolePrivileges(convertPrincipalPrivilegeSetEntries(proto.getRolesList()));
+      }
+    }
     return pps;
   }
   /**
@@ -339,7 +361,7 @@ class HBaseUtils {
    */
   static byte[][] serializeDatabase(Database db) {
     byte[][] result = new byte[2][];
-    result[0] = buildKey(db.getName());
+    result[0] = buildKey(HiveStringUtils.normalizeIdentifier(db.getName()));
     HbaseMetastoreProto.Database.Builder builder = HbaseMetastoreProto.Database.newBuilder();
 
     if (db.getDescription() != null) builder.setDescription(db.getDescription());
@@ -696,8 +718,10 @@ class HBaseUtils {
     sd.setNumBuckets(proto.getNumBuckets());
     if (proto.hasSerdeInfo()) {
       SerDeInfo serde = new SerDeInfo();
-      serde.setName(proto.getSerdeInfo().getName());
-      serde.setSerializationLib(proto.getSerdeInfo().getSerializationLib());
+      serde.setName(proto.getSerdeInfo().hasName()?
+          proto.getSerdeInfo().getName():null);
+      serde.setSerializationLib(proto.getSerdeInfo().hasSerializationLib()?
+          proto.getSerdeInfo().getSerializationLib():null);
       serde.setParameters(buildParameters(proto.getSerdeInfo().getParameters()));
       sd.setSerdeInfo(serde);
     }
@@ -848,8 +872,8 @@ class HBaseUtils {
    * @return A struct that contains the partition plus parts of the storage descriptor
    */
   static StorageDescriptorParts deserializePartition(String dbName, String tableName, List<FieldSchema> partitions,
-      byte[] key, byte[] serialized) throws InvalidProtocolBufferException {
-    List keys = deserializePartitionKey(partitions, key);
+      byte[] key, byte[] serialized, Configuration conf) throws InvalidProtocolBufferException {
+    List keys = deserializePartitionKey(partitions, key, conf);
     return deserializePartition(dbName, tableName, keys, serialized);
   }
 
@@ -886,7 +910,8 @@ class HBaseUtils {
     return k.split(KEY_SEPARATOR_STR);
   }
 
-  private static List<String> deserializePartitionKey(List<FieldSchema> partitions, byte[] key) {
+  private static List<String> deserializePartitionKey(List<FieldSchema> partitions, byte[] key,
+      Configuration conf) {
     StringBuffer names = new StringBuffer();
     names.append("dbName,tableName,");
     StringBuffer types = new StringBuffer();
@@ -908,7 +933,8 @@ class HBaseUtils {
       List deserializedkeys = ((List)serDe.deserialize(new BytesWritable(key))).subList(2, partitions.size()+2);
       List<String> partitionKeys = new ArrayList<String>();
       for (Object deserializedKey : deserializedkeys) {
-        partitionKeys.add(deserializedKey.toString());
+        partitionKeys.add(deserializedKey!=null?deserializedKey.toString():
+          HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME));
       }
       return partitionKeys;
     } catch (SerDeException e) {
@@ -924,7 +950,8 @@ class HBaseUtils {
    */
   static byte[][] serializeTable(Table table, byte[] sdHash) {
     byte[][] result = new byte[2][];
-    result[0] = buildKey(table.getDbName(), table.getTableName());
+    result[0] = buildKey(HiveStringUtils.normalizeIdentifier(table.getDbName()),
+        HiveStringUtils.normalizeIdentifier(table.getTableName()));
     HbaseMetastoreProto.Table.Builder builder = HbaseMetastoreProto.Table.newBuilder();
     if (table.getOwner() != null) builder.setOwner(table.getOwner());
     builder
@@ -952,7 +979,10 @@ class HBaseUtils {
     if (table.getPrivileges() != null) {
       builder.setPrivileges(buildPrincipalPrivilegeSet(table.getPrivileges()));
     }
-    builder.setIsTemporary(table.isTemporary());
+    // Set only if table is temporary
+    if (table.isTemporary()) {
+      builder.setIsTemporary(table.isTemporary());
+    }
     result[1] = builder.build().toByteArray();
     return result;
   }

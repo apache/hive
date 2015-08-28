@@ -680,7 +680,13 @@ public class HBaseReadWrite {
         firstStar = i;
         break;
       } else {
-        keyElements.add(partVals.get(i));
+        // empty string equals to null partition,
+        // means star
+        if (partVals.get(i).equals("")) {
+          break;
+        } else {
+          keyElements.add(partVals.get(i));
+        }
       }
     }
 
@@ -693,7 +699,7 @@ public class HBaseReadWrite {
     }
     keyPrefix = HBaseUtils.buildPartitionKey(dbName, tableName,
         HBaseUtils.getPartitionKeyTypes(table.getPartitionKeys().subList(0, keyElements.size()-2)),
-          keyElements.subList(0, keyElements.size()-2));
+          keyElements.subList(2, keyElements.size()));
 
     // Now, build a filter out of the remaining keys
     List<PartitionKeyComparator.Range> ranges = new ArrayList<PartitionKeyComparator.Range>();
@@ -809,7 +815,7 @@ public class HBaseReadWrite {
     for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
       Result result = iter.next();
       HBaseUtils.StorageDescriptorParts sdParts = HBaseUtils.deserializePartition(dbName, tableName,
-          tablePartitions, result.getRow(), result.getValue(CATALOG_CF, CATALOG_COL));
+          tablePartitions, result.getRow(), result.getValue(CATALOG_CF, CATALOG_COL), staticConf);
       StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
       HBaseUtils.assembleStorageDescriptor(sd, sdParts);
       parts.add(sdParts.containingPartition);
@@ -1604,9 +1610,10 @@ public class HBaseReadWrite {
             // recontruct the key.  We have to pull the dbName and tableName out of the key to
             // find the partition values.
             byte[] key = results[i].getRow();
-            String[] reconstructedKey = HBaseUtils.parseKey(key);
+            List<String> reconstructedKey = HBaseUtils.parseKey(key, HBaseUtils.getPartitionNames(getTable(dbName, tblName).getPartitionKeys()),
+                HBaseUtils.getPartitionKeyTypes(getTable(dbName, tblName).getPartitionKeys()));
             List<String> reconstructedPartVals =
-                Arrays.asList(reconstructedKey).subList(2, reconstructedKey.length);
+                reconstructedKey.subList(2, reconstructedKey.size());
             String partName = valToPartMap.get(reconstructedPartVals);
             assert partName != null;
             csd.setIsTblLevel(false);

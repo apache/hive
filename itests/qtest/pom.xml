@@ -509,7 +509,8 @@
                               logDirectory="${project.build.directory}/qfile-results/clientpositive/"
                               hadoopVersion="${active.hadoop.version}"
                               initScript="${initScript}"
-                              cleanupScript="q_test_cleanup.sql"/>
+                              cleanupScript="q_test_cleanup.sql"
+                              useHBaseMetastore="true"/>
 
                     <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
                               outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
