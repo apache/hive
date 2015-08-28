@@ -127,7 +127,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
   /**
    * When picking the hosts for a split that crosses block boundaries,
-   * any drop any host that has fewer than MIN_INCLUDED_LOCATION of the
+   * drop any host that has fewer than MIN_INCLUDED_LOCATION of the
    * number of bytes available on the host with the most.
    * If host1 has 10MB of the split, host2 has 20MB, and host3 has 18MB the
    * split will contain host2 (100% of host2) and host3 (90% of host2). Host1
@@ -1246,6 +1246,22 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     } else {
       bucket = (int) split.getStart();
       reader = null;
+      if(deltas != null && deltas.length > 0) {
+        Path bucketPath = AcidUtils.createBucketFile(deltas[0], bucket);
+        OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf);
+        FileSystem fs = readerOptions.getFilesystem();
+        if(fs == null) {
+          fs = path.getFileSystem(options.getConfiguration());
+        }
+        if(fs.exists(bucketPath)) {
+        /* w/o schema evolution (which ACID doesn't support yet) all delta
+        files have the same schema, so choosing the 1st one*/
+          final List<OrcProto.Type> types =
+            OrcFile.createReader(bucketPath, readerOptions).getTypes();
+          readOptions.include(genIncludedColumns(types, conf, split.isOriginal()));
+          setSearchArgument(readOptions, types, conf, split.isOriginal());
+        }
+      }
     }
     String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY,
                                 Long.MAX_VALUE + ":");
