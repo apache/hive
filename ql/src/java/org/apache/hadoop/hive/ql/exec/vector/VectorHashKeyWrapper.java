@@ -143,7 +143,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     for (int i = 0; i < byteValues.length; ++i) {
       // the byte comparison is potentially expensive so is better to branch on null
       if (!isNull[longValues.length + doubleValues.length + i]) {
-        if (0 != StringExpr.compare(
+        if (!StringExpr.equal(
             byteValues[i],
             byteStarts[i],
             byteLengths[i],

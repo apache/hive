@@ -39,11 +39,6 @@
 </property>
 
 <property>
-  <name>hive.execution.mode</name>
-  <value>container</value>
-</property>
-
-<property>
   <name>mapred.tez.java.opts</name>
   <value>-Xmx128m</value>
 </property>
@@ -251,21 +246,16 @@
 </property>
 
 <property>
-  <name>hive.llap.cache.size</name>
-  <value>67108864</value>
-</property>
-
-<property>
-  <name>hive.llap.buffer.size</name>
-  <value>4194304</value>
-</property>
-
-<property>
   <name>hive.in.tez.test</name>
   <value>true</value>
   <description>
     Indicates that we are in tez testing mode.
   </description>
+</property>
+
+<property>
+  <name>hive.tez.java.opts</name>
+  <value> -Dlog4j.configurationFile=tez-container-log4j2.xml -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
 </property>
 
 </configuration>
