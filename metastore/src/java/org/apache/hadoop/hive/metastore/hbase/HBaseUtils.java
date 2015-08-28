@@ -117,24 +117,6 @@ class HBaseUtils {
     return protoKey.getBytes(ENCODING);
   }
 
-  static List<String> parseKey(byte[] serialized, List<String> partNames, List<String> partTypes) {
-    BinarySortableSerDe serDe = new BinarySortableSerDe();
-    Properties props = new Properties();
-    props.setProperty(serdeConstants.LIST_COLUMNS, "dbName,tableName," + StringUtils.join(partNames, ","));
-    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string,string," + StringUtils.join(partTypes, ","));
-    List<String> partVals = null;
-    try {
-      serDe.initialize(new Configuration(), props);
-      List deserializedkeys = ((List)serDe.deserialize(new BytesWritable(serialized)));
-      partVals = new ArrayList<String>();
-      for (Object deserializedkey : deserializedkeys) {
-        partVals.add(deserializedkey.toString());
-      }
-    } catch (SerDeException e) {
-    }
-    return partVals;
-  }
-
   private static HbaseMetastoreProto.Parameters buildParameters(Map<String, String> params) {
     List<HbaseMetastoreProto.ParameterEntry> entries = new ArrayList<>();
     for (Map.Entry<String, String> e : params.entrySet()) {
@@ -910,7 +892,7 @@ class HBaseUtils {
     return k.split(KEY_SEPARATOR_STR);
   }
 
-  private static List<String> deserializePartitionKey(List<FieldSchema> partitions, byte[] key,
+  static List<String> deserializePartitionKey(List<FieldSchema> partitions, byte[] key,
       Configuration conf) {
     StringBuffer names = new StringBuffer();
     names.append("dbName,tableName,");
@@ -932,9 +914,19 @@ class HBaseUtils {
       serDe.initialize(new Configuration(), props);
       List deserializedkeys = ((List)serDe.deserialize(new BytesWritable(key))).subList(2, partitions.size()+2);
       List<String> partitionKeys = new ArrayList<String>();
-      for (Object deserializedKey : deserializedkeys) {
-        partitionKeys.add(deserializedKey!=null?deserializedKey.toString():
-          HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME));
+      for (int i=0;i<deserializedkeys.size();i++) {
+        Object deserializedKey = deserializedkeys.get(i);
+        if (deserializedKey==null) {
+          partitionKeys.add(HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME));
+        } else {
+          TypeInfo inputType =
+              TypeInfoUtils.getTypeInfoFromTypeString(partitions.get(i).getType());
+          ObjectInspector inputOI =
+              TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(inputType);
+          Converter converter = ObjectInspectorConverters.getConverter(inputOI,
+              PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+          partitionKeys.add((String)converter.convert(deserializedKey));
+        }
       }
       return partitionKeys;
     } catch (SerDeException e) {

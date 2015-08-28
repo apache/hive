@@ -140,7 +140,7 @@ public class TestHBaseAggrStatsCacheIntegration extends HBaseIntegrationTests {
     Checker statChecker = new Checker() {
       @Override
       public void checkStats(AggrStats aggrStats) throws Exception {
-        Assert.assertEquals(4, aggrStats.getPartsFound());
+        Assert.assertEquals(2, aggrStats.getPartsFound());
         Assert.assertEquals(2, aggrStats.getColStatsSize());
         ColumnStatisticsObj cso = aggrStats.getColStats().get(0);
         Assert.assertEquals("col1", cso.getColName());
@@ -152,7 +152,7 @@ public class TestHBaseAggrStatsCacheIntegration extends HBaseIntegrationTests {
 
         cso = aggrStats.getColStats().get(1);
         Assert.assertEquals("col2", cso.getColName());
-        Assert.assertEquals("string", cso.getColType());
+        Assert.assertEquals("varchar", cso.getColType());
         StringColumnStatsData scsd = cso.getStatsData().getStringStats();
         Assert.assertEquals(10.3, scsd.getAvgColLen(), 0.1);
         Assert.assertEquals(2000, scsd.getMaxColLen());

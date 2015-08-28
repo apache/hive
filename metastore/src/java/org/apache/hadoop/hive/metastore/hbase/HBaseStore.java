@@ -139,9 +139,10 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-
+      Database dbCopy = db.deepCopy();
+      dbCopy.setName(HiveStringUtils.normalizeIdentifier(dbCopy.getName()));
       // HiveMetaStore already checks for existence of the database, don't recheck
-      getHBase().putDb(db);
+      getHBase().putDb(dbCopy);
       commit = true;
     } catch (IOException e) {
       LOG.error("Unable to create database ", e);
@@ -195,7 +196,9 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().putDb(db);
+      Database dbCopy = db.deepCopy();
+      dbCopy.setName(HiveStringUtils.normalizeIdentifier(dbCopy.getName()));
+      getHBase().putDb(dbCopy);
       commit = true;
       return true;
     } catch (IOException e) {
@@ -211,7 +214,8 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<Database> dbs = getHBase().scanDatabases(likeToRegex(pattern));
+      List<Database> dbs = getHBase().scanDatabases(
+          pattern==null?null:HiveStringUtils.normalizeIdentifier(likeToRegex(pattern)));
       List<String> dbNames = new ArrayList<String>(dbs.size());
       for (Database db : dbs) dbNames.add(db.getName());
       commit = true;
@@ -250,7 +254,10 @@ public class HBaseStore implements RawStore {
     openTransaction();
     // HiveMetaStore above us checks if the table already exists, so we can blindly store it here.
     try {
-      getHBase().putTable(tbl);
+      Table tblCopy = tbl.deepCopy();
+      tblCopy.setDbName(HiveStringUtils.normalizeIdentifier(tblCopy.getDbName()));
+      tblCopy.setTableName(HiveStringUtils.normalizeIdentifier(tblCopy.getTableName()));
+      getHBase().putTable(tblCopy);
       commit = true;
     } catch (IOException e) {
       LOG.error("Unable to create table ", e);
@@ -303,7 +310,10 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().putPartition(part);
+      Partition partCopy = part.deepCopy();
+      partCopy.setDbName(HiveStringUtils.normalizeIdentifier(part.getDbName()));
+      partCopy.setTableName(HiveStringUtils.normalizeIdentifier(part.getTableName()));
+      getHBase().putPartition(partCopy);
       commit = true;
       return true;
     } catch (IOException e) {
@@ -320,7 +330,14 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().putPartitions(parts);
+      List<Partition> partsCopy = new ArrayList<Partition>();
+      for (int i=0;i<parts.size();i++) {
+        Partition partCopy = parts.get(i).deepCopy();
+        partCopy.setDbName(HiveStringUtils.normalizeIdentifier(partCopy.getDbName()));
+        partCopy.setTableName(HiveStringUtils.normalizeIdentifier(partCopy.getTableName()));
+        partsCopy.add(i, partCopy);
+      }
+      getHBase().putPartitions(partsCopy);
       commit = true;
       return true;
     } catch (IOException e) {
@@ -383,11 +400,12 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().deletePartition(HiveStringUtils.normalizeIdentifier(dbName),
-          HiveStringUtils.normalizeIdentifier(tableName), part_vals);
+      dbName = HiveStringUtils.normalizeIdentifier(dbName);
+      tableName = HiveStringUtils.normalizeIdentifier(tableName);
+      getHBase().deletePartition(dbName, tableName, HBaseUtils.getPartitionKeyTypes(
+          getTable(dbName, tableName).getPartitionKeys()), part_vals);
       // Drop any cached stats that reference this partitions
-      getHBase().getStatsCache().invalidate(HiveStringUtils.normalizeIdentifier(dbName),
-          HiveStringUtils.normalizeIdentifier(tableName),
+      getHBase().getStatsCache().invalidate(dbName, tableName,
           buildExternalPartName(dbName, tableName, part_vals));
       commit = true;
       return true;
@@ -419,26 +437,31 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public void alterTable(String dbname, String name, Table newTable) throws InvalidObjectException,
+  public void alterTable(String dbName, String tableName, Table newTable) throws InvalidObjectException,
       MetaException {
     boolean commit = false;
     openTransaction();
     try {
-      getHBase().replaceTable(getHBase().getTable(HiveStringUtils.normalizeIdentifier(dbname),
-          HiveStringUtils.normalizeIdentifier(name)), newTable);
+      Table newTableCopy = newTable.deepCopy();
+      newTableCopy.setDbName(HiveStringUtils.normalizeIdentifier(newTableCopy.getDbName()));
+      List<String> oldPartTypes = getTable(dbName, tableName).getPartitionKeys()==null?
+          null:HBaseUtils.getPartitionKeyTypes(getTable(dbName, tableName).getPartitionKeys());
+      newTableCopy.setTableName(HiveStringUtils.normalizeIdentifier(newTableCopy.getTableName()));
+      getHBase().replaceTable(getHBase().getTable(HiveStringUtils.normalizeIdentifier(dbName),
+          HiveStringUtils.normalizeIdentifier(tableName)), newTableCopy);
       if (newTable.getPartitionKeys() != null && newTable.getPartitionKeys().size() > 0
-          && !name.equals(newTable.getTableName())) {
+          && !tableName.equals(newTable.getTableName())) {
         // They renamed the table, so we need to change each partition as well, since it changes
         // the key.
         try {
-          List<Partition> oldParts = getPartitions(dbname, name, -1);
+          List<Partition> oldParts = getPartitions(dbName, tableName, -1);
           List<Partition> newParts = new ArrayList<>(oldParts.size());
           for (Partition oldPart : oldParts) {
             Partition newPart = oldPart.deepCopy();
             newPart.setTableName(newTable.getTableName());
             newParts.add(newPart);
           }
-          getHBase().replacePartitions(oldParts, newParts);
+          getHBase().replacePartitions(oldParts, newParts, oldPartTypes);
         } catch (NoSuchObjectException e) {
           LOG.debug("No partitions found for old table so not worrying about it");
         }
@@ -446,8 +469,8 @@ public class HBaseStore implements RawStore {
       }
       commit = true;
     } catch (IOException e) {
-      LOG.error("Unable to alter table " + tableNameForErrorMsg(dbname, name), e);
-      throw new MetaException("Unable to alter table " + tableNameForErrorMsg(dbname, name));
+      LOG.error("Unable to alter table " + tableNameForErrorMsg(dbName, tableName), e);
+      throw new MetaException("Unable to alter table " + tableNameForErrorMsg(dbName, tableName));
     } finally {
       commitOrRoleBack(commit);
     }
@@ -459,7 +482,7 @@ public class HBaseStore implements RawStore {
     openTransaction();
     try {
       List<Table> tables = getHBase().scanTables(HiveStringUtils.normalizeIdentifier(dbName),
-          likeToRegex(pattern));
+          pattern==null?null:HiveStringUtils.normalizeIdentifier(likeToRegex(pattern)));
       List<String> tableNames = new ArrayList<String>(tables.size());
       for (Table table : tables) tableNames.add(table.getTableName());
       commit = true;
@@ -544,9 +567,13 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
+      Partition new_partCopy = new_part.deepCopy();
+      new_partCopy.setDbName(HiveStringUtils.normalizeIdentifier(new_partCopy.getDbName()));
+      new_partCopy.setTableName(HiveStringUtils.normalizeIdentifier(new_partCopy.getTableName()));
       Partition oldPart = getHBase().getPartition(HiveStringUtils.normalizeIdentifier(db_name),
           HiveStringUtils.normalizeIdentifier(tbl_name), part_vals);
-      getHBase().replacePartition(oldPart, new_part);
+      getHBase().replacePartition(oldPart, new_partCopy, HBaseUtils.getPartitionKeyTypes(
+          getTable(db_name, tbl_name).getPartitionKeys()));
       // Drop any cached stats that reference this partitions
       getHBase().getStatsCache().invalidate(HiveStringUtils.normalizeIdentifier(db_name),
           HiveStringUtils.normalizeIdentifier(tbl_name),
@@ -567,11 +594,19 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
+      List<Partition> new_partsCopy = new ArrayList<Partition>();
+      for (int i=0;i<new_parts.size();i++) {
+        Partition newPartCopy = new_parts.get(i).deepCopy();
+        newPartCopy.setDbName(HiveStringUtils.normalizeIdentifier(newPartCopy.getDbName()));
+        newPartCopy.setTableName(HiveStringUtils.normalizeIdentifier(newPartCopy.getTableName()));
+        new_partsCopy.add(i, newPartCopy);
+      }
       List<Partition> oldParts = getHBase().getPartitions(HiveStringUtils.normalizeIdentifier(db_name),
           HiveStringUtils.normalizeIdentifier(tbl_name),
           HBaseUtils.getPartitionKeyTypes(getTable(HiveStringUtils.normalizeIdentifier(db_name),
           HiveStringUtils.normalizeIdentifier(tbl_name)).getPartitionKeys()), part_vals_list);
-      getHBase().replacePartitions(oldParts, new_parts);
+      getHBase().replacePartitions(oldParts, new_partsCopy, HBaseUtils.getPartitionKeyTypes(
+          getTable(db_name, tbl_name).getPartitionKeys()));
       for (List<String> part_vals : part_vals_list) {
         getHBase().getStatsCache().invalidate(HiveStringUtils.normalizeIdentifier(db_name),
             HiveStringUtils.normalizeIdentifier(tbl_name),

@@ -96,18 +96,26 @@ public class TestHBaseStore {
     }
   }
   static final long DEFAULT_TIME = System.currentTimeMillis();
+  static final String PART_KEY = "part";
   static final String BOOLEAN_COL = "boolCol";
   static final String BOOLEAN_TYPE = "boolean";
+  static final String BOOLEAN_VAL = "true";
   static final String LONG_COL = "longCol";
   static final String LONG_TYPE = "long";
+  static final String INT_TYPE = "int";
+  static final String INT_VAL = "1234";
   static final String DOUBLE_COL = "doubleCol";
   static final String DOUBLE_TYPE = "double";
+  static final String DOUBLE_VAL = "3.1415";
   static final String STRING_COL = "stringCol";
   static final String STRING_TYPE = "string";
+  static final String STRING_VAL = "stringval";
   static final String BINARY_COL = "binaryCol";
   static final String BINARY_TYPE = "binary";
+  static final String BINARY_VAL = "1";
   static final String DECIMAL_COL = "decimalCol";
   static final String DECIMAL_TYPE = "decimal(5,3)";
+  static final String DECIMAL_VAL = "12.123";
   static List<ColumnStatisticsObj> booleanColStatsObjs = new ArrayList<ColumnStatisticsObj>(
       NUM_PARTITIONS);
   static List<ColumnStatisticsObj> longColStatsObjs = new ArrayList<ColumnStatisticsObj>(
@@ -991,12 +999,13 @@ public class TestHBaseStore {
 
   @Test
   public void booleanPartitionStatistics() throws Exception {
-    // Add partition stats for: BOOLEAN_COL and partition: {PART_KEYS(0), PART_VALS(0)} to DB
+    createMockTableAndPartition(BOOLEAN_TYPE, BOOLEAN_VAL);
+    // Add partition stats for: BOOLEAN_COL and partition: {PART_KEY, BOOLEAN_VAL} to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
     ColumnStatistics stats = new ColumnStatistics();
     // Get a default ColumnStatisticsDesc for partition level stats
-    ColumnStatisticsDesc desc = getMockPartColStatsDesc(0, 0);
+    ColumnStatisticsDesc desc = getMockPartColStatsDesc(PART_KEY, BOOLEAN_VAL);
     stats.setStatsDesc(desc);
     // Get one of the pre-created ColumnStatisticsObj
     ColumnStatisticsObj obj = booleanColStatsObjs.get(0);
@@ -1004,7 +1013,7 @@ public class TestHBaseStore {
     // Add to DB
     stats.addToStatsObj(obj);
     List<String> parVals = new ArrayList<String>();
-    parVals.add(PART_VALS.get(0));
+    parVals.add(BOOLEAN_VAL);
     store.updatePartitionColumnStatistics(stats, parVals);
     // Get from DB
     List<String> partNames = new ArrayList<String>();
@@ -1033,12 +1042,13 @@ public class TestHBaseStore {
 
   @Test
   public void longPartitionStatistics() throws Exception {
-    // Add partition stats for: LONG_COL and partition: {PART_KEYS(0), PART_VALS(0)} to DB
+    createMockTableAndPartition(INT_TYPE, INT_VAL);
+    // Add partition stats for: LONG_COL and partition: {PART_KEY, INT_VAL} to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
     ColumnStatistics stats = new ColumnStatistics();
     // Get a default ColumnStatisticsDesc for partition level stats
-    ColumnStatisticsDesc desc = getMockPartColStatsDesc(0, 0);
+    ColumnStatisticsDesc desc = getMockPartColStatsDesc(PART_KEY, INT_VAL);
     stats.setStatsDesc(desc);
     // Get one of the pre-created ColumnStatisticsObj
     ColumnStatisticsObj obj = longColStatsObjs.get(0);
@@ -1046,7 +1056,7 @@ public class TestHBaseStore {
     // Add to DB
     stats.addToStatsObj(obj);
     List<String> parVals = new ArrayList<String>();
-    parVals.add(PART_VALS.get(0));
+    parVals.add(INT_VAL);
     store.updatePartitionColumnStatistics(stats, parVals);
     // Get from DB
     List<String> partNames = new ArrayList<String>();
@@ -1076,12 +1086,13 @@ public class TestHBaseStore {
 
   @Test
   public void doublePartitionStatistics() throws Exception {
-    // Add partition stats for: DOUBLE_COL and partition: {PART_KEYS(0), PART_VALS(0)} to DB
+    createMockTableAndPartition(DOUBLE_TYPE, DOUBLE_VAL);
+    // Add partition stats for: DOUBLE_COL and partition: {PART_KEY, DOUBLE_VAL} to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
     ColumnStatistics stats = new ColumnStatistics();
     // Get a default ColumnStatisticsDesc for partition level stats
-    ColumnStatisticsDesc desc = getMockPartColStatsDesc(0, 0);
+    ColumnStatisticsDesc desc = getMockPartColStatsDesc(PART_KEY, DOUBLE_VAL);
     stats.setStatsDesc(desc);
     // Get one of the pre-created ColumnStatisticsObj
     ColumnStatisticsObj obj = doubleColStatsObjs.get(0);
@@ -1089,7 +1100,7 @@ public class TestHBaseStore {
     // Add to DB
     stats.addToStatsObj(obj);
     List<String> parVals = new ArrayList<String>();
-    parVals.add(PART_VALS.get(0));
+    parVals.add(DOUBLE_VAL);
     store.updatePartitionColumnStatistics(stats, parVals);
     // Get from DB
     List<String> partNames = new ArrayList<String>();
@@ -1119,12 +1130,13 @@ public class TestHBaseStore {
 
   @Test
   public void stringPartitionStatistics() throws Exception {
-    // Add partition stats for: STRING_COL and partition: {PART_KEYS(0), PART_VALS(0)} to DB
+    createMockTableAndPartition(STRING_TYPE, STRING_VAL);
+    // Add partition stats for: STRING_COL and partition: {PART_KEY, STRING_VAL} to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
     ColumnStatistics stats = new ColumnStatistics();
     // Get a default ColumnStatisticsDesc for partition level stats
-    ColumnStatisticsDesc desc = getMockPartColStatsDesc(0, 0);
+    ColumnStatisticsDesc desc = getMockPartColStatsDesc(PART_KEY, STRING_VAL);
     stats.setStatsDesc(desc);
     // Get one of the pre-created ColumnStatisticsObj
     ColumnStatisticsObj obj = stringColStatsObjs.get(0);
@@ -1132,7 +1144,7 @@ public class TestHBaseStore {
     // Add to DB
     stats.addToStatsObj(obj);
     List<String> parVals = new ArrayList<String>();
-    parVals.add(PART_VALS.get(0));
+    parVals.add(STRING_VAL);
     store.updatePartitionColumnStatistics(stats, parVals);
     // Get from DB
     List<String> partNames = new ArrayList<String>();
@@ -1162,12 +1174,13 @@ public class TestHBaseStore {
 
   @Test
   public void binaryPartitionStatistics() throws Exception {
-    // Add partition stats for: BINARY_COL and partition: {PART_KEYS(0), PART_VALS(0)} to DB
+    createMockTableAndPartition(BINARY_TYPE, BINARY_VAL);
+    // Add partition stats for: BINARY_COL and partition: {PART_KEY, BINARY_VAL} to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
     ColumnStatistics stats = new ColumnStatistics();
     // Get a default ColumnStatisticsDesc for partition level stats
-    ColumnStatisticsDesc desc = getMockPartColStatsDesc(0, 0);
+    ColumnStatisticsDesc desc = getMockPartColStatsDesc(PART_KEY, BINARY_VAL);
     stats.setStatsDesc(desc);
     // Get one of the pre-created ColumnStatisticsObj
     ColumnStatisticsObj obj = binaryColStatsObjs.get(0);
@@ -1175,7 +1188,7 @@ public class TestHBaseStore {
     // Add to DB
     stats.addToStatsObj(obj);
     List<String> parVals = new ArrayList<String>();
-    parVals.add(PART_VALS.get(0));
+    parVals.add(BINARY_VAL);
     store.updatePartitionColumnStatistics(stats, parVals);
     // Get from DB
     List<String> partNames = new ArrayList<String>();
@@ -1204,12 +1217,13 @@ public class TestHBaseStore {
 
   @Test
   public void decimalPartitionStatistics() throws Exception {
-    // Add partition stats for: DECIMAL_COL and partition: {PART_KEYS(0), PART_VALS(0)} to DB
+    createMockTableAndPartition(DECIMAL_TYPE, DECIMAL_VAL);
+    // Add partition stats for: DECIMAL_COL and partition: {PART_KEY, DECIMAL_VAL} to DB
     // Because of the way our mock implementation works we actually need to not create the table
     // before we set statistics on it.
     ColumnStatistics stats = new ColumnStatistics();
     // Get a default ColumnStatisticsDesc for partition level stats
-    ColumnStatisticsDesc desc = getMockPartColStatsDesc(0, 0);
+    ColumnStatisticsDesc desc = getMockPartColStatsDesc(PART_KEY, DECIMAL_VAL);
     stats.setStatsDesc(desc);
     // Get one of the pre-created ColumnStatisticsObj
     ColumnStatisticsObj obj = decimalColStatsObjs.get(0);
@@ -1217,7 +1231,7 @@ public class TestHBaseStore {
     // Add to DB
     stats.addToStatsObj(obj);
     List<String> parVals = new ArrayList<String>();
-    parVals.add(PART_VALS.get(0));
+    parVals.add(DECIMAL_VAL);
     store.updatePartitionColumnStatistics(stats, parVals);
     // Get from DB
     List<String> partNames = new ArrayList<String>();
@@ -1245,6 +1259,25 @@ public class TestHBaseStore {
     Assert.assertEquals(decimalData.getNumDVs(), decimalDataFromDB.getNumDVs());
   }
 
+  private Table createMockTableAndPartition(String partType, String partVal) throws Exception {
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", partType, ""));
+    List<String> vals = new ArrayList<String>();
+    vals.add(partVal);
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("key", "value");
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
+    int currentTime = (int)(System.currentTimeMillis() / 1000);
+    Table table = new Table(TBL, DB, "me", currentTime, currentTime, 0, sd, cols,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+    Partition part = new Partition(vals, DB, TBL, currentTime, currentTime, sd,
+        emptyParameters);
+    store.addPartition(part);
+    return table;
+  }
   /**
    * Returns a dummy table level ColumnStatisticsDesc with default values
    */
@@ -1260,13 +1293,13 @@ public class TestHBaseStore {
   /**
    * Returns a dummy partition level ColumnStatisticsDesc
    */
-  private ColumnStatisticsDesc getMockPartColStatsDesc(int partKeyIndex, int partValIndex) {
+  private ColumnStatisticsDesc getMockPartColStatsDesc(String partKey, String partVal) {
     ColumnStatisticsDesc desc = new ColumnStatisticsDesc();
     desc.setLastAnalyzed(DEFAULT_TIME);
     desc.setDbName(DB);
     desc.setTableName(TBL);
     // part1=val1
-    desc.setPartName(PART_KEYS.get(partKeyIndex) + PART_KV_SEPARATOR + PART_VALS.get(partValIndex));
+    desc.setPartName(partKey + PART_KV_SEPARATOR + partVal);
     desc.setIsTblLevel(false);
     return desc;
   }
