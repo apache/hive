@@ -189,18 +189,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       LOG.debug("TableScan: " + ts);
     }
 
-    if (ts == null) {
-      // could be a reduce sink
-      LOG.warn("Could not find the table scan for " + filter); 
-      return null;
-    } else {
-      Table table = ts.getConf().getTableMetadata();
-      if (table != null && !table.isPartitioned()) {
-        // table is not partitioned, skip optimizer
-        return null;
-      }
-    }
-
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
     walkExprTree(desc.getPredicate(), removerContext);
