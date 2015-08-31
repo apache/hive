@@ -116,6 +116,7 @@ public class TaskExecutorTestHelpers {
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition startedCondition = lock.newCondition();
     private final Condition sleepCondition = lock.newCondition();
+    private boolean shouldSleep = true;
     private final Condition finishedCondition = lock.newCondition();
 
     public MockRequest(SubmitWorkRequestProto requestProto,
@@ -143,7 +144,9 @@ public class TaskExecutorTestHelpers {
 
         lock.lock();
         try {
-          sleepCondition.await(workTime, TimeUnit.MILLISECONDS);
+          if (shouldSleep) {
+            sleepCondition.await(workTime, TimeUnit.MILLISECONDS);
+          }
         } catch (InterruptedException e) {
           wasInterrupted.set(true);
           return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
@@ -171,6 +174,7 @@ public class TaskExecutorTestHelpers {
       lock.lock();
       try {
         wasKilled.set(true);
+        shouldSleep = false;
         sleepCondition.signal();
       } finally {
         lock.unlock();
@@ -192,6 +196,7 @@ public class TaskExecutorTestHelpers {
     void complete() {
       lock.lock();
       try {
+        shouldSleep = false;
         sleepCondition.signal();
       } finally {
         lock.unlock();

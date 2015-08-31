@@ -343,9 +343,12 @@ public class TestLlapTaskSchedulerService {
 
       ts = new LlapTaskSchedulerServiceForTest(mockAppCallback, clock);
 
+      controlScheduler(true);
       ts.initialize();
       ts.start();
       // One scheduler pass from the nodes that are added at startup
+      signalSchedulerRun();
+      controlScheduler(false);
       awaitSchedulerRun();
     }
 
@@ -386,9 +389,9 @@ public class TestLlapTaskSchedulerService {
     private AtomicBoolean controlScheduling = new AtomicBoolean(false);
     private final Lock testLock = new ReentrantLock();
     private final Condition schedulingCompleteCondition = testLock.newCondition();
-    private final AtomicBoolean schedulingComplete = new AtomicBoolean(false);
+    private boolean schedulingComplete = false;
     private final Condition triggerSchedulingCondition = testLock.newCondition();
-    private final AtomicBoolean schedulingTriggered = new AtomicBoolean(false);
+    private boolean schedulingTriggered = false;
     private final AtomicInteger numSchedulerRuns = new AtomicInteger(0);
 
 
@@ -402,7 +405,7 @@ public class TestLlapTaskSchedulerService {
       testLock.lock();
       try {
         if (controlScheduling.get()) {
-          while (!schedulingTriggered.get()) {
+          while (!schedulingTriggered) {
             try {
               triggerSchedulingCondition.await();
             } catch (InterruptedException e) {
@@ -412,8 +415,8 @@ public class TestLlapTaskSchedulerService {
         }
         numSchedulerRuns.incrementAndGet();
         super.schedulePendingTasks();
-        schedulingTriggered.set(false);
-        schedulingComplete.set(true);
+        schedulingTriggered = false;
+        schedulingComplete = true;
         schedulingCompleteCondition.signal();
       } finally {
         testLock.unlock();
@@ -428,7 +431,7 @@ public class TestLlapTaskSchedulerService {
     void forTestSignalSchedulingRun() throws InterruptedException {
       testLock.lock();
       try {
-        schedulingTriggered.set(true);
+        schedulingTriggered = true;
         triggerSchedulingCondition.signal();
       } finally {
         testLock.unlock();
@@ -438,10 +441,10 @@ public class TestLlapTaskSchedulerService {
     void forTestAwaitSchedulingRun() throws InterruptedException {
       testLock.lock();
       try {
-        while (!schedulingComplete.get()) {
+        while (!schedulingComplete) {
           schedulingCompleteCondition.await();
         }
-        schedulingComplete.set(false);
+        schedulingComplete = false;
       } finally {
         testLock.unlock();
       }

@@ -223,6 +223,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
 
         while (!isShutdown.get()) {
+          RejectedExecutionException rejectedException = null;
           synchronized (lock) {
             // Since schedule() can be called from multiple threads, we peek the wait queue,
             // try scheduling the task and then remove the task if scheduling is successful.
@@ -259,15 +260,19 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
               // queue again to pick up the task at the highest priority.
               continue;
             }
+            try {
+              trySchedule(task);
+              // wait queue could have been re-ordered in the mean time because of concurrent task
+              // submission. So remove the specific task instead of the head task.
+              waitQueue.remove(task);
+            } catch (RejectedExecutionException e) {
+              rejectedException = e;
+            }
           }
 
-          boolean scheduled = trySchedule(task);
-          if (scheduled) {
-            // wait queue could have been re-ordered in the mean time because of concurrent task
-            // submission. So remove the specific task instead of the head task.
-            synchronized (lock) {
-              waitQueue.remove(task);
-            }
+          // Handle the rejection outside of the lock
+          if (rejectedException !=null) {
+            handleScheduleAttemptedRejection(task);
           }
 
           synchronized (lock) {
@@ -318,6 +323,10 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     synchronized (lock) {
       // If the queue does not have capacity, it does not throw a Rejection. Instead it will
       // return the task with the lowest priority, which could be the task which is currently being processed.
+
+      // TODO HIVE-11687 It's possible for a bunch of tasks to come in around the same time, without the
+      // actual executor threads picking up any work. This will lead to unnecessary rejection of tasks.
+      // The wait queue should be able to fit at least (waitQueue + currentFreeExecutor slots)
       evictedTask = waitQueue.offer(taskWrapper);
       if (evictedTask != taskWrapper) {
         knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
@@ -392,10 +401,8 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     }
   }
 
-  private boolean trySchedule(final TaskWrapper taskWrapper) {
+  private void trySchedule(final TaskWrapper taskWrapper) throws RejectedExecutionException {
 
-    boolean scheduled = false;
-    try {
       synchronized (lock) {
         boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
         LOG.info("Attempting to execute {}", taskWrapper);
@@ -423,37 +430,35 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         }
       }
       numSlotsAvailable.decrementAndGet();
-      scheduled = true;
-    } catch (RejectedExecutionException e) {
-      if (enablePreemption && taskWrapper.getTaskRunnerCallable().canFinish() && !preemptionQueue.isEmpty()) {
+  }
 
-        if (isDebugEnabled) {
-          LOG.debug("Preemption Queue: " + preemptionQueue);
-        }
+  private void handleScheduleAttemptedRejection(TaskWrapper taskWrapper) {
+    if (enablePreemption && taskWrapper.getTaskRunnerCallable().canFinish() && !preemptionQueue.isEmpty()) {
 
-        TaskWrapper pRequest = removeAndGetFromPreemptionQueue();
+      if (isDebugEnabled) {
+        LOG.debug("Preemption Queue: " + preemptionQueue);
+      }
 
-        // Avoid preempting tasks which are finishable - callback still to be processed.
-        if (pRequest != null) {
-          if (pRequest.getTaskRunnerCallable().canFinish()) {
-            LOG.info(
-                "Removed {} from preemption queue, but not preempting since it's now finishable",
-                pRequest.getRequestId());
-          } else {
-            if (isInfoEnabled) {
-              LOG.info("Invoking kill task for {} due to pre-emption to run {}",
-                  pRequest.getRequestId(), taskWrapper.getRequestId());
-            }
-            // The task will either be killed or is already in the process of completing, which will
-            // trigger the next scheduling run, or result in available slots being higher than 0,
-            // which will cause the scheduler loop to continue.
-            pRequest.getTaskRunnerCallable().killTask();
+      TaskWrapper pRequest = removeAndGetFromPreemptionQueue();
+
+      // Avoid preempting tasks which are finishable - callback still to be processed.
+      if (pRequest != null) {
+        if (pRequest.getTaskRunnerCallable().canFinish()) {
+          LOG.info(
+              "Removed {} from preemption queue, but not preempting since it's now finishable",
+              pRequest.getRequestId());
+        } else {
+          if (isInfoEnabled) {
+            LOG.info("Invoking kill task for {} due to pre-emption to run {}",
+                pRequest.getRequestId(), taskWrapper.getRequestId());
           }
+          // The task will either be killed or is already in the process of completing, which will
+          // trigger the next scheduling run, or result in available slots being higher than 0,
+          // which will cause the scheduler loop to continue.
+          pRequest.getTaskRunnerCallable().killTask();
         }
       }
     }
-
-    return scheduled;
   }
 
   private void finishableStateUpdated(TaskWrapper taskWrapper, boolean newFinishableState) {

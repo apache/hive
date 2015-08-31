@@ -24,6 +24,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -81,6 +83,7 @@ public class TestTaskExecutorService {
       r2.awaitStart();
       // Verify r1 was preempted. Also verify that it finished (single executor), otherwise
       // r2 could have run anyway.
+      r1.awaitEnd();
       assertTrue(r1.wasPreempted());
       assertTrue(r1.hasFinished());
 
@@ -117,6 +120,9 @@ public class TestTaskExecutorService {
 
     try {
       taskExecutorService.schedule(r1);
+
+      // TODO HIVE-11687. Remove the awaitStart once offer can handle (waitQueueSize + numFreeExecutionSlots)
+      // This currently serves to allow the task to be removed from the waitQueue.
       r1.awaitStart();
       try {
         taskExecutorService.schedule(r2);
@@ -154,6 +160,7 @@ public class TestTaskExecutorService {
       assertTrue(taskExecutorService.knownTasks.containsKey(r5.getRequestId()));
 
       r1.complete();
+      r1.awaitEnd();
       icl1.awaitCompletion();
 
       // Two known tasks left. r2 and r5. (r1 complete, r3 evicted, r4 rejected)
@@ -165,6 +172,7 @@ public class TestTaskExecutorService {
       TaskExecutorServiceForTest.InternalCompletionListenerForTest icl5 =
           taskExecutorService.getInternalCompletionListenerForTest(r5.getRequestId());
       r5.complete();
+      r5.awaitEnd();
       icl5.awaitCompletion();
 
       // 1 Pending task which is not finishable
@@ -175,6 +183,7 @@ public class TestTaskExecutorService {
       TaskExecutorServiceForTest.InternalCompletionListenerForTest icl2 =
           taskExecutorService.getInternalCompletionListenerForTest(r2.getRequestId());
       r2.complete();
+      r2.awaitEnd();
       icl2.awaitCompletion();
       // 0 Pending task which is not finishable
       assertEquals(0, taskExecutorService.knownTasks.size());
@@ -187,6 +196,10 @@ public class TestTaskExecutorService {
 
 
   private static class TaskExecutorServiceForTest extends TaskExecutorService {
+
+    private final Lock iclCreationLock = new ReentrantLock();
+    private final Map<String, Condition> iclCreationConditions = new HashMap<>();
+
     public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize, String waitQueueComparatorClassName,
                                       boolean enablePreemption) {
       super(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption);
@@ -196,13 +209,38 @@ public class TestTaskExecutorService {
 
     @Override
     InternalCompletionListener createInternalCompletionListener(TaskWrapper taskWrapper) {
-      InternalCompletionListenerForTest icl = new InternalCompletionListenerForTest(taskWrapper);
-      completionListeners.put(taskWrapper.getRequestId(), icl);
-      return icl;
+      iclCreationLock.lock();
+      try {
+        InternalCompletionListenerForTest icl = new InternalCompletionListenerForTest(taskWrapper);
+        completionListeners.put(taskWrapper.getRequestId(), icl);
+        Condition condition = iclCreationConditions.get(taskWrapper.getRequestId());
+        if (condition == null) {
+          condition = iclCreationLock.newCondition();
+          iclCreationConditions.put(taskWrapper.getRequestId(), condition);
+        }
+        condition.signalAll();
+        return icl;
+      } finally {
+        iclCreationLock.unlock();
+      }
     }
 
-    InternalCompletionListenerForTest getInternalCompletionListenerForTest(String requestId) {
-      return completionListeners.get(requestId);
+    InternalCompletionListenerForTest getInternalCompletionListenerForTest(String requestId) throws
+        InterruptedException {
+      iclCreationLock.lock();
+      try {
+        Condition condition = iclCreationConditions.get(requestId);
+        if (condition == null) {
+          condition = iclCreationLock.newCondition();
+          iclCreationConditions.put(requestId, condition);
+        }
+        while (completionListeners.get(requestId) == null) {
+          condition.await();
+        }
+        return completionListeners.get(requestId);
+      } finally {
+        iclCreationLock.unlock();
+      }
     }
 
     private class InternalCompletionListenerForTest extends TaskExecutorService.InternalCompletionListener {
