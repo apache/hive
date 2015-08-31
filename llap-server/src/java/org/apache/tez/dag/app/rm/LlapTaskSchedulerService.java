@@ -123,6 +123,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private final Lock scheduleLock = new ReentrantLock();
   private final Condition scheduleCondition = scheduleLock.newCondition();
+  private final AtomicBoolean pendingScheduleInvodations = new AtomicBoolean(false);
   private final ListeningExecutorService schedulerExecutor;
   private final SchedulerCallable schedulerCallable = new SchedulerCallable();
 
@@ -910,6 +911,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private void trySchedulingPendingTasks() {
     scheduleLock.lock();
     try {
+      pendingScheduleInvodations.set(true);
       scheduleCondition.signal();
     } finally {
       scheduleLock.unlock();
@@ -924,7 +926,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
         scheduleLock.lock();
         try {
-          scheduleCondition.await();
+          while (!pendingScheduleInvodations.get()) {
+            scheduleCondition.await();
+          }
         } catch (InterruptedException e) {
           if (isShutdown.get()) {
             LOG.info("Scheduler thread interrupted after shutdown");
@@ -936,6 +940,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         } finally {
           scheduleLock.unlock();
         }
+
+        // Set pending to false since scheduling is about to run. Any triggers up to this point
+        // will be handled in the next run.
+        // A new request may come in right after this is set to false, but before the actual scheduling.
+        // This will be handled in this run, but will cause an immediate run after, which is harmless.
+        pendingScheduleInvodations.set(false);
         // Schedule outside of the scheduleLock - which should only be used to wait on the condition.
         schedulePendingTasks();
       }
