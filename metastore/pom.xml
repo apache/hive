@@ -135,6 +135,12 @@
       <groupId>co.cask.tephra</groupId>
       <artifactId>tephra-core</artifactId>
       <version>${tephra.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>co.cask.tephra</groupId>

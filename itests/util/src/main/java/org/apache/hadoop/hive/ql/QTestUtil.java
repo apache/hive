@@ -288,6 +288,10 @@ public class QTestUtil {
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     }
 
+    // Plug verifying metastore in for testing.
+    conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
+      "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+
     if (mr != null) {
       assert dfs != null;
 

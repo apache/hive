@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.TestObjectStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -57,22 +58,34 @@ import java.util.Set;
  */
 public class TestHBaseImport extends HBaseIntegrationTests {
 
-  private static final Log LOG = LogFactory.getLog(TestHBaseStoreIntegration.class.getName());
+  private static final Log LOG = LogFactory.getLog(TestHBaseImport.class.getName());
 
   private static final String[] tableNames = new String[] {"allnonparttable", "allparttable"};
   private static final String[] partVals = new String[] {"na", "emea", "latam", "apac"};
   private static final String[] funcNames = new String[] {"allfunc1", "allfunc2"};
 
+  private static final List<Integer> masterKeySeqs = new ArrayList<Integer>();
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   @BeforeClass
   public static void startup() throws Exception {
     HBaseIntegrationTests.startMiniCluster();
+    RawStore rdbms;
+    rdbms = new ObjectStore();
+    rdbms.setConf(conf);
+    TestObjectStore.dropAllStoreObjects(rdbms);
   }
 
   @AfterClass
   public static void shutdown() throws Exception {
+    RawStore rdbms;
+    rdbms = new ObjectStore();
+    rdbms.setConf(conf);
+    TestObjectStore.dropAllStoreObjects(rdbms);
+    for (int seq : masterKeySeqs) {
+      rdbms.removeMasterKey(seq);
+    }
     HBaseIntegrationTests.shutdownMiniCluster();
   }
 
@@ -316,7 +329,6 @@ public class TestHBaseImport extends HBaseIntegrationTests {
     Assert.assertEquals(baseNumToks, store.getAllTokenIdentifiers().size());
     String[] hbaseKeys = store.getMasterKeys();
     Assert.assertEquals(baseNumKeys, hbaseKeys.length);
-
   }
 
   @Test
@@ -502,7 +514,7 @@ public class TestHBaseImport extends HBaseIntegrationTests {
     }
     for (int i = 0; i < tokenIds.length; i++) rdbms.addToken(tokenIds[i], tokens[i]);
     for (int i = 0; i < masterKeys.length; i++) {
-      rdbms.addMasterKey(masterKeys[i]);
+      masterKeySeqs.add(rdbms.addMasterKey(masterKeys[i]));
     }
   }
 
