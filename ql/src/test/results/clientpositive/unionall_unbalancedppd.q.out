@@ -1,6 +1,10 @@
-PREHOOK: query: drop table if exists union_all_bug_test_1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table if exists union_all_bug_test_1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists union_all_bug_test_1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table if exists union_all_bug_test_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table if exists union_all_bug_test_2
 PREHOOK: type: DROPTABLE
@@ -283,8 +287,8 @@ POSTHOOK: Input: default@union_all_bug_test_1
 POSTHOOK: Input: default@union_all_bug_test_2
 #### A masked pattern was here ####
 0
-1
 0
+1
 PREHOOK: query: SELECT f1
 FROM (
 
@@ -325,10 +329,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_all_bug_test_1
 POSTHOOK: Input: default@union_all_bug_test_2
 #### A masked pattern was here ####
-1
+0
 0
 1
-0
+1
 PREHOOK: query: explain
 
 SELECT f1

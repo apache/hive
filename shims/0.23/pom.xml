@@ -144,18 +144,11 @@
       <optional>true</optional>
      <type>test-jar</type>
    </dependency>
-  </dependencies>
-
-  <profiles>
-    <profile>
-      <id>hadoop-2</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-distcp</artifactId>
-          <version>${hadoop-23.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
+   <dependency>
+     <groupId>org.apache.hadoop</groupId>
+     <artifactId>hadoop-distcp</artifactId>
+     <version>${hadoop-23.version}</version>
+     <scope>provided</scope>
+   </dependency>
+   </dependencies>
 </project>

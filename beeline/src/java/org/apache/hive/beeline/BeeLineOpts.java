@@ -154,9 +154,9 @@ class BeeLineOpts implements Completer {
 
 
   public void save() throws IOException {
-    OutputStream out = new FileOutputStream(rcFile);
-    save(out);
-    out.close();
+    try (OutputStream out = new FileOutputStream(rcFile)) {
+      save(out);
+    }
   }
 
   public void save(OutputStream out) throws IOException {
@@ -208,9 +208,9 @@ class BeeLineOpts implements Completer {
 
 
   public void load() throws IOException {
-    InputStream in = new FileInputStream(rcFile);
-    load(in);
-    in.close();
+    try (InputStream in = new FileInputStream(rcFile)) {
+      load(in);
+    }
   }
 
 

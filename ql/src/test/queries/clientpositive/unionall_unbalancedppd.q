@@ -1,4 +1,7 @@
 set hive.optimize.ppd=true;
+
+-- SORT_QUERY_RESULTS
+
 drop table if exists union_all_bug_test_1;
 drop table if exists union_all_bug_test_2;
 create table if not exists union_all_bug_test_1

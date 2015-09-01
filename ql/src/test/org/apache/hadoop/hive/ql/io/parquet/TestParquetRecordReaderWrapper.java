@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.MessageTypeParser;
 import org.junit.Test;
 
 import java.sql.Date;
@@ -48,15 +50,19 @@ public class TestParquetRecordReaderWrapper {
      SearchArgument sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x", PredicateLeaf.Type.INTEGER)
-        .between("y", PredicateLeaf.Type.INTEGER, 10, 20)
-        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .isNull("x", PredicateLeaf.Type.LONG)
+        .between("y", PredicateLeaf.Type.LONG, 10L, 20L)
+        .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L)
         .nullSafeEquals("a", PredicateLeaf.Type.STRING, "stinger")
         .end()
         .end()
         .build();
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema = MessageTypeParser.parseMessageType("message test {" +
+        " optional int32 x; required int32 y; required int32 z;" +
+        " optional binary a;}");
+    FilterPredicate p =
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected =
       "and(and(and(not(eq(x, null)), not(and(lt(y, 20), not(lteq(y, 10))))), not(or(or(eq(z, 1), " +
         "eq(z, 2)), eq(z, 3)))), not(eq(a, Binary{\"stinger\"})))";
@@ -75,23 +81,27 @@ public class TestParquetRecordReaderWrapper {
             .equals("z", PredicateLeaf.Type.DECIMAL, new HiveDecimalWritable("1.0"))
             .end()
             .build();
+    MessageType schema = MessageTypeParser.parseMessageType("message test {" +
+        " required int32 x; required binary y; required binary z;}");
     assertEquals("lteq(y, Binary{\"hi        \"})",
-        ParquetFilterPredicateConverter.toFilterPredicate(sarg).toString());
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema).toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x", PredicateLeaf.Type.INTEGER)
+        .isNull("x", PredicateLeaf.Type.LONG)
         .between("y", PredicateLeaf.Type.DECIMAL,
             new HiveDecimalWritable("10"), new HiveDecimalWritable("20.0"))
-        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L)
         .nullSafeEquals("a", PredicateLeaf.Type.STRING,
             new HiveVarchar("stinger", 100).toString())
         .end()
         .end()
         .build();
-
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    schema = MessageTypeParser.parseMessageType("message test {" +
+        " optional int32 x; required binary y; required int32 z;" +
+        " optional binary a;}");
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected =
         "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
         "not(eq(a, Binary{\"stinger\"})))";
@@ -110,23 +120,28 @@ public class TestParquetRecordReaderWrapper {
                 new HiveDecimalWritable("1.0"))
             .end()
             .build();
+    MessageType schema = MessageTypeParser.parseMessageType("message test {" +
+        " required int32 x; required binary y; required binary z;}");
     assertEquals("lteq(y, Binary{\"hi        \"})",
-        ParquetFilterPredicateConverter.toFilterPredicate(sarg).toString());
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema).toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x", PredicateLeaf.Type.INTEGER)
+        .isNull("x", PredicateLeaf.Type.LONG)
         .between("y", PredicateLeaf.Type.DECIMAL, new HiveDecimalWritable("10"),
             new HiveDecimalWritable("20.0"))
-        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L)
         .nullSafeEquals("a", PredicateLeaf.Type.STRING,
             new HiveVarchar("stinger", 100).toString())
         .end()
         .end()
         .build();
+    schema = MessageTypeParser.parseMessageType("message test {" +
+        " optional int32 x; required binary y; required int32 z;" +
+        " optional binary a;}");
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
         "not(eq(a, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
@@ -137,16 +152,19 @@ public class TestParquetRecordReaderWrapper {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("x", PredicateLeaf.Type.INTEGER, new Integer((short) 22))
-            .lessThan("x1", PredicateLeaf.Type.INTEGER, new Integer(22))
+            .lessThan("x", PredicateLeaf.Type.LONG, 22L)
+            .lessThan("x1", PredicateLeaf.Type.LONG, 22L)
             .lessThanEquals("y", PredicateLeaf.Type.STRING,
                 new HiveChar("hi", 10).toString())
             .equals("z", PredicateLeaf.Type.FLOAT, new Double(0.22))
             .equals("z1", PredicateLeaf.Type.FLOAT, new Double(0.22))
             .end()
             .build();
+    MessageType schema = MessageTypeParser.parseMessageType("message test {" +
+        " required int32 x; required int32 x1;" +
+        " required binary y; required float z; required float z1;}");
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = "and(and(and(and(lt(x, 22), lt(x1, 22))," +
         " lteq(y, Binary{\"hi        \"})), eq(z, " +
         "0.22)), eq(z1, 0.22))";

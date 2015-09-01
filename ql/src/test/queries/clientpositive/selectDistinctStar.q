@@ -3,6 +3,8 @@ set hive.explain.user=false;
 
 explain select distinct src.* from src;
 
+-- SORT_QUERY_RESULTS
+
 select distinct src.* from src;
 
 select distinct * from src;

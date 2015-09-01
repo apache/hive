@@ -163,8 +163,13 @@ public class StandardStructObjectInspector extends
     }
     // We support both List<Object> and Object[]
     // so we have to do differently.
-    boolean isArray = ! (data instanceof List);
+    boolean isArray = data.getClass().isArray();
     if (!isArray && !(data instanceof List)) {
+      if (!warned) {
+        LOG.warn("Invalid type for struct " + data.getClass());
+        LOG.warn("ignoring similar errors.");
+        warned = true;
+      }
       return data;
     }
     int listSize = (isArray ? ((Object[]) data).length : ((List<Object>) data)

@@ -97,4 +97,8 @@ public class GenericUDFOPAnd extends GenericUDF {
     return sb.toString();
   }
 
+  @Override
+  public GenericUDF negative() {
+    return new GenericUDFOPOr();
+  }
 }

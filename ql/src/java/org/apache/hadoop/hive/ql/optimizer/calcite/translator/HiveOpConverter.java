@@ -686,13 +686,34 @@ public class HiveOpConverter {
       int numReducers, Operation acidOperation, boolean strictMode,
       List<String> keepColNames) throws SemanticException {
     // 1. Generate RS operator
-    if (input.getSchema().getTableNames().size() != 1) {
-      throw new SemanticException(
-          "In CBO return path, genReduceSinkAndBacktrackSelect is expecting only one SelectOp but there is "
-              + input.getSchema().getTableNames().size());
+    // 1.1 Prune the tableNames, only count the tableNames that are not empty strings
+	// as empty string in table aliases is only allowed for virtual columns.
+    String tableAlias = null;
+    Set<String> tableNames = input.getSchema().getTableNames();
+    for (String tableName : tableNames) {
+      if (tableName != null) {
+        if (tableName.length() == 0) {
+          if (tableAlias == null) {
+            tableAlias = tableName;
+          }
+        } else {
+          if (tableAlias == null || tableAlias.length() == 0) {
+            tableAlias = tableName;
+          } else {
+            if (!tableName.equals(tableAlias)) {
+              throw new SemanticException(
+                  "In CBO return path, genReduceSinkAndBacktrackSelect is expecting only one tableAlias but there is more than one");
+            }
+          }
+        }
+      }
     }
-    ReduceSinkOperator rsOp = genReduceSink(input, input.getSchema().getTableNames().iterator()
-        .next(), keys, tag, partitionCols, order, numReducers, acidOperation, strictMode);
+    if (tableAlias == null) {
+      throw new SemanticException(
+          "In CBO return path, genReduceSinkAndBacktrackSelect is expecting only one tableAlias but there is none");
+    }
+    // 1.2 Now generate RS operator
+    ReduceSinkOperator rsOp = genReduceSink(input, tableAlias, keys, tag, partitionCols, order, numReducers, acidOperation, strictMode);
 
     // 2. Generate backtrack Select operator
     Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(keepColNames,
@@ -974,7 +995,7 @@ public class HiveOpConverter {
    * to be expressed that way.
    */
   private static int updateExprNode(ExprNodeDesc expr, final Map<String, Byte> reversedExprs,
-          final Map<String, ExprNodeDesc> colExprMap) {
+      final Map<String, ExprNodeDesc> colExprMap) throws SemanticException {
     int inputPos = -1;
     if (expr instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
@@ -982,10 +1003,26 @@ public class HiveOpConverter {
       for (ExprNodeDesc functionChild : func.getChildren()) {
         if (functionChild instanceof ExprNodeColumnDesc) {
           String colRef = functionChild.getExprString();
-          inputPos = reversedExprs.get(colRef);
+          int pos = reversedExprs.get(colRef);
+          if (pos != -1) {
+            if (inputPos == -1) {
+              inputPos = pos;
+            } else if (inputPos != pos) {
+              throw new SemanticException(
+                  "UpdateExprNode is expecting only one position for join operator convert. But there are more than one.");
+            }
+          }
           newChildren.add(colExprMap.get(colRef));
         } else {
-          inputPos = updateExprNode(functionChild, reversedExprs, colExprMap);
+          int pos = updateExprNode(functionChild, reversedExprs, colExprMap);
+          if (pos != -1) {
+            if (inputPos == -1) {
+              inputPos = pos;
+            } else if (inputPos != pos) {
+              throw new SemanticException(
+                  "UpdateExprNode is expecting only one position for join operator convert. But there are more than one.");
+            }
+          }
           newChildren.add(functionChild);
         }
       }

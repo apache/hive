@@ -42,6 +42,24 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@orc_test@ds=10
 Found 2 items
 #### A masked pattern was here ####
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' overwrite into table orc_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_staging
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' overwrite into table orc_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_staging
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_test@ds=10
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_test@ds=10
+Found 1 items
+#### A masked pattern was here ####
 PREHOOK: query: alter table orc_test add partition(ds='11')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@orc_test
