@@ -47,4 +47,25 @@ public class TestParquetFilterPredicate {
     String expected = "and(not(eq(a, null)), not(eq(a, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
   }
+
+  @Test
+  public void testFilterFloatColumns() {
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test {  required float a; required int32 b; }");
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startNot()
+        .startOr()
+        .isNull("a")
+        .between("a", 10.2, 20.3)
+        .in("b", 1L, 2L, 3L)
+        .end()
+        .end()
+        .build();
+
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+
+    String expected =
+        "and(and(not(eq(a, null)), not(and(lt(a, 20.3), not(lteq(a, 10.2))))), not(or(or(eq(b, 1), eq(b, 2)), eq(b, 3))))";
+    assertEquals(expected, p.toString());
+  }
 }
