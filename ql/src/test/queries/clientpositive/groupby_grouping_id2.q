@@ -4,6 +4,8 @@ LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1;
 
 set hive.groupby.skewindata = true;
 
+-- SORT_QUERY_RESULTS
+
 SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP;
 
 SELECT GROUPING__ID, count(*)

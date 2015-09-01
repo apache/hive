@@ -63,3 +63,30 @@ SELECT customer_name, SUM(customer_balance), SUM(order_quantity) FROM default.te
 (SUM(customer_balance) <= 4074689.000000041)
 AND (COUNT(s1.discount) <= 822)
 );
+
+explain
+SELECT s1.customer_name FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
+GROUP BY s1.customer_name
+HAVING (
+(SUM(s1.customer_balance) <= 4074689.000000041)
+AND (AVG(s1.discount) <= 822)
+AND (COUNT(s2.value) > 4)
+);
+
+explain
+SELECT s1.customer_name FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
+GROUP BY s1.customer_name, s1.customer_name
+HAVING (
+(SUM(s1.customer_balance) <= 4074689.000000041)
+AND (AVG(s1.discount) <= 822)
+AND (COUNT(s2.value) > 4)
+);
+
+explain
+SELECT distinct s1.customer_name as x, s1.customer_name as y
+FROM default.testv1_staples s1 join default.src s2 on s1.customer_name = s2.key
+HAVING (
+(SUM(s1.customer_balance) <= 4074689.000000041)
+AND (AVG(s1.discount) <= 822)
+AND (COUNT(s2.value) > 4)
+);
