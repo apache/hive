@@ -4620,6 +4620,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ExprNodeDesc grpByExprNode = genExprNodeDesc(grpbyExpr,
           groupByInputRowResolver);
 
+      if (ExprNodeDescUtils.indexOf(grpByExprNode, groupByKeys) >= 0) {
+        // Skip duplicated grouping keys
+        continue;
+      }
       groupByKeys.add(grpByExprNode);
       String field = getColumnInternalName(i);
       outputColumnNames.add(field);
