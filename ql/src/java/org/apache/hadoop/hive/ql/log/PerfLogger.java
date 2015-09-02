@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,8 +80,8 @@ public class PerfLogger {
 
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 
-  protected final Map<String, Long> startTimes = new HashMap<String, Long>();
-  protected final Map<String, Long> endTimes = new HashMap<String, Long>();
+  protected final Map<String, Long> startTimes = Collections.synchronizedMap(new HashMap<String, Long>());
+  protected final Map<String, Long> endTimes = Collections.synchronizedMap(new HashMap<String, Long>());
 
   static final private Log LOG = LogFactory.getLog(PerfLogger.class.getName());
 
