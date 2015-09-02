@@ -125,13 +125,13 @@ public class RuleRegExp implements Rule {
    */
   private int costPatternWithoutWildCardChar(Stack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
-    String name = new String("");
     int patLen = patternWithoutWildCardChar.length();
-
+    StringBuilder name = new StringBuilder(patLen + numElems);
     for (int pos = numElems - 1; pos >= 0; pos--) {
-        name = stack.get(pos).getName() + "%" + name;
+      String nodeName = stack.get(pos).getName() + "%";
+      name.insert(0, nodeName);
       if (name.length() >= patLen) {
-        if (patternWithoutWildCardChar.equals(name)) {
+        if (patternWithoutWildCardChar.contentEquals(name)) {
           return patLen;
         } else {
           return -1;
@@ -153,13 +153,14 @@ public class RuleRegExp implements Rule {
   private int costPatternWithORWildCardChar(Stack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
     for (String pattern : patternORWildChar) {
-      String name = new String("");
       int patLen = pattern.length();
 
+      StringBuilder name = new StringBuilder(patLen + numElems);
       for (int pos = numElems - 1; pos >= 0; pos--) {
-        name = stack.get(pos).getName() + "%" + name;
+        String nodeName = stack.get(pos).getName() + "%";
+        name.insert(0, nodeName);
         if (name.length() >= patLen) {
-          if (pattern.equals(name)) {
+          if (pattern.contentEquals(name)) {
             return patLen;
           } else {
             break;
@@ -181,11 +182,12 @@ public class RuleRegExp implements Rule {
    * @throws SemanticException
    */
   private int costPatternWithWildCardChar(Stack<Node> stack) throws SemanticException {
-	int numElems = (stack != null ? stack.size() : 0);
-    String name = "";
+    int numElems = (stack != null ? stack.size() : 0);
+    StringBuilder name = new StringBuilder();
     Matcher m = patternWithWildCardChar.matcher("");
     for (int pos = numElems - 1; pos >= 0; pos--) {
-      name = stack.get(pos).getName() + "%" + name;
+      String nodeName = stack.get(pos).getName() + "%";
+      name.insert(0, nodeName);
       m.reset(name);
       if (m.matches()) {
         return name.length();
