@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -373,7 +374,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final Configuration conf;
     private static Cache<Path, FileInfo> footerCache;
     private static ExecutorService threadPool = null;
-    private static ExecutorCompletionService<AcidDirInfo> ecs = null;
     private final int numBuckets;
     private final long maxSize;
     private final long minSize;
@@ -419,7 +419,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           threadPool = Executors.newFixedThreadPool(numThreads,
               new ThreadFactoryBuilder().setDaemon(true)
                   .setNameFormat("ORC_GET_SPLITS #%d").build());
-          ecs = new ExecutorCompletionService<AcidDirInfo>(threadPool);
         }
 
         if (footerCache == null && cacheStripeDetails) {
@@ -440,7 +439,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   /**
    * The full ACID directory information needed for splits; no more calls to HDFS needed.
    * We could just live with AcidUtils.Directory but...
-   * 1) That doesn't contain have base files.
+   * 1) That doesn't have base files for the base-directory case.
    * 2) We save fs for convenience to avoid getting it twice.
    */
   @VisibleForTesting
@@ -1031,17 +1030,18 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     // multi-threaded file statuses and split strategy
     boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     Path[] paths = getInputPaths(conf);
+    CompletionService<AcidDirInfo> ecs = new ExecutorCompletionService<>(Context.threadPool);
     for (Path dir : paths) {
       FileSystem fs = dir.getFileSystem(conf);
       FileGenerator fileGenerator = new FileGenerator(context, fs, dir, useFileIds);
-      pathFutures.add(Context.ecs.submit(fileGenerator));
+      pathFutures.add(ecs.submit(fileGenerator));
     }
 
     // complete path futures and schedule split generation
     try {
       for (int notIndex = 0; notIndex < paths.length; ++notIndex) {
-        AcidDirInfo adi = Context.ecs.take().get();
-        SplitStrategy splitStrategy = determineSplitStrategy(
+        AcidDirInfo adi = ecs.take().get();
+        SplitStrategy<?> splitStrategy = determineSplitStrategy(
             context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
 
         if (isDebugEnabled) {
@@ -1049,12 +1049,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         }
 
         if (splitStrategy instanceof ETLSplitStrategy) {
-          List<SplitInfo> splitInfos = splitStrategy.getSplits();
+          List<SplitInfo> splitInfos = ((ETLSplitStrategy)splitStrategy).getSplits();
           for (SplitInfo splitInfo : splitInfos) {
             splitFutures.add(Context.threadPool.submit(new SplitGenerator(splitInfo)));
           }
         } else {
-          splits.addAll(splitStrategy.getSplits());
+          @SuppressWarnings("unchecked")
+          List<OrcSplit> readySplits = (List<OrcSplit>)splitStrategy.getSplits();
+          splits.addAll(readySplits);
         }
       }
 
