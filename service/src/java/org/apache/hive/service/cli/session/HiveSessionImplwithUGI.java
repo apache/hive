@@ -37,7 +37,8 @@ import org.apache.hive.service.cli.thrift.TProtocolVersion;
 /**
  *
  * HiveSessionImplwithUGI.
- * HiveSession with connecting user's UGI and delegation token if required
+ * HiveSession with connecting user's UGI and delegation token if required.
+ * Note: this object may be shared between threads in HS2.
  */
 public class HiveSessionImplwithUGI extends HiveSessionImpl {
   public static final String HS2TOKEN = "HiveServer2ImpersonationToken";
