@@ -160,9 +160,6 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   private final ConcurrentMap<String,String> userRsrc;
   private JobTokenSecretManager secretManager;
 
-  public static final String MAPREDUCE_SHUFFLE_SERVICEID =
-      "mapreduce_shuffle";
-
   public static final String SHUFFLE_PORT_CONFIG_KEY = "llap.shuffle.port";
   public static final int DEFAULT_SHUFFLE_PORT = 15551;
 
@@ -247,7 +244,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     }
   }
 
-  public ShuffleHandler(Configuration conf) {
+  private ShuffleHandler(Configuration conf) {
     this.conf = conf;
     manageOsCache = conf.getBoolean(SHUFFLE_MANAGE_OS_CACHE,
         DEFAULT_SHUFFLE_MANAGE_OS_CACHE);

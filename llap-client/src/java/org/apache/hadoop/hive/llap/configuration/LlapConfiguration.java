@@ -14,6 +14,8 @@
 
 package org.apache.hadoop.hive.llap.configuration;
 
+import java.net.URL;
+
 import org.apache.hadoop.conf.Configuration;
 
 public class LlapConfiguration extends Configuration {
@@ -28,6 +30,10 @@ public class LlapConfiguration extends Configuration {
     addResource(LLAP_DAEMON_SITE);
   }
 
+  public LlapConfiguration(Configuration conf, URL llapDaemonConfLocation) {
+    super(conf);
+    addResource(llapDaemonConfLocation);
+  }
 
   public static final String LLAP_PREFIX = "llap.";
 

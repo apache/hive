@@ -372,8 +372,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-    String nameNode, int numDir) throws IOException {
-    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, numDir);
+      String nameNode) throws IOException {
+    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode);
   }
 
   /**
@@ -384,9 +384,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final MiniTezCluster mr;
     private final Configuration conf;
 
-    public MiniTezShim(Configuration conf, int numberOfTaskTrackers,
-                      String nameNode, int numDir) throws IOException {
-
+    public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode)
+        throws IOException {
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");

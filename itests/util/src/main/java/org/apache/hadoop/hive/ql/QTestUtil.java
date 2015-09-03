@@ -38,7 +38,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.lang.RuntimeException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -46,22 +45,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -74,7 +73,9 @@ import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
+import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
+import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -107,6 +108,9 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.google.common.collect.ImmutableList;
+
+import junit.framework.Assert;
+import junit.framework.TestSuite;
 
 /**
  * QTestUtil.
@@ -150,6 +154,8 @@ public class QTestUtil {
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private HadoopShims.HdfsEncryptionShim hes = null;
+  private MiniLlapCluster llapCluster = null;
+  private final boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
   private SparkSession sparkSession = null;
@@ -310,6 +316,7 @@ public class QTestUtil {
     spark,
     encrypted,
     miniSparkOnYarn,
+    llap,
     none;
 
     public static MiniClusterType valueForString(String type) {
@@ -323,6 +330,8 @@ public class QTestUtil {
         return encrypted;
       } else if (type.equals("miniSparkOnYarn")) {
         return miniSparkOnYarn;
+      } else if (type.equals("llap")) {
+        return llap;
       } else {
         return none;
       }
@@ -400,7 +409,48 @@ public class QTestUtil {
 
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
-        mr = shims.getMiniTezCluster(conf, 4, uriString, 1);
+        mr = shims.getMiniTezCluster(conf, 4, uriString);
+      } else if (clusterType == MiniClusterType.llap) {
+        Configuration daemonConf;
+        if (confDir != null && !confDir.isEmpty()) {
+          URL llapDaemonConfURL = new URL("file://"
+              + new File(confDir).toURI().getPath() + "/llap-daemon-site.xml");
+          daemonConf = new LlapConfiguration(conf, llapDaemonConfURL);
+        } else {
+          daemonConf = new LlapConfiguration(conf);
+        }
+        final String clusterName = "llap";
+        final long maxMemory = LlapDaemon.getTotalHeapSize();
+        // 15% for io cache
+        final long memoryForCache = (long) (0.15f * maxMemory);
+        // 75% for 4 executors
+        final long totalExecutorMemory = (long) (0.75f * maxMemory);
+        final int numExecutors = daemonConf.getInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
+            LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT);
+        final boolean asyncIOEnabled = true;
+        // enabling this will cause test failures in Mac OS X
+        final boolean directMemoryEnabled = false;
+        final int numLocalDirs = 1;
+        LOG.info("MiniLlap Configs - maxMemory: " + maxMemory + " memoryForCache: " + memoryForCache
+            + " totalExecutorMemory: " + totalExecutorMemory + " numExecutors: " + numExecutors
+            + " asyncIOEnabled: " + asyncIOEnabled + " directMemoryEnabled: " + directMemoryEnabled
+            + " numLocalDirs: " + numLocalDirs);
+        llapCluster = MiniLlapCluster.create(clusterName,
+            numExecutors,
+            totalExecutorMemory,
+            asyncIOEnabled,
+            directMemoryEnabled,
+            memoryForCache,
+            numLocalDirs);
+        llapCluster.init(daemonConf);
+        llapCluster.start();
+        Configuration llapConf = llapCluster.getClusterSpecificConfiguration();
+        Iterator<Entry<String, String>> confIter = llapConf.iterator();
+        while (confIter.hasNext()) {
+          Entry<String, String> entry = confIter.next();
+          conf.set(entry.getKey(), entry.getValue());
+        }
+        mr = shims.getMiniTezCluster(conf, 2, uriString);
       } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
         mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
       } else {
@@ -409,12 +459,6 @@ public class QTestUtil {
     }
 
     initConf();
-
-    if (withLlapIo && clusterType != MiniClusterType.spark
-        && clusterType != MiniClusterType.miniSparkOnYarn) {
-      LOG.info("initializing llap");
-      LlapIoProxy.initializeLlapIo(conf);
-    }
 
     // Use the current directory if it is not specified
     String dataDir = conf.get("test.data.files");
@@ -456,6 +500,10 @@ public class QTestUtil {
       } finally {
         sparkSession = null;
       }
+    }
+    if (llapCluster != null) {
+      llapCluster.stop();
+      llapCluster = null;
     }
     if (mr != null) {
       mr.shutdown();
