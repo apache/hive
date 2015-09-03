@@ -75,6 +75,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final QueryTracker queryTracker;
   private final Scheduler<TaskRunnerCallable> executorService;
   private final AtomicReference<InetSocketAddress> localAddress;
+  private final AtomicReference<Integer> localShufflePort;
   private final Map<String, String> localEnv = new HashMap<>();
   private final long memoryPerExecutor;
   private final LlapDaemonExecutorMetrics metrics;
@@ -83,7 +84,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final KilledTaskHandler killedTaskHandler = new KilledTaskHandlerImpl();
 
   public ContainerRunnerImpl(Configuration conf, int numExecutors, int waitQueueSize,
-      boolean enablePreemption, String[] localDirsBase, int localShufflePort,
+      boolean enablePreemption, String[] localDirsBase, AtomicReference<Integer> localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
       long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics,
       AMReporter amReporter) {
@@ -92,6 +93,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     Preconditions.checkState(numExecutors > 0,
         "Invalid number of executors: " + numExecutors + ". Must be > 0");
     this.localAddress = localAddress;
+    this.localShufflePort = localShufflePort;
     this.amReporter = amReporter;
 
     this.queryTracker = new QueryTracker(conf, localDirsBase);
@@ -101,9 +103,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
             LlapConfiguration.LLAP_DAEMON_WAIT_QUEUE_SCHEDULER_CLASS_NAME_DEFAULT);
     this.executorService = new TaskExecutorService(numExecutors, waitQueueSize, waitQueueSchedulerClassName,
         enablePreemption);
-    AuxiliaryServiceHelper.setServiceDataIntoEnv(
-        TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
-        ByteBuffer.allocate(4).putInt(localShufflePort), localEnv);
+
     addIfService(executorService);
 
     // 80% of memory considered for accounted buffers. Rest for objects.
@@ -132,8 +132,11 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   @Override
   public void serviceStart() throws Exception {
+    LOG.info("Using ShufflePort: " + localShufflePort.get());
+    AuxiliaryServiceHelper.setServiceDataIntoEnv(
+        TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
+        ByteBuffer.allocate(4).putInt(localShufflePort.get()), localEnv);
     super.serviceStart();
-
   }
 
   @Override

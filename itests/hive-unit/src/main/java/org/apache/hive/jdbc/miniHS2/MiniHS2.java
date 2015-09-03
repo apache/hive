@@ -59,7 +59,7 @@ public class MiniHS2 extends AbstractHiveService {
   private static final AtomicLong hs2Counter = new AtomicLong();
   private MiniMrShim mr;
   private MiniDFSShim dfs;
-  private FileSystem localFS;
+  private final FileSystem localFS;
   private boolean useMiniKdc = false;
   private final String serverPrincipal;
   private final boolean isMetastoreRemote;
@@ -181,7 +181,7 @@ public class MiniHS2 extends AbstractHiveService {
       // Initialize the execution engine based on cluster type
       switch (miniClusterType) {
       case TEZ:
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, 1);
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString);
         break;
       case MR:
         mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4, uriString, 1);

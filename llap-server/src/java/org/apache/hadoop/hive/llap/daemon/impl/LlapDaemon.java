@@ -16,7 +16,6 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.net.InetSocketAddress;
@@ -49,13 +48,12 @@ import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LlapDaemon extends CompositeService implements ContainerRunner, LlapDaemonMXBean {
 
@@ -81,7 +79,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final String[] localDirs;
 
   // TODO Not the best way to share the address
-  private final AtomicReference<InetSocketAddress> address = new AtomicReference<InetSocketAddress>();
+  private final AtomicReference<InetSocketAddress> address = new AtomicReference<>();
+  private final AtomicReference<Integer> shufflePort = new AtomicReference<>();
 
   public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
       boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int rpcPort,
@@ -169,7 +168,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         waitQueueSize,
         enablePreemption,
         localDirs,
-        shufflePort,
+        this.shufflePort,
         address,
         executorMemoryBytes,
         metrics,
@@ -187,7 +186,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     addIfService(amReporter);
   }
 
-  private long getTotalHeapSize() {
+  public static long getTotalHeapSize() {
     // runtime.getMax() gives a very different number from the actual Xmx sizing.
     // you can iterate through the
     // http://docs.oracle.com/javase/7/docs/api/java/lang/management/MemoryPoolMXBean.html
@@ -235,6 +234,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   public void serviceStart() throws Exception {
     // Start the Shuffle service before the listener - until it's a service as well.
     ShuffleHandler.initializeAndStart(shuffleHandlerConf);
+    LOG.info("Setting shuffle port to: " + ShuffleHandler.get().getPort());
+    this.shufflePort.set(ShuffleHandler.get().getPort());
     super.serviceStart();
     LOG.info("LlapDaemon serviceStart complete");
   }

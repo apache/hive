@@ -39,6 +39,11 @@
 </property>
 
 <property>
+  <name>hive.execution.mode</name>
+  <value>container</value>
+</property>
+
+<property>
   <name>mapred.tez.java.opts</name>
   <value>-Xmx128m</value>
 </property>
@@ -214,7 +219,7 @@
 
 <property>
   <name>hive.stats.dbclass</name>
-  <value>counter</value>
+  <value>fs</value>
   <description>The default storatge that stores temporary hive statistics. Currently, jdbc, hbase and counter type is supported</description>
 </property>
 
@@ -231,26 +236,27 @@
 
 <property>
   <name>hive.prewarm.enabled</name>
-  <value>true</value>
+  <value>false</value>
   <description>
     Enables container prewarm for tez (hadoop 2 only)
   </description>
 </property>
-
-<property>
-  <name>hive.prewarm.numcontainers</name>
-  <value>3</value>
-  <description>
-    Controls the number of containers to prewarm for tez (hadoop 2 only)
-  </description>
-</property>
-
 <property>
   <name>hive.in.tez.test</name>
   <value>true</value>
   <description>
     Indicates that we are in tez testing mode.
   </description>
+</property>
+
+<property>
+  <name>hive.execution.mode</name>
+  <value>llap</value>
+</property>
+
+<property>
+  <name>hive.llap.execution.mode</name>
+  <value>all</value>
 </property>
 
 <property>
@@ -261,6 +267,16 @@
 <property>
   <name>tez.am.launch.cmd-opts</name>
   <value> -Dlog4j.configurationFile=tez-container-log4j2.xml -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
+
+<property>
+  <name>hive.llap.io.cache.direct</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.explain.user</name>
+  <value>false</value>
 </property>
 
 </configuration>

@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -31,6 +30,8 @@ import org.apache.hadoop.service.Service;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
+
+import com.google.common.base.Preconditions;
 
 public class MiniLlapCluster extends AbstractService {
   private static final Log LOG = LogFactory.getLog(MiniLlapCluster.class);
@@ -122,9 +123,8 @@ public class MiniLlapCluster extends AbstractService {
 
   @Override
   public void serviceInit(Configuration conf) {
-    llapDaemon =
-        new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
-            ioIsDirect, ioBytesPerService, localDirs, 0, 0);
+    llapDaemon = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
+        ioIsDirect, ioBytesPerService, localDirs, 0, 0);
     llapDaemon.init(conf);
   }
 
@@ -159,11 +159,6 @@ public class MiniLlapCluster extends AbstractService {
   private InetSocketAddress getServiceAddress() {
     Preconditions.checkState(getServiceState() == Service.STATE.STARTED);
     return llapDaemon.getListenerAddress();
-  }
-
-  private int getShufflePort() {
-    Preconditions.checkState(getServiceState() == Service.STATE.STARTED);
-    return llapDaemon.getShufflePort();
   }
 
   public Configuration getClusterSpecificConfiguration() {

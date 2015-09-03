@@ -103,6 +103,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-llap-server</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-registry</artifactId>
       <version>${hadoop-23.version}</version>
@@ -205,12 +212,6 @@
         <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
       </properties>
       <dependencies>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-llap-server</artifactId>
-          <version>${project.version}</version>
-          <scope>test</scope>
-        </dependency>
         <dependency>
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-servlet</artifactId>
@@ -516,12 +517,30 @@
                               clusterMode="tez"
                               runDisabled="${run_disabled}"
                               hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/tez"
-                              resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/tez" 
+                              resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/tez"
                               className="TestMiniTezCliDriver"
                               logFile="${project.build.directory}/testminitezclidrivergen.log"
                               logDirectory="${project.build.directory}/qfile-results/clientpositive/"
                               hadoopVersion="${active.hadoop.version}"
                               initScript="${initScript}"
+                              cleanupScript="q_test_cleanup.sql"/>
+
+                    <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+                              outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
+                              templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
+                              queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
+                              queryFile="${qfile}"
+                              includeQueryFile="${minitez.query.files},${minitez.query.files.shared}"
+                              queryFileRegex="${qfile_regex}"
+                              clusterMode="llap"
+                              runDisabled="${run_disabled}"
+                              hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/llap"
+                              resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/llap"
+                              className="TestMiniLlapCliDriver"
+                              logFile="${project.build.directory}/testminitezclidrivergen.log"
+                              logDirectory="${project.build.directory}/qfile-results/clientpositive/"
+                              hadoopVersion="${active.hadoop.version}"
+                              initScript="q_test_init.sql"
                               cleanupScript="q_test_cleanup.sql"/>
 
                     <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
