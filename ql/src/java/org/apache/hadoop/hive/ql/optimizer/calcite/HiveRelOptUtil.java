@@ -278,29 +278,6 @@ public class HiveRelOptUtil extends RelOptUtil {
     }
   }
 
-  private static SqlOperator op(SqlKind kind, SqlOperator operator) {
-    switch (kind) {
-    case EQUALS:
-      return SqlStdOperatorTable.EQUALS;
-    case NOT_EQUALS:
-      return SqlStdOperatorTable.NOT_EQUALS;
-    case GREATER_THAN:
-      return SqlStdOperatorTable.GREATER_THAN;
-    case GREATER_THAN_OR_EQUAL:
-      return SqlStdOperatorTable.GREATER_THAN_OR_EQUAL;
-    case LESS_THAN:
-      return SqlStdOperatorTable.LESS_THAN;
-    case LESS_THAN_OR_EQUAL:
-      return SqlStdOperatorTable.LESS_THAN_OR_EQUAL;
-    case IS_DISTINCT_FROM:
-      return SqlStdOperatorTable.IS_DISTINCT_FROM;
-    case IS_NOT_DISTINCT_FROM:
-      return SqlStdOperatorTable.IS_NOT_DISTINCT_FROM;
-    default:
-      return operator;
-    }
-  }
-
   private static void addJoinKey(
       List<RexNode> joinKeyList,
       RexNode key,

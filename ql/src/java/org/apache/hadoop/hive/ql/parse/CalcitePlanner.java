@@ -914,8 +914,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         // 6.1. Merge join into multijoin operators (if possible)
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(),
-                HepMatchOrder.BOTTOM_UP, HiveJoinProjectTransposeRule.BOTH_PROJECT,
-                HiveJoinProjectTransposeRule.LEFT_PROJECT, HiveJoinProjectTransposeRule.RIGHT_PROJECT,
+                HepMatchOrder.BOTTOM_UP, HiveJoinProjectTransposeRule.BOTH_PROJECT_INCLUDE_OUTER,
+                HiveJoinProjectTransposeRule.LEFT_PROJECT_INCLUDE_OUTER,
+                HiveJoinProjectTransposeRule.RIGHT_PROJECT_INCLUDE_OUTER,
                 HiveJoinToMultiJoinRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
         // The previous rules can pull up projections through join operators,
         // thus we run the field trimmer again to push them back down

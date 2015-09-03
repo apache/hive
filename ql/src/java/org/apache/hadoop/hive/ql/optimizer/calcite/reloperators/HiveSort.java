@@ -22,6 +22,7 @@ import java.util.Map;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
@@ -47,6 +48,24 @@ public class HiveSort extends Sort implements HiveRelNode {
       RelCollation collation, RexNode offset, RexNode fetch) {
     super(cluster, TraitsUtil.getSortTraitSet(cluster, traitSet, collation), child, collation,
         offset, fetch);
+  }
+
+  /**
+   * Creates a HiveSort.
+   *
+   * @param input     Input relational expression
+   * @param collation array of sort specifications
+   * @param offset    Expression for number of rows to discard before returning
+   *                  first row
+   * @param fetch     Expression for number of rows to fetch
+   */
+  public static HiveSort create(RelNode input, RelCollation collation,
+      RexNode offset, RexNode fetch) {
+    RelOptCluster cluster = input.getCluster();
+    collation = RelCollationTraitDef.INSTANCE.canonize(collation);
+    RelTraitSet traitSet =
+        TraitsUtil.getSortTraitSet(cluster, input.getTraitSet(), collation);
+    return new HiveSort(cluster, traitSet, input, collation, offset, fetch);
   }
 
   @Override
@@ -77,9 +96,15 @@ public class HiveSort extends Sort implements HiveRelNode {
   private static class HiveSortRelFactory implements RelFactories.SortFactory {
 
     @Override
-    public RelNode createSort(RelTraitSet traits, RelNode child, RelCollation collation,
+    public RelNode createSort(RelTraitSet traits, RelNode input, RelCollation collation,
         RexNode offset, RexNode fetch) {
-      return new HiveSort(child.getCluster(), traits, child, collation, offset, fetch);
+      return createSort(input, collation, offset, fetch);
+    }
+
+    @Override
+    public RelNode createSort(RelNode input, RelCollation collation, RexNode offset,
+        RexNode fetch) {
+      return create(input, collation, offset, fetch);
     }
   }
 }
