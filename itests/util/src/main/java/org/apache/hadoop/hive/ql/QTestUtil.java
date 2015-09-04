@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.io.BufferedInputStream;
@@ -67,9 +66,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
@@ -81,9 +77,7 @@ import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.hbase.HBaseReadWrite;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -357,19 +351,14 @@ public class QTestUtil {
     utility = new HBaseTestingUtility();
     utility.startMiniCluster();
     conf = new HiveConf(utility.getConfiguration(), Driver.class);
-    conf = new HiveConf(utility.getConfiguration(), Driver.class);
     HBaseAdmin admin = utility.getHBaseAdmin();
-    for (String tableName : HBaseReadWrite.tableNames) {
-      List<byte[]> families = HBaseReadWrite.columnFamilies.get(tableName);
-      HTableDescriptor desc = new HTableDescriptor(TableName.valueOf(tableName));
-      for (byte[] family : families) {
-        HColumnDescriptor columnDesc = new HColumnDescriptor(family);
-        desc.addFamily(columnDesc);
-      }
-      admin.createTable(desc);
-    }
-    admin.close();
-    HBaseReadWrite.getInstance(conf);
+    // Need to use reflection here to make compilation pass since HBaseIntegrationTests
+    // is not compiled in hadoop-1. All HBaseMetastore tests run under hadoop-2, so this
+    // guarantee HBaseIntegrationTests exist when we hitting this code path
+    java.lang.reflect.Method initHBaseMetastoreMethod = Class.forName(
+        "org.apache.hadoop.hive.metastore.hbase.HBaseStoreTestUtil")
+        .getMethod("initHBaseMetastore", HBaseAdmin.class, HiveConf.class);
+    initHBaseMetastoreMethod.invoke(null, admin, conf);
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,

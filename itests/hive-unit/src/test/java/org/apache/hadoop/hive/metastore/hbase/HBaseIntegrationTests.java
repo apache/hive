@@ -64,18 +64,7 @@ public class HBaseIntegrationTests {
     utility.startMiniCluster();
     conf = new HiveConf(utility.getConfiguration(), HBaseIntegrationTests.class);
     admin = utility.getHBaseAdmin();
-    for (String tableName : HBaseReadWrite.tableNames) {
-      List<byte[]> families = HBaseReadWrite.columnFamilies.get(tableName);
-      HTableDescriptor desc = new HTableDescriptor(TableName.valueOf(tableName));
-      for (byte[] family : families) {
-        HColumnDescriptor columnDesc = new HColumnDescriptor(family);
-        if (testingTephra) columnDesc.setMaxVersions(Integer.MAX_VALUE);
-        desc.addFamily(columnDesc);
-      }
-      if (testingTephra) desc.addCoprocessor(TransactionProcessor.class.getName());
-      admin.createTable(desc);
-    }
-    admin.close();
+    HBaseStoreTestUtil.initHBaseMetastore(admin, null);
   }
 
   protected static void shutdownMiniCluster() throws Exception {
