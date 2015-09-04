@@ -1,0 +1,47 @@
+PREHOOK: query: -- Test predicate with partitioned columns
+CREATE TABLE part1 (id int, content string) PARTITIONED BY (p string) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part1
+POSTHOOK: query: -- Test predicate with partitioned columns
+CREATE TABLE part1 (id int, content string) PARTITIONED BY (p string) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part1
+PREHOOK: query: ALTER TABLE part1 ADD PARTITION (p='p1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@part1
+POSTHOOK: query: ALTER TABLE part1 ADD PARTITION (p='p1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@part1
+POSTHOOK: Output: default@part1@p=p1
+PREHOOK: query: INSERT INTO TABLE part1 PARTITION (p='p1') VALUES (1, 'a'), (2, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@part1@p=p1
+POSTHOOK: query: INSERT INTO TABLE part1 PARTITION (p='p1') VALUES (1, 'a'), (2, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@part1@p=p1
+POSTHOOK: Lineage: part1 PARTITION(p=p1).content SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part1 PARTITION(p=p1).id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT * FROM part1 WHERE p='p1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@part1@p=p1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM part1 WHERE p='p1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part1
+POSTHOOK: Input: default@part1@p=p1
+#### A masked pattern was here ####
+1	a	p1
+2	b	p1
+PREHOOK: query: DROP TABLE part1 PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part1
+PREHOOK: Output: default@part1
+POSTHOOK: query: DROP TABLE part1 PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part1
+POSTHOOK: Output: default@part1

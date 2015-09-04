@@ -485,7 +485,7 @@ public class TestInputOutputFormat {
               conf, n);
           OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
               context, fs, new MockPath(fs, "mock:/a/b"), false);
-          final SplitStrategy splitStrategy = gen.call();
+          final SplitStrategy splitStrategy = createSplitStrategy(context, gen);
           assertTrue(
               String.format(
                   "Split strategy for %d files x %d size for %d splits", c, s,
@@ -509,7 +509,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.FileGenerator gen =
       new OrcInputFormat.FileGenerator(context, fs,
           new MockPath(fs, "mock:/a/b"), false);
-    SplitStrategy splitStrategy = gen.call();
+    OrcInputFormat.SplitStrategy splitStrategy = createSplitStrategy(context, gen);
     assertEquals(true, splitStrategy instanceof OrcInputFormat.BISplitStrategy);
 
     conf.set("mapreduce.input.fileinputformat.split.maxsize", "500");
@@ -522,9 +522,16 @@ public class TestInputOutputFormat {
         new MockFile("mock:/a/b/part-04", 1000, new byte[1000]));
     gen = new OrcInputFormat.FileGenerator(context, fs,
             new MockPath(fs, "mock:/a/b"), false);
-    splitStrategy = gen.call();
+    splitStrategy = createSplitStrategy(context, gen);
     assertEquals(true, splitStrategy instanceof OrcInputFormat.ETLSplitStrategy);
 
+  }
+
+  private OrcInputFormat.SplitStrategy createSplitStrategy(
+      OrcInputFormat.Context context, OrcInputFormat.FileGenerator gen) throws IOException {
+    OrcInputFormat.AcidDirInfo adi = gen.call();
+    return OrcInputFormat.determineSplitStrategy(
+        context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
   }
 
   public static class MockBlock {
@@ -1845,7 +1852,7 @@ public class TestInputOutputFormat {
     types.add(builder.build());
     types.add(builder.build());
     SearchArgument isNull = SearchArgumentFactory.newBuilder()
-        .startAnd().isNull("cost", PredicateLeaf.Type.INTEGER).end().build();
+        .startAnd().isNull("cost", PredicateLeaf.Type.LONG).end().build();
     conf.set(ConvertAstToSearchArg.SARG_PUSHDOWN, toKryo(isNull));
     conf.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR,
         "url,cost");
@@ -1890,7 +1897,7 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", PredicateLeaf.Type.INTEGER, new Integer(0))
+            .lessThan("z", PredicateLeaf.Type.LONG, new Long(0))
             .end()
             .build();
     conf.set("sarg.pushdown", toKryo(sarg));

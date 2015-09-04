@@ -995,7 +995,7 @@ public class HiveOpConverter {
    * to be expressed that way.
    */
   private static int updateExprNode(ExprNodeDesc expr, final Map<String, Byte> reversedExprs,
-          final Map<String, ExprNodeDesc> colExprMap) {
+      final Map<String, ExprNodeDesc> colExprMap) throws SemanticException {
     int inputPos = -1;
     if (expr instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
@@ -1003,10 +1003,26 @@ public class HiveOpConverter {
       for (ExprNodeDesc functionChild : func.getChildren()) {
         if (functionChild instanceof ExprNodeColumnDesc) {
           String colRef = functionChild.getExprString();
-          inputPos = reversedExprs.get(colRef);
+          int pos = reversedExprs.get(colRef);
+          if (pos != -1) {
+            if (inputPos == -1) {
+              inputPos = pos;
+            } else if (inputPos != pos) {
+              throw new SemanticException(
+                  "UpdateExprNode is expecting only one position for join operator convert. But there are more than one.");
+            }
+          }
           newChildren.add(colExprMap.get(colRef));
         } else {
-          inputPos = updateExprNode(functionChild, reversedExprs, colExprMap);
+          int pos = updateExprNode(functionChild, reversedExprs, colExprMap);
+          if (pos != -1) {
+            if (inputPos == -1) {
+              inputPos = pos;
+            } else if (inputPos != pos) {
+              throw new SemanticException(
+                  "UpdateExprNode is expecting only one position for join operator convert. But there are more than one.");
+            }
+          }
           newChildren.add(functionChild);
         }
       }

@@ -136,17 +136,17 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: a is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              predicate: (a > 2) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: int)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   HashTable Sink Operator
                     keys:
                       0 _col0 (type: int)
@@ -172,10 +172,10 @@ STAGE PLANS:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

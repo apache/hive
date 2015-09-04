@@ -21,12 +21,15 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
+
 /**
  * FileMetaInfo - represents file metadata stored in footer and postscript sections of the file
  * that is useful for Reader implementation
  *
  */
 class FileMetaInfo {
+  ByteBuffer footerMetaAndPsBuffer;
   final String compressionType;
   final int bufferSize;
   final int metadataSize;
@@ -34,20 +37,24 @@ class FileMetaInfo {
   final List<Integer> versionList;
   final OrcFile.WriterVersion writerVersion;
 
+
+  /** Ctor used when reading splits - no version list or full footer buffer. */
   FileMetaInfo(String compressionType, int bufferSize, int metadataSize,
       ByteBuffer footerBuffer, OrcFile.WriterVersion writerVersion) {
     this(compressionType, bufferSize, metadataSize, footerBuffer, null,
-        writerVersion);
+        writerVersion, null);
   }
 
+  /** Ctor used when creating file info during init and when getting a new one. */
   public FileMetaInfo(String compressionType, int bufferSize, int metadataSize,
-               ByteBuffer footerBuffer, List<Integer> versionList,
-               OrcFile.WriterVersion writerVersion){
+      ByteBuffer footerBuffer, List<Integer> versionList, WriterVersion writerVersion,
+      ByteBuffer fullFooterBuffer) {
     this.compressionType = compressionType;
     this.bufferSize = bufferSize;
     this.metadataSize = metadataSize;
     this.footerBuffer = footerBuffer;
     this.versionList = versionList;
     this.writerVersion = writerVersion;
+    this.footerMetaAndPsBuffer = fullFooterBuffer;
   }
 }

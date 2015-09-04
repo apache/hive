@@ -92,6 +92,11 @@ public class TestHplsqlLocal {
   public void testCreateProcedure() throws Exception {
     run("create_procedure");
   }
+  
+  @Test
+  public void testCreateProcedureNoParams() throws Exception {
+    run("create_procedure_no_params");
+  }
 
   @Test
   public void testDate() throws Exception {
@@ -301,7 +306,7 @@ public class TestHplsqlLocal {
     BufferedReader reader = new BufferedReader(new StringReader(s));
     String line = null;
     while ((line = reader.readLine()) != null) {
-      if (!line.startsWith("log4j:")) {
+      if (!line.startsWith("log4j:") && !line.contains("INFO Log4j")) {
         sb.append(line);
         sb.append("\n");
       }

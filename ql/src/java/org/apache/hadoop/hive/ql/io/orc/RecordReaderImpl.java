@@ -631,8 +631,6 @@ public class RecordReaderImpl implements RecordReader {
           return ((BigDecimal) obj).doubleValue();
         }
         break;
-      case INTEGER:
-        // fall through
       case LONG:
         if (obj instanceof Number) {
           // widening conversion

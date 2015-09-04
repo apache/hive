@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
@@ -36,7 +38,21 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class DefaultGraphWalker implements GraphWalker {
 
-  protected Stack<Node> opStack;
+  /**
+   * opStack keeps the nodes that have been visited, but have not been
+   * dispatched yet
+   */
+  protected final Stack<Node> opStack;
+  /**
+   * opQueue keeps the nodes in the order that the were dispatched.
+   * Then it is used to go through the processed nodes and store
+   * the results that the dispatcher has produced (if any)
+   */
+  protected final Queue<Node> opQueue;
+  /**
+   * toWalk stores the starting nodes for the graph that needs to be
+   * traversed
+   */
   protected final List<Node> toWalk = new ArrayList<Node>();
   protected final IdentityHashMap<Node, Object> retMap = new  IdentityHashMap<Node, Object>();
   protected final Dispatcher dispatcher;
@@ -50,13 +66,7 @@ public class DefaultGraphWalker implements GraphWalker {
   public DefaultGraphWalker(Dispatcher disp) {
     dispatcher = disp;
     opStack = new Stack<Node>();
-  }
-
-  /**
-   * @return the toWalk
-   */
-  public List<Node> getToWalk() {
-    return toWalk;
+    opQueue = new LinkedList<Node>();
   }
 
   /**
@@ -108,8 +118,20 @@ public class DefaultGraphWalker implements GraphWalker {
     while (toWalk.size() > 0) {
       Node nd = toWalk.remove(0);
       walk(nd);
+      // Some walkers extending DefaultGraphWalker e.g. ForwardWalker
+      // do not use opQueue and rely uniquely in the toWalk structure,
+      // thus we store the results produced by the dispatcher here
+      // TODO: rewriting the logic of those walkers to use opQueue
       if (nodeOutput != null && getDispatchedList().contains(nd)) {
         nodeOutput.put(nd, retMap.get(nd));
+      }
+    }
+
+    // Store the results produced by the dispatcher
+    while (!opQueue.isEmpty()) {
+      Node node = opQueue.poll();
+      if (nodeOutput != null && getDispatchedList().contains(node)) {
+        nodeOutput.put(node, retMap.get(node));
       }
     }
   }
@@ -121,23 +143,33 @@ public class DefaultGraphWalker implements GraphWalker {
    *          current operator in the graph
    * @throws SemanticException
    */
-  public void walk(Node nd) throws SemanticException {
-    if (opStack.empty() || nd != opStack.peek()) {
-      opStack.push(nd);
-    }
+  public void walk(Node nd) throws SemanticException {    
+    // Push the node in the stack
+    opStack.push(nd);
 
-    if ((nd.getChildren() == null)
-        || getDispatchedList().containsAll(nd.getChildren())) {
-      // all children are done or no need to walk the children
-      if (!getDispatchedList().contains(nd)) {
-        dispatch(nd, opStack);
+    // While there are still nodes to dispatch...
+    while (!opStack.empty()) {
+      Node node = opStack.peek();
+
+      if (node.getChildren() == null ||
+              getDispatchedList().containsAll(node.getChildren())) {
+        // Dispatch current node
+        if (!getDispatchedList().contains(node)) {
+          dispatch(node, opStack);
+          opQueue.add(node);
+        }
+        opStack.pop();
+        continue;
       }
-      opStack.pop();
-      return;
-    }
-    // add children, self to the front of the queue in that order
-    getToWalk().add(0, nd);
-    getToWalk().removeAll(nd.getChildren());
-    getToWalk().addAll(0, nd.getChildren());
+
+      // Add a single child and restart the loop
+      for (Node childNode : node.getChildren()) {
+        if (!getDispatchedList().contains(childNode)) {
+          opStack.push(childNode);
+          break;
+        }
+      }
+    } // end while
   }
+
 }

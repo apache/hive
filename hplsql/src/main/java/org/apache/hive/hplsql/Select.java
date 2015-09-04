@@ -92,11 +92,15 @@ public class Select {
             String into_name = getIntoVariable(ctx, i - 1);
             Var var = exec.findVariable(into_name);
             if (var != null) {
-              var.setValue(rs, rm, i);
+              if (var.type != Var.Type.ROW) {
+                var.setValue(rs, rm, i);
+              }
+              else {
+                var.setValues(rs, rm);
+              }
               if (trace) {
-                trace(ctx, "COLUMN: " + rm.getColumnName(i) + ", " + rm.getColumnTypeName(i));
-                trace(ctx, "SET " + var.getName() + " = " + var.toString());
-              }            
+                trace(ctx, var, rs, rm, i);
+              }
             } 
             else {
               trace(ctx, "Variable not found: " + into_name);
@@ -439,4 +443,8 @@ public class Select {
   void trace(ParserRuleContext ctx, String message) {
     exec.trace(ctx, message);
   }
+  
+  void trace(ParserRuleContext ctx, Var var, ResultSet rs, ResultSetMetaData rm, int idx) throws SQLException {
+    exec.trace(ctx, var, rs, rm, idx);
+  }    
 }

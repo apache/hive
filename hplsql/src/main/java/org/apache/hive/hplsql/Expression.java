@@ -327,6 +327,9 @@ public class Expression {
     else if (v1.type == Type.TIMESTAMP && v2.type == Type.INTERVAL) {
       exec.stackPush(new Var(((Interval)v2.value).timestampChange((Timestamp)v1.value, true /*add*/), v1.scale));
     }
+    else {
+      evalNull();
+    }
   }
 
   /**
@@ -349,6 +352,9 @@ public class Expression {
     }
     else if (v1.type == Type.TIMESTAMP && v2.type == Type.INTERVAL) {
       exec.stackPush(new Var(((Interval)v2.value).timestampChange((Timestamp)v1.value, false /*subtract*/), v1.scale));
+    }
+    else {
+      evalNull();
     }
   }
   

@@ -66,7 +66,7 @@ public class TestHplsqlOffline {
     BufferedReader reader = new BufferedReader(new StringReader(s));
     String line = null;
     while ((line = reader.readLine()) != null) {
-      if (!line.startsWith("log4j:")) {
+      if (!line.startsWith("log4j:") && !line.contains("INFO Log4j")) {
         sb.append(line);
         sb.append("\n");
       }
