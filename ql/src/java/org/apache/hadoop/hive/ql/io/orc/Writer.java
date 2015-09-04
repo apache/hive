@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -26,6 +28,13 @@ import java.util.List;
  * The interface for writing ORC files.
  */
 public interface Writer {
+
+  /**
+   * Get the schema for this writer
+   * @return the file schema
+   */
+  TypeDescription getSchema();
+
   /**
    * Add arbitrary meta-data to the ORC file. This may be called at any point
    * until the Writer is closed. If the same key is passed a second time, the

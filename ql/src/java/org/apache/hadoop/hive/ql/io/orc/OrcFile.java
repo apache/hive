@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Contains factory methods to read or write ORC files.
@@ -102,7 +103,9 @@ public final class OrcFile {
    */
   public enum WriterVersion {
     ORIGINAL(0),
-      HIVE_8732(1); // corrupted stripe/file maximum column statistics
+      HIVE_8732(1), // corrupted stripe/file maximum column statistics
+      HIVE_4243(2), // use real column names from Hive tables
+      FUTURE(Integer.MAX_VALUE); // a version from a future writer
 
     private final int id;
 
@@ -205,7 +208,9 @@ public final class OrcFile {
   public static class WriterOptions {
     private final Configuration configuration;
     private FileSystem fileSystemValue = null;
-    private ObjectInspector inspectorValue = null;
+    private boolean explicitSchema = false;
+    private TypeDescription schema = null;
+    private ObjectInspector inspector = null;
     private long stripeSizeValue;
     private long blockSizeValue;
     private int rowIndexStrideValue;
@@ -355,11 +360,26 @@ public final class OrcFile {
     }
 
     /**
-     * A required option that sets the object inspector for the rows. Used
-     * to determine the schema for the file.
+     * A required option that sets the object inspector for the rows. If
+     * setSchema is not called, it also defines the schema.
      */
     public WriterOptions inspector(ObjectInspector value) {
-      inspectorValue = value;
+      this.inspector = value;
+      if (!explicitSchema) {
+        schema = OrcOutputFormat.convertTypeInfo(
+            TypeInfoUtils.getTypeInfoFromObjectInspector(value));
+      }
+      return this;
+    }
+
+    /**
+     * Set the schema for the file. This is a required parameter.
+     * @param schema the schema for the file.
+     * @return this
+     */
+    public WriterOptions setSchema(TypeDescription schema) {
+      this.explicitSchema = true;
+      this.schema = schema;
       return this;
     }
 
@@ -426,7 +446,8 @@ public final class OrcFile {
     FileSystem fs = opts.fileSystemValue == null ?
       path.getFileSystem(opts.configuration) : opts.fileSystemValue;
 
-    return new WriterImpl(fs, path, opts.configuration, opts.inspectorValue,
+    return new WriterImpl(fs, path, opts.configuration, opts.inspector,
+                          opts.schema,
                           opts.stripeSizeValue, opts.compressValue,
                           opts.bufferSizeValue, opts.rowIndexStrideValue,
                           opts.memoryManagerValue, opts.blockPaddingValue,
