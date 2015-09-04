@@ -30,7 +30,7 @@ import org.junit.Test;
 
 /**
  * Parser tests for SQL11 Reserved KeyWords. Please find more information in
- * HIVE-6617. Total number : 74
+ * HIVE-6617. Total number : 74 + 2 (MySQL)
  */
 public class TestSQL11ReservedKeyWordsNegative {
   private static HiveConf conf;
@@ -1070,4 +1070,34 @@ public class TestSQL11ReservedKeyWordsNegative {
               ex.getMessage());
     }
   }
+
+  // MySQL reserved keywords.
+  @Test
+  public void testSQL11ReservedKeyWords_RLIKE() {
+    try {
+      parse("CREATE TABLE RLIKE (col STRING)");
+      Assert.assertFalse("Expected ParseException", true);
+    } catch (ParseException ex) {
+      Assert
+          .assertEquals(
+              "Failure didn't match.",
+              "line 1:13 Failed to recognize predicate 'RLIKE'. Failed rule: 'identifier' in table name",
+              ex.getMessage());
+    }
+  }
+
+  @Test
+  public void testSQL11ReservedKeyWords_REGEXP() {
+    try {
+      parse("CREATE TABLE REGEXP (col STRING)");
+      Assert.assertFalse("Expected ParseException", true);
+    } catch (ParseException ex) {
+      Assert
+          .assertEquals(
+              "Failure didn't match.",
+              "line 1:13 Failed to recognize predicate 'REGEXP'. Failed rule: 'identifier' in table name",
+              ex.getMessage());
+    }
+  }
+
 }

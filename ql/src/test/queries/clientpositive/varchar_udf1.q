@@ -75,9 +75,9 @@ select
 from varchar_udf_1 limit 1;
 
 select
-  regexp(c2, 'val'),
-  regexp(c4, 'val'),
-  regexp(c2, 'val') = regexp(c4, 'val')
+  c2 regexp 'val',
+  c4 regexp 'val',
+  (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1 limit 1;
 
 select
