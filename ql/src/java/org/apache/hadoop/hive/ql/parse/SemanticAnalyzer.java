@@ -4447,6 +4447,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (ExprNodeDescUtils.indexOf(grpByExprNode, groupByKeys) >= 0) {
         // Skip duplicated grouping keys
+        grpByExprs.remove(i--);
         continue;
       }
       groupByKeys.add(grpByExprNode);
