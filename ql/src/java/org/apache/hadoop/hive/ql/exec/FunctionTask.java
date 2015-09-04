@@ -101,7 +101,7 @@ public class FunctionTask extends Task<FunctionWork> {
 
     if (work.getReloadFunctionDesc() != null) {
       try {
-        Hive.reloadFunctions();
+        Hive.get().reloadFunctions();
       } catch (Exception e) {
         setException(e);
         LOG.error(stringifyException(e));
