@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.MessageTypeParser;
 import org.junit.Test;
 
 import java.beans.XMLDecoder;
@@ -550,7 +552,11 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test { required int32 id;" +
+            " required binary first_name; }");
+
+      FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String[] conditions = new String[]{
       "eq(first_name, Binary{\"john\"})",    /* first_name = 'john' */
       "not(lteq(first_name, Binary{\"greg\"}))", /* 'greg' < first_name */
@@ -586,34 +592,34 @@ public class TestConvertAstToSearchArg {
     assertEquals("alan", leaf.getLiteral());
 
     leaf = leaves.get(3);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(12, leaf.getLiteral());
+    assertEquals(12L, leaf.getLiteral());
 
     leaf = leaves.get(4);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(13, leaf.getLiteral());
+    assertEquals(13L, leaf.getLiteral());
 
     leaf = leaves.get(5);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(15, leaf.getLiteral());
+    assertEquals(15L, leaf.getLiteral());
 
     leaf = leaves.get(6);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(16, leaf.getLiteral());
+    assertEquals(16L, leaf.getLiteral());
 
     leaf = leaves.get(7);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.NULL_SAFE_EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(30, leaf.getLiteral());
+    assertEquals(30L, leaf.getLiteral());
 
     leaf = leaves.get(8);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
@@ -842,7 +848,10 @@ public class TestConvertAstToSearchArg {
       "lteq(id, 4)"                         /* id <= 4             */
     };
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test { required int32 id;" +
+            " required binary first_name; }");
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = String.format("or(or(or(%1$s, %2$s), %3$s), %4$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -860,16 +869,16 @@ public class TestConvertAstToSearchArg {
     assertEquals("sue", leaf.getLiteral());
 
     leaf = leaves.get(2);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(12, leaf.getLiteral());
+    assertEquals(12L, leaf.getLiteral());
 
     leaf = leaves.get(3);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN_EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(4, leaf.getLiteral());
+    assertEquals(4L, leaf.getLiteral());
 
     assertEquals("(or leaf-0 (not leaf-1) (not leaf-2) leaf-3)",
         sarg.getExpression().toString());
@@ -1271,18 +1280,21 @@ public class TestConvertAstToSearchArg {
       "eq(first_name, Binary{\"alan\"})",   /* first_name = 'alan'  */
       "eq(last_name, Binary{\"smith\"})"    /* 'smith' = last_name  */
     };
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test { required int32 id;" +
+            " required binary first_name; required binary last_name;}");
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = String.format("and(and(and(%1$s, %2$s), %3$s), %4$s)", conditions);
     assertEquals(expected, p.toString());
 
     PredicateLeaf leaf = leaves.get(0);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.BETWEEN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
     assertEquals(null, leaf.getLiteral());
-    assertEquals(23, leaf.getLiteralList().get(0));
-    assertEquals(45, leaf.getLiteralList().get(1));
+    assertEquals(23L, leaf.getLiteralList().get(0));
+    assertEquals(45L, leaf.getLiteralList().get(1));
 
     leaf = leaves.get(1);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
@@ -1493,15 +1505,19 @@ public class TestConvertAstToSearchArg {
       "or(eq(id, 34), eq(id, 50))" /* id in (34,50) */
     };
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test { required int32 id;" +
+            " required binary first_name; }");
+    FilterPredicate p =
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = String.format("and(and(%1$s, %2$s), %3$s)", conditions);
     assertEquals(expected, p.toString());
 
     PredicateLeaf leaf = leaves.get(0);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.EQUALS, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(12, leaf.getLiteral());
+    assertEquals(12L, leaf.getLiteral());
 
     leaf = leaves.get(1);
     assertEquals(PredicateLeaf.Type.STRING, leaf.getType());
@@ -1511,11 +1527,11 @@ public class TestConvertAstToSearchArg {
     assertEquals("sue", leaf.getLiteralList().get(1));
 
     leaf = leaves.get(2);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.IN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(34, leaf.getLiteralList().get(0));
-    assertEquals(50, leaf.getLiteralList().get(1));
+    assertEquals(34L, leaf.getLiteralList().get(0));
+    assertEquals(50L, leaf.getLiteralList().get(1));
 
     assertEquals("(and (not leaf-0) leaf-1 leaf-2)",
         sarg.getExpression().toString());
@@ -1752,7 +1768,10 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test { required int32 id;" +
+            " required binary first_name; }");
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected =
       "and(lt(first_name, Binary{\"greg\"}), not(lteq(first_name, Binary{\"david\"})))";
     assertEquals(p.toString(), expected);
@@ -2232,7 +2251,10 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test { required int32 id;" +
+            " required binary first_name; }");
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = "and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(" +
       "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 13)), lt(id, 16)), " +
       "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 13)), lt(id, 16))), " +
@@ -2255,58 +2277,58 @@ public class TestConvertAstToSearchArg {
     assertEquals(p.toString(), expected);
 
     PredicateLeaf leaf = leaves.get(0);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(18, leaf.getLiteral());
+    assertEquals(18L, leaf.getLiteral());
 
     leaf = leaves.get(1);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(10, leaf.getLiteral());
+    assertEquals(10L, leaf.getLiteral());
 
     leaf = leaves.get(2);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(13, leaf.getLiteral());
+    assertEquals(13L, leaf.getLiteral());
 
     leaf = leaves.get(3);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(16, leaf.getLiteral());
+    assertEquals(16L, leaf.getLiteral());
 
     leaf = leaves.get(4);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(11, leaf.getLiteral());
+    assertEquals(11L, leaf.getLiteral());
 
     leaf = leaves.get(5);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(12, leaf.getLiteral());
+    assertEquals(12L, leaf.getLiteral());
 
     leaf = leaves.get(6);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(14, leaf.getLiteral());
+    assertEquals(14L, leaf.getLiteral());
 
     leaf = leaves.get(7);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(15, leaf.getLiteral());
+    assertEquals(15L, leaf.getLiteral());
 
     leaf = leaves.get(8);
-    assertEquals(PredicateLeaf.Type.INTEGER, leaf.getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaf.getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN, leaf.getOperator());
     assertEquals("id", leaf.getColumnName());
-    assertEquals(17, leaf.getLiteral());
+    assertEquals(17L, leaf.getLiteral());
 
     assertEquals("(and" +
         " (or leaf-0 leaf-1 leaf-2 leaf-3)" +
@@ -2388,7 +2410,10 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test { required int32 id;" +
+            " required binary first_name; }");
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     assertNull(p);
 
     assertEquals("YES_NO_NULL",
@@ -2643,15 +2668,18 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test { required int32 id;" +
+            " required binary first_name; }");
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = "and(not(lt(id, 10)), not(lt(id, 10)))";
     assertEquals(expected, p.toString());
 
-    assertEquals(PredicateLeaf.Type.INTEGER, leaves.get(0).getType());
+    assertEquals(PredicateLeaf.Type.LONG, leaves.get(0).getType());
     assertEquals(PredicateLeaf.Operator.LESS_THAN,
         leaves.get(0).getOperator());
     assertEquals("id", leaves.get(0).getColumnName());
-    assertEquals(10, leaves.get(0).getLiteral());
+    assertEquals(10L, leaves.get(0).getLiteral());
 
     assertEquals("(and (not leaf-0) (not leaf-0))",
         sarg.getExpression().toString());

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -363,4 +364,7 @@ public interface Reader {
   List<OrcProto.ColumnStatistics> getOrcProtoFileStatistics();
 
   DataReader createDefaultDataReader(boolean useZeroCopy);
+
+  /** Gets serialized file metadata read from disk for the purposes of caching, etc. */
+  ByteBuffer getSerializedFileFooter();
 }

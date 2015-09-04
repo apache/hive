@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -51,6 +53,7 @@ import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaMetaData;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
@@ -128,7 +131,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
   /**
    * When picking the hosts for a split that crosses block boundaries,
-   * any drop any host that has fewer than MIN_INCLUDED_LOCATION of the
+   * drop any host that has fewer than MIN_INCLUDED_LOCATION of the
    * number of bytes available on the host with the most.
    * If host1 has 10MB of the split, host2 has 20MB, and host3 has 18MB the
    * split will contain host2 (100% of host2) and host3 (90% of host2). Host1
@@ -435,10 +438,34 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  /**
+   * The full ACID directory information needed for splits; no more calls to HDFS needed.
+   * We could just live with AcidUtils.Directory but...
+   * 1) That doesn't have base files for the base-directory case.
+   * 2) We save fs for convenience to avoid getting it twice.
+   */
+  @VisibleForTesting
+  static final class AcidDirInfo {
+    public AcidDirInfo(FileSystem fs, Path splitPath, Directory acidInfo,
+        List<HdfsFileStatusWithId> baseOrOriginalFiles) {
+      this.splitPath = splitPath;
+      this.acidInfo = acidInfo;
+      this.baseOrOriginalFiles = baseOrOriginalFiles;
+      this.fs = fs;
+    }
+
+    final FileSystem fs;
+    final Path splitPath;
+    final AcidUtils.Directory acidInfo;
+    final List<HdfsFileStatusWithId> baseOrOriginalFiles;
+  }
+
+  @VisibleForTesting
   interface SplitStrategy<T> {
     List<T> getSplits() throws IOException;
   }
 
+  @VisibleForTesting
   static final class SplitInfo extends ACIDSplitStrategy {
     private final Context context;
     private final FileSystem fs;
@@ -640,7 +667,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * Given a directory, get the list of files and blocks in those files.
    * To parallelize file generator use "mapreduce.input.fileinputformat.list-status.num-threads"
    */
-  static final class FileGenerator implements Callable<SplitStrategy> {
+  static final class FileGenerator implements Callable<AcidDirInfo> {
     private final Context context;
     private final FileSystem fs;
     private final Path dir;
@@ -654,69 +681,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
 
     @Override
-    public SplitStrategy call() throws IOException {
-      final SplitStrategy splitStrategy;
+    public AcidDirInfo call() throws IOException {
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir,
           context.conf, context.transactionList, useFileIds);
-      List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
       Path base = dirInfo.getBaseDirectory();
-      List<HdfsFileStatusWithId> original = dirInfo.getOriginalFiles();
-      boolean[] covered = new boolean[context.numBuckets];
-      boolean isOriginal = base == null;
-
-      // if we have a base to work from
-      if (base != null || !original.isEmpty()) {
-
-        // find the base files (original or new style)
-        List<HdfsFileStatusWithId> children = original;
-        if (base != null) {
-          children = findBaseFiles(base, useFileIds);
-        }
-
-        long totalFileSize = 0;
-        for (HdfsFileStatusWithId child : children) {
-          totalFileSize += child.getFileStatus().getLen();
-          AcidOutputFormat.Options opts = AcidUtils.parseBaseBucketFilename
-              (child.getFileStatus().getPath(), context.conf);
-          int b = opts.getBucket();
-          // If the bucket is in the valid range, mark it as covered.
-          // I wish Hive actually enforced bucketing all of the time.
-          if (b >= 0 && b < covered.length) {
-            covered[b] = true;
-          }
-        }
-
-        int numFiles = children.size();
-        long avgFileSize = totalFileSize / numFiles;
-        int totalFiles = context.numFilesCounter.addAndGet(numFiles);
-        switch(context.splitStrategyKind) {
-          case BI:
-            // BI strategy requested through config
-            splitStrategy = new BISplitStrategy(context, fs, dir, children, isOriginal,
-                deltas, covered);
-            break;
-          case ETL:
-            // ETL strategy requested through config
-            splitStrategy = new ETLSplitStrategy(context, fs, dir, children, isOriginal,
-                deltas, covered);
-            break;
-          default:
-            // HYBRID strategy
-            if (avgFileSize > context.maxSize || totalFiles <= context.minSplits) {
-              splitStrategy = new ETLSplitStrategy(context, fs, dir, children, isOriginal, deltas,
-                  covered);
-            } else {
-              splitStrategy = new BISplitStrategy(context, fs, dir, children, isOriginal, deltas,
-                  covered);
-            }
-            break;
-        }
-      } else {
-        // no base, only deltas
-        splitStrategy = new ACIDSplitStrategy(dir, context.numBuckets, deltas, covered);
-      }
-
-      return splitStrategy;
+      // find the base files (original or new style)
+      List<HdfsFileStatusWithId> children = (base == null)
+          ? dirInfo.getOriginalFiles() : findBaseFiles(base, useFileIds);
+      return new AcidDirInfo(fs, dir, dirInfo, children);
     }
 
     private List<HdfsFileStatusWithId> findBaseFiles(
@@ -1055,38 +1027,44 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     Context context = new Context(conf, numSplits);
     boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     List<OrcSplit> splits = Lists.newArrayList();
-    List<Future<?>> pathFutures = Lists.newArrayList();
-    List<Future<?>> splitFutures = Lists.newArrayList();
+    List<Future<AcidDirInfo>> pathFutures = Lists.newArrayList();
+    List<Future<List<OrcSplit>>> splitFutures = Lists.newArrayList();
 
     // multi-threaded file statuses and split strategy
-    for (Path dir : getInputPaths(conf)) {
+    Path[] paths = getInputPaths(conf);
+    CompletionService<AcidDirInfo> ecs = new ExecutorCompletionService<>(Context.threadPool);
+    for (Path dir : paths) {
       FileSystem fs = dir.getFileSystem(conf);
       FileGenerator fileGenerator = new FileGenerator(context, fs, dir, useFileIds);
-      pathFutures.add(context.threadPool.submit(fileGenerator));
+      pathFutures.add(ecs.submit(fileGenerator));
     }
 
     // complete path futures and schedule split generation
     try {
-      for (Future<?> pathFuture : pathFutures) {
-        SplitStrategy splitStrategy = (SplitStrategy) pathFuture.get();
+      for (int notIndex = 0; notIndex < paths.length; ++notIndex) {
+        AcidDirInfo adi = ecs.take().get();
+        SplitStrategy<?> splitStrategy = determineSplitStrategy(
+            context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
 
         if (isDebugEnabled) {
           LOG.debug(splitStrategy);
         }
 
         if (splitStrategy instanceof ETLSplitStrategy) {
-          List<SplitInfo> splitInfos = splitStrategy.getSplits();
+          List<SplitInfo> splitInfos = ((ETLSplitStrategy)splitStrategy).getSplits();
           for (SplitInfo splitInfo : splitInfos) {
-            splitFutures.add(context.threadPool.submit(new SplitGenerator(splitInfo)));
+            splitFutures.add(Context.threadPool.submit(new SplitGenerator(splitInfo)));
           }
         } else {
-          splits.addAll(splitStrategy.getSplits());
+          @SuppressWarnings("unchecked")
+          List<OrcSplit> readySplits = (List<OrcSplit>)splitStrategy.getSplits();
+          splits.addAll(readySplits);
         }
       }
 
       // complete split futures
-      for (Future<?> splitFuture : splitFutures) {
-        splits.addAll((Collection<? extends OrcSplit>) splitFuture.get());
+      for (Future<List<OrcSplit>> splitFuture : splitFutures) {
+        splits.addAll(splitFuture.get());
       }
     } catch (Exception e) {
       cancelFutures(pathFutures);
@@ -1108,8 +1086,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     return splits;
   }
 
-  private static void cancelFutures(List<Future<?>> futures) {
-    for (Future future : futures) {
+  private static <T> void cancelFutures(List<Future<T>> futures) {
+    for (Future<T> future : futures) {
       future.cancel(true);
     }
   }
@@ -1285,6 +1263,22 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     } else {
       bucket = (int) split.getStart();
       reader = null;
+      if(deltas != null && deltas.length > 0) {
+        Path bucketPath = AcidUtils.createBucketFile(deltas[0], bucket);
+        OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf);
+        FileSystem fs = readerOptions.getFilesystem();
+        if(fs == null) {
+          fs = path.getFileSystem(options.getConfiguration());
+        }
+        if(fs.exists(bucketPath)) {
+        /* w/o schema evolution (which ACID doesn't support yet) all delta
+        files have the same schema, so choosing the 1st one*/
+          final List<OrcProto.Type> types =
+            OrcFile.createReader(bucketPath, readerOptions).getTypes();
+          readOptions.include(genIncludedColumns(types, conf, split.isOriginal()));
+          setSearchArgument(readOptions, types, conf, split.isOriginal());
+        }
+      }
     }
     String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY,
                                 Long.MAX_VALUE + ":");
@@ -1359,6 +1353,55 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
     throw new IllegalArgumentException("Can't find bucket " + bucket + " in " +
         directory);
+  }
+
+
+  @VisibleForTesting
+  static SplitStrategy determineSplitStrategy(Context context, FileSystem fs, Path dir,
+      AcidUtils.Directory dirInfo, List<HdfsFileStatusWithId> baseOrOriginalFiles) {
+    Path base = dirInfo.getBaseDirectory();
+    List<HdfsFileStatusWithId> original = dirInfo.getOriginalFiles();
+    List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
+    boolean[] covered = new boolean[context.numBuckets];
+    boolean isOriginal = base == null;
+
+    // if we have a base to work from
+    if (base != null || !original.isEmpty()) {
+      long totalFileSize = 0;
+      for (HdfsFileStatusWithId child : baseOrOriginalFiles) {
+        totalFileSize += child.getFileStatus().getLen();
+        AcidOutputFormat.Options opts = AcidUtils.parseBaseBucketFilename
+            (child.getFileStatus().getPath(), context.conf);
+        int b = opts.getBucket();
+        // If the bucket is in the valid range, mark it as covered.
+        // I wish Hive actually enforced bucketing all of the time.
+        if (b >= 0 && b < covered.length) {
+          covered[b] = true;
+        }
+      }
+
+      int numFiles = baseOrOriginalFiles.size();
+      long avgFileSize = totalFileSize / numFiles;
+      int totalFiles = context.numFilesCounter.addAndGet(numFiles);
+      switch(context.splitStrategyKind) {
+        case BI:
+          // BI strategy requested through config
+          return new BISplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+        case ETL:
+          // ETL strategy requested through config
+          return new ETLSplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+        default:
+          // HYBRID strategy
+          if (avgFileSize > context.maxSize || totalFiles <= context.minSplits) {
+            return new ETLSplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+          } else {
+            return new BISplitStrategy(context, fs, dir, baseOrOriginalFiles, isOriginal, deltas, covered);
+          }
+      }
+    } else {
+      // no base, only deltas
+      return new ACIDSplitStrategy(dir, context.numBuckets, deltas, covered);
+    }
   }
 
   @Override

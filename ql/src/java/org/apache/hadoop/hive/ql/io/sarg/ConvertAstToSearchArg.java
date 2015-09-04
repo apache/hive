@@ -88,7 +88,6 @@ public class ConvertAstToSearchArg {
         case BYTE:
         case SHORT:
         case INT:
-          return PredicateLeaf.Type.INTEGER;
         case LONG:
           return PredicateLeaf.Type.LONG;
         case CHAR:
@@ -139,8 +138,6 @@ public class ConvertAstToSearchArg {
       return null;
     }
     switch (type) {
-      case INTEGER:
-        return ((Number) lit).intValue();
       case LONG:
         return ((Number) lit).longValue();
       case STRING:

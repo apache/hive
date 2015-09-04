@@ -14,25 +14,29 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-PREHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	NULL	0	6
+1	1	3	1
 1	NULL	1	2
 1	NULL	3	1
-1	1	3	1
-2	NULL	1	1
 2	2	3	1
+2	NULL	1	1
+3	3	3	1
 3	NULL	1	2
 3	NULL	3	1
-3	3	3	1
-4	NULL	1	1
 4	5	3	1
+4	NULL	1	1
+NULL	NULL	0	6
 PREHOOK: query: SELECT GROUPING__ID, count(*)
 FROM
 (
@@ -129,17 +133,17 @@ POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	NULL	0	6
+1	1	3	1
 1	NULL	1	2
 1	NULL	3	1
-1	1	3	1
-2	NULL	1	1
 2	2	3	1
+2	NULL	1	1
+3	3	3	1
 3	NULL	1	2
 3	NULL	3	1
-3	3	3	1
-4	NULL	1	1
 4	5	3	1
+4	NULL	1	1
+NULL	NULL	0	6
 PREHOOK: query: SELECT GROUPING__ID, count(*)
 FROM
 (
