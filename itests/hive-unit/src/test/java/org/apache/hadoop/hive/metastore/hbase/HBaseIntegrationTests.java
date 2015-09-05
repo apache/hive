@@ -19,8 +19,11 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import co.cask.tephra.hbase10.coprocessor.TransactionProcessor;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -32,6 +35,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +64,9 @@ public class HBaseIntegrationTests {
     if (testingTephra) {
       LOG.info("Testing with Tephra");
     }
-    utility = new HBaseTestingUtility();
+    Configuration hbaseConf = HBaseConfiguration.create();
+    hbaseConf.setInt("hbase.master.info.port", -1);
+    utility = new HBaseTestingUtility(hbaseConf);
     utility.startMiniCluster();
     conf = new HiveConf(utility.getConfiguration(), HBaseIntegrationTests.class);
     admin = utility.getHBaseAdmin();
