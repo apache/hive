@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,11 +81,11 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private final String             tabAlias;
   private final String             columnAlias;
   private final RelDataType        inputRowType;
-  private final RelDataType        outputRowType;
   private final ImmutableSet<Integer>       inputVCols;
-  private WindowFunctionSpec wfs;
+  private List<WindowFunctionSpec> windowFunctionSpecs = new ArrayList<>();
   private final RelDataTypeFactory dTFactory;
   protected final Log LOG = LogFactory.getLog(this.getClass().getName());
+  private static long uniqueCounter = 0;
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
       Set<Integer> vCols, RelDataTypeFactory dTFactory) {
@@ -97,13 +98,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     this.tabAlias = tabAlias;
     this.columnAlias = columnAlias;
     this.inputRowType = inputRowType;
-    this.outputRowType = outputRowType;
     this.inputVCols = ImmutableSet.copyOf(inputVCols);
     this.dTFactory = dTFactory;
   }
 
-  public WindowFunctionSpec getWindowFunctionSpec() {
-    return this.wfs;
+  public List<WindowFunctionSpec> getWindowFunctionSpec() {
+    return this.windowFunctionSpecs;
   }
 
   @Override
@@ -235,7 +235,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     final WindowFrameSpec windowFrameSpec = getWindowRange(window);
     windowSpec.setWindowFrame(windowFrameSpec);
 
-    wfs = new WindowFunctionSpec();
+    WindowFunctionSpec wfs = new WindowFunctionSpec();
     wfs.setWindowSpec(windowSpec);
     final Schema schema = new Schema(tabAlias, inputRowType.getFieldList());
     final ASTNode wUDAFAst = new ASTConverter.RexVisitor(schema).visitOver(over);
@@ -246,10 +246,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       ASTNode child = (ASTNode) wUDAFAst.getChild(i);
       wfs.addArg(child);
     }
+    if (wUDAFAst.getText().equals("TOK_FUNCTIONSTAR")) {
+      wfs.setStar(true);
+    }
+    String columnAlias = getWindowColumnAlias();
     wfs.setAlias(columnAlias);
 
-    RelDataTypeField f = outputRowType.getField(columnAlias, false, false);
-    return new ExprNodeColumnDesc(TypeConverter.convert(f.getType()), columnAlias, tabAlias,
+    this.windowFunctionSpecs.add(wfs);
+
+    return new ExprNodeColumnDesc(TypeConverter.convert(over.getType()), columnAlias, tabAlias,
             false);
   }
 
@@ -341,6 +346,10 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     }
 
     return boundarySpec;
+  }
+
+  private String getWindowColumnAlias() {
+    return "$win$_col_" + (uniqueCounter++);
   }
 
 }
