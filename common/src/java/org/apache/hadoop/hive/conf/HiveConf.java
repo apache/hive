@@ -1243,7 +1243,7 @@ public class HiveConf extends Configuration {
         "Whether join and group by keys on tables are derived and maintained in the QueryPlan.\n" +
         "This is useful to identify how tables are accessed and to determine if they should be bucketed."),
     // Collect column access information
-    HIVE_STATS_COLLECT_SCANCOLS("hive.stats.collect.scancols", false,
+    HIVE_STATS_COLLECT_SCANCOLS("hive.stats.collect.scancols", true,
         "Whether column accesses are tracked in the QueryPlan.\n" +
         "This is useful to identify how tables are accessed and to determine if there are wasted columns that can be trimmed."),
     // standard error allowed for ndv estimates. A lower value indicates higher accuracy and a
