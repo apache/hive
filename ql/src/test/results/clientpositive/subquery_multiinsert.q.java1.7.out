@@ -333,10 +333,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_4
 POSTHOOK: Output: default@src_5
-POSTHOOK: Lineage: src_4.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_4.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_5.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_5.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_4.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_4.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_5.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_5.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-10:MAPRED
 RUN: Stage-2:MAPRED
 RUN: Stage-3:MAPRED
@@ -839,10 +839,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_4
 POSTHOOK: Output: default@src_5
-POSTHOOK: Lineage: src_4.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_4.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_5.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_5.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_4.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_4.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_5.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_5.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-10:MAPRED
 RUN: Stage-14:CONDITIONAL
 RUN: Stage-17:MAPREDLOCAL

@@ -68,7 +68,7 @@ public class ForwardWalker extends DefaultGraphWalker {
 * current operator in the graph
 * @throws SemanticException
 */
-  public void walk(Node nd) throws SemanticException {
+  protected void walk(Node nd) throws SemanticException {
     if (opStack.empty() || nd != opStack.peek()) {
       opStack.push(nd);
     }
