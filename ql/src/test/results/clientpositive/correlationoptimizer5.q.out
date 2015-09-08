@@ -280,7 +280,7 @@ POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
 POSTHOOK: Output: default@dest_co1
-POSTHOOK: Lineage: dest_co1.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_co1.key SIMPLE [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_co1.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_co2
@@ -461,7 +461,7 @@ POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
 POSTHOOK: Output: default@dest_co2
-POSTHOOK: Lineage: dest_co2.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_co2.key SIMPLE [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_co2.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- Enable hive.auto.convert.join.
 EXPLAIN
@@ -754,7 +754,7 @@ POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
 POSTHOOK: Output: default@dest_co3
-POSTHOOK: Lineage: dest_co3.key EXPRESSION [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_co3.key SIMPLE [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_co3.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- dest_co1, dest_co2 and dest_co3 should be same
 -- SELECT * FROM dest_co1 x ORDER BY x.key, x.val;

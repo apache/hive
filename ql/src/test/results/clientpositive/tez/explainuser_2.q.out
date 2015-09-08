@@ -58,10 +58,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@ss
 POSTHOOK: Lineage: ss.k1 SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss.k2 SIMPLE [(src)y.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ss.k3 EXPRESSION [(srcpart)z.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss.k3 SIMPLE [(srcpart)z.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss.v1 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss.v2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: ss.v3 EXPRESSION [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss.v3 SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE sr
 SELECT x.key,x.value,y.key,y.value,z.key,z.value
 FROM src1 x 
@@ -86,10 +86,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@sr
 POSTHOOK: Lineage: sr.k1 SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: sr.k2 SIMPLE [(src)y.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: sr.k3 EXPRESSION [(srcpart)z.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sr.k3 SIMPLE [(srcpart)z.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: sr.v1 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: sr.v2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: sr.v3 EXPRESSION [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: sr.v3 SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE cs
 SELECT x.key,x.value,y.key,y.value,z.key,z.value
 FROM src1 x 
@@ -115,10 +115,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@cs
 POSTHOOK: Lineage: cs.k1 SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: cs.k2 EXPRESSION [(src)y.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: cs.k2 SIMPLE [(src)y.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: cs.k3 SIMPLE [(srcpart)z.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: cs.v1 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: cs.v2 EXPRESSION [(src)y.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: cs.v2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: cs.v3 SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS
 PREHOOK: type: QUERY
