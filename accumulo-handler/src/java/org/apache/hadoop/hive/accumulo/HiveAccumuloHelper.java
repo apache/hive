@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.accumulo;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -238,21 +239,55 @@ public class HiveAccumuloHelper {
   public void setZooKeeperInstance(JobConf jobConf, Class<?> inputOrOutputFormatClass, String
       zookeepers, String instanceName, boolean useSasl) throws IOException {
     try {
-      Class<?> clientConfigClass = JavaUtils.loadClass(CLIENT_CONFIGURATION_CLASS_NAME);
-
-      // get the ClientConfiguration
-      Object clientConfig = getClientConfiguration(zookeepers, instanceName, useSasl);
-
-      // AccumuloOutputFormat.setZooKeeperInstance(JobConf, ClientConfiguration) or
-      // AccumuloInputFormat.setZooKeeperInstance(JobConf, ClientConfiguration)
-      Method setZooKeeperMethod = inputOrOutputFormatClass.getMethod(
-          SET_ZOOKEEPER_INSTANCE_METHOD_NAME, JobConf.class, clientConfigClass);
-      setZooKeeperMethod.invoke(null, jobConf, clientConfig);
+      setZooKeeperInstanceWithReflection(jobConf, inputOrOutputFormatClass, zookeepers,
+          instanceName, useSasl);
+    } catch (InvocationTargetException e) {
+      Throwable cause = e.getCause();
+      if (null != cause && cause instanceof IllegalStateException) {
+        throw (IllegalStateException) cause;
+      }
+      throw new IOException("Failed to invoke setZooKeeperInstance method", e);
+    } catch (IllegalStateException e) {
+      // re-throw the ISE so the caller can work around the silly impl that throws this in the
+      // first place.
+      throw e;
     } catch (Exception e) {
       throw new IOException("Failed to invoke setZooKeeperInstance method", e);
     }
   }
 
+  /**
+   * Wrap the setZooKeeperInstance reflected-call into its own method for testing
+   *
+   * @param jobConf
+   *          The JobConf
+   * @param inputOrOutputFormatClass
+   *          The InputFormat or OutputFormat class
+   * @param zookeepers
+   *          ZooKeeper hosts
+   * @param instanceName
+   *          Accumulo instance name
+   * @param useSasl
+   *          Is SASL enabled
+   * @throws IOException
+   *           When invocation of the method fails
+   */
+  void setZooKeeperInstanceWithReflection(JobConf jobConf, Class<?> inputOrOutputFormatClass, String
+      zookeepers, String instanceName, boolean useSasl) throws IOException, ClassNotFoundException,
+      NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException {
+    Class<?> clientConfigClass = JavaUtils.loadClass(CLIENT_CONFIGURATION_CLASS_NAME);
+
+    // get the ClientConfiguration
+    Object clientConfig = getClientConfiguration(zookeepers, instanceName, useSasl);
+
+    // AccumuloOutputFormat.setZooKeeperInstance(JobConf, ClientConfiguration) or
+    // AccumuloInputFormat.setZooKeeperInstance(JobConf, ClientConfiguration)
+    Method setZooKeeperMethod = inputOrOutputFormatClass.getMethod(
+        SET_ZOOKEEPER_INSTANCE_METHOD_NAME, JobConf.class, clientConfigClass);
+    setZooKeeperMethod.invoke(null, jobConf, clientConfig);
+  }
+      
   /**
    * Wrapper around <code>ConfiguratorBase.unwrapAuthenticationToken</code> which only exists in
    * 1.7.0 and new. Uses reflection to not break compat.
