@@ -89,4 +89,8 @@ public class GenericUDFOPOr extends GenericUDF {
     return "(" + children[0] + " or " + children[1] + ")";
   }
 
+  @Override
+  public GenericUDF negative() {
+    return new GenericUDFOPAnd();
+  }
 }

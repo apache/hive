@@ -121,4 +121,9 @@ public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
     }
     return result;
   }
+
+  @Override
+  public GenericUDF negative() {
+    return new GenericUDFOPEqual();
+  }
 }
