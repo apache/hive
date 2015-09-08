@@ -709,6 +709,7 @@ public class BeeLine implements Closeable {
     if (!commands.isEmpty()) {
       embeddedConnect();
       connectDBInEmbededMode();
+      updateOptsForCli();
       for (Iterator<String> i = commands.iterator(); i.hasNext(); ) {
         String command = i.next().toString();
         debug(loc("executing-command", command));
@@ -856,6 +857,14 @@ public class BeeLine implements Closeable {
     }
   }
 
+  private void updateOptsForCli() {
+    getOpts().updateBeeLineOptsFromConf();
+    getOpts().setShowHeader(false);
+    getOpts().setOutputFormat("dsv");
+    getOpts().setDelimiterForDSV(' ');
+    getOpts().setNullEmptyString(true);
+  }
+
   /**
    * Start accepting input from stdin, and dispatch it
    * to the appropriate {@link CommandHandler} until the
@@ -881,10 +890,7 @@ public class BeeLine implements Closeable {
           return code;
         }
         defaultConnect(false);
-        getOpts().updateBeeLineOptsFromConf();
-        getOpts().setShowHeader(false);
-        getOpts().setOutputFormat("dsv");
-        getOpts().setDelimiterForDSV(' ');
+        updateOptsForCli();
 
         processInitFiles(opts.getInitFiles());
       }
@@ -1006,6 +1012,7 @@ public class BeeLine implements Closeable {
 
         // trim line
         line = (line == null) ? null : line.trim();
+
         if (!dispatch(line) && exitOnError) {
           return ERRNO_OTHER;
         }
@@ -1108,8 +1115,33 @@ public class BeeLine implements Closeable {
     output(loc("cmd-usage"));
   }
 
-  private String[] tokenizeCmd(String cmd) {
-    return cmd.split("\\s+");
+  /**
+   * This method is used for executing commands beginning with !
+   * @param line
+   * @return
+   */
+  public boolean execCommandWithPrefix(String line) {
+    Map<String, CommandHandler> cmdMap = new TreeMap<String, CommandHandler>();
+    line = line.substring(1);
+    for (int i = 0; i < commandHandlers.length; i++) {
+      String match = commandHandlers[i].matches(line);
+      if (match != null) {
+        cmdMap.put(match, commandHandlers[i]);
+      }
+    }
+
+    if (cmdMap.size() == 0) {
+      return error(loc("unknown-command", line));
+    }
+    if (cmdMap.size() > 1) {
+      // any exact match?
+      CommandHandler handler = cmdMap.get(line);
+      if (handler == null) {
+        return error(loc("multiple-matches", cmdMap.keySet().toString()));
+      }
+      return handler.execute(line);
+    }
+    return cmdMap.values().iterator().next().execute(line);
   }
 
   /**
@@ -1145,35 +1177,19 @@ public class BeeLine implements Closeable {
       line = "!help";
     }
 
-    if (line.startsWith(COMMAND_PREFIX)) {
-      Map<String, CommandHandler> cmdMap = new TreeMap<String, CommandHandler>();
-      line = line.substring(1);
-      for (int i = 0; i < commandHandlers.length; i++) {
-        String match = commandHandlers[i].matches(line);
-        if (match != null) {
-          CommandHandler prev = cmdMap.put(match, commandHandlers[i]);
-          if (prev != null) {
-            return error(loc("multiple-matches",
-                Arrays.asList(prev.getName(), commandHandlers[i].getName())));
-          }
-        }
+    if (isBeeLine) {
+      if (line.startsWith(COMMAND_PREFIX) && !line.contains(";")) {
+        // handle the case "!cmd" for beeline
+        return execCommandWithPrefix(line);
+      } else {
+        return commands.sql(line, getOpts().getEntireLineAsCommand());
       }
-
-      if (cmdMap.size() == 0) {
-        return error(loc("unknown-command", line));
-      }
-      if (cmdMap.size() > 1) {
-        // any exact match?
-        CommandHandler handler = cmdMap.get(line);
-        if (handler == null) {
-          return error(loc("multiple-matches", cmdMap.keySet().toString()));
-        }
-        return handler.execute(line);
-      }
-      return cmdMap.values().iterator().next()
-          .execute(line);
     } else {
-      return commands.sql(line, getOpts().getEntireLineAsCommand());
+      if (line.toLowerCase().startsWith("!connect")) {
+        return execCommandWithPrefix(line);
+      } else {
+        return commands.sql(line, getOpts().getEntireLineAsCommand());
+      }
     }
   }
 

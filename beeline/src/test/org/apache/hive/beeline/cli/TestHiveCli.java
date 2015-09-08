@@ -46,6 +46,7 @@ public class TestHiveCli {
       "create table if not exists test.testSrcTbl2(sc2 string);";
   private final static String SOURCE_CONTEXT3 =
       "create table if not exists test.testSrcTbl3(sc3 string);";
+  private final static String SOURCE_CONTEXT4 = "show tables;!ls;show tables;\nquit;";
   final static String CMD =
       "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b "
           + "string);\n";
@@ -90,19 +91,23 @@ public class TestHiveCli {
     String output = os.toString();
     LOG.debug(output);
     if (contains) {
-      Assert.assertTrue(
-          "The expected keyword \"" + keywords + "\" doesn't occur in the output: " + output,
+      Assert.assertTrue("The expected keyword \"" + keywords + "\" occur in the output: " + output,
           output.contains(keywords));
     } else {
       Assert.assertFalse(
-          "The expected keyword \"" + keywords + "\" doesn't occur in the output: " + output,
-          output.contains(keywords));
+          "The expected keyword \"" + keywords + "\" should be excluded occurred in the output: "
+              + output, output.contains(keywords));
     }
   }
 
   @Test
   public void testInValidCmd() {
-    verifyCMD("!lss\n", "Unknown command: lss", errS, null, ERRNO_OK, true);
+    verifyCMD("!lss\n", "Failed to execute lss", errS, null, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testCmd() {
+    verifyCMD("show tables;!ls;show tables;\n", "src", os, null, ERRNO_OK, true);
   }
 
   @Test
@@ -152,6 +157,14 @@ public class TestHiveCli {
   }
 
   @Test
+  public void testSourceCmd3() {
+    File f = generateTmpFile(SOURCE_CONTEXT4);
+    verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl4;\nquit;\n", "src", os,
+        new String[] { "--database", "test" }, ERRNO_OK, true);
+    f.delete();
+  }
+
+  @Test
   public void testSqlFromCmd() {
     verifyCMD(null, "", os, new String[] { "-e", "show databases;" }, ERRNO_OK, true);
   }
@@ -192,8 +205,7 @@ public class TestHiveCli {
 
   @Test
   public void testErrOutput() {
-    verifyCMD(
-        "show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;",
+    verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;",
         "cannot recognize input near 'lss' '<EOF>' '<EOF>'", errS, null, ERRNO_OK, true);
   }
 
@@ -222,6 +234,12 @@ public class TestHiveCli {
   public void testUseInvalidDB() {
     verifyCMD("set hive.cli.print.current.db=true;use invalidDB;",
         "hive (invalidDB)>", os, null, ERRNO_OK, false);
+  }
+
+  @Test
+  public void testNoErrorDB() {
+    verifyCMD(null, "Error: Method not supported (state=,code=0)", errS, new String[] { "-e", "show tables;" },
+        ERRNO_OK, false);
   }
 
   private void redirectOutputStream() {
