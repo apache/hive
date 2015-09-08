@@ -236,7 +236,6 @@ final class SearchArgumentImpl implements SearchArgument {
           case BYTE:
           case SHORT:
           case INT:
-            return PredicateLeaf.Type.INTEGER;
           case LONG:
             return PredicateLeaf.Type.LONG;
           case CHAR:
@@ -282,8 +281,6 @@ final class SearchArgumentImpl implements SearchArgument {
 
     private static Object boxLiteral(ExprNodeConstantDesc lit) {
       switch (getType(lit)) {
-        case INTEGER:
-          return ((Number) lit.getValue()).intValue();
         case LONG:
           return ((Number) lit.getValue()).longValue();
         case STRING:
@@ -929,9 +926,8 @@ final class SearchArgumentImpl implements SearchArgument {
     private static PredicateLeaf.Type getType(Object literal) {
       if (literal instanceof Byte ||
           literal instanceof Short ||
-          literal instanceof Integer) {
-        return PredicateLeaf.Type.INTEGER;
-      } else if(literal instanceof Long){
+          literal instanceof Integer ||
+          literal instanceof Long) {
         return PredicateLeaf.Type.LONG;
       }else if (literal instanceof HiveChar ||
           literal instanceof HiveVarchar ||

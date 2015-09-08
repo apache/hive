@@ -318,7 +318,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithIntStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(10, 100), pred));
 
@@ -346,7 +346,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithDoubleStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createDoubleStats(10.0, 100.0), pred));
 
@@ -374,7 +374,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithStringStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 100, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 100L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createStringStats("10", "1000"), pred));
 
@@ -402,7 +402,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithDateStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createDateStats(10, 100), pred));
 
@@ -461,7 +461,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithDecimalStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createDecimalStats("10.0", "100.0"), pred));
 
@@ -490,7 +490,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testEquals() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.LONG,
             "x", 15L, null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), pred));
@@ -509,7 +509,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testNullSafeEquals() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG,
             "x", 15L, null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), pred));
@@ -528,7 +528,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testLessThan() throws Exception {
     PredicateLeaf lessThan = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.LESS_THAN, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.LESS_THAN, PredicateLeaf.Type.LONG,
             "x", 15L, null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), lessThan));
@@ -545,7 +545,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testLessThanEquals() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.LESS_THAN_EQUALS, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.LESS_THAN_EQUALS, PredicateLeaf.Type.LONG,
             "x", 15L, null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), pred));
@@ -565,7 +565,7 @@ public class TestRecordReaderImpl {
     args.add(10L);
     args.add(20L);
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.IN, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.IN, PredicateLeaf.Type.LONG,
             "x", null, args);
     assertEquals(TruthValue.YES,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 20L), pred));
@@ -583,7 +583,7 @@ public class TestRecordReaderImpl {
     args.add(10L);
     args.add(20L);
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.BETWEEN, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.BETWEEN, PredicateLeaf.Type.LONG,
             "x", null, args);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(0L, 5L), pred));
@@ -604,7 +604,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testIsNull() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.IS_NULL, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.IS_NULL, PredicateLeaf.Type.LONG,
             "x", null, null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), pred));

@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf.Operator;
 import parquet.filter2.predicate.FilterApi;
 import parquet.filter2.predicate.FilterPredicate;
 import parquet.io.api.Binary;
+import parquet.schema.PrimitiveType;
+import parquet.schema.Type;
 
 import static parquet.filter2.predicate.FilterApi.eq;
 import static parquet.filter2.predicate.FilterApi.lt;
@@ -146,12 +148,16 @@ public class LeafFilterFactory {
    * @param type FilterPredicateType
    * @return
    */
-  public FilterPredicateLeafBuilder getLeafFilterBuilderByType(PredicateLeaf.Type type){
+    public FilterPredicateLeafBuilder getLeafFilterBuilderByType(PredicateLeaf.Type type,
+                                                               Type parquetType){
     switch (type){
-      case INTEGER:
-        return new IntFilterPredicateLeafBuilder();
       case LONG:
-        return new LongFilterPredicateLeafBuilder();
+        if (parquetType.asPrimitiveType().getPrimitiveTypeName() ==
+            PrimitiveType.PrimitiveTypeName.INT32) {
+          return new IntFilterPredicateLeafBuilder();
+        } else {
+          return new LongFilterPredicateLeafBuilder();
+        }
       case FLOAT:   // float and double
         return new DoubleFilterPredicateLeafBuilder();
       case STRING:  // string, char, varchar

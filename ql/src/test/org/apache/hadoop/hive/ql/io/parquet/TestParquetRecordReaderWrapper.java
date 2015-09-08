@@ -33,6 +33,8 @@ import org.junit.Test;
 import java.sql.Date;
 
 import parquet.filter2.predicate.FilterPredicate;
+import parquet.schema.MessageType;
+import parquet.schema.MessageTypeParser;
 
 /**
  * These tests test the conversion to Parquet's sarg implementation.
@@ -56,7 +58,11 @@ public class TestParquetRecordReaderWrapper {
         .end()
         .build();
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    MessageType schema = MessageTypeParser.parseMessageType("message test {" +
+        " optional int32 x; required int32 y; required int32 z;" +
+        " optional binary a;}");
+    FilterPredicate p =
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected =
       "and(and(and(not(eq(x, null)), not(and(lt(y, 20), not(lteq(y, 10))))), not(or(or(eq(z, 1), " +
         "eq(z, 2)), eq(z, 3)))), not(eq(a, Binary{\"stinger\"})))";
@@ -71,8 +77,10 @@ public class TestParquetRecordReaderWrapper {
             .lessThanEquals("y", new HiveChar("hi", 10).toString())
             .end()
             .build();
+    MessageType schema = MessageTypeParser.parseMessageType("message test {" +
+        " required int32 x; required binary y; required binary z;}");
     assertEquals("lteq(y, Binary{\"hi        \"})",
-        ParquetFilterPredicateConverter.toFilterPredicate(sarg).toString());
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema).toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -84,7 +92,10 @@ public class TestParquetRecordReaderWrapper {
         .end()
         .build();
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    schema = MessageTypeParser.parseMessageType("message test {" +
+        " optional int32 x; required binary y; required int32 z;" +
+        " optional binary a;}");
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected =
         "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
         "not(eq(a, Binary{\"stinger\"})))";
@@ -99,8 +110,10 @@ public class TestParquetRecordReaderWrapper {
             .lessThanEquals("y", new HiveChar("hi", 10).toString())
             .end()
             .build();
+    MessageType schema = MessageTypeParser.parseMessageType("message test {" +
+        " required int32 x; required binary y; required binary z;}");
     assertEquals("lteq(y, Binary{\"hi        \"})",
-        ParquetFilterPredicateConverter.toFilterPredicate(sarg).toString());
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema).toString());
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -111,8 +124,11 @@ public class TestParquetRecordReaderWrapper {
         .end()
         .end()
         .build();
+    schema = MessageTypeParser.parseMessageType("message test {" +
+        " optional int32 x; required binary y; required int32 z;" +
+        " optional binary a;}");
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
         "not(eq(a, Binary{\"stinger\"})))";
     assertEquals(expected, p.toString());
@@ -130,8 +146,11 @@ public class TestParquetRecordReaderWrapper {
             .equals("z1", new Double(0.22))
             .end()
             .build();
+    MessageType schema = MessageTypeParser.parseMessageType("message test {" +
+        " required int32 x; required int32 x1;" +
+        " required binary y; required float z; required float z1;}");
 
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     String expected = "and(and(and(and(lt(x, 22), lt(x1, 22))," +
         " lteq(y, Binary{\"hi        \"})), eq(z, " +
         "0.22)), eq(z1, 0.22))";

@@ -43,7 +43,6 @@ public interface PredicateLeaf {
    * The possible types for sargs.
    */
   public static enum Type {
-    INTEGER, // all of the integer types except long
     LONG,
     FLOAT,   // float and double
     STRING,  // string, char, varchar

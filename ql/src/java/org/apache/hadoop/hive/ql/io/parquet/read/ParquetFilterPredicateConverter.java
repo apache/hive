@@ -37,14 +37,6 @@ public class ParquetFilterPredicateConverter {
   private static final Log LOG = LogFactory.getLog(ParquetFilterPredicateConverter.class);
 
   /**
-   * Translate the search argument to the filter predicate parquet uses
-   * @return translate the sarg into a filter predicate
-   */
-  public static FilterPredicate toFilterPredicate(SearchArgument sarg) {
-    return toFilterPredicate(sarg, null);
-  }
-
-  /**
    * Translate the search argument to the filter predicate parquet uses. It includes
    * only the columns from the passed schema.
    * @return translate the sarg into a filter predicate
@@ -58,18 +50,21 @@ public class ParquetFilterPredicateConverter {
       }
     }
 
-    return translate(sarg.getExpression(), sarg.getLeaves(), columns);
+    return translate(sarg.getExpression(), sarg.getLeaves(), columns, schema);
   }
 
-  private static FilterPredicate translate(ExpressionTree root, List<PredicateLeaf> leaves, Set<String> columns) {
+  private static FilterPredicate translate(ExpressionTree root,
+                                           List<PredicateLeaf> leaves,
+                                           Set<String> columns,
+                                           MessageType schema) {
     FilterPredicate p = null;
     switch (root.getOperator()) {
       case OR:
         for(ExpressionTree child: root.getChildren()) {
           if (p == null) {
-            p = translate(child, leaves, columns);
+            p = translate(child, leaves, columns, schema);
           } else {
-            FilterPredicate right = translate(child, leaves, columns);
+            FilterPredicate right = translate(child, leaves, columns, schema);
             // constant means no filter, ignore it when it is null
             if(right != null){
               p = FilterApi.or(p, right);
@@ -80,9 +75,9 @@ public class ParquetFilterPredicateConverter {
       case AND:
         for(ExpressionTree child: root.getChildren()) {
           if (p == null) {
-            p = translate(child, leaves, columns);
+            p = translate(child, leaves, columns, schema);
           } else {
-            FilterPredicate right = translate(child, leaves, columns);
+            FilterPredicate right = translate(child, leaves, columns, schema);
             // constant means no filter, ignore it when it is null
             if(right != null){
               p = FilterApi.and(p, right);
@@ -91,7 +86,8 @@ public class ParquetFilterPredicateConverter {
         }
         return p;
       case NOT:
-        FilterPredicate op = translate(root.getChildren().get(0), leaves, columns);
+        FilterPredicate op = translate(root.getChildren().get(0), leaves,
+            columns, schema);
         if (op != null) {
           return FilterApi.not(op);
         } else {
@@ -101,8 +97,9 @@ public class ParquetFilterPredicateConverter {
         PredicateLeaf leaf = leaves.get(root.getLeaf());
 
         // If columns is null, then we need to create the leaf
-        if (columns == null || columns.contains(leaf.getColumnName())) {
-          return buildFilterPredicateFromPredicateLeaf(leaf);
+        if (columns.contains(leaf.getColumnName())) {
+          Type parquetType = schema.getType(leaf.getColumnName());
+          return buildFilterPredicateFromPredicateLeaf(leaf, parquetType);
         } else {
           // Do not create predicate if the leaf is not on the passed schema.
           return null;
@@ -116,12 +113,12 @@ public class ParquetFilterPredicateConverter {
   }
 
   private static FilterPredicate buildFilterPredicateFromPredicateLeaf
-      (PredicateLeaf leaf) {
+      (PredicateLeaf leaf, Type parquetType) {
     LeafFilterFactory leafFilterFactory = new LeafFilterFactory();
     FilterPredicateLeafBuilder builder;
     try {
       builder = leafFilterFactory
-          .getLeafFilterBuilderByType(leaf.getType());
+          .getLeafFilterBuilderByType(leaf.getType(), parquetType);
       if (builder == null) {
         return null;
       }
