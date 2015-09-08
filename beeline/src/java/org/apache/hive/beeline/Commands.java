@@ -824,7 +824,7 @@ public class Commands {
     if (cmd == null || cmd.isEmpty())
       return false;
     String[] tokens = tokenizeCmd(cmd);
-    return tokens[0].equalsIgnoreCase("!source");
+    return tokens[0].equalsIgnoreCase("source");
   }
 
   private boolean sourceFile(String cmd) {
@@ -866,6 +866,7 @@ public class Commands {
       }
       String[] cmds = lines.split(";");
       for (String c : cmds) {
+        c = c.trim();
         if (!executeInternal(c, false)) {
           return false;
         }
@@ -878,11 +879,10 @@ public class Commands {
     return true;
   }
 
-  private String cliToBeelineCmd(String cmd) {
+  public String cliToBeelineCmd(String cmd) {
     if (cmd == null)
       return null;
-    String[] tokens = tokenizeCmd(cmd);
-    if (tokens[0].equalsIgnoreCase("source")) {
+    if (cmd.toLowerCase().equals("quit") || cmd.toLowerCase().equals("exit")) {
       return BeeLine.COMMAND_PREFIX + cmd;
     } else if (cmd.startsWith("!")) {
       String shell_cmd = cmd.substring(1);
@@ -896,6 +896,10 @@ public class Commands {
   // Return false only occurred error when execution the sql and the sql should follow the rules
   // of beeline.
   private boolean executeInternal(String sql, boolean call) {
+    if (!beeLine.isBeeLine()) {
+      sql = cliToBeelineCmd(sql);
+    }
+
     if (sql == null || sql.length() == 0) {
       return true;
     }
@@ -905,8 +909,13 @@ public class Commands {
       return true;
     }
 
+    // is source CMD
+    if (isSourceCMD(sql)) {
+      return sourceFile(sql);
+    }
+
     if (sql.startsWith(BeeLine.COMMAND_PREFIX)) {
-      sql = sql.substring(1);
+      return beeLine.execCommandWithPrefix(sql);
     }
 
     String prefix = call ? "call" : "sql";
@@ -919,6 +928,10 @@ public class Commands {
     if (beeLine.getBatch() != null) {
       beeLine.getBatch().add(sql);
       return true;
+    }
+
+    if (!(beeLine.assertConnection())) {
+      return false;
     }
 
     ClientHook hook = null;
@@ -1096,10 +1109,6 @@ public class Commands {
       beeLine.handleException(e);
     }
 
-    if (!(beeLine.assertConnection())) {
-      return false;
-    }
-
     line = line.trim();
     List<String> cmdList = new ArrayList<String>();
     if (entireLineAsCommand) {
@@ -1120,20 +1129,6 @@ public class Commands {
     for (int i = 0; i < cmdList.size(); i++) {
       String sql = cmdList.get(i).trim();
       if (sql.length() != 0) {
-        if (!beeLine.isBeeLine()) {
-          sql = cliToBeelineCmd(sql);
-          if (sql.equalsIgnoreCase("quit") || sql.equalsIgnoreCase("exit")) {
-            beeLine.setExit(true);
-            return true;
-          }
-        }
-
-        // is source CMD
-        if (isSourceCMD(sql)) {
-          sourceFile(sql);
-          continue;
-        }
-
         if (!executeInternal(sql, call)) {
           return false;
         }
@@ -1205,6 +1200,9 @@ public class Commands {
     return true;
   }
 
+  public boolean exit(String line) {
+    return quit(line);
+  }
 
   /**
    * Close all connections.
