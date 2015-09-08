@@ -18,18 +18,23 @@ package org.apache.hadoop.hive.accumulo;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.accumulo.core.client.mapred.AccumuloInputFormat;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class TestHiveAccumuloHelper {
+  private static final Logger log = Logger.getLogger(TestHiveAccumuloHelper.class);
 
   private HiveAccumuloHelper helper;
 
@@ -46,7 +51,13 @@ public class TestHiveAccumuloHelper {
 
     Mockito.when(token.getService()).thenReturn(service);
 
-    helper.mergeTokenIntoJobConf(jobConf, token);
+    try {
+      helper.mergeTokenIntoJobConf(jobConf, token);
+    } catch (IOException e) {
+      // Hadoop 1 doesn't support credential merging, so this will fail.
+      log.info("Ignoring exception, likely coming from Hadoop 1", e);
+      return;
+    }
 
     Collection<Token<?>> tokens = jobConf.getCredentials().getAllTokens();
     assertEquals(1, tokens.size());
@@ -66,10 +77,64 @@ public class TestHiveAccumuloHelper {
     Mockito.when(token.getKind()).thenReturn(HiveAccumuloHelper.ACCUMULO_SERVICE);
     Mockito.when(token.getService()).thenReturn(service);
 
-    helper.addTokenFromUserToJobConf(ugi, jobConf);
+    try {
+      helper.addTokenFromUserToJobConf(ugi, jobConf);
+    } catch (IOException e) {
+      // Hadoop 1 doesn't support credential merging, so this will fail.
+      log.info("Ignoring exception, likely coming from Hadoop 1", e);
+      return;
+    }
 
     Collection<Token<?>> credTokens = jobConf.getCredentials().getAllTokens();
     assertEquals(1, credTokens.size());
     assertEquals(service, credTokens.iterator().next().getService());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testISEIsPropagated() throws Exception {
+    final HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
+
+    final JobConf jobConf = Mockito.mock(JobConf.class);
+    final Class<?> inputOrOutputFormatClass = AccumuloInputFormat.class;
+    final String zookeepers = "localhost:2181";
+    final String instanceName = "accumulo_instance";
+    final boolean useSasl = false;
+
+    // Call the real "public" method
+    Mockito.doCallRealMethod().when(helper).setZooKeeperInstance(jobConf, inputOrOutputFormatClass,
+        zookeepers, instanceName, useSasl);
+
+    // Mock the private one to throw the ISE
+    Mockito.doThrow(new IllegalStateException()).when(helper).
+        setZooKeeperInstanceWithReflection(jobConf, inputOrOutputFormatClass, zookeepers,
+            instanceName, useSasl);
+
+    // Should throw an IllegalStateException
+    helper.setZooKeeperInstance(jobConf, inputOrOutputFormatClass, zookeepers, instanceName,
+        useSasl);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testISEIsPropagatedWithReflection() throws Exception {
+    final HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
+
+    final JobConf jobConf = Mockito.mock(JobConf.class);
+    final Class<?> inputOrOutputFormatClass = AccumuloInputFormat.class;
+    final String zookeepers = "localhost:2181";
+    final String instanceName = "accumulo_instance";
+    final boolean useSasl = false;
+
+    // Call the real "public" method
+    Mockito.doCallRealMethod().when(helper).setZooKeeperInstance(jobConf, inputOrOutputFormatClass,
+        zookeepers, instanceName, useSasl);
+
+    // Mock the private one to throw the IAE
+    Mockito.doThrow(new InvocationTargetException(new IllegalStateException())).when(helper).
+        setZooKeeperInstanceWithReflection(jobConf, inputOrOutputFormatClass, zookeepers,
+            instanceName, useSasl);
+
+    // Should throw an IllegalStateException
+    helper.setZooKeeperInstance(jobConf, inputOrOutputFormatClass, zookeepers, instanceName,
+        useSasl);
   }
 }

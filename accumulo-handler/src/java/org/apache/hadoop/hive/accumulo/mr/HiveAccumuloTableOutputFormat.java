@@ -61,7 +61,7 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
   }
 
   protected void configureAccumuloOutputFormat(JobConf job) throws IOException {
-    AccumuloConnectionParameters cnxnParams = new AccumuloConnectionParameters(job);
+    AccumuloConnectionParameters cnxnParams = getConnectionParams(job);
 
     final String tableName = job.get(AccumuloSerDeParameters.TABLE_NAME);
 
@@ -72,35 +72,35 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
     // Set the necessary Accumulo information
     try {
       if (cnxnParams.useMockInstance()) {
-        setAccumuloMockInstance(job, cnxnParams.getAccumuloInstanceName());
+        setMockInstanceWithErrorChecking(job, cnxnParams.getAccumuloInstanceName());
       } else {
         // Accumulo instance name with ZK quorum
-        setAccumuloZooKeeperInstance(job, cnxnParams.getAccumuloInstanceName(),
+        setZooKeeperInstanceWithErrorChecking(job, cnxnParams.getAccumuloInstanceName(),
             cnxnParams.getZooKeepers(), cnxnParams.useSasl());
       }
 
       // Extract the delegation Token from the UGI and add it to the job
       // The AccumuloOutputFormat will look for it there.
       if (cnxnParams.useSasl()) {
-        UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-        if (!ugi.hasKerberosCredentials()) {
-          helper.addTokenFromUserToJobConf(ugi, job);
+        UserGroupInformation ugi = getCurrentUser();
+        if (!hasKerberosCredentials(ugi)) {
+          getHelper().addTokenFromUserToJobConf(ugi, job);
         } else {
           // Still in the local JVM, can use Kerberos credentials
           try {
             Connector connector = cnxnParams.getConnector();
-            AuthenticationToken token = helper.getDelegationToken(connector);
+            AuthenticationToken token = getHelper().getDelegationToken(connector);
 
             // Send the DelegationToken down to the Configuration for Accumulo to use
-            setConnectorInfo(job, cnxnParams.getAccumuloUserName(), token);
+            setConnectorInfoWithErrorChecking(job, cnxnParams.getAccumuloUserName(), token);
 
             // Convert the Accumulo token in a Hadoop token
-            Token<? extends TokenIdentifier> accumuloToken = helper.getHadoopToken(token);
+            Token<? extends TokenIdentifier> accumuloToken = getHelper().getHadoopToken(token);
 
             log.info("Adding Hadoop Token for Accumulo to Job's Credentials");
 
             // Add the Hadoop token to the JobConf
-            helper.mergeTokenIntoJobConf(job, accumuloToken);
+            getHelper().mergeTokenIntoJobConf(job, accumuloToken);
 
             // Make sure the UGI contains the token too for good measure
             if (!ugi.addToken(accumuloToken)) {
@@ -111,7 +111,7 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
           }
         }
       } else {
-        setAccumuloConnectorInfo(job, cnxnParams.getAccumuloUserName(),
+        setConnectorInfoWithErrorChecking(job, cnxnParams.getAccumuloUserName(),
             new PasswordToken(cnxnParams.getAccumuloPassword()));
       }
 
@@ -125,7 +125,7 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
 
   // Non-static methods to wrap the static AccumuloOutputFormat methods to enable testing
 
-  protected void setAccumuloConnectorInfo(JobConf conf, String username, AuthenticationToken token)
+  protected void setConnectorInfoWithErrorChecking(JobConf conf, String username, AuthenticationToken token)
       throws AccumuloSecurityException {
     try {
       AccumuloOutputFormat.setConnectorInfo(conf, username, token);
@@ -136,14 +136,14 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
   }
 
   @SuppressWarnings("deprecation")
-  protected void setAccumuloZooKeeperInstance(JobConf conf, String instanceName, String zookeepers,
+  protected void setZooKeeperInstanceWithErrorChecking(JobConf conf, String instanceName, String zookeepers,
       boolean isSasl) throws IOException {
     try {
       if (isSasl) {
         // Reflection to support Accumulo 1.5. Remove when Accumulo 1.5 support is dropped
         // 1.6 works with the deprecated 1.5 method, but must use reflection for 1.7-only
         // SASL support
-        helper.setZooKeeperInstance(conf, AccumuloOutputFormat.class, zookeepers, instanceName,
+        getHelper().setZooKeeperInstance(conf, AccumuloOutputFormat.class, zookeepers, instanceName,
             isSasl);
       } else {
         AccumuloOutputFormat.setZooKeeperInstance(conf, instanceName, zookeepers);
@@ -155,7 +155,7 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
     }
   }
 
-  protected void setAccumuloMockInstance(JobConf conf, String instanceName) {
+  protected void setMockInstanceWithErrorChecking(JobConf conf, String instanceName) {
     try {
       AccumuloOutputFormat.setMockInstance(conf, instanceName);
     } catch (IllegalStateException e) {
@@ -166,5 +166,25 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
 
   protected void setDefaultAccumuloTableName(JobConf conf, String tableName) {
     AccumuloOutputFormat.setDefaultTableName(conf, tableName);
+  }
+
+  HiveAccumuloHelper getHelper() {
+    // Allows mocking in testing.
+    return helper;
+  }
+
+  AccumuloConnectionParameters getConnectionParams(JobConf conf) {
+    // Allows mocking in testing.
+    return new AccumuloConnectionParameters(conf);
+  }
+
+  boolean hasKerberosCredentials(UserGroupInformation ugi) {
+    // Allows mocking in testing.
+    return ugi.hasKerberosCredentials();
+  }
+
+  UserGroupInformation getCurrentUser() throws IOException {
+    // Allows mocking in testing.
+    return UserGroupInformation.getCurrentUser();
   }
 }
