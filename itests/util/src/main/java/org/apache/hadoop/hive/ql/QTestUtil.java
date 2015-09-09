@@ -45,10 +45,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -60,7 +58,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -73,9 +70,6 @@ import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
-import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
-import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -154,7 +148,6 @@ public class QTestUtil {
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private HadoopShims.HdfsEncryptionShim hes = null;
-  private MiniLlapCluster llapCluster = null;
   private final boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
@@ -409,48 +402,13 @@ public class QTestUtil {
 
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
-        mr = shims.getMiniTezCluster(conf, 4, uriString);
+        mr = shims.getMiniTezCluster(conf, 4, uriString, false);
       } else if (clusterType == MiniClusterType.llap) {
-        Configuration daemonConf;
         if (confDir != null && !confDir.isEmpty()) {
-          URL llapDaemonConfURL = new URL("file://"
-              + new File(confDir).toURI().getPath() + "/llap-daemon-site.xml");
-          daemonConf = new LlapConfiguration(conf, llapDaemonConfURL);
-        } else {
-          daemonConf = new LlapConfiguration(conf);
+          conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
+              + "/llap-daemon-site.xml"));
         }
-        final String clusterName = "llap";
-        final long maxMemory = LlapDaemon.getTotalHeapSize();
-        // 15% for io cache
-        final long memoryForCache = (long) (0.15f * maxMemory);
-        // 75% for 4 executors
-        final long totalExecutorMemory = (long) (0.75f * maxMemory);
-        final int numExecutors = daemonConf.getInt(LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS,
-            LlapConfiguration.LLAP_DAEMON_NUM_EXECUTORS_DEFAULT);
-        final boolean asyncIOEnabled = true;
-        // enabling this will cause test failures in Mac OS X
-        final boolean directMemoryEnabled = false;
-        final int numLocalDirs = 1;
-        LOG.info("MiniLlap Configs - maxMemory: " + maxMemory + " memoryForCache: " + memoryForCache
-            + " totalExecutorMemory: " + totalExecutorMemory + " numExecutors: " + numExecutors
-            + " asyncIOEnabled: " + asyncIOEnabled + " directMemoryEnabled: " + directMemoryEnabled
-            + " numLocalDirs: " + numLocalDirs);
-        llapCluster = MiniLlapCluster.create(clusterName,
-            numExecutors,
-            totalExecutorMemory,
-            asyncIOEnabled,
-            directMemoryEnabled,
-            memoryForCache,
-            numLocalDirs);
-        llapCluster.init(daemonConf);
-        llapCluster.start();
-        Configuration llapConf = llapCluster.getClusterSpecificConfiguration();
-        Iterator<Entry<String, String>> confIter = llapConf.iterator();
-        while (confIter.hasNext()) {
-          Entry<String, String> entry = confIter.next();
-          conf.set(entry.getKey(), entry.getValue());
-        }
-        mr = shims.getMiniTezCluster(conf, 2, uriString);
+        mr = shims.getMiniTezCluster(conf, 2, uriString, true);
       } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
         mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
       } else {
@@ -500,10 +458,6 @@ public class QTestUtil {
       } finally {
         sparkSession = null;
       }
-    }
-    if (llapCluster != null) {
-      llapCluster.stop();
-      llapCluster = null;
     }
     if (mr != null) {
       mr.shutdown();
