@@ -66,32 +66,30 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantBinaryObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantHiveCharObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantHiveVarcharObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableFloatObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -569,7 +567,7 @@ public class StatsUtils {
    *          - hive conf
    * @param parts
    *          - partition list
-   * @return sizes of patitions
+   * @return sizes of partitions
    */
   public static List<Long> getFileSizeForPartitions(HiveConf conf, List<Partition> parts) {
     List<Long> sizes = Lists.newArrayList();
@@ -783,19 +781,9 @@ public class StatsUtils {
         ConstantObjectInspector coi = (ConstantObjectInspector) oi;
 
         // if writable constant is null then return size 0
-        if (coi.getWritableConstantValue() == null) {
-          return 0;
-        }
-
-        return coi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableConstantStringObjectInspector) {
-
-        // some UDFs return writable constant strings (fixed width)
-        // Ex: select upper("hello") from table
-        WritableConstantStringObjectInspector wcsoi = (WritableConstantStringObjectInspector) oi;
-
-        return wcsoi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableStringObjectInspector) {
+        Object constantValue = coi.getWritableConstantValue();
+        return constantValue == null ? 0 : constantValue.toString().length();
+      } else if (oi instanceof StringObjectInspector) {
 
         // some UDFs may emit strings of variable length. like pattern matching
         // UDFs. it's hard to find the length of such UDFs.
@@ -809,18 +797,11 @@ public class StatsUtils {
         ConstantObjectInspector coi = (ConstantObjectInspector) oi;
 
         // if writable constant is null then return size 0
-        if (coi.getWritableConstantValue() == null) {
-          return 0;
-        }
-
-        return coi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableConstantHiveVarcharObjectInspector) {
-
-        WritableConstantHiveVarcharObjectInspector wcsoi =
-            (WritableConstantHiveVarcharObjectInspector) oi;
-        return wcsoi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableHiveVarcharObjectInspector) {
-        return ((WritableHiveVarcharObjectInspector) oi).getMaxLength();
+        Object constantValue = coi.getWritableConstantValue();
+        return constantValue == null ? 0 : constantValue.toString().length();
+      } else if (oi instanceof HiveVarcharObjectInspector) {
+        VarcharTypeInfo type = (VarcharTypeInfo) ((HiveVarcharObjectInspector) oi).getTypeInfo();
+        return type.getLength();
       }
     } else if (colType.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
 
@@ -829,18 +810,11 @@ public class StatsUtils {
         ConstantObjectInspector coi = (ConstantObjectInspector) oi;
 
         // if writable constant is null then return size 0
-        if (coi.getWritableConstantValue() == null) {
-          return 0;
-        }
-
-        return coi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableConstantHiveCharObjectInspector) {
-
-        WritableConstantHiveCharObjectInspector wcsoi =
-            (WritableConstantHiveCharObjectInspector) oi;
-        return wcsoi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableHiveCharObjectInspector) {
-        return ((WritableHiveCharObjectInspector) oi).getMaxLength();
+        Object constantValue = coi.getWritableConstantValue();
+        return constantValue == null ? 0 : constantValue.toString().length();
+      } else if (oi instanceof HiveCharObjectInspector) {
+        CharTypeInfo type = (CharTypeInfo) ((HiveCharObjectInspector) oi).getTypeInfo();
+        return type.getLength();
       }
     } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
 
@@ -849,19 +823,9 @@ public class StatsUtils {
         ConstantObjectInspector coi = (ConstantObjectInspector) oi;
 
         // if writable constant is null then return size 0
-        if (coi.getWritableConstantValue() == null) {
-          return 0;
-        }
-
-        BytesWritable bw = ((BytesWritable) coi.getWritableConstantValue());
-        return bw.getLength();
-      } else if (oi instanceof WritableConstantBinaryObjectInspector) {
-
-        // writable constant byte arrays
-        WritableConstantBinaryObjectInspector wcboi = (WritableConstantBinaryObjectInspector) oi;
-
-        return wcboi.getWritableConstantValue().getLength();
-      } else if (oi instanceof WritableBinaryObjectInspector) {
+        BytesWritable constantValue = (BytesWritable)coi.getWritableConstantValue();
+        return constantValue == null ? 0 : constantValue.getLength();
+      } else if (oi instanceof BinaryObjectInspector) {
 
         // return the variable length from config
         return configVarLen;
@@ -1296,6 +1260,8 @@ public class StatsUtils {
       colType = enfd.getTypeString();
       countDistincts = numRows;
       oi = enfd.getWritableObjectInspector();
+    } else {
+      throw new IllegalArgumentException("not supported expr type " + end.getClass());
     }
 
     if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
