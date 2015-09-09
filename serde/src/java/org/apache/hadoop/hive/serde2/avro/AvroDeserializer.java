@@ -162,7 +162,7 @@ class AvroDeserializer {
         reEncoder = new SchemaReEncoder(r.getSchema(), readerSchema);
         reEncoderCache.put(recordReaderId, reEncoder);
       } else{
-        LOG.info("Adding new valid RRID :" +  recordReaderId);
+        LOG.debug("Adding new valid RRID :" +  recordReaderId);
         noEncodingNeeded.add(recordReaderId);
       }
       if(reEncoder != null) {
