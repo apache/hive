@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
 import org.apache.hadoop.hive.ql.parse.WindowingComponentizer;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -284,7 +285,9 @@ public class HiveOpConverter {
       exprCols.add(exprCol);
       //TODO: Cols that come through PTF should it retain (VirtualColumness)?
       if (converter.getWindowFunctionSpec() != null) {
-        windowingSpec.addWindowFunction(converter.getWindowFunctionSpec());
+        for (WindowFunctionSpec wfs : converter.getWindowFunctionSpec()) {
+          windowingSpec.addWindowFunction(wfs);
+        }
       }
     }
     if (windowingSpec.getWindowExpressions() != null

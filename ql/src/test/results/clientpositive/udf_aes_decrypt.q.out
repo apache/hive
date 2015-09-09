@@ -1,0 +1,79 @@
+PREHOOK: query: DESCRIBE FUNCTION aes_decrypt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION aes_decrypt
+POSTHOOK: type: DESCFUNCTION
+aes_decrypt(input binary, key string/binary) - Decrypt input using AES.
+PREHOOK: query: DESC FUNCTION EXTENDED aes_decrypt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED aes_decrypt
+POSTHOOK: type: DESCFUNCTION
+aes_decrypt(input binary, key string/binary) - Decrypt input using AES.
+AES (Advanced Encryption Standard) algorithm. Key lengths of 128, 192 or 256 bits can be used. 192 and 256 bits keys can be used if Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files are installed. If either argument is NULL or the key length is not one of the permitted values, the return value is NULL.
+Example: > SELECT aes_decrypt(unbase64('y6Ss+zCYObpCbgfWfyNWTw=='), '1234567890123456');
+ 'ABC'
+PREHOOK: query: explain select aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), '1234567890123456')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), '1234567890123456')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 414243 (type: binary)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: select
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), '1234567890123456'),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), binary('1234567890123456')),
+aes_decrypt(unbase64("BQGHoM3lqYcsurCRq3PlUw=="), '1234567890123456') = binary(''),
+aes_decrypt(unbase64("BQGHoM3lqYcsurCRq3PlUw=="), binary('1234567890123456')) = binary(''),
+aes_decrypt(cast(null as binary), '1234567890123456'),
+aes_decrypt(cast(null as binary), binary('1234567890123456'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), '1234567890123456'),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), binary('1234567890123456')),
+aes_decrypt(unbase64("BQGHoM3lqYcsurCRq3PlUw=="), '1234567890123456') = binary(''),
+aes_decrypt(unbase64("BQGHoM3lqYcsurCRq3PlUw=="), binary('1234567890123456')) = binary(''),
+aes_decrypt(cast(null as binary), '1234567890123456'),
+aes_decrypt(cast(null as binary), binary('1234567890123456'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+ABC	ABC	true	true	NULL	NULL
+PREHOOK: query: --bad key
+select
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), '12345678901234567'),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), binary('123456789012345')),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), ''),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), binary('')),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), cast(null as string)),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), cast(null as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: --bad key
+select
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), '12345678901234567'),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), binary('123456789012345')),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), ''),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), binary('')),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), cast(null as string)),
+aes_decrypt(unbase64("y6Ss+zCYObpCbgfWfyNWTw=="), cast(null as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL

@@ -140,7 +140,7 @@ public class ConstantPropagate implements Transform {
     }
 
     @Override
-    public void walk(Node nd) throws SemanticException {
+    protected void walk(Node nd) throws SemanticException {
 
       List<Node> parents = ((Operator) nd).getParentOperators();
       if ((parents == null)
