@@ -18,6 +18,26 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.thrift.TException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -663,9 +683,38 @@ public interface IMetaStoreClient {
       List<String> part_vals, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;
 
+  /**
+   * Method to dropPartitions() with the option to purge the partition data directly,
+   * rather than to move data to trash.
+   * @param db_name Name of the database.
+   * @param tbl_name Name of the table.
+   * @param part_vals Specification of the partitions being dropped.
+   * @param options PartitionDropOptions for the operation.
+   * @return True (if partitions are dropped), else false.
+   * @throws TException
+   */
+  boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
+                        PartitionDropOptions options) throws TException;
+
   List<Partition> dropPartitions(String dbName, String tblName,
       List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
       boolean ifExists) throws NoSuchObjectException, MetaException, TException;
+
+  List<Partition> dropPartitions(String dbName, String tblName,
+      List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData, boolean ignoreProtection,
+      boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Generalization of dropPartitions(),
+   * @param dbName Name of the database
+   * @param tblName Name of the table
+   * @param partExprs Partition-specification
+   * @param options Boolean options for dropping partitions
+   * @return List of Partitions dropped
+   * @throws TException On failure
+   */
+  List<Partition> dropPartitions(String dbName, String tblName,
+                                 List<ObjectPair<Integer, byte[]>> partExprs, PartitionDropOptions options) throws TException;
 
   boolean dropPartition(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
