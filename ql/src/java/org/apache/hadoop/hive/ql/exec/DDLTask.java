@@ -163,6 +163,7 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
+import org.apache.hadoop.hive.ql.plan.ShowCreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
@@ -440,6 +441,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return showPartitions(db, showParts);
       }
 
+      ShowCreateDatabaseDesc showCreateDb = work.getShowCreateDbDesc();
+      if (showCreateDb != null) {
+        return showCreateDatabase(db, showCreateDb);
+      }
+
       ShowCreateTableDesc showCreateTbl = work.getShowCreateTblDesc();
       if (showCreateTbl != null) {
         return showCreateTable(db, showCreateTbl);
@@ -545,9 +551,23 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private DataOutputStream getOutputStream(Path outputFile) throws Exception {
-    FileSystem fs = outputFile.getFileSystem(conf);
-    return fs.create(outputFile);
+  private DataOutputStream getOutputStream(String resFile) throws HiveException {
+    try {
+      return getOutputStream(new Path(resFile));
+    } catch (HiveException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  private DataOutputStream getOutputStream(Path outputFile) throws HiveException {
+    try {
+      FileSystem fs = outputFile.getFileSystem(conf);
+      return fs.create(outputFile);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   /**
@@ -1891,16 +1911,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(showParts.getResFile());
     try {
-      Path resFile = new Path(showParts.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       formatter.showTablePartitions(outStream, parts);
-
-      outStream.close();
-      outStream = null;
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show partitions for table " + tabName);
     } finally {
@@ -1918,6 +1931,40 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       "NULL DEFINED AS"
   };
 
+  private int showCreateDatabase(Hive db, ShowCreateDatabaseDesc showCreateDb) throws HiveException {
+    DataOutputStream outStream = getOutputStream(showCreateDb.getResFile());
+    try {
+      String dbName = showCreateDb.getDatabaseName();
+      return showCreateDatabase(db, outStream, dbName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    } finally {
+      IOUtils.closeStream(outStream);
+    }
+  }
+
+  private int showCreateDatabase(Hive db, DataOutputStream outStream, String databaseName)
+      throws Exception {
+    Database database = db.getDatabase(databaseName);
+
+    StringBuilder createDb_str = new StringBuilder();
+    createDb_str.append("CREATE DATABASE `").append(database.getName()).append("`\n");
+    if (database.getDescription() != null) {
+      createDb_str.append("COMMENT\n  '");
+      createDb_str.append(escapeHiveCommand(database.getDescription())).append("'\n");
+    }
+    createDb_str.append("LOCATION\n  '");
+    createDb_str.append(database.getLocationUri()).append("'\n");
+    String propertiesToString = propertiesToString(database.getParameters(), null);
+    if (!propertiesToString.isEmpty()) {
+      createDb_str.append("WITH DBPROPERTIES (\n");
+      createDb_str.append(propertiesToString).append(")\n");
+    }
+
+    outStream.write(createDb_str.toString().getBytes("UTF-8"));
+    return 0;
+  }
+
   /**
    * Write a statement of how to create a table to a file.
    *
@@ -1931,6 +1978,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int showCreateTable(Hive db, ShowCreateTableDesc showCreateTbl) throws HiveException {
     // get the create table statement for the table and populate the output
+    DataOutputStream outStream = getOutputStream(showCreateTbl.getResFile());
+    try {
+      String tableName = showCreateTbl.getTableName();
+      return showCreateTable(db, outStream, tableName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    } finally {
+      IOUtils.closeStream(outStream);
+    }
+  }
+
+  private int showCreateTable(Hive db, DataOutputStream outStream, String tableName)
+      throws HiveException {
     final String EXTERNAL = "external";
     final String TEMPORARY = "temporary";
     final String LIST_COLUMNS = "columns";
@@ -1943,22 +2003,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     boolean needsLocation = true;
     StringBuilder createTab_str = new StringBuilder();
 
-    String tableName = showCreateTbl.getTableName();
     Table tbl = db.getTable(tableName, false);
-    DataOutputStream outStream = null;
     List<String> duplicateProps = new ArrayList<String>();
     try {
-      Path resFile = new Path(showCreateTbl.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       needsLocation = doesTableNeedLocation(tbl);
 
       if (tbl.isView()) {
         String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
         outStream.writeBytes(createTab_stmt.toString());
-        outStream.close();
-        outStream = null;
         return 0;
       }
 
@@ -2115,18 +2167,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       String tbl_location = "  '" + escapeHiveCommand(sd.getLocation()) + "'";
 
       // Table properties
-      String tbl_properties = "";
-      if (!tbl.getParameters().isEmpty()) {
-        Map<String, String> properties = new TreeMap<String, String>(tbl.getParameters());
-        List<String> realProps = new ArrayList<String>();
-        for (String key : properties.keySet()) {
-          if (properties.get(key) != null && !duplicateProps.contains(key)) {
-            realProps.add("  '" + key + "'='" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(properties.get(key))) + "'");
-          }
-        }
-        tbl_properties += StringUtils.join(realProps, ", \n");
-      }
+      String tbl_properties = propertiesToString(tbl.getParameters(), duplicateProps);
 
       createTab_stmt.add(TEMPORARY, tbl_temp);
       createTab_stmt.add(EXTERNAL, tbl_external);
@@ -2142,21 +2183,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
 
       outStream.writeBytes(createTab_stmt.render());
-      outStream.close();
-      outStream = null;
-    } catch (FileNotFoundException e) {
-      LOG.info("show create table: " + stringifyException(e));
-      return 1;
     } catch (IOException e) {
       LOG.info("show create table: " + stringifyException(e));
       return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
     }
 
     return 0;
+  }
+
+  private String propertiesToString(Map<String, String> props, List<String> exclude) {
+    String prop_string = "";
+    if (!props.isEmpty()) {
+      Map<String, String> properties = new TreeMap<String, String>(props);
+      List<String> realProps = new ArrayList<String>();
+      for (String key : properties.keySet()) {
+        if (properties.get(key) != null && (exclude == null || !exclude.contains(key))) {
+          realProps.add("  '" + key + "'='" +
+              escapeHiveCommand(StringEscapeUtils.escapeJava(properties.get(key))) + "'");
+        }
+      }
+      prop_string += StringUtils.join(realProps, ", \n");
+    }
+    return prop_string;
   }
 
   private boolean containsNonNull(String[] values) {
@@ -2202,12 +2250,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     indexes = db.getIndexes(tbl.getDbName(), tbl.getTableName(), (short) -1);
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(showIndexes.getResFile());
     try {
-      Path resFile = new Path(showIndexes.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       if (showIndexes.isFormatted()) {
         // column headers
         outStream.writeBytes(MetaDataFormatUtils.getIndexColumnsHeader());
@@ -2219,10 +2263,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       {
         outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(index));
       }
-
-      outStream.close();
-      outStream = null;
-
     } catch (FileNotFoundException e) {
       LOG.info("show indexes: " + stringifyException(e));
       throw new HiveException(e.toString());
@@ -2259,15 +2299,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     LOG.info("results : " + databases.size());
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(showDatabasesDesc.getResFile());
     try {
-      Path resFile = new Path(showDatabasesDesc.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       formatter.showDatabases(outStream, databases);
-      outStream.close();
-      outStream = null;
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show databases");
     } finally {
@@ -2304,16 +2338,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(showTbls.getResFile());
     try {
-      Path resFile = new Path(showTbls.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       SortedSet<String> sortedTbls = new TreeSet<String>(tbls);
       formatter.showTables(outStream, sortedTbls);
-      outStream.close();
-      outStream = null;
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + dbName);
     } finally {
@@ -2328,12 +2356,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table table = db.getTable(showCols.getTableName());
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(showCols.getResFile());;
     try {
-      Path resFile = new Path(showCols.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       List<FieldSchema> cols = table.getCols();
       cols.addAll(table.getPartCols());
       // In case the query is served by HiveServer2, don't pad it with spaces,
@@ -2341,8 +2365,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
       outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(
           cols, false, isOutputPadded, null));
-      outStream.close();
-      outStream = null;
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
@@ -2377,11 +2399,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(showFuncs.getResFile());
     try {
-      Path resFile = new Path(showFuncs.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
       SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
       // To remove the primitive types
       sortedFuncs.removeAll(serdeConstants.PrimitiveTypes);
@@ -2392,8 +2411,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.writeBytes(iterFuncs.next());
         outStream.write(terminator);
       }
-      outStream.close();
-      outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
       return 1;
@@ -2430,11 +2447,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(showLocks.getResFile());
     try {
-      Path resFile = new Path(showLocks.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
       List<HiveLock> locks = null;
 
       if (showLocks.getTableName() == null) {
@@ -2490,8 +2504,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         outStream.write(terminator);
       }
-      outStream.close();
-      outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
       return 1;
@@ -2518,12 +2530,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     ShowLocksResponse rsp = lockMgr.getLocks();
 
     // write the results in the file
-    DataOutputStream os = null;
+    DataOutputStream os = getOutputStream(showLocks.getResFile());
     try {
-      Path resFile = new Path(showLocks.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      os = fs.create(resFile);
-
       // Write a header
       os.writeBytes("Lock ID");
       os.write(separator);
@@ -2577,9 +2585,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
 
       }
-
-      os.close();
-      os = null;
     } catch (FileNotFoundException e) {
       LOG.warn("show function: " + stringifyException(e));
       return 1;
@@ -2599,12 +2604,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     ShowCompactResponse rsp = db.showCompactions();
 
     // Write the results into the file
-    DataOutputStream os = null;
+    DataOutputStream os = getOutputStream(desc.getResFile());
     try {
-      Path resFile = new Path(desc.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      os = fs.create(resFile);
-
       // Write a header
       os.writeBytes("Database");
       os.write(separator);
@@ -2641,7 +2642,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           os.write(terminator);
         }
       }
-      os.close();
     } catch (IOException e) {
       LOG.warn("show compactions: " + stringifyException(e));
       return 1;
@@ -2656,12 +2656,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     GetOpenTxnsInfoResponse rsp = db.showTransactions();
 
     // Write the results into the file
-    DataOutputStream os = null;
+    DataOutputStream os = getOutputStream(desc.getResFile());
     try {
-      Path resFile = new Path(desc.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      os = fs.create(resFile);
-
       // Write a header
       os.writeBytes("Transaction ID");
       os.write(separator);
@@ -2682,7 +2678,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         os.writeBytes(txn.getHostname());
         os.write(terminator);
       }
-      os.close();
     } catch (IOException e) {
       LOG.warn("show transactions: " + stringifyException(e));
       return 1;
@@ -2763,12 +2758,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String funcName = descFunc.getName();
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(descFunc.getResFile());
     try {
-      Path resFile = new Path(descFunc.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       // get the function documentation
       Description desc = null;
       Class<?> funcClass = null;
@@ -2801,9 +2792,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       outStream.write(terminator);
-
-      outStream.close();
-      outStream = null;
     } catch (FileNotFoundException e) {
       LOG.warn("describe function: " + stringifyException(e));
       return 1;
@@ -2819,12 +2807,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int descDatabase(DescDatabaseDesc descDatabase) throws HiveException {
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(descDatabase.getResFile());
     try {
-      Path resFile = new Path(descDatabase.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       Database database = db.getDatabase(descDatabase.getDatabaseName());
 
       if (database == null) {
@@ -2851,9 +2835,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           database.getDescription(), location,
           database.getOwnerName(), (null == ownerType) ? null : ownerType.name(), params);
 
-      outStream.close();
-      outStream = null;
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
       IOUtils.closeStream(outStream);
@@ -2899,16 +2881,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // write the results in the file
-    DataOutputStream outStream = null;
+    DataOutputStream outStream = getOutputStream(showTblStatus.getResFile());
     try {
-      Path resFile = new Path(showTblStatus.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
       formatter.showTableStatus(outStream, db, conf, tbls, part, par);
-
-      outStream.close();
-      outStream = null;
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show table status");
     } finally {
@@ -3011,40 +2986,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // describe the table - populate the output stream
     Table tbl = db.getTable(tableName, false);
+    if (tbl == null) {
+      throw new HiveException(ErrorMsg.INVALID_TABLE, tableName);
+    }
     Partition part = null;
-    DataOutputStream outStream = null;
-    try {
-      Path resFile = new Path(descTbl.getResFile());
-      if (tbl == null) {
-        FileSystem fs = resFile.getFileSystem(conf);
-        outStream = fs.create(resFile);
-        outStream.close();
-        outStream = null;
-        throw new HiveException(ErrorMsg.INVALID_TABLE, tableName);
+    if (descTbl.getPartSpec() != null) {
+      part = db.getPartition(tbl, descTbl.getPartSpec(), false);
+      if (part == null) {
+        throw new HiveException(ErrorMsg.INVALID_PARTITION,
+            StringUtils.join(descTbl.getPartSpec().keySet(), ','), tableName);
       }
-      if (descTbl.getPartSpec() != null) {
-        part = db.getPartition(tbl, descTbl.getPartSpec(), false);
-        if (part == null) {
-          FileSystem fs = resFile.getFileSystem(conf);
-          outStream = fs.create(resFile);
-          outStream.close();
-          outStream = null;
-          throw new HiveException(ErrorMsg.INVALID_PARTITION,
-              StringUtils.join(descTbl.getPartSpec().keySet(), ','), tableName);
-        }
-        tbl = part.getTable();
-      }
-    } catch (IOException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
-    } finally {
-      IOUtils.closeStream(outStream);
+      tbl = part.getTable();
     }
 
+    DataOutputStream outStream = getOutputStream(descTbl.getResFile());
     try {
       LOG.info("DDLTask: got data for " + tbl.getTableName());
-      Path resFile = new Path(descTbl.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
 
       List<FieldSchema> cols = null;
       List<ColumnStatisticsObj> colStats = null;
@@ -3092,12 +3049,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           descTbl.isPretty(), isOutputPadded, colStats);
 
       LOG.info("DDLTask: written data for " + tbl.getTableName());
-      outStream.close();
-      outStream = null;
 
     } catch (SQLException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
-    } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
     } finally {
       IOUtils.closeStream(outStream);
