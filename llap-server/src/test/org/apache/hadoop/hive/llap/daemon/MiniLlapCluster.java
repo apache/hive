@@ -17,6 +17,8 @@ package org.apache.hadoop.hive.llap.daemon;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,6 +54,22 @@ public class MiniLlapCluster extends AbstractService {
       int numLocalDirs) {
     return new MiniLlapCluster(clusterName, numExecutorsPerService, execBytePerService,
         llapIoEnabled, ioIsDirect, ioBytesPerService, numLocalDirs);
+  }
+
+  public static MiniLlapCluster createAndLaunch(Configuration conf, String clusterName,
+      int numExecutorsPerService, long execBytePerService, boolean llapIoEnabled,
+      boolean ioIsDirect, long ioBytesPerService, int numLocalDirs) {
+    MiniLlapCluster miniLlapCluster = create(clusterName, numExecutorsPerService,
+        execBytePerService, llapIoEnabled, ioIsDirect, ioBytesPerService, numLocalDirs);
+    miniLlapCluster.init(conf);
+    miniLlapCluster.start();
+    Configuration llapConf = miniLlapCluster.getClusterSpecificConfiguration();
+    Iterator<Map.Entry<String, String>> confIter = llapConf.iterator();
+    while (confIter.hasNext()) {
+      Map.Entry<String, String> entry = confIter.next();
+      conf.set(entry.getKey(), entry.getValue());
+    }
+    return miniLlapCluster;
   }
 
   // TODO Add support for multiple instances

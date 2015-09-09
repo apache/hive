@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.shims;
 
 import java.io.IOException;
-import java.lang.Override;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -69,12 +68,11 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.KerberosName;
-import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.tools.distcp2.DistCp;
 import org.apache.hadoop.tools.distcp2.DistCpOptions;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.VersionInfo;
 
 
@@ -233,7 +231,7 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
   @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-      String nameNode) throws IOException {
+      String nameNode, boolean isLlap) throws IOException {
     throw new IOException("Cannot run tez on current hadoop, Version: " + VersionInfo.getVersion());
   }
 

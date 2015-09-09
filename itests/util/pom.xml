@@ -54,20 +54,6 @@
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-llap-server</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-llap-server</artifactId>
-      <type>test-jar</type>
-      <version>${project.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-cli</artifactId>

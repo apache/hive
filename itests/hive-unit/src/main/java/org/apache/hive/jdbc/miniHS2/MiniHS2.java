@@ -181,7 +181,7 @@ public class MiniHS2 extends AbstractHiveService {
       // Initialize the execution engine based on cluster type
       switch (miniClusterType) {
       case TEZ:
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString);
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString, false);
         break;
       case MR:
         mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4, uriString, 1);
