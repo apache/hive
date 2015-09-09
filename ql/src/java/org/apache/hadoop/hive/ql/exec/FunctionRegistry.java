@@ -234,6 +234,8 @@ public final class FunctionRegistry {
     system.registerUDF("md5", UDFMd5.class, false);
     system.registerUDF("sha1", UDFSha1.class, false);
     system.registerUDF("sha", UDFSha1.class, false);
+    system.registerGenericUDF("aes_encrypt", GenericUDFAesEncrypt.class);
+    system.registerGenericUDF("aes_decrypt", GenericUDFAesDecrypt.class);
 
     system.registerGenericUDF("encode", GenericUDFEncode.class);
     system.registerGenericUDF("decode", GenericUDFDecode.class);

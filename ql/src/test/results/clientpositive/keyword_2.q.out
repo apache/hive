@@ -1,0 +1,51 @@
+PREHOOK: query: drop table varchar_udf_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table varchar_udf_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_udf_1
+POSTHOOK: query: create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_udf_1
+PREHOOK: query: insert overwrite table varchar_udf_1
+  select key, value, key, value from src where key = '238' limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@varchar_udf_1
+POSTHOOK: query: insert overwrite table varchar_udf_1
+  select key, value, key, value from src where key = '238' limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@varchar_udf_1
+POSTHOOK: Lineage: varchar_udf_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select
+  regexp(c2, 'val'),
+  regexp(c4, 'val'),
+  regexp(c2, 'val') = regexp(c4, 'val')
+from varchar_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  regexp(c2, 'val'),
+  regexp(c4, 'val'),
+  regexp(c2, 'val') = regexp(c4, 'val')
+from varchar_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_udf_1
+#### A masked pattern was here ####
+true	true	true
+PREHOOK: query: drop table varchar_udf_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Output: default@varchar_udf_1
+POSTHOOK: query: drop table varchar_udf_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Output: default@varchar_udf_1

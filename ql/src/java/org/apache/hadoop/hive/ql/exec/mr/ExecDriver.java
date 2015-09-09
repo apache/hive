@@ -398,7 +398,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       if (pwd != null) {
         HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, "HIVE");
       }
-      LOG.error(job.get("mapreduce.framework.name"));
       JobClient jc = new JobClient(job);
       // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
