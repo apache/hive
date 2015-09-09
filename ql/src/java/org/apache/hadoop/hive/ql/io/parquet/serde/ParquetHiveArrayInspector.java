@@ -75,6 +75,10 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       }
     }
 
+    if (data instanceof List) {
+      return ((List)data).get(index);
+    }
+
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
   }
 
@@ -98,6 +102,10 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       }
 
       return ((ArrayWritable) subObj).get().length;
+    }
+
+    if (data instanceof List) {
+      return ((List)data).size();
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
@@ -130,6 +138,10 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       }
 
       return list;
+    }
+
+    if (data instanceof List) {
+      return (List<?>)data;
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
