@@ -83,6 +83,7 @@ class BeeLineOpts implements Completer {
   private HiveConf conf;
   private boolean trimScripts = true;
   private boolean allowMultiLineCommand = true;
+  private boolean showConnectedUrl = false;
 
   //This can be set for old behavior of nulls printed as empty strings
   private boolean nullEmptyString = false;
@@ -156,9 +157,9 @@ class BeeLineOpts implements Completer {
 
 
   public void save() throws IOException {
-    OutputStream out = new FileOutputStream(rcFile);
-    save(out);
-    out.close();
+    try (OutputStream out = new FileOutputStream(rcFile)) {
+      save(out);
+    }
   }
 
   public void save(OutputStream out) throws IOException {
@@ -210,9 +211,9 @@ class BeeLineOpts implements Completer {
 
 
   public void load() throws IOException {
-    InputStream in = new FileInputStream(rcFile);
-    load(in);
-    in.close();
+    try (InputStream in = new FileInputStream(rcFile)) {
+      load(in);
+    }
   }
 
 
@@ -457,6 +458,14 @@ class BeeLineOpts implements Completer {
 
   public boolean getAutosave() {
     return autosave;
+  }
+
+  public boolean getShowConnectedUrl() {
+    return showConnectedUrl;
+  }
+
+  public void setShowConnectedUrl(boolean showConnectedUrl) {
+    this.showConnectedUrl = showConnectedUrl;
   }
 
   public void setOutputFormat(String outputFormat) {

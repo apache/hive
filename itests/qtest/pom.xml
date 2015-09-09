@@ -30,7 +30,7 @@
 
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
-
+    <initScript>q_test_init.sql</initScript>
     <qfile></qfile>
     <qfile_regex></qfile_regex>
     <run_disabled>false</run_disabled>
@@ -420,7 +420,7 @@
                   logFile="${project.build.directory}/testparseneggen.log"
                   hadoopVersion="${active.hadoop.version}"
                   logDirectory="${project.build.directory}/qfile-results/negative/"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- Cli -->
@@ -429,7 +429,7 @@
                   templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
                   queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
                   queryFile="${qfile}"
-                  excludeQueryFile="${minimr.query.files},${minitez.query.files},${encrypted.query.files}"
+                  excludeQueryFile="${minimr.query.files},${minitez.query.files},${encrypted.query.files},${spark.only.query.files}"
                   queryFileRegex="${qfile_regex}"
                   clusterMode="${clustermode}"
                   runDisabled="${run_disabled}"
@@ -437,7 +437,7 @@
                   logFile="${project.build.directory}/testclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/"
                   hadoopVersion="${active.hadoop.version}"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- Negative Cli -->
@@ -454,7 +454,7 @@
                   logFile="${project.build.directory}/testnegativeclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientnegative/"
                   hadoopVersion="${active.hadoop.version}"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- Compare Cli -->
@@ -470,7 +470,7 @@
                   logFile="${project.build.directory}/testcompareclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientcompare/"
                   hadoopVersion="${active.hadoop.version}"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- Minimr -->
@@ -487,7 +487,7 @@
                   logFile="${project.build.directory}/testminimrclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/"
                   hadoopVersion="${active.hadoop.version}"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <if>
@@ -508,7 +508,7 @@
                               logFile="${project.build.directory}/testminitezclidrivergen.log"
                               logDirectory="${project.build.directory}/qfile-results/clientpositive/"
                               hadoopVersion="${active.hadoop.version}"
-                              initScript="q_test_init.sql"
+                              initScript="${initScript}"
                               cleanupScript="q_test_cleanup.sql"/>
 
                     <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
@@ -547,7 +547,7 @@
                   logFile="${project.build.directory}/testnegativeminimrclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientnegative/"
                   hadoopVersion="${hadoopVersion}"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- HBase Positive -->
@@ -561,7 +561,7 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/hbase-handler/src/test/results/positive/" className="TestHBaseCliDriver"
                   logFile="${project.build.directory}/testhbaseclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/hbase-handler/positive/"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- HBase Minimr -->
@@ -575,7 +575,7 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/hbase-handler/src/test/results/positive/" className="TestHBaseMinimrCliDriver"
                   logFile="${project.build.directory}/testhbaseminimrclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/hbase-handler/minimrpositive/"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- HBase Negative -->
@@ -589,7 +589,7 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/hbase-handler/src/test/results/negative/" className="TestHBaseNegativeCliDriver"
                   logFile="${project.build.directory}/testhbasenegativeclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/hbase-handler/negative"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- Beeline -->
@@ -626,7 +626,7 @@
                   logFile="${project.build.directory}/testcontribclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/contribclientpositive"
                   hadoopVersion="${hadoopVersion}"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
@@ -639,7 +639,7 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/contrib/src/test/results/clientnegative/" className="TestContribNegativeCliDriver"
                   logFile="${project.build.directory}/testcontribnegclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/contribclientnegative"
-                  initScript="q_test_init.sql"
+                  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
 

@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
+import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
@@ -67,8 +67,18 @@ public class SyntheticJoinPredicate implements Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
-    if (!pctx.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
-        || !pctx.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
+    boolean enabled = false;
+    String queryEngine = pctx.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE);
+
+    if (queryEngine.equals("tez")
+        && pctx.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
+      enabled = true;
+    } else if ((queryEngine.equals("spark")
+        && pctx.getConf().getBoolVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING))) {
+      enabled = true;
+    }
+
+    if (!enabled) {
       return pctx;
     }
 
@@ -82,7 +92,7 @@ public class SyntheticJoinPredicate implements Transform {
     // rule and passes the context along
     SyntheticContext context = new SyntheticContext(pctx);
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, context);
-    GraphWalker ogw = new PreOrderWalker(disp);
+    GraphWalker ogw = new PreOrderOnceWalker(disp);
 
     // Create a list of top op nodes
     List<Node> topNodes = new ArrayList<Node>();

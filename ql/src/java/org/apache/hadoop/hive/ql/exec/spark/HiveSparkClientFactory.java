@@ -33,9 +33,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.spark.SparkConf;
-import org.apache.spark.SparkException;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -51,9 +51,7 @@ public class HiveSparkClientFactory {
   private static final String SPARK_DEFAULT_SERIALIZER = "org.apache.spark.serializer.KryoSerializer";
   private static final String SPARK_DEFAULT_REFERENCE_TRACKING = "false";
 
-  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf)
-    throws IOException, SparkException {
-
+  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf) throws Exception {
     Map<String, String> sparkConf = initiateSparkConf(hiveconf);
     // Submit spark job through local spark context while spark master is local mode, otherwise submit
     // spark job through remote spark context.
@@ -148,11 +146,11 @@ public class HiveSparkClientFactory {
     Set<String> classes = Sets.newHashSet(
       Splitter.on(",").trimResults().omitEmptyStrings().split(
         Strings.nullToEmpty(sparkConf.get("spark.kryo.classesToRegister"))));
+    classes.add(Writable.class.getName());
     classes.add(VectorizedRowBatch.class.getName());
     classes.add(BytesWritable.class.getName());
     classes.add(HiveKey.class.getName());
-    sparkConf.put(
-      "spark.kryo.classesToRegister", Joiner.on(",").join(classes));
+    sparkConf.put("spark.kryo.classesToRegister", Joiner.on(",").join(classes));
 
     return sparkConf;
   }

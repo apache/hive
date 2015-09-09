@@ -22,7 +22,7 @@ package org.apache.hive.hplsql;
  * Signals and exceptions
  */
 public class Signal {
-  public enum Type { LEAVE_LOOP, LEAVE_ROUTINE, SQLEXCEPTION, NOTFOUND, USERDEFINED };
+  public enum Type { LEAVE_LOOP, LEAVE_ROUTINE, SQLEXCEPTION, NOTFOUND, UNSUPPORTED_OPERATION, USERDEFINED };
   Type type;
   String value = "";
   Exception exception = null;

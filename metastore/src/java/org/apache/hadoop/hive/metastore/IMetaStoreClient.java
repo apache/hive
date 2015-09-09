@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
@@ -417,8 +418,8 @@ public interface IMetaStoreClient {
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
   /**
-   * @param tblName
    * @param dbName
+   * @param tblName
    * @param partVals
    * @return the partition object
    * @throws MetaException
@@ -426,7 +427,7 @@ public interface IMetaStoreClient {
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_partition(java.lang.String,
    *      java.lang.String, java.util.List)
    */
-  Partition getPartition(String tblName, String dbName,
+  Partition getPartition(String dbName, String tblName,
       List<String> partVals) throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -1129,6 +1130,9 @@ public interface IMetaStoreClient {
 
   List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
+
+  GetAllFunctionsResponse getAllFunctions()
+          throws MetaException, TException;
 
   /**
    * Get a structure that details valid transactions.

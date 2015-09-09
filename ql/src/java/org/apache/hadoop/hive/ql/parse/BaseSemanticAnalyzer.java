@@ -125,6 +125,19 @@ public abstract class BaseSemanticAnalyzer {
    * Columns accessed by updates
    */
   protected ColumnAccessInfo updateColumnAccessInfo;
+  /**
+   * the value of set autocommit true|false
+   * It's an object to make sure it's {@code null} if the parsed statement is
+   * not 'set autocommit...'
+   */
+  private Boolean autoCommitValue;
+
+  public Boolean getAutoCommitValue() {
+    return autoCommitValue;
+  }
+  void setAutoCommitValue(Boolean autoCommit) {
+    autoCommitValue = autoCommit;
+  }
 
 
   public boolean skipAuthorization() {

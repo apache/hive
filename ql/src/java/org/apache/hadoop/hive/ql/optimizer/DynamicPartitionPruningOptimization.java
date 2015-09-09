@@ -48,10 +48,12 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -152,15 +154,24 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
       throws SemanticException {
-    OptimizeTezProcContext context = (OptimizeTezProcContext) procCtx;
-    ParseContext parseContext = context.parseContext;
+    ParseContext parseContext;
+    if (procCtx instanceof OptimizeTezProcContext) {
+      parseContext = ((OptimizeTezProcContext) procCtx).parseContext;
+    } else if (procCtx instanceof OptimizeSparkProcContext) {
+      parseContext = ((OptimizeSparkProcContext) procCtx).getParseContext();
+    } else {
+      throw new IllegalArgumentException("expected parseContext to be either " +
+          "OptimizeTezProcContext or OptimizeSparkProcContext, but found " +
+          procCtx.getClass().getName());
+    }
 
     FilterOperator filter = (FilterOperator) nd;
     FilterDesc desc = filter.getConf();
 
     TableScanOperator ts = null;
 
-    if (!parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
+    if (!parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING) &&
+        !parseContext.getConf().getBoolVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
       // nothing to do when the optimization is off
       return null;
     }
@@ -311,14 +322,25 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     groupByOp.setColumnExprMap(colMap);
 
     // finally add the event broadcast operator
-    DynamicPruningEventDesc eventDesc = new DynamicPruningEventDesc();
-    eventDesc.setTableScan(ts);
-    eventDesc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
-        .getFieldSchemasFromColumnList(keyExprs, "key")));
-    eventDesc.setTargetColumnName(column);
-    eventDesc.setPartKey(partKey);
-
-    OperatorFactory.getAndMakeChild(eventDesc, groupByOp);
+    if (HiveConf.getVar(parseContext.getConf(),
+        ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      DynamicPruningEventDesc eventDesc = new DynamicPruningEventDesc();
+      eventDesc.setTableScan(ts);
+      eventDesc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
+          .getFieldSchemasFromColumnList(keyExprs, "key")));
+      eventDesc.setTargetColumnName(column);
+      eventDesc.setPartKey(partKey);
+      OperatorFactory.getAndMakeChild(eventDesc, groupByOp);
+    } else {
+      // Must be spark branch
+      SparkPartitionPruningSinkDesc desc = new SparkPartitionPruningSinkDesc();
+      desc.setTableScan(ts);
+      desc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
+          .getFieldSchemasFromColumnList(keyExprs, "key")));
+      desc.setTargetColumnName(column);
+      desc.setPartKey(partKey);
+      OperatorFactory.getAndMakeChild(desc, groupByOp);
+    }
   }
 
   private Map<Node, Object> walkExprTree(ExprNodeDesc pred, NodeProcessorCtx ctx)

@@ -57,6 +57,8 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.tez.runtime.api.Reader;
+import org.apache.tez.runtime.library.api.KeyValueReader;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
 
 /**
@@ -107,7 +109,7 @@ public class ReduceRecordSource implements RecordSource {
   /* this is only used in the error code path */
   private List<VectorExpressionWriter> valueStringWriters;
 
-  private KeyValuesReader reader;
+  private KeyValuesAdapter reader;
 
   private boolean handleGroupKey;
 
@@ -120,7 +122,7 @@ public class ReduceRecordSource implements RecordSource {
   private final GroupIterator groupIterator = new GroupIterator();
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
-      TableDesc valueTableDesc, KeyValuesReader reader, boolean handleGroupKey, byte tag,
+      TableDesc valueTableDesc, Reader reader, boolean handleGroupKey, byte tag,
       Map<Integer, String> vectorScratchColumnTypeMap)
       throws Exception {
 
@@ -129,7 +131,11 @@ public class ReduceRecordSource implements RecordSource {
     this.reducer = reducer;
     this.vectorized = vectorized;
     this.keyTableDesc = keyTableDesc;
-    this.reader = reader;
+    if (reader instanceof KeyValueReader) {
+      this.reader = new KeyValuesFromKeyValue((KeyValueReader) reader);
+    } else {
+      this.reader = new KeyValuesFromKeyValues((KeyValuesReader) reader);
+    }
     this.handleGroupKey = handleGroupKey;
     this.tag = tag;
 
@@ -444,9 +450,6 @@ public class ReduceRecordSource implements RecordSource {
     } catch (Exception e) {
       String rowString = null;
       try {
-        /* batch.toString depends on this */
-        batch.setValueWriters(valueStringWriters
-            .toArray(new VectorExpressionWriter[0]));
         rowString = batch.toString();
       } catch (Exception e2) {
         rowString = "[Error getting row data with exception "

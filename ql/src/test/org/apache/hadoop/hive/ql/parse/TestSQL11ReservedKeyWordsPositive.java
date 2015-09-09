@@ -30,7 +30,7 @@ import org.junit.Test;
 
 /**
  * Parser tests for SQL11 Reserved KeyWords. Please find more information in
- * HIVE-6617. Total number : 74
+ * HIVE-6617. Total number : 74 + 2 (MySQL)
  */
 public class TestSQL11ReservedKeyWordsPositive {
   private static HiveConf conf;
@@ -796,6 +796,27 @@ public class TestSQL11ReservedKeyWordsPositive {
         .assertEquals(
             "AST doesn't match",
             "(TOK_CREATETABLE (TOK_TABNAME WITH) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            ast.toStringTree());
+  }
+
+  // MySQL reserved keywords.
+  @Test
+  public void testSQL11ReservedKeyWords_RLIKE() throws ParseException {
+    ASTNode ast = parse("CREATE TABLE RLIKE (col STRING)");
+    Assert
+        .assertEquals(
+            "AST doesn't match",
+            "(TOK_CREATETABLE (TOK_TABNAME RLIKE) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
+            ast.toStringTree());
+  }
+
+  @Test
+  public void testSQL11ReservedKeyWords_REGEXP() throws ParseException {
+    ASTNode ast = parse("CREATE TABLE REGEXP (col STRING)");
+    Assert
+        .assertEquals(
+            "AST doesn't match",
+            "(TOK_CREATETABLE (TOK_TABNAME REGEXP) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL col TOK_STRING)))",
             ast.toStringTree());
   }
 }

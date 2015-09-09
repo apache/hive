@@ -51,8 +51,9 @@ class DefaultOutputFormatContainer extends OutputFormatContainer {
     super(of);
   }
 
-  static synchronized String getOutputName(int partition) {
-    return "part-" + NUMBER_FORMAT.format(partition);
+  static synchronized String getOutputName(TaskAttemptContext context) {
+    return context.getConfiguration().get("mapreduce.output.basename", "part")
+        + "-" + NUMBER_FORMAT.format(context.getTaskAttemptID().getTaskID().getId());
   }
 
   /**
@@ -65,7 +66,7 @@ class DefaultOutputFormatContainer extends OutputFormatContainer {
   @Override
   public RecordWriter<WritableComparable<?>, HCatRecord>
   getRecordWriter(TaskAttemptContext context) throws IOException, InterruptedException {
-    String name = getOutputName(context.getTaskAttemptID().getTaskID().getId());
+    String name = getOutputName(context);
     return new DefaultRecordWriterContainer(context,
       getBaseOutputFormat().getRecordWriter(null, new JobConf(context.getConfiguration()), name, InternalUtil.createReporter(context)));
   }

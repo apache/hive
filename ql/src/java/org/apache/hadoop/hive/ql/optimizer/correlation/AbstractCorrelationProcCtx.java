@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.correlation;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESCRIPTOPERATORTRUST;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -39,11 +40,13 @@ abstract class AbstractCorrelationProcCtx implements NodeProcessorCtx {
   // only one reducer if this configuration does not prevents
   private final int minReducer;
   private final Set<Operator<?>> removedOps;
+  private final boolean isMapAggr;
 
   public AbstractCorrelationProcCtx(ParseContext pctx) {
     removedOps = new HashSet<Operator<?>>();
     trustScript = pctx.getConf().getBoolVar(HIVESCRIPTOPERATORTRUST);
     minReducer = pctx.getConf().getIntVar(HIVEOPTREDUCEDEDUPLICATIONMINREDUCER);
+    isMapAggr = pctx.getConf().getBoolVar(HIVEMAPSIDEAGGREGATE);
     this.pctx = pctx;
   }
 
@@ -69,5 +72,9 @@ abstract class AbstractCorrelationProcCtx implements NodeProcessorCtx {
 
   public boolean addRemovedOperator(Operator<?> rsOp) {
     return removedOps.add(rsOp);
+  }
+
+  public boolean isMapAggr() {
+    return isMapAggr;
   }
 }

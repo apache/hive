@@ -18,9 +18,6 @@
 
 package org.apache.hive.service.cli;
 
-import org.apache.log4j.Layout;
-import org.apache.log4j.PatternLayout;
-
 /**
  * CLIServiceUtils.
  *
@@ -29,10 +26,6 @@ public class CLIServiceUtils {
 
 
   private static final char SEARCH_STRING_ESCAPE = '\\';
-  public static final Layout verboseLayout = new PatternLayout(
-    "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n");
-  public static final Layout nonVerboseLayout = new PatternLayout(
-    "%-5p : %m%n");
 
   /**
    * Convert a SQL search pattern into an equivalent Java Regex.

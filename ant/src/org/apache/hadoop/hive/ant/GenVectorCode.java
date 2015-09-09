@@ -696,6 +696,7 @@ public class GenVectorCode extends Task {
       // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>,
       //   <ResultCast>, <Cleanup> <VectorExprArgType>
       {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncBRound", "double", "double", "MathExpr.bround", "", "", "", ""},
       // round(longCol) returns a long and is a no-op. So it will not be implemented here.
       // round(Col, N) is a special case and will be implemented separately from this template
       {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)", "", ""},
@@ -752,6 +753,7 @@ public class GenVectorCode extends Task {
       {"DecimalColumnUnaryFunc", "FuncAbs", "decimal", "DecimalUtil.abs"},
       {"DecimalColumnUnaryFunc", "FuncSign", "long", "DecimalUtil.sign"},
       {"DecimalColumnUnaryFunc", "FuncRound", "decimal", "DecimalUtil.round"},
+      {"DecimalColumnUnaryFunc", "FuncBRound", "decimal", "DecimalUtil.bround"},
       {"DecimalColumnUnaryFunc", "FuncNegate", "decimal", "DecimalUtil.negate"},
 
       // Casts
@@ -1338,6 +1340,23 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
+
+    String compareOrEqual;
+    String compareOrEqualReturnType = "boolean";
+    String optionalCompare = "";
+    if (operatorName.equals("Equal")) {
+      compareOrEqual = "StringExpr.equal";
+    } else if (operatorName.equals("NotEqual")) {
+      compareOrEqual = "!StringExpr.equal";
+    } else {
+      compareOrEqual = "StringExpr.compare";
+      compareOrEqualReturnType = "int";
+      optionalCompare = operatorSymbol + " 0";
+    }
+    templateString = templateString.replaceAll("<CompareOrEqual>", compareOrEqual);
+    templateString = templateString.replaceAll("<CompareOrEqualReturnType>", compareOrEqualReturnType);
+    templateString = templateString.replaceAll("<OptionalCompare>", optionalCompare);
+
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
@@ -1370,6 +1389,23 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
+
+    String compareOrEqual;
+    String compareOrEqualReturnType = "boolean";
+    String optionalCompare = "";
+    if (operatorName.equals("Equal")) {
+      compareOrEqual = "StringExpr.equal";
+    } else if (operatorName.equals("NotEqual")) {
+      compareOrEqual = "!StringExpr.equal";
+    } else {
+      compareOrEqual = "StringExpr.compare";
+      compareOrEqualReturnType = "int";
+      optionalCompare = operatorSymbol + " 0";
+    }
+    templateString = templateString.replaceAll("<CompareOrEqual>", compareOrEqual);
+    templateString = templateString.replaceAll("<CompareOrEqualReturnType>", compareOrEqualReturnType);
+    templateString = templateString.replaceAll("<OptionalCompare>", optionalCompare);
+
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
@@ -1399,6 +1435,23 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
+
+    String compareOrEqual;
+    String compareOrEqualReturnType = "boolean";
+    String optionalCompare = "";
+    if (operatorName.equals("Equal")) {
+      compareOrEqual = "StringExpr.equal";
+    } else if (operatorName.equals("NotEqual")) {
+      compareOrEqual = "!StringExpr.equal";
+    } else {
+      compareOrEqual = "StringExpr.compare";
+      compareOrEqualReturnType = "int";
+      optionalCompare = operatorSymbol + " 0";
+    }
+    templateString = templateString.replaceAll("<CompareOrEqual>", compareOrEqual);
+    templateString = templateString.replaceAll("<CompareOrEqualReturnType>", compareOrEqualReturnType);
+    templateString = templateString.replaceAll("<OptionalCompare>", optionalCompare);
+
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
@@ -1422,6 +1475,23 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
+
+    String compareOrEqual;
+    String compareOrEqualReturnType = "boolean";
+    String optionalCompare = "";
+    if (operatorName.equals("Equal")) {
+      compareOrEqual = "StringExpr.equal";
+    } else if (operatorName.equals("NotEqual")) {
+      compareOrEqual = "!StringExpr.equal";
+    } else {
+      compareOrEqual = "StringExpr.compare";
+      compareOrEqualReturnType = "int";
+      optionalCompare = operatorSymbol + " 0";
+    }
+    templateString = templateString.replaceAll("<CompareOrEqual>", compareOrEqual);
+    templateString = templateString.replaceAll("<CompareOrEqualReturnType>", compareOrEqualReturnType);
+    templateString = templateString.replaceAll("<OptionalCompare>", optionalCompare);
+
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
@@ -1437,6 +1507,23 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
+
+    String compareOrEqual;
+    String compareOrEqualReturnType = "boolean";
+    String optionalCompare = "";
+    if (operatorName.equals("Equal")) {
+      compareOrEqual = "StringExpr.equal";
+    } else if (operatorName.equals("NotEqual")) {
+      compareOrEqual = "!StringExpr.equal";
+    } else {
+      compareOrEqual = "StringExpr.compare";
+      compareOrEqualReturnType = "int";
+      optionalCompare = operatorSymbol + " 0";
+    }
+    templateString = templateString.replaceAll("<CompareOrEqual>", compareOrEqual);
+    templateString = templateString.replaceAll("<CompareOrEqualReturnType>", compareOrEqualReturnType);
+    templateString = templateString.replaceAll("<OptionalCompare>", optionalCompare);
+
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
@@ -1466,11 +1553,29 @@ public class GenVectorCode extends Task {
 
   private void generateStringColumnCompareScalar(String[] tdesc, String className)
       throws IOException {
+    String operatorName = tdesc[1];
     String operatorSymbol = tdesc[2];
     // Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
+
+    String compareOrEqual;
+    String compareOrEqualReturnType = "boolean";
+    String optionalCompare = "";
+    if (operatorName.equals("Equal")) {
+      compareOrEqual = "StringExpr.equal";
+    } else if (operatorName.equals("NotEqual")) {
+      compareOrEqual = "!StringExpr.equal";
+    } else {
+      compareOrEqual = "StringExpr.compare";
+      compareOrEqualReturnType = "int";
+      optionalCompare = operatorSymbol + " 0";
+    }
+    templateString = templateString.replaceAll("<CompareOrEqual>", compareOrEqual);
+    templateString = templateString.replaceAll("<CompareOrEqualReturnType>", compareOrEqualReturnType);
+    templateString = templateString.replaceAll("<OptionalCompare>", optionalCompare);
+
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,

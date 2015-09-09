@@ -219,18 +219,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
 val_238	val_238	true
-PREHOOK: query: select
-  regexp(c2, 'val'),
-  regexp(c4, 'val'),
-  regexp(c2, 'val') = regexp(c4, 'val')
+PREHOOK: query: -- In hive wiki page https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF
+-- we only allow A regexp B, not regexp (A,B).
+
+select
+  c2 regexp 'val',
+  c4 regexp 'val',
+  (c2 regexp 'val') = (c4 regexp 'val')
 from char_udf_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
-POSTHOOK: query: select
-  regexp(c2, 'val'),
-  regexp(c4, 'val'),
-  regexp(c2, 'val') = regexp(c4, 'val')
+POSTHOOK: query: -- In hive wiki page https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF
+-- we only allow A regexp B, not regexp (A,B).
+
+select
+  c2 regexp 'val',
+  c4 regexp 'val',
+  (c2 regexp 'val') = (c4 regexp 'val')
 from char_udf_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_udf_1

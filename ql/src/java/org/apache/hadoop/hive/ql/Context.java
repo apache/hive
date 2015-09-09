@@ -96,7 +96,6 @@ public class Context {
 
   // List of Locks for this query
   protected List<HiveLock> hiveLocks;
-  protected HiveLockManager hiveLockMgr;
 
   // Transaction manager for this query
   protected HiveTxnManager hiveTxnManager;

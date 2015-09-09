@@ -38,6 +38,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.hive.jdbc.HiveConnection;
+
 import jline.console.completer.ArgumentCompleter;
 import jline.console.completer.Completer;
 
@@ -262,6 +264,13 @@ class DatabaseConnection {
 
   String getUrl() {
     return url;
+  }
+
+  public String getConnectedUrl() {
+    if (connection instanceof HiveConnection) {
+      return ((HiveConnection) connection).getConnectedUrl();
+    }
+    return getUrl();
   }
 
   Completer getSQLCompleter() {

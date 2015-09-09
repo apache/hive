@@ -1,0 +1,284 @@
+PREHOOK: query: drop table ss
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ss
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE ss (
+    sales_order_id  BIGINT,
+    order_amount    FLOAT)
+PARTITIONED BY (country STRING, year INT, month INT, day INT) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ss
+POSTHOOK: query: CREATE TABLE ss (
+    sales_order_id  BIGINT,
+    order_amount    FLOAT)
+PARTITIONED BY (country STRING, year INT, month INT, day INT) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ss
+PREHOOK: query: insert into ss partition(country="US", year=2015, month=1, day=1) values(1,22.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@ss@country=US/year=2015/month=1/day=1
+POSTHOOK: query: insert into ss partition(country="US", year=2015, month=1, day=1) values(1,22.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@ss@country=US/year=2015/month=1/day=1
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=1).order_amount EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=1).sales_order_id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into ss partition(country="US", year=2015, month=2, day=1) values(2,2.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
+POSTHOOK: query: insert into ss partition(country="US", year=2015, month=2, day=1) values(2,2.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=2,day=1).order_amount EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=2,day=1).sales_order_id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into ss partition(country="US", year=2015, month=1, day=2) values(1,2.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
+POSTHOOK: query: insert into ss partition(country="US", year=2015, month=1, day=2) values(1,2.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).order_amount EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).sales_order_id EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: ANALYZE TABLE ss PARTITION(country,year,month,day) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss
+PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
+PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
+PREHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE ss PARTITION(country,year,month,day) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss
+POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
+POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
+POSTHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+#### A masked pattern was here ####
+PREHOOK: query: explain select sum(order_amount) from ss where (country="US" and year=2015 and month=2 and day=1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select sum(order_amount) from ss where (country="US" and year=2015 and month=2 and day=1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: ss
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: order_amount (type: float)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: sum(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: double)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select sum(order_amount) from ss where (year*10000+month*100+day) = "2015010" and 1>0
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select sum(order_amount) from ss where (year*10000+month*100+day) = "2015010" and 1>0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: ss
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
+            Filter Operator
+              predicate: (UDFToDouble((((year * 10000) + (month * 100)) + day)) = 2015010.0) (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
+              Select Operator
+                expressions: order_amount (type: float)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
+                Group By Operator
+                  aggregations: sum(_col0)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
+                    value expressions: _col0 (type: double)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select sum(order_amount) from ss where (year*100+month*10+day) = "201511" and 1>0
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select sum(order_amount) from ss where (year*100+month*10+day) = "201511" and 1>0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: ss
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: order_amount (type: float)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: sum(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: double)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select sum(order_amount) from ss where (year*100+month*10+day) > "201511" and 1>0
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select sum(order_amount) from ss where (year*100+month*10+day) > "201511" and 1>0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: ss
+            Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0) (type: boolean)
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: order_amount (type: float)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col0)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: double)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select '1' from ss where (year*100+month*10+day) > "201511"
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select '1' from ss where (year*100+month*10+day) > "201511"
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: ss
+          Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+          Filter Operator
+            predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0) (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: '1' (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+

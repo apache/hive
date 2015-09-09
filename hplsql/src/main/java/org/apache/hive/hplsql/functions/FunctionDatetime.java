@@ -106,12 +106,12 @@ public class FunctionDatetime extends Function {
    * DATE function
    */
   void date(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() != 1) {
+    if (ctx.func_param().size() != 1) {
       evalNull();
       return;
     }
     Var var = new Var(Var.Type.DATE);
-    var.cast(evalPop(ctx.expr(0)));
+    var.cast(evalPop(ctx.func_param(0).expr()));
     evalVar(var);
   }
 
@@ -119,12 +119,12 @@ public class FunctionDatetime extends Function {
    * TIMESTAMP_ISO function
    */
   void timestampIso(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() != 1) {
+    if (ctx.func_param().size() != 1) {
       evalNull();
       return;
     }
     Var var = new Var(Var.Type.TIMESTAMP);
-    var.cast(evalPop(ctx.expr(0)));
+    var.cast(evalPop(ctx.func_param(0).expr()));
     evalVar(var);
   }
   
@@ -132,12 +132,12 @@ public class FunctionDatetime extends Function {
    * TO_TIMESTAMP function
    */
   void toTimestamp(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() != 2) {
+    if (ctx.func_param().size() != 2) {
       evalNull();
       return;
     }    
-    String value = evalPop(ctx.expr(0)).toString();
-    String sqlFormat = evalPop(ctx.expr(1)).toString();
+    String value = evalPop(ctx.func_param(0).expr()).toString();
+    String sqlFormat = evalPop(ctx.func_param(1).expr()).toString();
     String format = Utils.convertSqlDatetimeFormat(sqlFormat);
     try {
       long timeInMs = new SimpleDateFormat(format).parse(value).getTime();

@@ -738,10 +738,10 @@ STAGE PLANS:
             1 key (type: string)
             2 key (type: string)
             3 key (type: string)
-          outputColumnNames: key, c_int, key0, c_int0, key1, c_int1
+          outputColumnNames: key, c_int, key0, c_int0, key1, c_int2
           Statistics: Num rows: 1458 Data size: 389286 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: key (type: string), c_int (type: int), key0 (type: string), c_int0 (type: int), key1 (type: string), c_int1 (type: int)
+            expressions: key (type: string), c_int (type: int), key0 (type: string), c_int0 (type: int), key1 (type: string), c_int2 (type: int)
             outputColumnNames: key, c_int, p, q, x, b
             Statistics: Num rows: 1458 Data size: 389286 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator

@@ -40,4 +40,8 @@ public interface VectorMapJoinHashTable {
   void putRow(BytesWritable currentKey, BytesWritable currentValue)
       throws SerDeException, HiveException, IOException;
 
+  /**
+   * Get hash table size
+   */
+  int size();
 }

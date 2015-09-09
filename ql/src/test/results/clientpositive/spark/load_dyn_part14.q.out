@@ -63,8 +63,8 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 4 <- Map 3 (GROUP, 1)
-        Reducer 6 <- Map 5 (GROUP, 1)
+        Reducer 4 <- Map 1 (GROUP, 1)
+        Reducer 6 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -80,32 +80,6 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 85000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 2
-                      Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 85500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 2
-                      Statistics: Num rows: 2 Data size: 342 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 2 Data size: 342 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
             Reduce Operator Tree:
               Limit

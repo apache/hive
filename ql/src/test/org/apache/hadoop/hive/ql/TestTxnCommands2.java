@@ -20,13 +20,12 @@ package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.orc.FileDump;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,13 +35,11 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * TODO: this should be merged with TestTxnCommands once that is checked in
@@ -111,7 +108,6 @@ public class TestTxnCommands2 {
   public void tearDown() throws Exception {
     try {
       if (d != null) {
-     //   runStatementOnDriver("set autocommit true");
         dropTables();
         d.destroy();
         d.close();
@@ -121,6 +117,122 @@ public class TestTxnCommands2 {
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
+  }
+  @Test
+  public void testOrcPPD() throws Exception  {
+    testOrcPPD(true);
+  }
+  @Test
+  public void testOrcNoPPD() throws Exception {
+    testOrcPPD(false);
+  }
+
+  /**
+   * this is run 2 times: 1 with PPD on, 1 with off
+   * Also, the queries are such that if we were to push predicate down to an update/delete delta,
+   * the test would produce wrong results
+   * @param enablePPD
+   * @throws Exception
+   */
+  private void testOrcPPD(boolean enablePPD) throws Exception {
+    boolean originalPpd = hiveConf.getBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, enablePPD);//enables ORC PPD
+    //create delta_0001_0001_0000 (should push predicate here)
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(new int[][]{{1, 2}, {3, 4}}));
+    List<String> explain;
+    String query = "update " + Table.ACIDTBL + " set b = 5 where a = 3";
+    if (enablePPD) {
+      explain = runStatementOnDriver("explain " + query);
+      /*
+      here is a portion of the above "explain".  The "filterExpr:" in the TableScan is the pushed predicate
+      w/o PPD, the line is simply not there, otherwise the plan is the same
+       Map Operator Tree:,
+         TableScan,
+          alias: acidtbl,
+          filterExpr: (a = 3) (type: boolean),
+            Filter Operator,
+             predicate: (a = 3) (type: boolean),
+             Select Operator,
+             ...
+       */
+      assertPredicateIsPushed("filterExpr: (a = 3)", explain);
+    }
+    //create delta_0002_0002_0000 (can't push predicate)
+    runStatementOnDriver(query);
+    query = "select a,b from " + Table.ACIDTBL + " where b = 4 order by a,b";
+    if (enablePPD) {
+      /*at this point we have 2 delta files, 1 for insert 1 for update
+      * we should push predicate into 1st one but not 2nd.  If the following 'select' were to
+      * push into the 'update' delta, we'd filter out {3,5} before doing merge and thus
+     * produce {3,4} as the value for 2nd row.  The right result is 0-rows.*/
+      explain = runStatementOnDriver("explain " + query);
+      assertPredicateIsPushed("filterExpr: (b = 4)", explain);
+    }
+    List<String> rs0 = runStatementOnDriver(query);
+    Assert.assertEquals("Read failed", 0, rs0.size());
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean stop = new AtomicBoolean();
+    AtomicBoolean looped = new AtomicBoolean();
+    stop.set(true);
+    t.init(stop, looped);
+    t.run();
+    //now we have base_0001 file
+    int[][] tableData2 = {{1, 7}, {5, 6}, {7, 8}, {9, 10}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
+    //now we have delta_0003_0003_0000 with inserts only (ok to push predicate)
+    if (enablePPD) {
+      explain = runStatementOnDriver("explain delete from " + Table.ACIDTBL + " where a=7 and b=8");
+      assertPredicateIsPushed("filterExpr: ((a = 7) and (b = 8))", explain);
+    }
+    runStatementOnDriver("delete from " + Table.ACIDTBL + " where a=7 and b=8");
+    //now we have delta_0004_0004_0000 with delete events
+
+    /*(can't push predicate to 'delete' delta)
+    * if we were to push to 'delete' delta, we'd filter out all rows since the 'row' is always NULL for
+    * delete events and we'd produce data as if the delete never happened*/
+    query = "select a,b from " + Table.ACIDTBL + " where a > 1 order by a,b";
+    if(enablePPD) {
+      explain = runStatementOnDriver("explain " + query);
+      assertPredicateIsPushed("filterExpr: (a > 1)", explain);
+    }
+    List<String> rs1 = runStatementOnDriver(query);
+    int [][] resultData = new int[][] {{3, 5}, {5, 6}, {9, 10}};
+    Assert.assertEquals("Update failed", stringifyValues(resultData), rs1);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, originalPpd);
+  }
+  private static void assertPredicateIsPushed(String ppd, List<String> queryPlan) {
+    for(String line : queryPlan) {
+      if(line != null && line.contains(ppd)) {
+        return;
+      }
+    }
+    Assert.assertFalse("PPD '" + ppd + "' wasn't pushed", true);
+  }
+  @Ignore("alter table")
+  @Test
+  public void testAlterTable() throws Exception {
+    int[][] tableData = {{1,2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean stop = new AtomicBoolean();
+    AtomicBoolean looped = new AtomicBoolean();
+    stop.set(true);
+    t.init(stop, looped);
+    t.run();
+    int[][] tableData2 = {{5,6}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
+    List<String> rs1 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " where b > 0 order by a,b");
+
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " add columns(c int)");
+    int[][] moreTableData = {{7,8,9}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b,c) " + makeValuesClause(moreTableData));
+    List<String> rs0 = runStatementOnDriver("select a,b,c from " + Table.ACIDTBL + " where a > 0 order by a,b,c");
   }
   @Ignore("not needed but useful for testing")
   @Test

@@ -63,8 +63,6 @@ public class MapWork extends BaseWork {
 
   private static final Log LOG = LogFactory.getLog(MapWork.class);
 
-  private boolean hadoopSupportsSplittable;
-
   // use LinkedHashMap to make sure the iteration order is
   // deterministic, to ease testing
   private LinkedHashMap<String, ArrayList<String>> pathToAliases = new LinkedHashMap<String, ArrayList<String>>();
@@ -86,6 +84,8 @@ public class MapWork extends BaseWork {
       new HashMap<String, List<SortCol>>();
 
   private Path tmpHDFSPath;
+
+  private Path tmpPathForPartitionPruning;
 
   private String inputformat;
 
@@ -419,14 +419,6 @@ public class MapWork extends BaseWork {
     return this.mapperCannotSpanPartns;
   }
 
-  public boolean getHadoopSupportsSplittable() {
-    return hadoopSupportsSplittable;
-  }
-
-  public void setHadoopSupportsSplittable(boolean hadoopSupportsSplittable) {
-    this.hadoopSupportsSplittable = hadoopSupportsSplittable;
-  }
-
   public String getIndexIntermediateFile() {
     return indexIntermediateFile;
   }
@@ -453,6 +445,14 @@ public class MapWork extends BaseWork {
 
   public void setTmpHDFSPath(Path tmpHDFSPath) {
     this.tmpHDFSPath = tmpHDFSPath;
+  }
+
+  public Path getTmpPathForPartitionPruning() {
+    return this.tmpPathForPartitionPruning;
+  }
+
+  public void setTmpPathForPartitionPruning(Path tmpPathForPartitionPruning) {
+    this.tmpPathForPartitionPruning = tmpPathForPartitionPruning;
   }
 
   public void mergingInto(MapWork mapWork) {

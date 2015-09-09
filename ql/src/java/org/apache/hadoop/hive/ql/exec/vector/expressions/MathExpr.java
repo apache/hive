@@ -35,6 +35,28 @@ public class MathExpr {
     }
   }
 
+  // Round using the "half-even" method used in Hive.
+  public static double bround(double d) {
+    long intPart = (long) (d);
+    if (d > 0.0) {
+      if (d - intPart == 0.5d) {
+        if (intPart % 2 == 0) {
+          return intPart;
+        }
+        return intPart + 1;
+      }
+      return (double) ((long) (d + 0.5d));
+    } else {
+      if (intPart - d == 0.5d) {
+        if (intPart % 2 == 0) {
+          return intPart;
+        }
+        return intPart - 1;
+      }
+      return (double) ((long) (d - 0.5d));
+    }
+  }
+
   public static double log2(double d) {
     return Math.log(d) / Math.log(2);
   }

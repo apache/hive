@@ -1,0 +1,109 @@
+PREHOOK: query: DROP TABLE src_null
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE src_null
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE hbase_null
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE hbase_null
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_null
+POSTHOOK: query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_null
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE src_null
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_null
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE src_null
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_null
+PREHOOK: query: CREATE TABLE hbase_null(key string, col1 string, col2 string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = ":key,cf1:c1,cf1:c2"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_null
+POSTHOOK: query: CREATE TABLE hbase_null(key string, col1 string, col2 string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = ":key,cf1:c1,cf1:c2"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_null
+PREHOOK: query: SELECT d, a, c FROM src_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d, a, c FROM src_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null
+#### A masked pattern was here ####
+0	1.0	same
+1	1.0	same
+2	1.0	same
+3	1.0	same
+4	1.0	same
+5	NULL	same
+6	NULL	same
+7	1.0	same
+8	1.0	same
+9	1.0	same
+PREHOOK: query: INSERT INTO TABLE hbase_null SELECT d, a, c FROM src_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null
+PREHOOK: Output: default@hbase_null
+POSTHOOK: query: INSERT INTO TABLE hbase_null SELECT d, a, c FROM src_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null
+POSTHOOK: Output: default@hbase_null
+PREHOOK: query: SELECT COUNT(d) FROM src_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(d) FROM src_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null
+#### A masked pattern was here ####
+10
+PREHOOK: query: SELECT COUNT(key) FROM hbase_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(key) FROM hbase_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_null
+#### A masked pattern was here ####
+10
+PREHOOK: query: SELECT COUNT(*) FROM hbase_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM hbase_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_null
+#### A masked pattern was here ####
+10
+PREHOOK: query: DROP TABLE src_null
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_null
+PREHOOK: Output: default@src_null
+POSTHOOK: query: DROP TABLE src_null
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_null
+POSTHOOK: Output: default@src_null
+PREHOOK: query: DROP TABLE hbase_null
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_null
+PREHOOK: Output: default@hbase_null
+POSTHOOK: query: DROP TABLE hbase_null
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_null
+POSTHOOK: Output: default@hbase_null

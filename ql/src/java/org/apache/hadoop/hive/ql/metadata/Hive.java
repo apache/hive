@@ -113,6 +113,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
@@ -160,28 +161,64 @@ public class Hive {
     }
   };
 
+  // Note that while this is an improvement over static initialization, it is still not,
+  // technically, valid, cause nothing prevents us from connecting to several metastores in
+  // the same process. This will still only get the functions from the first metastore.
+  private final static AtomicInteger didRegisterAllFuncs = new AtomicInteger(0);
+  private final static int REG_FUNCS_NO = 0, REG_FUNCS_DONE = 2, REG_FUNCS_PENDING = 1;
+
   // register all permanent functions. need improvement
-  static {
+  private void registerAllFunctionsOnce() {
+    boolean breakLoop = false;
+    while (!breakLoop) {
+      int val = didRegisterAllFuncs.get();
+      switch (val) {
+      case REG_FUNCS_NO: {
+        if (didRegisterAllFuncs.compareAndSet(val, REG_FUNCS_PENDING)) {
+          breakLoop = true;
+          break;
+        }
+        continue;
+      }
+      case REG_FUNCS_PENDING: {
+        synchronized (didRegisterAllFuncs) {
+          try {
+            didRegisterAllFuncs.wait(100);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+          }
+        }
+        continue;
+      }
+      case REG_FUNCS_DONE: return;
+      default: throw new AssertionError(val);
+      }
+    }
     try {
       reloadFunctions();
     } catch (Exception e) {
-      LOG.warn("Failed to access metastore. This class should not accessed in runtime.",e);
+      LOG.warn("Failed to register all functions.", e);
+    } finally {
+      boolean result = didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_DONE);
+      assert result;
+      synchronized (didRegisterAllFuncs) {
+        didRegisterAllFuncs.notifyAll();
+      }
     }
   }
 
-  public static void reloadFunctions() throws HiveException {
-    Hive db = Hive.get();
-    for (String dbName : db.getAllDatabases()) {
-      for (String functionName : db.getFunctions(dbName, "*")) {
-        Function function = db.getFunction(dbName, functionName);
-        try {
-	  FunctionRegistry.registerPermanentFunction(
-	      FunctionUtils.qualifyFunctionName(functionName, dbName), function.getClassName(),
-	      false, FunctionTask.toFunctionResource(function.getResourceUris()));
-        } catch (Exception e) {
-          LOG.warn("Failed to register persistent function " +
-              functionName + ":" + function.getClassName() + ". Ignore and continue.");
-        }
+  public void reloadFunctions() throws HiveException {
+    for (Function function : getAllFunctions()) {
+      String functionName = function.getFunctionName();
+      try {
+        LOG.info("Registering function " + functionName + " " + function.getClassName());
+        FunctionRegistry.registerPermanentFunction(FunctionUtils.qualifyFunctionName(
+                    functionName, function.getDbName()), function.getClassName(), false,
+                    FunctionTask.toFunctionResource(function.getResourceUris()));
+      } catch (Exception e) {
+        LOG.warn("Failed to register persistent function " +
+                functionName + ":" + function.getClassName() + ". Ignore and continue.");
       }
     }
   }
@@ -269,6 +306,7 @@ public class Hive {
    */
   private Hive(HiveConf c) throws HiveException {
     conf = c;
+    registerAllFunctionsOnce();
   }
 
 
@@ -2518,16 +2556,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return false;
   }
 
-  private static boolean isSubDir(Path srcf, Path destf, FileSystem fs, boolean isSrcLocal){
+  private static boolean isSubDir(Path srcf, Path destf, FileSystem srcFs, FileSystem destFs, boolean isSrcLocal) {
     if (srcf == null) {
       LOG.debug("The source path is null for isSubDir method.");
       return false;
     }
 
-    String fullF1 = getQualifiedPathWithoutSchemeAndAuthority(srcf, fs);
-    String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(destf, fs);
+    String fullF1 = getQualifiedPathWithoutSchemeAndAuthority(srcf, srcFs);
+    String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(destf, destFs);
 
-    boolean isInTest = Boolean.valueOf(HiveConf.getBoolVar(fs.getConf(), ConfVars.HIVE_IN_TEST));
+    boolean isInTest = Boolean.valueOf(HiveConf.getBoolVar(srcFs.getConf(), ConfVars.HIVE_IN_TEST));
     // In the automation, the data warehouse is the local file system based.
     LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
     if (isInTest) {
@@ -2566,15 +2604,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
   //from mv command if the destf is a directory, it replaces the destf instead of moving under
   //the destf. in this case, the replaced destf still preserves the original destf's permission
   public static boolean moveFile(HiveConf conf, Path srcf, Path destf,
-      FileSystem fs, boolean replace, boolean isSrcLocal) throws HiveException {
+      boolean replace, boolean isSrcLocal) throws HiveException {
     boolean success = false;
+    FileSystem srcFs, destFs;
+    try {
+      destFs = destf.getFileSystem(conf);
+    } catch (IOException e) {
+      LOG.error(e);
+      throw new HiveException(e.getMessage(), e);
+    }
+    try {
+      srcFs = srcf.getFileSystem(conf);
+    } catch (IOException e) {
+      LOG.error(e);
+      throw new HiveException(e.getMessage(), e);
+    }
 
     //needed for perm inheritance.
     boolean inheritPerms = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     HadoopShims shims = ShimLoader.getHadoopShims();
     HadoopShims.HdfsFileStatus destStatus = null;
-    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
 
     // If source path is a subdirectory of the destination path:
     //   ex: INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300;
@@ -2582,11 +2632,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // (1) Do not delete the dest dir before doing the move operation.
     // (2) It is assumed that subdir and dir are in same encryption zone.
     // (3) Move individual files from scr dir to dest dir.
-    boolean destIsSubDir = isSubDir(srcf, destf, fs, isSrcLocal);
+    boolean destIsSubDir = isSubDir(srcf, destf, srcFs, destFs, isSrcLocal);
     try {
       if (inheritPerms || replace) {
         try{
-          destStatus = shims.getFullFileStatus(conf, fs, destf.getParent());
+          destStatus = shims.getFullFileStatus(conf, destFs, destf.getParent());
           //if destf is an existing directory:
           //if replace is true, delete followed by rename(mv) is equivalent to replace
           //if replace is false, rename (mv) actually move the src under dest dir
@@ -2594,20 +2644,22 @@ private void constructOneLBLocationMap(FileStatus fSta,
           // to delete the file first
           if (replace && !destIsSubDir) {
             LOG.debug("The path " + destf.toString() + " is deleted");
-            fs.delete(destf, true);
+            destFs.delete(destf, true);
           }
         } catch (FileNotFoundException ignore) {
           //if dest dir does not exist, any re
           if (inheritPerms) {
-            destStatus = shims.getFullFileStatus(conf, fs, destf.getParent());
+            destStatus = shims.getFullFileStatus(conf, destFs, destf.getParent());
           }
         }
       }
-      if (!isSrcLocal) {
-        // For NOT local src file, rename the file
-        if (hdfsEncryptionShim != null && (hdfsEncryptionShim.isPathEncrypted(srcf) || hdfsEncryptionShim.isPathEncrypted(destf))
-            && !hdfsEncryptionShim.arePathsOnSameEncryptionZone(srcf, destf))
-        {
+      if (isSrcLocal) {
+        // For local src file, copy to hdfs
+        destFs.copyFromLocalFile(srcf, destf);
+        success = true;
+      } else {
+        if (needToCopy(srcf, destf, srcFs, destFs)) {
+          //copy if across file system or encryption zones.
           LOG.info("Copying source " + srcf + " to " + destf + " because HDFS encryption zones are different.");
           success = FileUtils.copy(srcf.getFileSystem(conf), srcf, destf.getFileSystem(conf), destf,
               true,    // delete source
@@ -2615,7 +2667,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               conf);
         } else {
           if (destIsSubDir) {
-            FileStatus[] srcs = fs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
+            FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
             if (srcs.length == 0) {
               success = true; // Nothing to move.
             }
@@ -2630,13 +2682,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
               }
             }
           } else {
-            success = fs.rename(srcf, destf);
+            success = destFs.rename(srcf, destf);
           }
         }
-      } else {
-        // For local src file, copy to hdfs
-        fs.copyFromLocalFile(srcf, destf);
-        success = true;
       }
 
       LOG.info((replace ? "Replacing src:" : "Renaming src: ") + srcf.toString()
@@ -2647,12 +2695,28 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     if (success && inheritPerms) {
       try {
-        ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, fs, destf);
+        ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, destFs, destf);
       } catch (IOException e) {
         LOG.warn("Error setting permission of file " + destf + ": "+ e.getMessage(), e);
       }
     }
     return success;
+  }
+
+  /**
+   * If moving across different FileSystems or differnent encryption zone, need to do a File copy instead of rename.
+   * TODO- consider if need to do this for different file authority.
+   */
+  static protected boolean needToCopy(Path srcf, Path destf, FileSystem srcFs, FileSystem destFs) throws HiveException, IOException {
+    //Check if different FileSystems
+    if (!srcFs.getClass().equals(destFs.getClass())) {
+      return true;
+    }
+
+    //Check if different encryption zones
+    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
+    return hdfsEncryptionShim != null && (hdfsEncryptionShim.isPathEncrypted(srcf) || hdfsEncryptionShim.isPathEncrypted(destf))
+      && !hdfsEncryptionShim.arePathsOnSameEncryptionZone(srcf, destf);
   }
 
   /**
@@ -2709,7 +2773,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       try {
         for (List<Path[]> sdpairs : result) {
           for (Path[] sdpair : sdpairs) {
-            if (!moveFile(conf, sdpair[0], sdpair[1], fs, false, isSrcLocal)) {
+            if (!moveFile(conf, sdpair[0], sdpair[1], false, isSrcLocal)) {
               throw new IOException("Cannot move " + sdpair[0] + " to "
                   + sdpair[1]);
             }
@@ -2890,7 +2954,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 inheritFromTable(tablePath, destParent, conf, destFs);
               }
             }
-            if (!moveFile(conf, sdpair[0], sdpair[1], destFs, true, isSrcLocal)) {
+            if (!moveFile(conf, sdpair[0], sdpair[1], true, isSrcLocal)) {
               throw new IOException("Unable to move file/directory from " + sdpair[0] +
                   " to " + sdpair[1]);
             }
@@ -2909,7 +2973,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // srcs must be a list of files -- ensured by LoadSemanticAnalyzer
         for (List<Path[]> sdpairs : result) {
           for (Path[] sdpair : sdpairs) {
-            if (!moveFile(conf, sdpair[0], sdpair[1], destFs, true,
+            if (!moveFile(conf, sdpair[0], sdpair[1], true,
                 isSrcLocal)) {
               throw new IOException("Error moving: " + sdpair[0] + " into: " + sdpair[1]);
             }
@@ -3240,6 +3304,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public Function getFunction(String dbName, String funcName) throws HiveException {
     try {
       return getMSC().getFunction(dbName, funcName);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public List<Function> getAllFunctions() throws HiveException {
+    try {
+      List<Function> functions = getMSC().getAllFunctions().getFunctions();
+      return functions == null ? new ArrayList<Function>() : functions;
     } catch (TException te) {
       throw new HiveException(te);
     }

@@ -136,7 +136,7 @@ public class ReduceWork extends BaseWork {
       return null;
     }
     if (valueObjectInspector == null) {
-      valueObjectInspector = getObjectInspector(tagToValueDesc.get(0));
+      valueObjectInspector = getObjectInspector(tagToValueDesc.get(tag));
     }
     return valueObjectInspector;
   }

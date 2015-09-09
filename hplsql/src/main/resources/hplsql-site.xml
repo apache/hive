@@ -1,0 +1,95 @@
+<configuration>
+<property>
+  <name>hplsql.conn.default</name>
+  <value>hiveconn</value>
+  <description>The default connection profile</description>
+</property>
+<property>
+  <name>hplsql.conn.hiveconn</name>
+  <value>org.apache.hive.jdbc.HiveDriver;jdbc:hive2://</value>
+  <description>HiveServer2 JDBC connection (embedded mode)</description>
+</property>
+<property>
+  <name>hplsql.conn.init.hiveconn</name>
+  <value>
+     set mapred.job.queue.name=default;
+     set hive.execution.engine=mr; 
+     use default;
+  </value>
+  <description>Statements for execute after connection to the database</description>
+</property>
+<property>
+  <name>hplsql.conn.convert.hiveconn</name>
+  <value>true</value>
+  <description>Convert SQL statements before execution</description>
+</property>
+<property>
+  <name>hplsql.conn.hive1conn</name>
+  <value>org.apache.hadoop.hive.jdbc.HiveDriver;jdbc:hive://</value>
+  <description>Hive embedded JDBC (not requiring HiveServer)</description>
+</property>
+<property>
+  <name>hplsql.conn.hive2conn</name>
+  <value>org.apache.hive.jdbc.HiveDriver;jdbc:hive2://localhost:10000;hive;hive</value>
+  <description>HiveServer2 JDBC connection</description>
+</property>
+<property>
+  <name>hplsql.conn.init.hive2conn</name>
+  <value>
+     set mapred.job.queue.name=default;
+     set hive.execution.engine=mr; 
+     use default;
+  </value>
+  <description>Statements for execute after connection to the database</description>
+</property>
+<property>
+  <name>hplsql.conn.convert.hive2conn</name>
+  <value>true</value>
+  <description>Convert SQL statements before execution</description>
+</property>
+<property>
+  <name>hplsql.conn.db2conn</name>
+  <value>com.ibm.db2.jcc.DB2Driver;jdbc:db2://localhost:50001/dbname;user;password</value>
+  <description>IBM DB2 connection</description>
+</property>
+<property>
+  <name>hplsql.conn.tdconn</name>
+  <value>com.teradata.jdbc.TeraDriver;jdbc:teradata://localhost/database=dbname,logmech=ldap;user;password</value>
+  <description>Teradata connection</description>
+</property>
+<property>
+  <name>hplsql.conn.mysqlconn</name>
+  <value>com.mysql.jdbc.Driver;jdbc:mysql://localhost/test;user;password</value>
+  <description>MySQL connection</description>
+</property>
+<property>
+  <name>hplsql.dual.table</name>
+  <value>default.dual</value>
+  <description>Single row, single column table for internal operations</description>
+</property>
+<property>
+  <name>hplsql.insert.values</name>
+  <value>native</value>
+  <description>How to execute INSERT VALUES statement: native (default) and select</description>
+</property>
+<property>
+  <name>hplsql.onerror</name>
+  <value>exception</value>
+  <description>Error handling behavior: exception (default), seterror and stop</description>
+</property>
+<property>
+  <name>hplsql.temp.tables</name>
+  <value>native</value>
+  <description>Temporary tables: native (default) and managed</description>
+</property>
+<property>
+  <name>hplsql.temp.tables.schema</name>
+  <value></value>
+  <description>Schema for managed temporary tables</description>
+</property>
+<property>
+  <name>hplsql.temp.tables.location</name>
+  <value>/tmp/plhql</value>
+  <description>LOcation for managed temporary tables in HDFS</description>
+</property>
+</configuration>

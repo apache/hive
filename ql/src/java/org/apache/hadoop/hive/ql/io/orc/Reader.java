@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -50,6 +51,13 @@ public interface Reader {
    * @return raw data size of columns
    */
   long getRawDataSizeOfColumns(List<String> colNames);
+
+  /**
+   * Get the deserialized data size of the specified columns ids
+   * @param colIds - internal column id (check orcfiledump for column ids)
+   * @return raw data size of columns
+   */
+  long getRawDataSizeFromColIndices(List<Integer> colIds);
 
   /**
    * Get the user metadata keys.
@@ -147,6 +155,8 @@ public interface Reader {
     private long length = Long.MAX_VALUE;
     private SearchArgument sarg = null;
     private String[] columnNames = null;
+    private Boolean useZeroCopy = null;
+    private Boolean skipCorruptRecords = null;
 
     /**
      * Set the list of columns to read.
@@ -174,11 +184,31 @@ public interface Reader {
      * Set search argument for predicate push down.
      * @param sarg the search argument
      * @param columnNames the column names for
-     * @return
+     * @return this
      */
     public Options searchArgument(SearchArgument sarg, String[] columnNames) {
       this.sarg = sarg;
       this.columnNames = columnNames;
+      return this;
+    }
+
+    /**
+     * Set whether to use zero copy from HDFS.
+     * @param value the new zero copy flag
+     * @return this
+     */
+    public Options useZeroCopy(boolean value) {
+      this.useZeroCopy = value;
+      return this;
+    }
+
+    /**
+     * Set whether to skip corrupt records.
+     * @param value the new skip corrupt records flag
+     * @return this
+     */
+    public Options skipCorruptRecords(boolean value) {
+      this.skipCorruptRecords = value;
       return this;
     }
 
@@ -210,6 +240,14 @@ public interface Reader {
       return result;
     }
 
+    public Boolean getUseZeroCopy() {
+      return useZeroCopy;
+    }
+
+    public Boolean getSkipCorruptRecords() {
+      return skipCorruptRecords;
+    }
+
     public Options clone() {
       Options result = new Options();
       result.include = include;
@@ -217,6 +255,8 @@ public interface Reader {
       result.length = length;
       result.sarg = sarg;
       result.columnNames = columnNames;
+      result.useZeroCopy = useZeroCopy;
+      result.skipCorruptRecords = skipCorruptRecords;
       return result;
     }
 
@@ -319,4 +359,9 @@ public interface Reader {
                     String[] neededColumns) throws IOException;
 
   MetadataReader metadata() throws IOException;
+
+  /** Gets serialized file metadata read from disk for the purposes of caching, etc. */
+  ByteBuffer getSerializedFileFooter();
+
+  Footer getFooter();
 }

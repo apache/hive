@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,12 +74,14 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
 import org.apache.hadoop.hive.ql.parse.WindowingComponentizer;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -94,6 +97,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -281,7 +285,9 @@ public class HiveOpConverter {
       exprCols.add(exprCol);
       //TODO: Cols that come through PTF should it retain (VirtualColumness)?
       if (converter.getWindowFunctionSpec() != null) {
-        windowingSpec.addWindowFunction(converter.getWindowFunctionSpec());
+        for (WindowFunctionSpec wfs : converter.getWindowFunctionSpec()) {
+          windowingSpec.addWindowFunction(wfs);
+        }
       }
     }
     if (windowingSpec.getWindowExpressions() != null
@@ -554,7 +560,14 @@ public class HiveOpConverter {
     ArrayList<ColumnInfo> cinfoLst = createColInfos(inputs[0].inputs.get(0), tableAlias);
     Operator<?>[] children = new Operator<?>[inputs.length];
     for (int i = 0; i < children.length; i++) {
-      children[i] = inputs[i].inputs.get(0);
+      if (i == 0) {
+        children[i] = inputs[i].inputs.get(0);
+      } else {
+        Operator<?> op = inputs[i].inputs.get(0);
+        // We need to check if the other input branches for union is following the first branch
+        // We may need to cast the data types for specific columns.
+        children[i] = genInputSelectForUnion(op, cinfoLst);
+      }
     }
     Operator<? extends OperatorDesc> unionOp = OperatorFactory.getAndMakeChild(unionDesc,
         new RowSchema(cinfoLst), children);
@@ -605,7 +618,7 @@ public class HiveOpConverter {
     WindowingComponentizer groups = new WindowingComponentizer(wSpec);
     RowResolver rr = new RowResolver();
     for (ColumnInfo ci : input.getSchema().getSignature()) {
-      rr.put(ci.getTabAlias(), ci.getInternalName(), ci);
+      rr.put(inputOpAf.tabAlias, ci.getInternalName(), ci);
     }
 
     while (groups.hasNext()) {
@@ -676,13 +689,34 @@ public class HiveOpConverter {
       int numReducers, Operation acidOperation, boolean strictMode,
       List<String> keepColNames) throws SemanticException {
     // 1. Generate RS operator
-    if (input.getSchema().getTableNames().size() != 1) {
-      throw new SemanticException(
-          "In CBO return path, genReduceSinkAndBacktrackSelect is expecting only one SelectOp but there is "
-              + input.getSchema().getTableNames().size());
+    // 1.1 Prune the tableNames, only count the tableNames that are not empty strings
+	// as empty string in table aliases is only allowed for virtual columns.
+    String tableAlias = null;
+    Set<String> tableNames = input.getSchema().getTableNames();
+    for (String tableName : tableNames) {
+      if (tableName != null) {
+        if (tableName.length() == 0) {
+          if (tableAlias == null) {
+            tableAlias = tableName;
+          }
+        } else {
+          if (tableAlias == null || tableAlias.length() == 0) {
+            tableAlias = tableName;
+          } else {
+            if (!tableName.equals(tableAlias)) {
+              throw new SemanticException(
+                  "In CBO return path, genReduceSinkAndBacktrackSelect is expecting only one tableAlias but there is more than one");
+            }
+          }
+        }
+      }
     }
-    ReduceSinkOperator rsOp = genReduceSink(input, input.getSchema().getTableNames().iterator()
-        .next(), keys, tag, partitionCols, order, numReducers, acidOperation, strictMode);
+    if (tableAlias == null) {
+      throw new SemanticException(
+          "In CBO return path, genReduceSinkAndBacktrackSelect is expecting only one tableAlias but there is none");
+    }
+    // 1.2 Now generate RS operator
+    ReduceSinkOperator rsOp = genReduceSink(input, tableAlias, keys, tag, partitionCols, order, numReducers, acidOperation, strictMode);
 
     // 2. Generate backtrack Select operator
     Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSink(keepColNames,
@@ -964,7 +998,7 @@ public class HiveOpConverter {
    * to be expressed that way.
    */
   private static int updateExprNode(ExprNodeDesc expr, final Map<String, Byte> reversedExprs,
-          final Map<String, ExprNodeDesc> colExprMap) {
+      final Map<String, ExprNodeDesc> colExprMap) throws SemanticException {
     int inputPos = -1;
     if (expr instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
@@ -972,10 +1006,26 @@ public class HiveOpConverter {
       for (ExprNodeDesc functionChild : func.getChildren()) {
         if (functionChild instanceof ExprNodeColumnDesc) {
           String colRef = functionChild.getExprString();
-          inputPos = reversedExprs.get(colRef);
+          int pos = reversedExprs.get(colRef);
+          if (pos != -1) {
+            if (inputPos == -1) {
+              inputPos = pos;
+            } else if (inputPos != pos) {
+              throw new SemanticException(
+                  "UpdateExprNode is expecting only one position for join operator convert. But there are more than one.");
+            }
+          }
           newChildren.add(colExprMap.get(colRef));
         } else {
-          inputPos = updateExprNode(functionChild, reversedExprs, colExprMap);
+          int pos = updateExprNode(functionChild, reversedExprs, colExprMap);
+          if (pos != -1) {
+            if (inputPos == -1) {
+              inputPos = pos;
+            } else if (inputPos != pos) {
+              throw new SemanticException(
+                  "UpdateExprNode is expecting only one position for join operator convert. But there are more than one.");
+            }
+          }
           newChildren.add(functionChild);
         }
       }
@@ -1167,5 +1217,37 @@ public class HiveOpConverter {
     }
 
     return new Pair<ArrayList<ColumnInfo>, Set<Integer>>(colInfos, newVColSet);
+  }
+
+  private Operator<? extends OperatorDesc> genInputSelectForUnion(
+      Operator<? extends OperatorDesc> origInputOp, ArrayList<ColumnInfo> uColumnInfo)
+      throws SemanticException {
+    Iterator<ColumnInfo> oIter = origInputOp.getSchema().getSignature().iterator();
+    Iterator<ColumnInfo> uIter = uColumnInfo.iterator();
+    List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
+    List<String> colName = new ArrayList<String>();
+    Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
+    boolean needSelectOp = false;
+    while (oIter.hasNext()) {
+      ColumnInfo oInfo = oIter.next();
+      ColumnInfo uInfo = uIter.next();
+      if (!oInfo.isSameColumnForRR(uInfo)) {
+        needSelectOp = true;
+      }
+      ExprNodeDesc column = new ExprNodeColumnDesc(oInfo.getType(), oInfo.getInternalName(),
+          oInfo.getTabAlias(), oInfo.getIsVirtualCol(), oInfo.isSkewedCol());
+      if (!oInfo.getType().equals(uInfo.getType())) {
+        column = ParseUtils.createConversionCast(column, (PrimitiveTypeInfo) uInfo.getType());
+      }
+      columns.add(column);
+      colName.add(uInfo.getInternalName());
+      columnExprMap.put(uInfo.getInternalName(), column);
+    }
+    if (needSelectOp) {
+      return OperatorFactory.getAndMakeChild(new SelectDesc(columns, colName), new RowSchema(
+          uColumnInfo), columnExprMap, origInputOp);
+    } else {
+      return origInputOp;
+    }
   }
 }

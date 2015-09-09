@@ -59,7 +59,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     try {
       ReturnInfo rc = parseAndAnalyze("insert into table T select a, b from U", "testInsertSelect");
 
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
 
     } finally {
       cleanupTables();
@@ -70,7 +70,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   public void testDeleteAllNonPartitioned() throws Exception {
     try {
       ReturnInfo rc = parseAndAnalyze("delete from T", "testDeleteAllNonPartitioned");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -80,7 +80,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   public void testDeleteWhereNoPartition() throws Exception {
     try {
       ReturnInfo rc = parseAndAnalyze("delete from T where a > 5", "testDeleteWhereNoPartition");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -90,7 +90,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   public void testDeleteAllPartitioned() throws Exception {
     try {
       ReturnInfo rc = parseAndAnalyze("delete from U", "testDeleteAllPartitioned");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -100,7 +100,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   public void testDeleteAllWherePartitioned() throws Exception {
     try {
       ReturnInfo rc = parseAndAnalyze("delete from U where a > 5", "testDeleteAllWherePartitioned");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -111,7 +111,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     try {
       ReturnInfo rc = parseAndAnalyze("delete from U where ds = 'today'",
           "testDeleteFromPartitionOnly");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -122,7 +122,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     try {
       ReturnInfo rc = parseAndAnalyze("delete from U where ds = 'today' and a > 5",
           "testDeletePartitionWhere");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -132,7 +132,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   public void testUpdateAllNonPartitioned() throws Exception {
     try {
       ReturnInfo rc = parseAndAnalyze("update T set b = 5", "testUpdateAllNonPartitioned");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -143,7 +143,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     try {
       ReturnInfo rc = parseAndAnalyze("update T set b = 5 where b > 5",
           "testUpdateAllNonPartitionedWhere");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -153,7 +153,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
   public void testUpdateAllPartitioned() throws Exception {
     try {
       ReturnInfo rc = parseAndAnalyze("update U set b = 5", "testUpdateAllPartitioned");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -164,7 +164,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     try {
       ReturnInfo rc = parseAndAnalyze("update U set b = 5 where b > 5",
           "testUpdateAllPartitionedWhere");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -175,7 +175,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     try {
       ReturnInfo rc = parseAndAnalyze("update U set b = 5 where ds = 'today'",
           "testUpdateOnePartition");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -186,7 +186,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     try {
       ReturnInfo rc = parseAndAnalyze("update U set b = 5 where ds = 'today' and b > 5",
           "testUpdateOnePartitionWhere");
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
     } finally {
       cleanupTables();
     }
@@ -198,7 +198,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
       ReturnInfo rc = parseAndAnalyze("insert into table T values ('abc', 3), ('ghi', null)",
           "testInsertValues");
 
-      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer)rc.sem, rc.plan, rc.ast));
 
     } finally {
       cleanupTables();
@@ -212,7 +212,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
               "('abc', 3, 'today'), ('ghi', 5, 'tomorrow')",
           "testInsertValuesPartitioned");
 
-      LOG.info(explain((SemanticAnalyzer) rc.sem, rc.plan, rc.ast.dump()));
+      LOG.info(explain((SemanticAnalyzer) rc.sem, rc.plan, rc.ast));
 
     } finally {
       cleanupTables();
@@ -285,7 +285,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     return new ReturnInfo(tree, sem, plan);
   }
 
-  private String explain(SemanticAnalyzer sem, QueryPlan plan, String astStringTree) throws
+  private String explain(SemanticAnalyzer sem, QueryPlan plan, ASTNode astTree) throws
       IOException {
     FileSystem fs = FileSystem.get(conf);
     File f = File.createTempFile("TestSemanticAnalyzer", "explain");
@@ -293,7 +293,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     fs.create(tmp);
     fs.deleteOnExit(tmp);
     ExplainWork work = new ExplainWork(tmp, sem.getParseContext(), sem.getRootTasks(),
-        sem.getFetchTask(), astStringTree, sem, true, false, false, false, false, false, null);
+        sem.getFetchTask(), astTree, sem, true, false, false, false, false, false, null);
     ExplainTask task = new ExplainTask();
     task.setWork(work);
     task.initialize(conf, plan, null);

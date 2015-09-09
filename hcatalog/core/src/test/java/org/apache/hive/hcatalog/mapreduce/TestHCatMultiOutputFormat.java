@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -379,11 +380,12 @@ public class TestHCatMultiOutputFormat {
       List<Partition> partitions = hive.getPartitions(tbl);
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
       List<Path> partLocs = new ArrayList<Path>();
+      TableDesc tableDesc = Utilities.getTableDesc(tbl);
       for (Partition part : partitions) {
         partLocs.add(part.getDataLocation());
-        partDesc.add(Utilities.getPartitionDesc(part));
+        partDesc.add(Utilities.getPartitionDescFromTableDesc(tableDesc, part, true));
       }
-      work = new FetchWork(partLocs, partDesc, Utilities.getTableDesc(tbl));
+      work = new FetchWork(partLocs, partDesc, tableDesc);
       work.setLimit(100);
     } else {
       work = new FetchWork(tbl.getDataLocation(), Utilities.getTableDesc(tbl));

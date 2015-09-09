@@ -169,19 +169,22 @@ public class MetaStoreUtils {
     return true;
   }
 
-  public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh,
+  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
       boolean madeDir) throws MetaException {
-    return updateUnpartitionedTableStatsFast(db, tbl, wh, madeDir, false);
+    return updateTableStatsFast(db, tbl, wh, madeDir, false);
   }
 
-  public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh,
+  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
       boolean madeDir, boolean forceRecompute) throws MetaException {
-    return updateUnpartitionedTableStatsFast(tbl,
-        wh.getFileStatusesForUnpartitionedTable(db, tbl), madeDir, forceRecompute);
+    FileStatus[] fileStatuses = {};
+    if (tbl.getPartitionKeysSize() == 0) { // Update stats only when unpartitioned
+      fileStatuses = wh.getFileStatusesForUnpartitionedTable(db, tbl);
+    }
+    return updateTableStatsFast(tbl, fileStatuses, madeDir, forceRecompute);
   }
 
   /**
-   * Updates the numFiles and totalSize parameters for the passed unpartitioned Table by querying
+   * Updates the numFiles and totalSize parameters for the passed Table by querying
    * the warehouse if the passed Table does not already have values for these parameters.
    * @param tbl
    * @param fileStatus
@@ -190,7 +193,7 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
-  public static boolean updateUnpartitionedTableStatsFast(Table tbl,
+  public static boolean updateTableStatsFast(Table tbl,
       FileStatus[] fileStatus, boolean newDir, boolean forceRecompute) throws MetaException {
 
     Map<String,String> params = tbl.getParameters();

@@ -28,12 +28,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 public class PlanModifierForReturnPath {
 
 
-  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema)
+  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean isCTAS)
           throws CalciteSemanticException {
     RelNode newTopNode = rel;
 
     Pair<RelNode, RelNode> topSelparentPair = HiveCalciteUtil.getTopLevelSelect(newTopNode);
     PlanModifierUtil.fixTopOBSchema(newTopNode, topSelparentPair, resultSchema, false);
+    if (isCTAS) {
+      newTopNode = PlanModifierForASTConv.renameTopLevelSelectInResultSchema(newTopNode,
+          topSelparentPair, resultSchema);
+    }
 
     return newTopNode;
   }

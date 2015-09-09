@@ -430,24 +430,31 @@ precedenceEqualOperator
 subQueryExpression 
     : 
     LPAREN! selectStatement[true] RPAREN!     
- ;
- 
+    ;
+
 precedenceEqualExpression
+    :
+    (LPAREN precedenceBitwiseOrExpression COMMA) => precedenceEqualExpressionMutiple
+    |
+    precedenceEqualExpressionSingle
+    ;
+
+precedenceEqualExpressionSingle
     :
     (left=precedenceBitwiseOrExpression -> $left)
     (
        (KW_NOT precedenceEqualNegatableOperator notExpr=precedenceBitwiseOrExpression)
-       -> ^(KW_NOT ^(precedenceEqualNegatableOperator $precedenceEqualExpression $notExpr))
+       -> ^(KW_NOT ^(precedenceEqualNegatableOperator $precedenceEqualExpressionSingle $notExpr))
     | (precedenceEqualOperator equalExpr=precedenceBitwiseOrExpression)
-       -> ^(precedenceEqualOperator $precedenceEqualExpression $equalExpr)
+       -> ^(precedenceEqualOperator $precedenceEqualExpressionSingle $equalExpr)
     | (KW_NOT KW_IN LPAREN KW_SELECT)=>  (KW_NOT KW_IN subQueryExpression) 
-       -> ^(KW_NOT ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpression))
+       -> ^(KW_NOT ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpressionSingle))
     | (KW_NOT KW_IN expressions)
-       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions))
+       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressions))
     | (KW_IN LPAREN KW_SELECT)=>  (KW_IN subQueryExpression) 
-       -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpression)
+       -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpressionSingle)
     | (KW_IN expressions)
-       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions)
+       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressions)
     | ( KW_NOT KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
        -> ^(TOK_FUNCTION Identifier["between"] KW_TRUE $left $min $max)
     | ( KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
@@ -458,7 +465,22 @@ precedenceEqualExpression
 
 expressions
     :
-    LPAREN expression (COMMA expression)* RPAREN -> expression*
+    LPAREN expression (COMMA expression)* RPAREN -> expression+
+    ;
+
+//we transform the (col0, col1) in ((v00,v01),(v10,v11)) into struct(col0, col1) in (struct(v00,v01),struct(v10,v11))
+precedenceEqualExpressionMutiple
+    :
+    (LPAREN precedenceBitwiseOrExpression (COMMA precedenceBitwiseOrExpression)+ RPAREN -> ^(TOK_FUNCTION Identifier["struct"] precedenceBitwiseOrExpression+))
+    ( (KW_IN LPAREN expressionsToStruct (COMMA expressionsToStruct)+ RPAREN)
+       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionMutiple expressionsToStruct+)
+    | (KW_NOT KW_IN LPAREN expressionsToStruct (COMMA expressionsToStruct)+ RPAREN)
+       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionMutiple expressionsToStruct+)))
+    ;
+
+expressionsToStruct
+    :
+    LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_FUNCTION Identifier["struct"] expression+)
     ;
 
 precedenceNotOperator
@@ -498,6 +520,12 @@ booleanValue
     :
     KW_TRUE^ | KW_FALSE^
     ;
+
+booleanValueTok
+   :
+   KW_TRUE -> TOK_TRUE
+   | KW_FALSE -> TOK_FALSE
+   ;
 
 tableOrPartition
    :
@@ -608,7 +636,13 @@ principalIdentifier
     | QuotedIdentifier
     ;
 
-//the new version of nonReserved + sql11ReservedKeywordsUsedAsIdentifier = old version of nonReserved 
+//The new version of nonReserved + sql11ReservedKeywordsUsedAsIdentifier = old version of nonReserved
+//Non reserved keywords are basically the keywords that can be used as identifiers.
+//All the KW_* are automatically not only keywords, but also reserved keywords.
+//That means, they can NOT be used as identifiers.
+//If you would like to use them as identifiers, put them in the nonReserved list below.
+//If you are not sure, please refer to the SQL2011 column in
+//http://www.postgresql.org/docs/9.5/static/sql-keywords-appendix.html
 nonReserved
     :
     KW_ADD | KW_ADMIN | KW_AFTER | KW_ANALYZE | KW_ARCHIVE | KW_ASC | KW_BEFORE | KW_BUCKET | KW_BUCKETS
@@ -623,21 +657,30 @@ nonReserved
     | KW_MAPJOIN | KW_MATERIALIZED | KW_METADATA | KW_MINUS | KW_MINUTE | KW_MONTH | KW_MSCK | KW_NOSCAN | KW_NO_DROP | KW_OFFLINE
     | KW_OPTION | KW_OUTPUTDRIVER | KW_OUTPUTFORMAT | KW_OVERWRITE | KW_OWNER | KW_PARTITIONED | KW_PARTITIONS | KW_PLUS | KW_PRETTY
     | KW_PRINCIPALS | KW_PROTECTION | KW_PURGE | KW_READ | KW_READONLY | KW_REBUILD | KW_RECORDREADER | KW_RECORDWRITER
-    | KW_REGEXP | KW_RELOAD | KW_RENAME | KW_REPAIR | KW_REPLACE | KW_REPLICATION | KW_RESTRICT | KW_REWRITE | KW_RLIKE
+    | KW_RELOAD | KW_RENAME | KW_REPAIR | KW_REPLACE | KW_REPLICATION | KW_RESTRICT | KW_REWRITE
     | KW_ROLE | KW_ROLES | KW_SCHEMA | KW_SCHEMAS | KW_SECOND | KW_SEMI | KW_SERDE | KW_SERDEPROPERTIES | KW_SERVER | KW_SETS | KW_SHARED
     | KW_SHOW | KW_SHOW_DATABASE | KW_SKEWED | KW_SORT | KW_SORTED | KW_SSL | KW_STATISTICS | KW_STORED
     | KW_STREAMTABLE | KW_STRING | KW_STRUCT | KW_TABLES | KW_TBLPROPERTIES | KW_TEMPORARY | KW_TERMINATED
     | KW_TINYINT | KW_TOUCH | KW_TRANSACTIONS | KW_UNARCHIVE | KW_UNDO | KW_UNIONTYPE | KW_UNLOCK | KW_UNSET
     | KW_UNSIGNED | KW_URI | KW_USE | KW_UTC | KW_UTCTIMESTAMP | KW_VALUE_TYPE | KW_VIEW | KW_WHILE | KW_YEAR
-    ;
+    | KW_WORK
+    | KW_TRANSACTION
+    | KW_WRITE
+    | KW_ISOLATION
+    | KW_LEVEL
+    | KW_SNAPSHOT
+    | KW_AUTOCOMMIT
+;
 
-//The following SQL2011 reserved keywords are used as cast function name only, it is a subset of the sql11ReservedKeywordsUsedAsIdentifier.
+//The following SQL2011 reserved keywords are used as cast function name only, but not as identifiers.
 sql11ReservedKeywordsUsedAsCastFunctionName
     :
     KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_INT | KW_SMALLINT | KW_TIMESTAMP
     ;
 
 //The following SQL2011 reserved keywords are used as identifiers in many q tests, they may be added back due to backward compatibility.
+//We are planning to remove the following whole list after several releases.
+//Thus, please do not change the following list unless you know what to do.
 sql11ReservedKeywordsUsedAsIdentifier
     :
     KW_ALL | KW_ALTER | KW_ARRAY | KW_AS | KW_AUTHORIZATION | KW_BETWEEN | KW_BIGINT | KW_BINARY | KW_BOOLEAN 
@@ -647,5 +690,7 @@ sql11ReservedKeywordsUsedAsIdentifier
     | KW_LEFT | KW_LIKE | KW_LOCAL | KW_NONE | KW_NULL | KW_OF | KW_ORDER | KW_OUT | KW_OUTER | KW_PARTITION 
     | KW_PERCENT | KW_PROCEDURE | KW_RANGE | KW_READS | KW_REVOKE | KW_RIGHT 
     | KW_ROLLUP | KW_ROW | KW_ROWS | KW_SET | KW_SMALLINT | KW_TABLE | KW_TIMESTAMP | KW_TO | KW_TRIGGER | KW_TRUE 
-    | KW_TRUNCATE | KW_UNION | KW_UPDATE | KW_USER | KW_USING | KW_VALUES | KW_WITH
+    | KW_TRUNCATE | KW_UNION | KW_UPDATE | KW_USER | KW_USING | KW_VALUES | KW_WITH 
+//The following two keywords come from MySQL. Although they are not keywords in SQL2011, they are reserved keywords in MySQL.    
+    | KW_REGEXP | KW_RLIKE
     ;

@@ -286,4 +286,11 @@ public class Utils {
     float bytesPerSec = ((float)bytes)/msElapsed*1000;
     return Utils.formatSizeInBytes((long)bytesPerSec, "/sec");
   }
+  
+  /**
+   * Note. This stub is to resolve name conflict with ANTLR generated source using org.antlr.v4.runtime.misc.Utils.join
+   */
+  static <T> String join(T[] array, String separator) {
+    return org.antlr.v4.runtime.misc.Utils.join(array, separator);
+  }
 }

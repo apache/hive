@@ -165,7 +165,7 @@ public class TestSessionState {
     // set state in current thread
     SessionState.start(ss1);
     SessionState ss2 = SessionState.get();
-    ClassLoader loader2 = ss2.conf.getClassLoader();
+    ClassLoader loader2 = ss2.getConf().getClassLoader();
 
     System.out.println("Loader1:(Set in other thread) " + otherThread.loader);
     System.out.println("Loader2:(Set in SessionState.conf) " + loader2);

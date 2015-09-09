@@ -193,6 +193,9 @@ if [ "$HADOOP_HOME" == "" ]; then
   exit 4;
 fi
 
+# to avoid errors from log4j2 automatic configuration loading
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=hive-log4j2.xml "
+
 HADOOP=$HADOOP_HOME/bin/hadoop
 if [ ! -f ${HADOOP} ]; then
   echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";

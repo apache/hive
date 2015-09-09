@@ -1024,6 +1024,8 @@ public class HiveConf extends Configuration {
         "data is read remotely (from the client or HS2 machine) and sent to all the tasks."),
     HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE("hive.orc.cache.stripe.details.size", 10000,
         "Max cache size for keeping meta info about orc splits cached in the client."),
+    HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS("hive.orc.splits.include.fileid", true,
+        "Include file ID in splits on file systems thaty support it."),
     HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS("hive.orc.compute.splits.num.threads", 10,
         "How many threads orc should use to create splits in parallel."),
     HIVE_ORC_SKIP_CORRUPT_DATA("hive.exec.orc.skip.corrupt.data", false,
@@ -1046,6 +1048,9 @@ public class HiveConf extends Configuration {
         "job, process those skewed keys. The same key need not be skewed for all the tables, and so,\n" +
         "the follow-up map-reduce job (for the skewed keys) would be much faster, since it would be a\n" +
         "map-join."),
+    HIVEDYNAMICPARTITIONHASHJOIN("hive.optimize.dynamic.partition.hashjoin", false,
+        "Whether to enable dynamically partitioned hash join optimization. \n" +
+        "This setting is also dependent on enabling hive.auto.convert.join"),
     HIVECONVERTJOIN("hive.auto.convert.join", true,
         "Whether Hive enables the optimization about converting common join into mapjoin based on the input file size"),
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true,
@@ -1172,8 +1177,6 @@ public class HiveConf extends Configuration {
     HIVEROWOFFSET("hive.exec.rowoffset", false,
         "Whether to provide the row offset virtual column"),
 
-    HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE("hive.hadoop.supports.splittable.combineinputformat", false, ""),
-
     // Optimizer
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false,
         "Whether to enable automatic use of indexes"),
@@ -1185,6 +1188,12 @@ public class HiveConf extends Configuration {
         "Whether to transitively replicate predicate filters over equijoin conditions."),
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true,
         "Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false."),
+    HIVEPOINTLOOKUPOPTIMIZER("hive.optimize.point.lookup", true,
+         "Whether to transform OR clauses in Filter operators into IN clauses"),
+    HIVEPOINTLOOKUPOPTIMIZERMIN("hive.optimize.point.lookup.min", 31,
+             "Minimum number of OR clauses needed to transform into IN clauses"),
+    HIVEPOINTLOOKUPOPTIMIZEREXTRACT("hive.optimize.point.lookup.extract", true,
+                 "Extract partial expressions when optimizing point lookup IN clauses"),
     // Constant propagation optimizer
     HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
     HIVEIDENTITYPROJECTREMOVER("hive.optimize.remove.identity.project", true, "Removes identity project from operator tree"),
@@ -1504,6 +1513,10 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_CLEANER_RUN_INTERVAL("hive.compactor.cleaner.run.interval", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "Time between runs of the cleaner thread"),
+    HIVE_TIMEDOUT_TXN_REAPER_START("hive.timedout.txn.reaper.start", "100s",
+      new TimeValidator(TimeUnit.MILLISECONDS), "Time delay of 1st reaper run after metastore start"),
+    HIVE_TIMEDOUT_TXN_REAPER_INTERVAL("hive.timedout.txn.reaper.interval", "180s",
+      new TimeValidator(TimeUnit.MILLISECONDS), "Time interval describing how often the reaper runs"),
 
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
@@ -1674,32 +1687,16 @@ public class HiveConf extends Configuration {
         "to construct a list exception handlers to handle exceptions thrown\n" +
         "by record readers"),
 
-    // operation log configuration
-    HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
-        "When true, HS2 will save operation logs and make them available for clients"),
-    HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION("hive.server2.logging.operation.log.location",
-        "${system:java.io.tmpdir}" + File.separator + "${system:user.name}" + File.separator +
-            "operation_logs",
-        "Top level directory where operation logs are stored if logging functionality is enabled"),
-    HIVE_SERVER2_LOGGING_OPERATION_LEVEL("hive.server2.logging.operation.level", "EXECUTION",
-        new StringSet("NONE", "EXECUTION", "PERFORMANCE", "VERBOSE"),
-        "HS2 operation logging mode available to clients to be set at session level.\n" +
-        "For this to work, hive.server2.logging.operation.enabled should be set to true.\n" +
-        "  NONE: Ignore any logging\n" +
-        "  EXECUTION: Log completion of tasks\n" +
-        "  PERFORMANCE: Execution + Performance logs \n" +
-        "  VERBOSE: All logs" ),
-    HIVE_SERVER2_METRICS_ENABLED("hive.server2.metrics.enabled", false, "Enable metrics on the HiveServer2."),
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
-        "If the property is not set, then logging will be initialized using hive-log4j.properties found on the classpath.\n" +
-        "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
+        "If the property is not set, then logging will be initialized using hive-log4j2.xml found on the classpath.\n" +
+        "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.xml\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
     HIVE_EXEC_LOG4J_FILE("hive.exec.log4j.file", "",
         "Hive log4j configuration file for execution mode(sub command).\n" +
-        "If the property is not set, then logging will be initialized using hive-exec-log4j.properties found on the classpath.\n" +
-        "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.properties\"), \n" +
+        "If the property is not set, then logging will be initialized using hive-exec-log4j2.xml found on the classpath.\n" +
+        "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.xml\"), \n" +
         "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
 
     HIVE_LOG_EXPLAIN_OUTPUT("hive.log.explain.output", false,
@@ -1781,6 +1778,7 @@ public class HiveConf extends Configuration {
         "hive.zookeeper.quorum in their connection string."),
     HIVE_SERVER2_ZOOKEEPER_NAMESPACE("hive.server2.zookeeper.namespace", "hiveserver2",
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
+
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
         "Either the location of a HS2 global init file or a directory containing a .hiverc file. If the \n" +
@@ -1791,6 +1789,39 @@ public class HiveConf extends Configuration {
         "Bind host on which to run the HiveServer2 Thrift service."),
     HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
         "enable parallel compilation between sessions on HiveServer2. The default is false."),
+
+    // Tez session settings
+    HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
+        "A list of comma separated values corresponding to YARN queues of the same name.\n" +
+        "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +
+        "for multiple Tez sessions to run in parallel on the cluster."),
+    HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE("hive.server2.tez.sessions.per.default.queue", 1,
+        "A positive integer that determines the number of Tez sessions that should be\n" +
+        "launched on each of the queues specified by \"hive.server2.tez.default.queues\".\n" +
+        "Determines the parallelism on each queue."),
+    HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS("hive.server2.tez.initialize.default.sessions", false,
+        "This flag is used in HiveServer2 to enable a user to use HiveServer2 without\n" +
+        "turning on Tez for HiveServer2. The user could potentially want to run queries\n" +
+        "over Tez without the pool of sessions."),
+
+    // Operation log configuration
+    HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
+        "When true, HS2 will save operation logs and make them available for clients"),
+    HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION("hive.server2.logging.operation.log.location",
+        "${system:java.io.tmpdir}" + File.separator + "${system:user.name}" + File.separator +
+            "operation_logs",
+        "Top level directory where operation logs are stored if logging functionality is enabled"),
+    HIVE_SERVER2_LOGGING_OPERATION_LEVEL("hive.server2.logging.operation.level", "EXECUTION",
+        new StringSet("NONE", "EXECUTION", "PERFORMANCE", "VERBOSE"),
+        "HS2 operation logging mode available to clients to be set at session level.\n" +
+        "For this to work, hive.server2.logging.operation.enabled should be set to true.\n" +
+        "  NONE: Ignore any logging\n" +
+        "  EXECUTION: Log completion of tasks\n" +
+        "  PERFORMANCE: Execution + Performance logs \n" +
+        "  VERBOSE: All logs" ),
+
+    // Enable metric collection for HiveServer2
+    HIVE_SERVER2_METRICS_ENABLED("hive.server2.metrics.enabled", false, "Enable metrics on the HiveServer2."),
 
     // http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001,
@@ -1807,7 +1838,7 @@ public class HiveConf extends Configuration {
         "Keepalive time for an idle http worker thread. When the number of workers exceeds min workers, " +
         "excessive threads are killed after this time interval."),
 
-    // Cookie based authentication
+    // Cookie based authentication when using HTTP Transport
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED("hive.server2.thrift.http.cookie.auth.enabled", true,
         "When true, HiveServer2 in HTTP transport mode, will use cookie based authentication mechanism."),
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE("hive.server2.thrift.http.cookie.max.age", "86400s",
@@ -1867,6 +1898,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_LONG_POLLING_TIMEOUT("hive.server2.long.polling.timeout", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Time that HiveServer2 will wait before responding to asynchronous calls that use long polling"),
+
+    HIVE_SESSION_IMPL_CLASSNAME("hive.session.impl.classname", null, "Classname for custom implementation of hive session"),
+    HIVE_SESSION_IMPL_WITH_UGI_CLASSNAME("hive.session.impl.withugi.classname", null, "Classname for custom implementation of hive session with UGI"),
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
@@ -1951,6 +1985,8 @@ public class HiveConf extends Configuration {
         "  HIVE : Exposes Hive's native table types like MANAGED_TABLE, EXTERNAL_TABLE, VIRTUAL_VIEW\n" +
         "  CLASSIC : More generic types like TABLE and VIEW"),
     HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", "", ""),
+
+    // SSL settings
     HIVE_SERVER2_USE_SSL("hive.server2.use.SSL", false,
         "Set this to true for using SSL encryption in HiveServer2."),
     HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", "",
@@ -1971,9 +2007,6 @@ public class HiveConf extends Configuration {
          "Comma separated list of udfs names. These udfs will not be allowed in queries." +
          " The udf black list takes precedence over udf white list"),
 
-    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
-        "Comma separated list of non-SQL Hive commands users are authorized to execute"),
-
     HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "6h",
         new TimeValidator(TimeUnit.MILLISECONDS, 3000l, true, null, false),
         "The check interval for session/operation timeout, which can be disabled by setting to zero or negative value."),
@@ -1990,6 +2023,8 @@ public class HiveConf extends Configuration {
         " This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
         "(hive.server2.session.check.interval) are enabled."),
 
+    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
+        "Comma separated list of non-SQL Hive commands users are authorized to execute"),
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
         "Comma separated list of configuration options which are immutable at runtime"),
@@ -2106,27 +2141,14 @@ public class HiveConf extends Configuration {
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true,
         "Whether to generate the splits locally or in the AM (tez only)"),
 
-    HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez (Hadoop 2 only)"),
-    HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez (Hadoop 2 only)"),
+    HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez/Spark (Hadoop 2 only)"),
+    HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez/Spark (Hadoop 2 only)"),
 
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false, ""),
 
     HIVECOUNTERGROUP("hive.counters.group.name", "HIVE",
         "The name of counter group for internal Hive variables (CREATED_FILE, FATAL_ERROR, etc.)"),
-
-    HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
-        "A list of comma separated values corresponding to YARN queues of the same name.\n" +
-        "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +
-        "for multiple Tez sessions to run in parallel on the cluster."),
-    HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE("hive.server2.tez.sessions.per.default.queue", 1,
-        "A positive integer that determines the number of Tez sessions that should be\n" +
-        "launched on each of the queues specified by \"hive.server2.tez.default.queues\".\n" +
-        "Determines the parallelism on each queue."),
-    HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS("hive.server2.tez.initialize.default.sessions", false,
-        "This flag is used in HiveServer2 to enable a user to use HiveServer2 without\n" +
-        "turning on Tez for HiveServer2. The user could potentially want to run queries\n" +
-        "over Tez without the pool of sessions."),
 
     HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
         new StringSet("none", "column"),
@@ -2210,6 +2232,13 @@ public class HiveConf extends Configuration {
       "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
     SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
       "Name of the SASL mechanism to use for authentication."),
+    SPARK_DYNAMIC_PARTITION_PRUNING(
+        "hive.spark.dynamic.partition.pruning", false,
+        "When dynamic pruning is enabled, joins on partition keys will be processed by writing\n" +
+            "to a temporary HDFS file, and read later for removing unnecessary partitions."),
+    SPARK_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE(
+        "hive.spark.dynamic.partition.pruning.max.data.size", 100*1024*1024L,
+        "Maximum total data size in dynamic pruning."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
@@ -2713,6 +2742,7 @@ public class HiveConf extends Configuration {
     super(other);
     hiveJar = other.hiveJar;
     auxJars = other.auxJars;
+    isSparkConfigUpdated = other.isSparkConfigUpdated;
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
     modWhiteListPattern = other.modWhiteListPattern;

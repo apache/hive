@@ -55,7 +55,8 @@ public final class OpProcFactory extends PrunerOperatorFactory {
         TableScanOperator top) throws SemanticException, UDFArgumentException {
       OpWalkerCtx owc = (OpWalkerCtx) procCtx;
       // Otherwise this is not a sampling predicate and we need to
-      ExprNodeDesc predicate = fop.getConf().getPredicate();
+      ExprNodeDesc predicate = fop.getConf().getOrigPredicate();
+      predicate = predicate == null ? fop.getConf().getPredicate() : predicate;
       String alias = top.getConf().getAlias();
 
       // Generate the partition pruning predicate

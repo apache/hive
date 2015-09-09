@@ -35,7 +35,9 @@ public class FilterExprAndExpr extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
     childExpressions[0].evaluate(batch);
-    childExpressions[1].evaluate(batch);
+    for (int childIndex = 1; childIndex < childExpressions.length; childIndex++) {
+      childExpressions[childIndex].evaluate(batch);
+    }
   }
 
   @Override
@@ -50,6 +52,10 @@ public class FilterExprAndExpr extends VectorExpression {
 
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
+
+    // IMPORTANT NOTE: For Multi-AND, the VectorizationContext class will catch cases with 3 or
+    //                 more parameters...
+
     return (new VectorExpressionDescriptor.Builder())
         .setMode(
             VectorExpressionDescriptor.Mode.FILTER)

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.ppd;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,29 +38,21 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 public class ExprWalkerInfo implements NodeProcessorCtx {
 
   /** Information maintained for an expr while walking an expr tree. */
-  private static class ExprInfo {
+  protected class ExprInfo {
     /**
      * true if expr rooted at this node doesn't contain more than one table.
      * alias
      */
-    public boolean isCandidate = false;
+    protected boolean isCandidate = false;
     /** alias that this expression refers to. */
-    public String alias = null;
+    protected String alias = null;
     /** new expr for this expression. */
-    public ExprNodeDesc convertedExpr = null;
+    protected ExprNodeDesc convertedExpr = null;
 
-    public ExprInfo() {
-    }
 
-    public ExprInfo(boolean isCandidate, String alias, ExprNodeDesc replacedNode) {
-      this.isCandidate = isCandidate;
-      this.alias = alias;
-      convertedExpr = replacedNode;
-    }
   }
 
-  protected static final Log LOG = LogFactory.getLog(OpProcFactory.class
-      .getName());;
+  protected static final Log LOG = LogFactory.getLog(OpProcFactory.class.getName());
   private Operator<? extends OperatorDesc> op = null;
 
   /**
@@ -98,17 +91,17 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   public ExprWalkerInfo() {
     pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
     nonFinalPreds = new HashMap<String, List<ExprNodeDesc>>();
-    exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
-    newToOldExprMap = new HashMap<ExprNodeDesc, ExprNodeDesc>();
+    exprInfoMap = new IdentityHashMap<ExprNodeDesc, ExprInfo>();
+    newToOldExprMap = new IdentityHashMap<ExprNodeDesc, ExprNodeDesc>();
   }
 
   public ExprWalkerInfo(Operator<? extends OperatorDesc> op) {
     this.op = op;
 
     pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
-    exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
+    exprInfoMap = new IdentityHashMap<ExprNodeDesc, ExprInfo>();
     nonFinalPreds = new HashMap<String, List<ExprNodeDesc>>();
-    newToOldExprMap = new HashMap<ExprNodeDesc, ExprNodeDesc>();
+    newToOldExprMap = new IdentityHashMap<ExprNodeDesc, ExprNodeDesc>();
   }
 
   /**
@@ -126,105 +119,33 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * @return converted expression for give node. If there is none then returns
-   *         null.
+   * Get additional info for a given expression node
    */
-  public ExprNodeDesc getConvertedNode(ExprNodeDesc nd) {
-    ExprInfo ei = exprInfoMap.get(nd);
-    if (ei == null) {
-      return null;
-    }
-    return ei.convertedExpr;
+  public ExprInfo getExprInfo(ExprNodeDesc expr) {
+    return exprInfoMap.get(expr);
   }
 
   /**
-   * adds a replacement node for this expression.
-   *
-   * @param oldNode
-   *          original node
-   * @param newNode
-   *          new node
+   * Get additional info for a given expression node if it
+   * exists, or create a new one and store it if it does not
    */
-  public void addConvertedNode(ExprNodeDesc oldNode, ExprNodeDesc newNode) {
-    ExprInfo ei = exprInfoMap.get(oldNode);
-    if (ei == null) {
-      ei = new ExprInfo();
-      exprInfoMap.put(oldNode, ei);
-    }
-    ei.convertedExpr = newNode;
-    exprInfoMap.put(newNode, new ExprInfo(ei.isCandidate, ei.alias, null));
+  public ExprInfo addExprInfo(ExprNodeDesc expr) {
+    ExprInfo exprInfo = new ExprInfo();
+    exprInfoMap.put(expr, exprInfo);
+    return exprInfo;
   }
 
   /**
-   * Returns true if the specified expression is pushdown candidate else false.
-   *
-   * @param expr
-   * @return true or false
+   * Get additional info for a given expression node if it
+   * exists, or create a new one and store it if it does not
    */
-  public boolean isCandidate(ExprNodeDesc expr) {
-    ExprInfo ei = exprInfoMap.get(expr);
-    if (ei == null) {
-      return false;
+  public ExprInfo addOrGetExprInfo(ExprNodeDesc expr) {
+    ExprInfo exprInfo = exprInfoMap.get(expr);
+    if (exprInfo == null) {
+      exprInfo = new ExprInfo();
+      exprInfoMap.put(expr, exprInfo);
     }
-    return ei.isCandidate;
-  }
-
-  /**
-   * Marks the specified expr to the specified value.
-   *
-   * @param expr
-   * @param b
-   *          can
-   */
-  public void setIsCandidate(ExprNodeDesc expr, boolean b) {
-    ExprInfo ei = exprInfoMap.get(expr);
-    if (ei == null) {
-      ei = new ExprInfo();
-      exprInfoMap.put(expr, ei);
-    }
-    ei.isCandidate = b;
-  }
-
-  /**
-   * Returns the alias of the specified expr.
-   *
-   * @param expr
-   * @return The alias of the expression
-   */
-  public String getAlias(ExprNodeDesc expr) {
-    ExprInfo ei = exprInfoMap.get(expr);
-    if (ei == null) {
-      return null;
-    }
-    return ei.alias;
-  }
-
-  /**
-   * Adds the specified alias to the specified expr.
-   *
-   * @param expr
-   * @param alias
-   */
-  public void addAlias(ExprNodeDesc expr, String alias) {
-    if (alias == null) {
-      return;
-    }
-    ExprInfo ei = exprInfoMap.get(expr);
-    if (ei == null) {
-      ei = new ExprInfo();
-      exprInfoMap.put(expr, ei);
-    }
-    ei.alias = alias;
-  }
-
-  /**
-   * Adds the specified expr as the top-most pushdown expr (ie all its children
-   * can be pushed).
-   *
-   * @param expr
-   */
-  public void addFinalCandidate(ExprNodeDesc expr) {
-    addFinalCandidate(getAlias(expr), expr);
+    return exprInfo;
   }
 
   public void addFinalCandidate(String alias, ExprNodeDesc expr) {
@@ -277,8 +198,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    *
    * @param expr
    */
-  public void addNonFinalCandidate(ExprNodeDesc expr) {
-    String alias = getAlias(expr);
+  public void addNonFinalCandidate(String alias, ExprNodeDesc expr) {
     if (nonFinalPreds.get(alias) == null) {
       nonFinalPreds.put(alias, new ArrayList<ExprNodeDesc>());
     }

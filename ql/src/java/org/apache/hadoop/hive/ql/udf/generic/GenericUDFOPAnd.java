@@ -35,46 +35,43 @@ import org.apache.hadoop.io.BooleanWritable;
 /**
  * GenericUDF Class for computing and.
  */
-@Description(name = "and", value = "a _FUNC_ b - Logical and")
+@Description(name = "and", value = "a1 _FUNC_ a2 _FUNC_ ... _FUNC_ an - Logical and")
 @VectorizedExpressions({ColAndCol.class, FilterExprAndExpr.class, FilterColAndScalar.class,
     FilterScalarAndColumn.class})
 public class GenericUDFOPAnd extends GenericUDF {
   private final BooleanWritable result = new BooleanWritable();
-  private transient BooleanObjectInspector boi0,boi1;
+  private transient BooleanObjectInspector boi[];
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException {
-    if (arguments.length != 2) {
+    if (arguments.length < 2) {
       throw new UDFArgumentLengthException(
-          "The operator 'AND' only accepts 2 argument.");
+          "The operator 'AND' accepts at least 2 argument.");
     }
-    boi0 = (BooleanObjectInspector) arguments[0];
-    boi1 = (BooleanObjectInspector) arguments[1];
+    boi = new BooleanObjectInspector[arguments.length];
+    for (int i = 0; i < arguments.length; i++) {
+      boi[i] = (BooleanObjectInspector) arguments[i];
+    }
     return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    boolean bool_a0 = false, bool_a1 = false;
-    Object a0 = arguments[0].get();
-    if (a0 != null) {
-      bool_a0 = boi0.get(a0);
-      if (bool_a0 == false) {
-        result.set(false);
-        return result;
+    boolean notNull = true;
+    for (int i = 0; i < arguments.length; i++) {
+      Object a = arguments[i].get();
+      if (a != null) {
+        boolean bool_a = boi[i].get(a);
+        if (bool_a == false) {
+          result.set(false);
+          return result;
+        }
+      } else {
+        notNull = false;
       }
     }
 
-    Object a1 = arguments[1].get();
-    if (a1 != null) {
-      bool_a1 = boi1.get(a1);
-      if (bool_a1 == false) {
-        result.set(false);
-        return result;
-      }
-    }
-
-    if ((a0 != null && bool_a0 == true) && (a1 != null && bool_a1 == true)) {
+    if (notNull) {
       result.set(true);
       return result;
     }
@@ -84,8 +81,24 @@ public class GenericUDFOPAnd extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    assert (children.length == 2);
-    return "(" + children[0] + " and " + children[1] + ")";
+    assert (children.length >= 2);
+    StringBuilder sb = new StringBuilder();
+    sb.append("(");
+    boolean first = true;
+    for (String and : children) {
+      if (!first) {
+        sb.append(" and ");
+      } else {
+        first = false;
+      }
+      sb.append(and);
+    }
+    sb.append(")");
+    return sb.toString();
   }
 
+  @Override
+  public GenericUDF negative() {
+    return new GenericUDFOPOr();
+  }
 }

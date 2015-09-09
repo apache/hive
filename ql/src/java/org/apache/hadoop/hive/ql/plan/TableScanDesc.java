@@ -103,7 +103,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private transient TableSample tableSample;
 
-  private transient final Table tableMetadata;
+  private transient Table tableMetadata;
 
   public TableScanDesc() {
     this(null, null);
@@ -275,6 +275,10 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public Table getTableMetadata() {
     return tableMetadata;
+  }
+
+  public void setTableMetadata(Table tableMetadata) {
+    this.tableMetadata = tableMetadata;
   }
 
   public TableSample getTableSample() {

@@ -39,7 +39,7 @@ import java.util.List;
 
 /**
  * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
- * Tests here 
+ * Tests here are "end-to-end"ish and simulate concurrent queries.
  */
 public class TestDbTxnManager2 {
   private static HiveConf conf = new HiveConf(Driver.class);

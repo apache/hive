@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
+
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
@@ -186,6 +188,7 @@ import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -203,6 +206,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
 import javax.jdo.JDOException;
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -1036,14 +1040,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
 
         int startIndex = 0;
-        int endIndex = -1;
         // retrieve the tables from the metastore in batches to alleviate memory constraints
-        while (endIndex < allTables.size() - 1) {
-          startIndex = endIndex + 1;
-          endIndex = endIndex + tableBatchSize;
-          if (endIndex >= allTables.size()) {
-            endIndex = allTables.size() - 1;
-          }
+        while (startIndex < allTables.size()) {
+          int endIndex = Math.min(startIndex + tableBatchSize, allTables.size());
 
           List<Table> tables = null;
           try {
@@ -1079,6 +1078,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // Drop the table but not its data
               drop_table(name, table.getTableName(), false);
             }
+
+            startIndex = endIndex;
           }
         }
 
@@ -1407,11 +1408,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER) &&
             !MetaStoreUtils.isView(tbl)) {
-          if (tbl.getPartitionKeysSize() == 0)  { // Unpartitioned table
-            MetaStoreUtils.updateUnpartitionedTableStatsFast(db, tbl, wh, madeDir);
-          } else { // Partitioned table with no partitions.
-            MetaStoreUtils.updateUnpartitionedTableStatsFast(db, tbl, wh, true);
-          }
+          MetaStoreUtils.updateTableStatsFast(db, tbl, wh, madeDir);
         }
 
         // set create time
@@ -1831,9 +1828,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     /**
      * Gets multiple tables from the hive metastore.
      *
-     * @param dbname
+     * @param dbName
      *          The name of the database in which the tables reside
-     * @param names
+     * @param tableNames
      *          The names of the tables to get.
      *
      * @return A list of tables whose names are in the the list "names" and
@@ -1845,21 +1842,44 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws UnknownDBException
      */
     @Override
-    public List<Table> get_table_objects_by_name(final String dbname, final List<String> names)
+    public List<Table> get_table_objects_by_name(final String dbName, final List<String> tableNames)
         throws MetaException, InvalidOperationException, UnknownDBException {
-      List<Table> tables = null;
-      startMultiTableFunction("get_multi_table", dbname, names);
+      List<Table> tables = new ArrayList<Table>();
+      startMultiTableFunction("get_multi_table", dbName, tableNames);
       Exception ex = null;
-      try {
+      int tableBatchSize = HiveConf.getIntVar(hiveConf,
+          ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
 
-        if (dbname == null || dbname.isEmpty()) {
+      try {
+        if (dbName == null || dbName.isEmpty()) {
           throw new UnknownDBException("DB name is null or empty");
         }
-        if (names == null)
+        if (tableNames == null)
         {
-          throw new InvalidOperationException(dbname + " cannot find null tables");
+          throw new InvalidOperationException(dbName + " cannot find null tables");
         }
-        tables = getMS().getTableObjectsByName(dbname, names);
+
+        // The list of table names could contain duplicates. RawStore.getTableObjectsByName()
+        // only guarantees returning no duplicate table objects in one batch. If we need
+        // to break into multiple batches, remove duplicates first.
+        List<String> distinctTableNames = tableNames;
+        if (distinctTableNames.size() > tableBatchSize) {
+          List<String> lowercaseTableNames = new ArrayList<String>();
+          for (String tableName : tableNames) {
+            lowercaseTableNames.add(HiveStringUtils.normalizeIdentifier(tableName));
+          }
+          distinctTableNames = new ArrayList<String>(new HashSet<String>(lowercaseTableNames));
+        }
+
+        RawStore ms = getMS();
+        int startIndex = 0;
+        // Retrieve the tables from the metastore in batches. Some databases like
+        // Oracle cannot have over 1000 expressions in a in-list
+        while (startIndex < distinctTableNames.size()) {
+          int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
+          tables.addAll(ms.getTableObjectsByName(dbName, distinctTableNames.subList(startIndex, endIndex)));
+          startIndex = endIndex;
+        }
       } catch (Exception e) {
         ex = e;
         if (e instanceof MetaException) {
@@ -1872,7 +1892,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw newMetaException(e);
         }
       } finally {
-        endFunction("get_multi_table", tables != null, ex, join(names, ","));
+        endFunction("get_multi_table", tables != null, ex, join(tableNames, ","));
       }
       return tables;
     }
@@ -5514,6 +5534,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GetAllFunctionsResponse get_all_functions()
+            throws MetaException {
+      GetAllFunctionsResponse response = new GetAllFunctionsResponse();
+      startFunction("get_all_functions");
+      RawStore ms = getMS();
+      List<Function> allFunctions = null;
+      Exception ex = null;
+      try {
+        allFunctions = ms.getAllFunctions();
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_all_functions", allFunctions != null, ex);
+      }
+      response.setFunctions(allFunctions);
+      return response;
+    }
+
+    @Override
     public Function get_function(String dbName, String funcName)
         throws MetaException, NoSuchObjectException, TException {
       startFunction("get_function", ": " + dbName + "." + funcName);
@@ -5887,7 +5927,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // If the log4j.configuration property hasn't already been explicitly set,
     // use Hive's default log4j configuration
-    if (System.getProperty("log4j.configuration") == null) {
+    if (System.getProperty("log4j.configurationFile") == null) {
       // NOTE: It is critical to do this here so that log4j is reinitialized
       // before any of the other core hive classes are loaded
       try {
@@ -6181,6 +6221,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startCompactorInitiator(conf);
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
+          startHouseKeeperService(conf);
         } catch (Throwable e) {
           LOG.error("Failure when starting the compactor, compactions may not happen, " +
               StringUtils.stringifyException(e));
@@ -6239,5 +6280,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     thread.setThreadId(nextThreadId++);
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
+  }
+  private static void startHouseKeeperService(HiveConf conf) throws Exception {
+    if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_INITIATOR_ON)) {
+      return;
+    }
+    Class c = Class.forName("org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService");
+    //todo: when metastore adds orderly-shutdown logic, houseKeeper.stop()
+    //should be called form it
+    HouseKeeperService houseKeeper = (HouseKeeperService)c.newInstance();
+    try {
+      houseKeeper.start(conf);
+    }
+    catch (Exception ex) {
+      LOG.fatal("Failed to start " + houseKeeper.getClass() +
+        ".  The system will not handle " + houseKeeper.getServiceDescription()  +
+        ".  Root Cause: ", ex);
+    }
   }
 }

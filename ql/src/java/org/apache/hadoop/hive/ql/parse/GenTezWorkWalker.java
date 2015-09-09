@@ -82,7 +82,7 @@ public class GenTezWorkWalker extends DefaultGraphWalker {
    * @param nd operator being walked
    */
   @Override
-  public void walk(Node nd) throws SemanticException {
+  protected void walk(Node nd) throws SemanticException {
     List<? extends Node> children = nd.getChildren();
 
     // maintain the stack of operators encountered

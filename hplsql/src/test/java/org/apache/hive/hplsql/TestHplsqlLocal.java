@@ -92,6 +92,11 @@ public class TestHplsqlLocal {
   public void testCreateProcedure() throws Exception {
     run("create_procedure");
   }
+  
+  @Test
+  public void testCreateProcedureNoParams() throws Exception {
+    run("create_procedure_no_params");
+  }
 
   @Test
   public void testDate() throws Exception {
@@ -132,25 +137,10 @@ public class TestHplsqlLocal {
   public void testException() throws Exception {
     run("exception");
   }
-
+  
   @Test
-  public void testException2() throws Exception {
-    run("exception2");
-  }
-
-  @Test
-  public void testException3() throws Exception {
-    run("exception2");
-  }
-
-  @Test
-  public void testException4() throws Exception {
-    run("exception2");
-  }
-
-  @Test
-  public void testException5() throws Exception {
-    run("exception2");
+  public void testExceptionDivideByZero() throws Exception {
+    run("exception_divide_by_zero");
   }
 
   @Test
@@ -300,11 +290,7 @@ public class TestHplsqlLocal {
     System.setOut(new PrintStream(out));
     Exec exec = new Exec();
     String[] args = { "-f", "src/test/queries/local/" + testFile + ".sql", "-trace" };
-    exec.init(args);
-    Var result = exec.run();
-    if (result != null) {
-      System.out.println(result.toString());
-    }
+    exec.run(args);
     String s = getTestOutput(out.toString()).trim();
     FileUtils.writeStringToFile(new java.io.File("target/tmp/log/" + testFile + ".out.txt"), s);
     String t = FileUtils.readFileToString(new java.io.File("src/test/results/local/" + testFile + ".out.txt"), "utf-8").trim();
@@ -320,7 +306,7 @@ public class TestHplsqlLocal {
     BufferedReader reader = new BufferedReader(new StringReader(s));
     String line = null;
     while ((line = reader.readLine()) != null) {
-      if (!line.startsWith("log4j:")) {
+      if (!line.startsWith("log4j:") && !line.contains("INFO Log4j")) {
         sb.append(line);
         sb.append("\n");
       }

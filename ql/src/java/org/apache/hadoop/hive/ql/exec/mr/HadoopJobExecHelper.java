@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
@@ -59,9 +56,11 @@ import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskReport;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.LogManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
 
 public class HadoopJobExecHelper {
 
@@ -492,10 +491,11 @@ public class HadoopJobExecHelper {
     sb.append("Logs:\n");
     console.printError(sb.toString());
 
-    for (Appender a : Collections.list((Enumeration<Appender>)
-          LogManager.getRootLogger().getAllAppenders())) {
-      if (a instanceof FileAppender) {
-        console.printError((new Path(((FileAppender)a).getFile())).toUri().getPath());
+    for (Appender appender : ((Logger) LogManager.getRootLogger()).getAppenders().values()) {
+      if (appender instanceof FileAppender) {
+        console.printError(((FileAppender) appender).getFileName());
+      } else if (appender instanceof RollingFileAppender) {
+        console.printError(((RollingFileAppender) appender).getFileName());
       }
     }
   }

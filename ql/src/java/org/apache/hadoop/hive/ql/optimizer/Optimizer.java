@@ -68,6 +68,18 @@ public class Optimizer {
 
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
+
+    // Try to transform OR predicates in Filter into simpler IN clauses first
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
+      final int min = HiveConf.getIntVar(hiveConf,
+          HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
+      final boolean extract = HiveConf.getBoolVar(hiveConf,
+          HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZEREXTRACT);
+      final boolean testMode = HiveConf.getBoolVar(hiveConf,
+          HiveConf.ConfVars.HIVE_IN_TEST);
+      transformations.add(new PointLookupOptimizer(min, extract, testMode));
+    }
+
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PredicateTransitivePropagate());
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
@@ -81,6 +93,7 @@ public class Optimizer {
       // are combined and may become eligible for reduction (like is not null filter).
         transformations.add(new ConstantPropagate());
     }
+
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());
@@ -171,7 +184,7 @@ public class Optimizer {
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES)) {
       transformations.add(new StatsOptimizer());
     }
-    if (isSparkExecEngine || (pctx.getContext().getExplain() && !isTezExecEngine)) {
+    if (pctx.getContext().getExplain() && !isTezExecEngine && !isSparkExecEngine) {
       transformations.add(new AnnotateWithStatistics());
       transformations.add(new AnnotateWithOpTraits());
     }

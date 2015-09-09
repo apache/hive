@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.apache.avro.Schema;
 import org.apache.avro.reflect.ReflectData;
 import org.apache.hadoop.conf.Configuration;
@@ -37,8 +39,6 @@ import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.ReflectionUtils;
-
-import javax.annotation.Nullable;
 
 /**
  * HBaseSerDeParameters encapsulates SerDeParameters and additional configurations that are specific for
@@ -57,6 +57,7 @@ public class HBaseSerDeParameters {
   private final String columnMappingString;
   private final ColumnMappings columnMappings;
   private final boolean doColumnRegexMatching;
+  private final boolean doColumnPrefixCut;
 
   private final long putTimestamp;
   private final HBaseKeyFactory keyFactory;
@@ -69,8 +70,9 @@ public class HBaseSerDeParameters {
     columnMappingString = tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING);
     doColumnRegexMatching =
         Boolean.valueOf(tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, "true"));
+    doColumnPrefixCut = Boolean.valueOf(tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_PREFIX_HIDE, "false"));
     // Parse and initialize the HBase columns mapping
-    columnMappings = HBaseSerDe.parseColumnsMapping(columnMappingString, doColumnRegexMatching);
+    columnMappings = HBaseSerDe.parseColumnsMapping(columnMappingString, doColumnRegexMatching, doColumnPrefixCut);
 
     // Build the type property string if not supplied
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
