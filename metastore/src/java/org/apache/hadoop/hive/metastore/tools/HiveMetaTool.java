@@ -222,6 +222,11 @@ public class HiveMetaTool {
           System.err.println("bad location URI: " + badRecord);
         }
       }
+      int numNullRecords = retVal.getNumNullRecords();
+      if (numNullRecords != 0) {
+        LOG.debug("Number of NULL location URI: " + numNullRecords +
+            ". This can happen for View or Index.");
+      }
     }
   }
 
