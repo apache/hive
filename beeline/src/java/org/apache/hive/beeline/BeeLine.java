@@ -881,7 +881,7 @@ public class BeeLine implements Closeable {
   }
 
   private int embeddedConnect() {
-    if (!dispatch("!connect " + Utils.URL_PREFIX + " '' ''")) {
+    if (!execCommandWithPrefix("!connect " + Utils.URL_PREFIX + " '' ''")) {
       return ERRNO_OTHER;
     } else {
       return ERRNO_OK;
@@ -1135,11 +1135,7 @@ public class BeeLine implements Closeable {
         return commands.sql(line, getOpts().getEntireLineAsCommand());
       }
     } else {
-      if (line.toLowerCase().startsWith("!connect")) {
-        return execCommandWithPrefix(line);
-      } else {
-        return commands.sql(line, getOpts().getEntireLineAsCommand());
-      }
+      return commands.sql(line, getOpts().getEntireLineAsCommand());
     }
   }
 
