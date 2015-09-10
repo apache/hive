@@ -18,13 +18,9 @@
 package org.apache.hive.beeline.cli;
 
 import org.apache.hive.beeline.BeeLine;
-import org.apache.hive.jdbc.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class HiveCli {
   private BeeLine beeLine;

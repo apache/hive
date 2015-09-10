@@ -92,7 +92,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
-import org.apache.hive.jdbc.Utils;
 
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
@@ -881,7 +880,7 @@ public class BeeLine implements Closeable {
   }
 
   private int embeddedConnect() {
-    if (!execCommandWithPrefix("!connect " + Utils.URL_PREFIX + " '' ''")) {
+    if (!execCommandWithPrefix("!connect " + BEELINE_DEFAULT_JDBC_URL + " '' ''")) {
       return ERRNO_OTHER;
     } else {
       return ERRNO_OK;

@@ -36,12 +36,12 @@ import org.apache.hive.service.cli.thrift.TStatusCode;
 import org.apache.http.client.CookieStore;
 import org.apache.http.cookie.Cookie;
 
-public class Utils {
+class Utils {
   static final Log LOG = LogFactory.getLog(Utils.class.getName());
   /**
     * The required prefix for the connection URL.
     */
-  public static final String URL_PREFIX = "jdbc:hive2://";
+  static final String URL_PREFIX = "jdbc:hive2://";
 
   /**
     * If host is provided, without a port.
