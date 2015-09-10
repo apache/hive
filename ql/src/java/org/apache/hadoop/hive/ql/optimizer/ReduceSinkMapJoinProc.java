@@ -215,8 +215,15 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
         tableSize /= bucketCount;
       }
     }
-    LOG.info("Mapjoin " + mapJoinOp + ", pos: " + pos + " --> " + parentWork.getName() + " ("
-      + keyCount + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
+    if (keyCount == 0) {
+      keyCount = 1;
+    }
+    if (tableSize == 0) {
+      tableSize = 1;
+    }
+    LOG.info("Mapjoin " + mapJoinOp + "(bucket map join = )" + joinConf.isBucketMapJoin()
+        + ", pos: " + pos + " --> " + parentWork.getName() + " (" + keyCount
+        + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
     joinConf.getParentToInput().put(pos, parentWork.getName());
     if (keyCount != Long.MAX_VALUE) {
       joinConf.getParentKeyCounts().put(pos, keyCount);
