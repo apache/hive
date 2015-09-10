@@ -30,6 +30,15 @@ explain
 select a.key, a.value, b.value
 from tab a join tab_part b on a.key = b.key;
 
+explain
+select count(*)
+from 
+(select distinct key, value from tab_part) a join tab b on a.key = b.key;
+
+select count(*)
+from 
+(select distinct key, value from tab_part) a join tab b on a.key = b.key;
+
 -- one side is really bucketed. srcbucket_mapjoin is not really a bucketed table.
 -- In this case the sub-query is chosen as the big table.
 explain
