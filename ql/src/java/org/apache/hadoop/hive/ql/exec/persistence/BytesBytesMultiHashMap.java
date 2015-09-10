@@ -153,9 +153,11 @@ public final class BytesBytesMultiHashMap {
   /** 8 Gb of refs is the max capacity if memory limit is not specified. If someone has 100s of
    * Gbs of memory (this might happen pretty soon) we'd need to string together arrays anyway. */
   private final static int DEFAULT_MAX_CAPACITY = 1024 * 1024 * 1024;
+  /** Make sure maxCapacity has a lower limit */
+  private final static int DEFAULT_MIN_MAX_CAPACITY = 16 * 1024 * 1024;
 
   public BytesBytesMultiHashMap(int initialCapacity,
-      float loadFactor, int wbSize, long memUsage) {
+      float loadFactor, int wbSize, long maxProbeSize) {
     if (loadFactor < 0 || loadFactor > 1) {
       throw new AssertionError("Load factor must be between (0, 1].");
     }
@@ -163,8 +165,11 @@ public final class BytesBytesMultiHashMap {
     initialCapacity = (Long.bitCount(initialCapacity) == 1)
         ? initialCapacity : nextHighestPowerOfTwo(initialCapacity);
     // 8 bytes per long in the refs, assume data will be empty. This is just a sanity check.
-    int maxCapacity =  (memUsage <= 0) ? DEFAULT_MAX_CAPACITY
-        : (int)Math.min((long)DEFAULT_MAX_CAPACITY, memUsage / 8);
+    int maxCapacity =  (maxProbeSize <= 0) ? DEFAULT_MAX_CAPACITY
+        : (int)Math.min((long)DEFAULT_MAX_CAPACITY, maxProbeSize / 8);
+    if (maxCapacity < DEFAULT_MIN_MAX_CAPACITY) {
+      maxCapacity = DEFAULT_MIN_MAX_CAPACITY;
+    }
     if (maxCapacity < initialCapacity || initialCapacity <= 0) {
       // Either initialCapacity is too large, or nextHighestPowerOfTwo overflows
       initialCapacity = (Long.bitCount(maxCapacity) == 1)
