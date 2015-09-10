@@ -168,16 +168,16 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     int numBuckets = -1;
     EdgeType edgeType = EdgeType.BROADCAST_EDGE;
     if (joinConf.isBucketMapJoin()) {
-
-      // disable auto parallelism for bucket map joins
-      parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
-
       numBuckets = (Integer) joinConf.getBigTableBucketNumMapping().values().toArray()[0];
       if (joinConf.getCustomBucketMapJoin()) {
         edgeType = EdgeType.CUSTOM_EDGE;
       } else {
         edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
       }
+    }
+    if (edgeType == EdgeType.CUSTOM_EDGE) {
+      // disable auto parallelism for bucket map joins
+      parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
     }
     TezEdgeProperty edgeProp = new TezEdgeProperty(null, edgeType, numBuckets);
 

@@ -390,13 +390,13 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
       ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
       if (checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getSortCols(), rsOp
-          .getOpTraits().getSortCols(), rsOp.getColumnExprMap(), tezBucketJoinProcCtx) == false) {
+          .getOpTraits().getSortCols(), rsOp.getColumnExprMap(), tezBucketJoinProcCtx, false) == false) {
         LOG.info("We cannot convert to SMB because the sort column names do not match.");
         return false;
       }
 
       if (checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getBucketColNames(), rsOp
-          .getOpTraits().getBucketColNames(), rsOp.getColumnExprMap(), tezBucketJoinProcCtx)
+          .getOpTraits().getBucketColNames(), rsOp.getColumnExprMap(), tezBucketJoinProcCtx, true)
           == false) {
         LOG.info("We cannot convert to SMB because bucket column names do not match.");
         return false;
@@ -446,7 +446,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     int numBuckets = parentOfParent.getOpTraits().getNumBuckets();
     // all keys matched.
     if (checkColEquality(grandParentColNames, parentColNames, rs.getColumnExprMap(),
-        tezBucketJoinProcCtx) == false) {
+        tezBucketJoinProcCtx, true) == false) {
       LOG.info("No info available to check for bucket map join. Cannot convert");
       return false;
     }
@@ -467,7 +467,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
   private boolean checkColEquality(List<List<String>> grandParentColNames,
       List<List<String>> parentColNames, Map<String, ExprNodeDesc> colExprMap,
-      TezBucketJoinProcCtx tezBucketJoinProcCtx) {
+      TezBucketJoinProcCtx tezBucketJoinProcCtx, boolean strict) {
 
     if ((grandParentColNames == null) || (parentColNames == null)) {
       return false;
@@ -500,7 +500,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           }
 
           if (colCount == parentColNames.get(0).size()) {
-            return true;
+            if (strict) {
+              return (colCount == listBucketCols.size());
+            } else {
+              return true;
+            }
           }
         }
       }
