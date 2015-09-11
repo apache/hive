@@ -39,16 +39,6 @@
 </property>
 
 <property>
-  <name>hive.execution.mode</name>
-  <value>container</value>
-</property>
-
-<property>
-  <name>mapred.tez.java.opts</name>
-  <value>-Xmx128m</value>
-</property>
-
-<property>
   <name>hive.tez.container.size</name>
   <value>128</value>
   <description></description>

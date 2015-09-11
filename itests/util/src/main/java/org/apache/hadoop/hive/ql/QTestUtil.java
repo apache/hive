@@ -347,15 +347,8 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript,
-      String cleanupScript) throws Exception {
-    this(outDir, logDir, clusterType, confDir,
-        hadoopVer, initScript, cleanupScript, true);
-  }
-
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
        String confDir, String hadoopVer, String initScript,
-       String cleanupScript, boolean withLlapIo) throws Exception {
+       String cleanupScript) throws Exception {
 
     this.outDir = outDir;
     this.logDir = logDir;
@@ -446,7 +439,7 @@ public class QTestUtil {
       cleanUp();
     }
 
-    if (clusterType == MiniClusterType.tez) {
+    if (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap) {
       SessionState.get().getTezSession().close(false);
     }
     setup.tearDown();
@@ -912,8 +905,8 @@ public class QTestUtil {
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
 
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark
-        || clusterType == MiniClusterType.miniSparkOnYarn)) {
+    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap
+        || clusterType == MiniClusterType.spark || clusterType == MiniClusterType.miniSparkOnYarn)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
@@ -976,8 +969,8 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark
-        || clusterType == MiniClusterType.miniSparkOnYarn)) {
+    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap
+        || clusterType == MiniClusterType.miniSparkOnYarn || clusterType == MiniClusterType.miniSparkOnYarn)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
@@ -1838,7 +1831,7 @@ public class QTestUtil {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
       qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
-          defaultInitScript, defaultCleanupScript, false);
+          defaultInitScript, defaultCleanupScript);
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
