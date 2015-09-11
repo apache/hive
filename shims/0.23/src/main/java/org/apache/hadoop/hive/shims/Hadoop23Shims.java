@@ -390,11 +390,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode,
         boolean isLlap) throws IOException {
-      if (isLlap) {
-        createAndLaunchLlapDaemon(conf);
-      } else {
-        miniLlapCluster = null;
-      }
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");
@@ -402,6 +397,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       mr.init(conf);
       mr.start();
       this.conf = mr.getConfig();
+      if (isLlap) {
+        createAndLaunchLlapDaemon(this.conf);
+      } else {
+        miniLlapCluster = null;
+      }
     }
 
     private void createAndLaunchLlapDaemon(final Configuration conf) {
