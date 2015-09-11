@@ -20,7 +20,6 @@
  packages="org.apache.hadoop.hive.ql.log">
 
   <Properties>
-    <Property name="tez.container.log.threshold">ALL</Property>
     <Property name="tez.container.log.level">INFO</Property>
     <Property name="tez.container.root.logger">CLA</Property>
     <Property name="tez.container.log.dir">${sys:yarn.app.container.log.dir}</Property>
@@ -41,8 +40,8 @@
   </Appenders>
 
   <Loggers>
-    <Root level="${sys:tez.container.log.threshold}">
-      <AppenderRef ref="${sys:tez.container.root.logger}" level="${sys:tez.container.log.level}"/>
+    <Root level="${sys:tez.container.log.level}">
+      <AppenderRef ref="${sys:tez.container.root.logger}"/>
     </Root>
   </Loggers>
 

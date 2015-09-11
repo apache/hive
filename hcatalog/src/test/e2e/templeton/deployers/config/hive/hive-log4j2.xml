@@ -20,7 +20,6 @@
  packages="org.apache.hadoop.hive.ql.log">
 
   <Properties>
-    <Property name="hive.log.threshold">ALL</Property>
     <Property name="hive.log.level">DEBUG</Property>
     <Property name="hive.root.logger">DRFA</Property>
     <Property name="hive.log.dir">${sys:java.io.tmpdir}/${sys:user.name}</Property>
@@ -68,8 +67,8 @@
   </Appenders>
 
   <Loggers>
-    <Root level="${sys:hive.log.threshold}">
-      <AppenderRef ref="${sys:hive.root.logger}" level="${sys:hive.log.level}"/>
+    <Root level="${sys:hive.log.level}">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
       <AppenderRef ref="EventCounter" />
     </Root>
 
