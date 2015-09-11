@@ -33,7 +33,9 @@ import org.apache.hadoop.hive.llap.tezplugins.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
 import org.apache.tez.dag.api.TaskCommunicatorContext;
 import org.apache.tez.dag.api.event.VertexState;
+import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
+import org.apache.tez.mapreduce.input.MultiMRInput;
 import org.apache.tez.runtime.api.impl.InputSpec;
 
 public class SourceStateTracker {
@@ -274,7 +276,8 @@ public class SourceStateTracker {
   private boolean isSourceOfInterest(InputSpec inputSpec) {
     String inputClassName = inputSpec.getInputDescriptor().getClassName();
     // MRInput is not of interest since it'll always be ready.
-    return !inputClassName.equals(MRInputLegacy.class.getName());
+    return !(inputClassName.equals(MRInputLegacy.class.getName()) || inputClassName.equals(
+        MultiMRInput.class.getName()) || inputClassName.equals(MRInput.class.getName()));
   }
 
   void sendStateUpdateToNode(LlapNodeId nodeId, String sourceName, VertexState state) {
