@@ -193,7 +193,6 @@ import com.google.common.collect.Lists;
 public class CalcitePlanner extends SemanticAnalyzer {
 
   private final AtomicInteger noColsMissingStats = new AtomicInteger(0);
-  private List<FieldSchema> topLevelFieldSchema;
   private SemanticException semanticException;
   private boolean           runCBO             = true;
 
@@ -620,7 +619,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
     }
-    optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, topLevelFieldSchema);
+    optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema);
 
     return optiqOptimizedAST;
   }
@@ -644,7 +643,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-        introduceProjectIfNeeded(optimizedOptiqPlan), topLevelFieldSchema, this.getQB()
+        introduceProjectIfNeeded(optimizedOptiqPlan), resultSchema, this.getQB()
             .getTableDesc() != null);
 
     LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
@@ -851,7 +850,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1. Gen Calcite Plan
       try {
         calciteGenPlan = genLogicalPlan(getQB(), true);
-        topLevelFieldSchema = SemanticAnalyzer.convertRowSchemaToResultSetSchema(
+        resultSchema = SemanticAnalyzer.convertRowSchemaToResultSetSchema(
             relToHiveRR.get(calciteGenPlan),
             HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {
