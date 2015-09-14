@@ -84,6 +84,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
     // Get the total available memory from memory manager
     long totalMapJoinMemory = desc.getMemoryNeeded();
+    LOG.info("Memory manager allocates " + totalMapJoinMemory + " bytes for the loading hashtable.");
     if (totalMapJoinMemory <= 0) {
       totalMapJoinMemory = HiveConf.getLongVar(
         hconf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
@@ -128,11 +129,9 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       long memory = tableMemorySizes.get(biggest);
       int numPartitions = 0;
       try {
-        numPartitions = HybridHashTableContainer.calcNumPartitions(memory,
-            maxSize,
+        numPartitions = HybridHashTableContainer.calcNumPartitions(memory, maxSize,
             HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
-            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
-            nwayConf);
+            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE));
       } catch (IOException e) {
         throw new HiveException(e);
       }

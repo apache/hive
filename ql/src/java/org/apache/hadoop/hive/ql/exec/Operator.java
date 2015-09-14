@@ -324,6 +324,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   @SuppressWarnings("unchecked")
   public final void initialize(Configuration hconf, ObjectInspector[] inputOIs)
       throws HiveException {
+    this.done = false;
     if (state == State.INIT) {
       return;
     }
@@ -384,6 +385,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         cancelAsyncInitOps();
       }
     }
+
+    if (isLogInfoEnabled) {
+      LOG.info("Initialization Done " + id + " " + getName() + " done is reset.");
+    }
+
+    initializeChildren(hconf);
 
     // let's wait on the async ops before continuing
     completeInitialization(asyncInitOperations);

@@ -1495,6 +1495,8 @@ setRole
     (
     (KW_ALL) => (all=KW_ALL) -> ^(TOK_SHOW_SET_ROLE Identifier[$all.text])
     |
+    (KW_NONE) => (none=KW_NONE) -> ^(TOK_SHOW_SET_ROLE Identifier[$none.text])
+    |
     identifier -> ^(TOK_SHOW_SET_ROLE identifier)
     )
     ;

@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -141,12 +141,12 @@ public class PlanModifierForASTConv {
         if (!validFilterParent(rel, parent)) {
           introduceDerivedTable(rel, parent);
         }
-      } else if (rel instanceof HiveSort) {
+      } else if (rel instanceof HiveSortLimit) {
         if (!validSortParent(rel, parent)) {
           introduceDerivedTable(rel, parent);
         }
-        if (!validSortChild((HiveSort) rel)) {
-          introduceDerivedTable(((HiveSort) rel).getInput(), rel);
+        if (!validSortChild((HiveSortLimit) rel)) {
+          introduceDerivedTable(((HiveSortLimit) rel).getInput(), rel);
         }
       } else if (rel instanceof HiveAggregate) {
         RelNode newParent = parent;
@@ -297,7 +297,7 @@ public class PlanModifierForASTConv {
     return validParent;
   }
 
-  private static boolean validSortChild(HiveSort sortNode) {
+  private static boolean validSortChild(HiveSortLimit sortNode) {
     boolean validChild = true;
     RelNode child = sortNode.getInput();
 

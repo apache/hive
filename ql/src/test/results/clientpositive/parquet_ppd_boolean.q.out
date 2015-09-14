@@ -6,11 +6,11 @@ POSTHOOK: query: create table newtypestbl(c char(10), v varchar(10), d decimal(5
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@newtypestbl
-PREHOOK: query: insert overwrite table newtypestbl select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, true from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, false from src src2) uniontbl
+PREHOOK: query: insert overwrite table newtypestbl select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, true from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, false from src src2 limit 10) uniontbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@newtypestbl
-POSTHOOK: query: insert overwrite table newtypestbl select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, true from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, false from src src2) uniontbl
+POSTHOOK: query: insert overwrite table newtypestbl select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, true from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, false from src src2 limit 10) uniontbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@newtypestbl
@@ -18,183 +18,253 @@ POSTHOOK: Lineage: newtypestbl.b EXPRESSION []
 POSTHOOK: Lineage: newtypestbl.c EXPRESSION []
 POSTHOOK: Lineage: newtypestbl.d EXPRESSION []
 POSTHOOK: Lineage: newtypestbl.v EXPRESSION []
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b=true
+PREHOOK: query: select * from newtypestbl where b=true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b=true
+POSTHOOK: query: select * from newtypestbl where b=true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
--252951953500
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b!=true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+PREHOOK: query: select * from newtypestbl where b!=true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b!=true
+POSTHOOK: query: select * from newtypestbl where b!=true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-334427776000
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b<true
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+PREHOOK: query: select * from newtypestbl where b<true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b<true
+POSTHOOK: query: select * from newtypestbl where b<true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-334427776000
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b>true
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+PREHOOK: query: select * from newtypestbl where b>true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b>true
+POSTHOOK: query: select * from newtypestbl where b>true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-NULL
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b<=true
+PREHOOK: query: select * from newtypestbl where b<=true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b<=true
+POSTHOOK: query: select * from newtypestbl where b<=true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-81475822500
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b=false
+hello     	world	11.22	false
+apple     	bee	0.22	true
+hello     	world	11.22	false
+apple     	bee	0.22	true
+hello     	world	11.22	false
+apple     	bee	0.22	true
+hello     	world	11.22	false
+apple     	bee	0.22	true
+hello     	world	11.22	false
+apple     	bee	0.22	true
+PREHOOK: query: select * from newtypestbl where b=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b=false
+POSTHOOK: query: select * from newtypestbl where b=false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-334427776000
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b!=false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+PREHOOK: query: select * from newtypestbl where b!=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b!=false
+POSTHOOK: query: select * from newtypestbl where b!=false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
--252951953500
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b<false
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+PREHOOK: query: select * from newtypestbl where b<false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b<false
+POSTHOOK: query: select * from newtypestbl where b<false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-NULL
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b>false
+PREHOOK: query: select * from newtypestbl where b>false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b>false
+POSTHOOK: query: select * from newtypestbl where b>false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
--252951953500
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b<=false
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+PREHOOK: query: select * from newtypestbl where b<=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b<=false
+POSTHOOK: query: select * from newtypestbl where b<=false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-334427776000
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b=true
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+PREHOOK: query: select * from newtypestbl where b=true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b=true
+POSTHOOK: query: select * from newtypestbl where b=true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
--252951953500
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b!=true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+PREHOOK: query: select * from newtypestbl where b!=true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b!=true
+POSTHOOK: query: select * from newtypestbl where b!=true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-334427776000
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b<true
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+PREHOOK: query: select * from newtypestbl where b<true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b<true
+POSTHOOK: query: select * from newtypestbl where b<true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-334427776000
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b>true
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+PREHOOK: query: select * from newtypestbl where b>true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b>true
+POSTHOOK: query: select * from newtypestbl where b>true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-NULL
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b<=true
+PREHOOK: query: select * from newtypestbl where b<=true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b<=true
+POSTHOOK: query: select * from newtypestbl where b<=true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-81475822500
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b=false
+hello     	world	11.22	false
+apple     	bee	0.22	true
+hello     	world	11.22	false
+apple     	bee	0.22	true
+hello     	world	11.22	false
+apple     	bee	0.22	true
+hello     	world	11.22	false
+apple     	bee	0.22	true
+hello     	world	11.22	false
+apple     	bee	0.22	true
+PREHOOK: query: select * from newtypestbl where b=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b=false
+POSTHOOK: query: select * from newtypestbl where b=false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-334427776000
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b!=false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+PREHOOK: query: select * from newtypestbl where b!=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b!=false
+POSTHOOK: query: select * from newtypestbl where b!=false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
--252951953500
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b<false
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+PREHOOK: query: select * from newtypestbl where b<false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b<false
+POSTHOOK: query: select * from newtypestbl where b<false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-NULL
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b>false
+PREHOOK: query: select * from newtypestbl where b>false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b>false
+POSTHOOK: query: select * from newtypestbl where b>false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
--252951953500
-PREHOOK: query: select sum(hash(*)) from newtypestbl where b<=false
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+apple     	bee	0.22	true
+PREHOOK: query: select * from newtypestbl where b<=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from newtypestbl where b<=false
+POSTHOOK: query: select * from newtypestbl where b<=false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-334427776000
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false
+hello     	world	11.22	false

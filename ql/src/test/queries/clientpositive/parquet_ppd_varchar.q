@@ -5,72 +5,72 @@ SET mapred.max.split.size=5000;
 
 create table newtypestbl(c char(10), v varchar(10), d decimal(5,3), da date) stored as parquet;
 
-insert overwrite table newtypestbl select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("1970-02-20" as date) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("1970-02-27" as date) from src src2) uniontbl;
+insert overwrite table newtypestbl select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("1970-02-20" as date) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("1970-02-27" as date) from src src2 limit 10) uniontbl;
 
 set hive.optimize.index.filter=false;
 
 -- varchar data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
-select sum(hash(*)) from newtypestbl where v="bee";
+select * from newtypestbl where v="bee";
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v="bee";
+select * from newtypestbl where v="bee";
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v!="bee";
+select * from newtypestbl where v!="bee";
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v!="bee";
+select * from newtypestbl where v!="bee";
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v<"world";
+select * from newtypestbl where v<"world";
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v<"world";
+select * from newtypestbl where v<"world";
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v<="world";
+select * from newtypestbl where v<="world";
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v<="world";
+select * from newtypestbl where v<="world";
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v="bee   ";
+select * from newtypestbl where v="bee   ";
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v="bee   ";
+select * from newtypestbl where v="bee   ";
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v in ("bee", "orange");
+select * from newtypestbl where v in ("bee", "orange");
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v in ("bee", "orange");
+select * from newtypestbl where v in ("bee", "orange");
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v in ("bee", "world");
+select * from newtypestbl where v in ("bee", "world");
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v in ("bee", "world");
+select * from newtypestbl where v in ("bee", "world");
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v in ("orange");
+select * from newtypestbl where v in ("orange");
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v in ("orange");
+select * from newtypestbl where v in ("orange");
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v between "bee" and "orange";
+select * from newtypestbl where v between "bee" and "orange";
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v between "bee" and "orange";
+select * from newtypestbl where v between "bee" and "orange";
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v between "bee" and "zombie";
+select * from newtypestbl where v between "bee" and "zombie";
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v between "bee" and "zombie";
+select * from newtypestbl where v between "bee" and "zombie";
 
 set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypestbl where v between "orange" and "pine";
+select * from newtypestbl where v between "orange" and "pine";
 
 set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypestbl where v between "orange" and "pine";
+select * from newtypestbl where v between "orange" and "pine";

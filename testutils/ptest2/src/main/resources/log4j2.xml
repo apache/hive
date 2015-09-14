@@ -20,7 +20,6 @@
  packages="org.apache.hadoop.hive.ql.log">
 
   <Properties>
-    <Property name="hive.ptest.log.threshold">DEBUG</Property>
     <Property name="hive.ptest.log.level">DEBUG</Property>
     <Property name="hive.ptest.root.logger">FILE</Property>
     <Property name="hive.ptest.log.dir">target</Property>
@@ -45,8 +44,8 @@
   </Appenders>
 
   <Loggers>
-    <Root level="${sys:hive.ptest.log.threshold}">
-      <AppenderRef ref="${sys:hive.ptest.root.logger}" level="${sys:hive.ptest.log.level}"/>
+    <Root level="${sys:hive.ptest.log.level}">
+      <AppenderRef ref="${sys:hive.ptest.root.logger}"/>
     </Root>
 
     <Logger name="org.apache.http" level="INFO">

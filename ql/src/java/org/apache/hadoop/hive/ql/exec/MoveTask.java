@@ -361,7 +361,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             if (dps != null && dps.size() > 0) {
               pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
             }
-
+            console.printInfo(System.getProperty("line.separator"));
             long startTime = System.currentTimeMillis();
             // load the list of DP partitions and return the list of partition specs
             // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
@@ -381,8 +381,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
                 SessionState.get().getTxnMgr().getCurrentTxnId());
-            console.printInfo("\t Time taken for load dynamic partitions : "  +
-                (System.currentTimeMillis() - startTime));
+
+            console.printInfo("\t Time taken to load dynamic partitions: "  +
+                (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
 
             if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
               throw new HiveException("This query creates no partitions." +
@@ -425,11 +426,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
                     table.getCols());
               }
-
-              console.printInfo("\tLoading partition " + entry.getKey());
+              LOG.info("\tLoading partition " + entry.getKey());
             }
             console.printInfo("\t Time taken for adding to write entity : " +
-                (System.currentTimeMillis() - startTime));
+                (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),
