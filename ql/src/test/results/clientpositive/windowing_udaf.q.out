@@ -584,3 +584,15 @@ zach zipper	19.822727272727274
 ulysses king	18.273333333333333
 bob king	17.664615384615384
 luke carson	18.02785714285714
+PREHOOK: query: select key, max(value) over
+  (order by key rows between 10 preceding and 20 following)
+from src1 where length(key) > 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, max(value) over
+  (order by key rows between 10 preceding and 20 following)
+from src1 where length(key) > 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
