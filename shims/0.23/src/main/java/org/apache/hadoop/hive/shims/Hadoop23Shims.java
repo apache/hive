@@ -404,7 +404,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     }
 
-    private void createAndLaunchLlapDaemon(final Configuration conf) {
+    private void createAndLaunchLlapDaemon(final Configuration conf)
+        throws IOException {
       try {
         final String clusterName = "llap";
         Class<?> llapDaemonKlass =
@@ -442,6 +443,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
             numLocalDirs);
       } catch (Exception e) {
         LOG.error("Unable to create MiniLlapCluster. Exception: " + e.getMessage());
+        throw new IOException(e);
       }
     }
 
