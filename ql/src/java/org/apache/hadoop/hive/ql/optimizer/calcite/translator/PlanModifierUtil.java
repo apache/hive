@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -53,7 +53,7 @@ public class PlanModifierUtil {
         || !HiveCalciteUtil.orderRelNode(topSelparentPair.getKey())) {
       return;
     }
-    HiveSort obRel = (HiveSort) topSelparentPair.getKey();
+    HiveSortLimit obRel = (HiveSortLimit) topSelparentPair.getKey();
     Project obChild = (Project) topSelparentPair.getValue();
     if (obChild.getRowType().getFieldCount() <= resultSchema.size()) {
       return;

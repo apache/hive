@@ -64,7 +64,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
@@ -171,8 +171,8 @@ public class HiveOpConverter {
       return visit(hj);
     } else if (rn instanceof HiveFilter) {
       return visit((HiveFilter) rn);
-    } else if (rn instanceof HiveSort) {
-      return visit((HiveSort) rn);
+    } else if (rn instanceof HiveSortLimit) {
+      return visit((HiveSortLimit) rn);
     } else if (rn instanceof HiveUnion) {
       return visit((HiveUnion) rn);
     } else if (rn instanceof HiveSortExchange) {
@@ -398,7 +398,7 @@ public class HiveOpConverter {
     return HiveGBOpConvUtil.translateGB(inputOpAf, aggRel, hiveConf);
   }
 
-  OpAttr visit(HiveSort sortRel) throws SemanticException {
+  OpAttr visit(HiveSortLimit sortRel) throws SemanticException {
     OpAttr inputOpAf = dispatch(sortRel.getInput());
 
     if (LOG.isDebugEnabled()) {

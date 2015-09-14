@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +62,7 @@ public final class Op {
       JSONObject mapjoinObj = opObject.getJSONObject("Map Join Operator");
       // get the map for posToVertex
       JSONObject verticeObj = mapjoinObj.getJSONObject("input vertices:");
-      Map<String, String> posToVertex = new HashMap<>();
+      Map<String, String> posToVertex = new LinkedHashMap<>();
       for (String pos : JSONObject.getNames(verticeObj)) {
         String vertexName = verticeObj.getString(pos);
         posToVertex.put(pos, vertexName);
@@ -83,7 +83,7 @@ public final class Op {
       // update the keys to use vertex name
       JSONObject keys = mapjoinObj.getJSONObject("keys:");
       if (keys.length() != 0) {
-        JSONObject newKeys = new JSONObject();
+        JSONObject newKeys = new JSONObject(new LinkedHashMap<>());
         for (String key : JSONObject.getNames(keys)) {
           String vertexName = posToVertex.get(key);
           if (vertexName != null) {
@@ -116,7 +116,7 @@ public final class Op {
   }
 
   /**
-   * @param out
+   * @param printer
    * @param indentFlag
    * @param branchOfJoinOp
    *          This parameter is used to show if it is a branch of a Join

@@ -53,8 +53,8 @@ Stage-3
    Stats-Aggr Operator
       Stage-0
          Move Operator
-            partition:{"ts":"2012-01-03+14:46:31","ds":"2012-01-03"}
-            table:{"serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.src_orc_merge_test_part","input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat"}
+            partition:{"ds":"2012-01-03","ts":"2012-01-03+14:46:31"}
+            table:{"input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat","serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.src_orc_merge_test_part"}
             Stage-2
                Dependency Collection{}
                   Stage-1
@@ -62,7 +62,7 @@ Stage-3
                      File Output Operator [FS_3]
                         compressed:false
                         Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                        table:{"serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.src_orc_merge_test_part","input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat"}
+                        table:{"input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat","serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.src_orc_merge_test_part"}
                         Select Operator [SEL_1]
                            outputColumnNames:["_col0","_col1"]
                            Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -93,8 +93,8 @@ Stage-3
    Stats-Aggr Operator
       Stage-0
          Move Operator
-            partition:{"ts":"2012-01-03+14:46:31","ds":"2012-01-03"}
-            table:{"serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.src_orc_merge_test_part","input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat"}
+            partition:{"ds":"2012-01-03","ts":"2012-01-03+14:46:31"}
+            table:{"input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat","serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.src_orc_merge_test_part"}
             Stage-2
                Dependency Collection{}
                   Stage-1
@@ -102,7 +102,7 @@ Stage-3
                      File Output Operator [FS_7]
                         compressed:false
                         Statistics:Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
-                        table:{"serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.src_orc_merge_test_part","input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat"}
+                        table:{"input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat","serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.src_orc_merge_test_part"}
                         Select Operator [SEL_6]
                            outputColumnNames:["_col0","_col1"]
                            Statistics:Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
@@ -144,7 +144,7 @@ Stage-0
          File Output Operator [FS_8]
             compressed:false
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_6]
             |  aggregations:["count(VALUE._col0)"]
             |  outputColumnNames:["_col0"]
@@ -181,7 +181,7 @@ Stage-0
          File Output Operator [FS_8]
             compressed:false
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_6]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -227,7 +227,7 @@ Stage-0
          File Output Operator [FS_8]
             compressed:false
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_6]
             |  aggregations:["count(VALUE._col0)"]
             |  outputColumnNames:["_col0"]
@@ -264,7 +264,7 @@ Stage-0
          File Output Operator [FS_8]
             compressed:false
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_6]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -329,7 +329,7 @@ Stage-0
          File Output Operator [FS_17]
             compressed:false
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_15]
             |  aggregations:["sum(VALUE._col0)"]
             |  outputColumnNames:["_col0"]
@@ -397,7 +397,7 @@ Stage-0
          File Output Operator [FS_7]
             compressed:false
             Statistics:Num rows: 10 Data size: 885 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_6]
                outputColumnNames:["_col0","_col1","_col2"]
                Statistics:Num rows: 10 Data size: 885 Basic stats: COMPLETE Column stats: COMPLETE
@@ -443,7 +443,7 @@ Stage-0
          File Output Operator [FS_12]
             compressed:false
             Statistics:Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_11]
                outputColumnNames:["_col0","_col1","_col2"]
                Statistics:Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
@@ -515,7 +515,7 @@ Stage-0
          File Output Operator [FS_45]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_44]
             |  outputColumnNames:["_col0","_col1","_col2"]
             |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -550,7 +550,7 @@ Stage-0
                                  Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                                  Merge Join Operator [MERGEJOIN_55]
                                  |  condition map:[{"":"Inner Join 0 to 1"}]
-                                 |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                 |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                  |  outputColumnNames:["_col1","_col2","_col6"]
                                  |  Statistics:Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                                  |<-Map 11 [SIMPLE_EDGE]
@@ -584,7 +584,7 @@ Stage-0
                                              Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                              Merge Join Operator [MERGEJOIN_54]
                                              |  condition map:[{"":"Inner Join 0 to 1"}]
-                                             |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                             |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                              |  outputColumnNames:["_col0","_col1","_col2","_col4"]
                                              |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                              |<-Reducer 10 [SIMPLE_EDGE]
@@ -701,7 +701,7 @@ Stage-0
          File Output Operator [FS_44]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_43]
             |  outputColumnNames:["_col0","_col1","_col2"]
             |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -736,7 +736,7 @@ Stage-0
                                  Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                                  Merge Join Operator [MERGEJOIN_53]
                                  |  condition map:[{"":"Left Outer Join0 to 1"}]
-                                 |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                 |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                  |  outputColumnNames:["_col1","_col2","_col6"]
                                  |  Statistics:Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                                  |<-Map 10 [SIMPLE_EDGE]
@@ -767,7 +767,7 @@ Stage-0
                                              Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                              Merge Join Operator [MERGEJOIN_52]
                                              |  condition map:[{"":"Left Outer Join0 to 1"}]
-                                             |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                             |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                              |  outputColumnNames:["_col0","_col1","_col2","_col4"]
                                              |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                              |<-Reducer 3 [SIMPLE_EDGE]
@@ -870,7 +870,7 @@ Stage-0
          File Output Operator [FS_36]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_34]
             |  aggregations:["count(VALUE._col0)"]
             |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
@@ -896,7 +896,7 @@ Stage-0
                            Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                            Merge Join Operator [MERGEJOIN_41]
                            |  condition map:[{"":"Right Outer Join0 to 1"},{"":"Right Outer Join0 to 2"}]
-                           |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                           |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)","2":"_col0 (type: string)"}
                            |  outputColumnNames:["_col1","_col2","_col4","_col6"]
                            |  Statistics:Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                            |<-Map 8 [SIMPLE_EDGE]
@@ -1014,7 +1014,7 @@ Stage-0
          File Output Operator [FS_43]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_42]
             |  outputColumnNames:["_col0","_col1","_col2"]
             |  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1049,7 +1049,7 @@ Stage-0
                                  Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                                  Merge Join Operator [MERGEJOIN_48]
                                  |  condition map:[{"":"Outer Join 0 to 1"},{"":"Outer Join 0 to 2"}]
-                                 |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                 |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)","2":"_col0 (type: string)"}
                                  |  outputColumnNames:["_col1","_col2","_col4","_col6"]
                                  |  Statistics:Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                                  |<-Map 10 [SIMPLE_EDGE]
@@ -1177,7 +1177,7 @@ Stage-0
          File Output Operator [FS_41]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_39]
             |  aggregations:["count(VALUE._col0)"]
             |  keys:KEY._col0 (type: int), KEY._col1 (type: bigint)
@@ -1203,7 +1203,7 @@ Stage-0
                            Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                            Merge Join Operator [MERGEJOIN_51]
                            |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                           |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                            |  outputColumnNames:["_col1","_col2","_col6"]
                            |  Statistics:Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                            |<-Map 8 [SIMPLE_EDGE]
@@ -1237,7 +1237,7 @@ Stage-0
                                        Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                        Merge Join Operator [MERGEJOIN_50]
                                        |  condition map:[{"":"Inner Join 0 to 1"}]
-                                       |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                       |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                        |  outputColumnNames:["_col0","_col1","_col2","_col4"]
                                        |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                        |<-Reducer 2 [SIMPLE_EDGE]
@@ -1327,7 +1327,7 @@ Stage-0
          File Output Operator [FS_8]
             compressed:false
             Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_6]
                outputColumnNames:["_col0"]
                Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1378,7 +1378,7 @@ Stage-0
          File Output Operator [FS_29]
             compressed:false
             Statistics:Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_28]
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1494,7 +1494,7 @@ Stage-0
          File Output Operator [FS_34]
             compressed:false
             Statistics:Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_33]
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1630,10 +1630,10 @@ Stage-0
          File Output Operator [FS_12]
             compressed:false
             Statistics:Num rows: 18 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_17]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+            |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 18 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Map 1 [SIMPLE_EDGE]
@@ -1684,13 +1684,13 @@ Stage-0
          File Output Operator [FS_8]
             compressed:false
             Statistics:Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1"]
                Statistics:Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                Merge Join Operator [MERGEJOIN_11]
                |  condition map:[{"":"Left Outer Join0 to 1"}]
-               |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+               |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                |  outputColumnNames:["_col1","_col3"]
                |  Statistics:Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                |<-Map 1 [SIMPLE_EDGE]
@@ -1737,13 +1737,13 @@ Stage-0
          File Output Operator [FS_8]
             compressed:false
             Statistics:Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1"]
                Statistics:Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                Merge Join Operator [MERGEJOIN_9]
                |  condition map:[{"":"Outer Join 0 to 1"}]
-               |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+               |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                |  outputColumnNames:["_col1","_col3"]
                |  Statistics:Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                |<-Map 1 [SIMPLE_EDGE]
@@ -1790,13 +1790,13 @@ Stage-0
          File Output Operator [FS_14]
             compressed:false
             Statistics:Num rows: 291 Data size: 29391 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_13]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4"]
                Statistics:Num rows: 291 Data size: 29391 Basic stats: COMPLETE Column stats: COMPLETE
                Merge Join Operator [MERGEJOIN_24]
                |  condition map:[{"":"Inner Join 0 to 1"},{"":"Inner Join 0 to 2"}]
-               |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+               |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)","2":"_col0 (type: string)"}
                |  outputColumnNames:["_col1","_col2","_col4","_col5","_col6"]
                |  Statistics:Num rows: 291 Data size: 29391 Basic stats: COMPLETE Column stats: COMPLETE
                |<-Map 1 [SIMPLE_EDGE]
@@ -1865,13 +1865,13 @@ Stage-0
          File Output Operator [FS_14]
             compressed:false
             Statistics:Num rows: 291 Data size: 51798 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_13]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 291 Data size: 51798 Basic stats: COMPLETE Column stats: COMPLETE
                Merge Join Operator [MERGEJOIN_24]
                |  condition map:[{"":"Inner Join 0 to 1"},{"":"Inner Join 0 to 2"}]
-               |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+               |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)","2":"_col0 (type: string)"}
                |  outputColumnNames:["_col0","_col1","_col3","_col4"]
                |  Statistics:Num rows: 291 Data size: 51798 Basic stats: COMPLETE Column stats: COMPLETE
                |<-Map 1 [SIMPLE_EDGE]
@@ -1940,7 +1940,7 @@ Stage-0
          File Output Operator [FS_22]
             compressed:false
             Statistics:Num rows: 4 Data size: 404 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_19]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4"]
                Statistics:Num rows: 4 Data size: 404 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1949,7 +1949,7 @@ Stage-0
                   Statistics:Num rows: 4 Data size: 404 Basic stats: COMPLETE Column stats: COMPLETE
                   Merge Join Operator [MERGEJOIN_32]
                   |  condition map:[{"":"Inner Join 0 to 1"}]
-                  |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                  |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                   |  outputColumnNames:["_col1","_col2","_col3","_col4","_col6"]
                   |  Statistics:Num rows: 14 Data size: 1414 Basic stats: COMPLETE Column stats: COMPLETE
                   |<-Map 5 [SIMPLE_EDGE]
@@ -1980,7 +1980,7 @@ Stage-0
                            Statistics:Num rows: 4 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
                            Merge Join Operator [MERGEJOIN_31]
                            |  condition map:[{"":"Outer Join 0 to 1"}]
-                           |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                           |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                            |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4"]
                            |  Statistics:Num rows: 18 Data size: 3276 Basic stats: COMPLETE Column stats: COMPLETE
                            |<-Map 1 [SIMPLE_EDGE]
@@ -2033,7 +2033,7 @@ Stage-0
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 12 Data size: 1212 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_13]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4"]
                Statistics:Num rows: 12 Data size: 1212 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2042,7 +2042,7 @@ Stage-0
                   Statistics:Num rows: 12 Data size: 1212 Basic stats: COMPLETE Column stats: COMPLETE
                   Merge Join Operator [MERGEJOIN_23]
                   |  condition map:[{"":"Right Outer Join0 to 1"},{"":"Right Outer Join0 to 2"}]
-                  |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                  |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)","2":"_col0 (type: string)"}
                   |  outputColumnNames:["_col1","_col2","_col3","_col4","_col6"]
                   |  Statistics:Num rows: 72 Data size: 7272 Basic stats: COMPLETE Column stats: COMPLETE
                   |<-Map 1 [SIMPLE_EDGE]
@@ -2109,7 +2109,7 @@ Stage-0
          File Output Operator [FS_10]
             compressed:false
             Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Limit [LIM_9]
                Number of rows:1
                Statistics:Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2168,7 +2168,7 @@ Stage-0
          File Output Operator [FS_15]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Limit [LIM_14]
                Number of rows:1
                Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2246,7 +2246,7 @@ Stage-0
          File Output Operator [FS_13]
             compressed:false
             Statistics:Num rows: 5 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Limit [LIM_12]
                Number of rows:5
                Statistics:Num rows: 5 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2304,7 +2304,7 @@ Stage-0
          File Output Operator [FS_13]
             compressed:false
             Statistics:Num rows: 5 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Limit [LIM_12]
                Number of rows:5
                Statistics:Num rows: 5 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2372,7 +2372,7 @@ Stage-0
          File Output Operator [FS_48]
             compressed:false
             Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Limit [LIM_47]
                Number of rows:5
                Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2410,7 +2410,7 @@ Stage-0
                                     Statistics:Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                                     Merge Join Operator [MERGEJOIN_60]
                                     |  condition map:[{"":"Inner Join 0 to 1"}]
-                                    |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                    |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                     |  outputColumnNames:["_col1","_col2","_col6"]
                                     |  Statistics:Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                                     |<-Map 11 [SIMPLE_EDGE]
@@ -2444,7 +2444,7 @@ Stage-0
                                                 Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                                 Merge Join Operator [MERGEJOIN_59]
                                                 |  condition map:[{"":"Inner Join 0 to 1"}]
-                                                |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                                |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                                 |  outputColumnNames:["_col0","_col1","_col2","_col4"]
                                                 |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                                                 |<-Reducer 10 [SIMPLE_EDGE]
@@ -2567,13 +2567,13 @@ Stage-0
          File Output Operator [FS_13]
             compressed:false
             Statistics:Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_12]
                outputColumnNames:["_col0"]
                Statistics:Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                Merge Join Operator [MERGEJOIN_18]
                |  condition map:[{"":"Left Semi Join 0 to 1"}]
-               |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+               |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                |  outputColumnNames:["_col1"]
                |  Statistics:Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                |<-Map 1 [SIMPLE_EDGE]
@@ -2629,13 +2629,13 @@ Stage-0
          File Output Operator [FS_24]
             compressed:false
             Statistics:Num rows: 12 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_23]
                outputColumnNames:["_col0","_col1","_col2"]
                Statistics:Num rows: 12 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
                Merge Join Operator [MERGEJOIN_34]
                |  condition map:[{"":"Left Semi Join 0 to 1"},{"":"Left Semi Join 0 to 2"}]
-               |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+               |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)","2":"_col0 (type: string)"}
                |  outputColumnNames:["_col0","_col1","_col2"]
                |  Statistics:Num rows: 12 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
                |<-Map 1 [SIMPLE_EDGE]
@@ -2716,7 +2716,7 @@ Stage-0
          File Output Operator [FS_53]
             compressed:false
             Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_52]
             |  outputColumnNames:["_col0","_col1","_col2"]
             |  Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2745,7 +2745,7 @@ Stage-0
                            Statistics:Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                            Merge Join Operator [MERGEJOIN_66]
                            |  condition map:[{"":"Left Semi Join 0 to 1"},{"":"Left Semi Join 0 to 2"}]
-                           |  keys:{"2":"_col0 (type: string)","1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                           |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)","2":"_col0 (type: string)"}
                            |  outputColumnNames:["_col0","_col1"]
                            |  Statistics:Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                            |<-Map 10 [SIMPLE_EDGE]
@@ -2931,7 +2931,7 @@ Stage-0
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_14]
             |  aggregations:["count(VALUE._col0)"]
             |  outputColumnNames:["_col0"]
@@ -3001,7 +3001,7 @@ Stage-0
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_15]
                outputColumnNames:["_col0","_col1"]
                Statistics:Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3010,7 +3010,7 @@ Stage-0
                   Statistics:Num rows: 1 Data size: 269 Basic stats: COMPLETE Column stats: COMPLETE
                   Merge Join Operator [MERGEJOIN_20]
                   |  condition map:[{"":"Left Outer Join0 to 1"}]
-                  |  keys:{"1":"_col1 (type: string)","0":"_col1 (type: string)"}
+                  |  keys:{"0":"_col1 (type: string)","1":"_col1 (type: string)"}
                   |  outputColumnNames:["_col0","_col1","_col3"]
                   |  Statistics:Num rows: 193 Data size: 51917 Basic stats: COMPLETE Column stats: COMPLETE
                   |<-Map 1 [SIMPLE_EDGE]
@@ -3091,7 +3091,7 @@ Stage-0
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_15]
                outputColumnNames:["_col0","_col1"]
                Statistics:Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3100,7 +3100,7 @@ Stage-0
                   Statistics:Num rows: 1 Data size: 265 Basic stats: COMPLETE Column stats: COMPLETE
                   Merge Join Operator [MERGEJOIN_20]
                   |  condition map:[{"":"Left Outer Join0 to 1"}]
-                  |  keys:{"1":"_col0 (type: string), _col1 (type: string)","0":"_col1 (type: string), _col0 (type: string)"}
+                  |  keys:{"0":"_col1 (type: string), _col0 (type: string)","1":"_col0 (type: string), _col1 (type: string)"}
                   |  outputColumnNames:["_col0","_col1","_col3"]
                   |  Statistics:Num rows: 1 Data size: 265 Basic stats: COMPLETE Column stats: COMPLETE
                   |<-Map 4 [SIMPLE_EDGE]
@@ -3184,10 +3184,10 @@ Stage-0
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_21]
             |  condition map:[{"":"Left Semi Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string), _col1 (type: string)","0":"_col1 (type: string), _col0 (type: string)"}
+            |  keys:{"0":"_col1 (type: string), _col0 (type: string)","1":"_col0 (type: string), _col1 (type: string)"}
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Map 1 [SIMPLE_EDGE]
@@ -3256,10 +3256,10 @@ Stage-0
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_21]
             |  condition map:[{"":"Left Semi Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string), _col1 (type: string)","0":"_col1 (type: string), _col0 (type: string)"}
+            |  keys:{"0":"_col1 (type: string), _col0 (type: string)","1":"_col0 (type: string), _col1 (type: string)"}
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Map 1 [SIMPLE_EDGE]
@@ -3318,10 +3318,10 @@ Stage-0
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_21]
             |  condition map:[{"":"Left Semi Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+            |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Map 1 [SIMPLE_EDGE]
@@ -3385,13 +3385,13 @@ Stage-0
          File Output Operator [FS_28]
             compressed:false
             Statistics:Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_27]
                outputColumnNames:["_col0","_col1"]
                Statistics:Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                Merge Join Operator [MERGEJOIN_38]
                |  condition map:[{"":"Inner Join 0 to 1"}]
-               |  keys:{"1":"_col0 (type: int)","0":"_col1 (type: int)"}
+               |  keys:{"0":"_col1 (type: int)","1":"_col0 (type: int)"}
                |  outputColumnNames:["_col1","_col2"]
                |  Statistics:Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                |<-Reducer 2 [SIMPLE_EDGE]
@@ -3403,7 +3403,7 @@ Stage-0
                |     value expressions:_col2 (type: int)
                |     Merge Join Operator [MERGEJOIN_37]
                |     |  condition map:[{"":"Left Semi Join 0 to 1"}]
-               |     |  keys:{"1":"_col0 (type: int)","0":"_col0 (type: int)"}
+               |     |  keys:{"0":"_col0 (type: int)","1":"_col0 (type: int)"}
                |     |  outputColumnNames:["_col1","_col2"]
                |     |  Statistics:Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                |     |<-Map 1 [SIMPLE_EDGE]
@@ -3499,10 +3499,10 @@ Stage-0
          File Output Operator [FS_38]
             compressed:false
             Statistics:Num rows: 34 Data size: 6324 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_51]
             |  condition map:[{"":"Left Semi Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: bigint)","0":"_col2 (type: bigint)"}
+            |  keys:{"0":"_col2 (type: bigint)","1":"_col0 (type: bigint)"}
             |  outputColumnNames:["_col0","_col1","_col2"]
             |  Statistics:Num rows: 34 Data size: 6324 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Reducer 3 [SIMPLE_EDGE]
@@ -3534,7 +3534,7 @@ Stage-0
             |                 Statistics:Num rows: 83 Data size: 15438 Basic stats: COMPLETE Column stats: COMPLETE
             |                 Merge Join Operator [MERGEJOIN_50]
             |                 |  condition map:[{"":"Left Semi Join 0 to 1"}]
-            |                 |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+            |                 |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
             |                 |  outputColumnNames:["_col0","_col1"]
             |                 |  Statistics:Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             |                 |<-Map 1 [SIMPLE_EDGE]
@@ -3645,10 +3645,10 @@ Stage-0
          File Output Operator [FS_22]
             compressed:false
             Statistics:Num rows: 3 Data size: 681 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_27]
             |  condition map:[{"":"Left Semi Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string)","0":"_col1 (type: string)"}
+            |  keys:{"0":"_col1 (type: string)","1":"_col0 (type: string)"}
             |  outputColumnNames:["_col0","_col1","_col2"]
             |  Statistics:Num rows: 3 Data size: 681 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Reducer 2 [SIMPLE_EDGE]
@@ -3701,7 +3701,7 @@ Stage-0
                            predicate:first_value_window_0 is not null (type: boolean)
                            Statistics:Num rows: 13 Data size: 6383 Basic stats: COMPLETE Column stats: COMPLETE
                            PTF Operator [PTF_11]
-                              Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col5"}]
+                              Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col5","partition by:":"_col2"}]
                               Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                               Select Operator [SEL_10]
                               |  outputColumnNames:["_col1","_col2","_col5"]
@@ -3747,7 +3747,7 @@ Stage-0
          File Output Operator [FS_29]
             compressed:false
             Statistics:Num rows: 302 Data size: 53756 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_28]
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 302 Data size: 53756 Basic stats: COMPLETE Column stats: NONE
@@ -3765,7 +3765,7 @@ Stage-0
                         Statistics:Num rows: 302 Data size: 53756 Basic stats: COMPLETE Column stats: NONE
                         Merge Join Operator [MERGEJOIN_37]
                         |  condition map:[{"":"Left Outer Join0 to 1"}]
-                        |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                        |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                         |  outputColumnNames:["_col0","_col1","_col3"]
                         |  Statistics:Num rows: 605 Data size: 107690 Basic stats: COMPLETE Column stats: NONE
                         |<-Map 7 [SIMPLE_EDGE]
@@ -3868,7 +3868,7 @@ Stage-0
          File Output Operator [FS_27]
             compressed:false
             Statistics:Num rows: 15 Data size: 3507 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_26]
                outputColumnNames:["_col0","_col1","_col2"]
                Statistics:Num rows: 15 Data size: 3507 Basic stats: COMPLETE Column stats: NONE
@@ -3877,7 +3877,7 @@ Stage-0
                   Statistics:Num rows: 15 Data size: 3507 Basic stats: COMPLETE Column stats: NONE
                   Merge Join Operator [MERGEJOIN_35]
                   |  condition map:[{"":"Left Outer Join0 to 1"}]
-                  |  keys:{"1":"_col0 (type: string), _col1 (type: string)","0":"_col0 (type: string), _col1 (type: string)"}
+                  |  keys:{"0":"_col0 (type: string), _col1 (type: string)","1":"_col0 (type: string), _col1 (type: string)"}
                   |  outputColumnNames:["_col0","_col1","_col2","_col4"]
                   |  Statistics:Num rows: 30 Data size: 7014 Basic stats: COMPLETE Column stats: NONE
                   |<-Map 6 [SIMPLE_EDGE]
@@ -3982,7 +3982,7 @@ Stage-0
          File Output Operator [FS_39]
             compressed:false
             Statistics:Num rows: 1 Data size: 146 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_38]
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 1 Data size: 146 Basic stats: COMPLETE Column stats: NONE
@@ -4007,7 +4007,7 @@ Stage-0
                   |        Statistics:Num rows: 1 Data size: 133 Basic stats: COMPLETE Column stats: COMPLETE
                   |        Merge Join Operator [MERGEJOIN_48]
                   |        |  condition map:[{"":"Left Outer Join0 to 1"}]
-                  |        |  keys:{"1":"_col0 (type: double)","0":"UDFToDouble(_col1) (type: double)"}
+                  |        |  keys:{"0":"UDFToDouble(_col1) (type: double)","1":"_col0 (type: double)"}
                   |        |  outputColumnNames:["_col0","_col1","_col2"]
                   |        |  Statistics:Num rows: 1 Data size: 133 Basic stats: COMPLETE Column stats: COMPLETE
                   |        |<-Map 1 [SIMPLE_EDGE]
@@ -4131,7 +4131,7 @@ Stage-0
          File Output Operator [FS_44]
             compressed:false
             Statistics:Num rows: 2 Data size: 256 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_43]
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 2 Data size: 256 Basic stats: COMPLETE Column stats: NONE
@@ -4149,7 +4149,7 @@ Stage-0
                         Statistics:Num rows: 2 Data size: 256 Basic stats: COMPLETE Column stats: NONE
                         Merge Join Operator [MERGEJOIN_53]
                         |  condition map:[{"":"Left Outer Join0 to 1"}]
-                        |  keys:{"1":"_col0 (type: string), _col1 (type: double)","0":"_col0 (type: string), _col1 (type: double)"}
+                        |  keys:{"0":"_col0 (type: string), _col1 (type: double)","1":"_col0 (type: string), _col1 (type: double)"}
                         |  outputColumnNames:["_col0","_col1","_col3"]
                         |  Statistics:Num rows: 5 Data size: 641 Basic stats: COMPLETE Column stats: NONE
                         |<-Reducer 10 [SIMPLE_EDGE]
@@ -4294,12 +4294,12 @@ Stage-0
          File Output Operator [FS_6]
             compressed:false
             Statistics:Num rows: 20 Data size: 1040 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_4]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
                Statistics:Num rows: 20 Data size: 1040 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_3]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"0","name:":"windowingtablefunction","order by:":"0"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"0","partition by:":"0"}]
                   Statistics:Num rows: 20 Data size: 9184 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_2]
                   |  outputColumnNames:["_col2","_col3"]
@@ -4332,12 +4332,12 @@ Stage-0
          File Output Operator [FS_6]
             compressed:false
             Statistics:Num rows: 20 Data size: 1040 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_4]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
                Statistics:Num rows: 20 Data size: 1040 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_3]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"0","name:":"windowingtablefunction","order by:":"0"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"0","partition by:":"0"}]
                   Statistics:Num rows: 20 Data size: 9184 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_2]
                   |  outputColumnNames:["_col2","_col3"]
@@ -4370,12 +4370,12 @@ Stage-0
          File Output Operator [FS_6]
             compressed:false
             Statistics:Num rows: 20 Data size: 1280 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_4]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"]
                Statistics:Num rows: 20 Data size: 1280 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_3]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col0","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col0"}]
                   Statistics:Num rows: 20 Data size: 12244 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_2]
                   |  outputColumnNames:["_col0","_col1","_col2","_col3"]
@@ -4408,12 +4408,12 @@ Stage-0
          File Output Operator [FS_6]
             compressed:false
             Statistics:Num rows: 25 Data size: 4475 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_4]
                outputColumnNames:["_col0","_col1","_col2"]
                Statistics:Num rows: 25 Data size: 4475 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_3]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col0","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col0"}]
                   Statistics:Num rows: 25 Data size: 11075 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_2]
                   |  outputColumnNames:["_col0","_col1"]
@@ -4455,7 +4455,7 @@ Stage-0
          File Output Operator [FS_20]
             compressed:false
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_18]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -4494,7 +4494,7 @@ Stage-0
                                     Statistics:Num rows: 60 Data size: 5160 Basic stats: COMPLETE Column stats: COMPLETE
                                     Merge Join Operator [MERGEJOIN_25]
                                     |  condition map:[{"":"Inner Join 0 to 1"}]
-                                    |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                    |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                     |  outputColumnNames:["_col1"]
                                     |  Statistics:Num rows: 60 Data size: 5160 Basic stats: COMPLETE Column stats: COMPLETE
                                     |<-Map 1 [SIMPLE_EDGE]
@@ -4555,7 +4555,7 @@ Stage-0
          File Output Operator [FS_20]
             compressed:false
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_18]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -4594,7 +4594,7 @@ Stage-0
                                     Statistics:Num rows: 60 Data size: 5160 Basic stats: COMPLETE Column stats: COMPLETE
                                     Merge Join Operator [MERGEJOIN_25]
                                     |  condition map:[{"":"Inner Join 0 to 1"}]
-                                    |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                    |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                     |  outputColumnNames:["_col1"]
                                     |  Statistics:Num rows: 60 Data size: 5160 Basic stats: COMPLETE Column stats: COMPLETE
                                     |<-Map 1 [SIMPLE_EDGE]
@@ -4655,7 +4655,7 @@ Stage-0
          File Output Operator [FS_20]
             compressed:false
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_18]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -4749,7 +4749,7 @@ Stage-0
          File Output Operator [FS_22]
             compressed:false
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_20]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -4785,7 +4785,7 @@ Stage-0
                                  Statistics:Num rows: 12 Data size: 1128 Basic stats: COMPLETE Column stats: COMPLETE
                                  Merge Join Operator [MERGEJOIN_27]
                                  |  condition map:[{"":"Left Semi Join 0 to 1"}]
-                                 |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                                 |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                                  |  outputColumnNames:["_col0"]
                                  |  Statistics:Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                                  |<-Map 1 [SIMPLE_EDGE]
@@ -4867,7 +4867,7 @@ Stage-0
          File Output Operator [FS_7]
             compressed:false
             Statistics:Num rows: 2 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_5]
             |  aggregations:["count(DISTINCT KEY._col1:0._col0)","count(DISTINCT KEY._col1:1._col0)","sum(VALUE._col2)"]
             |  keys:KEY._col0 (type: int)
@@ -4909,7 +4909,7 @@ Stage-0
          File Output Operator [FS_6]
             compressed:false
             Statistics:Num rows: 2 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_4]
             |  aggregations:["count(DISTINCT KEY._col1:0._col0)","count(DISTINCT KEY._col1:1._col0)","sum(VALUE._col0)"]
             |  keys:KEY._col0 (type: int)
@@ -5019,7 +5019,7 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_4]
             |  aggregations:["count(1)"]
             |  outputColumnNames:["_col0"]
@@ -5051,7 +5051,7 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_4]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -5110,7 +5110,7 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_4]
             |  aggregations:["count(1)"]
             |  outputColumnNames:["_col0"]
@@ -5142,7 +5142,7 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_4]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -5192,7 +5192,7 @@ Stage-0
          File Output Operator [FS_9]
             compressed:true
             Statistics:Num rows: 125000 Data size: 10875000 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_11]
             |  condition map:[{"":"Inner Join 0 to 1"}]
             |  keys:{}
@@ -5263,7 +5263,7 @@ Stage-3
                      File Output Operator [FS_8]
                         compressed:true
                         Statistics:Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.nzhang_CTAS1","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+                        table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.nzhang_CTAS1"}
                         Limit [LIM_7]
                            Number of rows:10
                            Statistics:Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5331,7 +5331,7 @@ Stage-3
                      File Output Operator [FS_8]
                         compressed:true
                         Statistics:Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:{"serde:":"org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe","name:":"default.nzhang_ctas3","input format:":"org.apache.hadoop.hive.ql.io.RCFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.RCFileOutputFormat"}
+                        table:{"input format:":"org.apache.hadoop.hive.ql.io.RCFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.RCFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe","name:":"default.nzhang_ctas3"}
                         Limit [LIM_7]
                            Number of rows:10
                            Statistics:Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5434,7 +5434,7 @@ Stage-0
          File Output Operator [FS_12]
             compressed:true
             Statistics:Num rows: 13778 Data size: 4904968 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_11]
             |  outputColumnNames:["_col0","_col1","_col2","_col3"]
             |  Statistics:Num rows: 13778 Data size: 4904968 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5510,13 +5510,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Inner Join 0 to 1"}]
-               |  keys:{"1":"value (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -5557,13 +5557,13 @@ Stage-0
          File Output Operator [FS_11]
             compressed:true
             Statistics:Num rows: 4 Data size: 37 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_10]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 4 Data size: 37 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_21]
                |  condition map:[{"":"Inner Join 0 to 1"},{"":"Inner Join 0 to 2"}]
-               |  keys:{"2":"key (type: int)","1":"value (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"value (type: int)","2":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6","_col10","_col11"]
                |  Statistics:Num rows: 4 Data size: 37 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -5623,13 +5623,13 @@ Stage-0
          File Output Operator [FS_8]
             compressed:true
             Statistics:Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_9]
                |  condition map:[{"":"Inner Join 0 to 1"},{"":"Inner Join 0 to 2"}]
-               |  keys:{"2":"key (type: int)","1":"value (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"value (type: int)","2":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6","_col10","_col11"]
                |  Statistics:Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -5680,13 +5680,13 @@ Stage-0
          File Output Operator [FS_11]
             compressed:true
             Statistics:Num rows: 4 Data size: 37 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_10]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 4 Data size: 37 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_15]
                |  condition map:[{"":"Inner Join 0 to 1"},{"":"Inner Join 0 to 2"}]
-               |  keys:{"2":"key (type: int), value (type: int)","1":"value (type: int), key (type: int)","0":"key (type: int), value (type: int)"}
+               |  keys:{"0":"key (type: int), value (type: int)","1":"value (type: int), key (type: int)","2":"key (type: int), value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6","_col10","_col11"]
                |  Statistics:Num rows: 4 Data size: 37 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -5743,13 +5743,13 @@ Stage-0
          File Output Operator [FS_8]
             compressed:true
             Statistics:Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_9]
                |  condition map:[{"":"Inner Join 0 to 1"},{"":"Inner Join 0 to 2"}]
-               |  keys:{"2":"key (type: int), value (type: int)","1":"value (type: int), key (type: int)","0":"key (type: int), value (type: int)"}
+               |  keys:{"0":"key (type: int), value (type: int)","1":"value (type: int), key (type: int)","2":"key (type: int), value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6","_col10","_col11"]
                |  Statistics:Num rows: 6 Data size: 57 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -5797,13 +5797,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Left Outer Join0 to 1"}]
-               |  keys:{"1":"value (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -5844,13 +5844,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Right Outer Join0 to 1"}]
-               |  keys:{"1":"value (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -5891,13 +5891,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Outer Join 0 to 1"}]
-               |  keys:{"1":"value (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -5938,13 +5938,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Inner Join 0 to 1"}]
-               |  keys:{"1":"value (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 3 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -6043,13 +6043,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Inner Join 0 to 1"}]
-               |  keys:{"1":"key (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -6090,13 +6090,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Inner Join 0 to 1"}]
-               |  keys:{"1":"key (type: int), value (type: int)","0":"key (type: int), value (type: int)"}
+               |  keys:{"0":"key (type: int), value (type: int)","1":"key (type: int), value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -6135,13 +6135,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Right Outer Join0 to 1"}]
-               |  keys:{"1":"key (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -6182,13 +6182,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Inner Join 0 to 1"}]
-               |  keys:{"1":"key (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -6229,13 +6229,13 @@ Stage-0
          File Output Operator [FS_6]
             compressed:true
             Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Left Outer Join0 to 1"}]
-               |  keys:{"1":"key (type: int)","0":"key (type: int)"}
+               |  keys:{"0":"key (type: int)","1":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
                |  Statistics:Num rows: 28 Data size: 209 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
@@ -6330,10 +6330,10 @@ Stage-0
          File Output Operator [FS_12]
             compressed:true
             Statistics:Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_17]
             |  condition map:[{"":"Left Semi Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: int)","0":"_col1 (type: int)"}
+            |  keys:{"0":"_col1 (type: int)","1":"_col0 (type: int)"}
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             |<-Map 1 [SIMPLE_EDGE]
@@ -6406,10 +6406,10 @@ Stage-0
          File Output Operator [FS_19]
             compressed:true
             Statistics:Num rows: 555 Data size: 48285 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_29]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string)","0":"_col1 (type: string)"}
+            |  keys:{"0":"_col1 (type: string)","1":"_col0 (type: string)"}
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 555 Data size: 48285 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Map 1 [SIMPLE_EDGE]
@@ -6482,10 +6482,10 @@ Stage-0
          File Output Operator [FS_19]
             compressed:true
             Statistics:Num rows: 555 Data size: 48285 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_29]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string)","0":"_col1 (type: string)"}
+            |  keys:{"0":"_col1 (type: string)","1":"_col0 (type: string)"}
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 555 Data size: 48285 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Map 1 [SIMPLE_EDGE]
@@ -6558,10 +6558,10 @@ Stage-0
          File Output Operator [FS_19]
             compressed:true
             Statistics:Num rows: 555 Data size: 48285 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_29]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string)","0":"_col1 (type: string)"}
+            |  keys:{"0":"_col1 (type: string)","1":"_col0 (type: string)"}
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 555 Data size: 48285 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Map 1 [SIMPLE_EDGE]
@@ -6650,12 +6650,12 @@ Stage-0
          File Output Operator [FS_9]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_6]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_5]
                   |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -6668,7 +6668,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int), _col7 (type: double)
                         PTF Operator [PTF_3]
-                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_2]
                            |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -6713,12 +6713,12 @@ Stage-0
          File Output Operator [FS_16]
             compressed:true
             Statistics:Num rows: 29 Data size: 6583 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_14]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 29 Data size: 6583 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_13]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 29 Data size: 6467 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_12]
                   |  outputColumnNames:["_col1","_col2","_col5"]
@@ -6731,7 +6731,7 @@ Stage-0
                         Statistics:Num rows: 29 Data size: 6467 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int)
                         PTF Operator [PTF_10]
-                           Function definitions:[{"Input definition":{"type:":"SUBQUERY"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"SUBQUERY"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                            Statistics:Num rows: 29 Data size: 6467 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_9]
                            |  outputColumnNames:["_col1","_col2","_col5"]
@@ -6801,12 +6801,12 @@ Stage-0
          File Output Operator [FS_9]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_6]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_5]
                   |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -6819,7 +6819,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int), _col7 (type: double)
                         PTF Operator [PTF_3]
-                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_2]
                            |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -6869,12 +6869,12 @@ Stage-0
          File Output Operator [FS_9]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_6]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_5]
                   |  outputColumnNames:["_col1","_col2","_col5"]
@@ -6887,7 +6887,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int)
                         PTF Operator [PTF_3]
-                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_2]
                            |  outputColumnNames:["_col1","_col2","_col5"]
@@ -6940,12 +6940,12 @@ Stage-0
          File Output Operator [FS_14]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_12]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_11]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col0","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col0"}]
                   Statistics:Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator [GBY_8]
                   |  keys:KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
@@ -6971,7 +6971,7 @@ Stage-0
                                  outputColumnNames:["_col1","_col2","_col5"]
                                  Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                  PTF Operator [PTF_3]
-                                    Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                                    Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                                     Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                     Select Operator [SEL_2]
                                     |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7014,7 +7014,7 @@ Stage-0
          File Output Operator [FS_11]
             compressed:true
             Statistics:Num rows: 29 Data size: 17951 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Map Join Operator [MAPJOIN_16]
             |  condition map:[{"":"Inner Join 0 to 1"}]
             |  keys:{"Reducer 2":"_col0 (type: int)","Map 3":"p_partkey (type: int)"}
@@ -7036,7 +7036,7 @@ Stage-0
                   predicate:_col0 is not null (type: boolean)
                   Statistics:Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator [PTF_4]
-                     Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                     Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                      Statistics:Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                      Select Operator [SEL_3]
                      |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
@@ -7080,12 +7080,12 @@ Stage-0
          File Output Operator [FS_10]
             compressed:true
             Statistics:Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_8]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_7]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1, _col5(DESC)"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1, _col5(DESC)","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_6]
                   |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7097,7 +7097,7 @@ Stage-0
                         sort order:++-
                         Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                         PTF Operator [PTF_4]
-                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noopwithmap","order by:":"_col1, _col5(DESC)"}}]
+                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col1, _col5(DESC)","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_3]
                            |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7109,7 +7109,7 @@ Stage-0
                                  sort order:++-
                                  Statistics:Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                                  PTF Operator [PTF_1]
-                                    Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"p_mfgr","name:":"noopwithmap","order by:":"p_name, p_size(DESC)"}}]
+                                    Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noopwithmap","order by:":"p_name, p_size(DESC)","partition by:":"p_mfgr"}}]
                                     Statistics:Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                                     TableScan [TS_0]
                                        alias:part
@@ -7147,12 +7147,12 @@ Stage-0
          File Output Operator [FS_10]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_8]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_7]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_6]
                   |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7165,7 +7165,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int), _col7 (type: double)
                         PTF Operator [PTF_4]
-                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noopwithmap","order by:":"_col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col1","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_3]
                            |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7178,7 +7178,7 @@ Stage-0
                                  Statistics:Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                                  value expressions:p_size (type: int), p_retailprice (type: double)
                                  PTF Operator [PTF_1]
-                                    Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"p_mfgr","name:":"noopwithmap","order by:":"p_name"}}]
+                                    Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noopwithmap","order by:":"p_name","partition by:":"p_mfgr"}}]
                                     Statistics:Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
                                     TableScan [TS_0]
                                        alias:part
@@ -7216,12 +7216,12 @@ Stage-0
          File Output Operator [FS_9]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_6]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_5]
                   |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7234,7 +7234,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int), _col7 (type: double)
                         PTF Operator [PTF_3]
-                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_2]
                            |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7285,12 +7285,12 @@ Stage-0
          File Output Operator [FS_13]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_11]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_10]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_9]
                   |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7303,7 +7303,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int), _col7 (type: double)
                         PTF Operator [PTF_7]
-                           Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"partition by:":"_col2","name:":"noopwithmap","order by:":"_col2(DESC), _col1"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2(DESC), _col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2(DESC), _col1","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2(DESC), _col1","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_6]
                            |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7316,10 +7316,10 @@ Stage-0
                                  Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                                  value expressions:_col5 (type: int), _col7 (type: double)
                                  PTF Operator [PTF_4]
-                                    Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"partition by:":"_col2","name:":"noopwithmap","order by:":"_col2(DESC), _col1"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2(DESC), _col1"}}]
+                                    Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2(DESC), _col1","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2(DESC), _col1","partition by:":"_col2"}}]
                                     Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                                     PTF Operator [PTF_3]
-                                       Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2(DESC), _col1"}}]
+                                       Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col2(DESC), _col1","partition by:":"_col2"}}]
                                        Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                                        Select Operator [SEL_2]
                                        |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7375,12 +7375,12 @@ Stage-0
          File Output Operator [FS_10]
             compressed:true
             Statistics:Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_7]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
                Statistics:Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_6]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_5]
                   |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7393,7 +7393,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int), _col7 (type: double)
                         PTF Operator [PTF_3]
-                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_2]
                            |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7447,12 +7447,12 @@ Stage-0
          File Output Operator [FS_15]
             compressed:true
             Statistics:Num rows: 29 Data size: 7511 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_13]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
                Statistics:Num rows: 29 Data size: 7511 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_12]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 29 Data size: 22243 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_11]
                   |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7485,7 +7485,7 @@ Stage-0
                               predicate:_col0 is not null (type: boolean)
                               Statistics:Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                               PTF Operator [PTF_4]
-                                 Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                                 Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                                  Statistics:Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                                  Select Operator [SEL_3]
                                  |  outputColumnNames:["_col0","_col1","_col2","_col5","_col7"]
@@ -7607,11 +7607,11 @@ Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 
-Stage-5
+Stage-4
    Stats-Aggr Operator
-      Stage-1
+      Stage-0
          Move Operator
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.part_5","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.part_4"}
             Stage-3
                Dependency Collection{}
                   Stage-2
@@ -7619,12 +7619,12 @@ Stage-5
                      File Output Operator [FS_9]
                         compressed:true
                         Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.part_4","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+                        table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.part_4"}
                         Select Operator [SEL_7]
                            outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                            Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                            PTF Operator [PTF_6]
-                              Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                              Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                               Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                               Select Operator [SEL_5]
                               |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7637,7 +7637,7 @@ Stage-5
                                     Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                                     value expressions:_col5 (type: int), _col7 (type: double)
                                     PTF Operator [PTF_3]
-                                       Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col1"}}]
+                                       Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col1","partition by:":"_col2"}}]
                                        Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                                        Select Operator [SEL_2]
                                        |  outputColumnNames:["_col1","_col2","_col5","_col7"]
@@ -7656,12 +7656,12 @@ Stage-5
                      File Output Operator [FS_20]
                         compressed:true
                         Statistics:Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.part_5","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+                        table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.part_5"}
                         Select Operator [SEL_17]
                            outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                            Statistics:Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                            PTF Operator [PTF_16]
-                              Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col3","name:":"windowingtablefunction","order by:":"_col3, _col2"}]
+                              Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col3, _col2","partition by:":"_col3"}]
                               Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                               Select Operator [SEL_15]
                               |  outputColumnNames:["_col0","_col2","_col3","_col6"]
@@ -7677,7 +7677,7 @@ Stage-5
                                        outputColumnNames:["_col1","_col2","_col5","sum_window_0"]
                                        Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                        PTF Operator [PTF_12]
-                                          Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col5"}]
+                                          Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col5","partition by:":"_col2"}]
                                           Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                           Select Operator [SEL_11]
                                           |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7690,11 +7690,11 @@ Stage-5
                                                 Statistics:Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                                                 value expressions:_col1 (type: string)
                                                  Please refer to the previous PTF Operator [PTF_3]
-Stage-4
+Stage-5
    Stats-Aggr Operator
-      Stage-0
+      Stage-1
          Move Operator
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.part_4","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.part_5"}
              Please refer to the previous Stage-3
 
 PREHOOK: query: explain
@@ -7746,12 +7746,12 @@ Stage-0
          File Output Operator [FS_13]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_11]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_10]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2, _col1","name:":"windowingtablefunction","order by:":"_col2, _col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col2, _col1","partition by:":"_col2, _col1"}]
                   Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_9]
                   |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7764,7 +7764,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int)
                         PTF Operator [PTF_7]
-                           Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"partition by:":"_col2, _col1","name:":"noopwithmap","order by:":"_col2, _col1"}},{"Partition table definition":{"partition by:":"_col2, _col1","name:":"noop","order by:":"_col2, _col1"}}]
+                           Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2, _col1","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2, _col1","partition by:":"_col2, _col1"}}]
                            Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_6]
                            |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7777,10 +7777,10 @@ Stage-0
                                  Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                  value expressions:_col5 (type: int)
                                  PTF Operator [PTF_4]
-                                    Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"partition by:":"_col2, _col1","name:":"noopwithmap","order by:":"_col2, _col1"}},{"Partition table definition":{"partition by:":"_col2, _col1","name:":"noop","order by:":"_col2, _col1"}}]
+                                    Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"name:":"noopwithmap","order by:":"_col2, _col1","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2, _col1","partition by:":"_col2, _col1"}}]
                                     Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                     PTF Operator [PTF_3]
-                                       Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2"}}]
+                                       Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col2","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2","partition by:":"_col2"}}]
                                        Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                        Select Operator [SEL_2]
                                        |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7846,12 +7846,12 @@ Stage-0
          File Output Operator [FS_15]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_13]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_12]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_11]
                   |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7864,7 +7864,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int)
                         PTF Operator [PTF_9]
-                           Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2"}}]
+                           Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"name:":"noop","order by:":"_col2","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_8]
                            |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7877,7 +7877,7 @@ Stage-0
                                  Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                  value expressions:_col1 (type: string), _col5 (type: int)
                                  PTF Operator [PTF_6]
-                                    Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"partition by:":"_col2, _col1","name:":"noop","order by:":"_col2, _col1"}}]
+                                    Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"name:":"noop","order by:":"_col2, _col1","partition by:":"_col2, _col1"}}]
                                     Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                     Select Operator [SEL_5]
                                     |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7890,7 +7890,7 @@ Stage-0
                                           Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                           value expressions:_col5 (type: int)
                                           PTF Operator [PTF_3]
-                                             Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2"}}]
+                                             Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col2","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2","partition by:":"_col2"}}]
                                              Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                              Select Operator [SEL_2]
                                              |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7951,12 +7951,12 @@ Stage-0
          File Output Operator [FS_12]
             compressed:true
             Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_10]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5"]
                Statistics:Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                PTF Operator [PTF_9]
-                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"partition by:":"_col2","name:":"windowingtablefunction","order by:":"_col1"}]
+                  Function definitions:[{"Input definition":{"type:":"WINDOWING"}},{"name:":"windowingtablefunction","order by:":"_col1","partition by:":"_col2"}]
                   Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator [SEL_8]
                   |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7969,7 +7969,7 @@ Stage-0
                         Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions:_col5 (type: int)
                         PTF Operator [PTF_6]
-                           Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2"}},{"Partition table definition":{"partition by:":"_col2","name:":"noop","order by:":"_col2"}}]
+                           Function definitions:[{"Input definition":{"type:":"PTFCOMPONENT"}},{"Partition table definition":{"name:":"noop","order by:":"_col2","partition by:":"_col2"}},{"Partition table definition":{"name:":"noop","order by:":"_col2","partition by:":"_col2"}}]
                            Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                            Select Operator [SEL_5]
                            |  outputColumnNames:["_col1","_col2","_col5"]
@@ -7982,7 +7982,7 @@ Stage-0
                                  Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                  value expressions:_col1 (type: string), _col5 (type: int)
                                  PTF Operator [PTF_3]
-                                    Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"partition by:":"_col2, _col1","name:":"noop","order by:":"_col2, _col1"}},{"Partition table definition":{"partition by:":"_col2, _col1","name:":"noop","order by:":"_col2, _col1"}}]
+                                    Function definitions:[{"Input definition":{"type:":"TABLE"}},{"Partition table definition":{"name:":"noop","order by:":"_col2, _col1","partition by:":"_col2, _col1"}},{"Partition table definition":{"name:":"noop","order by:":"_col2, _col1","partition by:":"_col2, _col1"}}]
                                     Statistics:Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                                     Select Operator [SEL_2]
                                     |  outputColumnNames:["_col1","_col2","_col5"]
@@ -8016,7 +8016,7 @@ Stage-0
          File Output Operator [FS_8]
             compressed:true
             Statistics:Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_6]
             |  keys:KEY._col0 (type: string), KEY._col1 (type: string)
             |  outputColumnNames:["_col0","_col1"]
@@ -8149,7 +8149,7 @@ Stage-3
    Stats-Aggr Operator
       Stage-0
          Move Operator
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.dest_j1","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.dest_j1"}
             Stage-2
                Dependency Collection{}
                   Stage-1
@@ -8157,13 +8157,13 @@ Stage-3
                      File Output Operator [FS_11]
                         compressed:true
                         Statistics:Num rows: 1219 Data size: 115805 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.dest_j1","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+                        table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.dest_j1"}
                         Select Operator [SEL_9]
                            outputColumnNames:["_col0","_col1"]
                            Statistics:Num rows: 1219 Data size: 115805 Basic stats: COMPLETE Column stats: COMPLETE
                            Merge Join Operator [MERGEJOIN_16]
                            |  condition map:[{"":"Inner Join 0 to 1"}]
-                           |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+                           |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
                            |  outputColumnNames:["_col1","_col2"]
                            |  Statistics:Num rows: 1219 Data size: 216982 Basic stats: COMPLETE Column stats: COMPLETE
                            |<-Map 1 [SIMPLE_EDGE]
@@ -8235,7 +8235,7 @@ Stage-0
          File Output Operator [FS_14]
             compressed:true
             Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_13]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
@@ -8244,18 +8244,18 @@ Stage-0
                |  keys:{"Map 1":"key (type: string)","Map 2":"key (type: string)","Map 3":"key (type: string)","Map 4":"key (type: string)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6","_col10","_col11","_col15","_col16"]
                |  Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
-               |<-Map 4 [BROADCAST_EDGE]
-               |  Reduce Output Operator [RS_11]
+               |<-Map 2 [BROADCAST_EDGE]
+               |  Reduce Output Operator [RS_7]
                |     key expressions:key (type: string)
                |     Map-reduce partition columns:key (type: string)
                |     sort order:+
                |     Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                |     value expressions:val (type: string)
-               |     Filter Operator [FIL_30]
+               |     Filter Operator [FIL_28]
                |        predicate:key is not null (type: boolean)
                |        Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-               |        TableScan [TS_3]
-               |           alias:d
+               |        TableScan [TS_1]
+               |           alias:b
                |           Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                |<-Map 3 [BROADCAST_EDGE]
                |  Reduce Output Operator [RS_9]
@@ -8270,18 +8270,18 @@ Stage-0
                |        TableScan [TS_2]
                |           alias:c
                |           Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-               |<-Map 2 [BROADCAST_EDGE]
-               |  Reduce Output Operator [RS_7]
+               |<-Map 4 [BROADCAST_EDGE]
+               |  Reduce Output Operator [RS_11]
                |     key expressions:key (type: string)
                |     Map-reduce partition columns:key (type: string)
                |     sort order:+
                |     Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                |     value expressions:val (type: string)
-               |     Filter Operator [FIL_28]
+               |     Filter Operator [FIL_30]
                |        predicate:key is not null (type: boolean)
                |        Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-               |        TableScan [TS_1]
-               |           alias:b
+               |        TableScan [TS_3]
+               |           alias:d
                |           Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                |<-Filter Operator [FIL_27]
                      predicate:key is not null (type: boolean)
@@ -8315,7 +8315,7 @@ Stage-0
          File Output Operator [FS_14]
             compressed:true
             Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_13]
                outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
@@ -8324,18 +8324,18 @@ Stage-0
                |  keys:{"Map 1":"key (type: string)","Map 2":"key (type: string)","Map 3":"key (type: string)","Map 4":"key (type: string)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6","_col10","_col11","_col15","_col16"]
                |  Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
-               |<-Map 4 [BROADCAST_EDGE]
-               |  Reduce Output Operator [RS_11]
+               |<-Map 2 [BROADCAST_EDGE]
+               |  Reduce Output Operator [RS_7]
                |     key expressions:key (type: string)
                |     Map-reduce partition columns:key (type: string)
                |     sort order:+
                |     Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                |     value expressions:val (type: string)
-               |     Filter Operator [FIL_30]
+               |     Filter Operator [FIL_28]
                |        predicate:key is not null (type: boolean)
                |        Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-               |        TableScan [TS_3]
-               |           alias:d
+               |        TableScan [TS_1]
+               |           alias:b
                |           Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                |<-Map 3 [BROADCAST_EDGE]
                |  Reduce Output Operator [RS_9]
@@ -8350,18 +8350,18 @@ Stage-0
                |        TableScan [TS_2]
                |           alias:c
                |           Statistics:Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-               |<-Map 2 [BROADCAST_EDGE]
-               |  Reduce Output Operator [RS_7]
+               |<-Map 4 [BROADCAST_EDGE]
+               |  Reduce Output Operator [RS_11]
                |     key expressions:key (type: string)
                |     Map-reduce partition columns:key (type: string)
                |     sort order:+
                |     Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                |     value expressions:val (type: string)
-               |     Filter Operator [FIL_28]
+               |     Filter Operator [FIL_30]
                |        predicate:key is not null (type: boolean)
                |        Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
-               |        TableScan [TS_1]
-               |           alias:b
+               |        TableScan [TS_3]
+               |           alias:d
                |           Statistics:Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                |<-Filter Operator [FIL_27]
                      predicate:key is not null (type: boolean)
@@ -8389,7 +8389,7 @@ Stage-0
          File Output Operator [FS_13]
             compressed:true
             Statistics:Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_11]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"]
             |  outputColumnNames:["_col0","_col1","_col2"]
@@ -8472,10 +8472,10 @@ Stage-0
          File Output Operator [FS_10]
             compressed:true
             Statistics:Num rows: 1219 Data size: 433964 Basic stats: COMPLETE Column stats: COMPLETE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_15]
             |  condition map:[{"":"Inner Join 0 to 1"}]
-            |  keys:{"1":"_col0 (type: string)","0":"_col0 (type: string)"}
+            |  keys:{"0":"_col0 (type: string)","1":"_col0 (type: string)"}
             |  outputColumnNames:["_col0","_col1","_col2","_col3"]
             |  Statistics:Num rows: 1219 Data size: 433964 Basic stats: COMPLETE Column stats: COMPLETE
             |<-Map 1 [SIMPLE_EDGE]
@@ -8530,7 +8530,7 @@ Stage-0
          File Output Operator [FS_13]
             compressed:true
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_11]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -8593,7 +8593,7 @@ Stage-0
          File Output Operator [FS_13]
             compressed:true
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_11]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
@@ -8657,7 +8657,7 @@ Stage-0
          File Output Operator [FS_13]
             compressed:true
             Statistics:Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_11]
             |  aggregations:["count(VALUE._col0)"]
             |  outputColumnNames:["_col0"]
@@ -8718,7 +8718,7 @@ Stage-0
          File Output Operator [FS_11]
             compressed:true
             Statistics:Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_9]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"]
             |  outputColumnNames:["_col0","_col1","_col2"]
@@ -8776,7 +8776,7 @@ Stage-0
          File Output Operator [FS_11]
             compressed:true
             Statistics:Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_9]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"]
             |  outputColumnNames:["_col0","_col1","_col2"]
@@ -8834,7 +8834,7 @@ Stage-0
          File Output Operator [FS_11]
             compressed:true
             Statistics:Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_9]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"]
             |  outputColumnNames:["_col0","_col1","_col2"]
@@ -8856,7 +8856,7 @@ Stage-0
                         value expressions:hash(_col0) (type: int), hash(_col1) (type: int), hash(_col5) (type: int)
                         Merge Join Operator [MERGEJOIN_12]
                         |  condition map:[{"":"Outer Join 0 to 1"}]
-                        |  keys:{"1":"(key + 1) (type: double)","0":"UDFToDouble(key) (type: double)"}
+                        |  keys:{"0":"UDFToDouble(key) (type: double)","1":"(key + 1) (type: double)"}
                         |  outputColumnNames:["_col0","_col1","_col5"]
                         |  Statistics:Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
                         |<-Map 1 [SIMPLE_EDGE]
@@ -8899,7 +8899,7 @@ Stage-0
          File Output Operator [FS_11]
             compressed:true
             Statistics:Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Group By Operator [GBY_9]
             |  aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]

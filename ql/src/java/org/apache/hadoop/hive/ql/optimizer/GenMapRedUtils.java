@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,6 +114,7 @@ import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 
 /**
@@ -1274,16 +1276,13 @@ public final class GenMapRedUtils {
       ArrayList<ColumnInfo> signature = inputRS.getSignature();
       String tblAlias = fsInputDesc.getTableInfo().getTableName();
       LinkedHashMap<String, String> colMap = new LinkedHashMap<String, String>();
-      StringBuilder partCols = new StringBuilder();
       for (String dpCol : dpCtx.getDPColNames()) {
         ColumnInfo colInfo = new ColumnInfo(dpCol,
             TypeInfoFactory.stringTypeInfo, // all partition column type should be string
             tblAlias, true); // partition column is virtual column
         signature.add(colInfo);
         colMap.put(dpCol, dpCol); // input and output have the same column name
-        partCols.append(dpCol).append('/');
       }
-      partCols.setLength(partCols.length() - 1); // remove the last '/'
       inputRS.setSignature(signature);
 
       // create another DynamicPartitionCtx, which has a different input-to-DP column mapping
@@ -1292,9 +1291,7 @@ public final class GenMapRedUtils {
       fsOutputDesc.setDynPartCtx(dpCtx2);
 
       // update the FileSinkOperator to include partition columns
-      fsInputDesc.getTableInfo().getProperties().setProperty(
-        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
-        partCols.toString()); // list of dynamic partition column names
+      usePartitionColumns(fsInputDesc.getTableInfo().getProperties(), dpCtx.getDPColNames());
     } else {
       // non-partitioned table
       fsInputDesc.getTableInfo().getProperties().remove(
@@ -1917,7 +1914,55 @@ public final class GenMapRedUtils {
     }
     return null;
   }
+  /**
+   * Uses only specified partition columns.
+   * Provided properties should be pre-populated with partition column names and types.
+   * This function retains only information related to the columns from the list.
+   * @param properties properties to update
+   * @param partColNames list of columns to use
+   */
+  static void usePartitionColumns(Properties properties, List<String> partColNames) {
+    Preconditions.checkArgument(!partColNames.isEmpty(), "No partition columns provided to use");
+    Preconditions.checkArgument(new HashSet<String>(partColNames).size() == partColNames.size(),
+        "Partition columns should be unique: " + partColNames);
 
+    String[] partNames = properties.getProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS)
+        .split("/");
+    String[] partTypes = properties.getProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES)
+        .split(":");
+    Preconditions.checkArgument(partNames.length == partTypes.length,
+        "Partition Names, " + Arrays.toString(partNames) + " don't match partition Types, "
+        + Arrays.toString(partTypes));
+
+    Map<String, String> typeMap = new HashMap();
+    for (int i = 0; i < partNames.length; i++) {
+      String previousValue = typeMap.put(partNames[i], partTypes[i]);
+      Preconditions.checkArgument(previousValue == null, "Partition columns configuration is inconsistent. "
+          + "There are duplicates in partition column names: " + partNames);
+    }
+
+    StringBuilder partNamesBuf = new StringBuilder();
+    StringBuilder partTypesBuf = new StringBuilder();
+    for (String partName : partColNames) {
+      partNamesBuf.append(partName).append('/');
+      String partType = typeMap.get(partName);
+      if (partType == null) {
+        throw new RuntimeException("Type information for partition column " + partName + " is missing.");
+      }
+      partTypesBuf.append(partType).append(':');
+    }
+    partNamesBuf.setLength(partNamesBuf.length() - 1);
+    partTypesBuf.setLength(partTypesBuf.length() - 1);
+
+    properties.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
+        partNamesBuf.toString());
+    properties.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES,
+        partTypesBuf.toString());
+  }
   private GenMapRedUtils() {
     // prevent instantiation
   }

@@ -18,11 +18,10 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,27 +30,23 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public final class TezJsonParser implements JsonParser {
-  public final Map<String, Stage> stages = new HashMap<String, Stage>();;
+  public final Map<String, Stage> stages = new LinkedHashMap<>();
   protected final Log LOG;
   // the object that has been printed.
-  public final Set<Object> printSet = new HashSet<>();
+  public final Set<Object> printSet = new LinkedHashSet<>();
   // the vertex that should be inlined. <Operator, list of Vertex that is
   // inlined>
-  public final Map<Op, List<Connection>> inlineMap = new HashMap<>();
+  public final Map<Op, List<Connection>> inlineMap = new LinkedHashMap<>();
 
   public TezJsonParser() {
     super();
     LOG = LogFactory.getLog(this.getClass().getName());
   }
 
-  public void extractStagesAndPlans(JSONObject inputObject) throws JSONException,
-      JsonParseException, JsonMappingException, Exception, IOException {
+  public void extractStagesAndPlans(JSONObject inputObject) throws Exception {
     // extract stages
     JSONObject dependency = inputObject.getJSONObject("STAGE DEPENDENCIES");
     if (dependency != null && dependency.length() > 0) {

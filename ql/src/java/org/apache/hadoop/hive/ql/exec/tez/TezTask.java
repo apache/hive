@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -291,7 +292,8 @@ public class TezTask extends Task<TezWork> {
     DAG dag = DAG.create(work.getName());
 
     // set some info for the query
-    JSONObject json = new JSONObject().put("context", "Hive").put("description", ctx.getCmd());
+    JSONObject json = new JSONObject(new LinkedHashMap()).put("context", "Hive")
+        .put("description", ctx.getCmd());
     String dagInfo = json.toString();
 
     if (LOG.isDebugEnabled()) {

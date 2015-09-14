@@ -13,6 +13,9 @@ show current roles;
 set role PUBLIC;
 show current roles;
 
+set role NONE;
+show current roles;
+
 set role ALL;
 show current roles;
 

@@ -58,7 +58,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -204,17 +204,17 @@ public class ASTConverter {
      * to its src/from. Hence the need to pass in sort for each block from
      * its parent.
      */
-    convertOBToASTNode((HiveSort) order);
+    convertOBToASTNode((HiveSortLimit) order);
 
     // 8. Limit
-    convertLimitToASTNode((HiveSort) limit);
+    convertLimitToASTNode((HiveSortLimit) limit);
 
     return hiveAST.getAST();
   }
 
-  private void convertLimitToASTNode(HiveSort limit) {
+  private void convertLimitToASTNode(HiveSortLimit limit) {
     if (limit != null) {
-      HiveSort hiveLimit = limit;
+      HiveSortLimit hiveLimit = limit;
       RexNode limitExpr = hiveLimit.getFetchExpr();
       if (limitExpr != null) {
         Object val = ((RexLiteral) limitExpr).getValue2();
@@ -223,18 +223,18 @@ public class ASTConverter {
     }
   }
 
-  private void convertOBToASTNode(HiveSort order) {
+  private void convertOBToASTNode(HiveSortLimit order) {
     if (order != null) {
-      HiveSort hiveSort = order;
-      if (!hiveSort.getCollation().getFieldCollations().isEmpty()) {
+      HiveSortLimit hiveSortLimit = order;
+      if (!hiveSortLimit.getCollation().getFieldCollations().isEmpty()) {
         // 1 Add order by token
         ASTNode orderAst = ASTBuilder.createAST(HiveParser.TOK_ORDERBY, "TOK_ORDERBY");
 
-        schema = new Schema(hiveSort);
-        Map<Integer, RexNode> obRefToCallMap = hiveSort.getInputRefToCallMap();
+        schema = new Schema(hiveSortLimit);
+        Map<Integer, RexNode> obRefToCallMap = hiveSortLimit.getInputRefToCallMap();
         RexNode obExpr;
         ASTNode astCol;
-        for (RelFieldCollation c : hiveSort.getCollation().getFieldCollations()) {
+        for (RelFieldCollation c : hiveSortLimit.getCollation().getFieldCollations()) {
 
           // 2 Add Direction token
           ASTNode directionAST = c.getDirection() == RelFieldCollation.Direction.ASCENDING ? ASTBuilder
@@ -651,7 +651,7 @@ public class ASTConverter {
      *          Hive Sort Node
      * @return Schema
      */
-    public Schema(HiveSort order) {
+    public Schema(HiveSortLimit order) {
       Project select = (Project) order.getInput();
       for (String projName : select.getRowType().getFieldNames()) {
         add(new ColumnInfo(null, projName));
