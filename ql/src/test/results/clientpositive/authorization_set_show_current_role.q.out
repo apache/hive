@@ -33,6 +33,14 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
+PREHOOK: query: set role NONE
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role NONE
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: set role ALL
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ALL

@@ -520,6 +520,11 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     HiveAuthzPluginException {
 
     initUserRoles();
+    if (NONE.equalsIgnoreCase(roleName)) {
+      // for set role NONE, clear all roles for current session.
+      currentRoles.clear();
+      return;
+    }
     if (ALL.equalsIgnoreCase(roleName)) {
       // for set role ALL, reset roles to default roles.
       currentRoles.clear();
