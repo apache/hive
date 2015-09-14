@@ -151,8 +151,10 @@ public class LineageLogger implements ExecuteWithHookContext {
           // so that the test golden output file is fixed.
           long queryTime = plan.getQueryStartTime().longValue();
           if (queryTime == 0) queryTime = System.currentTimeMillis();
+          long duration = System.currentTimeMillis() - queryTime;
           writer.name("user").value(hookContext.getUgi().getUserName());
           writer.name("timestamp").value(queryTime/1000);
+          writer.name("duration").value(duration);
           writer.name("jobIds");
           writer.beginArray();
           List<TaskRunner> tasks = hookContext.getCompleteTaskList();
