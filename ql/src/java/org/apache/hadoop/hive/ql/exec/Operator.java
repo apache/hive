@@ -390,8 +390,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       LOG.info("Initialization Done " + id + " " + getName() + " done is reset.");
     }
 
-    initializeChildren(hconf);
-
     // let's wait on the async ops before continuing
     completeInitialization(asyncInitOperations);
   }
