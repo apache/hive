@@ -1,0 +1,390 @@
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_3_txt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_3_txt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE DECIMAL_3_txt(key decimal(38,18), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_3_txt
+POSTHOOK: query: CREATE TABLE DECIMAL_3_txt(key decimal(38,18), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_3_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_3_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@decimal_3_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_3_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@decimal_3_txt
+PREHOOK: query: CREATE TABLE DECIMAL_3 STORED AS ORC AS SELECT * FROM DECIMAL_3_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@decimal_3_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_3
+POSTHOOK: query: CREATE TABLE DECIMAL_3 STORED AS ORC AS SELECT * FROM DECIMAL_3_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@decimal_3_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_3
+PREHOOK: query: SELECT * FROM DECIMAL_3 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_3 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+NULL	0
+-1234567890.123456789	-1234567890
+-4400	4400
+-1255.49	-1255
+-1.122	-11
+-1.12	-1
+-1.12	-1
+-0.333	0
+-0.33	0
+-0.3	0
+0	0
+0	0
+0	0
+0.01	0
+0.02	0
+0.1	0
+0.2	0
+0.3	0
+0.33	0
+0.333	0
+1	1
+1	1
+1	1
+1.12	1
+1.122	1
+2	2
+2	2
+3.14	3
+3.14	3
+3.14	3
+3.14	4
+10	10
+20	20
+100	100
+124	124
+125.2	125
+200	200
+1234567890.12345678	1234567890
+PREHOOK: query: SELECT * FROM DECIMAL_3 ORDER BY key DESC, value DESC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_3 ORDER BY key DESC, value DESC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+1234567890.12345678	1234567890
+200	200
+125.2	125
+124	124
+100	100
+20	20
+10	10
+3.14	4
+3.14	3
+3.14	3
+3.14	3
+2	2
+2	2
+1.122	1
+1.12	1
+1	1
+1	1
+1	1
+0.333	0
+0.33	0
+0.3	0
+0.2	0
+0.1	0
+0.02	0
+0.01	0
+0	0
+0	0
+0	0
+-0.3	0
+-0.33	0
+-0.333	0
+-1.12	-1
+-1.12	-1
+-1.122	-11
+-1255.49	-1255
+-4400	4400
+-1234567890.123456789	-1234567890
+NULL	0
+PREHOOK: query: SELECT * FROM DECIMAL_3 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_3 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+NULL	0
+-1234567890.123456789	-1234567890
+-4400	4400
+-1255.49	-1255
+-1.122	-11
+-1.12	-1
+-1.12	-1
+-0.333	0
+-0.33	0
+-0.3	0
+0	0
+0	0
+0	0
+0.01	0
+0.02	0
+0.1	0
+0.2	0
+0.3	0
+0.33	0
+0.333	0
+1	1
+1	1
+1	1
+1.12	1
+1.122	1
+2	2
+2	2
+3.14	3
+3.14	3
+3.14	3
+3.14	4
+10	10
+20	20
+100	100
+124	124
+125.2	125
+200	200
+1234567890.12345678	1234567890
+PREHOOK: query: SELECT DISTINCT key FROM DECIMAL_3 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DISTINCT key FROM DECIMAL_3 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+NULL
+-1234567890.123456789
+-4400
+-1255.49
+-1.122
+-1.12
+-0.333
+-0.33
+-0.3
+0
+0.01
+0.02
+0.1
+0.2
+0.3
+0.33
+0.333
+1
+1.12
+1.122
+2
+3.14
+10
+20
+100
+124
+125.2
+200
+1234567890.12345678
+PREHOOK: query: SELECT key, sum(value) FROM DECIMAL_3 GROUP BY key ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, sum(value) FROM DECIMAL_3 GROUP BY key ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+NULL	0
+-1234567890.123456789	-1234567890
+-4400	4400
+-1255.49	-1255
+-1.122	-11
+-1.12	-2
+-0.333	0
+-0.33	0
+-0.3	0
+0	0
+0.01	0
+0.02	0
+0.1	0
+0.2	0
+0.3	0
+0.33	0
+0.333	0
+1	3
+1.12	1
+1.122	1
+2	4
+3.14	13
+10	10
+20	20
+100	100
+124	124
+125.2	125
+200	200
+1234567890.12345678	1234567890
+PREHOOK: query: SELECT value, sum(key) FROM DECIMAL_3 GROUP BY value ORDER BY value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, sum(key) FROM DECIMAL_3 GROUP BY value ORDER BY value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+-1234567890	-1234567890.123456789
+-1255	-1255.49
+-11	-1.122
+-1	-2.24
+0	0.33
+1	5.242
+2	4
+3	9.42
+4	3.14
+10	10
+20	20
+100	100
+124	124
+125	125.2
+200	200
+4400	-4400
+1234567890	1234567890.12345678
+PREHOOK: query: SELECT * FROM DECIMAL_3 a JOIN DECIMAL_3 b ON (a.key = b.key) ORDER BY a.key, a.value, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_3 a JOIN DECIMAL_3 b ON (a.key = b.key) ORDER BY a.key, a.value, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+-1234567890.123456789	-1234567890	-1234567890.123456789	-1234567890
+-4400	4400	-4400	4400
+-1255.49	-1255	-1255.49	-1255
+-1.122	-11	-1.122	-11
+-1.12	-1	-1.12	-1
+-1.12	-1	-1.12	-1
+-1.12	-1	-1.12	-1
+-1.12	-1	-1.12	-1
+-0.333	0	-0.333	0
+-0.33	0	-0.33	0
+-0.3	0	-0.3	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0.01	0	0.01	0
+0.02	0	0.02	0
+0.1	0	0.1	0
+0.2	0	0.2	0
+0.3	0	0.3	0
+0.33	0	0.33	0
+0.333	0	0.333	0
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1	1	1	1
+1.12	1	1.12	1
+1.122	1	1.122	1
+2	2	2	2
+2	2	2	2
+2	2	2	2
+2	2	2	2
+3.14	3	3.14	3
+3.14	3	3.14	3
+3.14	3	3.14	3
+3.14	3	3.14	3
+3.14	3	3.14	3
+3.14	3	3.14	3
+3.14	3	3.14	3
+3.14	3	3.14	3
+3.14	3	3.14	3
+3.14	3	3.14	4
+3.14	3	3.14	4
+3.14	3	3.14	4
+3.14	4	3.14	3
+3.14	4	3.14	3
+3.14	4	3.14	3
+3.14	4	3.14	4
+10	10	10	10
+20	20	20	20
+100	100	100	100
+124	124	124	124
+125.2	125	125.2	125
+200	200	200	200
+1234567890.12345678	1234567890	1234567890.12345678	1234567890
+PREHOOK: query: SELECT * FROM DECIMAL_3 WHERE key=3.14 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_3 WHERE key=3.14 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+3.14	3
+3.14	3
+3.14	3
+3.14	4
+PREHOOK: query: SELECT * FROM DECIMAL_3 WHERE key=3.140 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_3 WHERE key=3.140 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3
+#### A masked pattern was here ####
+3.14	3
+3.14	3
+3.14	3
+3.14	4
+PREHOOK: query: DROP TABLE DECIMAL_3_txt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_3_txt
+PREHOOK: Output: default@decimal_3_txt
+POSTHOOK: query: DROP TABLE DECIMAL_3_txt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_3_txt
+POSTHOOK: Output: default@decimal_3_txt
+PREHOOK: query: DROP TABLE DECIMAL_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_3
+PREHOOK: Output: default@decimal_3
+POSTHOOK: query: DROP TABLE DECIMAL_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_3
+POSTHOOK: Output: default@decimal_3

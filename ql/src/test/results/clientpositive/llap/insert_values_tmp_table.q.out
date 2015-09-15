@@ -1,0 +1,36 @@
+PREHOOK: query: create temporary table acid_ivtt(i int, de decimal(5,2), vc varchar(128)) clustered by (vc) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_ivtt
+POSTHOOK: query: create temporary table acid_ivtt(i int, de decimal(5,2), vc varchar(128)) clustered by (vc) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_ivtt
+PREHOOK: query: insert into table acid_ivtt values 
+    (1, 109.23, 'mary had a little lamb'),
+    (429496729, 0.14, 'its fleece was white as snow'),
+    (-29496729, -0.14, 'negative values test')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@acid_ivtt
+POSTHOOK: query: insert into table acid_ivtt values 
+    (1, 109.23, 'mary had a little lamb'),
+    (429496729, 0.14, 'its fleece was white as snow'),
+    (-29496729, -0.14, 'negative values test')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@acid_ivtt
+POSTHOOK: Lineage: acid_ivtt.de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivtt.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivtt.vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: select i, de, vc from acid_ivtt order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivtt
+#### A masked pattern was here ####
+POSTHOOK: query: select i, de, vc from acid_ivtt order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivtt
+#### A masked pattern was here ####
+-29496729	-0.14	negative values test
+1	109.23	mary had a little lamb
+429496729	0.14	its fleece was white as snow

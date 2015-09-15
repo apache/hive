@@ -1,0 +1,522 @@
+PREHOOK: query: explain select key, value
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select key, value
+FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+POSTHOOK: type: QUERY
+Plan not optimized by CBO.
+
+Stage-0
+   Fetch Operator
+      limit:-1
+      Select Operator [SEL_6]
+         outputColumnNames:["_col0","_col1"]
+         Lateral View Join Operator [LVJ_5]
+            outputColumnNames:["_col0","_col1","_col7"]
+            Select Operator [SEL_2]
+               outputColumnNames:["key","value"]
+               Lateral View Forward [LVF_1]
+                  TableScan [TS_0]
+                     alias:srcpart
+      Select Operator [SEL_6]
+         outputColumnNames:["_col0","_col1"]
+         Lateral View Join Operator [LVJ_5]
+            outputColumnNames:["_col0","_col1","_col7"]
+            UDTF Operator [UDTF_4]
+               function name:explode
+               Select Operator [SEL_3]
+                  outputColumnNames:["_col0"]
+                   Please refer to the previous Lateral View Forward [LVF_1]
+
+PREHOOK: query: explain show tables
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: explain show tables
+POSTHOOK: type: SHOWTABLES
+Stage-1
+   Fetch Operator
+      limit:-1
+      Stage-0
+         Show Table Operator:
+            database name:default
+
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+Stage-0
+
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:newDB
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:newDB
+#### A masked pattern was here ####
+PREHOOK: query: explain describe database extended newDB
+PREHOOK: type: DESCDATABASE
+POSTHOOK: query: explain describe database extended newDB
+POSTHOOK: type: DESCDATABASE
+Stage-1
+   Fetch Operator
+      limit:-1
+      Stage-0
+
+PREHOOK: query: describe database extended newDB
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:newdb
+POSTHOOK: query: describe database extended newDB
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:newdb
+newdb		location/in/test	hive_test_user	USER	
+PREHOOK: query: explain use newDB
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: explain use newDB
+POSTHOOK: type: SWITCHDATABASE
+Stage-0
+
+PREHOOK: query: use newDB
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:newdb
+POSTHOOK: query: use newDB
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:newdb
+PREHOOK: query: create table tab (name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:newdb
+PREHOOK: Output: newDB@tab
+POSTHOOK: query: create table tab (name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:newdb
+POSTHOOK: Output: newDB@tab
+PREHOOK: query: explain alter table tab rename to newName
+PREHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: query: explain alter table tab rename to newName
+POSTHOOK: type: ALTERTABLE_RENAME
+Stage-0
+   Alter Table Operator:
+      new name:newDB.newName
+      old name:newDB.tab
+      type:rename
+
+PREHOOK: query: explain drop table tab
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: explain drop table tab
+POSTHOOK: type: DROPTABLE
+Stage-0
+   Drop Table Operator:
+      table:tab
+
+PREHOOK: query: drop table tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: newdb@tab
+PREHOOK: Output: newdb@tab
+POSTHOOK: query: drop table tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: newdb@tab
+POSTHOOK: Output: newdb@tab
+PREHOOK: query: explain use default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: explain use default
+POSTHOOK: type: SWITCHDATABASE
+Stage-0
+
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database newDB
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:newdb
+PREHOOK: Output: database:newdb
+POSTHOOK: query: drop database newDB
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:newdb
+POSTHOOK: Output: database:newdb
+PREHOOK: query: explain analyze table src compute statistics
+PREHOOK: type: QUERY
+POSTHOOK: query: explain analyze table src compute statistics
+POSTHOOK: type: QUERY
+Stage-2
+   Stats-Aggr Operator
+      Stage-0
+         Map 1
+         TableScan [TS_0]
+            alias:src
+            Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+
+PREHOOK: query: explain analyze table src compute statistics for columns
+PREHOOK: type: QUERY
+POSTHOOK: query: explain analyze table src compute statistics for columns
+POSTHOOK: type: QUERY
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-2
+   Column Stats Work{}
+      Stage-0
+         Reducer 2
+         File Output Operator [FS_6]
+            compressed:false
+            Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
+            Group By Operator [GBY_4]
+            |  aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+            |  outputColumnNames:["_col0","_col1"]
+            |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            |<-Map 1 [SIMPLE_EDGE]
+               Reduce Output Operator [RS_3]
+                  sort order:
+                  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  value expressions:_col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  Group By Operator [GBY_2]
+                     aggregations:["compute_stats(key, 16)","compute_stats(value, 16)"]
+                     outputColumnNames:["_col0","_col1"]
+                     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                     Select Operator [SEL_1]
+                        outputColumnNames:["key","value"]
+                        Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        TableScan [TS_0]
+                           alias:src
+                           Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+
+PREHOOK: query: explain
+CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
+PREHOOK: type: CREATEMACRO
+POSTHOOK: query: explain
+CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
+POSTHOOK: type: CREATEMACRO
+Stage-0
+
+PREHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: EXPLAIN SELECT SIGMOID(2) FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT SIGMOID(2) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-0
+   Fetch Operator
+      limit:1
+      Limit [LIM_2]
+         Number of rows:1
+         Select Operator [SEL_1]
+            outputColumnNames:["_col0"]
+            TableScan [TS_0]
+               alias:src
+
+PREHOOK: query: explain DROP TEMPORARY MACRO SIGMOID
+PREHOOK: type: DROPMACRO
+POSTHOOK: query: explain DROP TEMPORARY MACRO SIGMOID
+POSTHOOK: type: DROPMACRO
+Stage-0
+
+PREHOOK: query: DROP TEMPORARY MACRO SIGMOID
+PREHOOK: type: DROPMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TEMPORARY MACRO SIGMOID
+POSTHOOK: type: DROPMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: explain create table src_autho_test as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: explain create table src_autho_test as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+Plan optimized by CBO.
+
+Stage-3
+   Stats-Aggr Operator
+      Stage-4
+         Create Table Operator:
+            columns:["key string","value string"]
+            input format:org.apache.hadoop.mapred.TextInputFormat
+            name:default.src_autho_test
+            output format:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+            Stage-2
+               Dependency Collection{}
+                  Stage-1
+                     Map 1
+                     File Output Operator [FS_2]
+                        compressed:false
+                        Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","name:":"default.src_autho_test"}
+                        Select Operator [SEL_1]
+                           outputColumnNames:["_col0","_col1"]
+                           Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                           TableScan [TS_0]
+                              alias:src
+                              Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Stage-0
+               Move Operator
+                   Please refer to the previous Stage-1
+
+PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: create table src_autho_test as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_autho_test
+PREHOOK: query: explain grant select on table src_autho_test to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: explain grant select on table src_autho_test to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+Stage-0
+
+PREHOOK: query: grant select on table src_autho_test to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: grant select on table src_autho_test to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test
+PREHOOK: query: explain show grant user hive_test_user on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: explain show grant user hive_test_user on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+Stage-1
+   Fetch Operator
+      limit:-1
+      Stage-0
+
+PREHOOK: query: explain show grant user hive_test_user on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: explain show grant user hive_test_user on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+Stage-1
+   Fetch Operator
+      limit:-1
+      Stage-0
+
+PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+#### A masked pattern was here ####
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: explain revoke select on table src_autho_test from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: explain revoke select on table src_autho_test from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+Stage-0
+
+PREHOOK: query: explain grant select(key) on table src_autho_test to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: explain grant select(key) on table src_autho_test to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+Stage-0
+
+PREHOOK: query: explain revoke select(key) on table src_autho_test from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: explain revoke select(key) on table src_autho_test from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+Stage-0
+
+PREHOOK: query: explain 
+create role sRc_roLE
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: explain 
+create role sRc_roLE
+POSTHOOK: type: CREATEROLE
+Stage-0
+
+PREHOOK: query: create role sRc_roLE
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role sRc_roLE
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: explain
+grant role sRc_roLE to user hive_test_user
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: explain
+grant role sRc_roLE to user hive_test_user
+POSTHOOK: type: GRANT_ROLE
+Stage-0
+
+PREHOOK: query: grant role sRc_roLE to user hive_test_user
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role sRc_roLE to user hive_test_user
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: explain show role grant user hive_test_user
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: explain show role grant user hive_test_user
+POSTHOOK: type: SHOW_ROLE_GRANT
+Stage-1
+   Fetch Operator
+      limit:-1
+      Stage-0
+
+PREHOOK: query: explain drop role sRc_roLE
+PREHOOK: type: DROPROLE
+POSTHOOK: query: explain drop role sRc_roLE
+POSTHOOK: type: DROPROLE
+Stage-0
+
+PREHOOK: query: drop role sRc_roLE
+PREHOOK: type: DROPROLE
+POSTHOOK: query: drop role sRc_roLE
+POSTHOOK: type: DROPROLE
+PREHOOK: query: drop table src_autho_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: drop table src_autho_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: default@src_autho_test
+PREHOOK: query: explain drop view v
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: explain drop view v
+POSTHOOK: type: DROPVIEW
+Stage-0
+   Drop Table Operator:
+      table:v
+
+PREHOOK: query: explain create view v as with cte as (select * from src  order by key limit 5)
+select * from cte
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: explain create view v as with cte as (select * from src  order by key limit 5)
+select * from cte
+POSTHOOK: type: CREATEVIEW
+Plan not optimized by CBO.
+
+Stage-0
+   Create View Operator:
+      name:default.v
+      original text:with cte as (select * from src  order by key limit 5)
+select * from cte
+
+PREHOOK: query: explain with cte as (select * from src  order by key limit 5)
+select * from cte
+PREHOOK: type: QUERY
+POSTHOOK: query: explain with cte as (select * from src  order by key limit 5)
+select * from cte
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+   Fetch Operator
+      limit:5
+      Stage-1
+         Reducer 2
+         File Output Operator [FS_5]
+            compressed:false
+            Statistics:Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
+            Limit [LIM_4]
+               Number of rows:5
+               Statistics:Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
+               Select Operator [SEL_3]
+               |  outputColumnNames:["_col0","_col1"]
+               |  Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+               |<-Map 1 [SIMPLE_EDGE]
+                  Reduce Output Operator [RS_2]
+                     key expressions:_col0 (type: string)
+                     sort order:+
+                     Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                     value expressions:_col1 (type: string)
+                     Select Operator [SEL_1]
+                        outputColumnNames:["_col0","_col1"]
+                        Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        TableScan [TS_0]
+                           alias:src
+                           Statistics:Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+
+PREHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_merge5
+POSTHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_merge5
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_merge5
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_merge5
+PREHOOK: query: explain insert overwrite table orc_merge5 select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert overwrite table orc_merge5 select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-3
+   Stats-Aggr Operator
+      Stage-0
+         Move Operator
+            table:{"input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat","serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.orc_merge5"}
+            Stage-2
+               Dependency Collection{}
+                  Stage-5(CONDITIONAL)
+                     Move Operator
+                        Stage-8(CONDITIONAL CHILD TASKS: Stage-5, Stage-4, Stage-6)
+                           Conditional Operator
+                              Stage-1
+                                 Map 1
+                                 File Output Operator [FS_3]
+                                    compressed:false
+                                    Statistics:Num rows: 306 Data size: 82044 Basic stats: COMPLETE Column stats: NONE
+                                    table:{"input format:":"org.apache.hadoop.hive.ql.io.orc.OrcInputFormat","output format:":"org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat","serde:":"org.apache.hadoop.hive.ql.io.orc.OrcSerde","name:":"default.orc_merge5"}
+                                    Select Operator [SEL_2]
+                                       outputColumnNames:["_col0","_col1","_col2","_col3","_col4"]
+                                       Statistics:Num rows: 306 Data size: 82044 Basic stats: COMPLETE Column stats: NONE
+                                       Filter Operator [FIL_4]
+                                          predicate:(userid <= 13) (type: boolean)
+                                          Statistics:Num rows: 306 Data size: 82044 Basic stats: COMPLETE Column stats: NONE
+                                          TableScan [TS_0]
+                                             alias:orc_merge5
+                                             Statistics:Num rows: 919 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                  Stage-4(CONDITIONAL)
+                     File Merge
+                     ORC File Merge Operator [OFM_7]
+                         Please refer to the previous Stage-8(CONDITIONAL CHILD TASKS: Stage-5, Stage-4, Stage-6)
+                  Stage-7
+                     Move Operator
+                        Stage-6(CONDITIONAL)
+                           File Merge
+                           ORC File Merge Operator [OFM_7]
+                               Please refer to the previous Stage-8(CONDITIONAL CHILD TASKS: Stage-5, Stage-4, Stage-6)
+
+PREHOOK: query: drop table orc_merge5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_merge5
+PREHOOK: Output: default@orc_merge5
+POSTHOOK: query: drop table orc_merge5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_merge5
+POSTHOOK: Output: default@orc_merge5

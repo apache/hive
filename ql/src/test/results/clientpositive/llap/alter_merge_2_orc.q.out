@@ -1,0 +1,123 @@
+PREHOOK: query: create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc_merge_test_part
+POSTHOOK: query: create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_orc_merge_test_part
+PREHOOK: query: alter table src_orc_merge_test_part add partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@src_orc_merge_test_part
+POSTHOOK: query: alter table src_orc_merge_test_part add partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@src_orc_merge_test_part
+POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+PREHOOK: query: desc extended src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: query: desc extended src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_orc_merge_test_part
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+ts                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+ts                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: query: insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: query: insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src order by key, value limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_merge_test_part
+PREHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+#### A masked pattern was here ####
+610
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_merge_test_part
+PREHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+#### A masked pattern was here ####
+143807	50348357904
+PREHOOK: query: alter table src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@src_orc_merge_test_part
+PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: query: alter table src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+PREHOOK: query: select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_merge_test_part
+PREHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+#### A masked pattern was here ####
+610
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_merge_test_part
+PREHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+#### A masked pattern was here ####
+143807	50348357904
+PREHOOK: query: drop table src_orc_merge_test_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_orc_merge_test_part
+PREHOOK: Output: default@src_orc_merge_test_part
+POSTHOOK: query: drop table src_orc_merge_test_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: Output: default@src_orc_merge_test_part
