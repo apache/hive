@@ -15,7 +15,7 @@ import jline.TerminalFactory;
 
 public class InPlaceUpdates {
 
-  public static final int MIN_TERMINAL_WIDTH = 80;
+  public static final int MIN_TERMINAL_WIDTH = 94;
 
   static boolean isUnixTerminal() {
 
