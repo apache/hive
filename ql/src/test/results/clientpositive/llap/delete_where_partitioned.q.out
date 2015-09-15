@@ -1,0 +1,105 @@
+PREHOOK: query: create table acid_dwp(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_dwp
+POSTHOOK: query: create table acid_dwp(a int, b varchar(128)) partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_dwp
+PREHOOK: query: insert into table acid_dwp partition (ds='today') select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null and cint < 0 order by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acid_dwp@ds=today
+POSTHOOK: query: insert into table acid_dwp partition (ds='today') select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null and cint < 0 order by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acid_dwp@ds=today
+POSTHOOK: Lineage: acid_dwp PARTITION(ds=today).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_dwp PARTITION(ds=today).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: insert into table acid_dwp partition (ds='tomorrow') select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null and cint > -10000000 order by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acid_dwp@ds=tomorrow
+POSTHOOK: query: insert into table acid_dwp partition (ds='tomorrow') select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null and cint > -10000000 order by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acid_dwp@ds=tomorrow
+POSTHOOK: Lineage: acid_dwp PARTITION(ds=tomorrow).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_dwp PARTITION(ds=tomorrow).b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: select a,b,ds from acid_dwp order by a, ds
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_dwp
+PREHOOK: Input: default@acid_dwp@ds=today
+PREHOOK: Input: default@acid_dwp@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: query: select a,b,ds from acid_dwp order by a, ds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_dwp
+POSTHOOK: Input: default@acid_dwp@ds=today
+POSTHOOK: Input: default@acid_dwp@ds=tomorrow
+#### A masked pattern was here ####
+-1073279343	oj1YrV5Wa	today
+-1073051226	A34p7oRr2WvUJNf	today
+-1072910839	0iqrc5	today
+-1072081801	dPkN74F7	today
+-1072076362	2uLyD28144vklju213J1mr	today
+-1071480828	aw724t8c5558x2xneC624	today
+-1071363017	Anj0oF	today
+-1070883071	0ruyd6Y50JpdGRf6HqD	today
+-1070551679	iUR3Q	today
+-1069736047	k17Am8uPHWk02cEf1jet	today
+-9676535	MmMPCF2	tomorrow
+-9462165	7WLVW6F4h71Dgk7	tomorrow
+-9329892	e7sC5M0H5K6EgSTf41X	tomorrow
+-9175632	UUBET8444iJDvjUlq3en	tomorrow
+-9011819	A6CX2HDWN8	tomorrow
+-8987676	FhXANp2KDtMmA2gFd778pA	tomorrow
+-8413710	81Rg5rR0IaInWw	tomorrow
+-8230445	K6J1LIb5	tomorrow
+-7980033	HtI02nss6t8S0fqH4vcLkCD	tomorrow
+-6882225	r6gCtT4Tgo5rG	tomorrow
+PREHOOK: query: delete from acid_dwp where a = '-1071363017'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_dwp
+PREHOOK: Input: default@acid_dwp@ds=today
+PREHOOK: Input: default@acid_dwp@ds=tomorrow
+PREHOOK: Output: default@acid_dwp@ds=today
+PREHOOK: Output: default@acid_dwp@ds=tomorrow
+POSTHOOK: query: delete from acid_dwp where a = '-1071363017'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_dwp
+POSTHOOK: Input: default@acid_dwp@ds=today
+POSTHOOK: Input: default@acid_dwp@ds=tomorrow
+POSTHOOK: Output: default@acid_dwp@ds=today
+POSTHOOK: Output: default@acid_dwp@ds=tomorrow
+PREHOOK: query: select * from acid_dwp order by a, ds
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_dwp
+PREHOOK: Input: default@acid_dwp@ds=today
+PREHOOK: Input: default@acid_dwp@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_dwp order by a, ds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_dwp
+POSTHOOK: Input: default@acid_dwp@ds=today
+POSTHOOK: Input: default@acid_dwp@ds=tomorrow
+#### A masked pattern was here ####
+-1073279343	oj1YrV5Wa	today
+-1073051226	A34p7oRr2WvUJNf	today
+-1072910839	0iqrc5	today
+-1072081801	dPkN74F7	today
+-1072076362	2uLyD28144vklju213J1mr	today
+-1071480828	aw724t8c5558x2xneC624	today
+-1070883071	0ruyd6Y50JpdGRf6HqD	today
+-1070551679	iUR3Q	today
+-1069736047	k17Am8uPHWk02cEf1jet	today
+-9676535	MmMPCF2	tomorrow
+-9462165	7WLVW6F4h71Dgk7	tomorrow
+-9329892	e7sC5M0H5K6EgSTf41X	tomorrow
+-9175632	UUBET8444iJDvjUlq3en	tomorrow
+-9011819	A6CX2HDWN8	tomorrow
+-8987676	FhXANp2KDtMmA2gFd778pA	tomorrow
+-8413710	81Rg5rR0IaInWw	tomorrow
+-8230445	K6J1LIb5	tomorrow
+-7980033	HtI02nss6t8S0fqH4vcLkCD	tomorrow
+-6882225	r6gCtT4Tgo5rG	tomorrow
