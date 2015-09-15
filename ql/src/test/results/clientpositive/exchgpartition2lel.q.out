@@ -1,0 +1,182 @@
+PREHOOK: query: DROP TABLE IF EXISTS t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE t1 (a int) PARTITIONED BY (d1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1 (a int) PARTITIONED BY (d1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: CREATE TABLE t2 (a int) PARTITIONED BY (d1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: CREATE TABLE t2 (a int) PARTITIONED BY (d1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: CREATE TABLE t3 (a int) PARTITIONED BY (d1 int, d2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: CREATE TABLE t3 (a int) PARTITIONED BY (d1 int, d2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: CREATE TABLE t4 (a int) PARTITIONED BY (d1 int, d2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4
+POSTHOOK: query: CREATE TABLE t4 (a int) PARTITIONED BY (d1 int, d2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4
+PREHOOK: query: CREATE TABLE t5 (a int) PARTITIONED BY (d1 int, d2 int, d3 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5
+POSTHOOK: query: CREATE TABLE t5 (a int) PARTITIONED BY (d1 int, d2 int, d3 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5
+PREHOOK: query: CREATE TABLE t6 (a int) PARTITIONED BY (d1 int, d2 int, d3 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t6
+POSTHOOK: query: CREATE TABLE t6 (a int) PARTITIONED BY (d1 int, d2 int, d3 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t6
+PREHOOK: query: INSERT OVERWRITE TABLE t1 PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1@d1=1
+POSTHOOK: query: INSERT OVERWRITE TABLE t1 PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1@d1=1
+POSTHOOK: Lineage: t1 PARTITION(d1=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE t3 PARTITION (d1 = 1, d2 = 1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t3@d1=1/d2=1
+POSTHOOK: query: INSERT OVERWRITE TABLE t3 PARTITION (d1 = 1, d2 = 1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t3@d1=1/d2=1
+POSTHOOK: Lineage: t3 PARTITION(d1=1,d2=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE t5 PARTITION (d1 = 1, d2 = 1, d3=1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t5@d1=1/d2=1/d3=1
+POSTHOOK: query: INSERT OVERWRITE TABLE t5 PARTITION (d1 = 1, d2 = 1, d3=1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t5@d1=1/d2=1/d3=1
+POSTHOOK: Lineage: t5 PARTITION(d1=1,d2=1,d3=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@d1=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@d1=1
+#### A masked pattern was here ####
+100	1
+PREHOOK: query: SELECT * FROM t3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t3@d1=1/d2=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3@d1=1/d2=1
+#### A masked pattern was here ####
+100	1	1
+PREHOOK: query: ALTER TABLE t2 EXCHANGE PARTITION (d1 = 1) WITH TABLE t1
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: query: ALTER TABLE t2 EXCHANGE PARTITION (d1 = 1) WITH TABLE t1
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: query: SELECT * FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@d1=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@d1=1
+#### A masked pattern was here ####
+100	1
+PREHOOK: query: ALTER TABLE t4 EXCHANGE PARTITION (d1 = 1, d2 = 1) WITH TABLE t3
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: query: ALTER TABLE t4 EXCHANGE PARTITION (d1 = 1, d2 = 1) WITH TABLE t3
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: query: SELECT * FROM t3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4@d1=1/d2=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t4@d1=1/d2=1
+#### A masked pattern was here ####
+100	1	1
+PREHOOK: query: ALTER TABLE t6 EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: query: ALTER TABLE t6 EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: query: SELECT * FROM t5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t5
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t6
+PREHOOK: Input: default@t6@d1=1/d2=1/d3=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t6
+POSTHOOK: Input: default@t6@d1=1/d2=1/d3=1
+#### A masked pattern was here ####
+100	1	1	1
