@@ -62,7 +62,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -814,10 +816,12 @@ public class TypeCheckProcFactory {
           ((SettableUDF)genericUDF).setTypeInfo(typeInfo);
         }
       }
-
+      
       List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(children.length);
+
       childrenList.addAll(Arrays.asList(children));
-      return ExprNodeGenericFuncDesc.newInstance(genericUDF, childrenList);
+      return ExprNodeGenericFuncDesc.newInstance(genericUDF,
+          childrenList);
     }
 
     public static ExprNodeDesc getFuncExprNodeDesc(String udfName,
@@ -1030,7 +1034,7 @@ public class TypeCheckProcFactory {
               // we'll try again to convert it to double
               // however, if we already tried this, or the column is NUMBER type and
               // the operator is EQUAL, return false due to the type mismatch
-              if (triedDouble ||
+              if (triedDouble &&
                   (genericUDF instanceof GenericUDFOPEqual
                   && !columnType.equals(serdeConstants.STRING_TYPE_NAME))) {
                 return new ExprNodeConstantDesc(false);
@@ -1048,8 +1052,36 @@ public class TypeCheckProcFactory {
             }
           }
         }
-
-        desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, children);
+        if (genericUDF instanceof GenericUDFOPOr) {
+          // flatten OR
+          List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(
+              children.size());
+          for (ExprNodeDesc child : children) {
+            if (FunctionRegistry.isOpOr(child)) {
+              childrenList.addAll(child.getChildren());
+            } else {
+              childrenList.add(child);
+            }
+          }
+          desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
+              childrenList);
+        } else if (genericUDF instanceof GenericUDFOPAnd) {
+          // flatten AND
+          List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(
+              children.size());
+          for (ExprNodeDesc child : children) {
+            if (FunctionRegistry.isOpAnd(child)) {
+              childrenList.addAll(child.getChildren());
+            } else {
+              childrenList.add(child);
+            }
+          }
+          desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
+              childrenList);
+        } else {
+          desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
+              children);
+        }
       }
       // UDFOPPositive is a no-op.
       // However, we still create it, and then remove it here, to make sure we

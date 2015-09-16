@@ -319,6 +319,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   @SuppressWarnings("unchecked")
   public final void initialize(Configuration hconf, ObjectInspector[] inputOIs)
       throws HiveException {
+    this.done = false;
     if (state == State.INIT) {
       return;
     }
@@ -369,7 +370,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     if (isLogInfoEnabled) {
-      LOG.info("Initialization Done " + id + " " + getName());
+      LOG.info("Initialization Done " + id + " " + getName() + " done is reset.");
     }
 
     initializeChildren(hconf);
@@ -767,31 +768,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     } else {
       parent.getChildOperators().remove(childIndex);
     }
-  }
-
-  // Remove the operators till a certain depth.
-  // Return true if the remove was successful, false otherwise
-  public boolean removeChildren(int depth) {
-    Operator<? extends OperatorDesc> currOp = this;
-    for (int i = 0; i < depth; i++) {
-      // If there are more than 1 children at any level, don't do anything
-      if ((currOp.getChildOperators() == null) || (currOp.getChildOperators().isEmpty()) ||
-          (currOp.getChildOperators().size() > 1)) {
-        return false;
-      }
-      currOp = currOp.getChildOperators().get(0);
-    }
-
-    setChildOperators(currOp.getChildOperators());
-
-    List<Operator<? extends OperatorDesc>> parentOps =
-      new ArrayList<Operator<? extends OperatorDesc>>();
-    parentOps.add(this);
-
-    for (Operator<? extends OperatorDesc> op : currOp.getChildOperators()) {
-      op.setParentOperators(parentOps);
-    }
-    return true;
   }
 
   /**

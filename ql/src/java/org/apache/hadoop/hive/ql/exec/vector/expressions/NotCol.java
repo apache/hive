@@ -62,17 +62,17 @@ public class NotCol extends VectorExpression {
       outV.noNulls = true;
       if (inputColVector.isRepeating) {
         outV.isRepeating = true;
-        // mask out all but low order bit with "& 1" so NOT 1 yields 0, NOT 0 yields 1
-        outputVector[0] = ~vector[0] & 1;
+        // 0 XOR 1 yields 1, 1 XOR 1 yields 0
+        outputVector[0] = vector[0] ^ 1;
       } else if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = ~vector[i] & 1;
+          outputVector[i] = vector[i] ^ 1;
         }
         outV.isRepeating = false;
       } else {
         for (int i = 0; i != n; i++) {
-          outputVector[i] = ~vector[i] & 1;
+          outputVector[i] = vector[i] ^ 1;
         }
         outV.isRepeating = false;
       }
@@ -80,19 +80,19 @@ public class NotCol extends VectorExpression {
       outV.noNulls = false;
       if (inputColVector.isRepeating) {
         outV.isRepeating = true;
-        outputVector[0] = ~vector[0] & 1;
+        outputVector[0] = vector[0] ^ 1;
         outV.isNull[0] = inputColVector.isNull[0];
       } else if (batch.selectedInUse) {
         outV.isRepeating = false;
         for (int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = ~vector[i] & 1;
+          outputVector[i] = vector[i] ^ 1;
           outV.isNull[i] = inputColVector.isNull[i];
         }
       } else {
         outV.isRepeating = false;
         for (int i = 0; i != n; i++) {
-          outputVector[i] = ~vector[i] & 1;
+          outputVector[i] = vector[i] ^ 1;
           outV.isNull[i] = inputColVector.isNull[i];
         }
       }

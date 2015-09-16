@@ -1,0 +1,56 @@
+PREHOOK: query: drop table macro_testing
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table macro_testing
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE macro_testing(a int, b int, c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@macro_testing
+POSTHOOK: query: CREATE TABLE macro_testing(a int, b int, c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@macro_testing
+PREHOOK: query: insert into table macro_testing values (1,2,3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@macro_testing
+POSTHOOK: query: insert into table macro_testing values (1,2,3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@macro_testing
+POSTHOOK: Lineage: macro_testing.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: macro_testing.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: macro_testing.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: insert into table macro_testing values (4,5,6)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@macro_testing
+POSTHOOK: query: insert into table macro_testing values (4,5,6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@macro_testing
+POSTHOOK: Lineage: macro_testing.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: macro_testing.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: macro_testing.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: create temporary macro math_square(x int) x*x
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: create temporary macro math_square(x int) x*x
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: create temporary macro math_add(x int) x+x
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: create temporary macro math_add(x int) x+x
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: select math_square(a), math_square(b),factorial(a), factorial(b), math_add(a), math_add(b),int(c) from macro_testing
+PREHOOK: type: QUERY
+PREHOOK: Input: default@macro_testing
+#### A masked pattern was here ####
+POSTHOOK: query: select math_square(a), math_square(b),factorial(a), factorial(b), math_add(a), math_add(b),int(c) from macro_testing
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@macro_testing
+#### A masked pattern was here ####
+1	4	1	2	2	4	3
+16	25	24	120	8	10	6

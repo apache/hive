@@ -44,4 +44,4 @@ PREHOOK: query: explain formatted authorization use default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: explain formatted authorization use default
 POSTHOOK: type: SWITCHDATABASE
-{"OUTPUTS":[],"INPUTS":["database:default"],"OPERATION":"SWITCHDATABASE","CURRENT_USER":"hive_test_user"}
+{"INPUTS":["database:default"],"OUTPUTS":[],"CURRENT_USER":"hive_test_user","OPERATION":"SWITCHDATABASE"}

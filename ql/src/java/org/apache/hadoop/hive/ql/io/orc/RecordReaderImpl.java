@@ -137,7 +137,7 @@ class RecordReaderImpl implements RecordReader {
    *                   result
    * @return an array mapping the sarg leaves to concrete column numbers
    */
-  public static int[] mapSargColumns(List<PredicateLeaf> sargLeaves,
+  public static int[] mapSargColumnsToOrcInternalColIdx(List<PredicateLeaf> sargLeaves,
                              String[] columnNames,
                              int rootColumn) {
     int[] result = new int[sargLeaves.size()];
@@ -376,7 +376,7 @@ class RecordReaderImpl implements RecordReader {
       Object predObj = getBaseObjectForComparison(predicate.getType(), baseObj);
 
       result = evaluatePredicateMinMax(predicate, predObj, minValue, maxValue, hasNull);
-      if (bloomFilter != null && result != TruthValue.NO_NULL && result != TruthValue.NO) {
+      if (shouldEvaluateBloomFilter(predicate, result, bloomFilter)) {
         result = evaluatePredicateBloomFilter(predicate, predObj, bloomFilter, hasNull);
       }
       // in case failed conversion, return the default YES_NO_NULL truth value
@@ -392,6 +392,22 @@ class RecordReaderImpl implements RecordReader {
       }
     }
     return result;
+  }
+
+  private static boolean shouldEvaluateBloomFilter(PredicateLeaf predicate,
+      TruthValue result, BloomFilterIO bloomFilter) {
+    // evaluate bloom filter only when
+    // 1) Bloom filter is available
+    // 2) Min/Max evaluation yield YES or MAYBE
+    // 3) Predicate is EQUALS or IN list
+    if (bloomFilter != null
+        && result != TruthValue.NO_NULL && result != TruthValue.NO
+        && (predicate.getOperator().equals(PredicateLeaf.Operator.EQUALS)
+            || predicate.getOperator().equals(PredicateLeaf.Operator.NULL_SAFE_EQUALS)
+            || predicate.getOperator().equals(PredicateLeaf.Operator.IN))) {
+      return true;
+    }
+    return false;
   }
 
   private static TruthValue evaluatePredicateMinMax(PredicateLeaf predicate, Object predObj,
@@ -621,8 +637,6 @@ class RecordReaderImpl implements RecordReader {
           return ((BigDecimal) obj).doubleValue();
         }
         break;
-      case INTEGER:
-        // fall through
       case LONG:
         if (obj instanceof Number) {
           // widening conversion
@@ -679,7 +693,7 @@ class RecordReaderImpl implements RecordReader {
         List<OrcProto.Type> types, int includedCount) {
       this.sarg = sarg;
       sargLeaves = sarg.getLeaves();
-      filterColumns = mapSargColumns(sargLeaves, columnNames, 0);
+      filterColumns = mapSargColumnsToOrcInternalColIdx(sargLeaves, columnNames, 0);
       this.rowIndexStride = rowIndexStride;
       // included will not be null, row options will fill the array with trues if null
       sargColumns = new boolean[includedCount];

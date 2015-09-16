@@ -18,14 +18,15 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.List;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -51,9 +52,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.List;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
 
 public class ConvertAstToSearchArg {
   private static final Log LOG = LogFactory.getLog(ConvertAstToSearchArg.class);
@@ -88,7 +88,6 @@ public class ConvertAstToSearchArg {
         case BYTE:
         case SHORT:
         case INT:
-          return PredicateLeaf.Type.INTEGER;
         case LONG:
           return PredicateLeaf.Type.LONG;
         case CHAR:
@@ -139,13 +138,11 @@ public class ConvertAstToSearchArg {
       return null;
     }
     switch (type) {
-      case INTEGER:
-        return ((Number) lit).intValue();
       case LONG:
         return ((Number) lit).longValue();
       case STRING:
         if (lit instanceof HiveChar) {
-          lit = ((HiveChar) lit).getPaddedValue();
+          return ((HiveChar) lit).getPaddedValue();
         } else if (lit instanceof String) {
           return lit;
         } else {
@@ -434,6 +431,10 @@ public class ConvertAstToSearchArg {
       return create(sargString);
     }
     return null;
+  }
+
+  public static boolean canCreateFromConf(Configuration conf) {
+    return conf.get(TableScanDesc.FILTER_EXPR_CONF_STR) != null || conf.get(SARG_PUSHDOWN) != null;
   }
 
 }

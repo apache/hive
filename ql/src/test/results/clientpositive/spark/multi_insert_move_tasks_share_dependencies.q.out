@@ -613,7 +613,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
@@ -763,7 +763,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
@@ -913,7 +913,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
@@ -1063,7 +1063,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
@@ -2353,10 +2353,8 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2365,40 +2363,14 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
-                      Map-reduce partition columns: key (type: string), value (type: string)
+                      Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -2410,16 +2382,13 @@ STAGE PLANS:
                     mode: complete
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
-            Reduce Operator Tree:
-              Forward
-                Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
                   predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -2434,6 +2403,19 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Dependency Collection
@@ -2480,10 +2462,8 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2492,40 +2472,14 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
-                      Map-reduce partition columns: key (type: string), value (type: string)
+                      Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -2537,16 +2491,13 @@ STAGE PLANS:
                     mode: complete
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
-            Reduce Operator Tree:
-              Forward
-                Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
                   predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -2561,6 +2512,19 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Dependency Collection
@@ -2607,10 +2571,8 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2619,40 +2581,14 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
-                      Map-reduce partition columns: key (type: string), value (type: string)
+                      Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -2664,16 +2600,13 @@ STAGE PLANS:
                     mode: complete
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
-            Reduce Operator Tree:
-              Forward
-                Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
                   predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -2688,6 +2621,19 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Dependency Collection
@@ -2734,10 +2680,8 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2746,40 +2690,14 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
-                      Map-reduce partition columns: key (type: string), value (type: string)
+                      Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -2791,16 +2709,13 @@ STAGE PLANS:
                     mode: complete
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
-            Reduce Operator Tree:
-              Forward
-                Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
                   predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -2815,6 +2730,19 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Dependency Collection
@@ -2869,10 +2797,8 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2911,40 +2837,14 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
-                      Map-reduce partition columns: key (type: string), value (type: string)
+                      Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -2956,16 +2856,13 @@ STAGE PLANS:
                     mode: complete
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
-            Reduce Operator Tree:
-              Forward
-                Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
                   predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -2980,6 +2877,19 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-5
     Dependency Collection
@@ -3107,10 +3017,8 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3149,40 +3057,14 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
-                      Map-reduce partition columns: key (type: string), value (type: string)
+                      Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -3194,16 +3076,13 @@ STAGE PLANS:
                     mode: complete
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
-            Reduce Operator Tree:
-              Forward
-                Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
                   predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -3218,6 +3097,19 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-5
     Dependency Collection
@@ -3345,10 +3237,8 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3387,40 +3277,14 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
-                      Map-reduce partition columns: key (type: string), value (type: string)
+                      Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -3432,16 +3296,13 @@ STAGE PLANS:
                     mode: complete
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
-            Reduce Operator Tree:
-              Forward
-                Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
                   predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -3456,6 +3317,19 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-5
     Dependency Collection
@@ -3583,10 +3457,8 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3625,40 +3497,14 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
                   Filter Operator
-                    predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+                    predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
-                      Map-reduce partition columns: key (type: string), value (type: string)
+                      Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -3670,16 +3516,13 @@ STAGE PLANS:
                     mode: complete
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
-            Reduce Operator Tree:
-              Forward
-                Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
                   predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -3694,6 +3537,19 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 12 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-5
     Dependency Collection

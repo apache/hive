@@ -74,10 +74,13 @@ select
   ltrim(c2) = ltrim(c4)
 from char_udf_1 limit 1;
 
+-- In hive wiki page https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF
+-- we only allow A regexp B, not regexp (A,B).
+
 select
-  regexp(c2, 'val'),
-  regexp(c4, 'val'),
-  regexp(c2, 'val') = regexp(c4, 'val')
+  c2 regexp 'val',
+  c4 regexp 'val',
+  (c2 regexp 'val') = (c4 regexp 'val')
 from char_udf_1 limit 1;
 
 select

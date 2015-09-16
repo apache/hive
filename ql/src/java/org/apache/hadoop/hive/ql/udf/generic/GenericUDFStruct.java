@@ -21,12 +21,13 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 @Description(name = "struct",
     value = "_FUNC_(col1, col2, col3, ...) - Creates a struct with the given field values")
@@ -44,9 +45,23 @@ public class GenericUDFStruct extends GenericUDF {
     for (int f = 1; f <= numFields; f++) {
       fname.add("col" + f);
     }
-    StructObjectInspector soi = 
-      ObjectInspectorFactory.getStandardStructObjectInspector(fname, Arrays.asList(arguments));
-    return soi;
+    boolean constantStruct = true;
+    for (int i = 0; i < arguments.length; i++) {
+      ObjectInspector oi = arguments[i];
+      constantStruct &= (oi.getCategory() == Category.PRIMITIVE)
+          && (oi instanceof ConstantObjectInspector);
+      if (constantStruct) {
+        // nested complex types trigger Kryo issue #216 in plan deserialization
+        ret[i] = ((ConstantObjectInspector) oi).getWritableConstantValue();
+      }
+    }
+    if (constantStruct) {
+      return ObjectInspectorFactory.getStandardConstantStructObjectInspector(fname,
+          Arrays.asList(arguments), Arrays.asList(ret));
+    } else {
+      return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
+          Arrays.asList(arguments));
+    }
   }
 
   @Override

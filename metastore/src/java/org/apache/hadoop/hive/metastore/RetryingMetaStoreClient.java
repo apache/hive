@@ -161,16 +161,27 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       } catch (UndeclaredThrowableException e) {
         throw e.getCause();
       } catch (InvocationTargetException e) {
-        if ((e.getCause() instanceof TApplicationException) ||
-            (e.getCause() instanceof TProtocolException) ||
-            (e.getCause() instanceof TTransportException)) {
-          caughtException = (TException) e.getCause();
-        } else if ((e.getCause() instanceof MetaException) &&
-            e.getCause().getMessage().matches
-            ("(?s).*(JDO[a-zA-Z]*|TApplication|TProtocol|TTransport)Exception.*")) {
-          caughtException = (MetaException) e.getCause();
+        Throwable t = e.getCause();
+        if (t instanceof TApplicationException) {
+          TApplicationException tae = (TApplicationException)t;
+          switch (tae.getType()) {
+          case TApplicationException.UNSUPPORTED_CLIENT_TYPE:
+          case TApplicationException.UNKNOWN_METHOD:
+          case TApplicationException.WRONG_METHOD_NAME:
+          case TApplicationException.INVALID_PROTOCOL:
+            throw t;
+          default:
+            // TODO: most other options are probably unrecoverable... throw?
+            caughtException = tae;
+          }
+        } else if ((t instanceof TProtocolException) || (t instanceof TTransportException)) {
+          // TODO: most protocol exceptions are probably unrecoverable... throw?
+          caughtException = (TException)t;
+        } else if ((t instanceof MetaException) && t.getMessage().matches(
+            "(?s).*(JDO[a-zA-Z]*|TProtocol|TTransport)Exception.*")) {
+          caughtException = (MetaException)t;
         } else {
-          throw e.getCause();
+          throw t;
         }
       } catch (MetaException e) {
         if (e.getMessage().matches("(?s).*(IO|TTransport)Exception.*")) {
@@ -180,7 +191,8 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         }
       }
 
-      if (retriesMade >=  retryLimit) {
+
+      if (retriesMade >= retryLimit) {
         throw caughtException;
       }
       retriesMade++;

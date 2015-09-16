@@ -71,9 +71,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
-  protected static final transient Log LOG = LogFactory
-    .getLog(RemoteHiveSparkClient.class);
-
+  private static final transient Log LOG = LogFactory.getLog(RemoteHiveSparkClient.class);
+  private static final long MAX_PREWARM_TIME = 30000; // 30s
   private static final transient Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private transient SparkClient remoteClient;
@@ -92,7 +91,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
     remoteClient = SparkClientFactory.createClient(conf, hiveConf);
 
-    if (HiveConf.getBoolVar(hiveConf, ConfVars.SPARK_PREWARM_CONTAINERS) &&
+    if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PREWARM_ENABLED) &&
         hiveConf.get("spark.master").startsWith("yarn-")) {
       int minExecutors = getExecutorsToWarm();
       if (minExecutors <= 0) {
@@ -101,7 +100,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
       LOG.info("Prewarm Spark executors. The minimum number of executors to warm is " + minExecutors);
 
-      // Spend at most 60s to wait for executors to come up.
+      // Spend at most MAX_PREWARM_TIME to wait for executors to come up.
       int curExecutors = 0;
       long ts = System.currentTimeMillis();
       do {
@@ -111,7 +110,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
           return;
         }
         Thread.sleep(1000); // sleep 1 second
-      } while (System.currentTimeMillis() - ts < 60000);
+      } while (System.currentTimeMillis() - ts < MAX_PREWARM_TIME);
 
       LOG.info("Timeout (60s) occurred while prewarming executors. The current number of executors is " + curExecutors);
     }
@@ -124,7 +123,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
    */
   private int getExecutorsToWarm() {
     int minExecutors =
-        HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.SPARK_PREWARM_NUM_CONTAINERS);
+        HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
     boolean dynamicAllocation = hiveConf.getBoolean("spark.dynamicAllocation.enabled", false);
     if (dynamicAllocation) {
       int min = sparkConf.getInt("spark.dynamicAllocation.minExecutors", 0);

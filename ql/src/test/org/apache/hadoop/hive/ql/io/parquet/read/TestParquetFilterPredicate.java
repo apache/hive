@@ -35,9 +35,9 @@ public class TestParquetFilterPredicate {
     SearchArgument sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("a", PredicateLeaf.Type.INTEGER)
-        .between("y", PredicateLeaf.Type.INTEGER, 10, 20) // Column will be removed from filter
-        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3) // Column will be removed from filter
+        .isNull("a", PredicateLeaf.Type.LONG)
+        .between("y", PredicateLeaf.Type.LONG, 10L, 20L) // Column will be removed from filter
+        .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L) // Column will be removed from filter
         .nullSafeEquals("a", PredicateLeaf.Type.STRING, "stinger")
         .end()
         .end()
@@ -46,6 +46,27 @@ public class TestParquetFilterPredicate {
     FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
 
     String expected = "and(not(eq(a, null)), not(eq(a, Binary{\"stinger\"})))";
+    assertEquals(expected, p.toString());
+  }
+
+  @Test
+  public void testFilterFloatColumns() {
+    MessageType schema =
+        MessageTypeParser.parseMessageType("message test {  required float a; required int32 b; }");
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startNot()
+        .startOr()
+        .isNull("a", PredicateLeaf.Type.FLOAT)
+        .between("a", PredicateLeaf.Type.FLOAT, 10.2, 20.3)
+        .in("b", PredicateLeaf.Type.LONG, 1L, 2L, 3L)
+        .end()
+        .end()
+        .build();
+
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
+
+    String expected =
+        "and(and(not(eq(a, null)), not(and(lt(a, 20.3), not(lteq(a, 10.2))))), not(or(or(eq(b, 1), eq(b, 2)), eq(b, 3))))";
     assertEquals(expected, p.toString());
   }
 }

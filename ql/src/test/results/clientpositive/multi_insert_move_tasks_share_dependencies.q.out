@@ -772,7 +772,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
@@ -926,7 +926,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
@@ -1148,7 +1148,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
@@ -1302,7 +1302,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
@@ -1497,466 +1497,6 @@ POSTHOOK: Input: default@src_multi2
 15	val_15
 17	val_17
 18	val_18
-19	val_19
-PREHOOK: query: explain
-from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
-PREHOOK: type: QUERY
-POSTHOOK: query: explain
-from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-4 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-4
-  Stage-3 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-4
-  Stage-5 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Union
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col0 < 10) (type: boolean)
-                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_multi1
-                Filter Operator
-                  predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
-                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_multi2
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Union
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col0 < 10) (type: boolean)
-                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_multi1
-                Filter Operator
-                  predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
-                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_multi2
-
-  Stage: Stage-4
-    Dependency Collection
-
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
-
-  Stage: Stage-3
-    Stats-Aggr Operator
-
-  Stage: Stage-1
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
-
-  Stage: Stage-5
-    Stats-Aggr Operator
-
-PREHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
-#### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
-#### A masked pattern was here ####
-0	val_0
-0	val_0
-0	val_0
-0	val_0
-0	val_0
-0	val_0
-2	val_2
-2	val_2
-4	val_4
-4	val_4
-5	val_5
-5	val_5
-5	val_5
-5	val_5
-5	val_5
-5	val_5
-8	val_8
-8	val_8
-9	val_9
-9	val_9
-PREHOOK: query: select * from src_multi2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
-#### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
-#### A masked pattern was here ####
-11	val_11
-11	val_11
-12	val_12
-12	val_12
-12	val_12
-12	val_12
-15	val_15
-15	val_15
-15	val_15
-15	val_15
-17	val_17
-17	val_17
-18	val_18
-18	val_18
-18	val_18
-18	val_18
-19	val_19
-19	val_19
-PREHOOK: query: explain
-from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
-PREHOOK: type: QUERY
-POSTHOOK: query: explain
-from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-9 depends on stages: Stage-2 , consists of Stage-6, Stage-5, Stage-7
-  Stage-6
-  Stage-4 depends on stages: Stage-6, Stage-5, Stage-8, Stage-12, Stage-11, Stage-14
-  Stage-0 depends on stages: Stage-4
-  Stage-3 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-4
-  Stage-10 depends on stages: Stage-1
-  Stage-5
-  Stage-7
-  Stage-8 depends on stages: Stage-7
-  Stage-15 depends on stages: Stage-2 , consists of Stage-12, Stage-11, Stage-13
-  Stage-12
-  Stage-11
-  Stage-13
-  Stage-14 depends on stages: Stage-13
-
-STAGE PLANS:
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Union
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col0 < 10) (type: boolean)
-                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_multi1
-                Filter Operator
-                  predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
-                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_multi2
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Union
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col0 < 10) (type: boolean)
-                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_multi1
-                Filter Operator
-                  predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
-                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_multi2
-
-  Stage: Stage-9
-    Conditional Operator
-
-  Stage: Stage-6
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-4
-    Dependency Collection
-
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
-
-  Stage: Stage-3
-    Stats-Aggr Operator
-
-  Stage: Stage-1
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
-
-  Stage: Stage-10
-    Stats-Aggr Operator
-
-  Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_multi1
-
-  Stage: Stage-7
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_multi1
-
-  Stage: Stage-8
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-15
-    Conditional Operator
-
-  Stage: Stage-12
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-11
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_multi2
-
-  Stage: Stage-13
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_multi2
-
-  Stage: Stage-14
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-PREHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
-#### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
-#### A masked pattern was here ####
-0	val_0
-0	val_0
-0	val_0
-0	val_0
-0	val_0
-0	val_0
-2	val_2
-2	val_2
-4	val_4
-4	val_4
-5	val_5
-5	val_5
-5	val_5
-5	val_5
-5	val_5
-5	val_5
-8	val_8
-8	val_8
-9	val_9
-9	val_9
-PREHOOK: query: select * from src_multi2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
-#### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
-#### A masked pattern was here ####
-11	val_11
-11	val_11
-12	val_12
-12	val_12
-12	val_12
-12	val_12
-15	val_15
-15	val_15
-15	val_15
-15	val_15
-17	val_17
-17	val_17
-18	val_18
-18	val_18
-18	val_18
-18	val_18
-19	val_19
 19	val_19
 PREHOOK: query: explain
 from (select * from src  union all select * from src) s
@@ -2418,6 +1958,466 @@ POSTHOOK: Input: default@src_multi2
 18	val_18
 19	val_19
 19	val_19
+PREHOOK: query: explain
+from (select * from src  union all select * from src) s
+insert overwrite table src_multi1 select * where key < 10
+insert overwrite table src_multi2 select * where key > 10 and key < 20
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+from (select * from src  union all select * from src) s
+insert overwrite table src_multi1 select * where key < 10
+insert overwrite table src_multi2 select * where key > 10 and key < 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-4 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Union
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col0 < 10) (type: boolean)
+                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.src_multi1
+                Filter Operator
+                  predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.src_multi2
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Union
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col0 < 10) (type: boolean)
+                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.src_multi1
+                Filter Operator
+                  predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.src_multi2
+
+  Stage: Stage-4
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_multi1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_multi2
+
+  Stage: Stage-5
+    Stats-Aggr Operator
+
+PREHOOK: query: from (select * from src  union all select * from src) s
+insert overwrite table src_multi1 select * where key < 10
+insert overwrite table src_multi2 select * where key > 10 and key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1
+PREHOOK: Output: default@src_multi2
+POSTHOOK: query: from (select * from src  union all select * from src) s
+insert overwrite table src_multi1 select * where key < 10
+insert overwrite table src_multi2 select * where key > 10 and key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1
+POSTHOOK: Output: default@src_multi2
+POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_multi1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_multi1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_multi1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+2	val_2
+2	val_2
+4	val_4
+4	val_4
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+8	val_8
+8	val_8
+9	val_9
+9	val_9
+PREHOOK: query: select * from src_multi2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_multi2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_multi2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_multi2
+#### A masked pattern was here ####
+11	val_11
+11	val_11
+12	val_12
+12	val_12
+12	val_12
+12	val_12
+15	val_15
+15	val_15
+15	val_15
+15	val_15
+17	val_17
+17	val_17
+18	val_18
+18	val_18
+18	val_18
+18	val_18
+19	val_19
+19	val_19
+PREHOOK: query: explain
+from (select * from src  union all select * from src) s
+insert overwrite table src_multi1 select * where key < 10
+insert overwrite table src_multi2 select * where key > 10 and key < 20
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+from (select * from src  union all select * from src) s
+insert overwrite table src_multi1 select * where key < 10
+insert overwrite table src_multi2 select * where key > 10 and key < 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-9 depends on stages: Stage-2 , consists of Stage-6, Stage-5, Stage-7
+  Stage-6
+  Stage-4 depends on stages: Stage-6, Stage-5, Stage-8, Stage-12, Stage-11, Stage-14
+  Stage-0 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-4
+  Stage-10 depends on stages: Stage-1
+  Stage-5
+  Stage-7
+  Stage-8 depends on stages: Stage-7
+  Stage-15 depends on stages: Stage-2 , consists of Stage-12, Stage-11, Stage-13
+  Stage-12
+  Stage-11
+  Stage-13
+  Stage-14 depends on stages: Stage-13
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Union
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col0 < 10) (type: boolean)
+                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.src_multi1
+                Filter Operator
+                  predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.src_multi2
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Union
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col0 < 10) (type: boolean)
+                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.src_multi1
+                Filter Operator
+                  predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.src_multi2
+
+  Stage: Stage-9
+    Conditional Operator
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-4
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_multi1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_multi2
+
+  Stage: Stage-10
+    Stats-Aggr Operator
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.src_multi1
+
+  Stage: Stage-7
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.src_multi1
+
+  Stage: Stage-8
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-15
+    Conditional Operator
+
+  Stage: Stage-12
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-11
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.src_multi2
+
+  Stage: Stage-13
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.src_multi2
+
+  Stage: Stage-14
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: from (select * from src  union all select * from src) s
+insert overwrite table src_multi1 select * where key < 10
+insert overwrite table src_multi2 select * where key > 10 and key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_multi1
+PREHOOK: Output: default@src_multi2
+POSTHOOK: query: from (select * from src  union all select * from src) s
+insert overwrite table src_multi1 select * where key < 10
+insert overwrite table src_multi2 select * where key > 10 and key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_multi1
+POSTHOOK: Output: default@src_multi2
+POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_multi1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_multi1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_multi1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+2	val_2
+2	val_2
+4	val_4
+4	val_4
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+8	val_8
+8	val_8
+9	val_9
+9	val_9
+PREHOOK: query: select * from src_multi2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_multi2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_multi2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_multi2
+#### A masked pattern was here ####
+11	val_11
+11	val_11
+12	val_12
+12	val_12
+12	val_12
+12	val_12
+15	val_15
+15	val_15
+15	val_15
+15	val_15
+17	val_17
+17	val_17
+18	val_18
+18	val_18
+18	val_18
+18	val_18
+19	val_19
+19	val_19
 #### A masked pattern was here ####
 PREHOOK: query: explain
 from src 
@@ -2821,11 +2821,10 @@ from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-3, Stage-5
-  Stage-0 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-5
+  Stage-3 depends on stages: Stage-2, Stage-4
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-2
@@ -2835,12 +2834,12 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Forward
@@ -2855,10 +2854,11 @@ STAGE PLANS:
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -2875,29 +2875,6 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-4
     Dependency Collection
 
   Stage: Stage-0
@@ -2906,7 +2883,7 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2957,11 +2934,10 @@ from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-3, Stage-5
-  Stage-0 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-5
+  Stage-3 depends on stages: Stage-2, Stage-4
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-2
@@ -2971,12 +2947,12 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Forward
@@ -2991,10 +2967,11 @@ STAGE PLANS:
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -3011,29 +2988,6 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-4
     Dependency Collection
 
   Stage: Stage-0
@@ -3042,7 +2996,7 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -3093,11 +3047,10 @@ from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-3, Stage-5
-  Stage-0 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-5
+  Stage-3 depends on stages: Stage-2, Stage-4
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-2
@@ -3107,12 +3060,12 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Forward
@@ -3127,10 +3080,11 @@ STAGE PLANS:
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -3147,29 +3101,6 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-4
     Dependency Collection
 
   Stage: Stage-0
@@ -3178,7 +3109,7 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -3229,11 +3160,10 @@ from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-3, Stage-5
-  Stage-0 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-5
+  Stage-3 depends on stages: Stage-2, Stage-4
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-2
@@ -3243,12 +3173,12 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Forward
@@ -3263,10 +3193,11 @@ STAGE PLANS:
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -3283,29 +3214,6 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-4
     Dependency Collection
 
   Stage: Stage-0
@@ -3314,7 +3222,7 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -3369,15 +3277,14 @@ insert overwrite table src_multi2 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
-  Stage-6 depends on stages: Stage-4, Stage-8, Stage-9
+  Stage-6 depends on stages: Stage-4, Stage-8
   Stage-0 depends on stages: Stage-6
   Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-6
   Stage-7 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-4
   Stage-8 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-8
-  Stage-9 depends on stages: Stage-4
-  Stage-3 depends on stages: Stage-9
+  Stage-3 depends on stages: Stage-8
 
 STAGE PLANS:
   Stage: Stage-4
@@ -3417,12 +3324,12 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.src_multi2
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Forward
@@ -3437,10 +3344,11 @@ STAGE PLANS:
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -3485,36 +3393,13 @@ STAGE PLANS:
   Stage: Stage-7
     Stats-Aggr Operator
 
-  Stage: Stage-8
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: false
 #### A masked pattern was here ####
 
-  Stage: Stage-9
+  Stage: Stage-8
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -3616,15 +3501,14 @@ insert overwrite table src_multi2 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
-  Stage-6 depends on stages: Stage-4, Stage-8, Stage-9
+  Stage-6 depends on stages: Stage-4, Stage-8
   Stage-0 depends on stages: Stage-6
   Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-6
   Stage-7 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-4
   Stage-8 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-8
-  Stage-9 depends on stages: Stage-4
-  Stage-3 depends on stages: Stage-9
+  Stage-3 depends on stages: Stage-8
 
 STAGE PLANS:
   Stage: Stage-4
@@ -3664,12 +3548,12 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.src_multi2
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Forward
@@ -3684,10 +3568,11 @@ STAGE PLANS:
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -3732,36 +3617,13 @@ STAGE PLANS:
   Stage: Stage-7
     Stats-Aggr Operator
 
-  Stage: Stage-8
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: false
 #### A masked pattern was here ####
 
-  Stage: Stage-9
+  Stage: Stage-8
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -3865,7 +3727,7 @@ STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-11 depends on stages: Stage-4 , consists of Stage-8, Stage-7, Stage-9
   Stage-8
-  Stage-6 depends on stages: Stage-8, Stage-7, Stage-10, Stage-14, Stage-13, Stage-16, Stage-18, Stage-19
+  Stage-6 depends on stages: Stage-8, Stage-7, Stage-10, Stage-14, Stage-13, Stage-16, Stage-4, Stage-18
   Stage-0 depends on stages: Stage-6
   Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-6
@@ -3878,10 +3740,9 @@ STAGE DEPENDENCIES:
   Stage-13
   Stage-15
   Stage-16 depends on stages: Stage-15
+  Stage-2 depends on stages: Stage-4
   Stage-18 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-18
-  Stage-19 depends on stages: Stage-4
-  Stage-3 depends on stages: Stage-19
+  Stage-3 depends on stages: Stage-18
 
 STAGE PLANS:
   Stage: Stage-4
@@ -3921,12 +3782,12 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.src_multi2
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Forward
@@ -3941,10 +3802,11 @@ STAGE PLANS:
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -4067,36 +3929,13 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-18
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: false
 #### A masked pattern was here ####
 
-  Stage: Stage-19
+  Stage: Stage-18
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -4200,7 +4039,7 @@ STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-11 depends on stages: Stage-4 , consists of Stage-8, Stage-7, Stage-9
   Stage-8
-  Stage-6 depends on stages: Stage-8, Stage-7, Stage-10, Stage-14, Stage-13, Stage-16, Stage-18, Stage-19
+  Stage-6 depends on stages: Stage-8, Stage-7, Stage-10, Stage-14, Stage-13, Stage-16, Stage-4, Stage-18
   Stage-0 depends on stages: Stage-6
   Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-6
@@ -4213,10 +4052,9 @@ STAGE DEPENDENCIES:
   Stage-13
   Stage-15
   Stage-16 depends on stages: Stage-15
+  Stage-2 depends on stages: Stage-4
   Stage-18 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-18
-  Stage-19 depends on stages: Stage-4
-  Stage-3 depends on stages: Stage-19
+  Stage-3 depends on stages: Stage-18
 
 STAGE PLANS:
   Stage: Stage-4
@@ -4256,12 +4094,12 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.src_multi2
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
                 sort order: ++
-                Map-reduce partition columns: key (type: string), value (type: string)
+                Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Forward
@@ -4276,10 +4114,11 @@ STAGE PLANS:
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
                 table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Filter Operator
             predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
             Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -4402,36 +4241,13 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-18
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: false
 #### A masked pattern was here ####
 
-  Stage: Stage-19
+  Stage: Stage-18
     Map Reduce
       Map Operator Tree:
           TableScan

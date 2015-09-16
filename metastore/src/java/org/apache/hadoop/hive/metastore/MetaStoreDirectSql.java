@@ -148,16 +148,16 @@ class MetaStoreDirectSql {
 
   private DB determineDbType() {
     DB dbType = DB.OTHER;
-    if (runDbCheck("SET @@session.sql_mode=ANSI_QUOTES", "MySql")) {
-      dbType = DB.MYSQL;
-    } else if (runDbCheck("SELECT version FROM v$instance", "Oracle")) {
-      dbType = DB.ORACLE;
-    } else if (runDbCheck("SELECT @@version", "MSSQL")) {
-      dbType = DB.MSSQL;
-    } else {
-      // TODO: maybe we should use getProductName to identify all the DBs
-      String productName = getProductName();
-      if (productName != null && productName.toLowerCase().contains("derby")) {
+    String productName = getProductName();
+    if (productName != null) {
+      productName = productName.toLowerCase();
+      if (productName.contains("mysql")) {
+        dbType = DB.MYSQL;
+      } else if (productName.contains("oracle")) {
+        dbType = DB.ORACLE;
+      } else if (productName.contains("microsoft sql server")) {
+        dbType = DB.MSSQL;
+      } else if (productName.contains("derby")) {
         dbType = DB.DERBY;
       }
     }
@@ -178,7 +178,13 @@ class MetaStoreDirectSql {
 
   private boolean ensureDbInit() {
     Transaction tx = pm.currentTransaction();
+    boolean doCommit = false;
+    if (!tx.isActive()) {
+      tx.begin();
+      doCommit = true;
+    }
     Query dbQuery = null, tblColumnQuery = null, partColumnQuery = null;
+
     try {
       // Force the underlying db to initialize.
       dbQuery = pm.newQuery(MDatabase.class, "name == ''");
@@ -192,10 +198,14 @@ class MetaStoreDirectSql {
 
       return true;
     } catch (Exception ex) {
+      doCommit = false;
       LOG.warn("Database initialization failed; direct SQL is disabled", ex);
       tx.rollback();
       return false;
     } finally {
+      if (doCommit) {
+        tx.commit();
+      }
       if (dbQuery != null) {
         dbQuery.closeAll();
       }
@@ -210,20 +220,28 @@ class MetaStoreDirectSql {
 
   private boolean runTestQuery() {
     Transaction tx = pm.currentTransaction();
+    boolean doCommit = false;
+    if (!tx.isActive()) {
+      tx.begin();
+      doCommit = true;
+    }
     Query query = null;
     // Run a self-test query. If it doesn't work, we will self-disable. What a PITA...
     String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
     try {
+      doDbSpecificInitializationsBeforeQuery();
       query = pm.newQuery("javax.jdo.query.SQL", selfTestQuery);
       query.execute();
-      tx.commit();
       return true;
-    } catch (Exception ex) {
-      LOG.warn("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", ex);
+    } catch (Throwable t) {
+      doCommit = false;
+      LOG.warn("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", t);
       tx.rollback();
       return false;
-    }
-    finally {
+    } finally {
+      if (doCommit) {
+        tx.commit();
+      }
       if (query != null) {
         query.closeAll();
       }
@@ -258,23 +276,6 @@ class MetaStoreDirectSql {
       timingTrace(doTrace, queryText, start, doTrace ? System.nanoTime() : 0);
     } finally {
       jdoConn.close(); // We must release the connection before we call other pm methods.
-    }
-  }
-
-  private boolean runDbCheck(String queryText, String name) {
-    Transaction tx = pm.currentTransaction();
-    if (!tx.isActive()) {
-      tx.begin();
-    }
-    try {
-      executeNoResult(queryText);
-      return true;
-    } catch (Throwable t) {
-      LOG.debug(name + " check failed, assuming we are not on " + name + ": " + t.getMessage());
-      tx.rollback();
-      tx = pm.currentTransaction();
-      tx.begin();
-      return false;
     }
   }
 
@@ -538,7 +539,6 @@ class MetaStoreDirectSql {
     + "where \"PART_ID\" in (" + partIds + ") order by \"PART_NAME\" asc";
     long start = doTrace ? System.nanoTime() : 0;
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    @SuppressWarnings("unchecked")
     List<Object[]> sqlResult = executeWithArray(query, null, queryText);
     long queryTime = doTrace ? System.nanoTime() : 0;
     Deadline.checkTimeout();
@@ -1109,6 +1109,7 @@ class MetaStoreDirectSql {
     if (colNames.isEmpty()) {
       return null;
     }
+    doDbSpecificInitializationsBeforeQuery();
     boolean doTrace = LOG.isDebugEnabled();
     long start = doTrace ? System.nanoTime() : 0;
     String queryText = "select " + STATS_COLLIST + " from \"TAB_COL_STATS\" "
@@ -1228,6 +1229,7 @@ class MetaStoreDirectSql {
   private List<ColumnStatisticsObj> columnStatisticsObjForPartitions(String dbName,
       String tableName, List<String> partNames, List<String> colNames, long partsFound,
       boolean useDensityFunctionForNDVEstimation) throws MetaException {
+    doDbSpecificInitializationsBeforeQuery();
     // TODO: all the extrapolation logic should be moved out of this class,
     // only mechanical data retrieval should remain here.
     String commonPrefix = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", "
@@ -1544,6 +1546,7 @@ class MetaStoreDirectSql {
       return Lists.newArrayList();
     }
     boolean doTrace = LOG.isDebugEnabled();
+    doDbSpecificInitializationsBeforeQuery();
     long start = doTrace ? System.nanoTime() : 0;
     String queryText = "select \"PARTITION_NAME\", " + STATS_COLLIST + " from \"PART_COL_STATS\""
       + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? and \"COLUMN_NAME\" in ("

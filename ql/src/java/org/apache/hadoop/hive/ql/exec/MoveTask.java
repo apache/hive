@@ -102,7 +102,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
           deletePath = createTargetPath(targetPath, fs);
         }
-        if (!Hive.moveFile(conf, sourcePath, targetPath, fs, true, false)) {
+        if (!Hive.moveFile(conf, sourcePath, targetPath, true, false)) {
           try {
             if (deletePath != null) {
               fs.delete(deletePath, true);
@@ -127,10 +127,22 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       LocalFileSystem dstFs = FileSystem.getLocal(conf);
 
       if (dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
-        console.printInfo(mesg, mesg_detail);
         // if source exists, rename. Otherwise, create a empty directory
         if (fs.exists(sourcePath)) {
-          fs.copyToLocalFile(sourcePath, targetPath);
+          try {
+            // create the destination if it does not exist
+            if (!dstFs.exists(targetPath)) {
+              FileUtils.mkdir(dstFs, targetPath, false, conf);
+            }
+          } catch (IOException e) {
+            throw new HiveException("Unable to create target directory for copy" + targetPath, e);
+          }
+
+          FileSystem srcFs = sourcePath.getFileSystem(conf);
+          FileStatus[] srcs = srcFs.listStatus(sourcePath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+          for (FileStatus status : srcs) {
+            fs.copyToLocalFile(status.getPath(), targetPath);
+          }
         } else {
           if (!dstFs.mkdirs(targetPath)) {
             throw new HiveException("Unable to make local directory: "
@@ -361,7 +373,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             if (dps != null && dps.size() > 0) {
               pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
             }
-
+            console.printInfo(System.getProperty("line.separator"));
             long startTime = System.currentTimeMillis();
             // load the list of DP partitions and return the list of partition specs
             // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
@@ -381,8 +393,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
                 SessionState.get().getTxnMgr().getCurrentTxnId());
-            console.printInfo("\t Time taken for load dynamic partitions : "  +
-                (System.currentTimeMillis() - startTime));
+
+            console.printInfo("\t Time taken to load dynamic partitions: "  +
+                (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
 
             if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
               throw new HiveException("This query creates no partitions." +
@@ -425,11 +438,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
                     table.getCols());
               }
-
-              console.printInfo("\tLoading partition " + entry.getKey());
+              LOG.info("\tLoading partition " + entry.getKey());
             }
             console.printInfo("\t Time taken for adding to write entity : " +
-                (System.currentTimeMillis() - startTime));
+                (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),

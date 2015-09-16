@@ -81,6 +81,34 @@ public final class LazyUtils {
   }
 
   /**
+   * returns false, when the bytes definitely cannot be parsed into a base-10
+   * Number (Long or a Double)
+   * 
+   * If it returns true, the bytes might still be invalid, but not obviously.
+   */
+
+  public static boolean isNumberMaybe(byte[] buf, int offset, int len) {
+    switch (len) {
+    case 0:
+      return false;
+    case 1:
+      // space usually
+      return Character.isDigit(buf[offset]);
+    case 2:
+      // \N or -1 (allow latter)
+      return Character.isDigit(buf[offset + 1])
+          || Character.isDigit(buf[offset + 0]);
+    case 4:
+      // null or NULL
+      if (buf[offset] == 'N' || buf[offset] == 'n') {
+        return false;
+      }
+    }
+    // maybe valid - too expensive to check without a parse
+    return true;
+  }
+
+  /**
    * Returns -1 if the first byte sequence is lexicographically less than the
    * second; returns +1 if the second byte sequence is lexicographically less
    * than the first; otherwise return 0.

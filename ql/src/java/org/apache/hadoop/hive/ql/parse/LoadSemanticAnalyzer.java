@@ -128,8 +128,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     return new URI(fromScheme, fromAuthority, path, null, null);
   }
 
-  private void applyConstraints(URI fromURI, URI toURI, Tree ast,
+  private FileStatus[] applyConstraintsAndGetFiles(URI fromURI, URI toURI, Tree ast,
       boolean isLocal) throws SemanticException {
+
+    FileStatus[] srcs = null;
 
     // local mode implies that scheme should be "file"
     // we can change this going forward
@@ -139,7 +141,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     try {
-      FileStatus[] srcs = matchFilesOrDir(FileSystem.get(fromURI, conf), new Path(fromURI));
+      srcs = matchFilesOrDir(FileSystem.get(fromURI, conf), new Path(fromURI));
       if (srcs == null || srcs.length == 0) {
         throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
             "No files matching path " + fromURI));
@@ -168,6 +170,8 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           + "\"hive.metastore.warehouse.dir\" do not conflict.";
       throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(ast, reason));
     }
+
+    return srcs;
   }
 
   @Override
@@ -227,11 +231,11 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // make sure the arguments make sense
-    applyConstraints(fromURI, toURI, fromTree, isLocal);
+    FileStatus[] files = applyConstraintsAndGetFiles(fromURI, toURI, fromTree, isLocal);
 
     // for managed tables, make sure the file formats match
     if (TableType.MANAGED_TABLE.equals(ts.tableHandle.getTableType())) {
-      ensureFileFormatsMatch(ts, fromURI);
+      ensureFileFormatsMatch(ts, files);
     }
     inputs.add(toReadEntity(new Path(fromURI)));
     Task<? extends Serializable> rTask = null;
@@ -325,7 +329,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void ensureFileFormatsMatch(TableSpec ts, URI fromURI) throws SemanticException {
+  private void ensureFileFormatsMatch(TableSpec ts, FileStatus[] fileStatuses) throws SemanticException {
     final Class<? extends InputFormat> destInputFormat;
     try {
       if (ts.getPartSpec() == null || ts.getPartSpec().isEmpty()) {
@@ -340,17 +344,19 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // Other file formats should do similar check to make sure file formats match
     // when doing LOAD DATA .. INTO TABLE
     if (OrcInputFormat.class.equals(destInputFormat)) {
-      Path inputFilePath = new Path(fromURI);
-      try {
-        FileSystem fs = FileSystem.get(fromURI, conf);
-        // just creating orc reader is going to do sanity checks to make sure its valid ORC file
-        OrcFile.createReader(fs, inputFilePath);
-      } catch (FileFormatException e) {
-        throw new SemanticException(ErrorMsg.INVALID_FILE_FORMAT_IN_LOAD.getMsg("Destination" +
-            " table is stored as ORC but the file being loaded is not a valid ORC file."));
-      } catch (IOException e) {
-        throw new SemanticException("Unable to load data to destination table." +
-            " Error: " + e.getMessage());
+      for (FileStatus fileStatus : fileStatuses) {
+        try {
+          Path filePath = fileStatus.getPath();
+          FileSystem fs = FileSystem.get(filePath.toUri(), conf);
+          // just creating orc reader is going to do sanity checks to make sure its valid ORC file
+          OrcFile.createReader(fs, filePath);
+        } catch (FileFormatException e) {
+          throw new SemanticException(ErrorMsg.INVALID_FILE_FORMAT_IN_LOAD.getMsg("Destination" +
+              " table is stored as ORC but the file being loaded is not a valid ORC file."));
+        } catch (IOException e) {
+          throw new SemanticException("Unable to load data to destination table." +
+              " Error: " + e.getMessage());
+        }
       }
     }
   }

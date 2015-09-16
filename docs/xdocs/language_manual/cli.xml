@@ -163,7 +163,7 @@ Sample Usage:
 
 <section name="Logging" href="logging">
 <p>
-Hive uses log4j for logging. These logs are not emitted to the standard output by default but are instead captured to a log file specified by Hive's log4j properties file. By default Hive will use <i>hive-log4j.default</i> in the <i>conf/</i> directory of the hive installation which writes out logs to <i>/tmp/$USER/hive.log</i> and uses the <i>WARN</i> level.
+Hive uses log4j for logging. These logs are not emitted to the standard output by default but are instead captured to a log file specified by Hive's log4j properties file. By default Hive will use <i>hive-log4j2.xml</i> in the <i>conf/</i> directory of the hive installation which writes out logs to <i>/tmp/$USER/hive.log</i> and uses the <i>WARN</i> level.
 </p>
 <p>
 It is often desirable to emit the logs to the standard output and/or change the logging level for debugging purposes. These can be done from the command line as follows: </p>

@@ -133,7 +133,7 @@ public enum OrcConf {
   private String lookupValue(Properties tbl, Configuration conf) {
     String result = null;
     if (tbl != null) {
-      result = conf.get(attribute);
+      result = tbl.getProperty(attribute);
     }
     if (result == null && conf != null) {
       result = conf.get(attribute);

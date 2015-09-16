@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
@@ -1407,11 +1408,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER) &&
             !MetaStoreUtils.isView(tbl)) {
-          if (tbl.getPartitionKeysSize() == 0)  { // Unpartitioned table
-            MetaStoreUtils.updateUnpartitionedTableStatsFast(db, tbl, wh, madeDir);
-          } else { // Partitioned table with no partitions.
-            MetaStoreUtils.updateUnpartitionedTableStatsFast(db, tbl, wh, true);
-          }
+          MetaStoreUtils.updateTableStatsFast(db, tbl, wh, madeDir);
         }
 
         // set create time
@@ -2598,6 +2595,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.addPartition(destPartition);
           ms.dropPartition(partition.getDbName(), sourceTable.getTableName(),
             partition.getValues());
+        }
+        Path destParentPath = destPath.getParent();
+        if (!wh.isDir(destParentPath)) {
+          if (!wh.mkdirs(destParentPath, true)) {
+              throw new MetaException("Unable to create path " + destParentPath);
+          }
         }
         /**
          * TODO: Use the hard link feature of hdfs
@@ -5537,6 +5540,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GetAllFunctionsResponse get_all_functions()
+            throws MetaException {
+      GetAllFunctionsResponse response = new GetAllFunctionsResponse();
+      startFunction("get_all_functions");
+      RawStore ms = getMS();
+      List<Function> allFunctions = null;
+      Exception ex = null;
+      try {
+        allFunctions = ms.getAllFunctions();
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_all_functions", allFunctions != null, ex);
+      }
+      response.setFunctions(allFunctions);
+      return response;
+    }
+
+    @Override
     public Function get_function(String dbName, String funcName)
         throws MetaException, NoSuchObjectException, TException {
       startFunction("get_function", ": " + dbName + "." + funcName);
@@ -5910,7 +5933,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // If the log4j.configuration property hasn't already been explicitly set,
     // use Hive's default log4j configuration
-    if (System.getProperty("log4j.configuration") == null) {
+    if (System.getProperty("log4j.configurationFile") == null) {
       // NOTE: It is critical to do this here so that log4j is reinitialized
       // before any of the other core hive classes are loaded
       try {
@@ -6204,6 +6227,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startCompactorInitiator(conf);
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
+          startHouseKeeperService(conf);
         } catch (Throwable e) {
           LOG.error("Failure when starting the compactor, compactions may not happen, " +
               StringUtils.stringifyException(e));
@@ -6262,5 +6286,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     thread.setThreadId(nextThreadId++);
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
+  }
+  private static void startHouseKeeperService(HiveConf conf) throws Exception {
+    if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_INITIATOR_ON)) {
+      return;
+    }
+    Class c = Class.forName("org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService");
+    //todo: when metastore adds orderly-shutdown logic, houseKeeper.stop()
+    //should be called form it
+    HouseKeeperService houseKeeper = (HouseKeeperService)c.newInstance();
+    try {
+      houseKeeper.start(conf);
+    }
+    catch (Exception ex) {
+      LOG.fatal("Failed to start " + houseKeeper.getClass() +
+        ".  The system will not handle " + houseKeeper.getServiceDescription()  +
+        ".  Root Cause: ", ex);
+    }
   }
 }

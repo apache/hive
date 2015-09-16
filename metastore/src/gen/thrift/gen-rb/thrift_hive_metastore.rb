@@ -1523,6 +1523,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_function failed: unknown result')
     end
 
+    def get_all_functions()
+      send_get_all_functions()
+      return recv_get_all_functions()
+    end
+
+    def send_get_all_functions()
+      send_message('get_all_functions', Get_all_functions_args)
+    end
+
+    def recv_get_all_functions()
+      result = receive_message(Get_all_functions_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_functions failed: unknown result')
+    end
+
     def create_role(role)
       send_create_role(role)
       return recv_create_role()
@@ -3291,6 +3307,17 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_function', seqid)
+    end
+
+    def process_get_all_functions(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_functions_args)
+      result = Get_all_functions_result.new()
+      begin
+        result.success = @handler.get_all_functions()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_all_functions', seqid)
     end
 
     def process_create_role(seqid, iprot, oprot)
@@ -7133,6 +7160,39 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Function},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_functions_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_functions_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetAllFunctionsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

@@ -18,7 +18,6 @@
 
 package org.apache.hive.hcatalog.streaming;
 
-import junit.framework.Assert;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
@@ -36,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
+import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -51,6 +52,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.thrift.TException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,6 +69,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 
 public class TestStreaming {
@@ -301,6 +304,55 @@ public class TestStreaming {
     connection.close();
   }
 
+  /**
+   * check that transactions that have not heartbeated and timedout get properly aborted
+   * @throws Exception
+   */
+  @Test
+  public void testTimeOutReaper() throws Exception {
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, null);
+    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames2,",", endPt);
+    StreamingConnection connection = endPt.newConnection(false, null);
+
+    TransactionBatch txnBatch =  connection.fetchTransactionBatch(5, writer);
+    txnBatch.beginNextTransaction();
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
+    //ensure txn timesout
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.MILLISECONDS);
+    AcidHouseKeeperService houseKeeperService = new AcidHouseKeeperService();
+    houseKeeperService.start(conf);
+    while(houseKeeperService.getIsAliveCounter() <= Integer.MIN_VALUE) {
+      Thread.sleep(100);//make sure it has run at least once
+    }
+    houseKeeperService.stop();
+    try {
+      //should fail because the TransactionBatch timed out
+      txnBatch.commit();
+    }
+    catch(TransactionError e) {
+      Assert.assertTrue("Expected aborted transaction", e.getCause() instanceof TxnAbortedException);
+    }
+    txnBatch.close();
+    txnBatch =  connection.fetchTransactionBatch(10, writer);
+    txnBatch.beginNextTransaction();
+    txnBatch.commit();
+    txnBatch.beginNextTransaction();
+    int lastCount = houseKeeperService.getIsAliveCounter();
+    houseKeeperService.start(conf);
+    while(houseKeeperService.getIsAliveCounter() <= lastCount) {
+      Thread.sleep(100);//make sure it has run at least once
+    }
+    houseKeeperService.stop();
+    try {
+      //should fail because the TransactionBatch timed out
+      txnBatch.commit();
+    }
+    catch(TransactionError e) {
+      Assert.assertTrue("Expected aborted transaction", e.getCause() instanceof TxnAbortedException);
+    }
+    txnBatch.close();
+    connection.close();
+  }
   @Test
   public void testTransactionBatchEmptyAbort() throws Exception {
     // 1) to partitioned table

@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -2533,6 +2534,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     String funcName = "test_func";
     String className = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper";
     String owner = "test_owner";
+    final int N_FUNCTIONS = 5;
     PrincipalType ownerType = PrincipalType.USER;
     int createTime = (int) (System.currentTimeMillis() / 1000);
     FunctionType funcType = FunctionType.JAVA;
@@ -2542,14 +2544,16 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       createDb(dbName);
 
-      createFunction(dbName, funcName, className, owner, ownerType, createTime, funcType, null);
+      for (int i = 0; i < N_FUNCTIONS; i++) {
+        createFunction(dbName, funcName + "_" + i, className, owner, ownerType, createTime, funcType, null);
+      }
 
       // Try the different getters
 
       // getFunction()
-      Function func = client.getFunction(dbName, funcName);
+      Function func = client.getFunction(dbName, funcName + "_0");
       assertEquals("function db name", dbName, func.getDbName());
-      assertEquals("function name", funcName, func.getFunctionName());
+      assertEquals("function name", funcName + "_0", func.getFunctionName());
       assertEquals("function class name", className, func.getClassName());
       assertEquals("function owner name", owner, func.getOwnerName());
       assertEquals("function owner type", PrincipalType.USER, func.getOwnerType());
@@ -2566,21 +2570,31 @@ public abstract class TestHiveMetaStore extends TestCase {
       }
       assertEquals(true, gotException);
 
+      // getAllFunctions()
+      GetAllFunctionsResponse response = client.getAllFunctions();
+      List<Function> allFunctions = response.getFunctions();
+      assertEquals(N_FUNCTIONS, allFunctions.size());
+      assertEquals(funcName + "_3", allFunctions.get(3).getFunctionName());
+
       // getFunctions()
-      List<String> funcs = client.getFunctions(dbName, "*_func");
-      assertEquals(1, funcs.size());
-      assertEquals(funcName, funcs.get(0));
+      List<String> funcs = client.getFunctions(dbName, "*_func_*");
+      assertEquals(N_FUNCTIONS, funcs.size());
+      assertEquals(funcName + "_0", funcs.get(0));
 
       funcs = client.getFunctions(dbName, "nonexistent_func");
       assertEquals(0, funcs.size());
 
       // dropFunction()
-      client.dropFunction(dbName, funcName);
+      for (int i = 0; i < N_FUNCTIONS; i++) {
+        client.dropFunction(dbName, funcName + "_" + i);
+      }
 
       // Confirm that the function is now gone
       funcs = client.getFunctions(dbName, funcName);
       assertEquals(0, funcs.size());
-
+      response = client.getAllFunctions();
+      allFunctions = response.getFunctions();
+      assertEquals(0, allFunctions.size());
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testConcurrentMetastores() failed.");
@@ -2951,5 +2965,71 @@ public abstract class TestHiveMetaStore extends TestCase {
       }
     };
     return hookLoader;
+  }
+
+  public void testValidateTableCols() throws Throwable {
+
+    try {
+      String dbName = "compdb";
+      String tblName = "comptbl";
+
+      client.dropTable(dbName, tblName);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      db.setDescription("Validate Table Columns test");
+      client.createDatabase(db);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+      cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName);
+      StorageDescriptor sd = new StorageDescriptor();
+      tbl.setSd(sd);
+      sd.setCols(cols);
+      sd.setCompressed(false);
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.getSerdeInfo().setName(tbl.getTableName());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.getSerdeInfo().getParameters()
+          .put(serdeConstants.SERIALIZATION_FORMAT, "1");
+      sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
+      sd.setInputFormat(HiveInputFormat.class.getName());
+      sd.setOutputFormat(HiveOutputFormat.class.getName());
+      sd.setSortCols(new ArrayList<Order>());
+
+      client.createTable(tbl);
+      if (isThriftClient) {
+        tbl = client.getTable(dbName, tblName);
+      }
+
+      List<String> expectedCols = Lists.newArrayList();
+      expectedCols.add("name");
+      ObjectStore objStore = new ObjectStore();
+      try {
+        objStore.validateTableCols(tbl, expectedCols);
+      } catch (MetaException ex) {
+        throw new RuntimeException(ex);
+      }
+
+      expectedCols.add("doesntExist");
+      boolean exceptionFound = false;
+      try {
+        objStore.validateTableCols(tbl, expectedCols);
+      } catch (MetaException ex) {
+        assertEquals(ex.getMessage(),
+            "Column doesntExist doesn't exist in table comptbl in database compdb");
+        exceptionFound = true;
+      }
+      assertTrue(exceptionFound);
+
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testValidateTableCols() failed.");
+      throw e;
+    }
   }
 }

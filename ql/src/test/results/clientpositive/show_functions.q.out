@@ -22,6 +22,8 @@ POSTHOOK: type: SHOWFUNCTIONS
 abs
 acos
 add_months
+aes_decrypt
+aes_encrypt
 and
 array
 array_contains
@@ -33,6 +35,7 @@ avg
 base64
 between
 bin
+bround
 case
 cbrt
 ceil

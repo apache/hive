@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.SecurityUtil;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.spark.client.rpc.Rpc;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
@@ -423,6 +422,10 @@ class SparkClientImpl implements SparkClient {
       String cmd = Joiner.on(" ").join(argv);
       LOG.info("Running client driver with argv: {}", cmd);
       ProcessBuilder pb = new ProcessBuilder("sh", "-c", cmd);
+
+      // Prevent hive configurations from being visible in Spark.
+      pb.environment().remove("HIVE_HOME");
+      pb.environment().remove("HIVE_CONF_DIR");
 
       if (isTesting != null) {
         pb.environment().put("SPARK_TESTING", isTesting);

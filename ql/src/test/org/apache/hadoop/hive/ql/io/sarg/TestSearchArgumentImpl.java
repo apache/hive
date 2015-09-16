@@ -330,7 +330,7 @@ public class TestSearchArgumentImpl {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("x", PredicateLeaf.Type.INTEGER, 10)
+            .lessThan("x", PredicateLeaf.Type.LONG, 10L)
             .lessThanEquals("y", PredicateLeaf.Type.STRING, "hi")
             .equals("z", PredicateLeaf.Type.FLOAT, 1.0)
             .end()
@@ -342,9 +342,9 @@ public class TestSearchArgumentImpl {
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x", PredicateLeaf.Type.INTEGER)
-        .between("y", PredicateLeaf.Type.INTEGER, 10, 20)
-        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .isNull("x", PredicateLeaf.Type.LONG)
+        .between("y", PredicateLeaf.Type.LONG, 10L, 20L)
+        .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L)
         .nullSafeEquals("a", PredicateLeaf.Type.STRING, "stinger")
         .end()
         .end()
@@ -376,10 +376,10 @@ public class TestSearchArgumentImpl {
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x", PredicateLeaf.Type.INTEGER)
+        .isNull("x", PredicateLeaf.Type.LONG)
         .between("y", PredicateLeaf.Type.DECIMAL,
             new HiveDecimalWritable("10"), new HiveDecimalWritable("20.0"))
-        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L)
         .nullSafeEquals("a", PredicateLeaf.Type.STRING,
             new HiveVarchar("stinger", 100).toString())
         .end()
@@ -413,10 +413,10 @@ public class TestSearchArgumentImpl {
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
-        .isNull("x", PredicateLeaf.Type.INTEGER)
+        .isNull("x", PredicateLeaf.Type.LONG)
         .between("y", PredicateLeaf.Type.DECIMAL, new HiveDecimalWritable("10"),
             new HiveDecimalWritable("20.0"))
-        .in("z", PredicateLeaf.Type.INTEGER, 1, 2, 3)
+        .in("z", PredicateLeaf.Type.LONG, 1L, 2L, 3L)
         .nullSafeEquals("a", PredicateLeaf.Type.STRING,
             new HiveVarchar("stinger", 100).toString())
         .end()
@@ -435,8 +435,8 @@ public class TestSearchArgumentImpl {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("x", PredicateLeaf.Type.INTEGER, new Integer((short) 22))
-            .lessThan("x1", PredicateLeaf.Type.INTEGER, new Integer(22))
+            .lessThan("x", PredicateLeaf.Type.LONG, 22L)
+            .lessThan("x1", PredicateLeaf.Type.LONG, 22L)
             .lessThanEquals("y", PredicateLeaf.Type.STRING,
                 new HiveChar("hi", 10).toString())
             .equals("z", PredicateLeaf.Type.FLOAT, new Double(0.22))
@@ -480,7 +480,7 @@ public class TestSearchArgumentImpl {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
         .startAnd()
-        .lessThan("x", PredicateLeaf.Type.INTEGER, "hi")
+        .lessThan("x", PredicateLeaf.Type.LONG, "hi")
         .end()
         .build();
   }

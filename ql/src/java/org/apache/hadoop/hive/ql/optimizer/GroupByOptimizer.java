@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +32,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -520,11 +524,63 @@ public class GroupByOptimizer implements Transform {
         return;
       }
 
-      if (groupByOp.removeChildren(depth)) {
+      if (removeChildren(groupByOp, depth)) {
         // Use bucketized hive input format - that makes sure that one mapper reads the entire file
         groupByOp.setUseBucketizedHiveInputFormat(true);
         groupByOp.getConf().setMode(GroupByDesc.Mode.FINAL);
       }
+    }
+
+    // Remove the operators till a certain depth.
+    // Return true if the remove was successful, false otherwise
+    public boolean removeChildren(Operator<? extends OperatorDesc> currOp, int depth) {
+      Operator<? extends OperatorDesc> inputOp = currOp;
+      for (int i = 0; i < depth; i++) {
+        // If there are more than 1 children at any level, don't do anything
+        if ((currOp.getChildOperators() == null) || (currOp.getChildOperators().isEmpty())
+            || (currOp.getChildOperators().size() > 1)) {
+          return false;
+        }
+        currOp = currOp.getChildOperators().get(0);
+      }
+
+      // add selectOp to match the schema
+      // after that, inputOp is the parent of selOp.
+      for (Operator<? extends OperatorDesc> op : inputOp.getChildOperators()) {
+        op.getParentOperators().clear();
+      }
+      inputOp.getChildOperators().clear();
+      Operator<? extends OperatorDesc> selOp = genOutputSelectForGroupBy(inputOp, currOp);
+
+      // update the childOp of selectOp
+      selOp.setChildOperators(currOp.getChildOperators());
+
+      // update the parentOp
+      for (Operator<? extends OperatorDesc> op : currOp.getChildOperators()) {
+        op.replaceParent(currOp, selOp);
+      }
+      return true;
+    }
+
+    private Operator<? extends OperatorDesc> genOutputSelectForGroupBy(
+        Operator<? extends OperatorDesc> parentOp, Operator<? extends OperatorDesc> currOp) {
+      assert (parentOp.getSchema().getSignature().size() == currOp.getSchema().getSignature().size());
+      Iterator<ColumnInfo> pIter = parentOp.getSchema().getSignature().iterator();
+      Iterator<ColumnInfo> cIter = currOp.getSchema().getSignature().iterator();
+      List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
+      List<String> colName = new ArrayList<String>();
+      Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
+      while (pIter.hasNext()) {
+        ColumnInfo pInfo = pIter.next();
+        ColumnInfo cInfo = cIter.next();
+        ExprNodeDesc column = new ExprNodeColumnDesc(pInfo.getType(), pInfo.getInternalName(),
+            pInfo.getTabAlias(), pInfo.getIsVirtualCol(), pInfo.isSkewedCol());
+        columns.add(column);
+        colName.add(cInfo.getInternalName());
+        columnExprMap.put(cInfo.getInternalName(), column);
+      }
+      return OperatorFactory.getAndMakeChild(new SelectDesc(columns, colName), new RowSchema(currOp
+          .getSchema().getSignature()), columnExprMap, parentOp);
     }
   }
 

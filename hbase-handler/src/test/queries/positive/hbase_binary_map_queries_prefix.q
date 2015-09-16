@@ -50,3 +50,16 @@ TBLPROPERTIES ("hbase.table.name"="t_hive_maps");
 SELECT * FROM t_ext_hbase_maps ORDER BY key;
 
 DROP TABLE t_ext_hbase_maps;
+
+DROP TABLE t_ext_hbase_maps_cut_prefix;
+
+CREATE EXTERNAL TABLE t_ext_hbase_maps_cut_prefix(key STRING,
+                                       string_map_cols MAP<STRING, STRING>, simple_string_col STRING)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:string_.*,cf-string:simple_string_col"
+    ,"hbase.columns.mapping.prefix.hide"="true")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps");
+
+SELECT * FROM t_ext_hbase_maps_cut_prefix ORDER BY key;
+
+DROP TABLE t_ext_hbase_maps_cut_prefix;

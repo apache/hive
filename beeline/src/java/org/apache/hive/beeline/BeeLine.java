@@ -844,7 +844,7 @@ public class BeeLine implements Closeable {
     consoleReader.setExpandEvents(false);
 
     // setup history
-    ByteArrayOutputStream hist = null;
+    ByteArrayOutputStream hist = new ByteArrayOutputStream();
     if (new File(getOpts().getHistoryFile()).isFile()) {
       try {
         // save the current contents of the history buffer. This gets
@@ -852,13 +852,12 @@ public class BeeLine implements Closeable {
         // input will clobber the history input, but setting the
         // input before the output will cause the previous commands
         // to not be saved to the buffer.
-        FileInputStream historyIn = new FileInputStream(getOpts().getHistoryFile());
-        hist = new ByteArrayOutputStream();
-        int n;
-        while ((n = historyIn.read()) != -1) {
-          hist.write(n);
+        try (FileInputStream historyIn = new FileInputStream(getOpts().getHistoryFile())) {
+          int n;
+          while ((n = historyIn.read()) != -1) {
+            hist.write(n);
+          }
         }
-        historyIn.close();
       } catch (Exception e) {
         handleException(e);
       }

@@ -42,17 +42,25 @@ public class Expression {
    * Evaluate an expression
    */
   public void exec(HplsqlParser.ExprContext ctx) {
-    if (ctx.T_ADD() != null) {
-      operatorAdd(ctx); 
+    try {
+      if (ctx.T_ADD() != null) {
+        operatorAdd(ctx); 
+      }
+      else if (ctx.T_SUB() != null) {
+        operatorSub(ctx); 
+      }
+      else if (ctx.T_DIV() != null) {
+        operatorDiv(ctx); 
+      }
+      else if (ctx.interval_item() != null) {
+        createInterval(ctx);
+      }
+      else {
+        visitChildren(ctx);
+      }
     }
-    else if (ctx.T_SUB() != null) {
-      operatorSub(ctx); 
-    }
-    else if (ctx.interval_item() != null) {
-      createInterval(ctx);
-    }
-    else {
-     visitChildren(ctx);
+    catch (Exception e) {
+      exec.signal(e);
     }
   }
   
@@ -319,6 +327,9 @@ public class Expression {
     else if (v1.type == Type.TIMESTAMP && v2.type == Type.INTERVAL) {
       exec.stackPush(new Var(((Interval)v2.value).timestampChange((Timestamp)v1.value, true /*add*/), v1.scale));
     }
+    else {
+      evalNull();
+    }
   }
 
   /**
@@ -341,6 +352,26 @@ public class Expression {
     }
     else if (v1.type == Type.TIMESTAMP && v2.type == Type.INTERVAL) {
       exec.stackPush(new Var(((Interval)v2.value).timestampChange((Timestamp)v1.value, false /*subtract*/), v1.scale));
+    }
+    else {
+      evalNull();
+    }
+  }
+  
+  /**
+   * Division operator
+   */
+  public void operatorDiv(HplsqlParser.ExprContext ctx) {
+    Var v1 = evalPop(ctx.expr(0));
+    Var v2 = evalPop(ctx.expr(1));
+    if (v1.value == null || v2.value == null) {
+      evalNull();
+    }
+    else if (v1.type == Type.BIGINT && v2.type == Type.BIGINT) {
+      exec.stackPush(new Var((Long)v1.value / (Long)v2.value)); 
+    }
+    else {
+      exec.signal(Signal.Type.UNSUPPORTED_OPERATION, "Unsupported data types in division operator");
     }
   }
   

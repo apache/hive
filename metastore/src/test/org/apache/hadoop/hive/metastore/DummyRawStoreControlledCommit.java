@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -716,6 +717,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public Function getFunction(String dbName, String funcName)
       throws MetaException {
     return objectStore.getFunction(dbName, funcName);
+  }
+
+  @Override
+  public List<Function> getAllFunctions()
+          throws MetaException {
+    return Collections.emptyList();
   }
 
   @Override

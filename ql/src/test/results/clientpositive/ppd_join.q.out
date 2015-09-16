@@ -39,7 +39,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 > '20') and (((_col1 < 'val_50') or (_col0 > '2')) and (_col0 < '400'))) (type: boolean)
+                  predicate: ((_col0 > '20') and ((_col1 < 'val_50') or (_col0 > '2')) and (_col0 < '400')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string)
@@ -70,7 +70,7 @@ STAGE PLANS:
                   predicate: (_col0 <> '4') (type: boolean)
                   Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col0 > '1') and ((_col0 > '20') and (_col0 < '400'))) (type: boolean)
+                    predicate: ((_col0 > '1') and (_col0 > '20') and (_col0 < '400')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       predicate: _col0 is not null (type: boolean)

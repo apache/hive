@@ -51,6 +51,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.logging.Log;
@@ -5929,11 +5930,13 @@ public class ObjectStore implements RawStore, Configurable {
   public class UpdateMStorageDescriptorTblURIRetVal {
     private List<String> badRecords;
     private Map<String, String> updateLocations;
+    private int numNullRecords;
 
     UpdateMStorageDescriptorTblURIRetVal(List<String> badRecords,
-      Map<String, String> updateLocations) {
+      Map<String, String> updateLocations, int numNullRecords) {
       this.badRecords = badRecords;
       this.updateLocations = updateLocations;
+      this.numNullRecords = numNullRecords;
     }
 
     public List<String> getBadRecords() {
@@ -5951,6 +5954,14 @@ public class ObjectStore implements RawStore, Configurable {
     public void setUpdateLocations(Map<String, String> updateLocations) {
       this.updateLocations = updateLocations;
     }
+
+    public int getNumNullRecords() {
+      return numNullRecords;
+    }
+
+    public void setNumNullRecords(int numNullRecords) {
+      this.numNullRecords = numNullRecords;
+    }
   }
 
   /** The following APIs
@@ -5966,6 +5977,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     Map<String, String> updateLocations = new HashMap<String, String>();
     List<String> badRecords = new ArrayList<String>();
+    int numNullRecords = 0;
     UpdateMStorageDescriptorTblURIRetVal retVal = null;
     try {
       openTransaction();
@@ -5975,6 +5987,10 @@ public class ObjectStore implements RawStore, Configurable {
       for (MStorageDescriptor mSDS : mSDSs) {
         URI locationURI = null;
         String location = mSDS.getLocation();
+        if (location == null) { // This can happen for View or Index
+          numNullRecords++;
+          continue;
+        }
         try {
           locationURI = new Path(location).toUri();
         } catch (IllegalArgumentException e) {
@@ -5994,7 +6010,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
       if (committed) {
-        retVal = new UpdateMStorageDescriptorTblURIRetVal(badRecords, updateLocations);
+        retVal = new UpdateMStorageDescriptorTblURIRetVal(badRecords, updateLocations, numNullRecords);
       }
       return retVal;
     } finally {
@@ -6261,7 +6277,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private void validateTableCols(Table table, List<String> colNames) throws MetaException {
+  @VisibleForTesting
+  public void validateTableCols(Table table, List<String> colNames) throws MetaException {
     List<FieldSchema> colList = table.getSd().getCols();
     for (String colName : colNames) {
       boolean foundCol = false;
@@ -6272,7 +6289,8 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       if (!foundCol) {
-        throw new MetaException("Column " + colName + " doesn't exist.");
+        throw new MetaException("Column " + colName + " doesn't exist in table "
+            + table.getTableName() + " in database " + table.getDbName());
       }
     }
   }
@@ -7098,6 +7116,17 @@ public class ObjectStore implements RawStore, Configurable {
     return func;
   }
 
+  private List<Function> convertToFunctions(List<MFunction> mfuncs) {
+    if (mfuncs == null) {
+      return null;
+    }
+    List<Function> functions = new ArrayList<>();
+    for (MFunction mfunc : mfuncs) {
+      functions.add(convertToFunction(mfunc));
+    }
+    return functions;
+  }
+
   private MFunction convertToMFunction(Function func) throws InvalidObjectException {
     if (func == null) {
       return null;
@@ -7254,6 +7283,23 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return func;
+  }
+
+  @Override
+  public List<Function> getAllFunctions() throws MetaException {
+    boolean commited = false;
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MFunction.class);
+      List<MFunction> allFunctions = (List<MFunction>) query.execute();
+      pm.retrieveAll(allFunctions);
+      commited = commitTransaction();
+      return convertToFunctions(allFunctions);
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
   }
 
   @Override

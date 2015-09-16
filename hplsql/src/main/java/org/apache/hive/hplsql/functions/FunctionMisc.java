@@ -132,23 +132,23 @@ public class FunctionMisc extends Function {
    * DECODE function
    */
   void decode(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     if (cnt < 3) {
       evalNull();
       return;
     }
-    Var value = evalPop(ctx.expr(0));
+    Var value = evalPop(ctx.func_param(0).expr());
     int i = 1;
     while (i + 1 < cnt) {
-      Var when = evalPop(ctx.expr(i));
+      Var when = evalPop(ctx.func_param(i).expr());
       if ((value.isNull() && when.isNull()) || value.equals(when)) {
-        eval(ctx.expr(i + 1));
+        eval(ctx.func_param(i + 1).expr());
         return;
       }
       i += 2;
     }    
     if (i < cnt) {           // ELSE expression
-      eval(ctx.expr(i));
+      eval(ctx.func_param(i).expr());
     }
     else {
       evalNull();
@@ -159,8 +159,8 @@ public class FunctionMisc extends Function {
    * NVL function - Return first non-NULL expression
    */
   void nvl(HplsqlParser.Expr_func_paramsContext ctx) {
-    for (int i=0; i < ctx.expr().size(); i++) {
-      Var v = evalPop(ctx.expr(i));
+    for (int i=0; i < ctx.func_param().size(); i++) {
+      Var v = evalPop(ctx.func_param(i).expr());
       if (v.type != Var.Type.NULL) {
         exec.stackPush(v);
         return;
@@ -173,12 +173,12 @@ public class FunctionMisc extends Function {
    * NVL2 function - If expr1 is not NULL return expr2, otherwise expr3
    */
   void nvl2(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() == 3) {
-      if (!evalPop(ctx.expr(0)).isNull()) {
-        eval(ctx.expr(1));
+    if (ctx.func_param().size() == 3) {
+      if (!evalPop(ctx.func_param(0).expr()).isNull()) {
+        eval(ctx.func_param(1).expr());
       }
       else {
-        eval(ctx.expr(2));
+        eval(ctx.func_param(2).expr());
       }
     }
     else {

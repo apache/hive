@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,8 +27,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -176,16 +173,11 @@ public final class Stage {
    * @param opName
    * @param opObj
    * @return
-   * @throws JSONException
-   * @throws JsonParseException
-   * @throws JsonMappingException
-   * @throws IOException
    * @throws Exception
    *           This method address the create table operator, fetch operator,
    *           etc
    */
-  Op extractOp(String opName, JSONObject opObj) throws JSONException, JsonParseException,
-      JsonMappingException, IOException, Exception {
+  Op extractOp(String opName, JSONObject opObj) throws Exception {
     List<Attr> attrs = new ArrayList<>();
     Vertex v = null;
     if (opObj.length() > 0) {
@@ -198,7 +190,7 @@ public final class Stage {
           JSONObject attrObj = (JSONObject) o;
           if (attrObj.length() > 0) {
             if (name.equals("Processor Tree:")) {
-              JSONObject object = new JSONObject();
+              JSONObject object = new JSONObject(new LinkedHashMap<>());
               object.put(name, attrObj);
               v = new Vertex(null, object, parser);
               v.extractOpTree();
@@ -232,7 +224,7 @@ public final class Stage {
     return false;
   }
 
-  public void print(Printer printer, List<Boolean> indentFlag) throws JSONException, Exception {
+  public void print(Printer printer, List<Boolean> indentFlag) throws Exception {
     // print stagename
     if (parser.printSet.contains(this)) {
       printer.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "
