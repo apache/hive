@@ -102,8 +102,7 @@ POSTHOOK: LINEAGE: {
         3
       ],
       "targets": [
-        0,
-        1
+        0
       ],
       "expression": "t.y is null",
       "edgeType": "PREDICATE"
@@ -135,7 +134,6 @@ POSTHOOK: LINEAGE: {
         2
       ],
       "targets": [
-        0,
         1
       ],
       "expression": "(t.x > 0)",
@@ -2699,3 +2697,603 @@ POSTHOOK: LINEAGE: {
 }
 38	216	false
 38	229	true
+PREHOOK: query: drop table if exists src_dp
+PREHOOK: type: DROPTABLE
+PREHOOK: query: create table src_dp (first string, word string, year int, month int, day int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_dp
+PREHOOK: query: drop table if exists dest_dp1
+PREHOOK: type: DROPTABLE
+PREHOOK: query: create table dest_dp1 (first string, word string) partitioned by (year int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_dp1
+PREHOOK: query: drop table if exists dest_dp2
+PREHOOK: type: DROPTABLE
+PREHOOK: query: create table dest_dp2 (first string, word string) partitioned by (y int, m int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_dp2
+PREHOOK: query: drop table if exists dest_dp3
+PREHOOK: type: DROPTABLE
+PREHOOK: query: create table dest_dp3 (first string, word string) partitioned by (y int, m int, d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_dp3
+PREHOOK: query: insert into dest_dp1 partition (year) select first, word, year from src_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_dp
+PREHOOK: Output: default@dest_dp1
+POSTHOOK: LINEAGE: {
+  "version": "1.0",
+  "engine": "mr",
+  "hash": "b2d38401a3281e74a003d9650df97060",
+  "queryText": "insert into dest_dp1 partition (year) select first, word, year from src_dp",
+  "edges": [
+    {
+      "sources": [
+        3
+      ],
+      "targets": [
+        0
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        4
+      ],
+      "targets": [
+        1
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        5
+      ],
+      "targets": [
+        2
+      ],
+      "edgeType": "PROJECTION"
+    }
+  ],
+  "vertices": [
+    {
+      "id": 0,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp1.first"
+    },
+    {
+      "id": 1,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp1.word"
+    },
+    {
+      "id": 2,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp1.year"
+    },
+    {
+      "id": 3,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.first"
+    },
+    {
+      "id": 4,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.word"
+    },
+    {
+      "id": 5,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.year"
+    }
+  ]
+}
+PREHOOK: query: insert into dest_dp2 partition (y, m) select first, word, year, month from src_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_dp
+PREHOOK: Output: default@dest_dp2
+POSTHOOK: LINEAGE: {
+  "version": "1.0",
+  "engine": "mr",
+  "hash": "237302d8ffd62b5b71d9544b22de7770",
+  "queryText": "insert into dest_dp2 partition (y, m) select first, word, year, month from src_dp",
+  "edges": [
+    {
+      "sources": [
+        4
+      ],
+      "targets": [
+        0
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        5
+      ],
+      "targets": [
+        1
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        6
+      ],
+      "targets": [
+        2
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        7
+      ],
+      "targets": [
+        3
+      ],
+      "edgeType": "PROJECTION"
+    }
+  ],
+  "vertices": [
+    {
+      "id": 0,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.first"
+    },
+    {
+      "id": 1,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.word"
+    },
+    {
+      "id": 2,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.y"
+    },
+    {
+      "id": 3,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.m"
+    },
+    {
+      "id": 4,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.first"
+    },
+    {
+      "id": 5,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.word"
+    },
+    {
+      "id": 6,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.year"
+    },
+    {
+      "id": 7,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.month"
+    }
+  ]
+}
+PREHOOK: query: insert into dest_dp2 partition (y=0, m) select first, word, month from src_dp where year=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_dp
+PREHOOK: Output: default@dest_dp2@y=0
+POSTHOOK: LINEAGE: {
+  "version": "1.0",
+  "engine": "mr",
+  "hash": "63e990b47e7ab4eb6f2ea09dfb7453ff",
+  "queryText": "insert into dest_dp2 partition (y=0, m) select first, word, month from src_dp where year=0",
+  "edges": [
+    {
+      "sources": [
+        3
+      ],
+      "targets": [
+        0
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        4
+      ],
+      "targets": [
+        1
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        5
+      ],
+      "targets": [
+        2
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        6
+      ],
+      "targets": [
+        0,
+        1,
+        2
+      ],
+      "expression": "(src_dp.year = 0)",
+      "edgeType": "PREDICATE"
+    }
+  ],
+  "vertices": [
+    {
+      "id": 0,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.first"
+    },
+    {
+      "id": 1,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.word"
+    },
+    {
+      "id": 2,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.m"
+    },
+    {
+      "id": 3,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.first"
+    },
+    {
+      "id": 4,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.word"
+    },
+    {
+      "id": 5,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.month"
+    },
+    {
+      "id": 6,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.year"
+    }
+  ]
+}
+PREHOOK: query: insert into dest_dp3 partition (y=0, m, d) select first, word, month m, day d from src_dp where year=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_dp
+PREHOOK: Output: default@dest_dp3@y=0
+POSTHOOK: LINEAGE: {
+  "version": "1.0",
+  "engine": "mr",
+  "hash": "6bf71a9d02c0612c63b6f40b15c1e8b3",
+  "queryText": "insert into dest_dp3 partition (y=0, m, d) select first, word, month m, day d from src_dp where year=0",
+  "edges": [
+    {
+      "sources": [
+        4
+      ],
+      "targets": [
+        0
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        5
+      ],
+      "targets": [
+        1
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        6
+      ],
+      "targets": [
+        2
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        7
+      ],
+      "targets": [
+        3
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        8
+      ],
+      "targets": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "expression": "(src_dp.year = 0)",
+      "edgeType": "PREDICATE"
+    }
+  ],
+  "vertices": [
+    {
+      "id": 0,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp3.first"
+    },
+    {
+      "id": 1,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp3.word"
+    },
+    {
+      "id": 2,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp3.m"
+    },
+    {
+      "id": 3,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp3.d"
+    },
+    {
+      "id": 4,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.first"
+    },
+    {
+      "id": 5,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.word"
+    },
+    {
+      "id": 6,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.month"
+    },
+    {
+      "id": 7,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.day"
+    },
+    {
+      "id": 8,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.year"
+    }
+  ]
+}
+PREHOOK: query: drop table if exists src_dp1
+PREHOOK: type: DROPTABLE
+PREHOOK: query: create table src_dp1 (f string, w string, m int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_dp1
+Warning: Shuffle Join JOIN[4][tables = [src_dp, src_dp1]] in Stage 'Stage-5:MAPRED' is a cross product
+PREHOOK: query: from src_dp, src_dp1
+insert into dest_dp1 partition (year) select first, word, year
+insert into dest_dp2 partition (y, m) select first, word, year, month
+insert into dest_dp3 partition (y=2, m, d) select first, word, month m, day d where year=2
+insert into dest_dp2 partition (y=1, m) select f, w, m
+insert into dest_dp1 partition (year=0) select f, w
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_dp
+PREHOOK: Input: default@src_dp1
+PREHOOK: Output: default@dest_dp1
+PREHOOK: Output: default@dest_dp1@year=0
+PREHOOK: Output: default@dest_dp2
+PREHOOK: Output: default@dest_dp2@y=1
+PREHOOK: Output: default@dest_dp3@y=2
+POSTHOOK: LINEAGE: {
+  "version": "1.0",
+  "engine": "mr",
+  "hash": "44f16edbf35cfeaf3d4f7b0113a69b74",
+  "queryText": "from src_dp, src_dp1\ninsert into dest_dp1 partition (year) select first, word, year\ninsert into dest_dp2 partition (y, m) select first, word, year, month\ninsert into dest_dp3 partition (y=2, m, d) select first, word, month m, day d where year=2\ninsert into dest_dp2 partition (y=1, m) select f, w, m\ninsert into dest_dp1 partition (year=0) select f, w",
+  "edges": [
+    {
+      "sources": [
+        11
+      ],
+      "targets": [
+        0,
+        1,
+        2
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        12
+      ],
+      "targets": [
+        3,
+        4,
+        5
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        13
+      ],
+      "targets": [
+        6,
+        7
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        14
+      ],
+      "targets": [
+        8,
+        9
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        15
+      ],
+      "targets": [
+        10
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        13
+      ],
+      "targets": [
+        2,
+        5,
+        9,
+        10
+      ],
+      "expression": "(src_dp.year = 2)",
+      "edgeType": "PREDICATE"
+    },
+    {
+      "sources": [
+        16
+      ],
+      "targets": [
+        1,
+        0
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        17
+      ],
+      "targets": [
+        4,
+        3
+      ],
+      "edgeType": "PROJECTION"
+    },
+    {
+      "sources": [
+        18
+      ],
+      "targets": [
+        8
+      ],
+      "edgeType": "PROJECTION"
+    }
+  ],
+  "vertices": [
+    {
+      "id": 0,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp1.first"
+    },
+    {
+      "id": 1,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.first"
+    },
+    {
+      "id": 2,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp3.first"
+    },
+    {
+      "id": 3,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp1.word"
+    },
+    {
+      "id": 4,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.word"
+    },
+    {
+      "id": 5,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp3.word"
+    },
+    {
+      "id": 6,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp1.year"
+    },
+    {
+      "id": 7,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.y"
+    },
+    {
+      "id": 8,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp2.m"
+    },
+    {
+      "id": 9,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp3.m"
+    },
+    {
+      "id": 10,
+      "vertexType": "COLUMN",
+      "vertexId": "default.dest_dp3.d"
+    },
+    {
+      "id": 11,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.first"
+    },
+    {
+      "id": 12,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.word"
+    },
+    {
+      "id": 13,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.year"
+    },
+    {
+      "id": 14,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.month"
+    },
+    {
+      "id": 15,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp.day"
+    },
+    {
+      "id": 16,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp1.f"
+    },
+    {
+      "id": 17,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp1.w"
+    },
+    {
+      "id": 18,
+      "vertexType": "COLUMN",
+      "vertexId": "default.src_dp1.m"
+    }
+  ]
+}
