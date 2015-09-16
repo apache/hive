@@ -9324,6 +9324,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (top == null) {
+      // Determine row schema for TSOP.
+      // Include column names from SerDe, the partition and virtual columns.
       rwsch = new RowResolver();
       try {
         StructObjectInspector rowObjectInspector = (StructObjectInspector) tab
