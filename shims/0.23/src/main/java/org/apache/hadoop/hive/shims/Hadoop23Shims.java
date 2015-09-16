@@ -88,6 +88,7 @@ import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.tools.DistCp;
 import org.apache.hadoop.tools.DistCpOptions;
+import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -1141,7 +1142,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
     options.setSyncFolder(true);
     options.setSkipCRC(true);
-    options.preserve(DistCpOptions.FileAttribute.BLOCKSIZE);
+    options.preserve(FileAttribute.BLOCKSIZE);
     try {
       DistCp distcp = new DistCp(conf, options);
       distcp.execute();
