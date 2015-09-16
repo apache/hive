@@ -1482,8 +1482,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return tableRel;
     }
 
-    private RelNode genFilterRelNode(ASTNode filterExpr, RelNode srcRel) throws SemanticException {
-      ExprNodeDesc filterCondn = genExprNodeDesc(filterExpr, relToHiveRR.get(srcRel));
+    private RelNode genFilterRelNode(ASTNode filterExpr, RelNode srcRel,
+            boolean useCaching) throws SemanticException {
+      ExprNodeDesc filterCondn = genExprNodeDesc(filterExpr, relToHiveRR.get(srcRel), useCaching);
       if (filterCondn instanceof ExprNodeConstantDesc
           && !filterCondn.getTypeString().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         // queries like select * from t1 where 'foo';
@@ -1634,7 +1635,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               subQuery.getJoinConditionAST());
           searchCond = subQuery.updateOuterQueryFilter(clonedSearchCond);
 
-          srcRel = genFilterRelNode(searchCond, srcRel);
+          srcRel = genFilterRelNode(searchCond, srcRel, forHavingClause);
 
           /*
            * For Not Exists and Not In, add a projection on top of the Left
@@ -1650,7 +1651,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return srcRel;
       }
 
-      return genFilterRelNode(searchCond, srcRel);
+      return genFilterRelNode(searchCond, srcRel, forHavingClause);
     }
 
     private RelNode projectLeftOuterSide(RelNode srcRel, int numColumns) throws SemanticException {
