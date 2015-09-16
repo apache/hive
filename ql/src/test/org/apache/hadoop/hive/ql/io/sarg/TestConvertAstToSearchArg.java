@@ -24,22 +24,15 @@ import static junit.framework.Assert.assertTrue;
 
 import com.google.common.collect.Sets;
 
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
+import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.PredicateLeafImpl;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.junit.Test;
 
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
@@ -557,7 +550,7 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String[] conditions = new String[]{
       "eq(first_name, Binary{\"john\"})",    /* first_name = 'john' */
       "not(lteq(first_name, Binary{\"greg\"}))", /* 'greg' < first_name */
@@ -849,7 +842,7 @@ public class TestConvertAstToSearchArg {
       "lteq(id, 4)"                         /* id <= 4             */
     };
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected = String.format("or(or(or(%1$s, %2$s), %3$s), %4$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1279,7 +1272,7 @@ public class TestConvertAstToSearchArg {
       "eq(last_name, Binary{\"smith\"})"    /* 'smith' = last_name  */
     };
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected = String.format("and(and(and(%1$s, %2$s), %3$s), %4$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1500,7 +1493,7 @@ public class TestConvertAstToSearchArg {
       "or(eq(id, 34), eq(id, 50))" /* id in (34,50) */
     };
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected = String.format("and(and(%1$s, %2$s), %3$s)", conditions);
     assertEquals(expected, p.toString());
 
@@ -1759,7 +1752,7 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected =
       "and(lt(first_name, Binary{\"greg\"}), not(lteq(first_name, Binary{\"david\"})))";
     assertEquals(p.toString(), expected);
@@ -2239,7 +2232,7 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected = "and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(and(" +
       "or(or(or(lt(id, 18), lt(id, 10)), lt(id, 13)), lt(id, 16)), " +
       "or(or(or(lt(id, 18), lt(id, 11)), lt(id, 13)), lt(id, 16))), " +
@@ -2395,7 +2388,7 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     assertNull(p);
 
     assertEquals("YES_NO_NULL",
@@ -2650,7 +2643,7 @@ public class TestConvertAstToSearchArg {
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
-    FilterPredicate p = ParquetRecordReaderWrapper.toFilterPredicate(sarg);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg);
     String expected = "and(not(lt(id, 10)), not(lt(id, 10)))";
     assertEquals(expected, p.toString());
 

@@ -22,17 +22,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.io.parquet.FilterPredicateLeafBuilder;
-import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
-import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree;
-import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
@@ -46,7 +39,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 
 import org.apache.parquet.filter2.compat.FilterCompat;
 import org.apache.parquet.filter2.compat.RowGroupFilter;
-import org.apache.parquet.filter2.predicate.FilterApi;
 import org.apache.parquet.filter2.predicate.FilterPredicate;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputFormat;
@@ -57,6 +49,7 @@ import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.ContextUtil;
+import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
 
 import com.google.common.base.Strings;
@@ -139,26 +132,23 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
     }
   }
 
-  public FilterCompat.Filter setFilter(final JobConf conf) {
-    String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
-    String columnNamesString =
-      conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
-    if (serializedPushdown == null || columnNamesString == null || serializedPushdown.isEmpty() ||
-      columnNamesString.isEmpty()) {
+  public FilterCompat.Filter setFilter(final JobConf conf, MessageType schema) {
+    SearchArgument sarg = ConvertAstToSearchArg.createFromConf(conf);
+    if (sarg == null) {
       return null;
     }
 
-    SearchArgument sarg =
-        ConvertAstToSearchArg.create(Utilities.deserializeExpression
-            (serializedPushdown));
-    FilterPredicate p = toFilterPredicate(sarg);
+    // Create the Parquet FilterPredicate without including columns that do not exist
+    // on the shema (such as partition columns).
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     if (p != null) {
-      LOG.debug("Predicate filter for parquet is " + p.toString());
+      // Filter may have sensitive information. Do not send to debug.
+      LOG.debug("PARQUET predicate push down generated.");
       ParquetInputFormat.setFilterPredicate(conf, p);
       return FilterCompat.get(p);
     } else {
-      LOG.debug("No predicate filter can be generated for " + TableScanDesc.FILTER_EXPR_CONF_STR +
-        " with the value of " + serializedPushdown);
+      // Filter may have sensitive information. Do not send to debug.
+      LOG.debug("No PARQUET predicate push down is generated.");
       return null;
     }
   }
@@ -250,7 +240,6 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
     if (oldSplit instanceof FileSplit) {
       final Path finalPath = ((FileSplit) oldSplit).getPath();
       jobConf = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
-      FilterCompat.Filter filter = setFilter(jobConf);
 
       final ParquetMetadata parquetMetadata = ParquetFileReader.readFooter(jobConf, finalPath);
       final List<BlockMetaData> blocks = parquetMetadata.getBlocks();
@@ -274,6 +263,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
         return null;
       }
 
+      FilterCompat.Filter filter = setFilter(jobConf, fileMetaData.getSchema());
       if (filter != null) {
         filtedBlocks = RowGroupFilter.filterRowGroups(filter, splitGroup, fileMetaData.getSchema());
         if (filtedBlocks.isEmpty()) {
@@ -310,92 +300,4 @@ public class ParquetRecordReaderWrapper  implements RecordReader<NullWritable, A
   public List<BlockMetaData> getFiltedBlocks() {
     return filtedBlocks;
   }
-
-  /**
-   * Translate the search argument to the filter predicate parquet used
-   * @return translate the sarg into a filter predicate
-   */
-  public static FilterPredicate toFilterPredicate(SearchArgument sarg) {
-    return translate(sarg.getExpression(), sarg.getLeaves());
-  }
-
-  private static boolean isMultiLiteralsOperator(PredicateLeaf.Operator op) {
-    return (op == PredicateLeaf.Operator.IN) ||
-        (op == PredicateLeaf.Operator.BETWEEN);
-  }
-
-  private static FilterPredicate translate(ExpressionTree root,
-                                           List<PredicateLeaf> leafs){
-    FilterPredicate p = null;
-    switch (root.getOperator()) {
-      case OR:
-        for(ExpressionTree child: root.getChildren()) {
-          if (p == null) {
-            p = translate(child, leafs);
-          } else {
-            FilterPredicate right = translate(child, leafs);
-            // constant means no filter, ignore it when it is null
-            if(right != null){
-              p = FilterApi.or(p, right);
-            }
-          }
-        }
-        return p;
-      case AND:
-        for(ExpressionTree child: root.getChildren()) {
-          if (p == null) {
-            p = translate(child, leafs);
-          } else {
-            FilterPredicate right = translate(child, leafs);
-            // constant means no filter, ignore it when it is null
-            if(right != null){
-              p = FilterApi.and(p, right);
-            }
-          }
-        }
-        return p;
-      case NOT:
-        FilterPredicate op = translate(root.getChildren().get(0), leafs);
-        if (op != null) {
-          return FilterApi.not(op);
-        } else {
-          return null;
-        }
-      case LEAF:
-        return buildFilterPredicateFromPredicateLeaf(leafs.get(root.getLeaf()));
-      case CONSTANT:
-        return null;// no filter will be executed for constant
-      default:
-        throw new IllegalStateException("Unknown operator: " +
-            root.getOperator());
-    }
-  }
-
-  private static FilterPredicate buildFilterPredicateFromPredicateLeaf
-          (PredicateLeaf leaf) {
-    LeafFilterFactory leafFilterFactory = new LeafFilterFactory();
-    FilterPredicateLeafBuilder builder;
-    try {
-      builder = leafFilterFactory
-          .getLeafFilterBuilderByType(leaf.getType());
-      if (builder == null) {
-        return null;
-      }
-      if (isMultiLiteralsOperator(leaf.getOperator())) {
-        return builder.buildPredicate(leaf.getOperator(),
-            leaf.getLiteralList(),
-            leaf.getColumnName());
-      } else {
-        return builder
-            .buildPredict(leaf.getOperator(),
-                leaf.getLiteral(),
-                leaf.getColumnName());
-      }
-    } catch (Exception e) {
-      LOG.error("fail to build predicate filter leaf with errors" + e, e);
-      return null;
-    }
-  }
-
-
 }
