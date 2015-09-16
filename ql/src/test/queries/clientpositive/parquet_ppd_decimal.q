@@ -67,22 +67,22 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where d<1;
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where d<=11.22;
+select * from newtypestbl where d<=11.22 sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where d<=11.22;
+select * from newtypestbl where d<=11.22 sort by c;
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where d<='11.22';
+select * from newtypestbl where d<='11.22' sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where d<='11.22';
+select * from newtypestbl where d<='11.22' sort by c;
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where d<=cast('11.22' as float);
+select * from newtypestbl where d<=cast('11.22' as float) sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where d<=cast('11.22' as float);
+select * from newtypestbl where d<=cast('11.22' as float) sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where d<=cast('11.22' as decimal);
@@ -91,16 +91,16 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where d<=cast('11.22' as decimal);
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where d<=11.22BD;
+select * from newtypestbl where d<=11.22BD sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where d<=11.22BD;
+select * from newtypestbl where d<=11.22BD sort by c;
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where d<=12;
+select * from newtypestbl where d<=12 sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where d<=12;
+select * from newtypestbl where d<=12 sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where d in ('0.22', '1.0');
@@ -109,10 +109,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where d in ('0.22', '1.0');
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where d in ('0.22', '11.22');
+select * from newtypestbl where d in ('0.22', '11.22') sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where d in ('0.22', '11.22');
+select * from newtypestbl where d in ('0.22', '11.22') sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where d in ('0.9', '1.0');
@@ -127,10 +127,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where d in ('0.9', 0.22);
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float));
+select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float)) sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float));
+select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float)) sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where d between 0 and 1;
@@ -139,10 +139,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where d between 0 and 1;
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where d between 0 and 1000;
+select * from newtypestbl where d between 0 and 1000 sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where d between 0 and 1000;
+select * from newtypestbl where d between 0 and 1000 sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where d between 0 and '2.0';

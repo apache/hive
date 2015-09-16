@@ -28,10 +28,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where c<"hello";
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where c<="hello";
+select * from newtypestbl where c<="hello" sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where c<="hello";
+select * from newtypestbl where c<="hello" sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where c="apple ";
@@ -46,10 +46,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where c in ("apple", "carrot");
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where c in ("apple", "hello");
+select * from newtypestbl where c in ("apple", "hello") sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where c in ("apple", "hello");
+select * from newtypestbl where c in ("apple", "hello") sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where c in ("carrot");
@@ -64,10 +64,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where c between "apple" and "carrot";
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where c between "apple" and "zombie";
+select * from newtypestbl where c between "apple" and "zombie" sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where c between "apple" and "zombie";
+select * from newtypestbl where c between "apple" and "zombie" sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where c between "carrot" and "carrot1";

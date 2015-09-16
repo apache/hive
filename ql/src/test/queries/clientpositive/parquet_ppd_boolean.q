@@ -12,7 +12,7 @@ select * from newtypestbl where b=true;
 select * from newtypestbl where b!=true;
 select * from newtypestbl where b<true;
 select * from newtypestbl where b>true;
-select * from newtypestbl where b<=true;
+select * from newtypestbl where b<=true sort by c;
 
 select * from newtypestbl where b=false;
 select * from newtypestbl where b!=false;
@@ -26,7 +26,7 @@ select * from newtypestbl where b=true;
 select * from newtypestbl where b!=true;
 select * from newtypestbl where b<true;
 select * from newtypestbl where b>true;
-select * from newtypestbl where b<=true;
+select * from newtypestbl where b<=true sort by c;
 
 select * from newtypestbl where b=false;
 select * from newtypestbl where b!=false;

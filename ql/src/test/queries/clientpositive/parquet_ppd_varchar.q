@@ -28,10 +28,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where v<"world";
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where v<="world";
+select * from newtypestbl where v<="world" sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where v<="world";
+select * from newtypestbl where v<="world" sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where v="bee   ";
@@ -46,10 +46,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where v in ("bee", "orange");
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where v in ("bee", "world");
+select * from newtypestbl where v in ("bee", "world") sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where v in ("bee", "world");
+select * from newtypestbl where v in ("bee", "world") sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where v in ("orange");
@@ -64,10 +64,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where v between "bee" and "orange";
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where v between "bee" and "zombie";
+select * from newtypestbl where v between "bee" and "zombie" sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where v between "bee" and "zombie";
+select * from newtypestbl where v between "bee" and "zombie" sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where v between "orange" and "pine";
