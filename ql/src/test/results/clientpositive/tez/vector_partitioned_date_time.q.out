@@ -379,11 +379,11 @@ STAGE PLANS:
                   Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: fl_date (type: date)
-                    outputColumnNames: _col0
+                    outputColumnNames: fl_date
                     Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      keys: _col0 (type: date)
+                      keys: fl_date (type: date)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: NONE
@@ -1159,11 +1159,11 @@ STAGE PLANS:
                   Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: fl_date (type: date)
-                    outputColumnNames: _col0
+                    outputColumnNames: fl_date
                     Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      keys: _col0 (type: date)
+                      keys: fl_date (type: date)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 137 Data size: 31776 Basic stats: COMPLETE Column stats: NONE
@@ -1963,11 +1963,11 @@ STAGE PLANS:
                   Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: fl_time (type: timestamp)
-                    outputColumnNames: _col0
+                    outputColumnNames: fl_time
                     Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      keys: _col0 (type: timestamp)
+                      keys: fl_time (type: timestamp)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 137 Data size: 33968 Basic stats: COMPLETE Column stats: NONE

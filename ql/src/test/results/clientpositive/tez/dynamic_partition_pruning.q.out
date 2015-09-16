@@ -59,10 +59,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: string)
+                      keys: ds (type: string)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1773,7 +1773,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 1000
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- parent is reduce tasks
 EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
@@ -1812,10 +1812,10 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: '2008-04-08' (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: string)
+                      keys: ds (type: string)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -1875,7 +1875,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -2739,10 +2739,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: max(_col0)
+                      aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -2757,10 +2757,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: min(_col0)
+                      aggregations: min(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -2936,10 +2936,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: max(_col0)
+                      aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -2954,10 +2954,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: min(_col0)
+                      aggregations: min(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -3121,20 +3121,16 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ds (type: string)
+                  Group By Operator
+                    keys: ds (type: string)
+                    mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 10 
             Map Operator Tree:
                 TableScan
@@ -3142,10 +3138,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: min(_col0)
+                      aggregations: min(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -3159,20 +3155,16 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ds (type: string)
+                  Group By Operator
+                    keys: ds (type: string)
+                    mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -3180,10 +3172,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: max(_col0)
+                      aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -4133,7 +4125,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 1000
-Warning: Map Join MAPJOIN[23][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: -- parent is reduce tasks
 EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
@@ -4188,10 +4180,10 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: '2008-04-08' (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: string)
+                      keys: ds (type: string)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -4233,7 +4225,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[23][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -4824,10 +4816,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: max(_col0)
+                      aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -4842,10 +4834,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: min(_col0)
+                      aggregations: min(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE

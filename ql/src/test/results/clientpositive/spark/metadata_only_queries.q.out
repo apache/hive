@@ -448,10 +448,10 @@ STAGE PLANS:
                   Statistics: Num rows: 9489 Data size: 978785 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ts (type: timestamp)
-                    outputColumnNames: _col0
+                    outputColumnNames: ts
                     Statistics: Num rows: 9489 Data size: 978785 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(_col0)
+                      aggregations: count(ts)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

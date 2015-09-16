@@ -37,7 +37,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- This test query is introduced for HIVE-4968.
 -- First, we do not convert the join to MapJoin.
 EXPLAIN
@@ -140,7 +140,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       FROM (SELECT *
@@ -188,7 +188,7 @@ POSTHOOK: Input: default@src1
 406	val_406	25
 66	val_66	25
 98	val_98	25
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[17][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: -- Then, we convert the join to MapJoin.
 EXPLAIN
 SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
@@ -296,7 +296,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[17][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       FROM (SELECT *

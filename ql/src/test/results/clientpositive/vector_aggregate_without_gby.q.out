@@ -53,10 +53,10 @@ STAGE PLANS:
               Statistics: Num rows: 3 Data size: 306 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: dt (type: int), greg_dt (type: string)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: dt, greg_dt
                 Statistics: Num rows: 3 Data size: 306 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: max(_col0), max(_col1)
+                  aggregations: max(dt), max(greg_dt)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: NONE

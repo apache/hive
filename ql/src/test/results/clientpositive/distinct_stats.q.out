@@ -43,11 +43,11 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: a, b
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(DISTINCT _col1)
-                keys: _col0 (type: string), _col1 (type: string)
+                aggregations: count(DISTINCT b)
+                keys: a (type: string), b (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -100,10 +100,10 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: b (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: b
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string)
+                keys: b (type: string)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -151,11 +151,11 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: a
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: _col0 (type: string)
+                keys: a (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
