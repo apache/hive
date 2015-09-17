@@ -29,6 +29,42 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
 -252951929000
+PREHOOK: query: select sum(hash(*)) from newtypesorc where da is null or da = null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where da is null or da = null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select sum(hash(*)) from newtypesorc where da is null or da = null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where da is null or da = null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select sum(hash(*)) from newtypesorc where da is not null or da != null or da <> null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where da is not null or da != null or da <> null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+81475875500
+PREHOOK: query: select sum(hash(*)) from newtypesorc where da is not null or da != null or da <> null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where da is not null or da != null or da <> null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypesorc
+#### A masked pattern was here ####
+81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc where da='1970-02-20'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc

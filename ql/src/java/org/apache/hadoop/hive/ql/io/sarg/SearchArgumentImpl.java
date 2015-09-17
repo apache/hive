@@ -444,6 +444,10 @@ final class SearchArgumentImpl implements SearchArgument {
     }
 
     private static Object boxLiteral(ExprNodeConstantDesc lit) {
+      Object val = lit.getValue();
+      if (val == null) {
+        return null;
+      }
       switch (getType(lit)) {
         case INTEGER:
           return ((Number) lit.getValue()).intValue();

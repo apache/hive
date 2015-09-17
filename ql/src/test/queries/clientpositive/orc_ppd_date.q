@@ -1,6 +1,7 @@
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;
 SET mapred.max.split.size=5000;
+SET hive.cbo.enable=false;
 
 create table newtypesorc(c char(10), v varchar(10), d decimal(5,3), da date) stored as orc tblproperties("orc.stripe.size"="16777216"); 
 
@@ -8,6 +9,18 @@ insert overwrite table newtypesorc select * from (select cast("apple" as char(10
 
 -- date data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
 select sum(hash(*)) from newtypesorc where da='1970-02-20';
+
+set hive.optimize.index.filter=false;
+select sum(hash(*)) from newtypesorc where da is null or da = null;
+
+set hive.optimize.index.filter=true;
+select sum(hash(*)) from newtypesorc where da is null or da = null;
+
+set hive.optimize.index.filter=false;
+select sum(hash(*)) from newtypesorc where da is not null or da != null or da <> null;
+
+set hive.optimize.index.filter=true;
+select sum(hash(*)) from newtypesorc where da is not null or da != null or da <> null;
 
 set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc where da='1970-02-20';
