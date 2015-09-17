@@ -158,6 +158,11 @@ public class LlapDecider implements PhysicalPlanResolver {
 
       // first we check if we *can* run in llap. If we need to use
       // user code to do so (script/udf) we don't.
+      if (work instanceof MapWork && ((MapWork)work).isUseOneNullRowInputFormat()) {
+        // LLAP doesn't support file-based splits that this forces.
+        return false;
+      }
+
       if (!evaluateOperators(work)) {
         LOG.info("some operators cannot be run in llap");
         return false;
