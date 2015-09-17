@@ -1389,6 +1389,10 @@ public class Commands {
       beeLine.getDatabaseConnections().setConnection(
           new DatabaseConnection(beeLine, driver, url, props));
       beeLine.getDatabaseConnection().getConnection();
+
+      if (!beeLine.isBeeLine()) {
+        beeLine.updateOptsForCli();
+      }
       beeLine.runInit();
 
       beeLine.setCompletions();

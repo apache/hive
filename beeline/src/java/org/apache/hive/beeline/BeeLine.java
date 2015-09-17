@@ -694,7 +694,6 @@ public class BeeLine implements Closeable {
     if (!commands.isEmpty()) {
       embeddedConnect();
       connectDBInEmbededMode();
-      updateOptsForCli();
       for (Iterator<String> i = commands.iterator(); i.hasNext(); ) {
         String command = i.next().toString();
         debug(loc("executing-command", command));
@@ -811,7 +810,7 @@ public class BeeLine implements Closeable {
     }
   }
 
-  private void updateOptsForCli() {
+  public void updateOptsForCli() {
     getOpts().updateBeeLineOptsFromConf();
     getOpts().setShowHeader(false);
     getOpts().setOutputFormat("dsv");
@@ -844,9 +843,6 @@ public class BeeLine implements Closeable {
           return code;
         }
         defaultConnect(false);
-        updateOptsForCli();
-
-        processInitFiles(opts.getInitFiles());
       }
 
       if (getOpts().getScriptFile() != null) {
@@ -931,24 +927,6 @@ public class BeeLine implements Closeable {
       IOUtils.closeStream(initStream);
       consoleReader = null;
       output("");   // dummy new line
-    }
-  }
-
-  /**
-   * Only initial files specified by i option will be executed. The hiverc file will be processed by session manager.
-   *
-   * @param files
-   * @throws IOException
-   */
-  public void processInitFiles(String[] files) throws IOException {
-    if (files == null || files.length == 0) {
-      return;
-    }
-    for (String initFile : files) {
-      int rc = executeFile(initFile);
-      if (rc != 0) {
-        System.exit(rc);
-      }
     }
   }
 
