@@ -1,0 +1,190 @@
+PREHOOK: query: create table split    (id int, line_id int, orders string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@split
+POSTHOOK: query: create table split    (id int, line_id int, orders string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@split
+PREHOOK: query: create table bar      (id int, line_id int, orders string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bar
+POSTHOOK: query: create table bar      (id int, line_id int, orders string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bar
+PREHOOK: query: create table foo      (id int, line_id int, orders string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create table foo      (id int, line_id int, orders string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: create table forecast (id int, line_id int, orders string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@forecast
+POSTHOOK: query: create table forecast (id int, line_id int, orders string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@forecast
+PREHOOK: query: explain 
+SELECT foo.id, count(*) as factor from 
+ foo JOIN bar  ON (foo.id = bar.id and foo.line_id = bar.line_id) 
+ JOIN split    ON (foo.id = split.id and foo.line_id = split.line_id) 
+ JOIN forecast ON (foo.id = forecast.id AND foo.line_id = forecast.line_id) 
+ WHERE foo.orders != 'blah'  
+ group by foo.id
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+SELECT foo.id, count(*) as factor from 
+ foo JOIN bar  ON (foo.id = bar.id and foo.line_id = bar.line_id) 
+ JOIN split    ON (foo.id = split.id and foo.line_id = split.line_id) 
+ JOIN forecast ON (foo.id = forecast.id AND foo.line_id = forecast.line_id) 
+ WHERE foo.orders != 'blah'  
+ group by foo.id
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: foo
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: ((id is not null and line_id is not null) and (orders <> 'blah')) (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: id (type: int), line_id (type: int)
+                sort order: ++
+                Map-reduce partition columns: id (type: int), line_id (type: int)
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          TableScan
+            alias: bar
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: (id is not null and line_id is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: id (type: int), line_id (type: int)
+                sort order: ++
+                Map-reduce partition columns: id (type: int), line_id (type: int)
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          TableScan
+            alias: split
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: (id is not null and line_id is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: id (type: int), line_id (type: int)
+                sort order: ++
+                Map-reduce partition columns: id (type: int), line_id (type: int)
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          TableScan
+            alias: forecast
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: (id is not null and line_id is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: id (type: int), line_id (type: int)
+                sort order: ++
+                Map-reduce partition columns: id (type: int), line_id (type: int)
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+               Inner Join 0 to 3
+          keys:
+            0 id (type: int), line_id (type: int)
+            1 id (type: int), line_id (type: int)
+            2 id (type: int), line_id (type: int)
+            3 id (type: int), line_id (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Group By Operator
+            aggregations: count()
+            keys: _col0 (type: int)
+            mode: hash
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table split
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@split
+PREHOOK: Output: default@split
+POSTHOOK: query: drop table split
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@split
+POSTHOOK: Output: default@split
+PREHOOK: query: drop table bar
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@bar
+PREHOOK: Output: default@bar
+POSTHOOK: query: drop table bar
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@bar
+POSTHOOK: Output: default@bar
+PREHOOK: query: drop table foo
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@foo
+PREHOOK: Output: default@foo
+POSTHOOK: query: drop table foo
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@foo
+POSTHOOK: Output: default@foo
+PREHOOK: query: drop table forecast
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@forecast
+PREHOOK: Output: default@forecast
+POSTHOOK: query: drop table forecast
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@forecast
+POSTHOOK: Output: default@forecast
