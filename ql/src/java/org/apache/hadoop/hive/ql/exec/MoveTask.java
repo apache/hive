@@ -132,7 +132,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           try {
             // create the destination if it does not exist
             if (!dstFs.exists(targetPath)) {
-              FileUtils.mkdir(dstFs, targetPath, false, conf);
+              if (!FileUtils.mkdir(dstFs, targetPath, false, conf)) {
+                throw new HiveException(
+                    "Failed to create local target directory for copy:" + targetPath);
+              }
             }
           } catch (IOException e) {
             throw new HiveException("Unable to create target directory for copy" + targetPath, e);
