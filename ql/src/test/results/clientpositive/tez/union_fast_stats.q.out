@@ -1,0 +1,526 @@
+PREHOOK: query: drop table small_alltypesorc1a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table small_alltypesorc1a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table small_alltypesorc2a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table small_alltypesorc2a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table small_alltypesorc3a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table small_alltypesorc3a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table small_alltypesorc4a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table small_alltypesorc4a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table small_alltypesorc_a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table small_alltypesorc_a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc1a
+POSTHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc1a
+PREHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc2a
+POSTHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc2a
+PREHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc3a
+POSTHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc3a
+PREHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc4a
+POSTHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc4a
+PREHOOK: query: create table small_alltypesorc_a stored as orc as select * from
+(select * from (select * from small_alltypesorc1a) sq1
+ union all
+ select * from (select * from small_alltypesorc2a) sq2
+ union all
+ select * from (select * from small_alltypesorc3a) sq3
+ union all
+ select * from (select * from small_alltypesorc4a) sq4) q
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@small_alltypesorc1a
+PREHOOK: Input: default@small_alltypesorc2a
+PREHOOK: Input: default@small_alltypesorc3a
+PREHOOK: Input: default@small_alltypesorc4a
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: query: create table small_alltypesorc_a stored as orc as select * from
+(select * from (select * from small_alltypesorc1a) sq1
+ union all
+ select * from (select * from small_alltypesorc2a) sq2
+ union all
+ select * from (select * from small_alltypesorc3a) sq3
+ union all
+ select * from (select * from small_alltypesorc4a) sq4) q
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@small_alltypesorc1a
+POSTHOOK: Input: default@small_alltypesorc2a
+POSTHOOK: Input: default@small_alltypesorc3a
+POSTHOOK: Input: default@small_alltypesorc4a
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc_a
+PREHOOK: query: desc formatted small_alltypesorc_a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: query: desc formatted small_alltypesorc_a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@small_alltypesorc_a
+# col_name            	data_type           	comment             
+	 	 
+ctinyint            	tinyint             	                    
+csmallint           	smallint            	                    
+cint                	int                 	                    
+cbigint             	bigint              	                    
+cfloat              	float               	                    
+cdouble             	double              	                    
+cstring1            	string              	                    
+cstring2            	string              	                    
+ctimestamp1         	timestamp           	                    
+ctimestamp2         	timestamp           	                    
+cboolean1           	boolean             	                    
+cboolean2           	boolean             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	4                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	3915                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Output: default@small_alltypesorc_a
+PREHOOK: query: desc formatted small_alltypesorc_a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: query: desc formatted small_alltypesorc_a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@small_alltypesorc_a
+# col_name            	data_type           	comment             
+	 	 
+ctinyint            	tinyint             	                    
+csmallint           	smallint            	                    
+cint                	int                 	                    
+cbigint             	bigint              	                    
+cfloat              	float               	                    
+cdouble             	double              	                    
+cstring1            	string              	                    
+cstring2            	string              	                    
+ctimestamp1         	timestamp           	                    
+ctimestamp2         	timestamp           	                    
+cboolean1           	boolean             	                    
+cboolean2           	boolean             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	4                   
+	numRows             	15                  
+	rawDataSize         	3483                
+	totalSize           	3915                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table small_alltypesorc_a select * from small_alltypesorc1a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc1a
+PREHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: query: insert into table small_alltypesorc_a select * from small_alltypesorc1a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc1a
+POSTHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: Lineage: small_alltypesorc_a.cbigint SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cboolean1 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cboolean2 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cdouble SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cfloat SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cint SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.csmallint SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cstring1 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cstring2 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp1 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp2 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctinyint SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: desc formatted small_alltypesorc_a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: query: desc formatted small_alltypesorc_a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@small_alltypesorc_a
+# col_name            	data_type           	comment             
+	 	 
+ctinyint            	tinyint             	                    
+csmallint           	smallint            	                    
+cint                	int                 	                    
+cbigint             	bigint              	                    
+cfloat              	float               	                    
+cdouble             	double              	                    
+cstring1            	string              	                    
+cstring2            	string              	                    
+ctimestamp1         	timestamp           	                    
+ctimestamp2         	timestamp           	                    
+cboolean1           	boolean             	                    
+cboolean2           	boolean             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	5                   
+	numRows             	20                  
+	rawDataSize         	4552                
+	totalSize           	5225                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table small_alltypesorc1a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@small_alltypesorc1a
+PREHOOK: Output: default@small_alltypesorc1a
+POSTHOOK: query: drop table small_alltypesorc1a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@small_alltypesorc1a
+POSTHOOK: Output: default@small_alltypesorc1a
+PREHOOK: query: drop table small_alltypesorc2a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@small_alltypesorc2a
+PREHOOK: Output: default@small_alltypesorc2a
+POSTHOOK: query: drop table small_alltypesorc2a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@small_alltypesorc2a
+POSTHOOK: Output: default@small_alltypesorc2a
+PREHOOK: query: drop table small_alltypesorc3a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@small_alltypesorc3a
+PREHOOK: Output: default@small_alltypesorc3a
+POSTHOOK: query: drop table small_alltypesorc3a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@small_alltypesorc3a
+POSTHOOK: Output: default@small_alltypesorc3a
+PREHOOK: query: drop table small_alltypesorc4a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@small_alltypesorc4a
+PREHOOK: Output: default@small_alltypesorc4a
+POSTHOOK: query: drop table small_alltypesorc4a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@small_alltypesorc4a
+POSTHOOK: Output: default@small_alltypesorc4a
+PREHOOK: query: drop table small_alltypesorc_a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: query: drop table small_alltypesorc_a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Output: default@small_alltypesorc_a
+PREHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc1a
+POSTHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc1a
+PREHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc2a
+POSTHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and ctinyint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc2a
+PREHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc3a
+POSTHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc3a
+PREHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc4a
+POSTHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and ctinyint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc4a
+PREHOOK: query: create table small_alltypesorc_a stored as orc as select * from
+(select * from (select * from small_alltypesorc1a) sq1
+ union all
+ select * from (select * from small_alltypesorc2a) sq2
+ union all
+ select * from (select * from small_alltypesorc3a) sq3
+ union all
+ select * from (select * from small_alltypesorc4a) sq4) q
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@small_alltypesorc1a
+PREHOOK: Input: default@small_alltypesorc2a
+PREHOOK: Input: default@small_alltypesorc3a
+PREHOOK: Input: default@small_alltypesorc4a
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: query: create table small_alltypesorc_a stored as orc as select * from
+(select * from (select * from small_alltypesorc1a) sq1
+ union all
+ select * from (select * from small_alltypesorc2a) sq2
+ union all
+ select * from (select * from small_alltypesorc3a) sq3
+ union all
+ select * from (select * from small_alltypesorc4a) sq4) q
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@small_alltypesorc1a
+POSTHOOK: Input: default@small_alltypesorc2a
+POSTHOOK: Input: default@small_alltypesorc3a
+POSTHOOK: Input: default@small_alltypesorc4a
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_alltypesorc_a
+PREHOOK: query: desc formatted small_alltypesorc_a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: query: desc formatted small_alltypesorc_a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@small_alltypesorc_a
+# col_name            	data_type           	comment             
+	 	 
+ctinyint            	tinyint             	                    
+csmallint           	smallint            	                    
+cint                	int                 	                    
+cbigint             	bigint              	                    
+cfloat              	float               	                    
+cdouble             	double              	                    
+cstring1            	string              	                    
+cstring2            	string              	                    
+ctimestamp1         	timestamp           	                    
+ctimestamp2         	timestamp           	                    
+cboolean1           	boolean             	                    
+cboolean2           	boolean             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	5                   
+	rawDataSize         	1069                
+	totalSize           	3177                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Output: default@small_alltypesorc_a
+PREHOOK: query: desc formatted small_alltypesorc_a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: query: desc formatted small_alltypesorc_a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@small_alltypesorc_a
+# col_name            	data_type           	comment             
+	 	 
+ctinyint            	tinyint             	                    
+csmallint           	smallint            	                    
+cint                	int                 	                    
+cbigint             	bigint              	                    
+cfloat              	float               	                    
+cdouble             	double              	                    
+cstring1            	string              	                    
+cstring2            	string              	                    
+ctimestamp1         	timestamp           	                    
+ctimestamp2         	timestamp           	                    
+cboolean1           	boolean             	                    
+cboolean2           	boolean             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	15                  
+	rawDataSize         	3320                
+	totalSize           	3177                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table small_alltypesorc_a select * from small_alltypesorc1a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc1a
+PREHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: query: insert into table small_alltypesorc_a select * from small_alltypesorc1a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc1a
+POSTHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: Lineage: small_alltypesorc_a.cbigint SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cboolean1 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cboolean2 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cdouble SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cfloat SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cint SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.csmallint SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cstring1 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cstring2 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp1 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp2 SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctinyint SIMPLE [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: desc formatted small_alltypesorc_a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: query: desc formatted small_alltypesorc_a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@small_alltypesorc_a
+# col_name            	data_type           	comment             
+	 	 
+ctinyint            	tinyint             	                    
+csmallint           	smallint            	                    
+cint                	int                 	                    
+cbigint             	bigint              	                    
+cfloat              	float               	                    
+cdouble             	double              	                    
+cstring1            	string              	                    
+cstring2            	string              	                    
+ctimestamp1         	timestamp           	                    
+ctimestamp2         	timestamp           	                    
+cboolean1           	boolean             	                    
+cboolean2           	boolean             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	2                   
+	numRows             	20                  
+	rawDataSize         	4389                
+	totalSize           	4487                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
