@@ -56,6 +56,14 @@ POSTHOOK: query: create table orc_rn3 (rn int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_rn3
+PREHOOK: query: analyze table orc1 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc1
+PREHOOK: Output: default@orc1
+POSTHOOK: query: analyze table orc1 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc1
+POSTHOOK: Output: default@orc1
 PREHOOK: query: explain from orc1 a
 insert overwrite table orc_rn1 select a.* where a.rn < 100
 insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
@@ -85,17 +93,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 145 Data size: 580 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (rn < 100) (type: boolean)
-                    Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rn (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -103,14 +111,14 @@ STAGE PLANS:
                             name: default.orc_rn1
                   Filter Operator
                     predicate: ((rn >= 100) and (rn < 1000)) (type: boolean)
-                    Statistics: Num rows: 16 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rn (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 16 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 16 Data size: 64 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -118,14 +126,14 @@ STAGE PLANS:
                             name: default.orc_rn2
                   Filter Operator
                     predicate: (rn >= 1000) (type: boolean)
-                    Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rn (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 48 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
