@@ -42,6 +42,7 @@ STAGE PLANS:
                         key expressions: '105' (type: string)
                         sort order: +
                         Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -56,7 +57,9 @@ STAGE PLANS:
                         key expressions: '105' (type: string)
                         sort order: +
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
@@ -66,6 +69,7 @@ STAGE PLANS:
                   Map-reduce partition columns: '105' (type: string)
                   Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
+            Execution mode: uber
             Reduce Operator Tree:
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
