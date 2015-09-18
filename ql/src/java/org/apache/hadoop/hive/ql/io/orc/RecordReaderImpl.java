@@ -130,7 +130,7 @@ public class RecordReaderImpl implements RecordReader {
    *                   result
    * @return an array mapping the sarg leaves to concrete column numbers
    */
-  public static int[] mapSargColumns(List<PredicateLeaf> sargLeaves,
+  public static int[] mapSargColumnsToOrcInternalColIdx(List<PredicateLeaf> sargLeaves,
                              String[] columnNames,
                              int rootColumn) {
     int[] result = new int[sargLeaves.size()];
@@ -691,7 +691,7 @@ public class RecordReaderImpl implements RecordReader {
         List<OrcProto.Type> types, int includedCount) {
       this.sarg = sarg;
       sargLeaves = sarg.getLeaves();
-      filterColumns = mapSargColumns(sargLeaves, columnNames, 0);
+      filterColumns = mapSargColumnsToOrcInternalColIdx(sargLeaves, columnNames, 0);
       this.rowIndexStride = rowIndexStride;
       // included will not be null, row options will fill the array with trues if null
       sargColumns = new boolean[includedCount];

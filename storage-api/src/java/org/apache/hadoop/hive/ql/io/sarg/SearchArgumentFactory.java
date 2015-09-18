@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.ql.io.sarg;
 
 /**
- * A factory for creating SearchArguments.
+ * A factory for creating SearchArguments, as well as modifying those created by this factory.
  */
 public class SearchArgumentFactory {
   public static SearchArgument.Builder newBuilder() {
     return new SearchArgumentImpl.BuilderImpl();
+  }
+  public static void setPredicateLeafColumn(PredicateLeaf leaf, String newName) {
+    SearchArgumentImpl.PredicateLeafImpl.setColumnName(leaf, newName);
   }
 }

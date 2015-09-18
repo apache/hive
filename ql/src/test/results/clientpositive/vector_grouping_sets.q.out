@@ -121,10 +121,10 @@ STAGE PLANS:
             Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s_store_id (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: s_store_id
               Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), '0' (type: string)
+                keys: s_store_id (type: string), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
@@ -196,10 +196,10 @@ STAGE PLANS:
             Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s_store_id (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: s_store_id
               Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string), '0' (type: string)
+                keys: s_store_id (type: string), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE

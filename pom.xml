@@ -122,7 +122,7 @@
     <derby.version>10.10.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>14.0.1</guava.version>
-    <groovy.version>2.1.6</groovy.version>
+    <groovy.version>2.4.4</groovy.version>
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
     <hadoop-23.version>2.6.0</hadoop-23.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
@@ -1041,6 +1041,26 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+    <id>findbugs</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${project.parent.basedir}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+
     <!-- hadoop profiles in the root pom are only used for dependency management -->
     <profile>
       <id>hadoop-1</id>

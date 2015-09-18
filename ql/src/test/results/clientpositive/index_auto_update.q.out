@@ -109,10 +109,10 @@ STAGE PLANS:
             alias: temp
             Select Operator
               expressions: key (type: string), INPUT__FILE__NAME (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)
-              outputColumnNames: _col0, _col1, _col2
+              outputColumnNames: key, INPUT__FILE__NAME, BLOCK__OFFSET__INSIDE__FILE
               Group By Operator
-                aggregations: collect_set(_col2)
-                keys: _col0 (type: string), _col1 (type: string)
+                aggregations: collect_set(BLOCK__OFFSET__INSIDE__FILE)
+                keys: key (type: string), INPUT__FILE__NAME (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Reduce Output Operator

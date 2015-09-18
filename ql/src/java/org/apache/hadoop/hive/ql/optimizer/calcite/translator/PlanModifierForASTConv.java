@@ -265,8 +265,8 @@ public class PlanModifierForASTConv {
 
     // TODO: Verify GB having is not a separate filter (if so we shouldn't
     // introduce derived table)
-    if (parent instanceof Filter || parent instanceof Join
-        || parent instanceof SetOp) {
+    if (parent instanceof Filter || parent instanceof Join || parent instanceof SetOp ||
+       (parent instanceof Aggregate && filterNode.getInputs().get(0) instanceof Aggregate)) {
       validParent = false;
     }
 

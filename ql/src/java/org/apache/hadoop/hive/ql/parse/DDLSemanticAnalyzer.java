@@ -106,6 +106,7 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
+import org.apache.hadoop.hive.ql.plan.ShowCreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
@@ -412,6 +413,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWPARTITIONS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowPartitions(ast);
+      break;
+    case HiveParser.TOK_SHOW_CREATEDATABASE:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      analyzeShowCreateDatabase(ast);
       break;
     case HiveParser.TOK_SHOW_CREATETABLE:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -2076,6 +2081,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showPartsDesc), conf));
     setFetchTask(createFetchTask(showPartsDesc.getSchema()));
+  }
+
+  private void analyzeShowCreateDatabase(ASTNode ast) throws SemanticException {
+    String dbName = getUnescapedName((ASTNode)ast.getChild(0));
+    ShowCreateDatabaseDesc showCreateDbDesc =
+        new ShowCreateDatabaseDesc(dbName, ctx.getResFile().toString());
+
+    Database database = getDatabase(dbName);
+    inputs.add(new ReadEntity(database));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showCreateDbDesc), conf));
+    setFetchTask(createFetchTask(showCreateDbDesc.getSchema()));
   }
 
   private void analyzeShowCreateTable(ASTNode ast) throws SemanticException {

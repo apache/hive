@@ -228,7 +228,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       globalIncludes = OrcInputFormat.genIncludedColumns(fileMetadata.getTypes(), columnIds, true);
       if (sarg != null && stride != 0) {
         // TODO: move this to a common method
-        int[] filterColumns = RecordReaderImpl.mapSargColumns(sarg.getLeaves(), columnNames, 0);
+        int[] filterColumns = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(
+          sarg.getLeaves(), columnNames, 0);
         // included will not be null, row options will fill the array with trues if null
         sargColumns = new boolean[globalIncludes.length];
         for (int i : filterColumns) {

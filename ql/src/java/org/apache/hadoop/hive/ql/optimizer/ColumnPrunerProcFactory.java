@@ -488,6 +488,9 @@ public final class ColumnPrunerProcFactory {
     }
   }
 
+  /** Sets up needed columns for TSOP. Mainly, transfers column names from input
+   * RowSchema as well as the needed virtual columns, into TableScanDesc.
+   */
   public static void setupNeededColumns(TableScanOperator scanOp, RowSchema inputRS,
       List<String> cols) throws SemanticException {
     List<Integer> neededColumnIds = new ArrayList<Integer>();
