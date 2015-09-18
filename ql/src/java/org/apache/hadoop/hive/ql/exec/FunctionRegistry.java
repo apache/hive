@@ -370,6 +370,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("min", new GenericUDAFMin());
 
     system.registerGenericUDAF("sum", new GenericUDAFSum());
+    system.registerGenericUDAF("$SUM0", new GenericUDAFSumEmptyIsZero());
     system.registerGenericUDAF("count", new GenericUDAFCount());
     system.registerGenericUDAF("avg", new GenericUDAFAverage());
     system.registerGenericUDAF("std", new GenericUDAFStd());
@@ -960,7 +961,7 @@ public final class FunctionRegistry {
     GenericUDAFParameterInfo paramInfo =
         new SimpleGenericUDAFParameterInfo(
             args, isDistinct, isAllColumns);
-    
+
     GenericUDAFEvaluator udafEvaluator;
     if (udafResolver instanceof GenericUDAFResolver2) {
       udafEvaluator =
