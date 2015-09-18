@@ -128,6 +128,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -141,7 +142,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -160,6 +163,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -243,6 +247,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -256,7 +261,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -275,6 +282,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -358,6 +366,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -371,7 +380,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -390,6 +401,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -454,6 +466,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -467,6 +480,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -480,7 +494,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -501,6 +517,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -591,7 +608,9 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: llap
         Reducer 2 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -671,6 +690,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -684,7 +704,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -703,6 +725,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -782,6 +805,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -795,7 +819,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -814,6 +840,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -878,6 +905,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -891,6 +919,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -904,7 +933,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -925,6 +956,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1015,7 +1047,9 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: llap
         Reducer 2 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1095,6 +1129,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1108,7 +1143,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
         Reducer 2 
+            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -1127,6 +1164,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
