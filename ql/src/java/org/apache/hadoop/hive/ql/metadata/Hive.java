@@ -202,9 +202,8 @@ public class Hive {
     }
   }
 
-  public static void reloadFunctions() throws HiveException {
-    Hive db = Hive.get();
-    for (Function function : db.getAllFunctions()) {
+  public void reloadFunctions() throws HiveException {
+    for (Function function : getAllFunctions()) {
       String functionName = function.getFunctionName();
       try {
         LOG.info("Registering function " + functionName + " " + function.getClassName());
