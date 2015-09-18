@@ -8,3 +8,4 @@ git commit                               branch     jira       url
 f3ab5fda6af57afff31c29ad048d906fd095d5fb branch-1.2 HIVE-10885 https://issues.apache.org/jira/browse/HIVE-10885
 dcf21cd6fa98fb5db01ef661bb3b9f94d9ca2d15 master     HIVE-10021 https://issues.apache.org/jira/browse/HIVE-10021
 9763c9dd31bd5939db3ca50e75bb97955b411f6d master     HIVE-11536 https://issues.apache.org/jira/browse/HIVE-11536
+52a934f911c63fda5d69cb6036cb4e917c799259 llap       HIVE-11871 https://issues.apache.org/jira/browse/HIVE-11871
