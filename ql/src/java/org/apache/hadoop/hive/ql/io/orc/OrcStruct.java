@@ -435,7 +435,7 @@ final public class OrcStruct implements Writable {
 
     @Override
     public Object getListElement(Object list, int i) {
-      if (list == null) {
+      if (list == null || i < 0 || i >= getListLength(list)) {
         return null;
       }
       return ((List) list).get(i);

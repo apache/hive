@@ -127,10 +127,25 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       LocalFileSystem dstFs = FileSystem.getLocal(conf);
 
       if (dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
-        console.printInfo(mesg, mesg_detail);
         // if source exists, rename. Otherwise, create a empty directory
         if (fs.exists(sourcePath)) {
-          fs.copyToLocalFile(sourcePath, targetPath);
+          try {
+            // create the destination if it does not exist
+            if (!dstFs.exists(targetPath)) {
+              if (!FileUtils.mkdir(dstFs, targetPath, false, conf)) {
+                throw new HiveException(
+                    "Failed to create local target directory for copy:" + targetPath);
+              }
+            }
+          } catch (IOException e) {
+            throw new HiveException("Unable to create target directory for copy" + targetPath, e);
+          }
+
+          FileSystem srcFs = sourcePath.getFileSystem(conf);
+          FileStatus[] srcs = srcFs.listStatus(sourcePath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+          for (FileStatus status : srcs) {
+            fs.copyToLocalFile(status.getPath(), targetPath);
+          }
         } else {
           if (!dstFs.mkdirs(targetPath)) {
             throw new HiveException("Unable to make local directory: "

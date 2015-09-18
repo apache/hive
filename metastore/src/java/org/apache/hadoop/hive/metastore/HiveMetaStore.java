@@ -2596,6 +2596,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.dropPartition(partition.getDbName(), sourceTable.getTableName(),
             partition.getValues());
         }
+        Path destParentPath = destPath.getParent();
+        if (!wh.isDir(destParentPath)) {
+          if (!wh.mkdirs(destParentPath, true)) {
+              throw new MetaException("Unable to create path " + destParentPath);
+          }
+        }
         /**
          * TODO: Use the hard link feature of hdfs
          * once https://issues.apache.org/jira/browse/HDFS-3370 is done

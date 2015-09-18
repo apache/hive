@@ -433,4 +433,8 @@ public class ConvertAstToSearchArg {
     return null;
   }
 
+  public static boolean canCreateFromConf(Configuration conf) {
+    return conf.get(TableScanDesc.FILTER_EXPR_CONF_STR) != null || conf.get(SARG_PUSHDOWN) != null;
+  }
+
 }

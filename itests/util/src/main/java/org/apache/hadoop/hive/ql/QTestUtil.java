@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -684,7 +685,13 @@ public class QTestUtil {
       SessionState.get().setCurrentDatabase(dbName);
       for (String tblName : db.getAllTables()) {
         if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
-          Table tblObj = db.getTable(tblName);
+          Table tblObj = null;
+          try {
+            tblObj = db.getTable(tblName);
+          } catch (InvalidTableException e) {
+            LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
+            continue;
+          }
           // dropping index table can not be dropped directly. Dropping the base
           // table will automatically drop all its index table
           if(tblObj.isIndexTable()) {
