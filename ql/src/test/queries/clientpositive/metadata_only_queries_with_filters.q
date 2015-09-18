@@ -1,5 +1,6 @@
 set hive.stats.dbclass=fs;
 set hive.compute.query.using.stats=true;
+set hive.explain.user=false;
 create table over10k(
            t tinyint,
            si smallint,
