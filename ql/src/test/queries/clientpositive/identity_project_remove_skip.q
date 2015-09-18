@@ -1,6 +1,7 @@
 set hive.optimize.remove.identity.project=true;
 set hive.auto.convert.join=true;
 set hive.optimize.ppd=true;
+set hive.explain.user=false;
 
 explain
 select t2.* 
