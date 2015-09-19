@@ -245,10 +245,10 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ss_ticket_number (type: int)
-                    outputColumnNames: _col0
+                    outputColumnNames: ss_ticket_number
                     Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: int)
+                      keys: ss_ticket_number (type: int)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
@@ -369,10 +369,10 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ss_ticket_number (type: int)
-                    outputColumnNames: _col0
+                    outputColumnNames: ss_ticket_number
                     Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: int)
+                      keys: ss_ticket_number (type: int)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE

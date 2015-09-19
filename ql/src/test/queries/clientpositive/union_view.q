@@ -1,4 +1,6 @@
 set hive.stats.dbclass=fs;
+set hive.explain.user=false;
+
 CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string);
 CREATE INDEX src_union_1_key_idx ON TABLE src_union_1(key) AS 'COMPACT' WITH DEFERRED REBUILD;
 

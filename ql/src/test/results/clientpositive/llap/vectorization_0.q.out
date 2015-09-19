@@ -133,10 +133,10 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
+                    outputColumnNames: ctinyint
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col0)
+                      aggregations: sum(ctinyint)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -440,10 +440,10 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cbigint (type: bigint)
-                    outputColumnNames: _col0
+                    outputColumnNames: cbigint
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col0)
+                      aggregations: sum(cbigint)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -747,10 +747,10 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cfloat (type: float)
-                    outputColumnNames: _col0
+                    outputColumnNames: cfloat
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col0)
+                      aggregations: sum(cfloat)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1001,10 +1001,10 @@ STAGE PLANS:
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cbigint (type: bigint), cfloat (type: float), ctinyint (type: tinyint)
-                      outputColumnNames: _col0, _col1, _col2
+                      outputColumnNames: cbigint, cfloat, ctinyint
                       Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: avg(_col0), stddev_pop(_col0), var_samp(_col0), count(), sum(_col1), min(_col2)
+                        aggregations: avg(cbigint), stddev_pop(cbigint), var_samp(cbigint), count(), sum(cfloat), min(ctinyint)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                         Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE

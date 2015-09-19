@@ -252,10 +252,10 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
+                    outputColumnNames: ctinyint
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: tinyint)
+                      keys: ctinyint (type: tinyint)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
@@ -343,10 +343,10 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cdouble (type: double)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: ctinyint, cdouble
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: tinyint), _col1 (type: double)
+                      keys: ctinyint (type: tinyint), cdouble (type: double)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
@@ -471,11 +471,11 @@ STAGE PLANS:
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdouble (type: double), ctinyint (type: tinyint)
-                      outputColumnNames: _col0, _col1
+                      outputColumnNames: cdouble, ctinyint
                       Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: sum(_col1)
-                        keys: _col0 (type: double)
+                        aggregations: sum(ctinyint)
+                        keys: cdouble (type: double)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
