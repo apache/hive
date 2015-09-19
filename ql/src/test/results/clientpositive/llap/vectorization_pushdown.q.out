@@ -25,10 +25,10 @@ STAGE PLANS:
                     Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cbigint (type: bigint)
-                      outputColumnNames: _col0
+                      outputColumnNames: cbigint
                       Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: avg(_col0)
+                        aggregations: avg(cbigint)
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE

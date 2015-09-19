@@ -102,6 +102,14 @@ POSTHOOK: Input: default@t3
 8	val_4
 8	val_8
 9	val_9
+PREHOOK: query: analyze table t3 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Output: default@t3
+POSTHOOK: query: analyze table t3 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: default@t3
 PREHOOK: query: create table t4 (key int, value string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
