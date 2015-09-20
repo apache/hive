@@ -23,6 +23,7 @@ import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.internal.CLibrary.STDOUT_FILENO;
 import static org.fusesource.jansi.internal.CLibrary.isatty;
 
+import jline.TerminalFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Heartbeater;
@@ -62,8 +63,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import jline.TerminalFactory;
-
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
  * print status to the console and retrieve final status of the job after
@@ -101,7 +100,7 @@ public class TezJobMonitor {
   private String separator;
 
   private transient LogHelper console;
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private final int checkInterval = 200;
   private final int maxRetryInterval = 2500;
   private final int printInterval = 3000;

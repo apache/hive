@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterF
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -106,7 +107,7 @@ public class ReduceRecordSource implements RecordSource {
 
   private ObjectInspector valueObjectInspector;
 
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   private Iterable<Object> valueWritables;
   

@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -116,7 +118,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
 
-  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private static final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String CLASS_NAME = ReaderImpl.class.getName();
 
   /**

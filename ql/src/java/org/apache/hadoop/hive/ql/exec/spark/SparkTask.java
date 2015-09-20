@@ -76,7 +76,7 @@ import com.google.common.collect.Lists;
 
 public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final long serialVersionUID = 1L;
   private SparkCounters sparkCounters;
 

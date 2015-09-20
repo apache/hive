@@ -25,6 +25,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -37,7 +39,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 /** An InputFormat for ORC files. Keys are meaningless,
  * value is the OrcStruct object */
 public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
-  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private static final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String CLASS_NAME = ReaderImpl.class.getName();
 
   @Override
