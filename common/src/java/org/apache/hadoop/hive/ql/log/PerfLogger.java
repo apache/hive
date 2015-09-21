@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.log;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.util.ReflectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,42 +77,39 @@ public class PerfLogger {
   public static final String SPARK_OPTIMIZE_TASK_TREE = "SparkOptimizeTaskTree";
   public static final String SPARK_FLUSH_HASHTABLE = "SparkFlushHashTable.";
 
-  protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
-
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
   protected final Map<String, Long> endTimes = new HashMap<String, Long>();
 
   static final private Log LOG = LogFactory.getLog(PerfLogger.class.getName());
+  protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
+
 
   public PerfLogger() {
     // Use getPerfLogger to get an instance of PerfLogger
   }
 
-  public static PerfLogger getPerfLogger() {
-    return getPerfLogger(false);
-  }
-
-  /**
-   * Call this function to get an instance of PerfLogger.
-   *
-   * Use resetPerfLogger to require a new instance.  Useful at the beginning of execution.
-   *
-   * @return Session perflogger if there's a sessionstate, otherwise return the thread local instance
-   */
-  public static PerfLogger getPerfLogger(boolean resetPerfLogger) {
-    if (SessionState.get() == null) {
-      if (perfLogger.get() == null || resetPerfLogger) {
-        perfLogger.set(new PerfLogger());
+  public static PerfLogger getPerfLogger(HiveConf conf, boolean resetPerfLogger) {
+    PerfLogger result = perfLogger.get();
+    if (resetPerfLogger || result == null) {
+      if (conf == null) {
+        result = new PerfLogger();
+      } else {
+        try {
+          result = (PerfLogger) ReflectionUtils.newInstance(conf.getClassByName(
+            conf.getVar(HiveConf.ConfVars.HIVE_PERF_LOGGER)), conf);
+        } catch (ClassNotFoundException e) {
+          LOG.error("Performance Logger Class not found:" + e.getMessage());
+          result = new PerfLogger();
+        }
       }
-      return perfLogger.get();
-    } else {
-      return SessionState.get().getPerfLogger(resetPerfLogger);
+      perfLogger.set(result);
     }
+    return result;
   }
 
   /**
    * Call this function when you start to measure time spent by a piece of code.
-   * @param _log the logging object to be used.
+   * @param callerName the logging object to be used.
    * @param method method or ID that identifies this perf log element.
    */
   public void PerfLogBegin(String callerName, String method) {
@@ -120,14 +117,23 @@ public class PerfLogger {
     LOG.info("<PERFLOG method=" + method + " from=" + callerName + ">");
     startTimes.put(method, new Long(startTime));
   }
-
   /**
    * Call this function in correspondence of PerfLogBegin to mark the end of the measurement.
-   * @param _log
+   * @param callerName
    * @param method
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
   public long PerfLogEnd(String callerName, String method) {
+    return PerfLogEnd(callerName, method, null);
+  }
+
+  /**
+   * Call this function in correspondence of PerfLogBegin to mark the end of the measurement.
+   * @param callerName
+   * @param method
+   * @return long duration  the difference between now and startTime, or -1 if startTime is null
+   */
+  public long PerfLogEnd(String callerName, String method, String additionalInfo) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
     long duration = -1;
@@ -143,19 +149,14 @@ public class PerfLogger {
       duration = endTime - startTime.longValue();
       sb.append(" duration=").append(duration);
     }
-    sb.append(" from=").append(callerName).append(">");
+    sb.append(" from=").append(callerName);
+    if (additionalInfo != null) {
+      sb.append(" ").append(additionalInfo);
+    }
+    sb.append(">");
     LOG.info(sb);
 
     return duration;
-  }
-
-  /**
-   * Call this function at the end of processing a query (any time after the last call to PerfLogEnd
-   * for a given query) to run any cleanup/final steps that need to be run
-   * @param _log
-   */
-  public void close(Log _log, QueryPlan queryPlan) {
-
   }
 
   public Long getStartTime(String method) {

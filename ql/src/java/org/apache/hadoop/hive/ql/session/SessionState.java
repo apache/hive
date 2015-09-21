@@ -104,6 +104,7 @@ public class SessionState {
   private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
   private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
+
   private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
   private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
       new HashMap<String, Map<String, ColumnStatisticsObj>>();
@@ -596,7 +597,7 @@ public class SessionState {
    * Create a given path if it doesn't exist.
    *
    * @param conf
-   * @param pathString
+   * @param path
    * @param permission
    * @param isLocal
    * @param isCleanUp
@@ -1523,24 +1524,36 @@ public class SessionState {
   }
 
   /**
+   * @return  Tries to return an instance of the class whose name is configured in
+   *          hive.exec.perf.logger, but if it can't it just returns an instance of
+   *          the base PerfLogger class
+   *
+   */
+  public static PerfLogger getPerfLogger() {
+    return getPerfLogger(false);
+  }
+
+  /**
    * @param resetPerfLogger
    * @return  Tries to return an instance of the class whose name is configured in
    *          hive.exec.perf.logger, but if it can't it just returns an instance of
    *          the base PerfLogger class
-
+   *
    */
-  public PerfLogger getPerfLogger(boolean resetPerfLogger) {
-    if ((perfLogger == null) || resetPerfLogger) {
-      try {
-        perfLogger = (PerfLogger) ReflectionUtils.newInstance(conf.getClassByName(
-            conf.getVar(ConfVars.HIVE_PERF_LOGGER)), conf);
-      } catch (ClassNotFoundException e) {
-        LOG.error("Performance Logger Class not found:" + e.getMessage());
-        perfLogger = new PerfLogger();
-      }
+  public static PerfLogger getPerfLogger(boolean resetPerfLogger) {
+    SessionState ss = get();
+    if (ss == null) {
+      return PerfLogger.getPerfLogger(null, resetPerfLogger);
+    } else if (ss.perfLogger != null && !resetPerfLogger) {
+      return ss.perfLogger;
+    } else {
+      PerfLogger perfLogger = PerfLogger.getPerfLogger(ss.getConf(), resetPerfLogger);
+      ss.perfLogger = perfLogger;
+      return perfLogger;
     }
-    return perfLogger;
   }
+
+
 
   public TezSessionState getTezSession() {
     return tezSessionState;

@@ -280,114 +280,114 @@ apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<=11.22
+PREHOOK: query: select * from newtypestbl where d<=11.22 sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<=11.22
+POSTHOOK: query: select * from newtypestbl where d<=11.22 sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<=11.22
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d<=11.22 sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<=11.22
+POSTHOOK: query: select * from newtypestbl where d<=11.22 sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<='11.22'
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d<='11.22' sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<='11.22'
+POSTHOOK: query: select * from newtypestbl where d<='11.22' sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<='11.22'
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d<='11.22' sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<='11.22'
+POSTHOOK: query: select * from newtypestbl where d<='11.22' sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<=cast('11.22' as float)
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d<=cast('11.22' as float) sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<=cast('11.22' as float)
+POSTHOOK: query: select * from newtypestbl where d<=cast('11.22' as float) sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<=cast('11.22' as float)
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d<=cast('11.22' as float) sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<=cast('11.22' as float)
+POSTHOOK: query: select * from newtypestbl where d<=cast('11.22' as float) sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
+hello     	world	11.22	1970-02-27
 PREHOOK: query: select * from newtypestbl where d<=cast('11.22' as decimal)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
@@ -414,78 +414,78 @@ apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<=11.22BD
+PREHOOK: query: select * from newtypestbl where d<=11.22BD sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<=11.22BD
+POSTHOOK: query: select * from newtypestbl where d<=11.22BD sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<=11.22BD
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d<=11.22BD sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<=11.22BD
+POSTHOOK: query: select * from newtypestbl where d<=11.22BD sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<=12
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d<=12 sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<=12
+POSTHOOK: query: select * from newtypestbl where d<=12 sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d<=12
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d<=12 sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d<=12
+POSTHOOK: query: select * from newtypestbl where d<=12 sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
+hello     	world	11.22	1970-02-27
 PREHOOK: query: select * from newtypestbl where d in ('0.22', '1.0')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
@@ -512,42 +512,42 @@ apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d in ('0.22', '11.22')
+PREHOOK: query: select * from newtypestbl where d in ('0.22', '11.22') sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d in ('0.22', '11.22')
+POSTHOOK: query: select * from newtypestbl where d in ('0.22', '11.22') sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d in ('0.22', '11.22')
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d in ('0.22', '11.22') sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d in ('0.22', '11.22')
+POSTHOOK: query: select * from newtypestbl where d in ('0.22', '11.22') sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
+hello     	world	11.22	1970-02-27
 PREHOOK: query: select * from newtypestbl where d in ('0.9', '1.0')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
@@ -590,42 +590,42 @@ apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float))
+PREHOOK: query: select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float)) sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float))
+POSTHOOK: query: select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float)) sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float))
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float)) sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float))
+POSTHOOK: query: select * from newtypestbl where d in ('0.9', 0.22, cast('11.22' as float)) sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
+hello     	world	11.22	1970-02-27
 PREHOOK: query: select * from newtypestbl where d between 0 and 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
@@ -652,42 +652,42 @@ apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d between 0 and 1000
+PREHOOK: query: select * from newtypestbl where d between 0 and 1000 sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d between 0 and 1000
+POSTHOOK: query: select * from newtypestbl where d between 0 and 1000 sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
-PREHOOK: query: select * from newtypestbl where d between 0 and 1000
+hello     	world	11.22	1970-02-27
+PREHOOK: query: select * from newtypestbl where d between 0 and 1000 sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where d between 0 and 1000
+POSTHOOK: query: select * from newtypestbl where d between 0 and 1000 sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-hello     	world	11.22	1970-02-27
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
+apple     	bee	0.22	1970-02-20
 apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
 hello     	world	11.22	1970-02-27
-apple     	bee	0.22	1970-02-20
+hello     	world	11.22	1970-02-27
 PREHOOK: query: select * from newtypestbl where d between 0 and '2.0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl

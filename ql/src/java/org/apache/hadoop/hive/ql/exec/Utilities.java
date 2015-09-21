@@ -85,7 +85,6 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import org.antlr.runtime.CommonToken;
-import org.apache.calcite.util.ChunkList;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
@@ -933,7 +932,7 @@ public final class Utilities {
   }
 
   private static void serializePlan(Object plan, OutputStream out, Configuration conf, boolean cloningPlan) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
     String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
     LOG.info("Serializing " + plan.getClass().getSimpleName() + " via " + serializationType);
@@ -959,7 +958,7 @@ public final class Utilities {
   }
 
   private static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf, boolean cloningPlan) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
     T plan;
     String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
@@ -994,7 +993,7 @@ public final class Utilities {
    */
   public static MapredWork clonePlan(MapredWork plan) {
     // TODO: need proper clone. Meanwhile, let's at least keep this horror in one place
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     Configuration conf = new HiveConf();
@@ -1011,7 +1010,7 @@ public final class Utilities {
    * @return The clone.
    */
   public static BaseWork cloneBaseWork(BaseWork plan) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     Configuration conf = new HiveConf();
@@ -2527,7 +2526,7 @@ public final class Utilities {
    */
   public static ContentSummary getInputSummary(final Context ctx, MapWork work, PathFilter filter)
       throws IOException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
     long[] summary = {0, 0, 0};

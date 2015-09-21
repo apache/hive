@@ -100,6 +100,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.tools.DistCp;
 import org.apache.hadoop.tools.DistCpOptions;
+import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.test.MiniTezCluster;
@@ -1274,8 +1275,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
 
     DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
-    options.setSkipCRC(true);
     options.setSyncFolder(true);
+    options.setSkipCRC(true);
+    options.preserve(FileAttribute.BLOCKSIZE);
     try {
       DistCp distcp = new DistCp(conf, options);
       distcp.execute();

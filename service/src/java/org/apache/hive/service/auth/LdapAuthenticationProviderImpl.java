@@ -146,15 +146,28 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
 
     DirContext ctx = null;
     String userDN = null;
+    String userName = null;
     try {
       // Create initial context
       ctx = new InitialDirContext(env);
 
-      if (userFilter == null && groupFilter == null && customQuery == null) {
-        userDN = findUserDNByPattern(ctx, user);
+      if (isDN(user)) {
+        userName = extractName(user);
+      } else {
+        userName = user;
+      }
 
-        if (userDN == null) {
-          userDN = findUserDNByName(ctx, baseDN, user);
+      if (userFilter == null && groupFilter == null && customQuery == null) {
+        if (isDN(user)) {
+          userDN = findUserDNByDN(ctx, user);
+        } else {
+          if (userDN == null) {
+            userDN = findUserDNByPattern(ctx, user);
+          }
+
+          if (userDN == null) {
+            userDN = findUserDNByName(ctx, baseDN, user);
+          }
         }
 
         // This should not be null because we were allowed to bind with this username
@@ -185,7 +198,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
 
         boolean success = false;
         for (String filteredUser : userFilter) {
-          if (filteredUser.equalsIgnoreCase(user)) {
+          if (filteredUser.equalsIgnoreCase(userName)) {
             LOG.debug("User filter partially satisfied");
             success = true;
             break;
@@ -198,7 +211,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
               "of specified list");
         }
 
-        userDN = findUserDNByPattern(ctx, user);
+        userDN = findUserDNByPattern(ctx, userName);
         if (userDN != null) {
           LOG.info("User filter entirely satisfied");
         } else {
@@ -214,7 +227,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
 
         // if only groupFilter is configured.
         if (userDN == null) {
-          userDN = findUserDNByName(ctx, baseDN, user);
+          userDN = findUserDNByName(ctx, baseDN, userName);
         }
 
         List<String> userGroups = getGroupsForUser(ctx, userDN);
@@ -395,6 +408,44 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     return null;
   }
 
+  /**
+   * This helper method attempts to find a username given a DN.
+   * Various LDAP implementations have different keys/properties that store this unique userID.
+   * Active Directory has a "sAMAccountName" that appears reliable,openLDAP uses "uid"
+   * So the first attempt is to find an entity with objectClass=person||user where
+   * (uid||sAMAccountName) matches the given username.
+   * The second attempt is to use CN attribute for wild card matching and then match the
+   * username in the DN.
+   * @param ctx DirContext for the LDAP Connection.
+   * @param baseDN BaseDN for this LDAP directory where the search is to be performed.
+   * @param userName A unique userid that is to be located in the LDAP.
+   * @return LDAP DN if the user is found in LDAP, null otherwise.
+   */
+  public static String findUserDNByDN(DirContext ctx, String userDN)
+      throws NamingException {
+    if (!isDN(userDN)) {
+      return null;
+    }
+
+    String baseDN        = extractBaseDN(userDN);
+    List<String> results = null;
+    String searchFilter  = "(&(|(objectClass=person)(objectClass=user))(" + DN_ATTR + "="
+                             + userDN + "))";
+
+    results = findDNByName(ctx, baseDN, searchFilter, 2);
+
+    if (results == null) {
+      return null;
+    }
+
+    if(results.size() > 1) {
+      //make sure there is not another item available, there should be only 1 match
+      LOG.info("Matched multiple users for the user: " + userDN + ",returning null");
+      return null;
+    }
+    return userDN;
+  }
+
   public static List<String> findDNByName(DirContext ctx, String baseDN,
       String searchString, int limit) throws NamingException {
     SearchResult searchResult     = null;
@@ -507,4 +558,23 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     }
     return list;
   }
+
+  public static boolean isDN(String name) {
+    return (name.indexOf("=") > -1);
+  }
+
+  public static String extractName(String dn) {
+    if (dn.indexOf("=") > -1) {
+      return dn.substring(dn.indexOf("=") + 1, dn.indexOf(","));
+    }
+    return dn;
+  }
+
+  public static String extractBaseDN(String dn) {
+    if (dn.indexOf(",") > -1) {
+      return dn.substring(dn.indexOf(",") + 1);
+    }
+    return null;
+  }
+
 }

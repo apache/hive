@@ -62,6 +62,21 @@ import org.fusesource.jansi.Ansi;
 
 import com.google.common.base.Preconditions;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
  * print status to the console and retrieve final status of the job after
@@ -99,7 +114,7 @@ public class TezJobMonitor {
   private String separator;
 
   private transient LogHelper console;
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private final int checkInterval = 200;
   private final int maxRetryInterval = 2500;
   private final int printInterval = 3000;

@@ -53,7 +53,6 @@ import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.api.Reader;
-import org.apache.tez.runtime.library.api.KeyValuesReader;
 
 import com.google.common.collect.Lists;
 
