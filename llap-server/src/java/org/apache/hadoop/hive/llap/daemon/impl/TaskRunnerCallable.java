@@ -27,8 +27,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
@@ -62,6 +62,7 @@ import org.apache.tez.runtime.task.TezTaskRunner2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -232,8 +233,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         isCompleted.set(true);
         return result;
       } finally {
-        // TODO Fix UGI and FS Handling. Closing UGI here causes some errors right now.
-        //        FileSystem.closeAllForUGI(taskUgi);
+        FileSystem.closeAllForUGI(taskUgi);
         LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
             runtimeWatch.stop().elapsedMillis());
         if (LOG.isDebugEnabled()) {
