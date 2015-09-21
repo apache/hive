@@ -469,11 +469,11 @@ STAGE PLANS:
             Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cstring1 (type: string), cstring2 (type: string)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: cstring1, cstring2
               Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: _col0 (type: string), _col1 (type: string)
+                keys: cstring1 (type: string), cstring2 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
@@ -902,11 +902,11 @@ STAGE PLANS:
             Statistics: Num rows: 7966 Data size: 1593293 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cstring1 (type: string), cstring2 (type: string)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: cstring1, cstring2
               Statistics: Num rows: 7966 Data size: 1593293 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: _col0 (type: string), _col1 (type: string)
+                keys: cstring1 (type: string), cstring2 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 7966 Data size: 1593293 Basic stats: COMPLETE Column stats: NONE
