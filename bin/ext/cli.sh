@@ -16,6 +16,14 @@
 THISSERVICE=cli
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
+updateBeelineOpts() {
+  # If process is backgrounded, don't change terminal settings
+  if [[ ! $(ps -o stat= -p $$) == *+ ]]; then
+    echo "background"
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djline.terminal=jline.UnsupportedTerminal"
+  fi
+}
+
 updateCli() {
   if [ "$USE_DEPRECATED_CLI" == "true" ]; then
     CLASS=org.apache.hadoop.hive.cli.CliDriver
@@ -24,6 +32,7 @@ updateCli() {
     export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configuration=beeline-log4j.properties"
     CLASS=org.apache.hive.beeline.cli.HiveCli
     JAR=hive-beeline-*.jar
+    updateBeelineOpts
   fi
 }
 
