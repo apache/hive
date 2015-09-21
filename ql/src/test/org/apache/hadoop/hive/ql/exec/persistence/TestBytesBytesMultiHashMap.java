@@ -43,6 +43,9 @@ public class TestBytesBytesMultiHashMap {
     assertEquals(CAPACITY, map.getCapacity());
     map = new BytesBytesMultiHashMap(9, LOAD_FACTOR, WB_SIZE);
     assertEquals(16, map.getCapacity());
+
+    // Verify the scenario when maxProbeSize is a very small value, it doesn't fail
+    BytesBytesMultiHashMap map1 = new BytesBytesMultiHashMap(1024, (float) 0.75, 524288, 1);
   }
 
   @Test
