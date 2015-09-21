@@ -72,6 +72,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.tools.distcp2.DistCp;
 import org.apache.hadoop.tools.distcp2.DistCpOptions;
+import org.apache.hadoop.tools.distcp2.DistCpOptions.FileAttribute;
+
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.VersionInfo;
 
@@ -670,8 +672,9 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
 
     DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
-    options.setSkipCRC(true);
     options.setSyncFolder(true);
+    options.setSkipCRC(true);
+    options.preserve(FileAttribute.BLOCKSIZE);
     try {
       DistCp distcp = new DistCp(conf, options);
       distcp.execute();

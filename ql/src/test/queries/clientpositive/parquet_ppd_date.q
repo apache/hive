@@ -41,10 +41,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where da<'1970-02-27';
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where da<'1970-02-29';
+select * from newtypestbl where da<'1970-02-29' sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where da<'1970-02-29';
+select * from newtypestbl where da<'1970-02-29' sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where da<'1970-02-15';
@@ -59,10 +59,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where da<='1970-02-20';
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where da<='1970-02-27';
+select * from newtypestbl where da<='1970-02-27' sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where da<='1970-02-27';
+select * from newtypestbl where da<='1970-02-27' sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where da in (cast('1970-02-21' as date), cast('1970-02-27' as date));
@@ -71,10 +71,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where da in (cast('1970-02-21' as date), cast('1970-02-27' as date));
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where da in (cast('1970-02-20' as date), cast('1970-02-27' as date));
+select * from newtypestbl where da in (cast('1970-02-20' as date), cast('1970-02-27' as date)) sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where da in (cast('1970-02-20' as date), cast('1970-02-27' as date));
+select * from newtypestbl where da in (cast('1970-02-20' as date), cast('1970-02-27' as date)) sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where da in (cast('1970-02-21' as date), cast('1970-02-22' as date));
@@ -89,10 +89,10 @@ set hive.optimize.index.filter=true;
 select * from newtypestbl where da between '1970-02-19' and '1970-02-22';
 
 set hive.optimize.index.filter=false;
-select * from newtypestbl where da between '1970-02-19' and '1970-02-28';
+select * from newtypestbl where da between '1970-02-19' and '1970-02-28' sort by c;
 
 set hive.optimize.index.filter=true;
-select * from newtypestbl where da between '1970-02-19' and '1970-02-28';
+select * from newtypestbl where da between '1970-02-19' and '1970-02-28' sort by c;
 
 set hive.optimize.index.filter=false;
 select * from newtypestbl where da between '1970-02-18' and '1970-02-19';

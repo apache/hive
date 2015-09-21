@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
@@ -63,7 +65,7 @@ public abstract class RecordProcessor  {
   protected boolean isLogTraceEnabled = false;
   protected MRTaskReporter reporter;
 
-  protected PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  protected PerfLogger perfLogger = SessionState.getPerfLogger();
   protected String CLASS_NAME = RecordProcessor.class.getName();
 
   public RecordProcessor(JobConf jConf, ProcessorContext processorContext) {
