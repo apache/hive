@@ -16,7 +16,7 @@ PREHOOK: query: CREATE TABLE parquet_mixed_partition_formats (
   m1 map<string, varchar(3)>,
   l1 array<int>,
   st1 struct<c1:int, c2:char(1)>,
-  d date)
+  d string)
 PARTITIONED BY (dateint int)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
@@ -39,7 +39,7 @@ POSTHOOK: query: CREATE TABLE parquet_mixed_partition_formats (
   m1 map<string, varchar(3)>,
   l1 array<int>,
   st1 struct<c1:int, c2:char(1)>,
-  d date)
+  d string)
 PARTITIONED BY (dateint int)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|'
@@ -89,8 +89,6 @@ POSTHOOK: Input: default@parquet_mixed_partition_formats@dateint=20140330
 117	3	3	1.2	5.1	zab	2028-06-06 18:18:18.181818181	tuvwx	abcded	68692CCAC0BDE7	{"k18":"v18"}	[118,200]	{"c1":10,"c2":"z"}	2028-06-06	20140330
 118	1	4	1.3	5.4	cde	2029-07-07 19:19:19.191919191	uvwzy	abcdede	B4F3CAFDBEDD	{"k19":"v19"}	[119,200]	{"c1":10,"c2":"c"}	2029-07-07	20140330
 119	2	5	1.4	5.7	fgh	2030-08-08 20:20:20.202020202	vwxyz	abcdede	68692CCAC0BDE7	{"k20":"v20"}	[120,200]	{"c1":10,"c2":"f"}	2030-08-08	20140330
-120	3	1	1.0	6.0	ijk	2031-09-09 21:21:21.212121212	wxyza	abcde	B4F3CAFDBEDD	{"k21":"v21"}	[121,200]	{"c1":10,"c2":"i"}	2031-09-09	20140330
-121	1	2	1.1	6.3	lmn	2032-10-10 22:22:22.222222222	bcdef	abcde		{"k22":"v22"}	[122,200]	{"c1":10,"c2":"l"}	2032-10-10	20140330
 PREHOOK: query: DESCRIBE FORMATTED parquet_mixed_partition_formats PARTITION (dateint=20140330)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_mixed_partition_formats
@@ -112,7 +110,7 @@ cbinary             	string
 m1                  	map<string,varchar(3)>	                    
 l1                  	array<int>          	                    
 st1                 	struct<c1:int,c2:char(1)>	                    
-d                   	date                	                    
+d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -124,12 +122,14 @@ Partition Value:    	[20140330]
 Database:           	default             	 
 Table:              	parquet_mixed_partition_formats	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	2521                
+	totalSize           	2304                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -186,7 +186,7 @@ cbinary             	string
 m1                  	map<string,varchar(3)>	                    
 l1                  	array<int>          	                    
 st1                 	struct<c1:int,c2:char(1)>	                    
-d                   	date                	                    
+d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -196,6 +196,7 @@ dateint             	int
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
 Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
@@ -236,7 +237,7 @@ cbinary             	string
 m1                  	map<string,varchar(3)>	                    
 l1                  	array<int>          	                    
 st1                 	struct<c1:int,c2:char(1)>	                    
-d                   	date                	                    
+d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -248,12 +249,14 @@ Partition Value:    	[20140330]
 Database:           	default             	 
 Table:              	parquet_mixed_partition_formats	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	2521                
+	totalSize           	2304                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -299,5 +302,3 @@ POSTHOOK: Input: default@parquet_mixed_partition_formats@dateint=20140330
 117	3	3	1.2	5.1	zab	2028-06-06 18:18:18.181818181	tuvwx	abcded	68692CCAC0BDE7	{"k18":"v18"}	[118,200]	{"c1":10,"c2":"z"}	2028-06-06	20140330
 118	1	4	1.3	5.4	cde	2029-07-07 19:19:19.191919191	uvwzy	abcdede	B4F3CAFDBEDD	{"k19":"v19"}	[119,200]	{"c1":10,"c2":"c"}	2029-07-07	20140330
 119	2	5	1.4	5.7	fgh	2030-08-08 20:20:20.202020202	vwxyz	abcdede	68692CCAC0BDE7	{"k20":"v20"}	[120,200]	{"c1":10,"c2":"f"}	2030-08-08	20140330
-120	3	1	1.0	6.0	ijk	2031-09-09 21:21:21.212121212	wxyza	abcde	B4F3CAFDBEDD	{"k21":"v21"}	[121,200]	{"c1":10,"c2":"i"}	2031-09-09	20140330
-121	1	2	1.1	6.3	lmn	2032-10-10 22:22:22.222222222	bcdef	abcde		{"k22":"v22"}	[122,200]	{"c1":10,"c2":"l"}	2032-10-10	20140330
