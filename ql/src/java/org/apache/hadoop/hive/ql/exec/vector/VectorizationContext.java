@@ -1528,7 +1528,7 @@ public class VectorizationContext {
       // Boolean must come before the integer family. It's a special case.
       return createVectorExpression(CastBooleanToStringViaLongToString.class, childExpr, Mode.PROJECTION, null);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToString.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastLongToString.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDecimalFamily(inputType)) {
       return createVectorExpression(CastDecimalToString.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {
@@ -1554,9 +1554,9 @@ public class VectorizationContext {
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
-      return createVectorExpression(CastBooleanToCharViaLongToChar.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastBooleanToCharViaLongToChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToChar.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastLongToChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDecimalFamily(inputType)) {
       return createVectorExpression(CastDecimalToChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {
@@ -1583,9 +1583,9 @@ public class VectorizationContext {
     }
     if (inputType.equals("boolean")) {
       // Boolean must come before the integer family. It's a special case.
-      return createVectorExpression(CastBooleanToVarCharViaLongToVarChar.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastBooleanToVarCharViaLongToVarChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToVarChar.class, childExpr, Mode.PROJECTION, null);
+      return createVectorExpression(CastLongToVarChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDecimalFamily(inputType)) {
       return createVectorExpression(CastDecimalToVarChar.class, childExpr, Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {

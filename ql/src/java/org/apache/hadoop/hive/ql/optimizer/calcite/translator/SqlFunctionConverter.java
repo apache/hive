@@ -45,6 +45,8 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -193,7 +195,16 @@ public class SqlFunctionConverter {
     HiveToken hToken = calciteToHiveToken.get(op);
     ASTNode node;
     if (hToken != null) {
-      node = (ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text);
+      switch (op.kind) {
+        case IN:
+        case BETWEEN:
+        case ROW:
+          node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+          node.addChild((ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text));
+          break;
+        default:
+          node = (ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text);
+      }
     } else {
       node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
       if (op.kind != SqlKind.CAST) {
@@ -296,6 +307,9 @@ public class SqlFunctionConverter {
           hToken(HiveParser.GREATERTHANOREQUALTO, ">="));
       registerFunction("!", SqlStdOperatorTable.NOT, hToken(HiveParser.KW_NOT, "not"));
       registerFunction("<>", SqlStdOperatorTable.NOT_EQUALS, hToken(HiveParser.NOTEQUAL, "<>"));
+      registerFunction("in", HiveIn.INSTANCE, hToken(HiveParser.Identifier, "in"));
+      registerFunction("between", HiveBetween.INSTANCE, hToken(HiveParser.Identifier, "between"));
+      registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {

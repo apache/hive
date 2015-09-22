@@ -24,6 +24,9 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapred.TableInputFormat;
 import org.apache.hadoop.hbase.mapred.TableSnapshotInputFormat;
+import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
+import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
+import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
@@ -41,15 +44,17 @@ public class HiveHBaseTableSnapshotInputFormat
   TableSnapshotInputFormat delegate = new TableSnapshotInputFormat();
 
   private static void setColumns(JobConf job) throws IOException {
-    // hbase mapred API doesn't support scan at the moment.
     Scan scan = HiveHBaseInputFormatUtil.getScan(job);
-    byte[][] families = scan.getFamilies();
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < families.length; i++) {
-      if (i > 0) sb.append(" ");
-      sb.append(Bytes.toString(families[i]));
-    }
-    job.set(TableInputFormat.COLUMN_LIST, sb.toString());
+    job.set(org.apache.hadoop.hbase.mapreduce.TableInputFormat.SCAN,
+      convertScanToString(scan));
+  }
+
+  // TODO: Once HBASE-11163 is completed, use that API, or switch to
+  // using mapreduce version of the APIs. rather than mapred
+  // Copied from HBase's TableMapreduceUtil since it is not public API
+  static String convertScanToString(Scan scan) throws IOException {
+    ClientProtos.Scan proto = ProtobufUtil.toScan(scan);
+    return Base64.encodeBytes(proto.toByteArray());
   }
 
   @Override

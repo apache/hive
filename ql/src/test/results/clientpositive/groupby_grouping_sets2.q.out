@@ -36,11 +36,11 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: a, b
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: _col0 (type: string), _col1 (type: string)
+                keys: a (type: string), b (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
@@ -143,11 +143,11 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string), c (type: string)
-              outputColumnNames: _col0, _col1, _col2
+              outputColumnNames: a, b, c
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(_col2)
-                keys: _col0 (type: string), _col1 (type: string)
+                aggregations: sum(c)
+                keys: a (type: string), b (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE

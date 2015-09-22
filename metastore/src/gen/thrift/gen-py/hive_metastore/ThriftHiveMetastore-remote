@@ -148,6 +148,11 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)')
   print('  CurrentNotificationEventId get_current_notificationEventId()')
   print('  FireEventResponse fire_listener_event(FireEventRequest rqst)')
+  print('  void flushCache()')
+  print('  GetFileMetadataByExprResult get_file_metadata_by_expr(GetFileMetadataByExprRequest req)')
+  print('  GetFileMetadataResult get_file_metadata(GetFileMetadataRequest req)')
+  print('  PutFileMetadataResult put_file_metadata(PutFileMetadataRequest req)')
+  print('  ClearFileMetadataResult clear_file_metadata(ClearFileMetadataRequest req)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -157,8 +162,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void setOption(string key, string value)')
   print('  string getOption(string key)')
   print('   getOptions()')
+  print('  string getCpuProfile(i32 profileDurationInSec)')
   print('  i64 aliveSince()')
-  print('  reflection_limited.Service getLimitedReflection()')
   print('  void reinitialize()')
   print('  void shutdown()')
   print('')
@@ -961,6 +966,36 @@ elif cmd == 'fire_listener_event':
     sys.exit(1)
   pp.pprint(client.fire_listener_event(eval(args[0]),))
 
+elif cmd == 'flushCache':
+  if len(args) != 0:
+    print('flushCache requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.flushCache())
+
+elif cmd == 'get_file_metadata_by_expr':
+  if len(args) != 1:
+    print('get_file_metadata_by_expr requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_file_metadata_by_expr(eval(args[0]),))
+
+elif cmd == 'get_file_metadata':
+  if len(args) != 1:
+    print('get_file_metadata requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_file_metadata(eval(args[0]),))
+
+elif cmd == 'put_file_metadata':
+  if len(args) != 1:
+    print('put_file_metadata requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.put_file_metadata(eval(args[0]),))
+
+elif cmd == 'clear_file_metadata':
+  if len(args) != 1:
+    print('clear_file_metadata requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.clear_file_metadata(eval(args[0]),))
+
 elif cmd == 'getName':
   if len(args) != 0:
     print('getName requires 0 args')
@@ -1015,17 +1050,17 @@ elif cmd == 'getOptions':
     sys.exit(1)
   pp.pprint(client.getOptions())
 
+elif cmd == 'getCpuProfile':
+  if len(args) != 1:
+    print('getCpuProfile requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getCpuProfile(eval(args[0]),))
+
 elif cmd == 'aliveSince':
   if len(args) != 0:
     print('aliveSince requires 0 args')
     sys.exit(1)
   pp.pprint(client.aliveSince())
-
-elif cmd == 'getLimitedReflection':
-  if len(args) != 0:
-    print('getLimitedReflection requires 0 args')
-    sys.exit(1)
-  pp.pprint(client.getLimitedReflection())
 
 elif cmd == 'reinitialize':
   if len(args) != 0:

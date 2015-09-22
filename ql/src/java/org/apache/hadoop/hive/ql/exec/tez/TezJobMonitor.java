@@ -20,9 +20,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 import static org.fusesource.jansi.Ansi.ansi;
-import static org.fusesource.jansi.internal.CLibrary.STDOUT_FILENO;
-import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
-import static org.fusesource.jansi.internal.CLibrary.isatty;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -64,8 +61,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import jline.TerminalFactory;
-
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
  * print status to the console and retrieve final status of the job after
@@ -74,7 +69,7 @@ import jline.TerminalFactory;
 public class TezJobMonitor {
 
   private static final String CLASS_NAME = TezJobMonitor.class.getName();
-  private static final int MIN_TERMINAL_WIDTH = 80;
+
   private static final int COLUMN_1_WIDTH = 16;
   private static final int SEPARATOR_WIDTH = 80;
 
@@ -103,7 +98,7 @@ public class TezJobMonitor {
   private String separator;
 
   private transient LogHelper console;
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private final int checkInterval = 200;
   private final int maxRetryInterval = 2500;
   private final int printInterval = 3000;
@@ -156,42 +151,13 @@ public class TezJobMonitor {
     }
   }
 
-  private static boolean isUnixTerminal() {
-
-    String os = System.getProperty("os.name");
-    if (os.startsWith("Windows")) {
-      // we do not support Windows, we will revisit this if we really need it for windows.
-      return false;
-    }
-
-    // We must be on some unix variant..
-    // check if standard out is a terminal
-    try {
-      // isatty system call will return 1 if the file descriptor is terminal else 0
-      if (isatty(STDOUT_FILENO) == 0) {
-        return false;
-      }
-      if (isatty(STDERR_FILENO) == 0) {
-        return false;
-      }
-    } catch (NoClassDefFoundError ignore) {
-      // These errors happen if the JNI lib is not available for your platform.
-      return false;
-    } catch (UnsatisfiedLinkError ignore) {
-      // These errors happen if the JNI lib is not available for your platform.
-      return false;
-    }
-    return true;
-  }
-
   /**
    * NOTE: Use this method only if isUnixTerminal is true.
    * Erases the current line and prints the given line.
    * @param line - line to print
    */
   public void reprintLine(String line) {
-    out.print(ansi().eraseLine(Ansi.Erase.ALL).a(line).a('\n').toString());
-    out.flush();
+    InPlaceUpdates.reprintLine(out, line);
     lines++;
   }
 
@@ -234,15 +200,6 @@ public class TezJobMonitor {
   }
 
   /**
-   * NOTE: Use this method only if isUnixTerminal is true.
-   * Gets the width of the terminal
-   * @return - width of terminal
-   */
-  public int getTerminalWidth() {
-    return TerminalFactory.get().getWidth();
-  }
-
-  /**
    * monitorExecution handles status printing, failures during execution and final status retrieval.
    *
    * @param dagClient client that was used to kick off the job
@@ -265,26 +222,11 @@ public class TezJobMonitor {
     Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
     Heartbeater heartbeater = new Heartbeater(txnMgr, conf);
     long startTime = 0;
-    boolean isProfileEnabled = conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
+    boolean isProfileEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
       Utilities.isPerfOrAboveLogging(conf);
-    boolean inPlaceUpdates = conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_INPLACE_PROGRESS);
-    boolean wideTerminal = false;
-    boolean isTerminal = inPlaceUpdates == true ? isUnixTerminal() : false;
 
-    // we need at least 80 chars wide terminal to display in-place updates properly
-    if (isTerminal) {
-      if (getTerminalWidth() >= MIN_TERMINAL_WIDTH) {
-        wideTerminal = true;
-      }
-    }
-
-    boolean inPlaceEligible = false;
-    if (inPlaceUpdates && isTerminal && wideTerminal && !console.getIsSilent()) {
-      inPlaceEligible = true;
-    }
-
+    boolean inPlaceEligible = InPlaceUpdates.inPlaceEligible(conf);
     shutdownList.add(dagClient);
-
     console.printInfo("\n");
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
@@ -470,7 +412,7 @@ public class TezJobMonitor {
       DAGClient dagClient, HiveConf conf, DAG dag) {
 
     /* Strings for headers and counters */
-    String hiveCountersGroup = conf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    String hiveCountersGroup = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
     Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
     TezCounters hiveCounters = null;
     try {

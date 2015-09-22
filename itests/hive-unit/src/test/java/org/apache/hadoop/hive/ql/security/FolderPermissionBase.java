@@ -370,7 +370,7 @@ public abstract class FolderPermissionBase {
   }
 
   @Test
-  public void testAlterPartition() throws Exception {
+  public void testPartition() throws Exception {
     String tableName = "alterpart";
     CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key string, value string) partitioned by (part1 int, part2 int, part3 int)");
     Assert.assertEquals(0,ret.getResponseCode());
@@ -396,6 +396,21 @@ public abstract class FolderPermissionBase {
     for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2")) {
       verifyPermission(child, 1);
     }
+
+    String tableName2 = "alterpart2";
+    ret = driver.run("CREATE TABLE " + tableName2 + " (key string, value string) partitioned by (part1 int, part2 int, part3 int)");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    assertExistence(warehouseDir + "/" + tableName2);
+    setPermission(warehouseDir + "/" + tableName2);
+    ret = driver.run("alter table " + tableName2 + " exchange partition (part1='2',part2='2',part3='2') with table " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    //alter exchange can not change base table's permission
+    //alter exchange can only control final partition folder's permission
+    verifyPermission(warehouseDir + "/" + tableName2 + "/part1=2", 0);
+    verifyPermission(warehouseDir + "/" + tableName2 + "/part1=2/part2=2", 0);
+    verifyPermission(warehouseDir + "/" + tableName2 + "/part1=2/part2=2/part3=2", 1);
   }
 
   @Test

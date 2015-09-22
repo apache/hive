@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -41,22 +42,11 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 
 public class HivePreFilteringRule extends RelOptRule {
@@ -71,18 +61,13 @@ public class HivePreFilteringRule extends RelOptRule {
   private final FilterFactory filterFactory;
 
 
-  private static final Set<String> COMPARISON_UDFS = Sets.newHashSet(
-          GenericUDFOPEqual.class.getAnnotation(Description.class).name(),
-          GenericUDFOPEqualNS.class.getAnnotation(Description.class).name(),
-          GenericUDFOPEqualOrGreaterThan.class.getAnnotation(Description.class).name(),
-          GenericUDFOPEqualOrLessThan.class.getAnnotation(Description.class).name(),
-          GenericUDFOPGreaterThan.class.getAnnotation(Description.class).name(),
-          GenericUDFOPLessThan.class.getAnnotation(Description.class).name(),
-          GenericUDFOPNotEqual.class.getAnnotation(Description.class).name());
-  private static final String IN_UDF =
-          GenericUDFIn.class.getAnnotation(Description.class).name();
-  private static final String BETWEEN_UDF =
-          GenericUDFBetween.class.getAnnotation(Description.class).name();
+  private static final Set<SqlKind> COMPARISON = EnumSet.of(
+          SqlKind.EQUALS,
+          SqlKind.GREATER_THAN_OR_EQUAL,
+          SqlKind.LESS_THAN_OR_EQUAL,
+          SqlKind.GREATER_THAN,
+          SqlKind.LESS_THAN,
+          SqlKind.NOT_EQUALS);
 
 
   private HivePreFilteringRule() {
@@ -176,7 +161,7 @@ public class HivePreFilteringRule extends RelOptRule {
           continue;
         }
         RexCall conjCall = (RexCall) conjunction;
-        if(COMPARISON_UDFS.contains(conjCall.getOperator().getName())) {
+        if(COMPARISON.contains(conjCall.getOperator().getKind())) {
           if (conjCall.operands.get(0) instanceof RexInputRef &&
                   conjCall.operands.get(1) instanceof RexLiteral) {
             reductionCondition.put(conjCall.operands.get(0).toString(),
@@ -188,11 +173,11 @@ public class HivePreFilteringRule extends RelOptRule {
                     conjCall);
             addedToReductionCondition = true;
           }
-        } else if(conjCall.getOperator().getName().equals(IN_UDF)) {
+        } else if(conjCall.getOperator().getKind().equals(SqlKind.IN)) {
           reductionCondition.put(conjCall.operands.get(0).toString(),
                   conjCall);
           addedToReductionCondition = true;
-        } else if(conjCall.getOperator().getName().equals(BETWEEN_UDF)) {
+        } else if(conjCall.getOperator().getKind().equals(SqlKind.BETWEEN)) {
           reductionCondition.put(conjCall.operands.get(1).toString(),
                   conjCall);
           addedToReductionCondition = true;

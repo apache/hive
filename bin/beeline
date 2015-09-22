@@ -22,4 +22,9 @@ bin=`cd "$bin"; pwd`
 # hive lib instead of hadoop lib.
 export HADOOP_USER_CLASSPATH_FIRST=true
 
+# If process is backgrounded, don't change terminal settings
+if [[ ! $(ps -o stat= -p $$) =~ + ]]; then
+  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djline.terminal=jline.UnsupportedTerminal"
+fi
+
 . "$bin"/hive --service beeline "$@"

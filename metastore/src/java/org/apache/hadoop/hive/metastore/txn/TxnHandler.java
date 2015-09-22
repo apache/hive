@@ -621,7 +621,7 @@ public class TxnHandler {
     try {
       Connection dbConn = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         heartbeatLock(dbConn, ids.getLockid());
         heartbeatTxn(dbConn, ids.getTxnid());
       } catch (SQLException e) {
@@ -1727,36 +1727,47 @@ public class TxnHandler {
     try {
       stmt = dbConn.createStatement();
       long now = getDbTime(dbConn);
-      // We need to check whether this transaction is valid and open
-      String s = "select txn_state from TXNS where txn_id = " + txnid;
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
-        ResultSet rs2 = stmt.executeQuery(s);
-        boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        if(alreadyCommitted) {
-          //makes the message more informative - helps to find bugs in client code
-          throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
-        }
-        throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
-      }
-      if (rs.getString(1).charAt(0) == TXN_ABORTED) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
-          " already aborted");//todo: add time of abort, which is not currently tracked
-      }
-      s = "update TXNS set txn_last_heartbeat = " + now +
-        " where txn_id = " + txnid;
+      ensureValidTxn(dbConn, txnid, stmt);
+      String s = "update TXNS set txn_last_heartbeat = " + now +
+        " where txn_id = " + txnid + " and txn_state = '" + TXN_OPEN + "'";
       LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
+      int rc = stmt.executeUpdate(s);
+      if (rc < 1) {
+        ensureValidTxn(dbConn, txnid, stmt); // This should now throw some useful exception.
+        LOG.warn("Can neither heartbeat txn nor confirm it as invalid.");
+        dbConn.rollback();
+        throw new NoSuchTxnException("No such txn: " + txnid);
+      }
       LOG.debug("Going to commit");
       dbConn.commit();
     } finally {
       closeStmt(stmt);
+    }
+  }
+
+  private static void ensureValidTxn(Connection dbConn, long txnid, Statement stmt)
+      throws SQLException, NoSuchTxnException, TxnAbortedException {
+    // We need to check whether this transaction is valid and open
+    String s = "select txn_state from TXNS where txn_id = " + txnid;
+    LOG.debug("Going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
+      ResultSet rs2 = stmt.executeQuery(s);
+      boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      if(alreadyCommitted) {
+        //makes the message more informative - helps to find bugs in client code
+        throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
+      }
+      throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
+    }
+    if (rs.getString(1).charAt(0) == TXN_ABORTED) {
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
+        " already aborted");//todo: add time of abort, which is not currently tracked
     }
   }
 

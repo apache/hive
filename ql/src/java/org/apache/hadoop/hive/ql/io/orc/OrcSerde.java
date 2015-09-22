@@ -108,6 +108,7 @@ public class OrcSerde implements SerDe, VectorizedSerde {
     ArrayList<TypeInfo> fieldTypes =
         TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     StructTypeInfo rootType = new StructTypeInfo();
+    // The source column names for ORC serde that will be used in the schema.
     rootType.setAllStructFieldNames(columnNames);
     rootType.setAllStructFieldTypeInfos(fieldTypes);
     inspector = OrcStruct.createObjectInspector(rootType);

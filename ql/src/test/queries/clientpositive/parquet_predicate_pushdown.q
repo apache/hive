@@ -60,28 +60,32 @@ SET hive.optimize.index.filter=true;
 SELECT * FROM tbl_pred WHERE t>2 limit 1;
 SET hive.optimize.index.filter=false;
 
-SELECT SUM(HASH(t)) FROM tbl_pred
+SELECT * FROM tbl_pred
   WHERE t IS NOT NULL
   AND t < 0
-  AND t > -2;
+  AND t > -2
+  LIMIT 10;
 
 SET hive.optimize.index.filter=true;
-SELECT SUM(HASH(t)) FROM tbl_pred
+SELECT * FROM tbl_pred
   WHERE t IS NOT NULL
   AND t < 0
-  AND t > -2;
+  AND t > -2
+  LIMIT 10;
 SET hive.optimize.index.filter=false;
 
-EXPLAIN SELECT SUM(HASH(t)) FROM tbl_pred
+EXPLAIN SELECT * FROM tbl_pred
   WHERE t IS NOT NULL
   AND t < 0
-  AND t > -2;
+  AND t > -2
+  LIMIT 10;
 
 SET hive.optimize.index.filter=true;
-EXPLAIN SELECT SUM(HASH(t)) FROM tbl_pred
+EXPLAIN SELECT * FROM tbl_pred
   WHERE t IS NOT NULL
   AND t < 0
-  AND t > -2;
+  AND t > -2
+  LIMIT 10;
 SET hive.optimize.index.filter=false;
 
 SELECT t, s FROM tbl_pred

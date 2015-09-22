@@ -20,7 +20,6 @@
  packages="org.apache.hadoop.hive.ql.log">
 
   <Properties>
-    <Property name="hive.log.threshold">DEBUG</Property>
     <Property name="hive.log.level">WARN</Property>
     <Property name="hive.root.logger">console</Property>
   </Properties>
@@ -32,8 +31,8 @@
   </Appenders>
 
   <Loggers>
-    <Root level="${sys:hive.log.threshold}">
-      <AppenderRef ref="${sys:hive.root.logger}" level="${sys:hive.log.level}"/>
+    <Root level="${sys:hive.log.level}">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
     </Root>
   </Loggers>
 

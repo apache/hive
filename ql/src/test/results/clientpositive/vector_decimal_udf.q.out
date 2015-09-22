@@ -1574,11 +1574,11 @@ STAGE PLANS:
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: _col0, _col1
+              outputColumnNames: value, key
               Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(_col1), count(_col1), avg(_col1)
-                keys: _col0 (type: int)
+                aggregations: sum(key), count(key), avg(key)
+                keys: value (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
@@ -2239,11 +2239,11 @@ STAGE PLANS:
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: _col0, _col1
+              outputColumnNames: value, key
               Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: stddev(_col1), variance(_col1)
-                keys: _col0 (type: int)
+                aggregations: stddev(key), variance(key)
+                keys: value (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
@@ -2319,11 +2319,11 @@ STAGE PLANS:
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: _col0, _col1
+              outputColumnNames: value, key
               Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: stddev_samp(_col1), var_samp(_col1)
-                keys: _col0 (type: int)
+                aggregations: stddev_samp(key), var_samp(key)
+                keys: value (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
@@ -2458,10 +2458,10 @@ STAGE PLANS:
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: min(_col0)
+                aggregations: min(key)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
@@ -2518,10 +2518,10 @@ STAGE PLANS:
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: max(_col0)
+                aggregations: max(key)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
@@ -2578,10 +2578,10 @@ STAGE PLANS:
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col0)
+                aggregations: count(key)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

@@ -18,17 +18,16 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -44,24 +43,16 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
-import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
-import org.apache.hadoop.hive.metastore.model.MRoleMap;
-import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -401,44 +392,45 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
       PrincipalType principalType) {
     return objectStore.listPrincipalGlobalGrants(principalName, principalType);
   }
 
   @Override
-  public List<MDBPrivilege> listPrincipalDBGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String dbName) {
     return objectStore.listPrincipalDBGrants(principalName, principalType, dbName);
   }
 
   @Override
-  public List<MTablePrivilege> listAllTableGrants(String principalName,
+  public List<HiveObjectPrivilege> listAllTableGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName) {
     return objectStore.listAllTableGrants(principalName, principalType,
         dbName, tableName);
   }
 
   @Override
-  public List<MPartitionPrivilege> listPrincipalPartitionGrants(String principalName,
-      PrincipalType principalType, String dbName, String tableName, String partName) {
+  public List<HiveObjectPrivilege> listPrincipalPartitionGrants(String principalName,
+      PrincipalType principalType, String dbName, String tableName, List<String> partValues,
+      String partName) {
     return objectStore.listPrincipalPartitionGrants(principalName, principalType,
-        dbName, tableName, partName);
+        dbName, tableName, partValues, partName);
   }
 
   @Override
-  public List<MTableColumnPrivilege> listPrincipalTableColumnGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalTableColumnGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName, String columnName) {
     return objectStore.listPrincipalTableColumnGrants(principalName, principalType,
         dbName, tableName, columnName);
   }
 
   @Override
-  public List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(
+  public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(
       String principalName, PrincipalType principalType, String dbName, String tableName,
-      String partName, String columnName) {
+      List<String> partVals, String partName, String columnName) {
     return objectStore.listPrincipalPartitionColumnGrants(principalName, principalType,
-        dbName, tableName, partName, columnName);
+        dbName, tableName, partVals, partName, columnName);
   }
 
   @Override
@@ -464,12 +456,18 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<MRoleMap> listRoles(String principalName, PrincipalType principalType) {
+  public List<Role> listRoles(String principalName, PrincipalType principalType) {
     return objectStore.listRoles(principalName, principalType);
   }
 
   @Override
-  public List<MRoleMap> listRoleMembers(String roleName) {
+  public List<RolePrincipalGrant> listRolesWithGrants(String principalName,
+                                                      PrincipalType principalType) {
+    return objectStore.listRolesWithGrants(principalName, principalType);
+  }
+
+  @Override
+  public List<RolePrincipalGrant> listRoleMembers(String roleName) {
     return objectStore.listRoleMembers(roleName);
   }
 
@@ -758,5 +756,17 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.getCurrentNotificationEventId();
   }
 
+  @Override
+  public void flushCache() {
+    objectStore.flushCache();
+  }
 
+  @Override
+  public ByteBuffer[] getFileMetadata(List<Long> fileIds) {
+    return null;
+  }
+
+  @Override
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
+  }
 }

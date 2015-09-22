@@ -261,7 +261,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final HashMap<String, SplitSample> nameToSplitSample;
   Map<GroupByOperator, Set<String>> groupOpToInputTables;
   Map<String, PrunedPartitionList> prunedPartitions;
-  private List<FieldSchema> resultSchema;
+  protected List<FieldSchema> resultSchema;
   private CreateViewDesc createVwDesc;
   private ArrayList<String> viewsExpanded;
   private ASTNode viewSelect;
@@ -9324,6 +9324,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (top == null) {
+      // Determine row schema for TSOP.
+      // Include column names from SerDe, the partition and virtual columns.
       rwsch = new RowResolver();
       try {
         StructObjectInspector rowObjectInspector = (StructObjectInspector) tab

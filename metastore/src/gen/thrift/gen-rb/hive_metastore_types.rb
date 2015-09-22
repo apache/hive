@@ -2231,6 +2231,173 @@ class FireEventResponse
   ::Thrift::Struct.generate_accessors self
 end
 
+class MetadataPpdResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  METADATA = 1
+  INCLUDEBITSET = 2
+
+  FIELDS = {
+    METADATA => {:type => ::Thrift::Types::STRING, :name => 'metadata', :binary => true},
+    INCLUDEBITSET => {:type => ::Thrift::Types::STRING, :name => 'includeBitset', :binary => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metadata is unset!') unless @metadata
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field includeBitset is unset!') unless @includeBitset
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetFileMetadataByExprResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  METADATA = 1
+  ISSUPPORTED = 2
+  UNKNOWNFILEIDS = 3
+
+  FIELDS = {
+    METADATA => {:type => ::Thrift::Types::MAP, :name => 'metadata', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::MetadataPpdResult}},
+    ISSUPPORTED => {:type => ::Thrift::Types::BOOL, :name => 'isSupported'},
+    UNKNOWNFILEIDS => {:type => ::Thrift::Types::LIST, :name => 'unknownFileIds', :element => {:type => ::Thrift::Types::I64}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metadata is unset!') unless @metadata
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field isSupported is unset!') if @isSupported.nil?
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field unknownFileIds is unset!') unless @unknownFileIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetFileMetadataByExprRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FILEIDS = 1
+  EXPR = 2
+
+  FIELDS = {
+    FILEIDS => {:type => ::Thrift::Types::LIST, :name => 'fileIds', :element => {:type => ::Thrift::Types::I64}},
+    EXPR => {:type => ::Thrift::Types::STRING, :name => 'expr', :binary => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fileIds is unset!') unless @fileIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field expr is unset!') unless @expr
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetFileMetadataResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  METADATA = 1
+  ISSUPPORTED = 2
+
+  FIELDS = {
+    METADATA => {:type => ::Thrift::Types::MAP, :name => 'metadata', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::STRING, :binary => true}},
+    ISSUPPORTED => {:type => ::Thrift::Types::BOOL, :name => 'isSupported'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metadata is unset!') unless @metadata
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field isSupported is unset!') if @isSupported.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetFileMetadataRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FILEIDS = 1
+
+  FIELDS = {
+    FILEIDS => {:type => ::Thrift::Types::LIST, :name => 'fileIds', :element => {:type => ::Thrift::Types::I64}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fileIds is unset!') unless @fileIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PutFileMetadataResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PutFileMetadataRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FILEIDS = 1
+  METADATA = 2
+
+  FIELDS = {
+    FILEIDS => {:type => ::Thrift::Types::LIST, :name => 'fileIds', :element => {:type => ::Thrift::Types::I64}},
+    METADATA => {:type => ::Thrift::Types::LIST, :name => 'metadata', :element => {:type => ::Thrift::Types::STRING, :binary => true}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fileIds is unset!') unless @fileIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metadata is unset!') unless @metadata
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ClearFileMetadataResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ClearFileMetadataRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FILEIDS = 1
+
+  FIELDS = {
+    FILEIDS => {:type => ::Thrift::Types::LIST, :name => 'fileIds', :element => {:type => ::Thrift::Types::I64}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fileIds is unset!') unless @fileIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class GetAllFunctionsResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FUNCTIONS = 1

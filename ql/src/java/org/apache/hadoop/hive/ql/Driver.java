@@ -364,7 +364,7 @@ public class Driver implements CommandProcessor {
    * @return 0 for ok
    */
   public int compile(String command, boolean resetTaskIds) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
 
     //holder for parent command type/string when executing reentrant queries
@@ -408,6 +408,12 @@ public class Driver implements CommandProcessor {
       List<HiveSemanticAnalyzerHook> saHooks =
           getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
               HiveSemanticAnalyzerHook.class);
+
+      // Flush the metastore cache.  This assures that we don't pick up objects from a previous
+      // query running in this same thread.  This has to be done after we get our semantic
+      // analyzer (this is when the connection to the metastore is made) but before we analyze,
+      // because at that point we need access to the objects.
+      Hive.get().getMSC().flushCache();
 
       // Do semantic analysis and plan generation
       if (saHooks != null && !saHooks.isEmpty()) {
@@ -953,7 +959,7 @@ public class Driver implements CommandProcessor {
    * @param startTxnImplicitly in AC=false, the 1st DML starts a txn
    **/
   private int acquireLocksAndOpenTxn(boolean startTxnImplicitly) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     SessionState ss = SessionState.get();
@@ -1039,7 +1045,7 @@ public class Driver implements CommandProcessor {
    **/
   private void releaseLocksAndCommitOrRollback(List<HiveLock> hiveLocks, boolean commit)
       throws LockException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
 
     SessionState ss = SessionState.get();
@@ -1194,7 +1200,7 @@ public class Driver implements CommandProcessor {
     }
 
     // Reset the perf logger
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(true);
+    PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TIME_TO_SUBMIT);
 
@@ -1282,7 +1288,6 @@ public class Driver implements CommandProcessor {
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_RUN);
-    perfLogger.close(LOG, plan);
 
     // Take all the driver run hooks and post-execute them.
     try {
@@ -1406,7 +1411,7 @@ public class Driver implements CommandProcessor {
   }
 
   public int execute() throws CommandNeedRetryException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
     boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);

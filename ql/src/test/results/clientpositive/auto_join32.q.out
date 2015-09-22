@@ -411,10 +411,10 @@ STAGE PLANS:
                   outputColumnNames: _col1, _col3
                   Select Operator
                     expressions: _col3 (type: string), _col1 (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: _col3, _col1
                     Group By Operator
                       aggregations: count(DISTINCT _col1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      keys: _col3 (type: string), _col1 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Reduce Output Operator

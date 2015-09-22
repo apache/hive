@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -76,7 +77,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
   private static final String CLASS_NAME = MapJoinOperator.class.getName();
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   private transient String cacheKey;
   private transient ObjectCache cache;
@@ -592,6 +593,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     // Deserialize the on-disk hash table
     // We're sure this part is smaller than memory limit
+    if (rowCount <= 0) {
+      rowCount = 1024 * 1024; // Since rowCount is used later to instantiate a BytesBytesMultiHashMap
+                              // as the initialCapacity which cannot be 0, we provide a reasonable
+                              // positive number here
+    }
     BytesBytesMultiHashMap restoredHashMap = partition.getHashMapFromDisk(rowCount);
     rowCount += restoredHashMap.getNumValues();
     LOG.info("Hybrid Grace Hash Join: Deserializing spilled hash partition...");

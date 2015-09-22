@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
@@ -95,7 +96,7 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
  */
 public class SparkCompiler extends TaskCompiler {
   private static final String CLASS_NAME = SparkCompiler.class.getName();
-  private static final PerfLogger PERF_LOGGER = PerfLogger.getPerfLogger();
+  private static final PerfLogger PERF_LOGGER = SessionState.getPerfLogger();
   private static final Log LOGGER = LogFactory.getLog(SparkCompiler.class);
 
   public SparkCompiler() {

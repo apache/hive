@@ -48,6 +48,10 @@ public class LazyByte extends
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
+    if (!LazyUtils.isNumberMaybe(bytes.getData(), start, length)) {
+      isNull = true;
+      return;
+    }
     try {
       data.set(parseByte(bytes.getData(), start, length, 10));
       isNull = false;
