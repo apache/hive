@@ -2090,6 +2090,80 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fire_listener_event failed: unknown result')
     end
 
+    def flushCache()
+      send_flushCache()
+      recv_flushCache()
+    end
+
+    def send_flushCache()
+      send_message('flushCache', FlushCache_args)
+    end
+
+    def recv_flushCache()
+      result = receive_message(FlushCache_result)
+      return
+    end
+
+    def get_file_metadata_by_expr(req)
+      send_get_file_metadata_by_expr(req)
+      return recv_get_file_metadata_by_expr()
+    end
+
+    def send_get_file_metadata_by_expr(req)
+      send_message('get_file_metadata_by_expr', Get_file_metadata_by_expr_args, :req => req)
+    end
+
+    def recv_get_file_metadata_by_expr()
+      result = receive_message(Get_file_metadata_by_expr_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_file_metadata_by_expr failed: unknown result')
+    end
+
+    def get_file_metadata(req)
+      send_get_file_metadata(req)
+      return recv_get_file_metadata()
+    end
+
+    def send_get_file_metadata(req)
+      send_message('get_file_metadata', Get_file_metadata_args, :req => req)
+    end
+
+    def recv_get_file_metadata()
+      result = receive_message(Get_file_metadata_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_file_metadata failed: unknown result')
+    end
+
+    def put_file_metadata(req)
+      send_put_file_metadata(req)
+      return recv_put_file_metadata()
+    end
+
+    def send_put_file_metadata(req)
+      send_message('put_file_metadata', Put_file_metadata_args, :req => req)
+    end
+
+    def recv_put_file_metadata()
+      result = receive_message(Put_file_metadata_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'put_file_metadata failed: unknown result')
+    end
+
+    def clear_file_metadata(req)
+      send_clear_file_metadata(req)
+      return recv_clear_file_metadata()
+    end
+
+    def send_clear_file_metadata(req)
+      send_message('clear_file_metadata', Clear_file_metadata_args, :req => req)
+    end
+
+    def recv_clear_file_metadata()
+      result = receive_message(Clear_file_metadata_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'clear_file_metadata failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -3679,6 +3753,41 @@ module ThriftHiveMetastore
       result = Fire_listener_event_result.new()
       result.success = @handler.fire_listener_event(args.rqst)
       write_result(result, oprot, 'fire_listener_event', seqid)
+    end
+
+    def process_flushCache(seqid, iprot, oprot)
+      args = read_args(iprot, FlushCache_args)
+      result = FlushCache_result.new()
+      @handler.flushCache()
+      write_result(result, oprot, 'flushCache', seqid)
+    end
+
+    def process_get_file_metadata_by_expr(seqid, iprot, oprot)
+      args = read_args(iprot, Get_file_metadata_by_expr_args)
+      result = Get_file_metadata_by_expr_result.new()
+      result.success = @handler.get_file_metadata_by_expr(args.req)
+      write_result(result, oprot, 'get_file_metadata_by_expr', seqid)
+    end
+
+    def process_get_file_metadata(seqid, iprot, oprot)
+      args = read_args(iprot, Get_file_metadata_args)
+      result = Get_file_metadata_result.new()
+      result.success = @handler.get_file_metadata(args.req)
+      write_result(result, oprot, 'get_file_metadata', seqid)
+    end
+
+    def process_put_file_metadata(seqid, iprot, oprot)
+      args = read_args(iprot, Put_file_metadata_args)
+      result = Put_file_metadata_result.new()
+      result.success = @handler.put_file_metadata(args.req)
+      write_result(result, oprot, 'put_file_metadata', seqid)
+    end
+
+    def process_clear_file_metadata(seqid, iprot, oprot)
+      args = read_args(iprot, Clear_file_metadata_args)
+      result = Clear_file_metadata_result.new()
+      result.success = @handler.clear_file_metadata(args.req)
+      write_result(result, oprot, 'clear_file_metadata', seqid)
     end
 
   end
@@ -8405,6 +8514,164 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::FireEventResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class FlushCache_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class FlushCache_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_file_metadata_by_expr_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetFileMetadataByExprRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_file_metadata_by_expr_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetFileMetadataByExprResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_file_metadata_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetFileMetadataRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_file_metadata_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetFileMetadataResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Put_file_metadata_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::PutFileMetadataRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Put_file_metadata_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PutFileMetadataResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Clear_file_metadata_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::ClearFileMetadataRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Clear_file_metadata_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ClearFileMetadataResult}
     }
 
     def struct_fields; FIELDS; end

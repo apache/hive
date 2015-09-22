@@ -18,7 +18,9 @@
 
 package org.apache.hive.hplsql;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -90,12 +92,9 @@ public class Meta {
    */
   Row readColumns(ParserRuleContext ctx, String conn, String table, HashMap<String, Row> map) {
     Row row = null;
-    String sql = null;
     Conn.Type connType = exec.getConnectionType(conn); 
     if (connType == Conn.Type.HIVE) {
-      sql = "DESCRIBE " + table;
-    }
-    if (sql != null) {
+      String sql = "DESCRIBE " + table;
       Query query = new Query(sql);
       exec.executeQuery(ctx, query, conn); 
       if (!query.error()) {
@@ -111,6 +110,27 @@ public class Meta {
           } 
           map.put(table, row);
         } 
+        catch (Exception e) {}
+      }
+      exec.closeQuery(query, conn);
+    }
+    else {
+      Query query = exec.prepareQuery(ctx, "SELECT * FROM " + table, conn); 
+      if (!query.error()) {
+        try {
+          PreparedStatement stmt = query.getPreparedStatement();
+          ResultSetMetaData rm = stmt.getMetaData();
+          int cols = rm.getColumnCount();
+          for (int i = 1; i <= cols; i++) {
+            String col = rm.getColumnName(i);
+            String typ = rm.getColumnTypeName(i);
+            if (row == null) {
+              row = new Row();
+            }
+            row.addColumn(col.toUpperCase(), typ);
+          }
+          map.put(table, row);
+        }
         catch (Exception e) {}
       }
       exec.closeQuery(query, conn);

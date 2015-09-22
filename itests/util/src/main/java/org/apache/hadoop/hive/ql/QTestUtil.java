@@ -58,9 +58,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HBaseTestingUtility;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -97,6 +101,8 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -158,10 +164,12 @@ public class QTestUtil {
 
   private final String initScript;
   private final String cleanupScript;
+  private boolean useHBaseMetastore = false;
 
   public interface SuiteAddTestFunctor {
     public void addTestToSuite(TestSuite suite, Object setup, String tName);
   }
+  private HBaseTestingUtility utility;
 
   static {
     for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
@@ -245,11 +253,9 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, String initScript,
-       String cleanupScript) throws
-         Exception {
-    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript,
-   cleanupScript);
+  public QTestUtil(String outDir, String logDir, String initScript, String cleanupScript) throws
+      Exception {
+    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript, cleanupScript);
   }
 
   public String getOutputDirectory() {
@@ -347,17 +353,43 @@ public class QTestUtil {
     return "jceks://file" + new Path(keyDir, "test.jks").toUri();
   }
 
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-       String confDir, String hadoopVer, String initScript,
-       String cleanupScript) throws Exception {
+  private void startMiniHBaseCluster() throws Exception {
+    Configuration hbaseConf = HBaseConfiguration.create();
+    hbaseConf.setInt("hbase.master.info.port", -1);
+    utility = new HBaseTestingUtility(hbaseConf);
+    utility.startMiniCluster();
+    conf = new HiveConf(utility.getConfiguration(), Driver.class);
+    HBaseAdmin admin = utility.getHBaseAdmin();
+    // Need to use reflection here to make compilation pass since HBaseIntegrationTests
+    // is not compiled in hadoop-1. All HBaseMetastore tests run under hadoop-2, so this
+    // guarantee HBaseIntegrationTests exist when we hitting this code path
+    java.lang.reflect.Method initHBaseMetastoreMethod = Class.forName(
+        "org.apache.hadoop.hive.metastore.hbase.HBaseStoreTestUtil")
+        .getMethod("initHBaseMetastore", HBaseAdmin.class, HiveConf.class);
+    initHBaseMetastoreMethod.invoke(null, admin, conf);
+  }
 
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
+      String confDir, String hadoopVer, String initScript, String cleanupScript)
+    throws Exception {
+    this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript, false);
+  }
+
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
+      String confDir, String hadoopVer, String initScript, String cleanupScript, boolean useHBaseMetastore)
+    throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
+    this.useHBaseMetastore = useHBaseMetastore;
 
+    Logger hadoopLog = Logger.getLogger("org.apache.hadoop");
+    hadoopLog.setLevel(Level.INFO);
     if (confDir != null && !confDir.isEmpty()) {
-      HiveConf.setHiveSiteLocation(new URL("file://"
-        + new File(confDir).toURI().getPath() + "/hive-site.xml"));
+      HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
+    }
+    if (useHBaseMetastore) {
+      startMiniHBaseCluster();
     }
     conf = new HiveConf(Driver.class);
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
@@ -452,6 +484,9 @@ public class QTestUtil {
       } finally {
         sparkSession = null;
       }
+    }
+    if (useHBaseMetastore) {
+      utility.shutdownMiniCluster();
     }
     if (mr != null) {
       mr.shutdown();

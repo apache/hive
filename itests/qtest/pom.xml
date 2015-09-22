@@ -80,6 +80,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-it-unit</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-it-util</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
@@ -523,7 +530,8 @@
                               logDirectory="${project.build.directory}/qfile-results/clientpositive/"
                               hadoopVersion="${active.hadoop.version}"
                               initScript="${initScript}"
-                              cleanupScript="q_test_cleanup.sql"/>
+                              cleanupScript="q_test_cleanup.sql"
+                              useHBaseMetastore="true"/>
 
                     <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
                               outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"

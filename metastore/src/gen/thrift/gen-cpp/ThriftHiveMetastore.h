@@ -140,6 +140,11 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
   virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
+  virtual void flushCache() = 0;
+  virtual void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) = 0;
+  virtual void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req) = 0;
+  virtual void put_file_metadata(PutFileMetadataResult& _return, const PutFileMetadataRequest& req) = 0;
+  virtual void clear_file_metadata(ClearFileMetadataResult& _return, const ClearFileMetadataRequest& req) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -562,6 +567,21 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void fire_listener_event(FireEventResponse& /* _return */, const FireEventRequest& /* rqst */) {
+    return;
+  }
+  void flushCache() {
+    return;
+  }
+  void get_file_metadata_by_expr(GetFileMetadataByExprResult& /* _return */, const GetFileMetadataByExprRequest& /* req */) {
+    return;
+  }
+  void get_file_metadata(GetFileMetadataResult& /* _return */, const GetFileMetadataRequest& /* req */) {
+    return;
+  }
+  void put_file_metadata(PutFileMetadataResult& /* _return */, const PutFileMetadataRequest& /* req */) {
+    return;
+  }
+  void clear_file_metadata(ClearFileMetadataResult& /* _return */, const ClearFileMetadataRequest& /* req */) {
     return;
   }
 };
@@ -18193,6 +18213,576 @@ class ThriftHiveMetastore_fire_listener_event_presult {
   friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_fire_listener_event_presult& obj);
 };
 
+
+class ThriftHiveMetastore_flushCache_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+  ThriftHiveMetastore_flushCache_args(const ThriftHiveMetastore_flushCache_args&);
+  ThriftHiveMetastore_flushCache_args& operator=(const ThriftHiveMetastore_flushCache_args&);
+  ThriftHiveMetastore_flushCache_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_flushCache_args() throw();
+
+  bool operator == (const ThriftHiveMetastore_flushCache_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_flushCache_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_flushCache_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_flushCache_args& obj);
+};
+
+
+class ThriftHiveMetastore_flushCache_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+
+  virtual ~ThriftHiveMetastore_flushCache_pargs() throw();
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_flushCache_pargs& obj);
+};
+
+
+class ThriftHiveMetastore_flushCache_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+  ThriftHiveMetastore_flushCache_result(const ThriftHiveMetastore_flushCache_result&);
+  ThriftHiveMetastore_flushCache_result& operator=(const ThriftHiveMetastore_flushCache_result&);
+  ThriftHiveMetastore_flushCache_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_flushCache_result() throw();
+
+  bool operator == (const ThriftHiveMetastore_flushCache_result & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_flushCache_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_flushCache_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_flushCache_result& obj);
+};
+
+
+class ThriftHiveMetastore_flushCache_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+
+  virtual ~ThriftHiveMetastore_flushCache_presult() throw();
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_flushCache_presult& obj);
+};
+
+typedef struct _ThriftHiveMetastore_get_file_metadata_by_expr_args__isset {
+  _ThriftHiveMetastore_get_file_metadata_by_expr_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_get_file_metadata_by_expr_args__isset;
+
+class ThriftHiveMetastore_get_file_metadata_by_expr_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "35F3A2DA650F5293300EA6DB58284F86";
+  static const uint8_t binary_fingerprint[16]; // = {0x35,0xF3,0xA2,0xDA,0x65,0x0F,0x52,0x93,0x30,0x0E,0xA6,0xDB,0x58,0x28,0x4F,0x86};
+
+  ThriftHiveMetastore_get_file_metadata_by_expr_args(const ThriftHiveMetastore_get_file_metadata_by_expr_args&);
+  ThriftHiveMetastore_get_file_metadata_by_expr_args& operator=(const ThriftHiveMetastore_get_file_metadata_by_expr_args&);
+  ThriftHiveMetastore_get_file_metadata_by_expr_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_file_metadata_by_expr_args() throw();
+  GetFileMetadataByExprRequest req;
+
+  _ThriftHiveMetastore_get_file_metadata_by_expr_args__isset __isset;
+
+  void __set_req(const GetFileMetadataByExprRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_file_metadata_by_expr_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_file_metadata_by_expr_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_file_metadata_by_expr_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_get_file_metadata_by_expr_args& obj);
+};
+
+
+class ThriftHiveMetastore_get_file_metadata_by_expr_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "35F3A2DA650F5293300EA6DB58284F86";
+  static const uint8_t binary_fingerprint[16]; // = {0x35,0xF3,0xA2,0xDA,0x65,0x0F,0x52,0x93,0x30,0x0E,0xA6,0xDB,0x58,0x28,0x4F,0x86};
+
+
+  virtual ~ThriftHiveMetastore_get_file_metadata_by_expr_pargs() throw();
+  const GetFileMetadataByExprRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_get_file_metadata_by_expr_pargs& obj);
+};
+
+typedef struct _ThriftHiveMetastore_get_file_metadata_by_expr_result__isset {
+  _ThriftHiveMetastore_get_file_metadata_by_expr_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_file_metadata_by_expr_result__isset;
+
+class ThriftHiveMetastore_get_file_metadata_by_expr_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "E2053E1FBA55841322D49B2FBE16E310";
+  static const uint8_t binary_fingerprint[16]; // = {0xE2,0x05,0x3E,0x1F,0xBA,0x55,0x84,0x13,0x22,0xD4,0x9B,0x2F,0xBE,0x16,0xE3,0x10};
+
+  ThriftHiveMetastore_get_file_metadata_by_expr_result(const ThriftHiveMetastore_get_file_metadata_by_expr_result&);
+  ThriftHiveMetastore_get_file_metadata_by_expr_result& operator=(const ThriftHiveMetastore_get_file_metadata_by_expr_result&);
+  ThriftHiveMetastore_get_file_metadata_by_expr_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_file_metadata_by_expr_result() throw();
+  GetFileMetadataByExprResult success;
+
+  _ThriftHiveMetastore_get_file_metadata_by_expr_result__isset __isset;
+
+  void __set_success(const GetFileMetadataByExprResult& val);
+
+  bool operator == (const ThriftHiveMetastore_get_file_metadata_by_expr_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_file_metadata_by_expr_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_file_metadata_by_expr_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_get_file_metadata_by_expr_result& obj);
+};
+
+typedef struct _ThriftHiveMetastore_get_file_metadata_by_expr_presult__isset {
+  _ThriftHiveMetastore_get_file_metadata_by_expr_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_file_metadata_by_expr_presult__isset;
+
+class ThriftHiveMetastore_get_file_metadata_by_expr_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "E2053E1FBA55841322D49B2FBE16E310";
+  static const uint8_t binary_fingerprint[16]; // = {0xE2,0x05,0x3E,0x1F,0xBA,0x55,0x84,0x13,0x22,0xD4,0x9B,0x2F,0xBE,0x16,0xE3,0x10};
+
+
+  virtual ~ThriftHiveMetastore_get_file_metadata_by_expr_presult() throw();
+  GetFileMetadataByExprResult* success;
+
+  _ThriftHiveMetastore_get_file_metadata_by_expr_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_get_file_metadata_by_expr_presult& obj);
+};
+
+typedef struct _ThriftHiveMetastore_get_file_metadata_args__isset {
+  _ThriftHiveMetastore_get_file_metadata_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_get_file_metadata_args__isset;
+
+class ThriftHiveMetastore_get_file_metadata_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "1BC0267F37F033AE9EEA2EB33C70733E";
+  static const uint8_t binary_fingerprint[16]; // = {0x1B,0xC0,0x26,0x7F,0x37,0xF0,0x33,0xAE,0x9E,0xEA,0x2E,0xB3,0x3C,0x70,0x73,0x3E};
+
+  ThriftHiveMetastore_get_file_metadata_args(const ThriftHiveMetastore_get_file_metadata_args&);
+  ThriftHiveMetastore_get_file_metadata_args& operator=(const ThriftHiveMetastore_get_file_metadata_args&);
+  ThriftHiveMetastore_get_file_metadata_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_file_metadata_args() throw();
+  GetFileMetadataRequest req;
+
+  _ThriftHiveMetastore_get_file_metadata_args__isset __isset;
+
+  void __set_req(const GetFileMetadataRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_file_metadata_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_file_metadata_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_file_metadata_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_get_file_metadata_args& obj);
+};
+
+
+class ThriftHiveMetastore_get_file_metadata_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "1BC0267F37F033AE9EEA2EB33C70733E";
+  static const uint8_t binary_fingerprint[16]; // = {0x1B,0xC0,0x26,0x7F,0x37,0xF0,0x33,0xAE,0x9E,0xEA,0x2E,0xB3,0x3C,0x70,0x73,0x3E};
+
+
+  virtual ~ThriftHiveMetastore_get_file_metadata_pargs() throw();
+  const GetFileMetadataRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_get_file_metadata_pargs& obj);
+};
+
+typedef struct _ThriftHiveMetastore_get_file_metadata_result__isset {
+  _ThriftHiveMetastore_get_file_metadata_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_file_metadata_result__isset;
+
+class ThriftHiveMetastore_get_file_metadata_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "2E68003888122322D29FD7969DAE8C2A";
+  static const uint8_t binary_fingerprint[16]; // = {0x2E,0x68,0x00,0x38,0x88,0x12,0x23,0x22,0xD2,0x9F,0xD7,0x96,0x9D,0xAE,0x8C,0x2A};
+
+  ThriftHiveMetastore_get_file_metadata_result(const ThriftHiveMetastore_get_file_metadata_result&);
+  ThriftHiveMetastore_get_file_metadata_result& operator=(const ThriftHiveMetastore_get_file_metadata_result&);
+  ThriftHiveMetastore_get_file_metadata_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_file_metadata_result() throw();
+  GetFileMetadataResult success;
+
+  _ThriftHiveMetastore_get_file_metadata_result__isset __isset;
+
+  void __set_success(const GetFileMetadataResult& val);
+
+  bool operator == (const ThriftHiveMetastore_get_file_metadata_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_file_metadata_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_file_metadata_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_get_file_metadata_result& obj);
+};
+
+typedef struct _ThriftHiveMetastore_get_file_metadata_presult__isset {
+  _ThriftHiveMetastore_get_file_metadata_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_file_metadata_presult__isset;
+
+class ThriftHiveMetastore_get_file_metadata_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "2E68003888122322D29FD7969DAE8C2A";
+  static const uint8_t binary_fingerprint[16]; // = {0x2E,0x68,0x00,0x38,0x88,0x12,0x23,0x22,0xD2,0x9F,0xD7,0x96,0x9D,0xAE,0x8C,0x2A};
+
+
+  virtual ~ThriftHiveMetastore_get_file_metadata_presult() throw();
+  GetFileMetadataResult* success;
+
+  _ThriftHiveMetastore_get_file_metadata_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_get_file_metadata_presult& obj);
+};
+
+typedef struct _ThriftHiveMetastore_put_file_metadata_args__isset {
+  _ThriftHiveMetastore_put_file_metadata_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_put_file_metadata_args__isset;
+
+class ThriftHiveMetastore_put_file_metadata_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "CC8035DE851F68540899C9E7BDA51238";
+  static const uint8_t binary_fingerprint[16]; // = {0xCC,0x80,0x35,0xDE,0x85,0x1F,0x68,0x54,0x08,0x99,0xC9,0xE7,0xBD,0xA5,0x12,0x38};
+
+  ThriftHiveMetastore_put_file_metadata_args(const ThriftHiveMetastore_put_file_metadata_args&);
+  ThriftHiveMetastore_put_file_metadata_args& operator=(const ThriftHiveMetastore_put_file_metadata_args&);
+  ThriftHiveMetastore_put_file_metadata_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_put_file_metadata_args() throw();
+  PutFileMetadataRequest req;
+
+  _ThriftHiveMetastore_put_file_metadata_args__isset __isset;
+
+  void __set_req(const PutFileMetadataRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_put_file_metadata_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_put_file_metadata_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_put_file_metadata_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_put_file_metadata_args& obj);
+};
+
+
+class ThriftHiveMetastore_put_file_metadata_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "CC8035DE851F68540899C9E7BDA51238";
+  static const uint8_t binary_fingerprint[16]; // = {0xCC,0x80,0x35,0xDE,0x85,0x1F,0x68,0x54,0x08,0x99,0xC9,0xE7,0xBD,0xA5,0x12,0x38};
+
+
+  virtual ~ThriftHiveMetastore_put_file_metadata_pargs() throw();
+  const PutFileMetadataRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_put_file_metadata_pargs& obj);
+};
+
+typedef struct _ThriftHiveMetastore_put_file_metadata_result__isset {
+  _ThriftHiveMetastore_put_file_metadata_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_put_file_metadata_result__isset;
+
+class ThriftHiveMetastore_put_file_metadata_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "3A26B8DD823AB72F2FE94404F3D36070";
+  static const uint8_t binary_fingerprint[16]; // = {0x3A,0x26,0xB8,0xDD,0x82,0x3A,0xB7,0x2F,0x2F,0xE9,0x44,0x04,0xF3,0xD3,0x60,0x70};
+
+  ThriftHiveMetastore_put_file_metadata_result(const ThriftHiveMetastore_put_file_metadata_result&);
+  ThriftHiveMetastore_put_file_metadata_result& operator=(const ThriftHiveMetastore_put_file_metadata_result&);
+  ThriftHiveMetastore_put_file_metadata_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_put_file_metadata_result() throw();
+  PutFileMetadataResult success;
+
+  _ThriftHiveMetastore_put_file_metadata_result__isset __isset;
+
+  void __set_success(const PutFileMetadataResult& val);
+
+  bool operator == (const ThriftHiveMetastore_put_file_metadata_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_put_file_metadata_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_put_file_metadata_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_put_file_metadata_result& obj);
+};
+
+typedef struct _ThriftHiveMetastore_put_file_metadata_presult__isset {
+  _ThriftHiveMetastore_put_file_metadata_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_put_file_metadata_presult__isset;
+
+class ThriftHiveMetastore_put_file_metadata_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "3A26B8DD823AB72F2FE94404F3D36070";
+  static const uint8_t binary_fingerprint[16]; // = {0x3A,0x26,0xB8,0xDD,0x82,0x3A,0xB7,0x2F,0x2F,0xE9,0x44,0x04,0xF3,0xD3,0x60,0x70};
+
+
+  virtual ~ThriftHiveMetastore_put_file_metadata_presult() throw();
+  PutFileMetadataResult* success;
+
+  _ThriftHiveMetastore_put_file_metadata_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_put_file_metadata_presult& obj);
+};
+
+typedef struct _ThriftHiveMetastore_clear_file_metadata_args__isset {
+  _ThriftHiveMetastore_clear_file_metadata_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_clear_file_metadata_args__isset;
+
+class ThriftHiveMetastore_clear_file_metadata_args {
+ public:
+
+  static const char* ascii_fingerprint; // = "1BC0267F37F033AE9EEA2EB33C70733E";
+  static const uint8_t binary_fingerprint[16]; // = {0x1B,0xC0,0x26,0x7F,0x37,0xF0,0x33,0xAE,0x9E,0xEA,0x2E,0xB3,0x3C,0x70,0x73,0x3E};
+
+  ThriftHiveMetastore_clear_file_metadata_args(const ThriftHiveMetastore_clear_file_metadata_args&);
+  ThriftHiveMetastore_clear_file_metadata_args& operator=(const ThriftHiveMetastore_clear_file_metadata_args&);
+  ThriftHiveMetastore_clear_file_metadata_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_clear_file_metadata_args() throw();
+  ClearFileMetadataRequest req;
+
+  _ThriftHiveMetastore_clear_file_metadata_args__isset __isset;
+
+  void __set_req(const ClearFileMetadataRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_clear_file_metadata_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_clear_file_metadata_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_clear_file_metadata_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_clear_file_metadata_args& obj);
+};
+
+
+class ThriftHiveMetastore_clear_file_metadata_pargs {
+ public:
+
+  static const char* ascii_fingerprint; // = "1BC0267F37F033AE9EEA2EB33C70733E";
+  static const uint8_t binary_fingerprint[16]; // = {0x1B,0xC0,0x26,0x7F,0x37,0xF0,0x33,0xAE,0x9E,0xEA,0x2E,0xB3,0x3C,0x70,0x73,0x3E};
+
+
+  virtual ~ThriftHiveMetastore_clear_file_metadata_pargs() throw();
+  const ClearFileMetadataRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_clear_file_metadata_pargs& obj);
+};
+
+typedef struct _ThriftHiveMetastore_clear_file_metadata_result__isset {
+  _ThriftHiveMetastore_clear_file_metadata_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_clear_file_metadata_result__isset;
+
+class ThriftHiveMetastore_clear_file_metadata_result {
+ public:
+
+  static const char* ascii_fingerprint; // = "3A26B8DD823AB72F2FE94404F3D36070";
+  static const uint8_t binary_fingerprint[16]; // = {0x3A,0x26,0xB8,0xDD,0x82,0x3A,0xB7,0x2F,0x2F,0xE9,0x44,0x04,0xF3,0xD3,0x60,0x70};
+
+  ThriftHiveMetastore_clear_file_metadata_result(const ThriftHiveMetastore_clear_file_metadata_result&);
+  ThriftHiveMetastore_clear_file_metadata_result& operator=(const ThriftHiveMetastore_clear_file_metadata_result&);
+  ThriftHiveMetastore_clear_file_metadata_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_clear_file_metadata_result() throw();
+  ClearFileMetadataResult success;
+
+  _ThriftHiveMetastore_clear_file_metadata_result__isset __isset;
+
+  void __set_success(const ClearFileMetadataResult& val);
+
+  bool operator == (const ThriftHiveMetastore_clear_file_metadata_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_clear_file_metadata_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_clear_file_metadata_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_clear_file_metadata_result& obj);
+};
+
+typedef struct _ThriftHiveMetastore_clear_file_metadata_presult__isset {
+  _ThriftHiveMetastore_clear_file_metadata_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_clear_file_metadata_presult__isset;
+
+class ThriftHiveMetastore_clear_file_metadata_presult {
+ public:
+
+  static const char* ascii_fingerprint; // = "3A26B8DD823AB72F2FE94404F3D36070";
+  static const uint8_t binary_fingerprint[16]; // = {0x3A,0x26,0xB8,0xDD,0x82,0x3A,0xB7,0x2F,0x2F,0xE9,0x44,0x04,0xF3,0xD3,0x60,0x70};
+
+
+  virtual ~ThriftHiveMetastore_clear_file_metadata_presult() throw();
+  ClearFileMetadataResult* success;
+
+  _ThriftHiveMetastore_clear_file_metadata_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+  friend std::ostream& operator<<(std::ostream& out, const ThriftHiveMetastore_clear_file_metadata_presult& obj);
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -18576,6 +19166,21 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst);
   void send_fire_listener_event(const FireEventRequest& rqst);
   void recv_fire_listener_event(FireEventResponse& _return);
+  void flushCache();
+  void send_flushCache();
+  void recv_flushCache();
+  void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req);
+  void send_get_file_metadata_by_expr(const GetFileMetadataByExprRequest& req);
+  void recv_get_file_metadata_by_expr(GetFileMetadataByExprResult& _return);
+  void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req);
+  void send_get_file_metadata(const GetFileMetadataRequest& req);
+  void recv_get_file_metadata(GetFileMetadataResult& _return);
+  void put_file_metadata(PutFileMetadataResult& _return, const PutFileMetadataRequest& req);
+  void send_put_file_metadata(const PutFileMetadataRequest& req);
+  void recv_put_file_metadata(PutFileMetadataResult& _return);
+  void clear_file_metadata(ClearFileMetadataResult& _return, const ClearFileMetadataRequest& req);
+  void send_clear_file_metadata(const ClearFileMetadataRequest& req);
+  void recv_clear_file_metadata(ClearFileMetadataResult& _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -18710,6 +19315,11 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_fire_listener_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_flushCache(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_file_metadata_by_expr(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_put_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_clear_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -18838,6 +19448,11 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
     processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
     processMap_["fire_listener_event"] = &ThriftHiveMetastoreProcessor::process_fire_listener_event;
+    processMap_["flushCache"] = &ThriftHiveMetastoreProcessor::process_flushCache;
+    processMap_["get_file_metadata_by_expr"] = &ThriftHiveMetastoreProcessor::process_get_file_metadata_by_expr;
+    processMap_["get_file_metadata"] = &ThriftHiveMetastoreProcessor::process_get_file_metadata;
+    processMap_["put_file_metadata"] = &ThriftHiveMetastoreProcessor::process_put_file_metadata;
+    processMap_["clear_file_metadata"] = &ThriftHiveMetastoreProcessor::process_clear_file_metadata;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -20058,6 +20673,55 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->fire_listener_event(_return, rqst);
     }
     ifaces_[i]->fire_listener_event(_return, rqst);
+    return;
+  }
+
+  void flushCache() {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->flushCache();
+    }
+    ifaces_[i]->flushCache();
+  }
+
+  void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_file_metadata_by_expr(_return, req);
+    }
+    ifaces_[i]->get_file_metadata_by_expr(_return, req);
+    return;
+  }
+
+  void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_file_metadata(_return, req);
+    }
+    ifaces_[i]->get_file_metadata(_return, req);
+    return;
+  }
+
+  void put_file_metadata(PutFileMetadataResult& _return, const PutFileMetadataRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->put_file_metadata(_return, req);
+    }
+    ifaces_[i]->put_file_metadata(_return, req);
+    return;
+  }
+
+  void clear_file_metadata(ClearFileMetadataResult& _return, const ClearFileMetadataRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->clear_file_metadata(_return, req);
+    }
+    ifaces_[i]->clear_file_metadata(_return, req);
     return;
   }
 

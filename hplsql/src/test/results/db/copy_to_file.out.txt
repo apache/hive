@@ -1,0 +1,6 @@
+Ln:1 COPY
+Ln:1 Query executed: 2 columns, output file: target/tmp/src.txt
+Ln:2 COPY
+Ln:2 Statement:
+select * from src
+Ln:2 Query executed: 2 columns, output file: target/tmp/src2.txt
