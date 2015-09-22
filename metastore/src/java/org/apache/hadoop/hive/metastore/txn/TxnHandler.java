@@ -1302,6 +1302,9 @@ public class TxnHandler {
   private int abortTxns(Connection dbConn, List<Long> txnids) throws SQLException {
     Statement stmt = null;
     int updateCnt = 0;
+    if (txnids.isEmpty()) {
+      return 0;
+    }
     try {
       stmt = dbConn.createStatement();
 
@@ -1921,7 +1924,7 @@ public class TxnHandler {
           abortTxns(dbConn, batchToAbort);
           dbConn.commit();
           //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
-          LOG.info("Aborted the following transactions due to timeout: " + timedOutTxns.toString());
+          LOG.info("Aborted the following transactions due to timeout: " + batchToAbort.toString());
         }
         int numTxnsAborted = (timedOutTxns.size() - 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE +
           timedOutTxns.get(timedOutTxns.size() - 1).size();
