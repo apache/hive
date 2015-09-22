@@ -253,7 +253,7 @@ public class TestMetastoreExpr extends TestCase {
     part.setTableName(table.getTableName());
     part.setValues(vals);
     part.setParameters(new HashMap<String, String>());
-    part.setSd(table.getSd());
+    part.setSd(table.getSd().deepCopy());
     part.getSd().setSerdeInfo(table.getSd().getSerdeInfo());
     part.getSd().setLocation(table.getSd().getLocation() + location);
 

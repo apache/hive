@@ -735,6 +735,9 @@ public class StatsUtils {
   }
 
   private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName) {
+    if (colStats==null) {
+      return new ArrayList<ColStatistics>();
+    }
     List<ColStatistics> stats = new ArrayList<ColStatistics>(colStats.size());
     for (ColumnStatisticsObj statObj : colStats) {
       ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());

@@ -18,25 +18,7 @@
 
 package org.apache.hadoop.hive.conf;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.security.auth.login.LoginException;
-
+import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,7 +36,23 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
 
-import com.google.common.base.Joiner;
+import javax.security.auth.login.LoginException;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Hive Configuration.
@@ -179,7 +177,23 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_FULL,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL
+      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
+      HiveConf.ConfVars.METASTORE_FASTPATH,
+      HiveConf.ConfVars.METASTORE_HBASE_CATALOG_CACHE_SIZE,
+      HiveConf.ConfVars.METASTORE_HBASE_AGGREGATE_STATS_CACHE_SIZE,
+      HiveConf.ConfVars.METASTORE_HBASE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS,
+      HiveConf.ConfVars.METASTORE_HBASE_AGGREGATE_STATS_CACHE_FALSE_POSITIVE_PROBABILITY,
+      HiveConf.ConfVars.METASTORE_HBASE_AGGREGATE_STATS_CACHE_MAX_VARIANCE,
+      HiveConf.ConfVars.METASTORE_HBASE_CACHE_TIME_TO_LIVE,
+      HiveConf.ConfVars.METASTORE_HBASE_CACHE_MAX_WRITER_WAIT,
+      HiveConf.ConfVars.METASTORE_HBASE_CACHE_MAX_READER_WAIT,
+      HiveConf.ConfVars.METASTORE_HBASE_CACHE_MAX_FULL,
+      HiveConf.ConfVars.METASTORE_HBASE_CACHE_CLEAN_UNTIL,
+      HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS,
+      HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_CACHE_ENTRIES,
+      HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_MEMORY_TTL,
+      HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_INVALIDATOR_FREQUENCY,
+      HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_HBASE_TTL
       };
 
   /**
@@ -388,6 +402,48 @@ public class HiveConf extends Configuration {
         "location of default database for the warehouse"),
     METASTOREURIS("hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
+
+    METASTORE_FASTPATH("hive.metastore.fastpath", false,
+        "Used to avoid all of the proxies and object copies in the metastore.  Note, if this is " +
+            "set, you MUST use a local metastore (hive.metastore.uris must be empty) otherwise " +
+            "undefined and most likely undesired behavior will result"),
+    METASTORE_HBASE_CATALOG_CACHE_SIZE("hive.metastore.hbase.catalog.cache.size", 50000, "Maximum number of " +
+        "objects we will place in the hbase metastore catalog cache.  The objects will be divided up by " +
+        "types that we need to cache."),
+    METASTORE_HBASE_AGGREGATE_STATS_CACHE_SIZE("hive.metastore.hbase.aggregate.stats.cache.size", 10000,
+        "Maximum number of aggregate stats nodes that we will place in the hbase metastore aggregate stats cache."),
+    METASTORE_HBASE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS("hive.metastore.hbase.aggregate.stats.max.partitions", 10000,
+        "Maximum number of partitions that are aggregated per cache node."),
+    METASTORE_HBASE_AGGREGATE_STATS_CACHE_FALSE_POSITIVE_PROBABILITY("hive.metastore.hbase.aggregate.stats.false.positive.probability",
+        (float) 0.01, "Maximum false positive probability for the Bloom Filter used in each aggregate stats cache node (default 1%)."),
+    METASTORE_HBASE_AGGREGATE_STATS_CACHE_MAX_VARIANCE("hive.metastore.hbase.aggregate.stats.max.variance", (float) 0.1,
+        "Maximum tolerable variance in number of partitions between a cached node and our request (default 10%)."),
+    METASTORE_HBASE_CACHE_TIME_TO_LIVE("hive.metastore.hbase.cache.ttl", "600s", new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds for a cached node to be active in the cache before they become stale."),
+    METASTORE_HBASE_CACHE_MAX_WRITER_WAIT("hive.metastore.hbase.cache.max.writer.wait", "5000ms", new TimeValidator(TimeUnit.MILLISECONDS),
+        "Number of milliseconds a writer will wait to acquire the writelock before giving up."),
+    METASTORE_HBASE_CACHE_MAX_READER_WAIT("hive.metastore.hbase.cache.max.reader.wait", "1000ms", new TimeValidator(TimeUnit.MILLISECONDS),
+         "Number of milliseconds a reader will wait to acquire the readlock before giving up."),
+    METASTORE_HBASE_CACHE_MAX_FULL("hive.metastore.hbase.cache.max.full", (float) 0.9,
+         "Maximum cache full % after which the cache cleaner thread kicks in."),
+    METASTORE_HBASE_CACHE_CLEAN_UNTIL("hive.metastore.hbase.cache.clean.until", (float) 0.8,
+          "The cleaner thread cleans until cache reaches this % full size."),
+    METASTORE_HBASE_CONNECTION_CLASS("hive.metastore.hbase.connection.class",
+        "org.apache.hadoop.hive.metastore.hbase.VanillaHBaseConnection",
+        "Class used to connection to HBase"),
+    METASTORE_HBASE_AGGR_STATS_CACHE_ENTRIES("hive.metastore.hbase.aggr.stats.cache.entries",
+        10000, "How many in stats objects to cache in memory"),
+    METASTORE_HBASE_AGGR_STATS_MEMORY_TTL("hive.metastore.hbase.aggr.stats.memory.ttl", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds stats objects live in memory after they are read from HBase."),
+    METASTORE_HBASE_AGGR_STATS_INVALIDATOR_FREQUENCY(
+        "hive.metastore.hbase.aggr.stats.invalidator.frequency", "5s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "How often the stats cache scans its HBase entries and looks for expired entries"),
+    METASTORE_HBASE_AGGR_STATS_HBASE_TTL("hive.metastore.hbase.aggr.stats.hbase.ttl", "604800s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds stats entries live in HBase cache after they are created.  They may be" +
+            " invalided by updates or partition drops before this.  Default is one week."),
 
     METASTORETHRIFTCONNECTIONRETRIES("hive.metastore.connect.retries", 3,
         "Number of retries while opening a connection to metastore"),

@@ -409,6 +409,12 @@ public class Driver implements CommandProcessor {
           getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
               HiveSemanticAnalyzerHook.class);
 
+      // Flush the metastore cache.  This assures that we don't pick up objects from a previous
+      // query running in this same thread.  This has to be done after we get our semantic
+      // analyzer (this is when the connection to the metastore is made) but before we analyze,
+      // because at that point we need access to the objects.
+      Hive.get().getMSC().flushCache();
+
       // Do semantic analysis and plan generation
       if (saHooks != null && !saHooks.isEmpty()) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
