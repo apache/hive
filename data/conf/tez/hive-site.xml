@@ -258,4 +258,14 @@
   <value> -Dlog4j.configurationFile=tez-container-log4j2.xml -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
 </property>
 
+<property>
+  <name>hive.metastore.fastpath</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.metastore.rawstore.impl</name>
+  <value>org.apache.hadoop.hive.metastore.hbase.HBaseStore</value>
+</property>
+
 </configuration>

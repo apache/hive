@@ -137,20 +137,32 @@ class ZooKeeperHiveClientHelper {
             && !(connParams.getSessionVars().containsKey(JdbcConnectionParams.USE_SSL))) {
           connParams.getSessionVars().put(JdbcConnectionParams.USE_SSL, matcher.group(2));
         }
-        // Set authentication configs
-        // Note that in JDBC driver, we have 3 auth modes: NOSASL, Kerberos and password based
-        // The use of "JdbcConnectionParams.AUTH_TYPE=JdbcConnectionParams.AUTH_SIMPLE" picks NOSASL
-        // The presence of "JdbcConnectionParams.AUTH_PRINCIPAL=<principal>" picks Kerberos
-        // Otherwise password based (which includes NONE, PAM, LDAP, CUSTOM)
-        if ((matcher.group(1).equals("hive.server2.authentication"))
-            && !(connParams.getSessionVars().containsKey(JdbcConnectionParams.AUTH_TYPE))) {
-          if (matcher.group(2).equalsIgnoreCase("NOSASL")) {
+        /**
+         * Note: this is pretty messy, but sticking to the current implementation.
+         * Set authentication configs. Note that in JDBC driver, we have 3 auth modes: NOSASL,
+         * Kerberos (including delegation token mechanism) and password based.
+         * The use of JdbcConnectionParams.AUTH_TYPE==JdbcConnectionParams.AUTH_SIMPLE picks NOSASL.
+         * The presence of JdbcConnectionParams.AUTH_PRINCIPAL==<principal> picks Kerberos.
+         * If principal is absent, the presence of
+         * JdbcConnectionParams.AUTH_TYPE==JdbcConnectionParams.AUTH_TOKEN uses delegation token.
+         * Otherwise password based (which includes NONE, PAM, LDAP, CUSTOM)
+         */
+        if (matcher.group(1).equals("hive.server2.authentication")) {
+          // NOSASL
+          if (matcher.group(2).equalsIgnoreCase("NOSASL")
+              && !(connParams.getSessionVars().containsKey(JdbcConnectionParams.AUTH_TYPE) && connParams
+                  .getSessionVars().get(JdbcConnectionParams.AUTH_TYPE)
+                  .equalsIgnoreCase(JdbcConnectionParams.AUTH_SIMPLE))) {
             connParams.getSessionVars().put(JdbcConnectionParams.AUTH_TYPE,
                 JdbcConnectionParams.AUTH_SIMPLE);
           }
         }
-        // Set server's kerberos principal
-        if ((matcher.group(1).equals("hive.server2.authentication.kerberos.principal"))
+        // KERBEROS
+        // If delegation token is passed from the client side, do not set the principal
+        if (matcher.group(2).equalsIgnoreCase("hive.server2.authentication.kerberos.principal")
+            && !(connParams.getSessionVars().containsKey(JdbcConnectionParams.AUTH_TYPE) && connParams
+                .getSessionVars().get(JdbcConnectionParams.AUTH_TYPE)
+                .equalsIgnoreCase(JdbcConnectionParams.AUTH_TOKEN))
             && !(connParams.getSessionVars().containsKey(JdbcConnectionParams.AUTH_PRINCIPAL))) {
           connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PRINCIPAL, matcher.group(2));
         }

@@ -94,6 +94,10 @@ public class TestHplsqlLocal {
   }
   
   @Test
+  public void testCreateProcedure2() throws Exception {
+    run("create_procedure2");
+  }
+  @Test
   public void testCreateProcedureNoParams() throws Exception {
     run("create_procedure_no_params");
   }
@@ -162,7 +166,16 @@ public class TestHplsqlLocal {
   public void testIf() throws Exception {
     run("if");
   }
+  
+  @Test
+  public void testIf2() throws Exception {
+    run("if2");
+  }
 
+  @Test
+  public void testInclude() throws Exception {
+    run("include");
+  }
   @Test
   public void testInstr() throws Exception {
     run("instr");
@@ -196,6 +209,11 @@ public class TestHplsqlLocal {
   @Test
   public void testLower() throws Exception {
     run("lower");
+  }
+
+  @Test
+  public void testMultDiv() throws Exception {
+    run("mult_div");
   }
 
   @Test

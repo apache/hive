@@ -3082,8 +3082,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
         }
       };
-    return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
-        SessionHiveMetaStoreClient.class.getName());
+
+    if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
+      return new SessionHiveMetaStoreClient(conf, hookLoader);
+    } else {
+      return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
+          SessionHiveMetaStoreClient.class.getName());
+    }
   }
 
   /**

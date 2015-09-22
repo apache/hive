@@ -151,6 +151,8 @@ public class QTestGenTask extends Task {
 
   private String cleanupScript;
 
+  private String useHBaseMetastore;
+
   public void setHadoopVersion(String ver) {
     this.hadoopVersion = ver;
   }
@@ -221,6 +223,14 @@ public class QTestGenTask extends Task {
 
   public void setCleanupScript(String cleanupScript) {
     this.cleanupScript = cleanupScript;
+  }
+
+  public String getUseHBaseMetastore() {
+    return useHBaseMetastore;
+  }
+
+  public void setUseHBaseMetastore(String useHBaseMetastore) {
+    this.useHBaseMetastore = useHBaseMetastore;
   }
 
   public void setHiveRootDirectory(File hiveRootDirectory) {
@@ -532,6 +542,7 @@ public class QTestGenTask extends Task {
       ctx.put("hadoopVersion", hadoopVersion);
       ctx.put("initScript", initScript);
       ctx.put("cleanupScript", cleanupScript);
+      ctx.put("useHBaseMetastore", useHBaseMetastore);
 
       File outFile = new File(outDir, className + ".java");
       FileWriter writer = new FileWriter(outFile);

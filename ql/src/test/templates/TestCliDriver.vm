@@ -45,14 +45,14 @@ public class $className extends TestCase {
     String hiveConfDir = "$hiveConfDir";
     String initScript = "$initScript";
     String cleanupScript = "$cleanupScript";
-
+    boolean useHBaseMetastore = Boolean.valueOf("$useHBaseMetastore");
     try {
       String hadoopVer = "$hadoopVersion";
       if (!hiveConfDir.isEmpty()) {
         hiveConfDir = HIVE_ROOT + hiveConfDir;
       }
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript);
+      hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore);
 
       // do a one time initialization
       qt.cleanUp();
