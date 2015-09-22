@@ -218,7 +218,10 @@ public class Select {
       sql.append(" " + getText(ctx.order_by_clause()));
     }
     if (ctx.select_options() != null) {
-      sql.append(" " + evalPop(ctx.select_options()));
+      Var opt = evalPop(ctx.select_options());
+      if (!opt.isNull()) {
+        sql.append(" " + opt.toString());
+      }
     }
     if (ctx.select_list().select_list_limit() != null) {
       sql.append(" LIMIT " + evalPop(ctx.select_list().select_list_limit().expr()));
@@ -275,6 +278,21 @@ public class Select {
   public Integer fromTable(HplsqlParser.From_table_name_clauseContext ctx) {     
     StringBuilder sql = new StringBuilder();
     sql.append(evalPop(ctx.table_name()));
+    if (ctx.from_alias_clause() != null) {
+      sql.append(" ").append(exec.getText(ctx.from_alias_clause()));
+    }
+    exec.stackPush(sql);
+    return 0; 
+  }
+  
+  /**
+   * Subselect in FROM
+   */
+  public Integer fromSubselect(HplsqlParser.From_subselect_clauseContext ctx) {     
+    StringBuilder sql = new StringBuilder();
+    sql.append("(");
+    sql.append(evalPop(ctx.select_stmt()).toString());
+    sql.append(")");
     if (ctx.from_alias_clause() != null) {
       sql.append(" ").append(exec.getText(ctx.from_alias_clause()));
     }
@@ -341,10 +359,13 @@ public class Select {
    * WHERE clause
    */
   public Integer where(HplsqlParser.Where_clauseContext ctx) { 
+    boolean oldBuildSql = exec.buildSql; 
+    exec.buildSql = true;
     StringBuilder sql = new StringBuilder();
     sql.append(ctx.T_WHERE().getText());
     sql.append(" " + evalPop(ctx.bool_expr()));
     exec.stackPush(sql);
+    exec.buildSql = oldBuildSql;
     return 0;
   }
   

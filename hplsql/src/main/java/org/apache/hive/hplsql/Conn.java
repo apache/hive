@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 
 public class Conn {
  
@@ -76,6 +77,25 @@ public class Conn {
   }
   
   /**
+   * Prepare a SQL query
+   */
+  public Query prepareQuery(Query query, String connName) {
+    try {
+      Connection conn = getConnection(connName);
+      timer.start();
+      PreparedStatement stmt = conn.prepareStatement(query.sql);
+      timer.stop();
+      query.set(conn, stmt);      
+      if (info) {
+        exec.info(null, "Prepared statement executed successfully (" + timer.format() + ")");
+      }      
+    } catch (Exception e) {
+      query.setError(e);
+    }
+    return query;
+  }
+  
+  /**
    * Execute a SQL statement
    */
   public Query executeSql(String sql, String connName) {
@@ -117,6 +137,7 @@ public class Conn {
     if (sqls != null) {
       Statement s = conn.createStatement();
       for (String sql : sqls) {
+        exec.info(null, "Starting pre-SQL statement");
         s.execute(sql);
       }
       s.close();

@@ -435,7 +435,13 @@ public class Stmt {
    * INCLUDE statement
    */
   public Integer include(HplsqlParser.Include_stmtContext ctx) {
-    String file = ctx.file_name().getText();
+    String file;
+    if (ctx.file_name() != null) {
+      file = ctx.file_name().getText();
+    }
+    else {
+      file = evalPop(ctx.expr()).toString();
+    }    
     trace(ctx, "INCLUDE " + file);
     exec.includeFile(file);
     return 0; 
