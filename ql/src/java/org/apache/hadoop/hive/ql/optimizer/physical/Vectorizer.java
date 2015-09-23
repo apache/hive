@@ -1139,8 +1139,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
-    boolean isMergePartial = (desc.getMode() != GroupByDesc.Mode.HASH);
-
     if (!isReduce) {
 
       // MapWork
@@ -1153,12 +1151,15 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       // ReduceWork
 
-      if (isMergePartial) {
+      boolean isComplete = desc.getMode() == GroupByDesc.Mode.COMPLETE;
+      if (desc.getMode() != GroupByDesc.Mode.HASH) {
 
         // Reduce Merge-Partial GROUP BY.
 
         // A merge-partial GROUP BY is fed by grouping by keys from reduce-shuffle.  It is the
         // first (or root) operator for its reduce task.
+        // TODO: Technically, we should also handle FINAL, PARTIAL1, PARTIAL2 and PARTIALS
+        //       that are not hash or complete, but aren't merge-partial, somehow.
 
         if (desc.isDistinct()) {
           LOG.info("Vectorized Reduce MergePartial GROUP BY does not support DISTINCT");
@@ -1174,7 +1175,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
 
         if (hasKeys) {
-          if (op.getParentOperators().size() > 0) {
+          if (op.getParentOperators().size() > 0 && !isComplete) {
             LOG.info("Vectorized Reduce MergePartial GROUP BY keys can only handle a key group when it is fed by reduce-shuffle");
             return false;
           }
@@ -1187,7 +1188,11 @@ public class Vectorizer implements PhysicalPlanResolver {
         } else {
           LOG.info("Vectorized Reduce MergePartial GROUP BY will do global aggregation");
         }
-        vectorDesc.setIsReduceMergePartial(true);
+        if (!isComplete) {
+          vectorDesc.setIsReduceMergePartial(true);
+        } else {
+          vectorDesc.setIsReduceStreaming(true);
+        }
       } else {
 
         // Reduce Hash GROUP BY or global aggregation.
@@ -1259,6 +1264,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       ExprNodeGenericFuncDesc d = (ExprNodeGenericFuncDesc) desc;
       boolean r = validateGenericUdf(d);
       if (!r) {
+        LOG.info("Cannot vectorize UDF " + d);
         return false;
       }
     }
