@@ -289,7 +289,16 @@ public class JDBCStatsPublisher implements StatsPublisher {
         boolean tblExists = rs.next();
         if (!tblExists) { // Table does not exist, create it
           String createTable = JDBCStatsUtils.getCreate("");
-          stmt.executeUpdate(createTable);
+          try {
+            stmt.executeUpdate(createTable);
+          } catch (SQLException ex) {
+            String msg = ex.getMessage();
+            if (msg != null && msg.contains("Specified key was too long")) {
+              throw new RuntimeException(msg + "; try using innodb with "
+                  + "Barracuda file format and innodb_large_prefix", ex);
+            }
+            throw ex;
+          }
         } else {
           // Upgrade column name to allow for longer paths.
           String idColName = JDBCStatsUtils.getIdColumnName();
@@ -301,7 +310,7 @@ public class JDBCStatsPublisher implements StatsPublisher {
               colSize = rs.getInt("COLUMN_SIZE");
               if (colSize < JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE) {
                 String alterTable = JDBCStatsUtils.getAlterIdColumn();
-                  stmt.executeUpdate(alterTable);
+                stmt.executeUpdate(alterTable);
               }
             } else {
               LOG.warn("Failed to update " + idColName + " - column not found");
