@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -63,13 +62,12 @@ import org.apache.hadoop.fs.permission.AclEntryType;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hdfs.protocol.BlockStoragePolicy;
-import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
-import org.apache.hadoop.hive.shims.HadoopShims.TextReaderShim;
+import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -91,9 +89,9 @@ import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -736,7 +734,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         aclStatus = fs.getAclStatus(file);
       } catch (Exception e) {
         LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
-                "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
+            "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
       }
     }
     return new Hadoop23FileStatus(fileStatus, aclStatus);
@@ -772,7 +770,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           }
         } catch (Exception e) {
           LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
-                  "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
+              "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
         }
       } else {
         String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
