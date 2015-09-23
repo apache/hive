@@ -229,7 +229,9 @@ public final class TxnDbUtil {
       ShimLoader.getHadoopShims().getPassword(conf, HiveConf.ConfVars.METASTOREPWD.varname);
     prop.setProperty("user", user);
     prop.setProperty("password", passwd);
-    return driver.connect(driverUrl, prop);
+    Connection conn = driver.connect(driverUrl, prop);
+    conn.setAutoCommit(false);
+    return conn;
   }
 
   private static void closeResources(Connection conn, Statement stmt, ResultSet rs) {
