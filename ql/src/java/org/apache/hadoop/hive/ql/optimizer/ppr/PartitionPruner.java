@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -262,7 +264,8 @@ public class PartitionPruner implements Transform {
    * @param expr original partition pruning expression.
    * @return partition pruning expression that only contains partition columns.
    */
-  static private ExprNodeDesc compactExpr(ExprNodeDesc expr) {
+  @VisibleForTesting
+  static ExprNodeDesc compactExpr(ExprNodeDesc expr) {
     // If this is a constant boolean expression, return the value.
     if (expr == null) {
       return null;
@@ -298,40 +301,49 @@ public class PartitionPruner implements Transform {
             allTrue = false;
           }
         }
-
+        
+        if (allTrue) {
+          return new ExprNodeConstantDesc(Boolean.TRUE);
+        }
         if (newChildren.size() == 0) {
           return null;
         }
         if (newChildren.size() == 1) {
           return newChildren.get(0);
         }
-        if (allTrue) {
-          return new ExprNodeConstantDesc(Boolean.TRUE);
-        }
+
         // Nothing to compact, update expr with compacted children.
         ((ExprNodeGenericFuncDesc) expr).setChildren(newChildren);
       } else if (isOr) {
         // Non-partition expressions are converted to nulls.
         List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
         boolean allFalse = true;
+        boolean isNull = false;
         for (ExprNodeDesc child : children) {
           ExprNodeDesc compactChild = compactExpr(child);
           if (compactChild != null) {
             if (isTrueExpr(compactChild)) {
               return new ExprNodeConstantDesc(Boolean.TRUE);
             }
-            if (!isFalseExpr(compactChild)) {
+            if (!isNull && !isFalseExpr(compactChild)) {
               newChildren.add(compactChild);
               allFalse = false;
             }
           } else {
-            return null;
+            isNull = true;
           }
         }
 
+        if (isNull) {
+          return null;
+        }
         if (allFalse) {
           return new ExprNodeConstantDesc(Boolean.FALSE);
         }
+        if (newChildren.size() == 1) {
+          return newChildren.get(0);
+        }
+
         // Nothing to compact, update expr with compacted children.
         ((ExprNodeGenericFuncDesc) expr).setChildren(newChildren);
       }
