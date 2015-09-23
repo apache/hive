@@ -140,6 +140,10 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
     return "boolean";
   }
 
+  public void setInputColumn(int inputCol) {
+    this.inputCol = inputCol;
+  }
+
   @Override
   public int getOutputColumn() {
     return this.outputColumn;

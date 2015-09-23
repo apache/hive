@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyStringOperator;
@@ -54,12 +53,10 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLeftSemiString
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterStringOperator;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.InConstantType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
@@ -70,6 +67,7 @@ import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
 import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
@@ -141,11 +139,8 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -160,7 +155,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   Set<String> supportedAggregationUdfs = new HashSet<String>();
 
-  private PhysicalContext physicalContext = null;
   private HiveConf hiveConf;
 
   public Vectorizer() {
@@ -312,13 +306,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class VectorizationDispatcher implements Dispatcher {
 
-    private final PhysicalContext physicalContext;
-
     private List<String> reduceColumnNames;
     private List<TypeInfo> reduceTypeInfos;
 
     public VectorizationDispatcher(PhysicalContext physicalContext) {
-      this.physicalContext = physicalContext;
       reduceColumnNames = null;
       reduceTypeInfos = null;
     }
@@ -433,7 +424,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       MapWorkVectorizationNodeProcessor vnp = new MapWorkVectorizationNodeProcessor(mapWork, isTez);
       addMapWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
-      GraphWalker ogw = new PreOrderWalker(disp);
+      GraphWalker ogw = new PreOrderOnceWalker(disp);
       // iterator the mapper operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
       topNodes.addAll(mapWork.getAliasToWork().values());
@@ -584,12 +575,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (nonVectorizableChildOfGroupBy(op)) {
           return new Boolean(true);
         }
-        boolean ret;
-        try {
-          ret = validateMapWorkOperator(op, mapWork, isTez);
-        } catch (Exception e) {
-          throw new SemanticException(e);
-        }
+        boolean ret = validateMapWorkOperator(op, mapWork, isTez);
         if (!ret) {
           LOG.info("MapWork Operator: " + op.getName() + " could not be vectorized.");
           return new Boolean(false);
@@ -711,12 +697,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class MapWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
 
-    private final MapWork mWork;
     private final boolean isTez;
 
     public MapWorkVectorizationNodeProcessor(MapWork mWork, boolean isTez) {
       super();
-      this.mWork = mWork;
       this.isTez = isTez;
     }
 
@@ -775,7 +759,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     private final List<String> reduceColumnNames;
     private final List<TypeInfo> reduceTypeInfos;
 
-    private boolean isTez;
+    private final boolean isTez;
 
     private Operator<? extends OperatorDesc> rootVectorOp;
 
@@ -849,11 +833,6 @@ public class Vectorizer implements PhysicalPlanResolver {
           LOG.debug("Vectorized ReduceWork operator " + vectorOp.getName() + " added vectorization context " + vNewContext.toString());
         }
       }
-      if (vectorOp instanceof VectorGroupByOperator) {
-        VectorGroupByOperator groupBy = (VectorGroupByOperator) vectorOp;
-        VectorGroupByDesc vectorDesc = groupBy.getConf().getVectorDesc();
-        vectorDesc.setVectorGroupBatches(true);
-      }
       if (saveRootVectorOp && op != vectorOp) {
         rootVectorOp = vectorOp;
       }
@@ -880,7 +859,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   @Override
   public PhysicalContext resolve(PhysicalContext physicalContext) throws SemanticException {
-    this.physicalContext  = physicalContext;
     hiveConf = physicalContext.getConf();
 
     boolean vectorPath = HiveConf.getBoolVar(hiveConf,
@@ -1160,42 +1138,72 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Cannot vectorize groupby key expression");
       return false;
     }
-    ret = validateAggregationDesc(desc.getAggregators(), isReduce);
-    if (!ret) {
-      LOG.info("Cannot vectorize groupby aggregate expression");
-      return false;
-    }
-    if (isReduce) {
-      if (desc.isDistinct()) {
-        LOG.info("Distinct not supported in reduce vector mode");
+
+    if (!isReduce) {
+
+      // MapWork
+
+      ret = validateHashAggregationDesc(desc.getAggregators());
+      if (!ret) {
         return false;
       }
-      // Sort-based GroupBy?
-      if (desc.getMode() != GroupByDesc.Mode.COMPLETE &&
-          desc.getMode() != GroupByDesc.Mode.PARTIAL1 &&
-          desc.getMode() != GroupByDesc.Mode.PARTIAL2 &&
-          desc.getMode() != GroupByDesc.Mode.MERGEPARTIAL) {
-        LOG.info("Reduce vector mode not supported when input for GROUP BY not sorted");
-        return false;
-      }
-      LOG.info("Reduce GROUP BY mode is " + desc.getMode().name());
-      if (!aggregatorsOutputIsPrimitive(desc.getAggregators(), isReduce)) {
-        LOG.info("Reduce vector mode only supported when aggregate outputs are primitive types");
-        return false;
-      }
-      if (desc.getKeys().size() > 0) {
-        if (op.getParentOperators().size() > 0) {
-          LOG.info("Reduce vector mode can only handle a key group GROUP BY operator when it is fed by reduce-shuffle");
+    } else {
+
+      // ReduceWork
+
+      boolean isComplete = desc.getMode() == GroupByDesc.Mode.COMPLETE;
+      if (desc.getMode() != GroupByDesc.Mode.HASH) {
+
+        // Reduce Merge-Partial GROUP BY.
+
+        // A merge-partial GROUP BY is fed by grouping by keys from reduce-shuffle.  It is the
+        // first (or root) operator for its reduce task.
+        // TODO: Technically, we should also handle FINAL, PARTIAL1, PARTIAL2 and PARTIALS
+        //       that are not hash or complete, but aren't merge-partial, somehow.
+
+        if (desc.isDistinct()) {
+          LOG.info("Vectorized Reduce MergePartial GROUP BY does not support DISTINCT");
           return false;
         }
-        LOG.info("Reduce-side GROUP BY will process key groups");
-        vectorDesc.setVectorGroupBatches(true);
+
+        boolean hasKeys = (desc.getKeys().size() > 0);
+
+        // Do we support merge-partial aggregation AND the output is primitive?
+        ret = validateReduceMergePartialAggregationDesc(desc.getAggregators(), hasKeys);
+        if (!ret) {
+          return false;
+        }
+
+        if (hasKeys) {
+          if (op.getParentOperators().size() > 0 && !isComplete) {
+            LOG.info("Vectorized Reduce MergePartial GROUP BY keys can only handle a key group when it is fed by reduce-shuffle");
+            return false;
+          }
+
+          LOG.info("Vectorized Reduce MergePartial GROUP BY will process key groups");
+
+          // Primitive output validation above means we can output VectorizedRowBatch to the
+          // children operators.
+          vectorDesc.setVectorOutput(true);
+        } else {
+          LOG.info("Vectorized Reduce MergePartial GROUP BY will do global aggregation");
+        }
+        if (!isComplete) {
+          vectorDesc.setIsReduceMergePartial(true);
+        } else {
+          vectorDesc.setIsReduceStreaming(true);
+        }
       } else {
-        LOG.info("Reduce-side GROUP BY will do global aggregation");
+
+        // Reduce Hash GROUP BY or global aggregation.
+
+        ret = validateHashAggregationDesc(desc.getAggregators());
+        if (!ret) {
+          return false;
+        }
       }
-      vectorDesc.setVectorOutput(true);
-      vectorDesc.setIsReduce(true);
     }
+
     return true;
   }
 
@@ -1218,9 +1226,18 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private boolean validateAggregationDesc(List<AggregationDesc> descs, boolean isReduce) {
+
+  private boolean validateHashAggregationDesc(List<AggregationDesc> descs) {
+    return validateAggregationDesc(descs, /* isReduceMergePartial */ false, false);
+  }
+
+  private boolean validateReduceMergePartialAggregationDesc(List<AggregationDesc> descs, boolean hasKeys) {
+    return validateAggregationDesc(descs, /* isReduceMergePartial */ true, hasKeys);
+  }
+
+  private boolean validateAggregationDesc(List<AggregationDesc> descs, boolean isReduceMergePartial, boolean hasKeys) {
     for (AggregationDesc d : descs) {
-      boolean ret = validateAggregationDesc(d, isReduce);
+      boolean ret = validateAggregationDesc(d, isReduceMergePartial, hasKeys);
       if (!ret) {
         return false;
       }
@@ -1243,69 +1260,19 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Cannot vectorize " + desc.toString() + " of type " + typeName);
       return false;
     }
-    boolean isInExpression = false;
     if (desc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc d = (ExprNodeGenericFuncDesc) desc;
       boolean r = validateGenericUdf(d);
       if (!r) {
+        LOG.info("Cannot vectorize UDF " + d);
         return false;
       }
-      GenericUDF genericUDF = d.getGenericUDF();
-      isInExpression = (genericUDF instanceof GenericUDFIn);
     }
     if (desc.getChildren() != null) {
-      if (isInExpression
-          && desc.getChildren().get(0).getTypeInfo().getCategory() == Category.STRUCT) {
-        // Don't restrict child expressions for projection. 
-        // Always use loose FILTER mode.
-        if (!validateStructInExpression(desc, VectorExpressionDescriptor.Mode.FILTER)) {
-          return false;
-        }
-      } else {
-        for (ExprNodeDesc d : desc.getChildren()) {
-          // Don't restrict child expressions for projection. 
-          // Always use loose FILTER mode.
-          if (!validateExprNodeDescRecursive(d, VectorExpressionDescriptor.Mode.FILTER)) {
-            return false;
-          }
-        }
-      }
-    }
-    return true;
-  }
-
-  private boolean validateStructInExpression(ExprNodeDesc desc,
-      VectorExpressionDescriptor.Mode mode) {
-    for (ExprNodeDesc d : desc.getChildren()) {
-      TypeInfo typeInfo = d.getTypeInfo();
-      if (typeInfo.getCategory() != Category.STRUCT) {
-        return false;
-      }
-      StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-
-      ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo
-          .getAllStructFieldTypeInfos();
-      ArrayList<String> fieldNames = structTypeInfo.getAllStructFieldNames();
-      final int fieldCount = fieldTypeInfos.size();
-      for (int f = 0; f < fieldCount; f++) {
-        TypeInfo fieldTypeInfo = fieldTypeInfos.get(f);
-        Category category = fieldTypeInfo.getCategory();
-        if (category != Category.PRIMITIVE) {
-          LOG.info("Cannot vectorize struct field " + fieldNames.get(f)
-              + " of type " + fieldTypeInfo.getTypeName());
-          return false;
-        }
-        PrimitiveTypeInfo fieldPrimitiveTypeInfo = (PrimitiveTypeInfo) fieldTypeInfo;
-        InConstantType inConstantType = VectorizationContext
-            .getInConstantTypeFromPrimitiveCategory(fieldPrimitiveTypeInfo
-                .getPrimitiveCategory());
-
-        // For now, limit the data types we support for Vectorized Struct IN().
-        if (inConstantType != InConstantType.INT_FAMILY
-            && inConstantType != InConstantType.FLOAT_FAMILY
-            && inConstantType != InConstantType.STRING_FAMILY) {
-          LOG.info("Cannot vectorize struct field " + fieldNames.get(f)
-              + " of type " + fieldTypeInfo.getTypeName());
+      for (ExprNodeDesc d: desc.getChildren()) {
+        // Don't restrict child expressions for projection.  Always use looser FILTER mode.
+        boolean r = validateExprNodeDescRecursive(d, VectorExpressionDescriptor.Mode.FILTER);
+        if (!r) {
           return false;
         }
       }
@@ -1348,7 +1315,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
   }
 
-  private boolean validateAggregationDesc(AggregationDesc aggDesc, boolean isReduce) {
+  private boolean validateAggregationIsPrimitive(VectorAggregateExpression vectorAggrExpr) {
+    ObjectInspector outputObjInspector = vectorAggrExpr.getOutputObjectInspector();
+    return (outputObjInspector.getCategory() == ObjectInspector.Category.PRIMITIVE);
+  }
+
+  private boolean validateAggregationDesc(AggregationDesc aggDesc, boolean isReduceMergePartial,
+          boolean hasKeys) {
+
     String udfName = aggDesc.getGenericUDAFName().toLowerCase();
     if (!supportedAggregationUdfs.contains(udfName)) {
       LOG.info("Cannot vectorize groupby aggregate expression: UDF " + udfName + " not supported");
@@ -1358,47 +1332,24 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Cannot vectorize groupby aggregate expression: UDF parameters not supported");
       return false;
     }
+
     // See if we can vectorize the aggregation.
-    try {
-      VectorizationContext vc = new ValidatorVectorizationContext();
-      if (vc.getAggregatorExpression(aggDesc, isReduce) == null) {
-        // TODO: this cannot happen - VectorizationContext throws in such cases.
-        LOG.info("getAggregatorExpression returned null");
-        return false;
-      }
-    } catch (Exception e) {
-      LOG.info("Failed to vectorize", e);
-      return false;
-    }
-    return true;
-  }
-
-  private boolean aggregatorsOutputIsPrimitive(List<AggregationDesc> descs, boolean isReduce) {
-    for (AggregationDesc d : descs) {
-      boolean ret = aggregatorsOutputIsPrimitive(d, isReduce);
-      if (!ret) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean aggregatorsOutputIsPrimitive(AggregationDesc aggDesc, boolean isReduce) {
     VectorizationContext vc = new ValidatorVectorizationContext();
     VectorAggregateExpression vectorAggrExpr;
     try {
-        vectorAggrExpr = vc.getAggregatorExpression(aggDesc, isReduce);
+        vectorAggrExpr = vc.getAggregatorExpression(aggDesc, isReduceMergePartial);
     } catch (Exception e) {
       // We should have already attempted to vectorize in validateAggregationDesc.
       LOG.info("Vectorization of aggreation should have succeeded ", e);
       return false;
     }
 
-    ObjectInspector outputObjInspector = vectorAggrExpr.getOutputObjectInspector();
-    if (outputObjInspector.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-      return true;
+    if (isReduceMergePartial && hasKeys && !validateAggregationIsPrimitive(vectorAggrExpr)) {
+      LOG.info("Vectorized Reduce MergePartial GROUP BY keys can only handle aggregate outputs that are primitive types");
+      return false;
     }
-    return false;
+
+    return true;
   }
 
   private boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {
@@ -1454,7 +1405,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     int[] smallTableIndices;
     int smallTableIndicesSize;
-    List<ExprNodeDesc> smallTableExprs = desc.getExprs().get(posSingleVectorMapJoinSmallTable);
     if (desc.getValueIndices() != null && desc.getValueIndices().get(posSingleVectorMapJoinSmallTable) != null) {
       smallTableIndices = desc.getValueIndices().get(posSingleVectorMapJoinSmallTable);
       LOG.info("Vectorizer isBigTableOnlyResults smallTableIndices " + Arrays.toString(smallTableIndices));
@@ -1492,8 +1442,6 @@ public class Vectorizer implements PhysicalPlanResolver {
         VectorizationContext vContext, MapJoinDesc desc) throws HiveException {
     Operator<? extends OperatorDesc> vectorOp = null;
     Class<? extends Operator<?>> opClass = null;
-
-    boolean isOuterJoin = !desc.getNoOuterJoin();
 
     VectorMapJoinDesc.HashTableImplementationType hashTableImplementationType = HashTableImplementationType.NONE;
     VectorMapJoinDesc.HashTableKind hashTableKind = HashTableKind.NONE;
