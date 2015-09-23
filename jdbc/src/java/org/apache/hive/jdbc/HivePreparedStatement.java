@@ -607,7 +607,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
     } else if (x instanceof Character) {
       setString(parameterIndex, x.toString());
     } else if (x instanceof Timestamp) {
-      setString(parameterIndex, x.toString());
+      setTimestamp(parameterIndex, (Timestamp) x);
     } else if (x instanceof BigDecimal) {
       setString(parameterIndex, x.toString());
     } else {
@@ -728,7 +728,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
-    this.parameters.put(parameterIndex, x.toString());
+    this.parameters.put(parameterIndex, "'" + x.toString() + "'");
   }
 
   /*
