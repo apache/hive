@@ -1056,7 +1056,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     } catch (Exception e) {
       cancelFutures(pathFutures);
       cancelFutures(splitFutures);
-      throw new RuntimeException("serious problem", e);
+      throw new RuntimeException("ORC split generation failed with exception: " + e.getMessage(), e);
     }
 
     if (context.cacheStripeDetails) {
