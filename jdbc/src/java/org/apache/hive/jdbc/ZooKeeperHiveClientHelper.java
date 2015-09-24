@@ -130,7 +130,7 @@ class ZooKeeperHiveClientHelper {
         // Set http path
         if ((matcher.group(1).equals("hive.server2.thrift.http.path"))
             && !(connParams.getSessionVars().containsKey(JdbcConnectionParams.HTTP_PATH))) {
-          connParams.getSessionVars().put(JdbcConnectionParams.HTTP_PATH, "/" + matcher.group(2));
+          connParams.getSessionVars().put(JdbcConnectionParams.HTTP_PATH, matcher.group(2));
         }
         // Set SSL
         if ((matcher.group(1) != null) && (matcher.group(1).equals("hive.server2.use.SSL"))
