@@ -177,8 +177,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.registry = new LlapRegistryService(true);
     addIfService(registry);
-    this.webServices = new LlapWebServices();
-    addIfService(webServices);
+    if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+      this.webServices = null;
+    } else {
+      this.webServices = new LlapWebServices();
+      addIfService(webServices);
+    }
     // Bring up the server only after all other components have started.
     addIfService(server);
     // AMReporter after the server so that it gets the correct address. It knows how to deal with
