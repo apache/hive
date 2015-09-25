@@ -34,6 +34,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.hcatalog.templeton.AppConfig;
 import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -544,9 +546,10 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     public void run() {
       PrintWriter writer = null;
       try {
-        InputStreamReader isr = new InputStreamReader(in);
+        String enc = conf.get(AppConfig.EXEC_ENCODING_NAME);
+        InputStreamReader isr = new InputStreamReader(in, enc);
         BufferedReader reader = new BufferedReader(isr);
-        writer = new PrintWriter(out);
+        writer = new PrintWriter(new OutputStreamWriter(out, enc));
 
         String line;
         while ((line = reader.readLine()) != null) {
