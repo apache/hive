@@ -1,0 +1,58 @@
+PREHOOK: query: drop table if exists emptyavro
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists emptyavro
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table emptyavro (a int) stored as avro
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emptyavro
+POSTHOOK: query: create table emptyavro (a int) stored as avro
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emptyavro
+PREHOOK: query: select count(*) from emptyavro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emptyavro
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from emptyavro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emptyavro
+#### A masked pattern was here ####
+0
+PREHOOK: query: insert into emptyavro select count(*) from emptyavro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emptyavro
+PREHOOK: Output: default@emptyavro
+POSTHOOK: query: insert into emptyavro select count(*) from emptyavro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emptyavro
+POSTHOOK: Output: default@emptyavro
+POSTHOOK: Lineage: emptyavro.a EXPRESSION [(emptyavro)emptyavro.null, ]
+PREHOOK: query: select count(*) from emptyavro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emptyavro
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from emptyavro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emptyavro
+#### A masked pattern was here ####
+1
+PREHOOK: query: insert into emptyavro select key from src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@emptyavro
+POSTHOOK: query: insert into emptyavro select key from src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@emptyavro
+POSTHOOK: Lineage: emptyavro.a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from emptyavro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emptyavro
+#### A masked pattern was here ####
+POSTHOOK: query: select * from emptyavro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emptyavro
+#### A masked pattern was here ####
+0
+100
