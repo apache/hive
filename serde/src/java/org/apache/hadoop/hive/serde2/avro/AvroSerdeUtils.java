@@ -27,6 +27,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
 
 import java.io.File;
@@ -38,6 +41,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -105,8 +109,26 @@ public class AvroSerdeUtils {
 
     // Try pulling directly from URL
     schemaString = properties.getProperty(AvroTableProperties.SCHEMA_URL.getPropName());
-    if(schemaString == null || schemaString.equals(SCHEMA_NONE))
+    if (schemaString == null) {
+      final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+      final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+      final String columnCommentProperty = properties.getProperty(AvroSerDe.LIST_COLUMN_COMMENTS);
+      if (columnNameProperty == null || columnNameProperty.isEmpty()
+        || columnTypeProperty == null || columnTypeProperty.isEmpty() ) {
+        throw new AvroSerdeException(EXCEPTION_MESSAGE);
+      }
+      // Get column names and types
+      List<String> columnNames = Arrays.asList(columnNameProperty.split(","));
+      List<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+
+      Schema schema = AvroSerDe.getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
+      properties.setProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
+      if (conf != null)
+        conf.set(AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(), schema.toString(false));
+      return schema;
+    } else if(schemaString.equals(SCHEMA_NONE)) {
       throw new AvroSerdeException(EXCEPTION_MESSAGE);
+    }
 
     try {
       Schema s = getSchemaFromFS(schemaString, conf);
