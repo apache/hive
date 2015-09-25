@@ -97,8 +97,6 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
-
 /**
  * A console SQL shell with command completion.
  * <p>
