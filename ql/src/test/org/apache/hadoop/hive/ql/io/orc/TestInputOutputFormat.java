@@ -1312,6 +1312,25 @@ public class TestInputOutputFormat {
     assertEquals(null, serde.getSerDeStats());
   }
 
+  @Test(expected = RuntimeException.class)
+  public void testSplitGenFailure() throws IOException {
+    Properties properties = new Properties();
+    HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
+    org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
+        outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
+            properties, Reporter.NULL);
+    writer.close(true);
+    InputFormat<?,?> in = new OrcInputFormat();
+    fs.setPermission(testFilePath, FsPermission.createImmutable((short) 0333));
+    FileInputFormat.setInputPaths(conf, testFilePath.toString());
+    try {
+      in.getSplits(conf, 1);
+    } catch (RuntimeException e) {
+      assertEquals(true, e.getMessage().contains("Permission denied"));
+      throw e;
+    }
+  }
+
   static class StringRow implements Writable {
     String str;
     String str2;

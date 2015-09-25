@@ -37,7 +37,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -412,29 +414,28 @@ public class TestJdbcDriver2 {
 
   @Test
   public void testPrepareStatement() {
-
-    String sql = "from (select count(1) from "
+    String sql = "FROM (SELECT 1 FROM "
         + tableName
         + " where   'not?param?not?param' <> 'not_param??not_param' and ?=? "
         + " and 1=? and 2=? and 3.0=? and 4.0=? and 'test\\'string\"'=? and 5=? and ?=? "
         + " and date '2012-01-01' = date ?"
-        + " ) t  select '2011-03-25' ddate,'China',true bv, 10 num limit 10";
+        + " and timestamp '2012-04-22 09:00:00.123456789' = timestamp ?"
+        + " ) t SELECT '2011-03-25' ddate,'China',true bv, 10 num LIMIT 1";
 
     ///////////////////////////////////////////////
     //////////////////// correct testcase
     //////////////////// executed twice: once with the typed ps setters, once with the generic setObject
     //////////////////////////////////////////////
     try {
-      PreparedStatement ps = createPreapredStatementUsingSetXXX(sql);
-      ResultSet res = ps.executeQuery();
-      assertPreparedStatementResultAsExpected(res);
-      ps.close();
+      try (PreparedStatement ps = createPreapredStatementUsingSetXXX(sql);
+           ResultSet res = ps.executeQuery()) {
+        assertPreparedStatementResultAsExpected(res);
+      }
 
-      ps = createPreapredStatementUsingSetObject(sql);
-      res = ps.executeQuery();
-      assertPreparedStatementResultAsExpected(res);
-      ps.close();
-
+      try (PreparedStatement ps = createPreapredStatementUsingSetObject(sql);
+           ResultSet res = ps.executeQuery()) {
+        assertPreparedStatementResultAsExpected(res);
+      }
     } catch (Exception e) {
       e.printStackTrace();
       fail(e.toString());
@@ -445,9 +446,8 @@ public class TestJdbcDriver2 {
     //////////////////////////////////////////////
     // set nothing for prepared sql
     Exception expectedException = null;
-    try {
-      PreparedStatement ps = con.prepareStatement(sql);
-      ps.executeQuery();
+    try (PreparedStatement ps = con.prepareStatement(sql);
+         ResultSet ignored = ps.executeQuery()) {
     } catch (Exception e) {
       expectedException = e;
     }
@@ -457,11 +457,10 @@ public class TestJdbcDriver2 {
 
     // set some of parameters for prepared sql, not all of them.
     expectedException = null;
-    try {
-      PreparedStatement ps = con.prepareStatement(sql);
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
       ps.setBoolean(1, true);
       ps.setBoolean(2, true);
-      ps.executeQuery();
+      try (ResultSet ignored = ps.executeQuery()) {}
     } catch (Exception e) {
       expectedException = e;
     }
@@ -471,16 +470,11 @@ public class TestJdbcDriver2 {
 
     // set the wrong type parameters for prepared sql.
     expectedException = null;
-    try {
-      PreparedStatement ps = con.prepareStatement(sql);
-
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
       // wrong type here
       ps.setString(1, "wrong");
-
-      assertTrue(true);
-      ResultSet res = ps.executeQuery();
-      if (!res.next()) {
-        throw new Exception("there must be a empty result set");
+      try (ResultSet res = ps.executeQuery()) {
+        assertFalse("ResultSet was not empty", res.next());
       }
     } catch (Exception e) {
       expectedException = e;
@@ -491,17 +485,15 @@ public class TestJdbcDriver2 {
 
     // setObject to the yet unknown type java.util.Date
     expectedException = null;
-    try {
-      PreparedStatement ps = con.prepareStatement(sql);
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
       ps.setObject(1, new Date());
-      ps.executeQuery();
+      try (ResultSet ignored = ps.executeQuery()) {}
     } catch (Exception e) {
       expectedException = e;
     }
     assertNotNull(
         "Setting to an unknown type should throw an exception",
         expectedException);
-
   }
 
   private PreparedStatement createPreapredStatementUsingSetObject(String sql) throws SQLException {
@@ -509,7 +501,6 @@ public class TestJdbcDriver2 {
 
     ps.setObject(1, true); //setBoolean
     ps.setObject(2, true); //setBoolean
-
     ps.setObject(3, Short.valueOf("1")); //setShort
     ps.setObject(4, 2); //setInt
     ps.setObject(5, 3f); //setFloat
@@ -519,6 +510,7 @@ public class TestJdbcDriver2 {
     ps.setObject(9, (byte) 1); //setByte
     ps.setObject(10, (byte) 1); //setByte
     ps.setString(11, "2012-01-01"); //setString
+    ps.setObject(12, Timestamp.valueOf("2012-04-22 09:00:00.123456789")); //setTimestamp
 
     ps.setMaxRows(2);
     return ps;
@@ -529,7 +521,6 @@ public class TestJdbcDriver2 {
 
     ps.setBoolean(1, true); //setBoolean
     ps.setBoolean(2, true); //setBoolean
-
     ps.setShort(3, Short.valueOf("1")); //setShort
     ps.setInt(4, 2); //setInt
     ps.setFloat(5, 3f); //setFloat
@@ -539,15 +530,17 @@ public class TestJdbcDriver2 {
     ps.setByte(9, (byte) 1); //setByte
     ps.setByte(10, (byte) 1); //setByte
     ps.setString(11, "2012-01-01"); //setString
+    ps.setTimestamp(12, Timestamp.valueOf("2012-04-22 09:00:00.123456789")); //setTimestamp
 
     ps.setMaxRows(2);
     return ps;
   }
 
-  private void assertPreparedStatementResultAsExpected(ResultSet res ) throws SQLException {
+  private void assertPreparedStatementResultAsExpected(ResultSet res) throws SQLException {
     assertNotNull(res);
+    assertTrue("ResultSet contained no rows", res.next());
 
-    while (res.next()) {
+    do {
       assertEquals("2011-03-25", res.getString("ddate"));
       assertEquals("10", res.getString("num"));
       assertEquals((byte) 10, res.getByte("num"));
@@ -561,9 +554,7 @@ public class TestJdbcDriver2 {
       assertNotNull(o);
       o = res.getObject("num");
       assertNotNull(o);
-    }
-    res.close();
-    assertTrue(true);
+    } while (res.next());
   }
 
   /**
@@ -2380,6 +2371,21 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     } catch (Exception e) {
       e.printStackTrace();
       fail(e.toString());
+    }
+  }
+
+  @Test
+  public void testPrepareSetTimestamp() throws SQLException, ParseException {
+    String sql = String.format("SELECT * FROM %s WHERE c17 = ?", dataTypeTableName);
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+      Timestamp timestamp = Timestamp.valueOf("2012-04-22 09:00:00.123456789");
+      ps.setTimestamp(1, timestamp);
+      // Ensure we find the single row which matches our timestamp (where field 1 has value 1)
+      try (ResultSet resultSet = ps.executeQuery()) {
+        assertTrue(resultSet.next());
+        assertEquals(1, resultSet.getInt(1));
+        assertFalse(resultSet.next());
+      }
     }
   }
 }

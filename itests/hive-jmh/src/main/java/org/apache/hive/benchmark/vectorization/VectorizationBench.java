@@ -17,6 +17,8 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprLongColumnLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDoubleColumnDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
@@ -40,6 +42,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.lang.Override;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -299,6 +302,33 @@ public class VectorizationBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 1, getBooleanLongColumnVector());
       expression = new NotCol(0, 1);
+    }
+  }
+
+  public static class IfExprLongColumnLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 3, getBooleanLongColumnVector(),
+        getLongColumnVector(), getLongColumnVector());
+      expression = new IfExprLongColumnLongColumn(0, 1, 2, 3);
+    }
+  }
+
+  public static class IfExprRepeatingLongColumnLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 3, getBooleanLongColumnVector(),
+          getRepeatingLongColumnVector(), getLongColumnVector());
+      expression = new IfExprLongColumnLongColumn(0, 1, 2, 3);
+    }
+  }
+
+  public static class IfExprLongColumnRepeatingLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 3, getBooleanLongColumnVector(),
+          getLongColumnVector(), getRepeatingLongColumnVector());
+      expression = new IfExprLongColumnLongColumn(0, 1, 2, 3);
     }
   }
 

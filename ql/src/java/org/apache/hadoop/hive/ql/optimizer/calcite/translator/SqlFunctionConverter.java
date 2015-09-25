@@ -45,6 +45,9 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -310,6 +313,7 @@ public class SqlFunctionConverter {
       registerFunction("in", HiveIn.INSTANCE, hToken(HiveParser.Identifier, "in"));
       registerFunction("between", HiveBetween.INSTANCE, hToken(HiveParser.Identifier, "between"));
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
+
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {
@@ -339,8 +343,7 @@ public class SqlFunctionConverter {
   // UDAF is assumed to be deterministic
   public static class CalciteUDAF extends SqlAggFunction {
     public CalciteUDAF(String opName, SqlReturnTypeInference returnTypeInference,
-        SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
-        ImmutableList<RelDataType> argTypes, RelDataType retType) {
+        SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
       super(opName, SqlKind.OTHER_FUNCTION, returnTypeInference, operandTypeInference,
           operandTypeChecker, SqlFunctionCategory.USER_DEFINED_FUNCTION);
     }
@@ -367,8 +370,6 @@ public class SqlFunctionConverter {
     private SqlReturnTypeInference     returnTypeInference;
     private SqlOperandTypeInference    operandTypeInference;
     private SqlOperandTypeChecker      operandTypeChecker;
-    private ImmutableList<RelDataType> argTypes;
-    private RelDataType                retType;
   }
 
   private static CalciteUDFInfo getUDFInfo(String hiveUdfName,
@@ -382,10 +383,6 @@ public class SqlFunctionConverter {
       typeFamilyBuilder.add(Util.first(at.getSqlTypeName().getFamily(), SqlTypeFamily.ANY));
     }
     udfInfo.operandTypeChecker = OperandTypes.family(typeFamilyBuilder.build());
-
-    udfInfo.argTypes = ImmutableList.<RelDataType> copyOf(calciteArgTypes);
-    udfInfo.retType = calciteRetType;
-
     return udfInfo;
   }
 
@@ -413,13 +410,34 @@ public class SqlFunctionConverter {
   public static SqlAggFunction getCalciteAggFn(String hiveUdfName,
       ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
+
     if (calciteAggFn == null) {
       CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
-      calciteAggFn = new CalciteUDAF(uInf.udfName, uInf.returnTypeInference,
-          uInf.operandTypeInference, uInf.operandTypeChecker, uInf.argTypes, uInf.retType);
-    }
+      switch (hiveUdfName.toLowerCase()) {
+        case "sum":
+          calciteAggFn = new HiveSqlSumAggFunction(uInf.returnTypeInference,
+              uInf.operandTypeInference, uInf.operandTypeChecker);
+          break;
+        case "count":
+          calciteAggFn = new HiveSqlCountAggFunction(uInf.returnTypeInference,
+              uInf.operandTypeInference, uInf.operandTypeChecker);
+          break;
+        case "min":
+          calciteAggFn = new HiveSqlMinMaxAggFunction(uInf.returnTypeInference,
+              uInf.operandTypeInference, uInf.operandTypeChecker, true);
+          break;
+        case "max":
+          calciteAggFn = new HiveSqlMinMaxAggFunction(uInf.returnTypeInference,
+              uInf.operandTypeInference, uInf.operandTypeChecker, false);
+          break;
+        default:
+          calciteAggFn = new CalciteUDAF(uInf.udfName, uInf.returnTypeInference,
+              uInf.operandTypeInference, uInf.operandTypeChecker);
+          break;
+      }
 
+    }
     return calciteAggFn;
   }
 

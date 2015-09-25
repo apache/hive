@@ -104,19 +104,29 @@ import org.apache.hadoop.hive.ql.udf.UDFToLong;
 import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.generic.*;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.DateUtils;
+
 
 /**
  * Context class for vectorization execution.
@@ -1273,17 +1283,208 @@ public class VectorizationContext {
     }
   }
 
+  public enum InConstantType {
+    INT_FAMILY,
+    TIMESTAMP,
+    DATE,
+    FLOAT_FAMILY,
+    STRING_FAMILY,
+    DECIMAL
+  }
+
+  public static InConstantType getInConstantTypeFromPrimitiveCategory(PrimitiveCategory primitiveCategory) {
+
+    switch (primitiveCategory) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      return InConstantType.INT_FAMILY;
+  
+    case DATE:
+      return InConstantType.TIMESTAMP;
+
+    case TIMESTAMP:
+      return InConstantType.DATE;
+
+    case FLOAT:
+    case DOUBLE:
+      return InConstantType.FLOAT_FAMILY;
+  
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+    case BINARY:
+      return InConstantType.STRING_FAMILY;
+  
+    case DECIMAL:
+      return InConstantType.DECIMAL;
+  
+
+    case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY_TIME:
+      // UNDONE: Fall through for these... they don't appear to be supported yet.
+    default:
+      throw new RuntimeException("Unexpected primitive type category " + primitiveCategory);
+    }
+  }
+
+  private VectorExpression getStructInExpression(List<ExprNodeDesc> childExpr, ExprNodeDesc colExpr,
+      TypeInfo colTypeInfo, List<ExprNodeDesc> inChildren, Mode mode, TypeInfo returnType)
+          throws HiveException {
+
+    VectorExpression expr = null;
+
+    StructTypeInfo structTypeInfo = (StructTypeInfo) colTypeInfo;
+
+    ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    final int fieldCount = fieldTypeInfos.size();
+    ColumnVector.Type[] fieldVectorColumnTypes = new ColumnVector.Type[fieldCount];
+    InConstantType[] fieldInConstantTypes = new InConstantType[fieldCount];
+    for (int f = 0; f < fieldCount; f++) {
+      TypeInfo fieldTypeInfo = fieldTypeInfos.get(f);
+      // Only primitive fields supports for now.
+      if (fieldTypeInfo.getCategory() != Category.PRIMITIVE) {
+        return null;
+      }
+
+      // We are going to serialize using the 4 basic types.
+      ColumnVector.Type fieldVectorColumnType = getColumnVectorTypeFromTypeInfo(fieldTypeInfo);
+      fieldVectorColumnTypes[f] = fieldVectorColumnType;
+
+      // We currently evaluate the IN (..) constants in special ways.
+      PrimitiveCategory fieldPrimitiveCategory =
+          ((PrimitiveTypeInfo) fieldTypeInfo).getPrimitiveCategory();
+      InConstantType inConstantType = getInConstantTypeFromPrimitiveCategory(fieldPrimitiveCategory);
+      fieldInConstantTypes[f] = inConstantType;
+    }
+
+    Output buffer = new Output();
+    BinarySortableSerializeWrite binarySortableSerializeWrite =
+        new BinarySortableSerializeWrite(fieldCount);
+
+    final int inChildrenCount = inChildren.size();
+    byte[][] serializedInChildren = new byte[inChildrenCount][];
+    try {
+      for (int i = 0; i < inChildrenCount; i++) {
+        final ExprNodeDesc node = inChildren.get(i);
+        final Object[] constants;
+
+        if (node instanceof ExprNodeConstantDesc) {
+          ExprNodeConstantDesc constNode = (ExprNodeConstantDesc) node;
+          ConstantObjectInspector output = constNode.getWritableObjectInspector();
+          constants = ((List<?>) output.getWritableConstantValue()).toArray();
+        } else {
+          ExprNodeGenericFuncDesc exprNode = (ExprNodeGenericFuncDesc) node;
+          ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory
+              .get(exprNode);
+          ObjectInspector output = evaluator.initialize(exprNode
+              .getWritableObjectInspector());
+          constants = (Object[]) evaluator.evaluate(null);
+        }
+
+        binarySortableSerializeWrite.set(buffer);
+        for (int f = 0; f < fieldCount; f++) {
+          Object constant = constants[f];
+          if (constant == null) {
+            binarySortableSerializeWrite.writeNull();
+          } else {
+            InConstantType inConstantType = fieldInConstantTypes[f];
+            switch (inConstantType) {
+            case STRING_FAMILY:
+              {
+                byte[] bytes;
+                if (constant instanceof Text) {
+                  Text text = (Text) constant;
+                  bytes = text.getBytes();
+                  binarySortableSerializeWrite.writeString(bytes, 0, text.getLength());
+                } else {
+                  throw new HiveException("Unexpected constant String type " +
+                      constant.getClass().getSimpleName());
+                }
+              }
+              break;
+            case INT_FAMILY:
+              {
+                long value;
+                if (constant instanceof IntWritable) {
+                  value = ((IntWritable) constant).get();
+                } else if (constant instanceof LongWritable) {
+                  value = ((LongWritable) constant).get();
+                } else {
+                  throw new HiveException("Unexpected constant Long type " +
+                      constant.getClass().getSimpleName());
+                }
+                binarySortableSerializeWrite.writeLong(value);
+              }
+              break;
+
+            case FLOAT_FAMILY:
+              {
+                double value;
+                if (constant instanceof DoubleWritable) {
+                  value = ((DoubleWritable) constant).get();
+                } else {
+                  throw new HiveException("Unexpected constant Double type " +
+                      constant.getClass().getSimpleName());
+                }
+                binarySortableSerializeWrite.writeDouble(value);
+              }
+              break;
+
+            // UNDONE...
+            case DATE:
+            case TIMESTAMP:
+            case DECIMAL:
+            default:
+              throw new RuntimeException("Unexpected IN constant type " + inConstantType.name());
+            }
+          }
+        }
+        serializedInChildren[i] = Arrays.copyOfRange(buffer.getData(), 0, buffer.getLength());
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+
+    // Create a single child representing the scratch column where we will
+    // generate the serialized keys of the batch.
+    int scratchBytesCol = ocm.allocateOutputColumn("string");
+
+    Class<?> cl = (mode == Mode.FILTER ? FilterStructColumnInList.class : StructColumnInList.class);
+
+    expr = createVectorExpression(cl, null, Mode.PROJECTION, returnType);
+
+    ((IStringInExpr) expr).setInListValues(serializedInChildren);
+
+    ((IStructInExpr) expr).setScratchBytesColumn(scratchBytesCol);
+    ((IStructInExpr) expr).setStructColumnExprs(this, colExpr.getChildren(),
+        fieldVectorColumnTypes);
+
+    return expr;
+  }
+
   /**
    * Create a filter or boolean-valued expression for column IN ( <list-of-constants> )
    */
   private VectorExpression getInExpression(List<ExprNodeDesc> childExpr, Mode mode, TypeInfo returnType)
       throws HiveException {
     ExprNodeDesc colExpr = childExpr.get(0);
+    List<ExprNodeDesc> inChildren = childExpr.subList(1, childExpr.size());
 
     String colType = colExpr.getTypeString();
+    colType = VectorizationContext.mapTypeNameSynonyms(colType);
+    TypeInfo colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(colType);
+    Category category = colTypeInfo.getCategory();
+    if (category == Category.STRUCT){
+      return getStructInExpression(childExpr, colExpr, colTypeInfo, inChildren, mode, returnType);
+    } else if (category != Category.PRIMITIVE) {
+      return null;
+    }
 
     // prepare arguments for createVectorExpression
-    List<ExprNodeDesc> childrenForInList =  evaluateCastOnConstants(childExpr.subList(1, childExpr.size()));
+    List<ExprNodeDesc> childrenForInList =  evaluateCastOnConstants(inChildren);
 
     /* This method assumes that the IN list has no NULL entries. That is enforced elsewhere,
      * in the Vectorizer class. If NULL is passed in as a list entry, behavior is not defined.

@@ -1,49 +1,29 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
-
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
  * The first is always a boolean (LongColumnVector).
  * The second and third are long columns or long expression results.
  */
-public class <ClassName> extends VectorExpression {
+public class IfExprLongColumnLongColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
   private int arg1Column, arg2Column, arg3Column;
   private int outputColumn;
 
-  public <ClassName>(int arg1Column, int arg2Column, int arg3Column, int outputColumn) {
+  public IfExprLongColumnLongColumn(int arg1Column, int arg2Column, int arg3Column, int outputColumn) {
     this.arg1Column = arg1Column;
     this.arg2Column = arg2Column;
     this.arg3Column = arg3Column;
     this.outputColumn = outputColumn;
   }
 
-  public <ClassName>() {
+  public IfExprLongColumnLongColumn() {
   }
 
   @Override
@@ -54,18 +34,18 @@ public class <ClassName> extends VectorExpression {
     }
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
-    <InputColumnVectorType> arg2ColVector = (<InputColumnVectorType>) batch.cols[arg2Column];
-    <InputColumnVectorType> arg3ColVector = (<InputColumnVectorType>) batch.cols[arg3Column];
-    <InputColumnVectorType> outputColVector = (<InputColumnVectorType>) batch.cols[outputColumn];
+    LongColumnVector arg2ColVector = (LongColumnVector) batch.cols[arg2Column];
+    LongColumnVector arg3ColVector = (LongColumnVector) batch.cols[arg3Column];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = arg2ColVector.noNulls && arg3ColVector.noNulls;
     outputColVector.isRepeating = false; // may override later
     int n = batch.size;
     long[] vector1 = arg1ColVector.vector;
-    <OperandType>[] vector2 = arg2ColVector.vector;
-    <OperandType>[] vector3 = arg3ColVector.vector;
-    <OperandType>[] outputVector = outputColVector.vector;
+    long[] vector2 = arg2ColVector.vector;
+    long[] vector3 = arg3ColVector.vector;
+    long[] outputVector = outputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -95,13 +75,13 @@ public class <ClassName> extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = (vector1[i] == 1 ? vector2[i] : vector3[i]);
+          outputVector[i] = (~(vector1[i] - 1) & vector2[i]) | ((vector1[i] - 1) & vector3[i]);
           outputIsNull[i] = (vector1[i] == 1 ?
               arg2ColVector.isNull[i] : arg3ColVector.isNull[i]);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = (vector1[i] == 1 ? vector2[i] : vector3[i]);
+          outputVector[i] = (~(vector1[i] - 1) & vector2[i]) | ((vector1[i] - 1) & vector3[i]);
           outputIsNull[i] = (vector1[i] == 1 ?
               arg2ColVector.isNull[i] : arg3ColVector.isNull[i]);
         }
@@ -137,7 +117,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String getOutputType() {
-    return "<OperandType>";
+    return "long";
   }
 
   public int getArg1Column() {
@@ -176,8 +156,8 @@ public class <ClassName> extends VectorExpression {
         .setNumArguments(3)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.getType("long"),
-            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType>"),
-            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType>"))
+            VectorExpressionDescriptor.ArgumentType.getType("int_datetime_interval_family"),
+            VectorExpressionDescriptor.ArgumentType.getType("int_datetime_interval_family"))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN,

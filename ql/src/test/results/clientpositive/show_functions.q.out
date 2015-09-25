@@ -4,6 +4,7 @@ POSTHOOK: query: SHOW FUNCTIONS
 POSTHOOK: type: SHOWFUNCTIONS
 !
 !=
+$sum0
 %
 &
 *
