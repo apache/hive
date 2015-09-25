@@ -2541,6 +2541,9 @@ public abstract class TestHiveMetaStore extends TestCase {
 
     try {
       cleanUp(dbName, null, null);
+      for (Function f : client.getAllFunctions().getFunctions()) {
+        client.dropFunction(f.getDbName(), f.getFunctionName());
+      }
 
       createDb(dbName);
 

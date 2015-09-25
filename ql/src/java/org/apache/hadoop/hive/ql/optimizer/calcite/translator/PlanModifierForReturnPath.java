@@ -34,10 +34,6 @@ public class PlanModifierForReturnPath {
 
     Pair<RelNode, RelNode> topSelparentPair = HiveCalciteUtil.getTopLevelSelect(newTopNode);
     PlanModifierUtil.fixTopOBSchema(newTopNode, topSelparentPair, resultSchema, false);
-    if (isCTAS) {
-      newTopNode = PlanModifierForASTConv.renameTopLevelSelectInResultSchema(newTopNode,
-          topSelparentPair, resultSchema);
-    }
 
     return newTopNode;
   }

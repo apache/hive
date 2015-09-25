@@ -104,7 +104,6 @@ public class KeyValuesInputMerger extends KeyValuesReader {
 
     @Override
     public Object next() {
-      l4j.info("next called on " + currentIterator);
       return currentIterator.next();
     }
 

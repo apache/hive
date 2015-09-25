@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -37,6 +39,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 public class RawStoreProxy implements InvocationHandler {
+
+  static final private Log LOG = LogFactory.getLog(RawStoreProxy.class.getName());
 
   private final RawStore base;
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
@@ -110,7 +114,6 @@ public class RawStoreProxy implements InvocationHandler {
         Deadline.startTimer(method.getName());
         isTimerStarted = true;
       }
-
       ret = method.invoke(base, args);
 
       if (isTimerStarted) {

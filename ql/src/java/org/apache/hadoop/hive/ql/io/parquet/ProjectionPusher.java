@@ -65,6 +65,7 @@ public class ProjectionPusher {
     }
   }
 
+  @Deprecated  // Uses deprecated methods on ColumnProjectionUtils
   private void pushProjectionsAndFilters(final JobConf jobConf,
       final String splitPath, final String splitPathWithNoSchema) {
 
@@ -136,7 +137,7 @@ public class ProjectionPusher {
         filterExprSerialized);
   }
 
-
+  @Deprecated // Uses deprecated methods on ColumnProjectionUtils
   public JobConf pushProjectionsAndFilters(JobConf jobConf, Path path)
       throws IOException {
     updateMrWork(jobConf);  // TODO: refactor this in HIVE-6366

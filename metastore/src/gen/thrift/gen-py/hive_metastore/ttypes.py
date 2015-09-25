@@ -9750,6 +9750,726 @@ class FireEventResponse:
   def __ne__(self, other):
     return not (self == other)
 
+class MetadataPpdResult:
+  """
+  Attributes:
+   - metadata
+   - includeBitset
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'metadata', None, None, ), # 1
+    (2, TType.STRING, 'includeBitset', None, None, ), # 2
+  )
+
+  def __init__(self, metadata=None, includeBitset=None,):
+    self.metadata = metadata
+    self.includeBitset = includeBitset
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.metadata = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.includeBitset = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('MetadataPpdResult')
+    if self.metadata is not None:
+      oprot.writeFieldBegin('metadata', TType.STRING, 1)
+      oprot.writeString(self.metadata)
+      oprot.writeFieldEnd()
+    if self.includeBitset is not None:
+      oprot.writeFieldBegin('includeBitset', TType.STRING, 2)
+      oprot.writeString(self.includeBitset)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.metadata is None:
+      raise TProtocol.TProtocolException(message='Required field metadata is unset!')
+    if self.includeBitset is None:
+      raise TProtocol.TProtocolException(message='Required field includeBitset is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.metadata)
+    value = (value * 31) ^ hash(self.includeBitset)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetFileMetadataByExprResult:
+  """
+  Attributes:
+   - metadata
+   - isSupported
+   - unknownFileIds
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.MAP, 'metadata', (TType.I64,None,TType.STRUCT,(MetadataPpdResult, MetadataPpdResult.thrift_spec)), None, ), # 1
+    (2, TType.BOOL, 'isSupported', None, None, ), # 2
+    (3, TType.LIST, 'unknownFileIds', (TType.I64,None), None, ), # 3
+  )
+
+  def __init__(self, metadata=None, isSupported=None, unknownFileIds=None,):
+    self.metadata = metadata
+    self.isSupported = isSupported
+    self.unknownFileIds = unknownFileIds
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.MAP:
+          self.metadata = {}
+          (_ktype463, _vtype464, _size462 ) = iprot.readMapBegin()
+          for _i466 in xrange(_size462):
+            _key467 = iprot.readI64();
+            _val468 = MetadataPpdResult()
+            _val468.read(iprot)
+            self.metadata[_key467] = _val468
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.BOOL:
+          self.isSupported = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.unknownFileIds = []
+          (_etype472, _size469) = iprot.readListBegin()
+          for _i473 in xrange(_size469):
+            _elem474 = iprot.readI64();
+            self.unknownFileIds.append(_elem474)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetFileMetadataByExprResult')
+    if self.metadata is not None:
+      oprot.writeFieldBegin('metadata', TType.MAP, 1)
+      oprot.writeMapBegin(TType.I64, TType.STRUCT, len(self.metadata))
+      for kiter475,viter476 in self.metadata.items():
+        oprot.writeI64(kiter475)
+        viter476.write(oprot)
+      oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    if self.isSupported is not None:
+      oprot.writeFieldBegin('isSupported', TType.BOOL, 2)
+      oprot.writeBool(self.isSupported)
+      oprot.writeFieldEnd()
+    if self.unknownFileIds is not None:
+      oprot.writeFieldBegin('unknownFileIds', TType.LIST, 3)
+      oprot.writeListBegin(TType.I64, len(self.unknownFileIds))
+      for iter477 in self.unknownFileIds:
+        oprot.writeI64(iter477)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.metadata is None:
+      raise TProtocol.TProtocolException(message='Required field metadata is unset!')
+    if self.isSupported is None:
+      raise TProtocol.TProtocolException(message='Required field isSupported is unset!')
+    if self.unknownFileIds is None:
+      raise TProtocol.TProtocolException(message='Required field unknownFileIds is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.metadata)
+    value = (value * 31) ^ hash(self.isSupported)
+    value = (value * 31) ^ hash(self.unknownFileIds)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetFileMetadataByExprRequest:
+  """
+  Attributes:
+   - fileIds
+   - expr
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'fileIds', (TType.I64,None), None, ), # 1
+    (2, TType.STRING, 'expr', None, None, ), # 2
+  )
+
+  def __init__(self, fileIds=None, expr=None,):
+    self.fileIds = fileIds
+    self.expr = expr
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.fileIds = []
+          (_etype481, _size478) = iprot.readListBegin()
+          for _i482 in xrange(_size478):
+            _elem483 = iprot.readI64();
+            self.fileIds.append(_elem483)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.expr = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetFileMetadataByExprRequest')
+    if self.fileIds is not None:
+      oprot.writeFieldBegin('fileIds', TType.LIST, 1)
+      oprot.writeListBegin(TType.I64, len(self.fileIds))
+      for iter484 in self.fileIds:
+        oprot.writeI64(iter484)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.expr is not None:
+      oprot.writeFieldBegin('expr', TType.STRING, 2)
+      oprot.writeString(self.expr)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.fileIds is None:
+      raise TProtocol.TProtocolException(message='Required field fileIds is unset!')
+    if self.expr is None:
+      raise TProtocol.TProtocolException(message='Required field expr is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.fileIds)
+    value = (value * 31) ^ hash(self.expr)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetFileMetadataResult:
+  """
+  Attributes:
+   - metadata
+   - isSupported
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.MAP, 'metadata', (TType.I64,None,TType.STRING,None), None, ), # 1
+    (2, TType.BOOL, 'isSupported', None, None, ), # 2
+  )
+
+  def __init__(self, metadata=None, isSupported=None,):
+    self.metadata = metadata
+    self.isSupported = isSupported
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.MAP:
+          self.metadata = {}
+          (_ktype486, _vtype487, _size485 ) = iprot.readMapBegin()
+          for _i489 in xrange(_size485):
+            _key490 = iprot.readI64();
+            _val491 = iprot.readString();
+            self.metadata[_key490] = _val491
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.BOOL:
+          self.isSupported = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetFileMetadataResult')
+    if self.metadata is not None:
+      oprot.writeFieldBegin('metadata', TType.MAP, 1)
+      oprot.writeMapBegin(TType.I64, TType.STRING, len(self.metadata))
+      for kiter492,viter493 in self.metadata.items():
+        oprot.writeI64(kiter492)
+        oprot.writeString(viter493)
+      oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    if self.isSupported is not None:
+      oprot.writeFieldBegin('isSupported', TType.BOOL, 2)
+      oprot.writeBool(self.isSupported)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.metadata is None:
+      raise TProtocol.TProtocolException(message='Required field metadata is unset!')
+    if self.isSupported is None:
+      raise TProtocol.TProtocolException(message='Required field isSupported is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.metadata)
+    value = (value * 31) ^ hash(self.isSupported)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetFileMetadataRequest:
+  """
+  Attributes:
+   - fileIds
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'fileIds', (TType.I64,None), None, ), # 1
+  )
+
+  def __init__(self, fileIds=None,):
+    self.fileIds = fileIds
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.fileIds = []
+          (_etype497, _size494) = iprot.readListBegin()
+          for _i498 in xrange(_size494):
+            _elem499 = iprot.readI64();
+            self.fileIds.append(_elem499)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetFileMetadataRequest')
+    if self.fileIds is not None:
+      oprot.writeFieldBegin('fileIds', TType.LIST, 1)
+      oprot.writeListBegin(TType.I64, len(self.fileIds))
+      for iter500 in self.fileIds:
+        oprot.writeI64(iter500)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.fileIds is None:
+      raise TProtocol.TProtocolException(message='Required field fileIds is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.fileIds)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class PutFileMetadataResult:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('PutFileMetadataResult')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class PutFileMetadataRequest:
+  """
+  Attributes:
+   - fileIds
+   - metadata
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'fileIds', (TType.I64,None), None, ), # 1
+    (2, TType.LIST, 'metadata', (TType.STRING,None), None, ), # 2
+  )
+
+  def __init__(self, fileIds=None, metadata=None,):
+    self.fileIds = fileIds
+    self.metadata = metadata
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.fileIds = []
+          (_etype504, _size501) = iprot.readListBegin()
+          for _i505 in xrange(_size501):
+            _elem506 = iprot.readI64();
+            self.fileIds.append(_elem506)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.LIST:
+          self.metadata = []
+          (_etype510, _size507) = iprot.readListBegin()
+          for _i511 in xrange(_size507):
+            _elem512 = iprot.readString();
+            self.metadata.append(_elem512)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('PutFileMetadataRequest')
+    if self.fileIds is not None:
+      oprot.writeFieldBegin('fileIds', TType.LIST, 1)
+      oprot.writeListBegin(TType.I64, len(self.fileIds))
+      for iter513 in self.fileIds:
+        oprot.writeI64(iter513)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.metadata is not None:
+      oprot.writeFieldBegin('metadata', TType.LIST, 2)
+      oprot.writeListBegin(TType.STRING, len(self.metadata))
+      for iter514 in self.metadata:
+        oprot.writeString(iter514)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.fileIds is None:
+      raise TProtocol.TProtocolException(message='Required field fileIds is unset!')
+    if self.metadata is None:
+      raise TProtocol.TProtocolException(message='Required field metadata is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.fileIds)
+    value = (value * 31) ^ hash(self.metadata)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ClearFileMetadataResult:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ClearFileMetadataResult')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ClearFileMetadataRequest:
+  """
+  Attributes:
+   - fileIds
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'fileIds', (TType.I64,None), None, ), # 1
+  )
+
+  def __init__(self, fileIds=None,):
+    self.fileIds = fileIds
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.fileIds = []
+          (_etype518, _size515) = iprot.readListBegin()
+          for _i519 in xrange(_size515):
+            _elem520 = iprot.readI64();
+            self.fileIds.append(_elem520)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ClearFileMetadataRequest')
+    if self.fileIds is not None:
+      oprot.writeFieldBegin('fileIds', TType.LIST, 1)
+      oprot.writeListBegin(TType.I64, len(self.fileIds))
+      for iter521 in self.fileIds:
+        oprot.writeI64(iter521)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.fileIds is None:
+      raise TProtocol.TProtocolException(message='Required field fileIds is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.fileIds)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class GetAllFunctionsResponse:
   """
   Attributes:
@@ -9776,11 +10496,11 @@ class GetAllFunctionsResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.functions = []
-          (_etype465, _size462) = iprot.readListBegin()
-          for _i466 in xrange(_size462):
-            _elem467 = Function()
-            _elem467.read(iprot)
-            self.functions.append(_elem467)
+          (_etype525, _size522) = iprot.readListBegin()
+          for _i526 in xrange(_size522):
+            _elem527 = Function()
+            _elem527.read(iprot)
+            self.functions.append(_elem527)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -9797,8 +10517,8 @@ class GetAllFunctionsResponse:
     if self.functions is not None:
       oprot.writeFieldBegin('functions', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.functions))
-      for iter468 in self.functions:
-        iter468.write(oprot)
+      for iter528 in self.functions:
+        iter528.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

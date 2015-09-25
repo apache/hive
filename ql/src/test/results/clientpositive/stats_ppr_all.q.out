@@ -77,10 +77,10 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: order_amount (type: float)
-              outputColumnNames: _col0
+              outputColumnNames: order_amount
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: sum(_col0)
+                aggregations: sum(order_amount)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -128,10 +128,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
               Select Operator
                 expressions: order_amount (type: float)
-                outputColumnNames: _col0
+                outputColumnNames: order_amount
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
                 Group By Operator
-                  aggregations: sum(_col0)
+                  aggregations: sum(order_amount)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
@@ -176,10 +176,10 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: order_amount (type: float)
-              outputColumnNames: _col0
+              outputColumnNames: order_amount
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: sum(_col0)
+                aggregations: sum(order_amount)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -227,10 +227,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: order_amount (type: float)
-                outputColumnNames: _col0
+                outputColumnNames: order_amount
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  aggregations: sum(_col0)
+                  aggregations: sum(order_amount)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

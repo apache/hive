@@ -20,7 +20,6 @@
  packages="org.apache.hadoop.hive.ql.log">
 
   <Properties>
-    <Property name="webhcat.log.threshold">DEBUG</Property>
     <Property name="webhcat.log.level">INFO</Property>
     <Property name="webhcat.root.logger">standard</Property>
     <Property name="webhcat.log.dir">.</Property>
@@ -48,8 +47,8 @@
   </Appenders>
 
   <Loggers>
-    <Root level="${sys:webhcat.log.threshold}">
-      <AppenderRef ref="${sys:webhcat.root.logger}" level="${sys:webhcat.log.level}"/>
+    <Root level="${sys:webhcat.log.level}">
+      <AppenderRef ref="${sys:webhcat.root.logger}"/>
     </Root>
 
     <Logger name="com.sun.jersey" level="DEBUG">

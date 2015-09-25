@@ -321,6 +321,24 @@ class FireEventRequest;
 
 class FireEventResponse;
 
+class MetadataPpdResult;
+
+class GetFileMetadataByExprResult;
+
+class GetFileMetadataByExprRequest;
+
+class GetFileMetadataResult;
+
+class GetFileMetadataRequest;
+
+class PutFileMetadataResult;
+
+class PutFileMetadataRequest;
+
+class ClearFileMetadataResult;
+
+class ClearFileMetadataRequest;
+
 class GetAllFunctionsResponse;
 
 class MetaException;
@@ -5400,6 +5418,359 @@ class FireEventResponse {
 };
 
 void swap(FireEventResponse &a, FireEventResponse &b);
+
+
+class MetadataPpdResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "07A9615F837F7D0A952B595DD3020972";
+  static const uint8_t binary_fingerprint[16]; // = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+
+  MetadataPpdResult(const MetadataPpdResult&);
+  MetadataPpdResult& operator=(const MetadataPpdResult&);
+  MetadataPpdResult() : metadata(), includeBitset() {
+  }
+
+  virtual ~MetadataPpdResult() throw();
+  std::string metadata;
+  std::string includeBitset;
+
+  void __set_metadata(const std::string& val);
+
+  void __set_includeBitset(const std::string& val);
+
+  bool operator == (const MetadataPpdResult & rhs) const
+  {
+    if (!(metadata == rhs.metadata))
+      return false;
+    if (!(includeBitset == rhs.includeBitset))
+      return false;
+    return true;
+  }
+  bool operator != (const MetadataPpdResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MetadataPpdResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const MetadataPpdResult& obj);
+};
+
+void swap(MetadataPpdResult &a, MetadataPpdResult &b);
+
+
+class GetFileMetadataByExprResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "2B0C1B8D7599529A5797481BE308375D";
+  static const uint8_t binary_fingerprint[16]; // = {0x2B,0x0C,0x1B,0x8D,0x75,0x99,0x52,0x9A,0x57,0x97,0x48,0x1B,0xE3,0x08,0x37,0x5D};
+
+  GetFileMetadataByExprResult(const GetFileMetadataByExprResult&);
+  GetFileMetadataByExprResult& operator=(const GetFileMetadataByExprResult&);
+  GetFileMetadataByExprResult() : isSupported(0) {
+  }
+
+  virtual ~GetFileMetadataByExprResult() throw();
+  std::map<int64_t, MetadataPpdResult>  metadata;
+  bool isSupported;
+  std::vector<int64_t>  unknownFileIds;
+
+  void __set_metadata(const std::map<int64_t, MetadataPpdResult> & val);
+
+  void __set_isSupported(const bool val);
+
+  void __set_unknownFileIds(const std::vector<int64_t> & val);
+
+  bool operator == (const GetFileMetadataByExprResult & rhs) const
+  {
+    if (!(metadata == rhs.metadata))
+      return false;
+    if (!(isSupported == rhs.isSupported))
+      return false;
+    if (!(unknownFileIds == rhs.unknownFileIds))
+      return false;
+    return true;
+  }
+  bool operator != (const GetFileMetadataByExprResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetFileMetadataByExprResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const GetFileMetadataByExprResult& obj);
+};
+
+void swap(GetFileMetadataByExprResult &a, GetFileMetadataByExprResult &b);
+
+
+class GetFileMetadataByExprRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "925353917FC0AF87976A2338011F5A31";
+  static const uint8_t binary_fingerprint[16]; // = {0x92,0x53,0x53,0x91,0x7F,0xC0,0xAF,0x87,0x97,0x6A,0x23,0x38,0x01,0x1F,0x5A,0x31};
+
+  GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest&);
+  GetFileMetadataByExprRequest& operator=(const GetFileMetadataByExprRequest&);
+  GetFileMetadataByExprRequest() : expr() {
+  }
+
+  virtual ~GetFileMetadataByExprRequest() throw();
+  std::vector<int64_t>  fileIds;
+  std::string expr;
+
+  void __set_fileIds(const std::vector<int64_t> & val);
+
+  void __set_expr(const std::string& val);
+
+  bool operator == (const GetFileMetadataByExprRequest & rhs) const
+  {
+    if (!(fileIds == rhs.fileIds))
+      return false;
+    if (!(expr == rhs.expr))
+      return false;
+    return true;
+  }
+  bool operator != (const GetFileMetadataByExprRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetFileMetadataByExprRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const GetFileMetadataByExprRequest& obj);
+};
+
+void swap(GetFileMetadataByExprRequest &a, GetFileMetadataByExprRequest &b);
+
+
+class GetFileMetadataResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "D18BCBD4BA945E7F6500F5CD95205706";
+  static const uint8_t binary_fingerprint[16]; // = {0xD1,0x8B,0xCB,0xD4,0xBA,0x94,0x5E,0x7F,0x65,0x00,0xF5,0xCD,0x95,0x20,0x57,0x06};
+
+  GetFileMetadataResult(const GetFileMetadataResult&);
+  GetFileMetadataResult& operator=(const GetFileMetadataResult&);
+  GetFileMetadataResult() : isSupported(0) {
+  }
+
+  virtual ~GetFileMetadataResult() throw();
+  std::map<int64_t, std::string>  metadata;
+  bool isSupported;
+
+  void __set_metadata(const std::map<int64_t, std::string> & val);
+
+  void __set_isSupported(const bool val);
+
+  bool operator == (const GetFileMetadataResult & rhs) const
+  {
+    if (!(metadata == rhs.metadata))
+      return false;
+    if (!(isSupported == rhs.isSupported))
+      return false;
+    return true;
+  }
+  bool operator != (const GetFileMetadataResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetFileMetadataResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const GetFileMetadataResult& obj);
+};
+
+void swap(GetFileMetadataResult &a, GetFileMetadataResult &b);
+
+
+class GetFileMetadataRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "E49D7D1A9013CC81CD0F69D631EF82E4";
+  static const uint8_t binary_fingerprint[16]; // = {0xE4,0x9D,0x7D,0x1A,0x90,0x13,0xCC,0x81,0xCD,0x0F,0x69,0xD6,0x31,0xEF,0x82,0xE4};
+
+  GetFileMetadataRequest(const GetFileMetadataRequest&);
+  GetFileMetadataRequest& operator=(const GetFileMetadataRequest&);
+  GetFileMetadataRequest() {
+  }
+
+  virtual ~GetFileMetadataRequest() throw();
+  std::vector<int64_t>  fileIds;
+
+  void __set_fileIds(const std::vector<int64_t> & val);
+
+  bool operator == (const GetFileMetadataRequest & rhs) const
+  {
+    if (!(fileIds == rhs.fileIds))
+      return false;
+    return true;
+  }
+  bool operator != (const GetFileMetadataRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetFileMetadataRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const GetFileMetadataRequest& obj);
+};
+
+void swap(GetFileMetadataRequest &a, GetFileMetadataRequest &b);
+
+
+class PutFileMetadataResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+  PutFileMetadataResult(const PutFileMetadataResult&);
+  PutFileMetadataResult& operator=(const PutFileMetadataResult&);
+  PutFileMetadataResult() {
+  }
+
+  virtual ~PutFileMetadataResult() throw();
+
+  bool operator == (const PutFileMetadataResult & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const PutFileMetadataResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PutFileMetadataResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const PutFileMetadataResult& obj);
+};
+
+void swap(PutFileMetadataResult &a, PutFileMetadataResult &b);
+
+
+class PutFileMetadataRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "D64A208A8BCFCE146F4E2CB2176A807C";
+  static const uint8_t binary_fingerprint[16]; // = {0xD6,0x4A,0x20,0x8A,0x8B,0xCF,0xCE,0x14,0x6F,0x4E,0x2C,0xB2,0x17,0x6A,0x80,0x7C};
+
+  PutFileMetadataRequest(const PutFileMetadataRequest&);
+  PutFileMetadataRequest& operator=(const PutFileMetadataRequest&);
+  PutFileMetadataRequest() {
+  }
+
+  virtual ~PutFileMetadataRequest() throw();
+  std::vector<int64_t>  fileIds;
+  std::vector<std::string>  metadata;
+
+  void __set_fileIds(const std::vector<int64_t> & val);
+
+  void __set_metadata(const std::vector<std::string> & val);
+
+  bool operator == (const PutFileMetadataRequest & rhs) const
+  {
+    if (!(fileIds == rhs.fileIds))
+      return false;
+    if (!(metadata == rhs.metadata))
+      return false;
+    return true;
+  }
+  bool operator != (const PutFileMetadataRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PutFileMetadataRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const PutFileMetadataRequest& obj);
+};
+
+void swap(PutFileMetadataRequest &a, PutFileMetadataRequest &b);
+
+
+class ClearFileMetadataResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+  ClearFileMetadataResult(const ClearFileMetadataResult&);
+  ClearFileMetadataResult& operator=(const ClearFileMetadataResult&);
+  ClearFileMetadataResult() {
+  }
+
+  virtual ~ClearFileMetadataResult() throw();
+
+  bool operator == (const ClearFileMetadataResult & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ClearFileMetadataResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ClearFileMetadataResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ClearFileMetadataResult& obj);
+};
+
+void swap(ClearFileMetadataResult &a, ClearFileMetadataResult &b);
+
+
+class ClearFileMetadataRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "E49D7D1A9013CC81CD0F69D631EF82E4";
+  static const uint8_t binary_fingerprint[16]; // = {0xE4,0x9D,0x7D,0x1A,0x90,0x13,0xCC,0x81,0xCD,0x0F,0x69,0xD6,0x31,0xEF,0x82,0xE4};
+
+  ClearFileMetadataRequest(const ClearFileMetadataRequest&);
+  ClearFileMetadataRequest& operator=(const ClearFileMetadataRequest&);
+  ClearFileMetadataRequest() {
+  }
+
+  virtual ~ClearFileMetadataRequest() throw();
+  std::vector<int64_t>  fileIds;
+
+  void __set_fileIds(const std::vector<int64_t> & val);
+
+  bool operator == (const ClearFileMetadataRequest & rhs) const
+  {
+    if (!(fileIds == rhs.fileIds))
+      return false;
+    return true;
+  }
+  bool operator != (const ClearFileMetadataRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ClearFileMetadataRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  friend std::ostream& operator<<(std::ostream& out, const ClearFileMetadataRequest& obj);
+};
+
+void swap(ClearFileMetadataRequest &a, ClearFileMetadataRequest &b);
 
 typedef struct _GetAllFunctionsResponse__isset {
   _GetAllFunctionsResponse__isset() : functions(false) {}

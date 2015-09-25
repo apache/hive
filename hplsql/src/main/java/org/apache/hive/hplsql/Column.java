@@ -27,9 +27,36 @@ public class Column {
   String type;
   Var value;
   
+  int len;
+  int scale;
+  
   Column(String name, String type) {
     this.name = name;
-    this.type = type;
+    len = 0;
+    scale = 0;
+    setType(type);
+  }
+  
+  /**
+   * Set the column type with its length/precision
+   */
+  void setType(String type) {
+    int open = type.indexOf('(');
+    if (open == -1) {
+      this.type = type;
+    }
+    else {
+      this.type = type.substring(0, open);
+      int comma = type.indexOf(',', open);
+      int close = type.indexOf(')', open);
+      if (comma == -1) {
+        len = Integer.parseInt(type.substring(open + 1, close));
+      }
+      else {
+        len = Integer.parseInt(type.substring(open + 1, comma));
+        scale = Integer.parseInt(type.substring(comma + 1, close));
+      }
+    }
   }
   
   /**

@@ -23,8 +23,8 @@ select distinct(ctinyint) from alltypesorc limit 20;
 select distinct(ctinyint) from alltypesorc limit 20;
 
 explain
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20;
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20;
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20;
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20;
 
 -- limit zero
 explain

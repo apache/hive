@@ -54,10 +54,10 @@ Stage-0
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            table:{"serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Merge Join Operator [MERGEJOIN_20]
             |  condition map:[{"":"Left Outer Join0 to 1"}]
-            |  keys:{"1":"_col0 (type: int)","0":"id (type: int)"}
+            |  keys:{"0":"id (type: int)","1":"_col0 (type: int)"}
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             |<-Map 6 [SIMPLE_EDGE]

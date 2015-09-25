@@ -40,7 +40,7 @@ final class SearchArgumentImpl implements SearchArgument {
   static final class PredicateLeafImpl implements PredicateLeaf {
     private final Operator operator;
     private final Type type;
-    private final String columnName;
+    private String columnName;
     private final Object literal;
     private final List<Object> literalList;
 
@@ -164,6 +164,11 @@ final class SearchArgumentImpl implements SearchArgument {
              (literal == null ? 0 : literal.hashCode()) * 101 * 3 * 17 +
              (literalList == null ? 0 : literalList.hashCode()) *
                  103 * 101 * 3 * 17;
+    }
+
+    public static void setColumnName(PredicateLeaf leaf, String newName) {
+      assert leaf instanceof PredicateLeafImpl;
+      ((PredicateLeafImpl)leaf).columnName = newName;
     }
   }
 

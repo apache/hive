@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
-import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaMetaData;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
@@ -58,7 +56,7 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.Context;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -265,8 +263,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     OrcProto.Type root = types.get(rootColumn);
     for(int i=0; i < root.getSubtypesCount(); ++i) {
       if (included.contains(i)) {
-        includeColumnRecursive(types, result, root.getSubtypes(i),
-            rootColumn);
+        includeColumnRecursive(types, result, root.getSubtypes(i), rootColumn);
       }
     }
     return result;
@@ -292,6 +289,13 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     int rootColumn = getRootColumn(isOriginal);
     String[] columnNames = new String[types.size() - rootColumn];
     int i = 0;
+    // The way this works is as such. originalColumnNames is the equivalent on getNeededColumns
+    // from TSOP. They are assumed to be in the same order as the columns in ORC file, AND they are
+    // assumed to be equivalent to the columns in includedColumns (because it was generated from
+    // the same column list at some point in the past), minus the subtype columns. Therefore, when
+    // we go thru all the top level ORC file columns that are included, in order, they match
+    // originalColumnNames. This way, we do not depend on names stored inside ORC for SARG leaf
+    // column name resolution (see mapSargColumns method).
     for(int columnId: types.get(rootColumn).getSubtypesList()) {
       if (includedColumns == null || includedColumns[columnId - rootColumn]) {
         // this is guaranteed to be positive because types only have children
@@ -306,8 +310,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                                 List<OrcProto.Type> types,
                                 Configuration conf,
                                 boolean isOriginal) {
-    String columnNamesString = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
-    if (columnNamesString == null) {
+    String neededColumnNames = getNeededColumnNamesString(conf);
+    if (neededColumnNames == null) {
       LOG.debug("No ORC pushdown predicate - no column names");
       options.searchArgument(null, null);
       return;
@@ -321,9 +325,39 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
     LOG.info("ORC pushdown predicate: " + sarg);
     options.searchArgument(sarg, getSargColumnNames(
-        columnNamesString.split(","), types, options.getInclude(), isOriginal));
+        neededColumnNames.split(","), types, options.getInclude(), isOriginal));
   }
 
+  static boolean canCreateSargFromConf(Configuration conf) {
+    if (getNeededColumnNamesString(conf) == null) {
+      LOG.debug("No ORC pushdown predicate - no column names");
+      return false;
+    }
+    if (!ConvertAstToSearchArg.canCreateFromConf(conf)) {
+      LOG.debug("No ORC pushdown predicate");
+      return false;
+    }
+    return true;
+  }
+
+  private static String[] extractNeededColNames(
+      List<OrcProto.Type> types, Configuration conf, boolean[] include, boolean isOriginal) {
+    return extractNeededColNames(types, getNeededColumnNamesString(conf), include, isOriginal);
+  }
+
+  private static String[] extractNeededColNames(
+      List<OrcProto.Type> types, String columnNamesString, boolean[] include, boolean isOriginal) {
+    return getSargColumnNames(columnNamesString.split(","), types, include, isOriginal);
+  }
+
+  private static String getNeededColumnNamesString(Configuration conf) {
+    return conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+  }
+
+  private static String getSargColumnIDsString(Configuration conf) {
+    return conf.getBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, true) ? null
+        : conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
+  }
   @Override
   public boolean validateInput(FileSystem fs, HiveConf conf,
                                ArrayList<FileStatus> files
@@ -863,34 +897,11 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
       // we can't eliminate stripes if there are deltas because the
       // deltas may change the rows making them match the predicate.
-      if (deltas.isEmpty()) {
-        Reader.Options options = new Reader.Options();
-        options.include(includedCols);
-        setSearchArgument(options, types, context.conf, isOriginal);
-        // only do split pruning if HIVE-8732 has been fixed in the writer
-        if (options.getSearchArgument() != null &&
-            writerVersion != OrcFile.WriterVersion.ORIGINAL) {
-          SearchArgument sarg = options.getSearchArgument();
-          List<PredicateLeaf> sargLeaves = sarg.getLeaves();
-          List<StripeStatistics> stripeStats = metadata.getStripeStatistics();
-          int[] filterColumns = RecordReaderImpl.mapSargColumns(sargLeaves,
-              options.getColumnNames(), getRootColumn(isOriginal));
-
-          if (stripeStats != null) {
-            // eliminate stripes that doesn't satisfy the predicate condition
-            includeStripe = new boolean[stripes.size()];
-            for (int i = 0; i < stripes.size(); ++i) {
-              includeStripe[i] = (i >= stripeStats.size()) ||
-                  isStripeSatisfyPredicate(stripeStats.get(i), sarg,
-                      filterColumns);
-              if (isDebugEnabled && !includeStripe[i]) {
-                LOG.debug("Eliminating ORC stripe-" + i + " of file '" +
-                    file.getPath() + "'  as it did not satisfy " +
-                    "predicate condition.");
-              }
-            }
-          }
-        }
+      if (deltas.isEmpty() && canCreateSargFromConf(context.conf)) {
+        SearchArgument sarg = ConvertAstToSearchArg.createFromConf(context.conf);
+        String[] sargColNames = extractNeededColNames(types, context.conf, includedCols, isOriginal);
+        includeStripe = pickStripes(sarg, sargColNames, writerVersion, isOriginal,
+            metadata.getStripeStatistics(), stripes.size(), file.getPath());
       }
 
       // if we didn't have predicate pushdown, read everything
@@ -990,28 +1001,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       }
       return orcReader.getRawDataSizeFromColIndices(internalColIds);
     }
-
-    private boolean isStripeSatisfyPredicate(StripeStatistics stripeStatistics,
-                                             SearchArgument sarg,
-                                             int[] filterColumns) {
-      List<PredicateLeaf> predLeaves = sarg.getLeaves();
-      TruthValue[] truthValues = new TruthValue[predLeaves.size()];
-      for (int pred = 0; pred < truthValues.length; pred++) {
-        if (filterColumns[pred] != -1) {
-
-          // column statistics at index 0 contains only the number of rows
-          ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred]];
-          truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, predLeaves.get(pred), null);
-        } else {
-
-          // parition column case.
-          // partition filter will be evaluated by partition pruner so
-          // we will not evaluate partition filter here.
-          truthValues[pred] = TruthValue.YES_NO_NULL;
-        }
-      }
-      return sarg.evaluate(truthValues).isNeeded();
-    }
   }
 
   static List<OrcSplit> generateSplitsInfo(Configuration conf)
@@ -1067,7 +1056,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     } catch (Exception e) {
       cancelFutures(pathFutures);
       cancelFutures(splitFutures);
-      throw new RuntimeException("serious problem", e);
+      throw new RuntimeException("ORC split generation failed with exception: " + e.getMessage(), e);
     }
 
     if (context.cacheStripeDetails) {
@@ -1353,6 +1342,54 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         directory);
   }
 
+  private static boolean[] pickStripes(SearchArgument sarg, String[] sargColNames,
+      WriterVersion writerVersion, boolean isOriginal, List<StripeStatistics> stripeStats,
+      int stripeCount, Path filePath) {
+    LOG.info("ORC pushdown predicate: " + sarg);
+    if (sarg == null || stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
+      return null; // only do split pruning if HIVE-8732 has been fixed in the writer
+    }
+    // eliminate stripes that doesn't satisfy the predicate condition
+    List<PredicateLeaf> sargLeaves = sarg.getLeaves();
+    int[] filterColumns = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(sargLeaves,
+        sargColNames, getRootColumn(isOriginal));
+    return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, filePath);
+  }
+
+  private static boolean[] pickStripesInternal(SearchArgument sarg, int[] filterColumns,
+      List<StripeStatistics> stripeStats, int stripeCount, Path filePath) {
+    boolean[] includeStripe = new boolean[stripeCount];
+    for (int i = 0; i < includeStripe.length; ++i) {
+      includeStripe[i] = (i >= stripeStats.size()) ||
+          isStripeSatisfyPredicate(stripeStats.get(i), sarg, filterColumns);
+      if (isDebugEnabled && !includeStripe[i]) {
+        LOG.debug("Eliminating ORC stripe-" + i + " of file '" + filePath
+            + "'  as it did not satisfy predicate condition.");
+      }
+    }
+    return includeStripe;
+  }
+
+  private static boolean isStripeSatisfyPredicate(
+      StripeStatistics stripeStatistics, SearchArgument sarg, int[] filterColumns) {
+    List<PredicateLeaf> predLeaves = sarg.getLeaves();
+    TruthValue[] truthValues = new TruthValue[predLeaves.size()];
+    for (int pred = 0; pred < truthValues.length; pred++) {
+      if (filterColumns[pred] != -1) {
+
+        // column statistics at index 0 contains only the number of rows
+        ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred]];
+        truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, predLeaves.get(pred), null);
+      } else {
+
+        // parition column case.
+        // partition filter will be evaluated by partition pruner so
+        // we will not evaluate partition filter here.
+        truthValues[pred] = TruthValue.YES_NO_NULL;
+      }
+    }
+    return sarg.evaluate(truthValues).isNeeded();
+  }
 
   @VisibleForTesting
   static SplitStrategy determineSplitStrategy(Context context, FileSystem fs, Path dir,

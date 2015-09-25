@@ -66,32 +66,30 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantBinaryObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantHiveCharObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantHiveVarcharObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableFloatObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -431,10 +429,11 @@ public class StatsUtils {
       String colType, String defaultPartName) {
     Range range = null;
     String partVal;
-    if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
+    String colTypeLowerCase = colType.toLowerCase();
+    if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
       long min = Long.MAX_VALUE;
       long max = Long.MIN_VALUE;
       for (Partition partition : partitions) {
@@ -449,8 +448,8 @@ public class StatsUtils {
         }
       }
       range = new Range(min, max);
-    } else if (colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
       double min = Double.MAX_VALUE;
       double max = Double.MIN_VALUE;
       for (Partition partition : partitions) {
@@ -465,7 +464,7 @@ public class StatsUtils {
         }
       }
       range = new Range(min, max);
-    } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       double min = Double.MAX_VALUE;
       double max = Double.MIN_VALUE;
       for (Partition partition : partitions) {
@@ -517,18 +516,18 @@ public class StatsUtils {
         continue;
       }
       ObjectInspector oi = ci.getObjectInspector();
-      String colType = ci.getTypeName();
-      if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
-          || colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)
-          || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
-          || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)
-          || colType.startsWith(serdeConstants.LIST_TYPE_NAME)
-          || colType.startsWith(serdeConstants.MAP_TYPE_NAME)
-          || colType.startsWith(serdeConstants.STRUCT_TYPE_NAME)
-          || colType.startsWith(serdeConstants.UNION_TYPE_NAME)) {
-        avgRowSize += getAvgColLenOfVariableLengthTypes(conf, oi, colType);
+      String colTypeLowerCase = ci.getTypeName().toLowerCase();
+      if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
+          || colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)
+          || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+          || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
+          || colTypeLowerCase.startsWith(serdeConstants.LIST_TYPE_NAME)
+          || colTypeLowerCase.startsWith(serdeConstants.MAP_TYPE_NAME)
+          || colTypeLowerCase.startsWith(serdeConstants.STRUCT_TYPE_NAME)
+          || colTypeLowerCase.startsWith(serdeConstants.UNION_TYPE_NAME)) {
+        avgRowSize += getAvgColLenOfVariableLengthTypes(conf, oi, colTypeLowerCase);
       } else {
-        avgRowSize += getAvgColLenOfFixedLengthTypes(colType);
+        avgRowSize += getAvgColLenOfFixedLengthTypes(colTypeLowerCase);
       }
     }
     return avgRowSize;
@@ -569,7 +568,7 @@ public class StatsUtils {
    *          - hive conf
    * @param parts
    *          - partition list
-   * @return sizes of patitions
+   * @return sizes of partitions
    */
   public static List<Long> getFileSizeForPartitions(HiveConf conf, List<Partition> parts) {
     List<Long> sizes = Lists.newArrayList();
@@ -642,38 +641,38 @@ public class StatsUtils {
    */
   public static ColStatistics getColStatistics(ColumnStatisticsObj cso, String tabName,
       String colName) {
-    ColStatistics cs = new ColStatistics(colName, cso.getColType());
-    String colType = cso.getColType();
+    String colTypeLowerCase = cso.getColType().toLowerCase();
+    ColStatistics cs = new ColStatistics(colName, colTypeLowerCase);
     ColumnStatisticsData csd = cso.getStatsData();
-    if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)) {
+    if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
       cs.setCountDistint(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
-    } else if (colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
       cs.setCountDistint(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
-    } else if (colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
-    } else if (colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
-    } else if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
-        || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)
-        || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
       cs.setCountDistint(csd.getStringStats().getNumDVs());
       cs.setNumNulls(csd.getStringStats().getNumNulls());
       cs.setAvgColLen(csd.getStringStats().getAvgColLen());
-    } else if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
       if (csd.getBooleanStats().getNumFalses() > 0 && csd.getBooleanStats().getNumTrues() > 0) {
         cs.setCountDistint(2);
       } else {
@@ -683,12 +682,12 @@ public class StatsUtils {
       cs.setNumFalses(csd.getBooleanStats().getNumFalses());
       cs.setNumNulls(csd.getBooleanStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
-    } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
       cs.setAvgColLen(csd.getBinaryStats().getAvgColLen());
       cs.setNumNulls(csd.getBinaryStats().getNumNulls());
-    } else if (colType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
-    } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
       cs.setCountDistint(csd.getDecimalStats().getNumDVs());
       cs.setNumNulls(csd.getDecimalStats().getNumNulls());
@@ -699,7 +698,7 @@ public class StatsUtils {
       BigDecimal minVal = HiveDecimal.
           create(new BigInteger(val.getUnscaled()), val.getScale()).bigDecimalValue();
       cs.setRange(minVal, maxVal);
-    } else if (colType.equalsIgnoreCase(serdeConstants.DATE_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
     } else {
       // Columns statistics for complex datatypes are not supported yet
@@ -737,10 +736,15 @@ public class StatsUtils {
   }
 
   private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName) {
+    if (colStats==null) {
+      return new ArrayList<ColStatistics>();
+    }
     List<ColStatistics> stats = new ArrayList<ColStatistics>(colStats.size());
     for (ColumnStatisticsObj statObj : colStats) {
       ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
-      stats.add(cs);
+      if (cs != null) {
+        stats.add(cs);
+      }
     }
     return stats;
   }
@@ -775,93 +779,59 @@ public class StatsUtils {
       String colType) {
 
     long configVarLen = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAX_VARIABLE_LENGTH);
-
-    if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)) {
+    String colTypeLowCase = colType.toLowerCase();
+    if (colTypeLowCase.equals(serdeConstants.STRING_TYPE_NAME)) {
 
       // constant string projection Ex: select "hello" from table
       if (oi instanceof ConstantObjectInspector) {
         ConstantObjectInspector coi = (ConstantObjectInspector) oi;
 
         // if writable constant is null then return size 0
-        if (coi.getWritableConstantValue() == null) {
-          return 0;
-        }
-
-        return coi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableConstantStringObjectInspector) {
-
-        // some UDFs return writable constant strings (fixed width)
-        // Ex: select upper("hello") from table
-        WritableConstantStringObjectInspector wcsoi = (WritableConstantStringObjectInspector) oi;
-
-        return wcsoi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableStringObjectInspector) {
+        Object constantValue = coi.getWritableConstantValue();
+        return constantValue == null ? 0 : constantValue.toString().length();
+      } else if (oi instanceof StringObjectInspector) {
 
         // some UDFs may emit strings of variable length. like pattern matching
         // UDFs. it's hard to find the length of such UDFs.
         // return the variable length from config
         return configVarLen;
       }
-    } else if (colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+    } else if (colTypeLowCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
 
       // constant varchar projection
       if (oi instanceof ConstantObjectInspector) {
         ConstantObjectInspector coi = (ConstantObjectInspector) oi;
 
         // if writable constant is null then return size 0
-        if (coi.getWritableConstantValue() == null) {
-          return 0;
-        }
-
-        return coi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableConstantHiveVarcharObjectInspector) {
-
-        WritableConstantHiveVarcharObjectInspector wcsoi =
-            (WritableConstantHiveVarcharObjectInspector) oi;
-        return wcsoi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableHiveVarcharObjectInspector) {
-        return ((WritableHiveVarcharObjectInspector) oi).getMaxLength();
+        Object constantValue = coi.getWritableConstantValue();
+        return constantValue == null ? 0 : constantValue.toString().length();
+      } else if (oi instanceof HiveVarcharObjectInspector) {
+        VarcharTypeInfo type = (VarcharTypeInfo) ((HiveVarcharObjectInspector) oi).getTypeInfo();
+        return type.getLength();
       }
-    } else if (colType.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+    } else if (colTypeLowCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
 
       // constant char projection
       if (oi instanceof ConstantObjectInspector) {
         ConstantObjectInspector coi = (ConstantObjectInspector) oi;
 
         // if writable constant is null then return size 0
-        if (coi.getWritableConstantValue() == null) {
-          return 0;
-        }
-
-        return coi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableConstantHiveCharObjectInspector) {
-
-        WritableConstantHiveCharObjectInspector wcsoi =
-            (WritableConstantHiveCharObjectInspector) oi;
-        return wcsoi.getWritableConstantValue().toString().length();
-      } else if (oi instanceof WritableHiveCharObjectInspector) {
-        return ((WritableHiveCharObjectInspector) oi).getMaxLength();
+        Object constantValue = coi.getWritableConstantValue();
+        return constantValue == null ? 0 : constantValue.toString().length();
+      } else if (oi instanceof HiveCharObjectInspector) {
+        CharTypeInfo type = (CharTypeInfo) ((HiveCharObjectInspector) oi).getTypeInfo();
+        return type.getLength();
       }
-    } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
+    } else if (colTypeLowCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
 
       // constant byte arrays
       if (oi instanceof ConstantObjectInspector) {
         ConstantObjectInspector coi = (ConstantObjectInspector) oi;
 
         // if writable constant is null then return size 0
-        if (coi.getWritableConstantValue() == null) {
-          return 0;
-        }
-
-        BytesWritable bw = ((BytesWritable) coi.getWritableConstantValue());
-        return bw.getLength();
-      } else if (oi instanceof WritableConstantBinaryObjectInspector) {
-
-        // writable constant byte arrays
-        WritableConstantBinaryObjectInspector wcboi = (WritableConstantBinaryObjectInspector) oi;
-
-        return wcboi.getWritableConstantValue().getLength();
-      } else if (oi instanceof WritableBinaryObjectInspector) {
+        BytesWritable constantValue = (BytesWritable)coi.getWritableConstantValue();
+        return constantValue == null ? 0 : constantValue.getLength();
+      } else if (oi instanceof BinaryObjectInspector) {
 
         // return the variable length from config
         return configVarLen;
@@ -891,17 +861,17 @@ public class StatsUtils {
 
     switch (oi.getCategory()) {
     case PRIMITIVE:
-      String colType = oi.getTypeName();
-      if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
-          || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
-          || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
-        int avgColLen = (int) getAvgColLenOfVariableLengthTypes(conf, oi, colType);
+      String colTypeLowerCase = oi.getTypeName().toLowerCase();
+      if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
+          || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+          || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+        int avgColLen = (int) getAvgColLenOfVariableLengthTypes(conf, oi, colTypeLowerCase);
         result += JavaDataModel.get().lengthForStringOfLength(avgColLen);
-      } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
-        int avgColLen = (int) getAvgColLenOfVariableLengthTypes(conf, oi, colType);
+      } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
+        int avgColLen = (int) getAvgColLenOfVariableLengthTypes(conf, oi, colTypeLowerCase);
         result += JavaDataModel.get().lengthForByteArrayOfSize(avgColLen);
       } else {
-        result += getAvgColLenOfFixedLengthTypes(colType);
+        result += getAvgColLenOfFixedLengthTypes(colTypeLowerCase);
       }
       break;
     case LIST:
@@ -985,21 +955,22 @@ public class StatsUtils {
    * @return raw data size
    */
   public static long getAvgColLenOfFixedLengthTypes(String colType) {
-    if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
+    String colTypeLowerCase = colType.toLowerCase();
+    if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
       return JavaDataModel.get().primitive1();
-    } else if (colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)
-        || colType.equalsIgnoreCase("long")) {
+    } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)
+        || colTypeLowerCase.equals("long")) {
       return JavaDataModel.get().primitive2();
-    } else if (colType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       return JavaDataModel.get().lengthOfTimestamp();
-    } else if (colType.equalsIgnoreCase(serdeConstants.DATE_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       return JavaDataModel.get().lengthOfDate();
-    } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       return JavaDataModel.get().lengthOfDecimal();
     } else {
       return 0;
@@ -1015,25 +986,26 @@ public class StatsUtils {
    * @return raw data size
    */
   public static long getSizeOfPrimitiveTypeArraysFromType(String colType, int length) {
-    if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
+    String colTypeLowerCase = colType.toLowerCase();
+    if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)
+        || colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
       return JavaDataModel.get().lengthForIntArrayOfSize(length);
-    } else if (colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
       return JavaDataModel.get().lengthForDoubleArrayOfSize(length);
-    } else if (colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)
-        || colType.equalsIgnoreCase("long")) {
+    } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)
+        || colTypeLowerCase.equals("long")) {
       return JavaDataModel.get().lengthForLongArrayOfSize(length);
-    } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
       return JavaDataModel.get().lengthForByteArrayOfSize(length);
-    } else if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
       return JavaDataModel.get().lengthForBooleanArrayOfSize(length);
-    } else if (colType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       return JavaDataModel.get().lengthForTimestampArrayOfSize(length);
-    } else if (colType.equalsIgnoreCase(serdeConstants.DATE_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       return JavaDataModel.get().lengthForDateArrayOfSize(length);
-    } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       return JavaDataModel.get().lengthForDecimalArrayOfSize(length);
     } else {
       return 0;
@@ -1296,10 +1268,13 @@ public class StatsUtils {
       colType = enfd.getTypeString();
       countDistincts = numRows;
       oi = enfd.getWritableObjectInspector();
+    } else {
+      throw new IllegalArgumentException("not supported expr type " + end.getClass());
     }
 
-    if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
-        || colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)
+    colType = colType.toLowerCase();
+    if (colType.equals(serdeConstants.STRING_TYPE_NAME)
+        || colType.equals(serdeConstants.BINARY_TYPE_NAME)
         || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
         || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colType.startsWith(serdeConstants.LIST_TYPE_NAME)
@@ -1411,30 +1386,30 @@ public class StatsUtils {
 
     for (ColStatistics cs : colStats) {
       if (cs != null) {
-        String colType = cs.getColumnType();
+        String colTypeLowerCase = cs.getColumnType().toLowerCase();
         long nonNullCount = numRows - cs.getNumNulls();
         double sizeOf = 0;
-        if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
-            || colType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
-            || colType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
-            || colType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)
-            || colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)
-            || colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)
-            || colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
+        if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
+            || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
+            || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)
+            || colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)
+            || colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)
+            || colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)
+            || colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
           sizeOf = cs.getAvgColLen();
-        } else if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
-            || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
-            || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+        } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
+            || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+            || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
           int acl = (int) Math.round(cs.getAvgColLen());
           sizeOf = JavaDataModel.get().lengthForStringOfLength(acl);
-        } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
+        } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
           int acl = (int) Math.round(cs.getAvgColLen());
           sizeOf = JavaDataModel.get().lengthForByteArrayOfSize(acl);
-        } else if (colType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+        } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
           sizeOf = JavaDataModel.get().lengthOfTimestamp();
-        } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+        } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
           sizeOf = JavaDataModel.get().lengthOfDecimal();
-        } else if (colType.equalsIgnoreCase(serdeConstants.DATE_TYPE_NAME)) {
+        } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
           sizeOf = JavaDataModel.get().lengthOfDate();
         } else {
           sizeOf = cs.getAvgColLen();

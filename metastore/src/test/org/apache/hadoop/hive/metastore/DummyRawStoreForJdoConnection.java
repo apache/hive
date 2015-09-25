@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,18 +48,12 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
-import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
-import org.apache.hadoop.hive.metastore.model.MRoleMap;
-import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -419,44 +414,45 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
       PrincipalType principalType) {
 
     return Collections.emptyList();
   }
 
   @Override
-  public List<MDBPrivilege> listPrincipalDBGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String dbName) {
 
     return Collections.emptyList();
   }
 
   @Override
-  public List<MTablePrivilege> listAllTableGrants(String principalName,
+  public List<HiveObjectPrivilege> listAllTableGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName) {
 
     return Collections.emptyList();
   }
 
   @Override
-  public List<MPartitionPrivilege> listPrincipalPartitionGrants(String principalName,
-      PrincipalType principalType, String dbName, String tableName, String partName) {
+  public List<HiveObjectPrivilege> listPrincipalPartitionGrants(String principalName,
+      PrincipalType principalType, String dbName, String tableName, List<String> partValues,
+      String partName) {
 
     return Collections.emptyList();
   }
 
   @Override
-  public List<MTableColumnPrivilege> listPrincipalTableColumnGrants(String principalName,
+  public List<HiveObjectPrivilege> listPrincipalTableColumnGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName, String columnName) {
 
     return Collections.emptyList();
   }
 
   @Override
-  public List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(String principalName,
-      PrincipalType principalType, String dbName, String tableName, String partName,
-      String columnName) {
+  public List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(String principalName,
+      PrincipalType principalType, String dbName, String tableName, List<String> partVals,
+      String partName, String columnName) {
 
     return Collections.emptyList();
   }
@@ -488,14 +484,20 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<MRoleMap> listRoles(String principalName, PrincipalType principalType) {
+  public List<Role> listRoles(String principalName, PrincipalType principalType) {
 
     return Collections.emptyList();
   }
 
   @Override
-  public List<MRoleMap> listRoleMembers(String roleName) {
+  public List<RolePrincipalGrant> listRolesWithGrants(String principalName,
+                                                      PrincipalType principalType) {
     return Collections.emptyList();
+  }
+
+  @Override
+  public List<RolePrincipalGrant> listRoleMembers(String roleName) {
+    return null;
   }
 
   @Override
@@ -772,6 +774,18 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
 
+  public void flushCache() {
+
+  }
+
+  @Override
+  public ByteBuffer[] getFileMetadata(List<Long> fileIds) {
+    return null;
+  }
+
+  @Override
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
+  }
 }
 
 

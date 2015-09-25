@@ -215,8 +215,15 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
         tableSize /= bucketCount;
       }
     }
-    LOG.info("Mapjoin " + mapJoinOp + ", pos: " + pos + " --> " + parentWork.getName() + " ("
-      + keyCount + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
+    if (keyCount == 0) {
+      keyCount = 1;
+    }
+    if (tableSize == 0) {
+      tableSize = 1;
+    }
+    LOG.info("Mapjoin " + mapJoinOp + "(bucket map join = )" + joinConf.isBucketMapJoin()
+        + ", pos: " + pos + " --> " + parentWork.getName() + " (" + keyCount
+        + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
     joinConf.getParentToInput().put(pos, parentWork.getName());
     if (keyCount != Long.MAX_VALUE) {
       joinConf.getParentKeyCounts().put(pos, keyCount);
@@ -226,10 +233,6 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     int numBuckets = -1;
     EdgeType edgeType = EdgeType.BROADCAST_EDGE;
     if (joinConf.isBucketMapJoin()) {
-
-      // disable auto parallelism for bucket map joins
-      parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
-
       numBuckets = (Integer) joinConf.getBigTableBucketNumMapping().values().toArray()[0];
       /*
        * Here, we can be in one of 4 states.
@@ -272,6 +275,10 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
       }
     } else if (mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
       edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+    }
+    if (edgeType == EdgeType.CUSTOM_EDGE) {
+      // disable auto parallelism for bucket map joins
+      parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
     }
     TezEdgeProperty edgeProp = new TezEdgeProperty(null, edgeType, numBuckets);
 

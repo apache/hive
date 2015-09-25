@@ -467,17 +467,6 @@ public class SubQueryUtils {
     return check;
   }
 
-  static void setOriginDeep(ASTNode node, ASTNodeOrigin origin) {
-    if ( node == null ) {
-      return;
-    }
-    node.setOrigin(origin);
-    int childCnt = node.getChildCount();
-    for(int i=0; i<childCnt; i++) {
-      setOriginDeep((ASTNode)node.getChild(i), origin);
-    }
-  }
-
   /*
    * Set of functions to create the Null Check Query for Not-In SubQuery predicates.
    * For a SubQuery predicate like:

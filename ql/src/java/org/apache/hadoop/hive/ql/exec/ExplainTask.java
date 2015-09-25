@@ -97,7 +97,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
     assert(work.getDependency());
 
-    JSONObject outJSONObject = new JSONObject();
+    JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
     List<Map<String, String>> inputTableInfo = new ArrayList<Map<String, String>>();
     List<Map<String, String>> inputPartitionInfo = new ArrayList<Map<String, String>>();
     for (ReadEntity input: work.getInputs()) {
@@ -133,7 +133,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public JSONObject getJSONLogicalPlan(PrintStream out, ExplainWork work) throws Exception {
     isLogical = true;
 
-    JSONObject outJSONObject = new JSONObject();
+    JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
     boolean jsonOutput = work.isFormatted();
     if (jsonOutput) {
       out = null;
@@ -181,7 +181,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     // If the user asked for a formatted output, dump the json output
     // in the output stream
-    JSONObject outJSONObject = new JSONObject();
+    JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
 
     if (jsonOutput) {
       out = null;
@@ -339,7 +339,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     BaseSemanticAnalyzer analyzer = work.getAnalyzer();
     HiveOperation operation = SessionState.get().getHiveOperation();
 
-    JSONObject object = new JSONObject();
+    JSONObject object = new JSONObject(new LinkedHashMap<>());
     Object jsonInput = toJson("INPUTS", toString(analyzer.getInputs()), out, work);
     if (work.isFormatted()) {
       object.put("INPUTS", jsonInput);
@@ -402,7 +402,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     TreeMap<Object, Object> tree = new TreeMap<Object, Object>();
     tree.putAll(mp);
-    JSONObject json = jsonOutput ? new JSONObject() : null;
+    JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;
     if (out != null && hasHeader && !mp.isEmpty()) {
       out.println();
     }
@@ -446,7 +446,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           }
           if (jsonOutput) {
             for (TezWork.Dependency dep: (List<TezWork.Dependency>)ent.getValue()) {
-              JSONObject jsonDep = new JSONObject();
+              JSONObject jsonDep = new JSONObject(new LinkedHashMap<>());
               jsonDep.put("parent", dep.getName());
               jsonDep.put("type", dep.getType());
               json.accumulate(ent.getKey().toString(), jsonDep);
@@ -475,7 +475,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           }
           if (jsonOutput) {
             for (SparkWork.Dependency dep: (List<SparkWork.Dependency>) ent.getValue()) {
-              JSONObject jsonDep = new JSONObject();
+              JSONObject jsonDep = new JSONObject(new LinkedHashMap<>());
               jsonDep.put("parent", dep.getName());
               jsonDep.put("type", dep.getShuffleType());
               jsonDep.put("partitions", dep.getNumPartitions());
@@ -613,7 +613,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
     }
 
-    JSONObject json = jsonOutput ? new JSONObject() : null;
+    JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;
     // If this is an operator then we need to call the plan generation on the
     // conf and then the children
     if (work instanceof Operator) {
@@ -783,7 +783,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (jsonOutput) {
       if (keyJSONObject != null) {
-        JSONObject ret = new JSONObject();
+        JSONObject ret = new JSONObject(new LinkedHashMap<>());
         ret.put(keyJSONObject, json);
         return ret;
       }
@@ -841,7 +841,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
 
     boolean first = true;
-    JSONObject json = jsonOutput ? new JSONObject() : null;
+    JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;
     if (out != null) {
       out.print(indentString(indent));
       out.print(task.getId());
@@ -946,7 +946,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       out.println("STAGE DEPENDENCIES:");
     }
 
-    JSONObject json = jsonOutput ? new JSONObject() : null;
+    JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;
     for (Task task : tasks) {
       JSONObject jsonOut = outputDependencies(task, out, json, jsonOutput, appendTaskType, 2);
       if (jsonOutput && jsonOut != null) {
@@ -965,7 +965,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       out.println("STAGE PLANS:");
     }
 
-    JSONObject json = jsonOutput ? new JSONObject() : null;
+    JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;
     for (Task task : tasks) {
       outputPlan(task, out, json, isExtended, jsonOutput, 2);
     }

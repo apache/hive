@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
 import com.google.common.collect.ImmutableMap;
 
-public class HiveSort extends Sort implements HiveRelNode {
+public class HiveSortLimit extends Sort implements HiveRelNode {
 
   public static final HiveSortRelFactory HIVE_SORT_REL_FACTORY = new HiveSortRelFactory();
 
@@ -44,14 +44,14 @@ public class HiveSort extends Sort implements HiveRelNode {
   // 4. This is used by ASTConverter after we are done with Calcite Planning
   private ImmutableMap<Integer, RexNode> mapOfInputRefToRexCall;
 
-  public HiveSort(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
+  public HiveSortLimit(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       RelCollation collation, RexNode offset, RexNode fetch) {
     super(cluster, TraitsUtil.getSortTraitSet(cluster, traitSet, collation), child, collation,
         offset, fetch);
   }
 
   /**
-   * Creates a HiveSort.
+   * Creates a HiveSortLimit.
    *
    * @param input     Input relational expression
    * @param collation array of sort specifications
@@ -59,22 +59,22 @@ public class HiveSort extends Sort implements HiveRelNode {
    *                  first row
    * @param fetch     Expression for number of rows to fetch
    */
-  public static HiveSort create(RelNode input, RelCollation collation,
+  public static HiveSortLimit create(RelNode input, RelCollation collation,
       RexNode offset, RexNode fetch) {
     RelOptCluster cluster = input.getCluster();
     collation = RelCollationTraitDef.INSTANCE.canonize(collation);
     RelTraitSet traitSet =
         TraitsUtil.getSortTraitSet(cluster, input.getTraitSet(), collation);
-    return new HiveSort(cluster, traitSet, input, collation, offset, fetch);
+    return new HiveSortLimit(cluster, traitSet, input, collation, offset, fetch);
   }
 
   @Override
-  public HiveSort copy(RelTraitSet traitSet, RelNode newInput, RelCollation newCollation,
+  public HiveSortLimit copy(RelTraitSet traitSet, RelNode newInput, RelCollation newCollation,
       RexNode offset, RexNode fetch) {
     // TODO: can we blindly copy sort trait? What if inputs changed and we
     // are now sorting by different cols
     RelCollation canonizedCollation = traitSet.canonize(newCollation);
-    return new HiveSort(getCluster(), traitSet, newInput, canonizedCollation, offset, fetch);
+    return new HiveSortLimit(getCluster(), traitSet, newInput, canonizedCollation, offset, fetch);
   }
 
   public RexNode getFetchExpr() {

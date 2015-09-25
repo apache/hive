@@ -562,10 +562,10 @@ STAGE PLANS:
             Statistics: Num rows: 75 Data size: 3472 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: dec (type: decimal(20,10))
-              outputColumnNames: _col0
+              outputColumnNames: dec
               Statistics: Num rows: 75 Data size: 3472 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: avg(_col0), sum(_col0)
+                aggregations: avg(dec), sum(dec)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE

@@ -18,9 +18,10 @@
 
 package org.apache.hive.common.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Arrays;
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * BloomFilter is a probabilistic data structure for set membership check. BloomFilters are
@@ -61,6 +62,21 @@ public class BloomFilter {
     this.numBits = nb + (Long.SIZE - (nb % Long.SIZE));
     this.numHashFunctions = optimalNumOfHashFunctions(expectedEntries, numBits);
     this.bitSet = new BitSet(numBits);
+  }
+
+  /**
+   * A constructor to support rebuilding the BloomFilter from a serialized representation.
+   * @param bits
+   * @param numBits
+   * @param numFuncs
+   */
+  public BloomFilter(List<Long> bits, int numBits, int numFuncs) {
+    super();
+    long[] copied = new long[bits.size()];
+    for (int i = 0; i < bits.size(); i++) copied[i] = bits.get(i);
+    bitSet = new BitSet(copied);
+    this.numBits = numBits;
+    numHashFunctions = numFuncs;
   }
 
   static int optimalNumOfHashFunctions(long n, long m) {

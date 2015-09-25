@@ -95,10 +95,10 @@ STAGE PLANS:
             Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: inv_quantity_on_hand (type: int)
-              outputColumnNames: _col0
+              outputColumnNames: inv_quantity_on_hand
               Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(_col0)
+                aggregations: sum(inv_quantity_on_hand)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -214,10 +214,10 @@ STAGE PLANS:
             Statistics: Num rows: 200 Data size: 11876 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: inv_quantity_on_hand (type: int)
-              outputColumnNames: _col0
+              outputColumnNames: inv_quantity_on_hand
               Statistics: Num rows: 200 Data size: 11876 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(_col0)
+                aggregations: sum(inv_quantity_on_hand)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -334,10 +334,10 @@ STAGE PLANS:
             Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: inv_quantity_on_hand (type: int)
-              outputColumnNames: _col0
+              outputColumnNames: inv_quantity_on_hand
               Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(_col0)
+                aggregations: sum(inv_quantity_on_hand)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -435,10 +435,10 @@ STAGE PLANS:
             Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: inv_quantity_on_hand (type: int)
-              outputColumnNames: _col0
+              outputColumnNames: inv_quantity_on_hand
               Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(_col0)
+                aggregations: sum(inv_quantity_on_hand)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -542,10 +542,10 @@ STAGE PLANS:
             Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: inv_quantity_on_hand (type: int)
-              outputColumnNames: _col0
+              outputColumnNames: inv_quantity_on_hand
               Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(_col0)
+                aggregations: sum(inv_quantity_on_hand)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
