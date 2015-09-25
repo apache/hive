@@ -16,10 +16,14 @@
 THISSERVICE=cli
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
+# Set old CLI as the default client
+if [ -n '$USE_DEPRECATED_CLI' ]; then
+  USE_DEPRECATED_CLI="true"
+fi
+
 updateBeelineOpts() {
   # If process is backgrounded, don't change terminal settings
   if [[ ! $(ps -o stat= -p $$) == *+ ]]; then
-    echo "background"
     export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djline.terminal=jline.UnsupportedTerminal"
   fi
 }

@@ -28,9 +28,13 @@ goto :EOF
 goto :EOF
 
 :update_cli
+	if [%USE_DEPRECATED_CLI%] == [] (
+		set USE_DEPRECATED_CLI=false
+	)
+
 	if /I "%USE_DEPRECATED_CLI%" == "true" (
 		call :old_cli
-	) else if (
+	) else (
 		call :new_cli
 	)
 goto :EOF
