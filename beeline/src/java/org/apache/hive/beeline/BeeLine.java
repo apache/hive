@@ -93,8 +93,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
-
 /**
  * A console SQL shell with command completion.
  * <p>
@@ -142,6 +140,7 @@ public class BeeLine implements Closeable {
 
   public static final String BEELINE_DEFAULT_JDBC_DRIVER = "org.apache.hive.jdbc.HiveDriver";
   public static final String BEELINE_DEFAULT_JDBC_URL = "jdbc:hive2://";
+  public static final String DEFAULT_DATABASE_NAME = "default";
 
   private static final String SCRIPT_OUTPUT_PREFIX = ">>>";
   private static final int SCRIPT_OUTPUT_PAD_SIZE = 5;

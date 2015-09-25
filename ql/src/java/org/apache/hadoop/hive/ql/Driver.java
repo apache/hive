@@ -390,7 +390,7 @@ public class Driver implements CommandProcessor {
     try {
       // Initialize the transaction manager.  This must be done before analyze is called.
       SessionState.get().initTxnMgr(conf);
-      
+
       command = new VariableSubstitution(new HiveVariableSource() {
         @Override
         public Map<String, String> getHiveVariable() {
