@@ -593,11 +593,32 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     // else the updates do not get flushed properly
     KeyProviderCryptoExtension keyProvider =  miniDFSCluster.getNameNode().getNamesystem().getProvider();
     if (keyProvider != null) {
-      miniDFSCluster.getFileSystem().getClient().setKeyProvider(keyProvider);
+      try {
+        setKeyProvider(miniDFSCluster.getFileSystem().getClient(), keyProvider);
+      } catch (Exception err) {
+        throw new IOException(err);
+      }
     }
 
     cluster = new MiniDFSShim(miniDFSCluster);
     return cluster;
+  }
+
+  private static void setKeyProvider(DFSClient dfsClient, KeyProviderCryptoExtension provider)
+      throws Exception {
+    Method setKeyProviderHadoop27Method = null;
+    try {
+      setKeyProviderHadoop27Method = DFSClient.class.getMethod("setKeyProvider", KeyProvider.class);
+    } catch (NoSuchMethodException err) {
+      // We can just use setKeyProvider() as it is
+    }
+
+    if (setKeyProviderHadoop27Method != null) {
+      // Method signature changed in Hadoop 2.7. Cast provider to KeyProvider
+      setKeyProviderHadoop27Method.invoke(dfsClient, (KeyProvider) provider);
+    } else {
+      dfsClient.setKeyProvider(provider);
+    }
   }
 
   /**

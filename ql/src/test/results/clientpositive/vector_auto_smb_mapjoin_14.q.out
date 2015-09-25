@@ -1,0 +1,1792 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: insert overwrite table tbl1
+select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: insert overwrite table tbl1
+select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl1
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2
+select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: insert overwrite table tbl2
+select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- The join is being performed as part of sub-query. It should be converted to a sort-merge join
+explain
+select count(*) from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The join is being performed as part of sub-query. It should be converted to a sort-merge join
+explain
+select count(*) from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+22
+PREHOOK: query: -- The join is being performed as part of more than one sub-query. It should be converted to a sort-merge join
+explain
+select count(*) from
+(
+  select key, count(*) from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq1
+  group by key
+) subq2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The join is being performed as part of more than one sub-query. It should be converted to a sort-merge join
+explain
+select count(*) from
+(
+  select key, count(*) from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq1
+  group by key
+) subq2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            Group By Operator
+              aggregations: count()
+              mode: hash
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from
+(
+  select key, count(*) from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq1
+  group by key
+) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from
+(
+  select key, count(*) from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq1
+  group by key
+) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+6
+PREHOOK: query: -- A join is being performed across different sub-queries, where a join is being performed in each of them.
+-- Each sub-query should be converted to a sort-merge join.
+explain
+select src1.key, src1.cnt1, src2.cnt1 from
+(
+  select key, count(*) as cnt1 from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq1 group by key
+) src1
+join
+(
+  select key, count(*) as cnt1 from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq2 group by key
+) src2
+on src1.key = src2.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- A join is being performed across different sub-queries, where a join is being performed in each of them.
+-- Each sub-query should be converted to a sort-merge join.
+explain
+select src1.key, src1.cnt1, src2.cnt1 from
+(
+  select key, count(*) as cnt1 from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq1 group by key
+) src1
+join
+(
+  select key, count(*) as cnt1 from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq2 group by key
+) src2
+on src1.key = src2.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-4 is a root stage
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              value expressions: _col1 (type: bigint)
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0 (type: int)
+            1 _col0 (type: int)
+          outputColumnNames: _col0, _col1, _col3
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint), _col3 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select src1.key, src1.cnt1, src2.cnt1 from
+(
+  select key, count(*) as cnt1 from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq1 group by key
+) src1
+join
+(
+  select key, count(*) as cnt1 from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq2 group by key
+) src2
+on src1.key = src2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select src1.key, src1.cnt1, src2.cnt1 from
+(
+  select key, count(*) as cnt1 from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq1 group by key
+) src1
+join
+(
+  select key, count(*) as cnt1 from 
+  (
+    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  ) subq2 group by key
+) src2
+on src1.key = src2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+0	9	9
+2	1	1
+4	1	1
+5	9	9
+8	1	1
+9	1	1
+PREHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
+-- be converted to a sort-merge join.
+explain
+select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  on subq1.key = subq2.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
+-- be converted to a sort-merge join.
+explain
+select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  on subq1.key = subq2.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+                Sorted Merge Bucket Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  on subq1.key = subq2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  on subq1.key = subq2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+20
+PREHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
+-- be converted to a sort-merge join, although there is more than one level of sub-query
+explain
+select count(*) from 
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1 
+  where key < 6
+  ) subq2
+  join tbl2 b
+  on subq2.key = b.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
+-- be converted to a sort-merge join, although there is more than one level of sub-query
+explain
+select count(*) from 
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1 
+  where key < 6
+  ) subq2
+  join tbl2 b
+  on subq2.key = b.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
+                Sorted Merge Bucket Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 key (type: int)
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from 
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1 
+  where key < 6
+  ) subq2
+  join tbl2 b
+  on subq2.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from 
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1 
+  where key < 6
+  ) subq2
+  join tbl2 b
+  on subq2.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+20
+PREHOOK: query: -- Both the tables are nested sub-queries i.e more then 1 level of sub-query.
+-- The join should be converted to a sort-merge join
+explain
+select count(*) from 
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1 
+  where key < 6
+  ) subq2
+  join
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq3 
+  where key < 6
+  ) subq4
+  on subq2.key = subq4.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Both the tables are nested sub-queries i.e more then 1 level of sub-query.
+-- The join should be converted to a sort-merge join
+explain
+select count(*) from 
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1 
+  where key < 6
+  ) subq2
+  join
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq3 
+  where key < 6
+  ) subq4
+  on subq2.key = subq4.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
+                Sorted Merge Bucket Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from 
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1 
+  where key < 6
+  ) subq2
+  join
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq3 
+  where key < 6
+  ) subq4
+  on subq2.key = subq4.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from 
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1 
+  where key < 6
+  ) subq2
+  join
+  (
+  select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq3 
+  where key < 6
+  ) subq4
+  on subq2.key = subq4.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+#### A masked pattern was here ####
+20
+PREHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters and the join key
+-- is not getting modified, it should be converted to a sort-merge join. Note that the sub-query modifies one 
+-- item, but that is not part of the join key.
+explain
+select count(*) from 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+    join
+  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  on subq1.key = subq2.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters and the join key
+-- is not getting modified, it should be converted to a sort-merge join. Note that the sub-query modifies one 
+-- item, but that is not part of the join key.
+explain
+select count(*) from 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+    join
+  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  on subq1.key = subq2.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key < 8) (type: boolean)
+              Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+                Sorted Merge Bucket Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+    join
+  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  on subq1.key = subq2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+    join
+  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  on subq1.key = subq2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+20
+PREHOOK: query: -- Since the join key is modified by the sub-query, neither sort-merge join not bucketized map-side
+-- join should be performed
+explain
+select count(*) from 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+    join
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  on subq1.key = subq2.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Since the join key is modified by the sub-query, neither sort-merge join not bucketized map-side
+-- join should be performed
+explain
+select count(*) from 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+    join
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  on subq1.key = subq2.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: (key + 1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+              Filter Operator
+                predicate: _col0 is not null (type: boolean)
+                Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: (key + 1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+              Filter Operator
+                predicate: _col0 is not null (type: boolean)
+                Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0 (type: int)
+            1 _col0 (type: int)
+          Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
+          Group By Operator
+            aggregations: count()
+            mode: hash
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+    join
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  on subq1.key = subq2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+    join
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  on subq1.key = subq2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+22
+PREHOOK: query: -- One of the tables is a sub-query and the other is not.
+-- It should be converted to a sort-merge join.
+explain
+select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join tbl2 a on subq1.key = a.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- One of the tables is a sub-query and the other is not.
+-- It should be converted to a sort-merge join.
+explain
+select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join tbl2 a on subq1.key = a.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+                Sorted Merge Bucket Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 key (type: int)
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join tbl2 a on subq1.key = a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join tbl2 a on subq1.key = a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+20
+PREHOOK: query: -- There are more than 2 inputs to the join, all of them being sub-queries. 
+-- It should be converted to to a sort-merge join
+explain
+select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  on (subq1.key = subq2.key)
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  on (subq1.key = subq3.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- There are more than 2 inputs to the join, all of them being sub-queries. 
+-- It should be converted to to a sort-merge join
+explain
+select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  on (subq1.key = subq2.key)
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  on (subq1.key = subq3.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key < 6) (type: boolean)
+              Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
+                Sorted Merge Bucket Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                       Inner Join 0 to 2
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                    2 _col0 (type: int)
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  on subq1.key = subq2.key
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  on (subq1.key = subq3.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from 
+  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  on subq1.key = subq2.key
+    join
+  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  on (subq1.key = subq3.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+56
+PREHOOK: query: -- The join is being performed on a nested sub-query, and an aggregation is performed after that.
+-- The join should be converted to a sort-merge join
+explain
+select count(*) from (
+  select subq2.key as key, subq2.value as value1, b.value as value2 from
+  (
+    select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1
+    where key < 6
+  ) subq2
+join tbl2 b
+on subq2.key = b.key) a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The join is being performed on a nested sub-query, and an aggregation is performed after that.
+-- The join should be converted to a sort-merge join
+explain
+select count(*) from (
+  select subq2.key as key, subq2.value as value1, b.value as value2 from
+  (
+    select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1
+    where key < 6
+  ) subq2
+join tbl2 b
+on subq2.key = b.key) a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
+                Sorted Merge Bucket Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 key (type: int)
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from (
+  select subq2.key as key, subq2.value as value1, b.value as value2 from
+  (
+    select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1
+    where key < 6
+  ) subq2
+join tbl2 b
+on subq2.key = b.key) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (
+  select subq2.key as key, subq2.value as value1, b.value as value2 from
+  (
+    select * from
+    (
+      select a.key as key, a.value as value from tbl1 a where key < 8
+    ) subq1
+    where key < 6
+  ) subq2
+join tbl2 b
+on subq2.key = b.key) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+20
+PREHOOK: query: CREATE TABLE dest1(key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
+POSTHOOK: query: CREATE TABLE dest1(key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1
+PREHOOK: query: CREATE TABLE dest2(key int, val1 string, val2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2
+POSTHOOK: query: CREATE TABLE dest2(key int, val1 string, val2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest2
+PREHOOK: query: -- The join is followed by a multi-table insert. It should be converted to
+-- a sort-merge join
+explain
+from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+insert overwrite table dest1 select key, val1
+insert overwrite table dest2 select key, val1, val2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The join is followed by a multi-table insert. It should be converted to
+-- a sort-merge join
+explain
+from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+insert overwrite table dest1 select key, val1
+insert overwrite table dest2 select key, val1, val2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
+  Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-3 depends on stages: Stage-0
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-14 depends on stages: Stage-2 , consists of Stage-11, Stage-10, Stage-12
+  Stage-11
+  Stage-1 depends on stages: Stage-11, Stage-10, Stage-13
+  Stage-9 depends on stages: Stage-1
+  Stage-10
+  Stage-12
+  Stage-13 depends on stages: Stage-12
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col0, _col1, _col6
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.dest1
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+      Execution mode: vectorized
+
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-14
+    Conditional Operator
+
+  Stage: Stage-11
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-9
+    Stats-Aggr Operator
+
+  Stage: Stage-10
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest2
+
+  Stage: Stage-12
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest2
+
+  Stage: Stage-13
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+insert overwrite table dest1 select key, val1
+insert overwrite table dest2 select key, val1, val2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+insert overwrite table dest1 select key, val1
+insert overwrite table dest2 select key, val1, val2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.value SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.val1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.val2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+2	val_2
+4	val_4
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+8	val_8
+9	val_9
+PREHOOK: query: select * from dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+#### A masked pattern was here ####
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+0	val_0	val_0
+2	val_2	val_2
+4	val_4	val_4
+5	val_5	val_5
+5	val_5	val_5
+5	val_5	val_5
+5	val_5	val_5
+5	val_5	val_5
+5	val_5	val_5
+5	val_5	val_5
+5	val_5	val_5
+5	val_5	val_5
+8	val_8	val_8
+9	val_9	val_9
+PREHOOK: query: DROP TABLE dest2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest2
+PREHOOK: Output: default@dest2
+POSTHOOK: query: DROP TABLE dest2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: default@dest2
+PREHOOK: query: CREATE TABLE dest2(key int, cnt int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2
+POSTHOOK: query: CREATE TABLE dest2(key int, cnt int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest2
+PREHOOK: query: -- The join is followed by a multi-table insert, and one of the inserts involves a reducer.
+-- It should be converted to a sort-merge join
+explain
+from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+insert overwrite table dest1 select key, val1
+insert overwrite table dest2 select key, count(*) group by key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The join is followed by a multi-table insert, and one of the inserts involves a reducer.
+-- It should be converted to a sort-merge join
+explain
+from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+insert overwrite table dest1 select key, val1
+insert overwrite table dest2 select key, count(*) group by key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
+  Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-3 depends on stages: Stage-0
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-1 depends on stages: Stage-2
+  Stage-9 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest1
+                Select Operator
+                  expressions: _col0 (type: int)
+                  outputColumnNames: _col0
+                  Group By Operator
+                    aggregations: count()
+                    keys: _col0 (type: int)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions: _col0 (type: int), UDFToInteger(_col1) (type: int)
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest2
+
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-9
+    Stats-Aggr Operator
+
+PREHOOK: query: from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+insert overwrite table dest1 select key, val1
+insert overwrite table dest2 select key, count(*) group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: from (
+  select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+) subq1
+insert overwrite table dest1 select key, val1
+insert overwrite table dest2 select key, count(*) group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.value SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.cnt EXPRESSION [(tbl1)a.null, (tbl2)b.null, ]
+POSTHOOK: Lineage: dest2.key SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+2	val_2
+4	val_4
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+8	val_8
+9	val_9
+PREHOOK: query: select * from dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+#### A masked pattern was here ####
+0	9
+2	1
+4	1
+5	9
+8	1
+9	1
