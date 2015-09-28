@@ -42,6 +42,7 @@ import jline.Terminal;
 import jline.TerminalFactory;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_WIDTH = 80;
@@ -78,6 +79,8 @@ class BeeLineOpts implements Completer {
   int timeout = -1;
   private String isolation = DEFAULT_ISOLATION_LEVEL;
   private String outputFormat = "table";
+  // This configuration is used only for client side configuration.
+  private HiveConf conf;
   private boolean trimScripts = true;
   private boolean allowMultiLineCommand = true;
   private boolean showConnectedUrl = false;
@@ -91,7 +94,7 @@ class BeeLineOpts implements Completer {
   private String historyFile = new File(saveDir(), "history").getAbsolutePath();
 
   private String scriptFile = null;
-  private String initFile = null;
+  private String[] initFiles = null;
   private String authType = null;
   private char delimiterForDSV = DEFAULT_DELIMITER_FOR_DSV;
 
@@ -115,7 +118,7 @@ class BeeLineOpts implements Completer {
 
   public String[] possibleSettingValues() {
     List<String> vals = new LinkedList<String>();
-    vals.addAll(Arrays.asList(new String[] {"yes", "no"}));
+    vals.addAll(Arrays.asList(new String[] { "yes", "no" }));
     return vals.toArray(new String[vals.size()]);
   }
 
@@ -220,6 +223,21 @@ class BeeLineOpts implements Completer {
     loadProperties(p);
   }
 
+  /**
+   * Update the options after connection is established in CLI mode.
+   */
+  public void updateBeeLineOptsFromConf() {
+    if (!beeLine.isBeeLine()) {
+      if (conf == null) {
+        conf = beeLine.getCommands().getHiveConf(false);
+      }
+      setForce(HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS));
+    }
+  }
+
+  public void setHiveConf(HiveConf conf) {
+    this.conf = conf;
+  }
 
   public void loadProperties(Properties props) {
     for (Object element : props.keySet()) {
@@ -371,12 +389,12 @@ class BeeLineOpts implements Completer {
     return scriptFile;
   }
 
-  public String getInitFile() {
-    return initFile;
+  public String[] getInitFiles() {
+    return initFiles;
   }
 
-  public void setInitFile(String initFile) {
-    this.initFile = initFile;
+  public void setInitFiles(String[] initFiles) {
+    this.initFiles = initFiles;
   }
 
   public void setColor(boolean color) {
@@ -392,7 +410,14 @@ class BeeLineOpts implements Completer {
   }
 
   public boolean getShowHeader() {
-    return showHeader;
+    if (beeLine.isBeeLine()) {
+      return showHeader;
+    } else {
+      boolean header;
+      HiveConf conf = beeLine.getCommands().getHiveConf(true);
+      header = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER);
+      return header;
+    }
   }
 
   public void setHeaderInterval(int headerInterval) {
@@ -528,6 +553,10 @@ class BeeLineOpts implements Completer {
 
   public void setDelimiterForDSV(char delimiterForDSV) {
     this.delimiterForDSV = delimiterForDSV;
+  }
+
+  public HiveConf getConf() {
+    return conf;
   }
 }
 

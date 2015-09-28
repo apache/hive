@@ -72,136 +72,136 @@ POSTHOOK: query: -- There will be an extra tab at the end of each comment line i
 DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table
-col_name           data_type     comment	 	 
-	 	 
-col1               int           col1 one line comment	 	 
-col2               string        col2	 	 
-                                 two lines comment	 	 
-col3               string        col3	 	 
-                                 three lines	 	 
-                                 comment	 	 
-col4               string        col4 very long comment that is greater than 80	 	 
-                                 chars and is likely to spill into multiple	 	 
-                                 lines	 	 
-col5               string        col5 very long multi-line comment where each	 	 
-                                 line is very long by itself and is likely to	 	 
-                                 spill	 	 
-                                 into multiple lines.  Lorem ipsum dolor sit	 	 
-                                 amet, consectetur adipiscing elit. Proin in	 	 
-                                 dolor nisl, sodales	 	 
-                                 adipiscing tortor. Integer venenatis	 	 
-col6               string        This comment has a very long single word ABCDEF	 	 
-                                 GHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvzxyz12	 	 
-                                 3 which will not fit in a line by itself for	 	 
-                                 small column widths.	 	 
-col7_nocomment     string        	 	 
+col_name           	data_type     	comment
+		
+col1               	int           	col1 one line comment
+col2               	string        	col2
+                   	              	two lines comment
+col3               	string        	col3
+                   	              	three lines
+                   	              	comment
+col4               	string        	col4 very long comment that is greater than 80
+                   	              	chars and is likely to spill into multiple 
+                   	              	lines
+col5               	string        	col5 very long multi-line comment where each
+                   	              	line is very long by itself and is likely to 
+                   	              	spill
+                   	              	into multiple lines.  Lorem ipsum dolor sit 
+                   	              	amet, consectetur adipiscing elit. Proin in 
+                   	              	dolor nisl, sodales
+                   	              	adipiscing tortor. Integer venenatis
+col6               	string        	This comment has a very long single word ABCDEF
+                   	              	GHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvzxyz12
+                   	              	3 which will not fit in a line by itself for 
+                   	              	small column widths.
+col7_nocomment     	string        	
 PREHOOK: query: DESCRIBE PRETTY test_table
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table
-col_name           data_type     comment	 	 
-	 	 
-col1               int           col1 one line comment	 	 
-col2               string        col2	 	 
-                                 two lines comment	 	 
-col3               string        col3	 	 
-                                 three lines	 	 
-                                 comment	 	 
-col4               string        col4 very long comment that is greater than 80 chars and is likely to spill into multiple lines	 	 
-col5               string        col5 very long multi-line comment where each line is very long by itself and is likely to spill	 	 
-                                 into multiple lines.  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in dolor nisl, sodales	 	 
-                                 adipiscing tortor. Integer venenatis	 	 
-col6               string        This comment has a very long single word ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvzxyz123 which will not fit in a line by itself for small column widths.	 	 
-col7_nocomment     string        	 	 
+col_name           	data_type     	comment
+		
+col1               	int           	col1 one line comment
+col2               	string        	col2
+                   	              	two lines comment
+col3               	string        	col3
+                   	              	three lines
+                   	              	comment
+col4               	string        	col4 very long comment that is greater than 80 chars and is likely to spill into multiple lines
+col5               	string        	col5 very long multi-line comment where each line is very long by itself and is likely to spill
+                   	              	into multiple lines.  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in dolor nisl, sodales
+                   	              	adipiscing tortor. Integer venenatis
+col6               	string        	This comment has a very long single word ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvzxyz123 which will not fit in a line by itself for small column widths.
+col7_nocomment     	string        	
 PREHOOK: query: DESCRIBE PRETTY test_table
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table
-col_name           data_type     comment	 	 
-	 	 
-col1               int           col1 one line	 	 
-                                 comment	 	 
-col2               string        col2	 	 
-                                 two lines comment	 	 
-col3               string        col3	 	 
-                                 three lines	 	 
-                                 comment	 	 
-col4               string        col4 very long	 	 
-                                 comment that is	 	 
-                                 greater than 80	 	 
-                                 chars and is	 	 
-                                 likely to spill	 	 
-                                 into multiple	 	 
-                                 lines	 	 
-col5               string        col5 very long	 	 
-                                 multi-line	 	 
-                                 comment where	 	 
-                                 each line is very	 	 
-                                 long by itself	 	 
-                                 and is likely to	 	 
-                                 spill	 	 
-                                 into multiple	 	 
-                                 lines.  Lorem	 	 
-                                 ipsum dolor sit	 	 
-                                 amet, consectetur	 	 
-                                 adipiscing elit.	 	 
-                                 Proin in dolor	 	 
-                                 nisl, sodales	 	 
-                                 adipiscing	 	 
-                                 tortor. Integer	 	 
-                                 venenatis	 	 
-col6               string        This comment has	 	 
-                                 a very long	 	 
-                                 single word ABCDE	 	 
-                                 FGHIJKLMNOPQRSTUV	 	 
-                                 XYZabcdefghijklmn	 	 
-                                 opqrstuvzxyz123	 	 
-                                 which will not	 	 
-                                 fit in a line by	 	 
-                                 itself for small	 	 
-                                 column widths.	 	 
-col7_nocomment     string        	 	 
+col_name           	data_type     	comment
+		
+col1               	int           	col1 one line
+                   	              	comment
+col2               	string        	col2
+                   	              	two lines comment
+col3               	string        	col3
+                   	              	three lines
+                   	              	comment
+col4               	string        	col4 very long
+                   	              	comment that is 
+                   	              	greater than 80 
+                   	              	chars and is 
+                   	              	likely to spill 
+                   	              	into multiple 
+                   	              	lines
+col5               	string        	col5 very long
+                   	              	multi-line 
+                   	              	comment where 
+                   	              	each line is very
+                   	              	long by itself 
+                   	              	and is likely to 
+                   	              	spill
+                   	              	into multiple 
+                   	              	lines.  Lorem 
+                   	              	ipsum dolor sit 
+                   	              	amet, consectetur
+                   	              	adipiscing elit. 
+                   	              	Proin in dolor 
+                   	              	nisl, sodales
+                   	              	adipiscing 
+                   	              	tortor. Integer 
+                   	              	venenatis
+col6               	string        	This comment has
+                   	              	a very long 
+                   	              	single word ABCDE
+                   	              	FGHIJKLMNOPQRSTUV
+                   	              	XYZabcdefghijklmn
+                   	              	opqrstuvzxyz123 
+                   	              	which will not 
+                   	              	fit in a line by 
+                   	              	itself for small 
+                   	              	column widths.
+col7_nocomment     	string        	
 PREHOOK: query: DESCRIBE PRETTY test_table
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table
 POSTHOOK: query: DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table
-col_name           data_type     comment	 	 
-	 	 
-col1               int           col1 one line comment	 	 
-col2               string        col2	 	 
-                                 two lines comment	 	 
-col3               string        col3	 	 
-                                 three lines	 	 
-                                 comment	 	 
-col4               string        col4 very long comment that	 	 
-                                 is greater than 80 chars	 	 
-                                 and is likely to spill into	 	 
-                                 multiple lines	 	 
-col5               string        col5 very long multi-line	 	 
-                                 comment where each line is	 	 
-                                 very long by itself and is	 	 
-                                 likely to spill	 	 
-                                 into multiple lines.  Lorem	 	 
-                                 ipsum dolor sit amet,	 	 
-                                 consectetur adipiscing	 	 
-                                 elit. Proin in dolor nisl,	 	 
-                                 sodales	 	 
-                                 adipiscing tortor. Integer	 	 
-                                 venenatis	 	 
-col6               string        This comment has a very	 	 
-                                 long single word ABCDEFGHIJ	 	 
-                                 KLMNOPQRSTUVXYZabcdefghijkl	 	 
-                                 mnopqrstuvzxyz123 which	 	 
-                                 will not fit in a line by	 	 
-                                 itself for small column	 	 
-                                 widths.	 	 
-col7_nocomment     string        	 	 
+col_name           	data_type     	comment
+		
+col1               	int           	col1 one line comment
+col2               	string        	col2
+                   	              	two lines comment
+col3               	string        	col3
+                   	              	three lines
+                   	              	comment
+col4               	string        	col4 very long comment that
+                   	              	is greater than 80 chars 
+                   	              	and is likely to spill into
+                   	              	multiple lines
+col5               	string        	col5 very long multi-line
+                   	              	comment where each line is 
+                   	              	very long by itself and is 
+                   	              	likely to spill
+                   	              	into multiple lines.  Lorem
+                   	              	ipsum dolor sit amet, 
+                   	              	consectetur adipiscing 
+                   	              	elit. Proin in dolor nisl, 
+                   	              	sodales
+                   	              	adipiscing tortor. Integer 
+                   	              	venenatis
+col6               	string        	This comment has a very
+                   	              	long single word ABCDEFGHIJ
+                   	              	KLMNOPQRSTUVXYZabcdefghijkl
+                   	              	mnopqrstuvzxyz123 which 
+                   	              	will not fit in a line by 
+                   	              	itself for small column 
+                   	              	widths.
+col7_nocomment     	string        	
 PREHOOK: query: CREATE TABLE test_table_very_long_column_name(
     col1 INT COMMENT 'col1 one line comment',
     col2_abcdefghiklmnopqrstuvxyz STRING COMMENT 'col2
@@ -230,48 +230,48 @@ PREHOOK: Input: default@test_table_very_long_column_name
 POSTHOOK: query: DESCRIBE PRETTY test_table_very_long_column_name
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_very_long_column_name
-col_name                          data_type     comment	 	 
-	 	 
-col1                              int           col1 one line comment	 	 
-col2_abcdefghiklmnopqrstuvxyz     string        col2	 	 
-                                                two lines comment	 	 
-col3                              string        col3	 	 
-                                                three lines	 	 
-                                                comment	 	 
-col4                              string        col4 very long comment that is	 	 
-                                                greater than 80 chars and is	 	 
-                                                likely to spill into multiple	 	 
-                                                lines	 	 
+col_name                          	data_type     	comment
+		
+col1                              	int           	col1 one line comment
+col2_abcdefghiklmnopqrstuvxyz     	string        	col2
+                                  	              	two lines comment
+col3                              	string        	col3
+                                  	              	three lines
+                                  	              	comment
+col4                              	string        	col4 very long comment that is
+                                  	              	greater than 80 chars and is 
+                                  	              	likely to spill into multiple 
+                                  	              	lines
 PREHOOK: query: DESCRIBE PRETTY test_table_very_long_column_name
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table_very_long_column_name
 POSTHOOK: query: DESCRIBE PRETTY test_table_very_long_column_name
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_very_long_column_name
-col_name                          data_type     comment	 	 
-	 	 
-col1                              int           col1 one	 	 
-                                                line	 	 
-                                                comment	 	 
-col2_abcdefghiklmnopqrstuvxyz     string        col2	 	 
-                                                two lines	 	 
-                                                comment	 	 
-col3                              string        col3	 	 
-                                                three	 	 
-                                                lines	 	 
-                                                comment	 	 
-col4                              string        col4 very	 	 
-                                                long	 	 
-                                                comment	 	 
-                                                that is	 	 
-                                                greater	 	 
-                                                than 80	 	 
-                                                chars and	 	 
-                                                is likely	 	 
-                                                to spill	 	 
-                                                into	 	 
-                                                multiple	 	 
-                                                lines	 	 
+col_name                          	data_type     	comment
+		
+col1                              	int           	col1 one
+                                  	              	line 
+                                  	              	comment
+col2_abcdefghiklmnopqrstuvxyz     	string        	col2
+                                  	              	two lines 
+                                  	              	comment
+col3                              	string        	col3
+                                  	              	three 
+                                  	              	lines
+                                  	              	comment
+col4                              	string        	col4 very
+                                  	              	long 
+                                  	              	comment 
+                                  	              	that is 
+                                  	              	greater 
+                                  	              	than 80 
+                                  	              	chars and 
+                                  	              	is likely 
+                                  	              	to spill 
+                                  	              	into 
+                                  	              	multiple 
+                                  	              	lines
 PREHOOK: query: CREATE TABLE test_table_partitioned(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
@@ -316,40 +316,40 @@ PREHOOK: Input: default@test_table_partitioned
 POSTHOOK: query: DESCRIBE PRETTY test_table_partitioned
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table_partitioned
-col_name           data_type     comment	 	 
-	 	 
-col1               int           col1 one line comment	 	 
-col2               string        col2	 	 
-                                 two lines comment	 	 
-col3               string        col3	 	 
-                                 three lines	 	 
-                                 comment	 	 
-col4               string        col4 very long comment that	 	 
-                                 is greater than 80 chars	 	 
-                                 and is likely to spill into	 	 
-                                 multiple lines	 	 
-col5               string        col5 very long multi-line	 	 
-                                 comment where each line is	 	 
-                                 very long by itself and is	 	 
-                                 likely to spill	 	 
-                                 into multiple lines.  Lorem	 	 
-                                 ipsum dolor sit amet,	 	 
-                                 consectetur adipiscing	 	 
-                                 elit. Proin in dolor nisl,	 	 
-                                 sodales	 	 
-                                 adipiscing tortor. Integer	 	 
-                                 venenatis	 	 
-col6               string        This comment has a very	 	 
-                                 long single word ABCDEFGHIJ	 	 
-                                 KLMNOPQRSTUVXYZabcdefghijkl	 	 
-                                 mnopqrstuvzxyz123 which	 	 
-                                 will not fit in a line by	 	 
-                                 itself for small column	 	 
-                                 widths.	 	 
-col7_nocomment     string        	 	 
-ds                 string        	 	 
+col_name           	data_type     	comment
+		
+col1               	int           	col1 one line comment
+col2               	string        	col2
+                   	              	two lines comment
+col3               	string        	col3
+                   	              	three lines
+                   	              	comment
+col4               	string        	col4 very long comment that
+                   	              	is greater than 80 chars 
+                   	              	and is likely to spill into
+                   	              	multiple lines
+col5               	string        	col5 very long multi-line
+                   	              	comment where each line is 
+                   	              	very long by itself and is 
+                   	              	likely to spill
+                   	              	into multiple lines.  Lorem
+                   	              	ipsum dolor sit amet, 
+                   	              	consectetur adipiscing 
+                   	              	elit. Proin in dolor nisl, 
+                   	              	sodales
+                   	              	adipiscing tortor. Integer 
+                   	              	venenatis
+col6               	string        	This comment has a very
+                   	              	long single word ABCDEFGHIJ
+                   	              	KLMNOPQRSTUVXYZabcdefghijkl
+                   	              	mnopqrstuvzxyz123 which 
+                   	              	will not fit in a line by 
+                   	              	itself for small column 
+                   	              	widths.
+col7_nocomment     	string        	
+ds                 	string        	
 	 	 
 # Partition Information	 	 
-col_name           data_type     comment	 	 
-	 	 
-ds                 string        	 	 
+col_name           	data_type     	comment
+		
+ds                 	string        	
