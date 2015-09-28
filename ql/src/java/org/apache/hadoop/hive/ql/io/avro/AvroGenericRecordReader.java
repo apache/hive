@@ -57,6 +57,7 @@ public class AvroGenericRecordReader implements
   final private long start;
   final private long stop;
   protected JobConf jobConf;
+  final private boolean isEmptyInput;
   /**
    * A unique ID for each record reader.
    */
@@ -78,9 +79,17 @@ public class AvroGenericRecordReader implements
       gdr.setExpected(latest);
     }
 
-    this.reader = new DataFileReader<GenericRecord>(new FsInput(split.getPath(), job), gdr);
-    this.reader.sync(split.getStart());
-    this.start = reader.tell();
+    if (split.getLength() == 0) {
+      this.isEmptyInput = true;
+      this.start = 0;
+      this.reader = null;
+    }
+    else {
+      this.isEmptyInput = false;
+      this.reader = new DataFileReader<GenericRecord>(new FsInput(split.getPath(), job), gdr);
+      this.reader.sync(split.getStart());
+      this.start = reader.tell();
+    }
     this.stop = split.getStart() + split.getLength();
     this.recordReaderID = new UID();
   }
@@ -146,7 +155,7 @@ public class AvroGenericRecordReader implements
 
   @Override
   public boolean next(NullWritable nullWritable, AvroGenericRecordWritable record) throws IOException {
-    if(!reader.hasNext() || reader.pastSync(stop)) {
+    if(isEmptyInput || !reader.hasNext() || reader.pastSync(stop)) {
       return false;
     }
 
@@ -170,12 +179,13 @@ public class AvroGenericRecordReader implements
 
   @Override
   public long getPos() throws IOException {
-    return reader.tell();
+    return isEmptyInput ? 0 : reader.tell();
   }
 
   @Override
   public void close() throws IOException {
-    reader.close();
+    if (isEmptyInput == false)
+      reader.close();
   }
 
   @Override
