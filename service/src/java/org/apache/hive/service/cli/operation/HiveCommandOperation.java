@@ -66,13 +66,14 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
   private void setupSessionIO(SessionState sessionState) {
     try {
-      LOG.info("Putting temp output to file " + sessionState.getTmpOutputFile().toString());
+      LOG.info("Putting temp output to file " + sessionState.getTmpOutputFile().toString()
+          + " and error output to file " + sessionState.getTmpErrOutputFile().toString());
       sessionState.in = null; // hive server's session input stream is not used
-      // open a per-session file in auto-flush mode for writing temp results
-      sessionState.out = new PrintStream(new FileOutputStream(sessionState.getTmpOutputFile()), true, "UTF-8");
-      // TODO: for hadoop jobs, progress is printed out to session.err,
-      // we should find a way to feed back job progress to client
-      sessionState.err = new PrintStream(System.err, true, "UTF-8");
+      // open a per-session file in auto-flush mode for writing temp results and tmp error output
+      sessionState.out =
+          new PrintStream(new FileOutputStream(sessionState.getTmpOutputFile()), true, "UTF-8");
+      sessionState.err =
+          new PrintStream(new FileOutputStream(sessionState.getTmpErrOutputFile()), true, "UTF-8");
     } catch (IOException e) {
       LOG.error("Error in creating temp output file ", e);
       try {
@@ -90,8 +91,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
 
   private void tearDownSessionIO() {
-    IOUtils.cleanup(LOG, parentSession.getSessionState().out);
-    IOUtils.cleanup(LOG, parentSession.getSessionState().err);
+    IOUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
   }
 
   @Override
@@ -201,6 +201,8 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     resetResultReader();
     SessionState sessionState = getParentSession().getSessionState();
     File tmp = sessionState.getTmpOutputFile();
+    tmp.delete();
+    tmp = sessionState.getTmpErrOutputFile();
     tmp.delete();
   }
 

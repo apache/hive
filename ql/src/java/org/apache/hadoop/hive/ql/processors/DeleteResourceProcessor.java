@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -44,7 +46,12 @@ public class DeleteResourceProcessor implements CommandProcessor {
   @Override
   public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
-    command = new VariableSubstitution().substitute(ss.getConf(),command);
+    command = new VariableSubstitution(new HiveVariableSource() {
+      @Override
+      public Map<String, String> getHiveVariable() {
+        return SessionState.get().getHiveVariables();
+      }
+    }).substitute(ss.getConf(), command);
     String[] tokens = command.split("\\s+");
 
     SessionState.ResourceType t;

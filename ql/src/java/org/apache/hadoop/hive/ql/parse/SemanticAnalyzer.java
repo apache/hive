@@ -862,7 +862,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return expr.getText();
 
       case HiveParser.StringLiteral:
-        return PlanUtils.stripQuotes(expr.getText());
+        return BaseSemanticAnalyzer.unescapeSQLString(expr.getText());
 
       case HiveParser.KW_FALSE:
         // UDFToBoolean casts any non-empty string to true, so set this to false
