@@ -14,20 +14,45 @@
 @rem See the License for the specific language governing permissions and
 @rem limitations under the License.
 
-set CLASS=org.apache.hadoop.hive.cli.CliDriver
-pushd %HIVE_LIB%
-for /f %%a IN ('dir /b hive-cli-*.jar') do (
-	set JAR=%HIVE_LIB%\%%a
-)
-popd
-
 if [%1]==[cli_help] goto :cli_help
 
 :cli
+	call :update_cli
 	call %HIVE_BIN_PATH%\ext\util\execHiveCmd.cmd %CLASS%
 goto :EOF
 
 :cli_help
+	call :update_cli
 	set HIVEARGS=--help
 	call :cli
+goto :EOF
+
+:update_cli
+	if [%USE_DEPRECATED_CLI%] == [] (
+		set USE_DEPRECATED_CLI=false
+	)
+
+	if /I "%USE_DEPRECATED_CLI%" == "true" (
+		call :old_cli
+	) else (
+		call :new_cli
+	)
+goto :EOF
+
+:old_cli
+	set CLASS=org.apache.hadoop.hive.cli.CliDriver
+	pushd %HIVE_LIB%
+	for /f %%a IN ('dir /b hive-cli-*.jar') do (
+		set JAR=%HIVE_LIB%\%%a
+	)
+	popd
+goto :EOF
+
+:new_cli
+	set CLASS=org.apache.hive.beeline.cli.HiveCli
+	pushd %HIVE_LIB%
+	for /f %%a IN ('dir /b hive-beeline-*.jar') do (
+		set JAR=%HIVE_LIB%\%%a
+	)
+	popd
 goto :EOF
