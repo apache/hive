@@ -25,6 +25,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
@@ -251,9 +254,17 @@ public abstract class Operation {
    */
   protected abstract void runInternal() throws HiveSQLException;
 
-  public void run() throws HiveSQLException {
+  public final void run() throws HiveSQLException {
     beforeRun();
     try {
+      Metrics metrics = MetricsFactory.getInstance();
+      if (metrics != null) {
+        try {
+          metrics.incrementCounter(MetricsConstant.OPEN_OPERATIONS);
+        } catch (Exception e) {
+          LOG.warn("Error Reporting open operation to Metrics system", e);
+        }
+      }
       runInternal();
     } finally {
       afterRun();
