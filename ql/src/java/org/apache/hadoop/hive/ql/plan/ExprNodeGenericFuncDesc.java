@@ -141,7 +141,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
         if (i > 0) {
           sb.append(", ");
         }
-        sb.append(chidren.get(i).toString());
+        sb.append(chidren.get(i));
       }
     }
     sb.append(")");
