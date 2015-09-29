@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -158,6 +159,7 @@ public class QTestUtil {
   private final boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
+  private TezSessionState tezSessionState = null;
   private SparkSession sparkSession = null;
   private boolean isSessionStateStarted = false;
   private static final String javaVersion = getJavaVersion();
@@ -428,9 +430,15 @@ public class QTestUtil {
 
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
+        if (confDir != null && !confDir.isEmpty()) {
+          conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
+              + "/tez-site.xml"));
+        }
         mr = shims.getMiniTezCluster(conf, 4, uriString, false);
       } else if (clusterType == MiniClusterType.llap) {
         if (confDir != null && !confDir.isEmpty()) {
+          conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
+              + "/tez-site.xml"));
           conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
               + "/llap-daemon-site.xml"));
         }
@@ -952,6 +960,10 @@ public class QTestUtil {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
+      // Copy the tezSessionState from the old CliSessionState.
+      tezSessionState = oldSs.getTezSession();
+      ss.setTezSession(tezSessionState);
+      oldSs.setTezSession(null);
       oldSs.close();
     }
 
@@ -1016,6 +1028,10 @@ public class QTestUtil {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
+      // Copy the tezSessionState from the old CliSessionState.
+      tezSessionState = oldSs.getTezSession();
+      ss.setTezSession(tezSessionState);
+      oldSs.setTezSession(null);
       oldSs.close();
     }
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
