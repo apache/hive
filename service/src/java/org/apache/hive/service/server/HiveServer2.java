@@ -97,10 +97,17 @@ public class HiveServer2 extends CompositeService {
   public synchronized void init(HiveConf hiveConf) {
     cliService = new CLIService(this);
     addService(cliService);
+    final HiveServer2 hiveServer2 = this;
+    Runnable oomHook = new Runnable() {
+      @Override
+      public void run() {
+        hiveServer2.stop();
+      }
+    };
     if (isHTTPTransportMode(hiveConf)) {
-      thriftCLIService = new ThriftHttpCLIService(cliService);
+      thriftCLIService = new ThriftHttpCLIService(cliService, oomHook);
     } else {
-      thriftCLIService = new ThriftBinaryCLIService(cliService);
+      thriftCLIService = new ThriftBinaryCLIService(cliService, oomHook);
     }
     addService(thriftCLIService);
     super.init(hiveConf);
@@ -111,7 +118,6 @@ public class HiveServer2 extends CompositeService {
       throw new Error("Unable to intitialize HiveServer2", t);
     }
     // Add a shutdown hook for catching SIGTERM & SIGINT
-    final HiveServer2 hiveServer2 = this;
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
