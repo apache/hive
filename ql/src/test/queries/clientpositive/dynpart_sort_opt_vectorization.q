@@ -7,8 +7,6 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.vectorized.execution.enabled=true;
 set hive.enforce.bucketing=false;
 set hive.enforce.sorting=false;
-set hive.exec.submitviachild=true;
-set hive.exec.submit.local.task.via.child=true;
 
 create table over1k(
            t tinyint,
