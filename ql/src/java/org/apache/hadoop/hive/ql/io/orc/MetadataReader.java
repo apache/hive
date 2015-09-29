@@ -82,8 +82,7 @@ public class MetadataReader {
         }
         if ((included == null || included[col]) && indexes[col] == null) {
           byte[] buffer = new byte[len];
-          file.seek(offset);
-          file.readFully(buffer);
+          file.readFully(offset, buffer, 0, buffer.length);
           ByteBuffer[] bb = new ByteBuffer[] {ByteBuffer.wrap(buffer)};
           indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create("index",
               bb, new long[]{0}, stream.getLength(), codec, bufferSize));
@@ -108,8 +107,7 @@ public class MetadataReader {
 
     // read the footer
     ByteBuffer tailBuf = ByteBuffer.allocate(tailLength);
-    file.seek(offset);
-    file.readFully(tailBuf.array(), tailBuf.arrayOffset(), tailLength);
+    file.readFully(offset, tailBuf.array(), tailBuf.arrayOffset(), tailLength);
     return OrcProto.StripeFooter.parseFrom(InStream.create("footer",
         Lists.<DiskRange>newArrayList(new BufferChunk(tailBuf, 0)),
         tailLength, codec, bufferSize));

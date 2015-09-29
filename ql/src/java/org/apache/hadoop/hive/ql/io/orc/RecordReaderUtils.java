@@ -246,8 +246,8 @@ public class RecordReaderUtils {
       }
       int len = (int) (range.getEnd() - range.getOffset());
       long off = range.getOffset();
-      file.seek(base + off);
       if (zcr != null) {
+        file.seek(base + off);
         boolean hasReplaced = false;
         while (len > 0) {
           ByteBuffer partial = zcr.readBuffer(len, false);
@@ -264,12 +264,13 @@ public class RecordReaderUtils {
           off += read;
         }
       } else if (doForceDirect) {
+        file.seek(base + off);
         ByteBuffer directBuf = ByteBuffer.allocateDirect(len);
         readDirect(file, len, directBuf);
         range = range.replaceSelfWith(new BufferChunk(directBuf, range.getOffset()));
       } else {
         byte[] buffer = new byte[len];
-        file.readFully(buffer, 0, buffer.length);
+        file.readFully((base + off), buffer, 0, buffer.length);
         range = range.replaceSelfWith(new BufferChunk(ByteBuffer.wrap(buffer), range.getOffset()));
       }
       range = range.next;
