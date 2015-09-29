@@ -72,6 +72,33 @@
       <AppenderRef ref="EventCounter" />
     </Root>
 
+    <Logger name="org.apache.hadoop.ipc" level="WARN">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.hadoop.security" level="INFO">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.hadoop.hdfs" level="INFO">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.hadoop.hdfs.server" level="WARN">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.hadoop.metrics2" level="INFO">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.mortbay" level="INFO">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.hadoop.yarn" level="INFO">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.hadoop.yarn.server" level="WARN">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
+    <Logger name="org.apache.tez" level="INFO">
+      <AppenderRef ref="${sys:hive.root.logger}"/>
+    </Logger>
     <Logger name="org.apache.hadoop.conf.Configuration" level="ERROR">
       <AppenderRef ref="${sys:hive.root.logger}"/>
     </Logger>
