@@ -17,7 +17,7 @@ create table acid_uat(ti tinyint,
                  s string,
                  vc varchar(128),
                  ch char(36),
-                 b boolean) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
+                 b boolean) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('TRANSACTIONAL'='TRUE');
 
 insert into table acid_uat
     select ctinyint,
