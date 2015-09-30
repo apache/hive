@@ -1219,11 +1219,8 @@ public class SessionState {
     String scheme = uri.getScheme() == null ? null : uri.getScheme().toLowerCase();
     if (scheme == null || scheme.equals("file")) {
       return "file";
-    } else if (scheme.equals("hdfs") || scheme.equals("ivy")) {
-      return scheme;
-    } else {
-      throw new RuntimeException("invalid url: " + uri + ", expecting ( file | hdfs | ivy)  as url scheme. ");
     }
+    return scheme;
   }
 
   List<URI> resolveAndDownload(ResourceType t, String value, boolean convertToUnix) throws URISyntaxException,
@@ -1233,10 +1230,8 @@ public class SessionState {
       return Arrays.asList(uri);
     } else if (getURLType(value).equals("ivy")) {
       return dependencyResolver.downloadDependencies(uri);
-    } else if (getURLType(value).equals("hdfs")) {
-      return Arrays.asList(createURI(downloadResource(value, convertToUnix)));
     } else {
-      throw new RuntimeException("Invalid url " + uri);
+      return Arrays.asList(createURI(downloadResource(value, convertToUnix)));
     }
   }
 
