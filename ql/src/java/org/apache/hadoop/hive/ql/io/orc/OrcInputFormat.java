@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -252,6 +253,40 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     int children = type.getSubtypesCount();
     for(int i=0; i < children; ++i) {
       includeColumnRecursive(types, result, type.getSubtypes(i), rootColumn);
+    }
+  }
+
+  /**
+   * Modifies the SARG, replacing column names with column indexes in target table schema. This
+   * basically does the same thing as all the shennannigans with included columns, except for the
+   * last step where ORC gets direct subtypes of root column and uses the ordered match to map
+   * table columns to file columns. The numbers put into predicate leaf should allow to go into
+   * said subtypes directly by index to get the proper index in the file.
+   * This won't work with schema evolution, although it's probably much easier to reason about
+   * if schema evolution was to be supported, because this is a clear boundary between table
+   * schema columns and all things ORC. None of the ORC stuff is used here and none of the
+   * table schema stuff is used after that - ORC doesn't need a bunch of extra crap to apply
+   * the SARG thus modified.
+   */
+  public static void translateSargToTableColIndexes(
+      SearchArgument sarg, Configuration conf, int rootColumn) {
+    String nameStr = getNeededColumnNamesString(conf), idStr = getSargColumnIDsString(conf);
+    String[] knownNames = nameStr.split(",");
+    String[] idStrs = (idStr == null) ? null : idStr.split(",");
+    assert idStrs == null || knownNames.length == idStrs.length;
+    HashMap<String, Integer> nameIdMap = new HashMap<>();
+    for (int i = 0; i < knownNames.length; ++i) {
+      nameIdMap.put(knownNames[i], idStrs != null ? Integer.parseInt(idStrs[i]) : i);
+    }
+    List<PredicateLeaf> leaves = sarg.getLeaves();
+    for (int i = 0; i < leaves.size(); ++i) {
+      PredicateLeaf pl = leaves.get(i);
+      Integer colId = nameIdMap.get(pl.getColumnName());
+      String newColName = RecordReaderImpl.encodeTranslatedSargColumn(rootColumn, colId);
+      SearchArgumentFactory.setPredicateLeafColumn(pl, newColName);
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("SARG translated into " + sarg);
     }
   }
 
@@ -1343,6 +1378,20 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
     throw new IllegalArgumentException("Can't find bucket " + bucket + " in " +
         directory);
+  }
+
+  public static boolean[] pickStripesViaTranslatedSarg(SearchArgument sarg,
+      WriterVersion writerVersion, List<OrcProto.Type> types,
+      List<StripeStatistics> stripeStats, int stripeCount) {
+    LOG.info("Translated ORC pushdown predicate: " + sarg);
+    assert sarg != null;
+    if (stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
+      return null; // only do split pruning if HIVE-8732 has been fixed in the writer
+    }
+    // eliminate stripes that doesn't satisfy the predicate condition
+    List<PredicateLeaf> sargLeaves = sarg.getLeaves();
+    int[] filterColumns = RecordReaderImpl.mapTranslatedSargColumns(types, sargLeaves);
+    return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, null);
   }
 
   private static boolean[] pickStripes(SearchArgument sarg, String[] sargColNames,

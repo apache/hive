@@ -27,6 +27,7 @@ public class MetricsConstant {
   public static String JVM_EXTRA_SLEEP = "jvm.pause.extraSleepTime";
 
   public static String OPEN_CONNECTIONS = "open_connections";
+  public static String OPEN_OPERATIONS = "open_operations";
 
   public static String JDO_ACTIVE_TRANSACTIONS = "active_jdo_transactions";
   public static String JDO_ROLLBACK_TRANSACTIONS = "rollbacked_jdo_transactions";

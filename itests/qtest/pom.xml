@@ -450,7 +450,7 @@
                   templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
                   queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
                   queryFile="${qfile}"
-                  excludeQueryFile="${minimr.query.files},${minitez.query.files},${encrypted.query.files},${spark.only.query.files}"
+                  excludeQueryFile="${minimr.query.files},${minitez.query.files},${encrypted.query.files},${spark.only.query.files},${disabled.query.files}"
                   queryFileRegex="${qfile_regex}"
                   clusterMode="${clustermode}"
                   runDisabled="${run_disabled}"
