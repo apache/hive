@@ -1002,8 +1002,16 @@ public class Server {
       throw new BadParam("Invalid numrecords format: numrecords should be an integer > 0");
     }
 
-    // Sort the list lexicographically
-    Collections.sort(list);
+    // Sort the list as requested
+    switch (appConf.getListJobsOrder()) {
+    case lexicographicaldesc:
+      Collections.sort(list, Collections.reverseOrder());
+      break;
+    case lexicographicalasc:
+    default:
+      Collections.sort(list);
+      break;
+    }
 
     for (String job : list) {
       // If numRecords = -1, fetch all records.

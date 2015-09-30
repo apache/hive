@@ -550,7 +550,8 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -560,19 +561,19 @@ STAGE PLANS:
             alias: store_sales
             Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: ss_ticket_number (type: int), ss_item_sk (type: int), ss_quantity (type: int)
-              outputColumnNames: _col0, _col1, _col2
+              expressions: ss_item_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int)
+              outputColumnNames: ss_item_sk, ss_ticket_number, ss_quantity
               Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: min(_col2)
-                keys: _col0 (type: int), _col1 (type: int)
+                aggregations: min(ss_quantity)
+                keys: ss_item_sk (type: int), ss_ticket_number (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: int)
                   sort order: ++
-                  Map-reduce partition columns: _col0 (type: int)
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                   Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: int)
       Execution mode: vectorized
@@ -584,11 +585,11 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
-            aggregations: sum(_col1), sum(_col2)
-            keys: _col0 (type: int)
-            mode: complete
+            aggregations: sum(_col0), sum(_col2)
+            keys: _col1 (type: int)
+            mode: hash
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 250 Data size: 22069 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -597,6 +598,30 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint), _col2 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0), sum(VALUE._col1)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 250 Data size: 22069 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -769,12 +794,12 @@ STAGE PLANS:
             alias: store_sales
             Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: ss_ticket_number (type: int), ss_item_sk (type: int), ss_quantity (type: int)
-              outputColumnNames: _col0, _col1, _col2
+              expressions: ss_item_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int)
+              outputColumnNames: ss_item_sk, ss_ticket_number, ss_quantity
               Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: min(_col2)
-                keys: _col0 (type: int), _col1 (type: int)
+                aggregations: min(ss_quantity)
+                keys: ss_item_sk (type: int), ss_ticket_number (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
@@ -798,12 +823,16 @@ STAGE PLANS:
             mode: complete
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 250 Data size: 22069 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Select Operator
+              expressions: _col1 (type: int), _col0 (type: int), _col2 (type: bigint)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 250 Data size: 22069 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce

@@ -26,7 +26,7 @@ public class TestPluggableHiveSessionImpl extends TestCase {
     hiveConf = new HiveConf();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_CLASSNAME, TestHiveSessionImpl.class.getName());
     cliService = new CLIService(null);
-    service = new ThriftBinaryCLIService(cliService);
+    service = new ThriftBinaryCLIService(cliService, null);
     service.init(hiveConf);
     client = new ThriftCLIServiceClient(service);
   }

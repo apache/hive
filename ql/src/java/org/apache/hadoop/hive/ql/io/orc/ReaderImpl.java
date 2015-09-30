@@ -250,9 +250,8 @@ public class ReaderImpl implements Reader {
     if (!Text.decode(array, offset, len).equals(OrcFile.MAGIC)) {
       // If it isn't there, this may be the 0.11.0 version of ORC.
       // Read the first 3 bytes of the file to check for the header
-      in.seek(0);
       byte[] header = new byte[len];
-      in.readFully(header, 0, len);
+      in.readFully(0, header, 0, len);
       // if it isn't there, this isn't an ORC file
       if (!Text.decode(header, 0 , len).equals(OrcFile.MAGIC)) {
         throw new FileFormatException("Malformed ORC file " + path +
@@ -508,10 +507,10 @@ public class ReaderImpl implements Reader {
 
     //read last bytes into buffer to get PostScript
     int readSize = (int) Math.min(size, DIRECTORY_SIZE_GUESS);
-    file.seek(size - readSize);
     ByteBuffer buffer = ByteBuffer.allocate(readSize);
     assert buffer.position() == 0;
-    file.readFully(buffer.array(), buffer.arrayOffset(), readSize);
+    file.readFully((size - readSize),
+        buffer.array(), buffer.arrayOffset(), readSize);
     buffer.position(0);
 
     //read the PostScript
@@ -531,10 +530,9 @@ public class ReaderImpl implements Reader {
     int extra = Math.max(0, psLen + 1 + footerSize + metadataSize - readSize);
     if (extra > 0) {
       //more bytes need to be read, seek back to the right place and read extra bytes
-      file.seek(size - readSize - extra);
       ByteBuffer extraBuf = ByteBuffer.allocate(extra + readSize);
-      file.readFully(extraBuf.array(),
-        extraBuf.arrayOffset() + extraBuf.position(), extra);
+      file.readFully((size - readSize - extra), extraBuf.array(),
+          extraBuf.arrayOffset() + extraBuf.position(), extra);
       extraBuf.position(extra);
       //append with already read bytes
       extraBuf.put(buffer);

@@ -79,6 +79,12 @@ public class HiveSessionProxy implements InvocationHandler {
     } catch (InvocationTargetException e) {
       if (e.getCause() instanceof HiveSQLException) {
         throw (HiveSQLException)e.getCause();
+      } else if (e.getCause() instanceof OutOfMemoryError) {
+        throw (OutOfMemoryError)e.getCause();
+      } else if (e.getCause() instanceof Error) {
+        // TODO: maybe we should throw this as-is too. ThriftCLIService currently catches Exception,
+        //       so the combination determines what would kill the HS2 executor thread. For now,
+        //       let's only allow OOM to propagate.
       }
       throw new RuntimeException(e.getCause());
     } catch (IllegalArgumentException e) {

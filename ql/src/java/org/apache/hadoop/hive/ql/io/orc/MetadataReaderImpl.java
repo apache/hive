@@ -35,9 +35,14 @@ public class MetadataReaderImpl implements MetadataReader {
   private final int bufferSize;
   private final int typeCount;
 
-  public MetadataReaderImpl(FileSystem fileSystem, Path path, CompressionCodec codec,
-      int bufferSize, int typeCount) throws IOException {
-    this.file = fileSystem.open(path);
+  public MetadataReaderImpl(FileSystem fileSystem, Path path,
+      CompressionCodec codec, int bufferSize, int typeCount) throws IOException {
+    this(fileSystem.open(path), codec, bufferSize, typeCount);
+  }
+
+  public MetadataReaderImpl(FSDataInputStream file,
+      CompressionCodec codec, int bufferSize, int typeCount) {
+    this.file = file;
     this.codec = codec;
     this.bufferSize = bufferSize;
     this.typeCount = typeCount;
@@ -78,12 +83,11 @@ public class MetadataReaderImpl implements MetadataReader {
         }
         if ((included == null || included[col]) && indexes[col] == null) {
           byte[] buffer = new byte[len];
+          file.readFully(offset, buffer, 0, buffer.length);
           ByteBuffer bb = ByteBuffer.wrap(buffer);
-          file.seek(offset);
-          file.readFully(buffer);
           indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create(null, "index",
               Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), stream.getLength(),
-              codec, bufferSize));
+               codec, bufferSize));
           if (readBloomFilter) {
             bb.position((int) stream.getLength());
             bloomFilterIndices[col] = OrcProto.BloomFilterIndex.parseFrom(InStream.create(
@@ -103,10 +107,10 @@ public class MetadataReaderImpl implements MetadataReader {
   public OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException {
     long offset = stripe.getOffset() + stripe.getIndexLength() + stripe.getDataLength();
     int tailLength = (int) stripe.getFooterLength();
+
     // read the footer
     ByteBuffer tailBuf = ByteBuffer.allocate(tailLength);
-    file.seek(offset);
-    file.readFully(tailBuf.array(), tailBuf.arrayOffset(), tailLength);
+    file.readFully(offset, tailBuf.array(), tailBuf.arrayOffset(), tailLength);
     return OrcProto.StripeFooter.parseFrom(InStream.create(null, "footer",
         Lists.<DiskRange>newArrayList(new BufferChunk(tailBuf, 0)),
         tailLength, codec, bufferSize));

@@ -289,13 +289,14 @@ public class SessionManager extends CompositeService {
     try {
       session.open(sessionConf);
     } catch (Exception e) {
+      LOG.warn("Failed to open session", e);
       try {
         session.close();
       } catch (Throwable t) {
         LOG.warn("Error closing session", t);
       }
       session = null;
-      throw new HiveSQLException("Failed to open new session: " + e, e);
+      throw new HiveSQLException("Failed to open new session: " + e.getMessage(), e);
     }
     if (isOperationLogEnabled) {
       session.setOperationLogSessionDir(operationLogRootDir);
@@ -303,13 +304,14 @@ public class SessionManager extends CompositeService {
     try {
       executeSessionHooks(session);
     } catch (Exception e) {
+      LOG.warn("Failed to execute session hooks", e);
       try {
         session.close();
       } catch (Throwable t) {
         LOG.warn("Error closing session", t);
       }
       session = null;
-      throw new HiveSQLException("Failed to execute session hooks", e);
+      throw new HiveSQLException("Failed to execute session hooks: " + e.getMessage(), e);
     }
     handleToSession.put(session.getSessionHandle(), session);
     return session.getSessionHandle();
