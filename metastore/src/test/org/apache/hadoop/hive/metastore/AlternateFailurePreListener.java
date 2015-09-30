@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
  *
  * AlternateFailurePreListener.
  *
- * An implemenation of MetaStorePreEventListener which fails every other time it's invoked,
+ * An implementation of MetaStorePreEventListener which fails every other time it's invoked,
  * starting with the first time.
  *
  * It also records and makes available the number of times it's been invoked.
