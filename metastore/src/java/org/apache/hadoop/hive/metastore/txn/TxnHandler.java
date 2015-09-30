@@ -84,6 +84,7 @@ public class TxnHandler {
   static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
 
   static private DataSource connPool;
+  static private boolean doRetryOnConnPool = false;
   private final static Object lockLock = new Object(); // Random object to lock on for the lock
   // method
 
@@ -885,18 +886,19 @@ public class TxnHandler {
 
   }
 
-  /**
-   * Get a connection to the database
-   * @param isolationLevel desired isolation level.  If you are doing _any_ data modifications
-   *                       you should request serializable, else read committed should be fine.
-   * @return db connection
-   * @throws MetaException if the connection cannot be obtained
-   */
   protected Connection getDbConn(int isolationLevel) throws SQLException {
-    Connection dbConn = connPool.getConnection();
-    dbConn.setAutoCommit(false);
-    dbConn.setTransactionIsolation(isolationLevel);
-    return dbConn;
+    int rc = doRetryOnConnPool ? 10 : 1;
+    while (true) {
+      try {
+        Connection dbConn = connPool.getConnection();
+        dbConn.setAutoCommit(false);
+        dbConn.setTransactionIsolation(isolationLevel);
+        return dbConn;
+      } catch (SQLException e){
+        if ((--rc) <= 0) throw e;
+        LOG.error("There is a problem with a connection from the pool, retrying", e);
+      }
+    }
   }
 
   void rollbackDBConn(Connection dbConn) {
@@ -1964,6 +1966,7 @@ public class TxnHandler {
       config.setUser(user);
       config.setPassword(passwd);
       connPool = new BoneCPDataSource(config);
+      doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
     } else if ("dbcp".equals(connectionPooler)) {
       ObjectPool objectPool = new GenericObjectPool();
       ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
