@@ -254,7 +254,7 @@ public abstract class Operation {
    */
   protected abstract void runInternal() throws HiveSQLException;
 
-  public final void run() throws HiveSQLException {
+  public void run() throws HiveSQLException {
     beforeRun();
     try {
       Metrics metrics = MetricsFactory.getInstance();
