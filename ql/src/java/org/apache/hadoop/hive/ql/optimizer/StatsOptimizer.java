@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -235,10 +237,23 @@ public class StatsOptimizer implements Transform {
           return null;
         }
         Operator<?> last = (Operator<?>) stack.get(5);
+        SelectOperator cselOp = null;
+        Map<Integer,Object> posToConstant = new HashMap<>();
         if (last instanceof SelectOperator) {
-          SelectOperator cselOp = (SelectOperator) last;
+          cselOp = (SelectOperator) last;
           if (!cselOp.isIdentitySelect()) {
-            return null;  // todo we can do further by providing operator to fetch task
+            for (int pos = 0; pos < cselOp.getConf().getColList().size(); pos++) {
+              ExprNodeDesc desc = cselOp.getConf().getColList().get(pos);
+              if (desc instanceof ExprNodeConstantDesc) {
+                //We store the position to the constant value for later use.
+                posToConstant.put(pos, ((ExprNodeConstantDesc)desc).getValue());
+              } else {
+                if (!(desc instanceof ExprNodeColumnDesc)) {
+                  // Probably an expression, cant handle that
+                  return null;
+                }
+              }
+            }
           }
           last = (Operator<?>) stack.get(6);
         }
@@ -588,13 +603,30 @@ public class StatsOptimizer implements Transform {
 
 
         List<List<Object>> allRows = new ArrayList<List<Object>>();
-        allRows.add(oneRow);
-
         List<String> colNames = new ArrayList<String>();
         List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
-        for (ColumnInfo colInfo: cgbyOp.getSchema().getSignature()) {
-          colNames.add(colInfo.getInternalName());
-          ois.add(TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(colInfo.getType()));
+        if (cselOp == null) {
+          allRows.add(oneRow);
+          for (ColumnInfo colInfo : cgbyOp.getSchema().getSignature()) {
+            colNames.add(colInfo.getInternalName());
+            ois.add(TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(colInfo.getType()));
+          }
+        } else {
+          int aggrPos = 0;
+          List<Object> oneRowWithConstant = new ArrayList<>();
+          for (int pos = 0; pos < cselOp.getSchema().getSignature().size(); pos++) {
+            if (posToConstant.containsKey(pos)) {
+              // This position is a constant.
+              oneRowWithConstant.add(posToConstant.get(pos));
+            } else {
+              // This position is an aggregation.
+              oneRowWithConstant.add(oneRow.get(aggrPos++));
+            }
+            ColumnInfo colInfo = cselOp.getSchema().getSignature().get(pos);
+            colNames.add(colInfo.getInternalName());
+            ois.add(TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(colInfo.getType()));
+          }
+          allRows.add(oneRowWithConstant);
         }
         StandardStructObjectInspector sOI = ObjectInspectorFactory.
             getStandardStructObjectInspector(colNames, ois);
