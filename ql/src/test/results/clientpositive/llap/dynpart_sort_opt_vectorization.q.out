@@ -1821,13 +1821,15 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from over1k_part2_orc
+PREHOOK: query: -- SORT_BEFORE_DIFF
+select * from over1k_part2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2_orc
 PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
 PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: query: select * from over1k_part2_orc
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+select * from over1k_part2_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2_orc
 POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
@@ -1966,13 +1968,15 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from over1k_part2_orc
+PREHOOK: query: -- SORT_BEFORE_DIFF
+select * from over1k_part2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2_orc
 PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
 PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: query: select * from over1k_part2_orc
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+select * from over1k_part2_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2_orc
 POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
