@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 
 /**
  * VectorSMBJoinOperator.
@@ -123,8 +125,17 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   @Override
   protected List<Object> smbJoinComputeKeys(Object row, byte alias) throws HiveException {
     if (alias == this.posBigTable) {
-      VectorizedRowBatch inBatch = (VectorizedRowBatch) row;
-      return keyEvaluator.evaluate(keyValues[batchIndex]);
+
+      // The keyEvaluate reuses storage.  That doesn't work with SMB MapJoin because it
+      // holds references to keys as it is merging.
+      List<Object> singletonListAndObjects = keyEvaluator.evaluate(keyValues[batchIndex]);
+      ArrayList<Object> result = new ArrayList<Object>(singletonListAndObjects.size());
+      for (int i = 0; i < singletonListAndObjects.size(); i++) {
+        result.add(ObjectInspectorUtils.copyToStandardObject(singletonListAndObjects.get(i),
+            joinKeysObjectInspectors[alias].get(i),
+            ObjectInspectorCopyOption.WRITABLE));
+      }
+      return result;
     } else {
       return super.smbJoinComputeKeys(row, alias);
     }
