@@ -704,7 +704,7 @@ public class TestFileSinkOperator {
     }
 
     @Override
-    public boolean validateInput(FileSystem fs, HiveConf conf, ArrayList<FileStatus> files) throws
+    public boolean validateInput(FileSystem fs, HiveConf conf, List<FileStatus> files) throws
         IOException {
       return false;
     }

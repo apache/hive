@@ -106,7 +106,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * that added this event. Insert and update events include the entire row, while
  * delete events have null for row.
  */
-public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
+public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface,
     AcidInputFormat<NullWritable, OrcStruct>, CombineHiveInputFormat.AvoidSplitCombination {
 
@@ -395,7 +395,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   }
   @Override
   public boolean validateInput(FileSystem fs, HiveConf conf,
-                               ArrayList<FileStatus> files
+                               List<FileStatus> files
                               ) throws IOException {
 
     if (Utilities.isVectorMode(conf)) {
