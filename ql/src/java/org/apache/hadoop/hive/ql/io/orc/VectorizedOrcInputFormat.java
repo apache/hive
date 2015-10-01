@@ -158,7 +158,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
   @Override
   public boolean validateInput(FileSystem fs, HiveConf conf,
-      ArrayList<FileStatus> files
+      List<FileStatus> files
       ) throws IOException {
     if (files.size() <= 0) {
       return false;
