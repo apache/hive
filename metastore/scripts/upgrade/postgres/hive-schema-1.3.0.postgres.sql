@@ -42,7 +42,7 @@ CREATE TABLE "CDS" (
 CREATE TABLE "COLUMNS_V2" (
     "CD_ID" bigint NOT NULL,
     "COMMENT" character varying(4000),
-    "COLUMN_NAME" character varying(128) NOT NULL,
+    "COLUMN_NAME" character varying(1000) NOT NULL,
     "TYPE_NAME" character varying(4000),
     "INTEGER_IDX" integer NOT NULL
 );
@@ -217,7 +217,7 @@ CREATE TABLE "PARTITION_PARAMS" (
 
 CREATE TABLE "PART_COL_PRIVS" (
     "PART_COLUMN_GRANT_ID" bigint NOT NULL,
-    "COLUMN_NAME" character varying(128) DEFAULT NULL::character varying,
+    "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
     "CREATE_TIME" bigint NOT NULL,
     "GRANT_OPTION" smallint NOT NULL,
     "GRANTOR" character varying(128) DEFAULT NULL::character varying,
@@ -340,7 +340,7 @@ CREATE TABLE "SERDE_PARAMS" (
 
 CREATE TABLE "SORT_COLS" (
     "SD_ID" bigint NOT NULL,
-    "COLUMN_NAME" character varying(128) DEFAULT NULL::character varying,
+    "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
     "ORDER" bigint NOT NULL,
     "INTEGER_IDX" bigint NOT NULL
 );
@@ -382,7 +382,7 @@ CREATE TABLE "TBLS" (
 
 CREATE TABLE "TBL_COL_PRIVS" (
     "TBL_COLUMN_GRANT_ID" bigint NOT NULL,
-    "COLUMN_NAME" character varying(128) DEFAULT NULL::character varying,
+    "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
     "CREATE_TIME" bigint NOT NULL,
     "GRANT_OPTION" smallint NOT NULL,
     "GRANTOR" character varying(128) DEFAULT NULL::character varying,
@@ -486,7 +486,7 @@ CREATE TABLE "TAB_COL_STATS" (
  "CS_ID" bigint NOT NULL,
  "DB_NAME" character varying(128) DEFAULT NULL::character varying,
  "TABLE_NAME" character varying(128) DEFAULT NULL::character varying,
- "COLUMN_NAME" character varying(128) DEFAULT NULL::character varying,
+ "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
  "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
  "TBL_ID" bigint NOT NULL,
  "LONG_LOW_VALUE" bigint,
@@ -522,7 +522,7 @@ CREATE TABLE "PART_COL_STATS" (
  "DB_NAME" character varying(128) DEFAULT NULL::character varying,
  "TABLE_NAME" character varying(128) DEFAULT NULL::character varying,
  "PARTITION_NAME" character varying(767) DEFAULT NULL::character varying,
- "COLUMN_NAME" character varying(128) DEFAULT NULL::character varying,
+ "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
  "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
  "PART_ID" bigint NOT NULL,
  "LONG_LOW_VALUE" bigint,
