@@ -47,8 +47,9 @@ import java.util.concurrent.TimeUnit;
  * A handler to answer transaction related calls that come into the metastore
  * server.
  *
- * Note on log messages:  Please include txnid:X and lockid info
- * {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
+ * Note on log messages:  Please include txnid:X and lockid info using
+ * {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)}
+ * and {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
  * The txnid:X and lockid:Y matches how Thrift object toString() methods are generated,
  * so keeping the format consistent makes grep'ing the logs much easier.
  */
@@ -166,7 +167,8 @@ public class TxnHandler {
         }
 
         List<TxnInfo> txnInfo = new ArrayList<TxnInfo>();
-        s = "select txn_id, txn_state, txn_user, txn_host from TXNS";
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id, txn_state, txn_user, txn_host from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -230,7 +232,8 @@ public class TxnHandler {
         }
 
         Set<Long> openList = new HashSet<Long>();
-        s = "select txn_id from TXNS";
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -1459,7 +1462,7 @@ public class TxnHandler {
     LockResponse response = new LockResponse();
     response.setLockid(extLockId);
 
-    LOG.debug("checkLock(): Setting savepoint. extLockId=" + extLockId);
+    LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
     Savepoint save = dbConn.setSavepoint();
     StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
       "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
@@ -1685,7 +1688,7 @@ public class TxnHandler {
     if (rc < 1) {
       LOG.debug("Going to rollback");
       dbConn.rollback();
-      throw new NoSuchLockException("No such lock: (" + extLockId + "," +
+      throw new NoSuchLockException("No such lock: (" + JavaUtils.lockIdToString(extLockId) + "," +
         + intLockId + ")");
     }
     // We update the database, but we don't commit because there may be other
@@ -1710,7 +1713,7 @@ public class TxnHandler {
       if (rc < 1) {
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        throw new NoSuchLockException("No such lock: " + extLockId);
+        throw new NoSuchLockException("No such lock: " + JavaUtils.lockIdToString(extLockId));
       }
       LOG.debug("Going to commit");
       dbConn.commit();
