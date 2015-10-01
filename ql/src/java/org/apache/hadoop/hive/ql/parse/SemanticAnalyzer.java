@@ -12212,6 +12212,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!SessionState.get().getTxnMgr().supportsAcid()) return false;
     String tableIsTransactional =
         tab.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if(tableIsTransactional == null) {
+      tableIsTransactional = tab.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+    }
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
