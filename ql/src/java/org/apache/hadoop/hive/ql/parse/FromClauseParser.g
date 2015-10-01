@@ -94,7 +94,7 @@ joinSource
     ;
 
 uniqueJoinSource
-@init { gParent.pushMsg("join source", state); }
+@init { gParent.pushMsg("unique join source", state); }
 @after { gParent.popMsg(state); }
     : KW_PRESERVE? fromSource uniqueJoinExpr
     ;
@@ -145,6 +145,16 @@ tableAlias
 
 fromSource
 @init { gParent.pushMsg("from source", state); }
+@after { gParent.popMsg(state); }
+    :
+    (LPAREN KW_VALUES) => fromSource0
+    | (LPAREN) => LPAREN joinSource RPAREN -> joinSource
+    | fromSource0
+    ;
+
+
+fromSource0
+@init { gParent.pushMsg("from source 0", state); }
 @after { gParent.popMsg(state); }
     :
     ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource | virtualTableSource) (lateralView^)*
@@ -270,11 +280,15 @@ searchCondition
 // INSERT INTO <table> (col1,col2,...) VALUES(...),(...),...
 // INSERT INTO <table> (col1,col2,...) SELECT * FROM (VALUES(1,2,3),(4,5,6),...) as Foo(a,b,c)
 valueRowConstructor
+@init { gParent.pushMsg("value row constructor", state); }
+@after { gParent.popMsg(state); }
     :
     LPAREN precedenceUnaryPrefixExpression (COMMA precedenceUnaryPrefixExpression)* RPAREN -> ^(TOK_VALUE_ROW precedenceUnaryPrefixExpression+)
     ;
 
 valuesTableConstructor
+@init { gParent.pushMsg("values table constructor", state); }
+@after { gParent.popMsg(state); }
     :
     valueRowConstructor (COMMA valueRowConstructor)* -> ^(TOK_VALUES_TABLE valueRowConstructor+)
     ;
@@ -285,6 +299,8 @@ VALUES(1,2),(3,4) means 2 rows, 2 columns each.
 VALUES(1,2,3) means 1 row, 3 columns
 */
 valuesClause
+@init { gParent.pushMsg("values clause", state); }
+@after { gParent.popMsg(state); }
     :
     KW_VALUES valuesTableConstructor -> valuesTableConstructor
     ;
@@ -294,14 +310,18 @@ This represents a clause like this:
 (VALUES(1,2),(2,3)) as VirtTable(col1,col2)
 */
 virtualTableSource
-   	:
-   	LPAREN valuesClause RPAREN tableNameColList -> ^(TOK_VIRTUAL_TABLE tableNameColList valuesClause)
-   	;
+@init { gParent.pushMsg("virtual table source", state); }
+@after { gParent.popMsg(state); }
+   :
+   LPAREN valuesClause RPAREN tableNameColList -> ^(TOK_VIRTUAL_TABLE tableNameColList valuesClause)
+   ;
 /*
 e.g. as VirtTable(col1,col2)
 Note that we only want literals as column names
 */
 tableNameColList
+@init { gParent.pushMsg("from source", state); }
+@after { gParent.popMsg(state); }
     :
     KW_AS? identifier LPAREN identifier (COMMA identifier)* RPAREN -> ^(TOK_VIRTUAL_TABREF ^(TOK_TABNAME identifier) ^(TOK_COL_NAME identifier+))
     ;
