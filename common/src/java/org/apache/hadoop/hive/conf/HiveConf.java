@@ -1341,11 +1341,11 @@ public class HiveConf extends Configuration {
     // Statistics
     HIVESTATSAUTOGATHER("hive.stats.autogather", true,
         "A flag to gather statistics automatically during the INSERT OVERWRITE command."),
-    HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("jdbc(:.*)", "hbase", "counter", "custom", "fs"),
+    HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("jdbc(:.*)", "counter", "custom", "fs"),
         "The storage that stores temporary Hive statistics. In filesystem based statistics collection ('fs'), \n" +
         "each task writes statistics it has collected in a file on the filesystem, which will be aggregated \n" +
         "after the job has finished. Supported values are fs (filesystem), jdbc:database (where database \n" +
-        "can be derby, mysql, etc.), hbase, counter, and custom as defined in StatsSetupConst.java."), // StatsSetupConst.StatDB
+        "can be derby, mysql, etc.), counter, and custom as defined in StatsSetupConst.java."), // StatsSetupConst.StatDB
     HIVESTATSJDBCDRIVER("hive.stats.jdbcdriver",
         "org.apache.derby.jdbc.EmbeddedDriver",
         "The JDBC driver for the database that stores temporary Hive statistics."),

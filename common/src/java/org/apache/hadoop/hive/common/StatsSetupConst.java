@@ -31,14 +31,6 @@ import java.util.Map;
 public class StatsSetupConst {
 
   public enum StatDB {
-    hbase {
-      @Override
-      public String getPublisher(Configuration conf) {
-        return "org.apache.hadoop.hive.hbase.HBaseStatsPublisher"; }
-      @Override
-      public String getAggregator(Configuration conf) {
-        return "org.apache.hadoop.hive.hbase.HBaseStatsAggregator"; }
-    },
     jdbc {
       @Override
       public String getPublisher(Configuration conf) {
