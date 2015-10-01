@@ -30,10 +30,12 @@ import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.protobuf.CodedInputStream;
 
 public abstract class InStream extends InputStream {
 
   private static final Log LOG = LogFactory.getLog(InStream.class);
+  private static final int PROTOBUF_MESSAGE_MAX_LIMIT = 1024 << 20; // 1GB
 
   protected final String name;
   protected final long length;
@@ -446,5 +448,27 @@ public abstract class InStream extends InputStream {
     } else {
       return new CompressedStream(name, input, length, codec, bufferSize);
     }
+  }
+
+  /**
+   * Creates coded input stream (used for protobuf message parsing) with higher message size limit.
+   *
+   * @param name       the name of the stream
+   * @param input      the list of ranges of bytes for the stream; from disk or cache
+   * @param length     the length in bytes of the stream
+   * @param codec      the compression codec
+   * @param bufferSize the compression buffer size
+   * @return coded input stream
+   * @throws IOException
+   */
+  public static CodedInputStream createCodedInputStream(String name,
+      List<DiskRange> input,
+      long length,
+      CompressionCodec codec,
+      int bufferSize) throws IOException {
+    InStream inStream = create(name, input, length, codec, bufferSize);
+    CodedInputStream codedInputStream = CodedInputStream.newInstance(inStream);
+    codedInputStream.setSizeLimit(PROTOBUF_MESSAGE_MAX_LIMIT);
+    return codedInputStream;
   }
 }
