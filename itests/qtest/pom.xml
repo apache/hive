@@ -538,7 +538,7 @@
                               templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
                               queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
                               queryFile="${qfile}"
-                              includeQueryFile="${minitez.query.files},${minitez.query.files.shared}"
+                              includeQueryFile="${minitez.query.files}"
                               queryFileRegex="${qfile_regex}"
                               clusterMode="llap"
                               runDisabled="${run_disabled}"
