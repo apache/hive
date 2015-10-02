@@ -213,6 +213,7 @@ message PostScript {
   // Version of the writer:
   //   0 (or missing) = original
   //   1 = HIVE-8732 fixed
+  //   2 = HIVE-4243 fixed
   optional uint32 writerVersion = 6;
   // Leave this last in the record
   optional string magic = 8000;

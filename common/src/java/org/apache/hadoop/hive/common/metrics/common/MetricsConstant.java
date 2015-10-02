@@ -33,4 +33,9 @@ public class MetricsConstant {
   public static String JDO_ROLLBACK_TRANSACTIONS = "rollbacked_jdo_transactions";
   public static String JDO_COMMIT_TRANSACTIONS = "committed_jdo_transactions";
   public static String JDO_OPEN_TRANSACTIONS = "opened_jdo_transactions";
+
+  public static String METASTORE_HIVE_LOCKS = "metastore_hive_locks";
+  public static String ZOOKEEPER_HIVE_SHAREDLOCKS = "zookeeper_hive_sharedlocks";
+  public static String ZOOKEEPER_HIVE_EXCLUSIVELOCKS = "zookeeper_hive_exclusivelocks";
+  public static String ZOOKEEPER_HIVE_SEMISHAREDLOCKS = "zookeeper_hive_semisharedlocks";
 }

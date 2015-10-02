@@ -40,15 +40,14 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter.OpAttr;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.GenericUDAFInfo;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -70,12 +69,17 @@ import com.google.common.collect.ImmutableList;
  * external names if possible.<br>
  * 3. In ExprNode & in ColumnInfo the tableAlias/VirtualColumn is specified
  * differently for different GB/RS in pipeline. Remove the different treatments.
- * 3. VirtualColMap needs to be maintained
+ * 4. VirtualColMap needs to be maintained
  *
  */
 public class HiveGBOpConvUtil {
+
   private static enum HIVEGBPHYSICALMODE {
-    MAP_SIDE_GB_NO_SKEW_NO_ADD_MR_JOB, MAP_SIDE_GB_NO_SKEW_ADD_MR_JOB, MAP_SIDE_GB_SKEW_GBKEYS_OR_DIST_UDAF_PRESENT, MAP_SIDE_GB_SKEW_GBKEYS_AND_DIST_UDAF_NOT_PRESENT, NO_MAP_SIDE_GB_NO_SKEW, NO_MAP_SIDE_GB_SKEW
+    MAP_SIDE_GB_NO_SKEW_NO_ADD_MR_JOB,
+    MAP_SIDE_GB_NO_SKEW_ADD_MR_JOB,
+    MAP_SIDE_GB_SKEW_GBKEYS_OR_DIST_UDAF_PRESENT,
+    MAP_SIDE_GB_SKEW_GBKEYS_AND_DIST_UDAF_NOT_PRESENT,
+    NO_MAP_SIDE_GB_NO_SKEW, NO_MAP_SIDE_GB_SKEW
   };
 
   private static class UDAFAttrs {
@@ -94,8 +98,8 @@ public class HiveGBOpConvUtil {
     private final List<ExprNodeDesc>  gbKeys               = new ArrayList<ExprNodeDesc>();
 
     private final List<Integer>       grpSets              = new ArrayList<Integer>();
-    private boolean             grpSetRqrAdditionalMRJob;
-    private boolean             grpIdFunctionNeeded;
+    private boolean                   grpSetRqrAdditionalMRJob;
+    private boolean                   grpIdFunctionNeeded;
 
     private final List<String>        distExprNames        = new ArrayList<String>();
     private final List<TypeInfo>      distExprTypes        = new ArrayList<TypeInfo>();
@@ -105,12 +109,12 @@ public class HiveGBOpConvUtil {
     private final List<ExprNodeDesc>  deDupedNonDistIrefs  = new ArrayList<ExprNodeDesc>();
 
     private final List<UDAFAttrs>     udafAttrs            = new ArrayList<UDAFAttrs>();
-    private boolean             containsDistinctAggr = false;
+    private boolean                   containsDistinctAggr = false;
 
-    float                       groupByMemoryUsage;
-    float                       memoryThreshold;
+    float                             groupByMemoryUsage;
+    float                             memoryThreshold;
 
-    private HIVEGBPHYSICALMODE  gbPhysicalPipelineMode;
+    private HIVEGBPHYSICALMODE        gbPhysicalPipelineMode;
   };
 
   private static HIVEGBPHYSICALMODE getAggOPMode(HiveConf hc, GBInfo gbInfo) {
@@ -203,11 +207,14 @@ public class HiveGBOpConvUtil {
       for (int i = 0; i < argLst.size(); i++) {
         if (!distinctRefs.contains(argLst.get(i))) {
           distinctRefs.add(argLst.get(i));
-          distParamInRefsToOutputPos.put(argLst.get(i), gbInfo.distExprNodes.size());
           distinctExpr = HiveCalciteUtil.getExprNode(argLst.get(i), aggInputRel, exprConv);
-          gbInfo.distExprNodes.add(distinctExpr);
-          gbInfo.distExprNames.add(argNames.get(i));
-          gbInfo.distExprTypes.add(distinctExpr.getTypeInfo());
+          // Only distinct nodes that are NOT part of the key should be added to distExprNodes
+          if (ExprNodeDescUtils.indexOf(distinctExpr, gbInfo.gbKeys) < 0) {
+            distParamInRefsToOutputPos.put(argLst.get(i), gbInfo.distExprNodes.size());
+            gbInfo.distExprNodes.add(distinctExpr);
+            gbInfo.distExprNames.add(argNames.get(i));
+            gbInfo.distExprTypes.add(distinctExpr.getTypeInfo());
+          }
         }
       }
     }
@@ -254,10 +261,10 @@ public class HiveGBOpConvUtil {
       }
 
       // special handling for count, similar to PlanModifierForASTConv::replaceEmptyGroupAggr()
-        udafAttrs.udafEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator(udafAttrs.udafName,
-            new ArrayList<ExprNodeDesc>(udafAttrs.udafParams), new ASTNode(),
-            udafAttrs.isDistinctUDAF, udafAttrs.udafParams.size() == 0 &&
-            "count".equalsIgnoreCase(udafAttrs.udafName) ? true : false);
+      udafAttrs.udafEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator(udafAttrs.udafName,
+          new ArrayList<ExprNodeDesc>(udafAttrs.udafParams), new ASTNode(),
+          udafAttrs.isDistinctUDAF, udafAttrs.udafParams.size() == 0 &&
+          "count".equalsIgnoreCase(udafAttrs.udafName) ? true : false);
       gbInfo.udafAttrs.add(udafAttrs);
     }
 
