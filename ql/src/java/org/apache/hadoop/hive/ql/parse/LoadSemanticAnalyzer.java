@@ -159,18 +159,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast), e);
     }
 
-    // only in 'local' mode do we copy stuff from one place to another.
-    // reject different scheme/authority in other cases.
-    if (!isLocal
-        && (!StringUtils.equals(fromURI.getScheme(), toURI.getScheme()) || !StringUtils
-        .equals(fromURI.getAuthority(), toURI.getAuthority()))) {
-      String reason = "Move from: " + fromURI.toString() + " to: "
-          + toURI.toString() + " is not valid. "
-          + "Please check that values for params \"default.fs.name\" and "
-          + "\"hive.metastore.warehouse.dir\" do not conflict.";
-      throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(ast, reason));
-    }
-
     return srcs;
   }
 
