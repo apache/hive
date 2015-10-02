@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,15 +46,12 @@ import org.apache.hadoop.io.Text;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.protobuf.CodedInputStream;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 public class ReaderImpl implements Reader {
 
   private static final Log LOG = LogFactory.getLog(ReaderImpl.class);
 
   private static final int DIRECTORY_SIZE_GUESS = 16 * 1024;
-  private static final int DEFAULT_PROTOBUF_MESSAGE_LIMIT = 64 << 20;  // 64MB
-  private static final int PROTOBUF_MESSAGE_MAX_LIMIT = 1024 << 20; // 1GB
 
   protected final FileSystem fileSystem;
   protected final Path path;
@@ -379,7 +375,7 @@ public class ReaderImpl implements Reader {
         return version;
       }
     }
-    return OrcFile.WriterVersion.ORIGINAL;
+    return OrcFile.WriterVersion.FUTURE;
   }
 
   /** Extracts the necessary metadata from an externally store buffer (fullFooterBuffer). */
@@ -423,47 +419,16 @@ public class ReaderImpl implements Reader {
       int footerSize, CompressionCodec codec, int bufferSize) throws IOException {
     bb.position(footerAbsPos);
     bb.limit(footerAbsPos + footerSize);
-    InputStream instream = InStream.create(null, "footer", Lists.<DiskRange>newArrayList(
-          new BufferChunk(bb, 0)), footerSize, codec, bufferSize);
-    return OrcProto.Footer.parseFrom(instream);
+    return OrcProto.Footer.parseFrom(InStream.createCodedInputStream(null, "footer",
+        Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), footerSize, codec, bufferSize));
   }
 
   private static OrcProto.Metadata extractMetadata(ByteBuffer bb, int metadataAbsPos,
       int metadataSize, CompressionCodec codec, int bufferSize) throws IOException {
     bb.position(metadataAbsPos);
     bb.limit(metadataAbsPos + metadataSize);
-    InputStream instream = InStream.create(null, "metadata", Lists.<DiskRange>newArrayList(
-        new BufferChunk(bb, 0)), metadataSize, codec, bufferSize);
-    CodedInputStream in = CodedInputStream.newInstance(instream);
-    int msgLimit = DEFAULT_PROTOBUF_MESSAGE_LIMIT;
-    OrcProto.Metadata meta = null;
-    do {
-      try {
-        in.setSizeLimit(msgLimit);
-        meta = OrcProto.Metadata.parseFrom(in);
-      } catch (InvalidProtocolBufferException e) {
-        if (e.getMessage().contains("Protocol message was too large")) {
-          LOG.warn("Metadata section is larger than " + msgLimit + " bytes. Increasing the max" +
-              " size of the coded input stream." );
-
-          msgLimit = msgLimit << 1;
-          if (msgLimit > PROTOBUF_MESSAGE_MAX_LIMIT) {
-            LOG.error("Metadata section exceeds max protobuf message size of " +
-                PROTOBUF_MESSAGE_MAX_LIMIT + " bytes.");
-            throw e;
-          }
-
-          // we must have failed in the middle of reading instream and instream doesn't support
-          // resetting the stream
-          instream = InStream.create(null, "metadata", Lists.<DiskRange>newArrayList(
-              new BufferChunk(bb, 0)), metadataSize, codec, bufferSize);
-          in = CodedInputStream.newInstance(instream);
-        } else {
-          throw e;
-        }
-      }
-    } while (meta == null);
-    return meta;
+    return OrcProto.Metadata.parseFrom(InStream.createCodedInputStream(null, "metadata",
+        Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), metadataSize, codec, bufferSize));
   }
 
   private static OrcProto.PostScript extractPostScript(ByteBuffer bb, Path path,

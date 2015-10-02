@@ -736,7 +736,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Path dataDir = null;
     if(!qb.getEncryptedTargetTablePaths().isEmpty()) {
       //currently only Insert into T values(...) is supported thus only 1 values clause
-      //and only 1 target table are possible.  If/when support for 
+      //and only 1 target table are possible.  If/when support for
       //select ... from values(...) is added an insert statement may have multiple
       //encrypted target tables.
       dataDir = ctx.getMRTmpPath(qb.getEncryptedTargetTablePaths().get(0).toUri());
@@ -1556,7 +1556,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       for (String alias : tabAliases) {
         String tab_name = qb.getTabNameForAlias(alias);
-        
+
         // we first look for this alias from CTE, and then from catalog.
         /*
          * if this s a CTE reference: Add its AST as a SubQuery to this QB.
@@ -6830,30 +6830,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               .getColumnInfos()), input), rowResolver);
       input.setColumnExprMap(colExprMap);
     }
-
-    rowFields = opParseCtx.get(input).getRowResolver()
-        .getColumnInfos();
-    if (deleting()) {
-      // Figure out if we have partition columns in the list or not.  If so,
-      // add them into the mapping.  Partition columns will be located after the row id.
-      if (rowFields.size() > 1) {
-        // This means we have partition columns to deal with, so set up the mapping from the
-        // input to the partition columns.
-        dpCtx.mapInputToDP(rowFields.subList(1, rowFields.size()));
-      }
-    } else if (updating()) {
-      // In this case we expect the number of in fields to exceed the number of out fields by one
-      // (for the ROW__ID virtual column).  If there are more columns than this,
-      // then the extras are for dynamic partitioning
-      if (dynPart && dpCtx != null) {
-        dpCtx.mapInputToDP(rowFields.subList(tableFields.size() + 1, rowFields.size()));
-      }
-    } else {
-      if (dynPart && dpCtx != null) {
-        // create the mapping from input ExprNode to dest table DP column
-        dpCtx.mapInputToDP(rowFields.subList(tableFields.size(), rowFields.size()));
-      }
-    }
     return input;
   }
 
@@ -10105,7 +10081,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return;
       }
       for (Node child : node.getChildren()) {
-        //each insert of multi insert looks like 
+        //each insert of multi insert looks like
         //(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME T1)))
         if (((ASTNode) child).getToken().getType() != HiveParser.TOK_INSERT) {
           continue;
@@ -12183,6 +12159,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!SessionState.get().getTxnMgr().supportsAcid()) return false;
     String tableIsTransactional =
         tab.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if(tableIsTransactional == null) {
+      tableIsTransactional = tab.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+    }
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 

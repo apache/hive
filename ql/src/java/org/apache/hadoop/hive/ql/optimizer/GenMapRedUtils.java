@@ -498,9 +498,6 @@ public final class GenMapRedUtils {
         partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
       } catch (SemanticException e) {
         throw e;
-      } catch (HiveException e) {
-        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw new SemanticException(e.getMessage(), e);
       }
     }
 
@@ -1030,7 +1027,7 @@ public final class GenMapRedUtils {
     fileSinkOp.setParentOperators(Utilities.makeList(parent));
 
     // Create a dummy TableScanOperator for the file generated through fileSinkOp
-    TableScanOperator tableScanOp = (TableScanOperator) createTemporaryTableScanOperator(
+    TableScanOperator tableScanOp = createTemporaryTableScanOperator(
             parent.getSchema());
 
     // Connect this TableScanOperator to child.
@@ -1275,19 +1272,16 @@ public final class GenMapRedUtils {
       // adding DP ColumnInfo to the RowSchema signature
       ArrayList<ColumnInfo> signature = inputRS.getSignature();
       String tblAlias = fsInputDesc.getTableInfo().getTableName();
-      LinkedHashMap<String, String> colMap = new LinkedHashMap<String, String>();
       for (String dpCol : dpCtx.getDPColNames()) {
         ColumnInfo colInfo = new ColumnInfo(dpCol,
             TypeInfoFactory.stringTypeInfo, // all partition column type should be string
             tblAlias, true); // partition column is virtual column
         signature.add(colInfo);
-        colMap.put(dpCol, dpCol); // input and output have the same column name
       }
       inputRS.setSignature(signature);
 
       // create another DynamicPartitionCtx, which has a different input-to-DP column mapping
       DynamicPartitionCtx dpCtx2 = new DynamicPartitionCtx(dpCtx);
-      dpCtx2.setInputToDPCols(colMap);
       fsOutputDesc.setDynPartCtx(dpCtx2);
 
       // update the FileSinkOperator to include partition columns
@@ -1936,7 +1930,7 @@ public final class GenMapRedUtils {
         "Partition Names, " + Arrays.toString(partNames) + " don't match partition Types, "
         + Arrays.toString(partTypes));
 
-    Map<String, String> typeMap = new HashMap();
+    Map<String, String> typeMap = new HashMap<>();
     for (int i = 0; i < partNames.length; i++) {
       String previousValue = typeMap.put(partNames[i], partTypes[i]);
       Preconditions.checkArgument(previousValue == null, "Partition columns configuration is inconsistent. "

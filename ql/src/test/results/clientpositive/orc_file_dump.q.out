@@ -93,11 +93,11 @@ PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_8732
+File Version: 0.12 with HIVE_4243
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
-Type: struct<_col0:tinyint,_col1:smallint,_col2:int,_col3:bigint,_col4:float,_col5:double,_col6:boolean,_col7:string,_col8:timestamp,_col9:decimal(4,2),_col10:binary>
+Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
 
 Stripe Statistics:
   Stripe 1:
@@ -192,7 +192,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 168 loadFactor: 0.0268 expectedFpp: 5.147697E-7
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 492 loadFactor: 0.0784 expectedFpp: 3.7864847E-5
 
-File length: 33456 bytes
+File length: 33458 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 -- END ORC FILE DUMP --
@@ -211,11 +211,11 @@ PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_8732
+File Version: 0.12 with HIVE_4243
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
-Type: struct<_col0:tinyint,_col1:smallint,_col2:int,_col3:bigint,_col4:float,_col5:double,_col6:boolean,_col7:string,_col8:timestamp,_col9:decimal(4,2),_col10:binary>
+Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
 
 Stripe Statistics:
   Stripe 1:
@@ -310,7 +310,7 @@ Stripes:
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 285 loadFactor: 0.0297 expectedFpp: 2.0324289E-11
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 849 loadFactor: 0.0884 expectedFpp: 4.231118E-8
 
-File length: 38610 bytes
+File length: 38613 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 -- END ORC FILE DUMP --
@@ -341,11 +341,11 @@ PREHOOK: Input: default@orc_ppd_part@ds=2015/hr=10
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_8732
+File Version: 0.12 with HIVE_4243
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
-Type: struct<_col0:tinyint,_col1:smallint,_col2:int,_col3:bigint,_col4:float,_col5:double,_col6:boolean,_col7:string,_col8:timestamp,_col9:decimal(4,2),_col10:binary>
+Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
 
 Stripe Statistics:
   Stripe 1:
@@ -440,7 +440,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 168 loadFactor: 0.0268 expectedFpp: 5.147697E-7
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 492 loadFactor: 0.0784 expectedFpp: 3.7864847E-5
 
-File length: 33456 bytes
+File length: 33458 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 -- END ORC FILE DUMP --

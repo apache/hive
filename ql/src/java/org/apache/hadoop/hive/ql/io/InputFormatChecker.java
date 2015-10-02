@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -34,7 +34,6 @@ public interface InputFormatChecker {
    * This method is used to validate the input files.
    * 
    */
-  boolean validateInput(FileSystem fs, HiveConf conf,
-      ArrayList<FileStatus> files) throws IOException;
+  boolean validateInput(FileSystem fs, HiveConf conf, List<FileStatus> files) throws IOException;
 
 }

@@ -48,11 +48,10 @@ public class TestColumnStatistics {
 
   @Test
   public void testLongMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaIntObjectInspector;
+    TypeDescription schema = TypeDescription.createInt();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateInteger(10);
     stats1.updateInteger(10);
     stats2.updateInteger(1);
@@ -71,11 +70,10 @@ public class TestColumnStatistics {
 
   @Test
   public void testDoubleMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaDoubleObjectInspector;
+    TypeDescription schema = TypeDescription.createDouble();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateDouble(10.0);
     stats1.updateDouble(100.0);
     stats2.updateDouble(1.0);
@@ -95,11 +93,10 @@ public class TestColumnStatistics {
 
   @Test
   public void testStringMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+    TypeDescription schema = TypeDescription.createString();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateString(new Text("bob"));
     stats1.updateString(new Text("david"));
     stats1.updateString(new Text("charles"));
@@ -119,11 +116,10 @@ public class TestColumnStatistics {
 
   @Test
   public void testDateMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaDateObjectInspector;
+    TypeDescription schema = TypeDescription.createDate();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateDate(new DateWritable(1000));
     stats1.updateDate(new DateWritable(100));
     stats2.updateDate(new DateWritable(10));
@@ -142,11 +138,10 @@ public class TestColumnStatistics {
 
   @Test
   public void testTimestampMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+    TypeDescription schema = TypeDescription.createTimestamp();
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateTimestamp(new Timestamp(10));
     stats1.updateTimestamp(new Timestamp(100));
     stats2.updateTimestamp(new Timestamp(1));
@@ -165,11 +160,11 @@ public class TestColumnStatistics {
 
   @Test
   public void testDecimalMerge() throws Exception {
-    ObjectInspector inspector =
-        PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector;
+    TypeDescription schema = TypeDescription.createDecimal()
+        .withPrecision(38).withScale(16);
 
-    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(inspector);
-    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(inspector);
+    ColumnStatisticsImpl stats1 = ColumnStatisticsImpl.create(schema);
+    ColumnStatisticsImpl stats2 = ColumnStatisticsImpl.create(schema);
     stats1.updateDecimal(HiveDecimal.create(10));
     stats1.updateDecimal(HiveDecimal.create(100));
     stats2.updateDecimal(HiveDecimal.create(1));

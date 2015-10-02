@@ -494,24 +494,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       assert inputObjInspectors.length == 1 : "FileSinkOperator should have 1 parent, but it has "
           + inputObjInspectors.length;
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[0];
-      // remove the last dpMapping.size() columns from the OI
-      List<? extends StructField> fieldOI = soi.getAllStructFieldRefs();
-      ArrayList<ObjectInspector> newFieldsOI = new ArrayList<ObjectInspector>();
-      ArrayList<String> newFieldsName = new ArrayList<String>();
-      this.dpStartCol = 0;
-      for (StructField sf : fieldOI) {
-        String fn = sf.getFieldName();
-        if (!dpCtx.getInputToDPCols().containsKey(fn)) {
-          newFieldsOI.add(sf.getFieldObjectInspector());
-          newFieldsName.add(sf.getFieldName());
-          this.dpStartCol++;
-        } else {
-          // once we found the start column for partition column we are done
-          break;
-        }
-      }
-      assert newFieldsOI.size() > 0 : "new Fields ObjectInspector is empty";
-
+      this.dpStartCol = Utilities.getDPColOffset(conf);
       this.subSetOI = new SubStructObjectInspector(soi, 0, this.dpStartCol);
       this.dpVals = new ArrayList<String>(numDynParts);
       this.dpWritables = new ArrayList<Object>(numDynParts);

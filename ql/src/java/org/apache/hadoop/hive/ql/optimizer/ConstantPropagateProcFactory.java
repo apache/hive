@@ -843,7 +843,7 @@ public final class ConstantPropagateProcFactory {
           }
         }
         if (constant.getTypeInfo().getCategory() != Category.PRIMITIVE) {
-          // nested complex types cannot be folded cleanly 
+          // nested complex types cannot be folded cleanly
           return null;
         }
         Object value = constant.getValue();
@@ -1163,16 +1163,15 @@ public final class ConstantPropagateProcFactory {
       DynamicPartitionCtx dpCtx = fsdesc.getDynPartCtx();
       if (dpCtx != null) {
 
-        // If all dynamic partitions are propagated as constant, remove DP.
-        Set<String> inputs = dpCtx.getInputToDPCols().keySet();
-
         // Assume only 1 parent for FS operator
         Operator<? extends Serializable> parent = op.getParentOperators().get(0);
         Map<ColumnInfo, ExprNodeDesc> parentConstants = cppCtx.getPropagatedConstants(parent);
         RowSchema rs = parent.getSchema();
         boolean allConstant = true;
-        for (String input : inputs) {
-          ColumnInfo ci = rs.getColumnInfo(input);
+        int dpColStartIdx = Utilities.getDPColOffset(fsdesc);
+        List<ColumnInfo> colInfos = rs.getSignature();
+        for (int i = dpColStartIdx; i < colInfos.size(); i++) {
+          ColumnInfo ci = colInfos.get(i);
           if (parentConstants.get(ci) == null) {
             allConstant = false;
             break;

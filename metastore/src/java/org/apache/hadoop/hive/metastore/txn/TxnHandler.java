@@ -47,8 +47,9 @@ import java.util.concurrent.TimeUnit;
  * A handler to answer transaction related calls that come into the metastore
  * server.
  *
- * Note on log messages:  Please include txnid:X and lockid info
- * {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
+ * Note on log messages:  Please include txnid:X and lockid info using
+ * {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)}
+ * and {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
  * The txnid:X and lockid:Y matches how Thrift object toString() methods are generated,
  * so keeping the format consistent makes grep'ing the logs much easier.
  */
@@ -84,14 +85,15 @@ public class TxnHandler {
   static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
 
   static private DataSource connPool;
+  static private boolean doRetryOnConnPool = false;
   private final static Object lockLock = new Object(); // Random object to lock on for the lock
   // method
 
   /**
    * Number of consecutive deadlocks we have seen
    */
-  protected int deadlockCnt;
-  private long deadlockRetryInterval;
+  private int deadlockCnt;
+  private final long deadlockRetryInterval;
   protected HiveConf conf;
   protected DatabaseProduct dbProduct;
 
@@ -114,10 +116,8 @@ public class TxnHandler {
   //
   // All public methods that write to the database have to check for deadlocks when a SQLException
   // comes back and handle it if they see one.  This has to be done with the connection pooling
-  // in mind.  To do this they should call detectDeadlock AFTER rolling back the db transaction,
-  // and then in an outer loop they should catch DeadlockException.  In the catch for this they
-  // should increment the deadlock counter and recall themselves.  See commitTxn for an example.
-  // the connection has been closed and returned to the pool.
+  // in mind.  To do this they should call checkRetryable() AFTER rolling back the db transaction,
+  // and then they should catch RetryException and call themselves recursively. See commitTxn for an example.
 
   public TxnHandler(HiveConf conf) {
     this.conf = conf;
@@ -134,7 +134,6 @@ public class TxnHandler {
     }
 
     timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    deadlockCnt = 0;
     buildJumpTable();
     retryInterval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HMSHANDLERINTERVAL,
         TimeUnit.MILLISECONDS);
@@ -168,7 +167,8 @@ public class TxnHandler {
         }
 
         List<TxnInfo> txnInfo = new ArrayList<TxnInfo>();
-        s = "select txn_id, txn_state, txn_user, txn_host from TXNS";
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id, txn_state, txn_user, txn_host from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -232,7 +232,8 @@ public class TxnHandler {
         }
 
         Set<Long> openList = new HashSet<Long>();
-        s = "select txn_id from TXNS";
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -279,7 +280,6 @@ public class TxnHandler {
   }
 
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {
-    deadlockCnt = 0;  // Reset deadlock count since this is a new transaction
     int numTxns = rqst.getNum_txns();
     try {
       Connection dbConn = null;
@@ -419,7 +419,6 @@ public class TxnHandler {
 
   public LockResponse lock(LockRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException {
-    deadlockCnt = 0;
     try {
       Connection dbConn = null;
       try {
@@ -635,8 +634,6 @@ public class TxnHandler {
       }
     } catch (RetryException e) {
       heartbeat(ids);
-    } finally {
-      deadlockCnt = 0;
     }
   }
 
@@ -885,30 +882,31 @@ public class TxnHandler {
 
   }
 
-  /**
-   * Get a connection to the database
-   * @param isolationLevel desired isolation level.  If you are doing _any_ data modifications
-   *                       you should request serializable, else read committed should be fine.
-   * @return db connection
-   * @throws MetaException if the connection cannot be obtained
-   */
   protected Connection getDbConn(int isolationLevel) throws SQLException {
-    Connection dbConn = connPool.getConnection();
-    dbConn.setAutoCommit(false);
-    dbConn.setTransactionIsolation(isolationLevel);
-    return dbConn;
+    int rc = doRetryOnConnPool ? 10 : 1;
+    while (true) {
+      try {
+        Connection dbConn = connPool.getConnection();
+        dbConn.setAutoCommit(false);
+        dbConn.setTransactionIsolation(isolationLevel);
+        return dbConn;
+      } catch (SQLException e){
+        if ((--rc) <= 0) throw e;
+        LOG.error("There is a problem with a connection from the pool, retrying", e);
+      }
+    }
   }
 
   void rollbackDBConn(Connection dbConn) {
     try {
-      if (dbConn != null) dbConn.rollback();
+      if (dbConn != null && !dbConn.isClosed()) dbConn.rollback();
     } catch (SQLException e) {
       LOG.warn("Failed to rollback db connection " + getMessage(e));
     }
   }
   protected void closeDbConn(Connection dbConn) {
     try {
-      if (dbConn != null) dbConn.close();
+      if (dbConn != null && !dbConn.isClosed()) dbConn.close();
     } catch (SQLException e) {
       LOG.warn("Failed to close db connection " + getMessage(e));
     }
@@ -920,7 +918,7 @@ public class TxnHandler {
    */
   protected void closeStmt(Statement stmt) {
     try {
-      if (stmt != null) stmt.close();
+      if (stmt != null && !stmt.isClosed()) stmt.close();
     } catch (SQLException e) {
       LOG.warn("Failed to close statement " + getMessage(e));
     }
@@ -950,15 +948,14 @@ public class TxnHandler {
     closeDbConn(dbConn);
   }
   /**
-   * Determine if an exception was such that it makse sense to retry.  Unfortunately there is no standard way to do
+   * Determine if an exception was such that it makes sense to retry.  Unfortunately there is no standard way to do
    * this, so we have to inspect the error messages and catch the telltale signs for each
-   * different database.
+   * different database.  This method will throw {@code RetryException}
+   * if the error is retry-able.
    * @param conn database connection
    * @param e exception that was thrown.
-   * @param caller name of the method calling this
-   * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.RetryException when deadlock
-   * detected and retry count has not been exceeded.
-   * TODO: make "caller" more elaborate like include lockId for example
+   * @param caller name of the method calling this (and other info useful to log)
+   * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.RetryException when the operation should be retried
    */
   protected void checkRetryable(Connection conn,
                                 SQLException e,
@@ -971,53 +968,57 @@ public class TxnHandler {
     // so I've tried to capture the different error messages (there appear to be fewer different
     // error messages than SQL states).
     // Derby and newer MySQL driver use the new SQLTransactionRollbackException
-    if (dbProduct == null && conn != null) {
-      determineDatabaseProduct(conn);
-    }
-    if (e instanceof SQLTransactionRollbackException ||
-      ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
-        dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
-      (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
-      (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
-        || e.getMessage().contains("can't serialize access for this transaction")))) {
-      if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
-        long waitInterval = deadlockRetryInterval * deadlockCnt;
-        LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
-          "ms try again up to " + (ALLOWED_REPEATED_DEADLOCKS - deadlockCnt + 1) + " times.");
-        // Pause for a just a bit for retrying to avoid immediately jumping back into the deadlock.
-        try {
-          Thread.sleep(waitInterval);
-        } catch (InterruptedException ie) {
-          // NOP
+    boolean sendRetrySignal = false;
+    try {
+      if (dbProduct == null && conn != null) {
+        determineDatabaseProduct(conn);
+      }
+      if (e instanceof SQLTransactionRollbackException ||
+        ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
+          dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
+        (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
+        (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
+          || e.getMessage().contains("can't serialize access for this transaction")))) {
+        if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
+          long waitInterval = deadlockRetryInterval * deadlockCnt;
+          LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
+            "ms try again up to " + (ALLOWED_REPEATED_DEADLOCKS - deadlockCnt + 1) + " times.");
+          // Pause for a just a bit for retrying to avoid immediately jumping back into the deadlock.
+          try {
+            Thread.sleep(waitInterval);
+          } catch (InterruptedException ie) {
+            // NOP
+          }
+          sendRetrySignal = true;
+        } else {
+          LOG.error("Too many repeated deadlocks in " + caller + ", giving up.");
         }
-        throw new RetryException();
-      } else {
-        LOG.error("Too many repeated deadlocks in " + caller + ", giving up.");
+      } else if (isRetryable(e)) {
+        //in MSSQL this means Communication Link Failure
+        if (retryNum++ < retryLimit) {
+          LOG.warn("Retryable error detected in " + caller + ".  Will wait " + retryInterval +
+            "ms and retry up to " + (retryLimit - retryNum + 1) + " times.  Error: " + getMessage(e));
+          try {
+            Thread.sleep(retryInterval);
+          } catch (InterruptedException ex) {
+            //
+          }
+          sendRetrySignal = true;
+        } else {
+          LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
+        }
+      }
+    }
+    finally {
+      /*if this method ends with anything except a retry signal, the caller should fail the operation
+      and propagate the error up to the its caller (Metastore client); thus must reset retry counters*/
+      if(!sendRetrySignal) {
         deadlockCnt = 0;
-      }
-    }
-    else if(isRetryable(e)) {
-      //in MSSQL this means Communication Link Failure
-      if(retryNum++ < retryLimit) {
-        LOG.warn("Retryable error detected in " + caller + ".  Will wait " + retryInterval +
-          "ms and retry up to " + (retryLimit - retryNum + 1) + " times.  Error: " + getMessage(e));
-        try {
-          Thread.sleep(retryInterval);
-        }
-        catch(InterruptedException ex) {
-          //
-        }
-        throw new RetryException();
-      }
-      else {
-        LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
         retryNum = 0;
       }
     }
-    else {
-      //if here, we got something that will propagate the error (rather than retry), so reset counters
-      deadlockCnt = 0;
-      retryNum = 0;
+    if(sendRetrySignal) {
+      throw new RetryException();
     }
   }
 
@@ -1461,7 +1462,7 @@ public class TxnHandler {
     LockResponse response = new LockResponse();
     response.setLockid(extLockId);
 
-    LOG.debug("checkLock(): Setting savepoint. extLockId=" + extLockId);
+    LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
     Savepoint save = dbConn.setSavepoint();
     StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
       "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
@@ -1687,7 +1688,7 @@ public class TxnHandler {
     if (rc < 1) {
       LOG.debug("Going to rollback");
       dbConn.rollback();
-      throw new NoSuchLockException("No such lock: (" + extLockId + "," +
+      throw new NoSuchLockException("No such lock: (" + JavaUtils.lockIdToString(extLockId) + "," +
         + intLockId + ")");
     }
     // We update the database, but we don't commit because there may be other
@@ -1712,7 +1713,7 @@ public class TxnHandler {
       if (rc < 1) {
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        throw new NoSuchLockException("No such lock: " + extLockId);
+        throw new NoSuchLockException("No such lock: " + JavaUtils.lockIdToString(extLockId));
       }
       LOG.debug("Going to commit");
       dbConn.commit();
@@ -1964,6 +1965,7 @@ public class TxnHandler {
       config.setUser(user);
       config.setPassword(passwd);
       connPool = new BoneCPDataSource(config);
+      doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
     } else if ("dbcp".equals(connectionPooler)) {
       ObjectPool objectPool = new GenericObjectPool();
       ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
@@ -2097,6 +2099,7 @@ public class TxnHandler {
         //in MSSQL this means Communication Link Failure
         return true;
       }
+      //see https://issues.apache.org/jira/browse/HIVE-9938
     }
     return false;
   }

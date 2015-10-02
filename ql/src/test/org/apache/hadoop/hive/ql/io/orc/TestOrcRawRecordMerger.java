@@ -896,7 +896,7 @@ public class TestOrcRawRecordMerger {
    */
   @Test
   public void testRecordReaderNewBaseAndDelta() throws Exception {
-    final int BUCKET = 10;
+    final int BUCKET = 11;
     Configuration conf = new Configuration();
     OrcOutputFormat of = new OrcOutputFormat();
     FileSystem fs = FileSystem.getLocal(conf);

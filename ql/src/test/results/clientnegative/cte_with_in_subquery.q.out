@@ -1,1 +1,1 @@
-FAILED: ParseException line 1:64 Failed to recognize predicate 'select'. Failed rule: 'queryStatementExpression' in subquery source
+FAILED: ParseException line 1:20 cannot recognize input near 'with' 'q1' 'as' in from source
