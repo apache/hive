@@ -169,6 +169,13 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return new ArrayList<Object>(Arrays.asList(arrWritable));
     }
 
+    //since setStructFieldData and create return a list, getStructFieldData should be able to
+    //handle list data. This is required when table serde is ParquetHiveSerDe and partition serde
+    //is something else.
+    if (data instanceof List) {
+      return ((List) data);
+    }
+
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
   }
 
