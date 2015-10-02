@@ -714,6 +714,7 @@ public class BeeLine implements Closeable {
 
     if (cl.hasOption("help")) {
       usage();
+      getOpts().setHelpAsked(true);
       return 0;
     }
 
@@ -833,6 +834,9 @@ public class BeeLine implements Closeable {
         getOpts().updateBeeLineOptsFromConf();
       }
 
+      if (getOpts().isHelpAsked()) {
+        return 0;
+      }
       if (getOpts().getScriptFile() != null) {
         return executeFile(getOpts().getScriptFile());
       }
