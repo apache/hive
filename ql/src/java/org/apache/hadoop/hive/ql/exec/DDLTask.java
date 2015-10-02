@@ -3635,7 +3635,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     int partitionBatchSize = HiveConf.getIntVar(conf,
-        ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
+        ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX);
 
     // drop the table
     db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());

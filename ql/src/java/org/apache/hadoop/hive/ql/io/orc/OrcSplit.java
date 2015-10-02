@@ -153,7 +153,7 @@ public class OrcSplit extends FileSplit {
     }
   }
 
-  ReaderImpl.FileMetaInfo getFileMetaInfo(){
+  public ReaderImpl.FileMetaInfo getFileMetaInfo() {
     return fileMetaInfo;
   }
 

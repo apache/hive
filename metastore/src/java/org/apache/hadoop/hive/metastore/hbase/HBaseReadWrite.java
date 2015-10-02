@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTableInterface;
@@ -1959,7 +1960,13 @@ public class HBaseReadWrite {
     Result[] results = htab.get(gets);
     for (int i = 0; i < results.length; ++i) {
       Result r = results[i];
-      resultDest[i] = (r.isEmpty() ? null : r.getValueAsByteBuffer(colFam, colName));
+      if (r.isEmpty()) {
+        resultDest[i] = null;
+      } else {
+        Cell cell = r.getColumnLatestCell(colFam, colName);
+        resultDest[i] = ByteBuffer.wrap(
+            cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());
+      }
     }
   }
 

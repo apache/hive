@@ -208,6 +208,7 @@ import org.apache.thrift.transport.TTransportFactory;
 import javax.jdo.JDOException;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -5718,10 +5719,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (metadatas != null) {
         assert metadatas.length == fileIds.size();
         for (int i = 0; i < metadatas.length; ++i) {
-          result.putToMetadata(fileIds.get(i), metadatas[i]);
+          ByteBuffer bb = metadatas[i];
+          if (bb == null) continue;
+          bb = handleReadOnlyBufferForThrift(bb);
+          result.putToMetadata(fileIds.get(i), bb);
         }
       }
+      if (!result.isSetMetadata()) {
+        result.setMetadata(new HashMap<Long, ByteBuffer>()); // Set the required field.
+      }
       return result;
+    }
+
+    private ByteBuffer handleReadOnlyBufferForThrift(ByteBuffer bb) {
+      if (!bb.isReadOnly()) return bb;
+      // Thrift cannot write read-only buffers... oh well.
+      // TODO: actually thrift never writes to the buffer, so we could use reflection to
+      //       unset the unnecessary read-only flag if allocation/copy perf becomes a problem.
+      ByteBuffer copy = ByteBuffer.allocate(bb.capacity());
+      copy.put(bb);
+      copy.flip();
+      return copy;
     }
 
     @Override
