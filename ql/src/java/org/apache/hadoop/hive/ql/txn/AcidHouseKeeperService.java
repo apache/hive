@@ -84,9 +84,10 @@ public class AcidHouseKeeperService implements HouseKeeperService {
     @Override
     public void run() {
       try {
+        long startTime = System.currentTimeMillis();
         txnHandler.performTimeOuts();
-        owner.isAliveCounter.incrementAndGet();
-        LOG.info("timeout reaper ran");
+        int count = owner.isAliveCounter.incrementAndGet();
+        LOG.info("timeout reaper ran for " + (System.currentTimeMillis() - startTime)/1000 + "seconds.  isAliveCounter=" + count);
       }
       catch(Throwable t) {
         LOG.fatal("Serious error in " + Thread.currentThread().getName() + ": " + t.getMessage(), t);

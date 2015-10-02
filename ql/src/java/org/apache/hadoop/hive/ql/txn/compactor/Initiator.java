@@ -98,7 +98,7 @@ public class Initiator extends CompactorThread {
 
               // check if no compaction set for this table
               if (noAutoCompactSet(t)) {
-                LOG.info("Table " + tableName(t) + " marked true so we will not compact it.");
+                LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT + "=true so we will not compact it.");
                 continue;
               }
 
@@ -296,11 +296,10 @@ public class Initiator extends CompactorThread {
   }
 
   private void requestCompaction(CompactionInfo ci, String runAs, CompactionType type) throws MetaException {
-    String s = "Requesting " + type.toString() + " compaction for " + ci.getFullPartitionName();
-    LOG.info(s);
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, type);
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
+    LOG.info("Requesting compaction: " + rqst);
     txnHandler.compact(rqst);
   }
 
