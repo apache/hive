@@ -113,7 +113,7 @@ public class StringAppender
 
     protected StringOutputStreamManager(ByteArrayOutputStream os, String streamName,
         Layout<?> layout) {
-      super(os, streamName, layout);
+      super(os, streamName, layout, true);
       stream = os;
     }
 
