@@ -162,7 +162,7 @@ public class Warehouse {
 
   public Path getTablePath(String whRootString, String tableName) throws MetaException {
     Path whRoot = getDnsPath(new Path(whRootString));
-    return new Path(whRoot, tableName.toLowerCase());
+    return new Path(whRoot, MetaStoreUtils.encodeTableName(tableName.toLowerCase()));
   }
 
   public Path getDatabasePath(Database db) throws MetaException {
@@ -181,7 +181,7 @@ public class Warehouse {
 
   public Path getTablePath(Database db, String tableName)
       throws MetaException {
-    return getDnsPath(new Path(getDatabasePath(db), tableName.toLowerCase()));
+    return getDnsPath(new Path(getDatabasePath(db), MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
   }
 
   public static String getQualifiedName(Table table) {

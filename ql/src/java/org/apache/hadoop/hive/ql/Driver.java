@@ -928,7 +928,7 @@ public class Driver implements CommandProcessor {
         try {
           locks.add(new HiveLockObj(
                       new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
-                                                            + "/" + p.getTable().getTableName()
+                                                            + "/" + MetaStoreUtils.encodeTableName(p.getTable().getTableName())
                                                             + "/" + partialName,
                                                               partialSpec), lockData), mode));
           partialName += "/";

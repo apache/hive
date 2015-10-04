@@ -2233,6 +2233,11 @@ public class HiveConf extends Configuration {
     HIVE_SUPPORT_SQL11_RESERVED_KEYWORDS("hive.support.sql11.reserved.keywords", true,
         "This flag should be set to true to enable support for SQL2011 reserved keywords.\n" +
         "The default value is true."),
+    HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES("hive.support.special.characters.tablename", true,
+        "This flag should be set to true to enable support for special characters in table names.\n"
+        + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
+        + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
+        + "The default value is true."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +

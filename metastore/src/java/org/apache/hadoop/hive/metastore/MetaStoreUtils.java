@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -92,6 +93,14 @@ public class MetaStoreUtils {
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
 
   public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
+
+  // Right now we only support one special character '/'.
+  // More special characters can be added accordingly in the future.
+  // NOTE:
+  // If the following array is updated, please also be sure to update the
+  // configuration parameter documentation
+  // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in HiveConf as well.
+  public static final char[] specialCharactersInTableNames = new char[] { '/' };
 
   public static Table createColumnsetSchema(String name, List<String> columns,
       List<String> partCols, Configuration conf) throws MetaException {
@@ -523,12 +532,23 @@ public class MetaStoreUtils {
    *
    * @param name
    *          the name to validate
+   * @param conf
+   *          hive configuration
    * @return true or false depending on conformance
    * @exception MetaException
    *              if it doesn't match the pattern.
    */
-  static public boolean validateName(String name) {
-    Pattern tpat = Pattern.compile("[\\w_]+");
+  static public boolean validateName(String name, Configuration conf) {
+    Pattern tpat = null;
+    String allowedCharacters = "\\w_";
+    if (conf != null
+        && HiveConf.getBoolVar(conf,
+            HiveConf.ConfVars.HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES)) {
+      for (Character c : specialCharactersInTableNames) {
+        allowedCharacters += c;
+      }
+    }
+    tpat = Pattern.compile("[" + allowedCharacters + "]+");
     Matcher m = tpat.matcher(name);
     if (m.matches()) {
       return true;
@@ -1714,6 +1734,22 @@ public class MetaStoreUtils {
     }
 
     return new URLClassLoader(curPath.toArray(new URL[0]), loader);
+  }
+
+  public static String encodeTableName(String name) {
+    // The encoding method is simple, e.g., replace
+    // all the special characters with the corresponding number in ASCII.
+    // Note that unicode is not supported in table names. And we have explicit
+    // checks for it.
+    String ret = "";
+    for (char ch : name.toCharArray()) {
+      if (Character.isLetterOrDigit(ch) || ch == '_') {
+        ret += ch;
+      } else {
+        ret += "-" + (int) ch + "-";
+      }
+    }
+    return ret;
   }
 
 }

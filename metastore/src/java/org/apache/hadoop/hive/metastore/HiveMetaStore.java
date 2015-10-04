@@ -865,7 +865,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void create_database_core(RawStore ms, final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
-      if (!validateName(db.getName())) {
+      if (!validateName(db.getName(), null)) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
       if (null == db.getLocationUri()) {
@@ -1217,7 +1217,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void create_type_core(final RawStore ms, final Type type)
         throws AlreadyExistsException, MetaException, InvalidObjectException {
-      if (!MetaStoreUtils.validateName(type.getName())) {
+      if (!MetaStoreUtils.validateName(type.getName(), null)) {
         throw new InvalidObjectException("Invalid type name");
       }
 
@@ -1351,7 +1351,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws AlreadyExistsException, MetaException,
         InvalidObjectException, NoSuchObjectException {
 
-      if (!MetaStoreUtils.validateName(tbl.getTableName())) {
+      if (!MetaStoreUtils.validateName(tbl.getTableName(), hiveConf)) {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
       }
@@ -5342,7 +5342,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void validateFunctionInfo(Function func) throws InvalidObjectException, MetaException {
-      if (!MetaStoreUtils.validateName(func.getFunctionName())) {
+      if (!MetaStoreUtils.validateName(func.getFunctionName(), null)) {
         throw new InvalidObjectException(func.getFunctionName() + " is not a valid object name");
       }
       String className = func.getClassName();

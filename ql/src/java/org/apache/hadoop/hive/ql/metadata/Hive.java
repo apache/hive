@@ -553,7 +553,7 @@ public class Hive {
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
-      newTbl.checkValidity();
+      newTbl.checkValidity(conf);
       getMSC().alter_table(names[0], names[1], newTbl.getTTable(), cascade);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
@@ -756,7 +756,7 @@ public class Hive {
         tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
             tbl.getDeserializer()));
       }
-      tbl.checkValidity();
+      tbl.checkValidity(conf);
       if (tbl.getParameters() != null) {
         tbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
