@@ -259,6 +259,10 @@ public class Rpc implements Closeable {
     return call(msg, Void.class);
   }
 
+  public boolean isActive() {
+    return channel.isActive();
+  }
+
   /**
    * Send an RPC call to the remote endpoint and returns a future that can be used to monitor the
    * operation.
