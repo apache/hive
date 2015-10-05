@@ -271,7 +271,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return bd;
   }
 
-  private static BigDecimal enforcePrecisionScale(BigDecimal bd, int maxPrecision, int maxScale) {
+  public static BigDecimal enforcePrecisionScale(BigDecimal bd, int maxPrecision, int maxScale) {
     if (bd == null) {
       return null;
     }
