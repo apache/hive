@@ -271,9 +271,17 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return bd;
   }
 
-  public static BigDecimal enforcePrecisionScale(BigDecimal bd, int maxPrecision, int maxScale) {
+  private static BigDecimal enforcePrecisionScale(BigDecimal bd, int maxPrecision, int maxScale) {
     if (bd == null) {
       return null;
+    }
+
+    /**
+     * Specially handling the case that bd=0, and we are converting it to a type where precision=scale,
+     * such as decimal(1, 1).
+     */
+    if (bd.compareTo(BigDecimal.ZERO) == 0 && bd.scale() == 0 && maxPrecision == maxScale) {
+      return bd.setScale(maxScale);
     }
 
     bd = trim(bd);
