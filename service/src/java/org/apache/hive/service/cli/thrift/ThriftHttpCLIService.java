@@ -73,6 +73,13 @@ public class ThriftHttpCLIService extends ThriftCLIService {
 
       // Connector configs
       SelectChannelConnector connector = new SelectChannelConnector();
+      // Configure header size
+      int requestHeaderSize =
+          hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE);
+      int responseHeaderSize =
+          hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE);
+      connector.setRequestHeaderSize(requestHeaderSize);
+      connector.setResponseHeaderSize(responseHeaderSize);
       boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       String schemeName = useSsl ? "https" : "http";
       // Change connector if SSL is used
