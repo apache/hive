@@ -75,6 +75,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private static final long MAX_PREWARM_TIME = 30000; // 30s
   private static final transient Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
+  private transient Map<String, String> conf;
   private transient SparkClient remoteClient;
   private transient SparkConf sparkConf;
   private transient HiveConf hiveConf;
@@ -89,6 +90,11 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     sparkClientTimtout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT,
         TimeUnit.SECONDS);
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
+    this.conf = conf;
+    createRemoteClient();
+  }
+
+  private void createRemoteClient() throws Exception {
     remoteClient = SparkClientFactory.createClient(conf, hiveConf);
 
     if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PREWARM_ENABLED) &&
@@ -155,6 +161,20 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   @Override
   public SparkJobRef execute(final DriverContext driverContext, final SparkWork sparkWork) throws Exception {
+    if (hiveConf.get("spark.master").startsWith("yarn-") && !remoteClient.isActive()) {
+      // Re-create the remote client if not active any more
+      close();
+      createRemoteClient();
+    }
+
+    try {
+      return submit(driverContext, sparkWork);
+    } catch (Throwable cause) {
+      throw new Exception("Failed to submit Spark work, please retry later", cause);
+    }
+  }
+
+  private SparkJobRef submit(final DriverContext driverContext, final SparkWork sparkWork) throws Exception {
     final Context ctx = driverContext.getCtx();
     final HiveConf hiveConf = (HiveConf) ctx.getConf();
     refreshLocalResources(sparkWork, hiveConf);
@@ -246,6 +266,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     if (remoteClient != null) {
       remoteClient.stop();
     }
+    localFiles.clear();
+    localJars.clear();
   }
 
   private static class JobStatusJob implements Job<Serializable> {

@@ -94,4 +94,9 @@ public interface SparkClient extends Serializable {
    * Get default parallelism. For standalone mode, this can be used to get total number of cores.
    */
   Future<Integer> getDefaultParallelism();
+
+  /**
+   * Check if remote context is still active.
+   */
+  boolean isActive();
 }
