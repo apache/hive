@@ -15,23 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite;
+package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import org.apache.calcite.plan.Context;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
+import java.util.Set;
 
+import org.apache.calcite.plan.RelOptRule;
+import org.apache.calcite.rel.RelNode;
 
-public class HiveConfigContext implements Context {
-  private HiveAlgorithmsConf config;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 
-  public HiveConfigContext(HiveAlgorithmsConf config) {
-    this.config = config;
+public class HiveRulesRegistry {
+
+  private SetMultimap<RelOptRule, RelNode> registry;
+
+  public HiveRulesRegistry() {
+    this.registry = HashMultimap.create();
   }
 
-  public <T> T unwrap(Class<T> clazz) {
-    if (clazz.isInstance(config)) {
-      return clazz.cast(config);
-    }
-    return null;
+  public void registerVisited(RelOptRule rule, RelNode operator) {
+    this.registry.put(rule, operator);
   }
+
+  public Set<RelNode> getVisited(RelOptRule rule) {
+    return this.registry.get(rule);
+  }
+
 }

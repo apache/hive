@@ -76,14 +76,38 @@ public class HivePreFilteringRule extends RelOptRule {
     this.filterFactory = HiveFilter.DEFAULT_FILTER_FACTORY;
   }
 
-  public void onMatch(RelOptRuleCall call) {
+  @Override
+  public boolean matches(RelOptRuleCall call) {
     final Filter filter = call.rel(0);
     final RelNode filterChild = call.rel(1);
 
-    // 0. If the filter is already on top of a TableScan,
-    //    we can bail out
+    // If the filter is already on top of a TableScan,
+    // we can bail out
     if (filterChild instanceof TableScan) {
-      return;
+      return false;
+    }
+
+    HiveRulesRegistry registry = call.getPlanner().
+            getContext().unwrap(HiveRulesRegistry.class);
+
+    // If this operator has been visited already by the rule,
+    // we do not need to apply the optimization
+    if (registry != null && registry.getVisited(this).contains(filter)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public void onMatch(RelOptRuleCall call) {
+    final Filter filter = call.rel(0);
+
+    // 0. Register that we have visited this operator in this rule
+    HiveRulesRegistry registry = call.getPlanner().
+            getContext().unwrap(HiveRulesRegistry.class);
+    if (registry != null) {
+      registry.registerVisited(this, filter);
     }
 
     final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
@@ -114,7 +138,7 @@ public class HivePreFilteringRule extends RelOptRule {
     }
 
     // 3. If the new conjuncts are already present in the plan, we bail out
-    final RelOptPredicateList predicates = RelMetadataQuery.getPulledUpPredicates(filter);
+    final RelOptPredicateList predicates = RelMetadataQuery.getPulledUpPredicates(filter.getInput());
     final List<RexNode> newConjuncts = new ArrayList<>();
     for (RexNode commonOperand : commonOperands) {
       boolean found = false;
@@ -137,8 +161,14 @@ public class HivePreFilteringRule extends RelOptRule {
             RexUtil.composeConjunction(rexBuilder, newConjuncts, false));
 
     // 5. We create the new filter that might be pushed down
-    RelNode newFilter = filterFactory.createFilter(filterChild, newCondition);
+    RelNode newFilter = filterFactory.createFilter(filter.getInput(), newCondition);
     RelNode newTopFilter = filterFactory.createFilter(newFilter, condition);
+
+    // 6. We register both so we do not fire the rule on them again
+    if (registry != null) {
+      registry.registerVisited(this, newFilter);
+      registry.registerVisited(this, newTopFilter);
+    }
 
     call.transformTo(newTopFilter);
 
