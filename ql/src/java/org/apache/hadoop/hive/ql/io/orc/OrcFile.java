@@ -132,7 +132,9 @@ public final class OrcFile {
       }
       values = new WriterVersion[max + 1];
       for (WriterVersion v : WriterVersion.values()) {
-        values[v.id] = v;
+        if (v.id < values.length) {
+          values[v.id] = v;
+        }
       }
     }
 
