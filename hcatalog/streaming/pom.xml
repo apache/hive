@@ -98,6 +98,13 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-common</artifactId>
+      <scope>test</scope>
+      <version>${hadoop-23.version}</version>
+    </dependency>
+
   </dependencies>
 
   <build>

@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -32,13 +33,20 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
 
 abstract class AbstractRecordWriter implements RecordWriter {
   static final private Log LOG = LogFactory.getLog(AbstractRecordWriter.class.getName());
@@ -48,14 +56,15 @@ abstract class AbstractRecordWriter implements RecordWriter {
   final Table tbl;
 
   final IMetaStoreClient msClient;
-  RecordUpdater updater = null;
+  protected final List<Integer> bucketIds;
+  ArrayList<RecordUpdater> updaters = null;
 
-  private final int totalBuckets;
-  private Random rand = new Random();
-  private int currentBucketId = 0;
+  public final int totalBuckets;
+
   private final Path partitionPath;
 
   final AcidOutputFormat<?,?> outf;
+  private Object[] bucketFieldData; // Pre-allocated in constructor. Updated on each write.
 
   protected AbstractRecordWriter(HiveEndPoint endPoint, HiveConf conf)
           throws ConnectionError, StreamingException {
@@ -71,8 +80,11 @@ abstract class AbstractRecordWriter implements RecordWriter {
         throw new StreamingException("Cannot stream to table that has not been bucketed : "
                 + endPoint);
       }
+      this.bucketIds = getBucketColIDs(tbl.getSd().getBucketCols(), tbl.getSd().getCols()) ;
+      this.bucketFieldData = new Object[bucketIds.size()];
       String outFormatName = this.tbl.getSd().getOutputFormat();
       outf = (AcidOutputFormat<?,?>) ReflectionUtils.newInstance(JavaUtils.loadClass(outFormatName), conf);
+      bucketFieldData = new Object[bucketIds.size()];
     } catch (MetaException e) {
       throw new ConnectionError(endPoint, e);
     } catch (NoSuchObjectException e) {
@@ -86,17 +98,37 @@ abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
-  protected AbstractRecordWriter(HiveEndPoint endPoint)
-          throws ConnectionError, StreamingException {
-    this(endPoint, HiveEndPoint.createHiveConf(AbstractRecordWriter.class, endPoint.metaStoreUri) );
+  // return the column numbers of the bucketed columns
+  private List<Integer> getBucketColIDs(List<String> bucketCols, List<FieldSchema> cols) {
+    ArrayList<Integer> result =  new ArrayList<Integer>(bucketCols.size());
+    HashSet<String> bucketSet = new HashSet<String>(bucketCols);
+    for (int i = 0; i < cols.size(); i++) {
+      if( bucketSet.contains(cols.get(i).getName()) ) {
+        result.add(i);
+      }
+    }
+    return result;
   }
 
   abstract SerDe getSerde() throws SerializationError;
 
+  protected abstract ObjectInspector[] getBucketObjectInspectors();
+  protected abstract StructObjectInspector getRecordObjectInspector();
+  protected abstract StructField[] getBucketStructFields();
+
+  // returns the bucket number to which the record belongs to
+  protected int getBucket(Object row) throws SerializationError {
+    ObjectInspector[] inspectors = getBucketObjectInspectors();
+    Object[] bucketFields = getBucketFields(row);
+    return ObjectInspectorUtils.getBucketNumber(bucketFields, inspectors, totalBuckets);
+  }
+
   @Override
   public void flush() throws StreamingIOFailure {
     try {
-      updater.flush();
+      for (RecordUpdater updater : updaters) {
+        updater.flush();
+      }
     } catch (IOException e) {
       throw new StreamingIOFailure("Unable to flush recordUpdater", e);
     }
@@ -116,9 +148,8 @@ abstract class AbstractRecordWriter implements RecordWriter {
   public void newBatch(Long minTxnId, Long maxTxnID)
           throws StreamingIOFailure, SerializationError {
     try {
-      this.currentBucketId = rand.nextInt(totalBuckets);
       LOG.debug("Creating Record updater");
-      updater = createRecordUpdater(currentBucketId, minTxnId, maxTxnID);
+      updaters = createRecordUpdaters(totalBuckets, minTxnId, maxTxnID);
     } catch (IOException e) {
       LOG.error("Failed creating record updater", e);
       throw new StreamingIOFailure("Unable to get new record Updater", e);
@@ -128,11 +159,47 @@ abstract class AbstractRecordWriter implements RecordWriter {
   @Override
   public void closeBatch() throws StreamingIOFailure {
     try {
-      updater.close(false);
-      updater = null;
+      for (RecordUpdater updater : updaters) {
+        updater.close(false);
+      }
+      updaters.clear();
     } catch (IOException e) {
       throw new StreamingIOFailure("Unable to close recordUpdater", e);
     }
+  }
+
+  protected static ObjectInspector[] getObjectInspectorsForBucketedCols(List<Integer> bucketIds
+          , StructObjectInspector recordObjInspector)
+          throws SerializationError {
+    ObjectInspector[] result = new ObjectInspector[bucketIds.size()];
+
+    for (int i = 0; i < bucketIds.size(); i++) {
+      int bucketId = bucketIds.get(i);
+      result[i] =
+              recordObjInspector.getAllStructFieldRefs().get( bucketId ).getFieldObjectInspector();
+    }
+    return result;
+  }
+
+
+  private Object[] getBucketFields(Object row) throws SerializationError {
+    StructObjectInspector recordObjInspector = getRecordObjectInspector();
+    StructField[] bucketStructFields = getBucketStructFields();
+    for (int i = 0; i < bucketIds.size(); i++) {
+      bucketFieldData[i] = recordObjInspector.getStructFieldData(row,  bucketStructFields[i]);
+    }
+    return bucketFieldData;
+  }
+
+
+
+  private ArrayList<RecordUpdater> createRecordUpdaters(int bucketCount, Long minTxnId, Long maxTxnID)
+          throws IOException, SerializationError {
+    ArrayList<RecordUpdater> result = new ArrayList<RecordUpdater>(bucketCount);
+    for (int bucket = 0; bucket < bucketCount; bucket++) {
+      result.add(createRecordUpdater(bucket, minTxnId, maxTxnID) );
+    }
+    return result;
   }
 
   private RecordUpdater createRecordUpdater(int bucketId, Long minTxnId, Long maxTxnID)
