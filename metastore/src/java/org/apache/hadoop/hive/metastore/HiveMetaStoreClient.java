@@ -35,9 +35,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
+import org.apache.hadoop.hive.metastore.api.ClearFileMetadataRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -76,6 +80,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetFileMetadataRequest;
+import org.apache.hadoop.hive.metastore.api.GetFileMetadataResult;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
@@ -116,6 +122,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PutFileMetadataRequest;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
@@ -170,6 +177,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private String tokenStrForm;
   private final boolean localMetaStore;
   private final MetaStoreFilterHook filterHook;
+  private final int fileMetadataBatchSize;
 
   private Map<String, String> currentMetaVars;
 
@@ -195,6 +203,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     this.conf = conf;
     filterHook = loadFilterHooks();
+    fileMetadataBatchSize = HiveConf.getIntVar(
+        conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX);
 
     String msUri = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
     localMetaStore = HiveConfUtil.isEmbeddedMetaStore(msUri);
@@ -2107,5 +2117,89 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if (colNames.isEmpty()) return null; // Nothing to aggregate.
     PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
     return client.get_aggr_stats_for(req);
+  }
+
+  @Override
+  public Iterable<Entry<Long, ByteBuffer>> getFileMetadata(
+      final List<Long> fileIds) throws TException {
+    return new MetastoreMapIterable<Long, ByteBuffer>() {
+      private int listIndex = 0;
+      @Override
+      protected Map<Long, ByteBuffer> fetchNextBatch() throws TException {
+        if (listIndex == fileIds.size()) return null;
+        int endIndex = Math.min(listIndex + fileMetadataBatchSize, fileIds.size());
+        List<Long> subList = fileIds.subList(listIndex, endIndex);
+        GetFileMetadataRequest req = new GetFileMetadataRequest();
+        req.setFileIds(subList);
+        GetFileMetadataResult resp = client.get_file_metadata(req);
+        listIndex = endIndex;
+        return resp.getMetadata();
+      }
+    };
+  }
+
+  public static abstract class MetastoreMapIterable<K, V>
+    implements Iterable<Entry<K, V>>, Iterator<Entry<K, V>> {
+    private Iterator<Entry<K, V>> currentIter;
+
+    protected abstract Map<K, V> fetchNextBatch() throws TException;
+
+    @Override
+    public Iterator<Entry<K, V>> iterator() {
+      return this;
+    }
+
+    @Override
+    public boolean hasNext() {
+      ensureCurrentBatch();
+      return currentIter != null;
+    }
+
+    private void ensureCurrentBatch() {
+      if (currentIter != null && currentIter.hasNext()) return;
+      currentIter = null;
+      Map<K, V> currentBatch;
+      do {
+        try {
+          currentBatch = fetchNextBatch();
+        } catch (TException ex) {
+          throw new RuntimeException(ex);
+        }
+        if (currentBatch == null) return; // No more data.
+      } while (currentBatch.isEmpty());
+      currentIter = currentBatch.entrySet().iterator();
+    }
+
+    @Override
+    public Entry<K, V> next() {
+      ensureCurrentBatch();
+      if (currentIter == null) throw new NoSuchElementException();
+      return currentIter.next();
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Override
+  public void clearFileMetadata(List<Long> fileIds) throws TException {
+    ClearFileMetadataRequest req = new ClearFileMetadataRequest();
+    req.setFileIds(fileIds);
+    client.clear_file_metadata(req);
+  }
+
+  @Override
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws TException {
+    PutFileMetadataRequest req = new PutFileMetadataRequest();
+    req.setFileIds(fileIds);
+    req.setMetadata(metadata);
+    client.put_file_metadata(req);
+  }
+
+  @Override
+  public boolean isSameConfObj(HiveConf c) {
+    return conf == c;
   }
 }

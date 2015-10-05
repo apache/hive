@@ -82,7 +82,7 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException("New table is invalid: " + newt);
     }
 
-    if (!MetaStoreUtils.validateName(newt.getTableName())) {
+    if (!MetaStoreUtils.validateName(newt.getTableName(), hiveConf)) {
       throw new InvalidOperationException(newt.getTableName()
           + " is not a valid object name");
     }

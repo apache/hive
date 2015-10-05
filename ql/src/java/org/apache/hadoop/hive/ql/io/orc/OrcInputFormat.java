@@ -19,11 +19,14 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
@@ -34,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -62,6 +66,8 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -111,7 +117,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface, LlapWrappableInputFormatInterface,
     AcidInputFormat<NullWritable, OrcStruct>, CombineHiveInputFormat.AvoidSplitCombination {
 
-  static enum SplitStrategyKind{
+  static enum SplitStrategyKind {
     HYBRID,
     BI,
     ETL
@@ -443,7 +449,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    */
   static class Context {
     private final Configuration conf;
-    private static Cache<Path, FileInfo> footerCache;
+
+    // We store all caches in variables to change the main one based on config.
+    // This is not thread safe between different split generations (and wasn't anyway).
+    private static FooterCache footerCache;
+    private static LocalCache localCache;
+    private static MetastoreCache metaCache;
     private static ExecutorService threadPool = null;
     private final int numBuckets;
     private final long maxSize;
@@ -492,13 +503,26 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                   .setNameFormat("ORC_GET_SPLITS #%d").build());
         }
 
-        if (footerCache == null && cacheStripeDetails) {
-          footerCache = CacheBuilder.newBuilder()
-              .concurrencyLevel(numThreads)
-              .initialCapacity(cacheStripeDetailsSize)
-              .maximumSize(cacheStripeDetailsSize)
-              .softValues()
-              .build();
+        // TODO: local cache is created once, so the configs for future queries will not be honored.
+        if (cacheStripeDetails) {
+          // Note that there's no FS check here; we implicitly only use metastore cache for
+          // HDFS, because only HDFS would return fileIds for us. If fileId is extended using
+          // size/mod time/etc. for other FSes, we might need to check FSes explicitly because
+          // using such an aggregate fileId cache is not bulletproof and should be disable-able.
+          boolean useMetastoreCache = HiveConf.getBoolVar(
+              conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED);
+          if (localCache == null) {
+            localCache = new LocalCache(numThreads, cacheStripeDetailsSize);
+          }
+          if (useMetastoreCache) {
+            if (metaCache == null) {
+              metaCache = new MetastoreCache(localCache);
+            }
+            assert conf instanceof HiveConf;
+            metaCache.configure((HiveConf)conf);
+          }
+          // Set footer cache for current split generation. See field comment - not thread safe.
+          footerCache = useMetastoreCache ? metaCache : localCache;
         }
       }
       String value = conf.get(ValidTxnList.VALID_TXNS_KEY,
@@ -593,49 +617,37 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       this.covered = covered;
     }
 
-    private FileInfo verifyCachedFileInfo(FileStatus file) {
-      FileInfo fileInfo = Context.footerCache.getIfPresent(file.getPath());
-      if (fileInfo != null) {
-        if (isDebugEnabled) {
-          LOG.debug("Info cached for path: " + file.getPath());
-        }
-        if (fileInfo.modificationTime == file.getModificationTime() &&
-            fileInfo.size == file.getLen()) {
-          // Cached copy is valid
-          context.cacheHitCounter.incrementAndGet();
-          return fileInfo;
-        } else {
-          // Invalidate
-          Context.footerCache.invalidate(file.getPath());
-          if (isDebugEnabled) {
-            LOG.debug("Meta-Info for : " + file.getPath() +
-                " changed. CachedModificationTime: "
-                + fileInfo.modificationTime + ", CurrentModificationTime: "
-                + file.getModificationTime()
-                + ", CachedLength: " + fileInfo.size + ", CurrentLength: " +
-                file.getLen());
+    @Override
+    public List<SplitInfo> getSplits() throws IOException {
+      List<SplitInfo> result = new ArrayList<>(files.size());
+      // TODO: Right now, we do the metastore call here, so there will be a metastore call per
+      //       partition. If we had a sync point after getting file lists, we could make just one
+      //       call; this might be too much sync for many partitions and also cause issues with the
+      //       huge metastore call result that cannot be handled with in-API batching. To have an
+      //       optimal number of metastore calls, we should wait for batch-size number of files (a
+      //       few hundreds) to become available, then call metastore.
+      if (context.cacheStripeDetails) {
+        FileInfo[] infos = Context.footerCache.getAndValidate(files);
+        for (int i = 0; i < files.size(); ++i) {
+          FileInfo info = infos[i];
+          if (info != null) {
+            // Cached copy is valid
+            context.cacheHitCounter.incrementAndGet();
+          }
+          HdfsFileStatusWithId file = files.get(i);
+          // ignore files of 0 length
+          if (file.getFileStatus().getLen() > 0) {
+            result.add(new SplitInfo(
+                context, fs, file, info, isOriginal, deltas, true, dir, covered));
           }
         }
       } else {
-        if (isDebugEnabled) {
-          LOG.debug("Info not cached for path: " + file.getPath());
-        }
-      }
-      return null;
-    }
-
-    @Override
-    public List<SplitInfo> getSplits() throws IOException {
-      List<SplitInfo> result = Lists.newArrayList();
-      for (HdfsFileStatusWithId file : files) {
-        FileInfo info = null;
-        if (context.cacheStripeDetails) {
-          info = verifyCachedFileInfo(file.getFileStatus());
-        }
-        // ignore files of 0 length
-        if (file.getFileStatus().getLen() > 0) {
-          result.add(new SplitInfo(
-              context, fs, file, info, isOriginal, deltas, true, dir, covered));
+        for (HdfsFileStatusWithId file : files) {
+          // ignore files of 0 length
+          if (file.getFileStatus().getLen() > 0) {
+            result.add(new SplitInfo(
+                context, fs, file, null, isOriginal, deltas, true, dir, covered));
+          }
         }
       }
       return result;
@@ -811,7 +823,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       this.file = this.fileWithId.getFileStatus();
       this.blockSize = this.file.getBlockSize();
       this.fileInfo = splitInfo.fileInfo;
-      locations = SHIMS.getLocationsWithOffset(fs, fileWithId.getFileStatus());
+      // TODO: potential DFS call
+      this.locations = SHIMS.getLocationsWithOffset(fs, fileWithId.getFileStatus());
       this.isOriginal = splitInfo.isOriginal;
       this.deltas = splitInfo.deltas;
       this.hasBase = splitInfo.hasBase;
@@ -993,41 +1006,51 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private void populateAndCacheStripeDetails() throws IOException {
-      Reader orcReader = OrcFile.createReader(fileWithId.getFileStatus().getPath(),
-          OrcFile.readerOptions(context.conf).filesystem(fs));
+      // Only create OrcReader if we are missing some information.
+      List<OrcProto.ColumnStatistics> colStatsLocal;
+      List<OrcProto.Type> typesLocal;
       if (fileInfo != null) {
         stripes = fileInfo.stripeInfos;
         stripeStats = fileInfo.stripeStats;
         fileMetaInfo = fileInfo.fileMetaInfo;
-        types = fileInfo.types;
+        typesLocal = types = fileInfo.types;
+        colStatsLocal = fileInfo.fileStats;
         writerVersion = fileInfo.writerVersion;
         // For multiple runs, in case sendSplitsInFooter changes
         if (fileMetaInfo == null && context.footerInSplits) {
+          Reader orcReader = createOrcReader();
           fileInfo.fileMetaInfo = ((ReaderImpl) orcReader).getFileMetaInfo();
-          fileInfo.types = orcReader.getTypes();
-          fileInfo.writerVersion = orcReader.getWriterVersion();
+          assert fileInfo.stripeStats != null && fileInfo.types != null
+              && fileInfo.writerVersion != null;
+          // We assume that if we needed to create a reader, we need to cache it to meta cache.
+          // TODO: This will also needlessly overwrite it in local cache for now.
+          Context.footerCache.put(fileWithId.getFileId(), file, fileInfo.fileMetaInfo, orcReader);
         }
       } else {
+        Reader orcReader = createOrcReader();
         stripes = orcReader.getStripes();
-        types = orcReader.getTypes();
+        typesLocal = types = orcReader.getTypes();
+        colStatsLocal = orcReader.getOrcProtoFileStatistics();
         writerVersion = orcReader.getWriterVersion();
         stripeStats = orcReader.getStripeStatistics();
         fileMetaInfo = context.footerInSplits ?
             ((ReaderImpl) orcReader).getFileMetaInfo() : null;
         if (context.cacheStripeDetails) {
-          // Populate into cache.
-          Context.footerCache.put(fileWithId.getFileStatus().getPath(),
-              new FileInfo(fileWithId.getFileStatus().getModificationTime(),
-                  fileWithId.getFileStatus().getLen(), stripes,
-                  stripeStats, types, fileMetaInfo, writerVersion));
+          Long fileId = fileWithId.getFileId();
+          Context.footerCache.put(fileId, file, fileMetaInfo, orcReader);
         }
       }
       includedCols = genIncludedColumns(types, context.conf, isOriginal);
-      projColsUncompressedSize = computeProjectionSize(orcReader, includedCols, isOriginal);
+      projColsUncompressedSize = computeProjectionSize(typesLocal, colStatsLocal, includedCols, isOriginal);
     }
 
-    private long computeProjectionSize(final Reader orcReader, final boolean[] includedCols,
-        final boolean isOriginal) {
+    private Reader createOrcReader() throws IOException {
+      return OrcFile.createReader(file.getPath(),
+          OrcFile.readerOptions(context.conf).filesystem(fs));
+    }
+
+    private long computeProjectionSize(List<OrcProto.Type> types,
+        List<OrcProto.ColumnStatistics> stats, boolean[] includedCols, boolean isOriginal) {
       final int rootIdx = getRootColumn(isOriginal);
       List<Integer> internalColIds = Lists.newArrayList();
       if (includedCols != null) {
@@ -1037,7 +1060,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
-      return orcReader.getRawDataSizeFromColIndices(internalColIds);
+      return ReaderImpl.getRawDataSizeFromColIndices(internalColIds, types, stats);
     }
   }
 
@@ -1048,7 +1071,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   static List<OrcSplit> generateSplitsInfo(Configuration conf, int numSplits)
       throws IOException {
-    // use threads to resolve directories into splits
+    // Use threads to resolve directories into splits.
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED)) {
+      // Create HiveConf once, since this is expensive.
+      conf = new HiveConf(conf, OrcInputFormat.class);
+    }
     Context context = new Context(conf, numSplits);
     boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     List<OrcSplit> splits = Lists.newArrayList();
@@ -1075,6 +1102,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           LOG.debug(splitStrategy);
         }
 
+        // Hack note - different split strategies return differently typed lists, yay Java.
+        // This works purely by magic, because we know which strategy produces which type.
         if (splitStrategy instanceof ETLSplitStrategy) {
           List<SplitInfo> splitInfos = ((ETLSplitStrategy)splitStrategy).getSplits();
           for (SplitInfo splitInfo : splitInfos) {
@@ -1137,26 +1166,29 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    *
    */
   private static class FileInfo {
-    long modificationTime;
-    long size;
-    List<StripeInformation> stripeInfos;
-    FileMetaInfo fileMetaInfo;
-    List<StripeStatistics> stripeStats;
-    List<OrcProto.Type> types;
+    private final long modificationTime;
+    private final long size;
+    private final Long fileId;
+    private final List<StripeInformation> stripeInfos;
+    private FileMetaInfo fileMetaInfo;
+    private List<StripeStatistics> stripeStats;
+    private List<OrcProto.ColumnStatistics> fileStats;
+    private List<OrcProto.Type> types;
     private OrcFile.WriterVersion writerVersion;
 
 
-    FileInfo(long modificationTime, long size,
-             List<StripeInformation> stripeInfos,
+    FileInfo(long modificationTime, long size, List<StripeInformation> stripeInfos,
              List<StripeStatistics> stripeStats, List<OrcProto.Type> types,
-             FileMetaInfo fileMetaInfo,
-             OrcFile.WriterVersion writerVersion) {
+             List<OrcProto.ColumnStatistics> fileStats, FileMetaInfo fileMetaInfo,
+             OrcFile.WriterVersion writerVersion, Long fileId) {
       this.modificationTime = modificationTime;
       this.size = size;
+      this.fileId = fileId;
       this.stripeInfos = stripeInfos;
       this.fileMetaInfo = fileMetaInfo;
       this.stripeStats = stripeStats;
       this.types = types;
+      this.fileStats = fileStats;
       this.writerVersion = writerVersion;
     }
   }
@@ -1516,5 +1548,187 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         bucket, validTxnList, new Reader.Options(), deltaDirectory);
   }
 
+  /**
+   * Represents footer cache.
+   */
+  public interface FooterCache {
+    FileInfo[] getAndValidate(List<HdfsFileStatusWithId> files) throws IOException;
+    void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
+        throws IOException;
+  }
 
+  /** Local footer cache using Guava. Stores convoluted Java objects. */
+  private static class LocalCache implements FooterCache {
+    private Cache<Path, FileInfo> cache;
+
+    public LocalCache(int numThreads, int cacheStripeDetailsSize) {
+      cache = CacheBuilder.newBuilder()
+        .concurrencyLevel(numThreads)
+        .initialCapacity(cacheStripeDetailsSize)
+        .maximumSize(cacheStripeDetailsSize)
+        .softValues()
+        .build();
+    }
+
+    @Override
+    public FileInfo[] getAndValidate(List<HdfsFileStatusWithId> files) {
+      // TODO: should local cache also be by fileId? Preserve the original logic for now.
+      FileInfo[] result = new FileInfo[files.size()];
+      int i = -1;
+      for (HdfsFileStatusWithId fileWithId : files) {
+        ++i;
+        FileStatus file = fileWithId.getFileStatus();
+        Path path = file.getPath();
+        Long fileId = fileWithId.getFileId();
+        FileInfo fileInfo = cache.getIfPresent(path);
+        if (isDebugEnabled) {
+          LOG.debug("Info " + (fileInfo == null ? "not " : "") + "cached for path: " + path);
+        }
+        if (fileInfo == null) continue;
+        if ((fileId != null && fileInfo.fileId != null && fileId == fileInfo.fileId)
+            || (fileInfo.modificationTime == file.getModificationTime() &&
+            fileInfo.size == file.getLen())) {
+          result[i] = fileInfo;
+          continue;
+        }
+        // Invalidate
+        cache.invalidate(path);
+        if (isDebugEnabled) {
+          LOG.debug("Meta-Info for : " + path + " changed. CachedModificationTime: "
+              + fileInfo.modificationTime + ", CurrentModificationTime: "
+              + file.getModificationTime() + ", CachedLength: " + fileInfo.size
+              + ", CurrentLength: " + file.getLen());
+        }
+      }
+      return result;
+    }
+
+    public void put(Path path, FileInfo fileInfo) {
+      cache.put(path, fileInfo);
+    }
+
+    @Override
+    public void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
+        throws IOException {
+      cache.put(file.getPath(), new FileInfo(file.getModificationTime(), file.getLen(),
+          orcReader.getStripes(), orcReader.getStripeStatistics(), orcReader.getTypes(),
+          orcReader.getOrcProtoFileStatistics(), fileMetaInfo, orcReader.getWriterVersion(),
+          fileId));
+    }
+  }
+
+  /** Metastore-based footer cache storing serialized footers. Also has a local cache. */
+  public static class MetastoreCache implements FooterCache {
+    private final LocalCache localCache;
+    private boolean isWarnLogged = false;
+    private HiveConf conf;
+
+    public MetastoreCache(LocalCache lc) {
+      localCache = lc;
+    }
+
+    @Override
+    public FileInfo[] getAndValidate(List<HdfsFileStatusWithId> files) throws IOException {
+      // First, check the local cache.
+      FileInfo[] result = localCache.getAndValidate(files);
+      assert result.length == files.size();
+      // This is an unfortunate consequence of batching/iterating thru MS results.
+      // TODO: maybe have a direct map call for small lists if this becomes a perf issue.
+      HashMap<Long, Integer> posMap = new HashMap<>(files.size());
+      for (int i = 0; i < result.length; ++i) {
+        if (result[i] != null) continue;
+        HdfsFileStatusWithId file = files.get(i);
+        Long fileId = file.getFileId();
+        if (fileId == null) {
+          if (!isWarnLogged || isDebugEnabled) {
+            LOG.warn("Not using metastore cache because fileId is missing: "
+                + file.getFileStatus().getPath());
+            isWarnLogged = true;
+          }
+          continue;
+        }
+        posMap.put(fileId, i);
+      }
+      Iterator<Entry<Long, ByteBuffer>> iter = null;
+      Hive hive;
+      try {
+        hive = getHive();
+        iter = hive.getFileMetadata(Lists.newArrayList(posMap.keySet()), conf).iterator();
+      } catch (HiveException ex) {
+        throw new IOException(ex);
+      }
+      List<Long> corruptIds = null;
+      while (iter.hasNext()) {
+        Entry<Long, ByteBuffer> e = iter.next();
+        int ix = posMap.get(e.getKey());
+        assert result[ix] == null;
+        HdfsFileStatusWithId file = files.get(ix);
+        assert file.getFileId() == e.getKey();
+        result[ix] = createFileInfoFromMs(file, e.getValue());
+        if (result[ix] == null) {
+          if (corruptIds == null) {
+            corruptIds = new ArrayList<>();
+          }
+          corruptIds.add(file.getFileId());
+        } else {
+          localCache.put(file.getFileStatus().getPath(), result[ix]);
+        }
+      }
+      if (corruptIds != null) {
+        try {
+          hive.clearFileMetadata(corruptIds);
+        } catch (HiveException ex) {
+          LOG.error("Failed to clear corrupt cache data", ex);
+        }
+      }
+      return result;
+    }
+
+    private Hive getHive() throws HiveException {
+      // TODO: we wish we could cache the Hive object, but it's not thread safe, and each
+      //       threadlocal we "cache" would need to be reinitialized for every query. This is
+      //       a huge PITA. Hive object will be cached internally, but the compat check will be
+      //       done every time inside get().
+      return Hive.getWithFastCheck(conf);
+    }
+
+    private static FileInfo createFileInfoFromMs(
+        HdfsFileStatusWithId file, ByteBuffer bb) throws IOException {
+      FileStatus fs = file.getFileStatus();
+      ReaderImpl.FooterInfo fi = null;
+      ByteBuffer original = bb.duplicate();
+      try {
+        fi = ReaderImpl.extractMetaInfoFromFooter(bb, fs.getPath());
+      } catch (Exception ex) {
+        byte[] data = new byte[original.remaining()];
+        System.arraycopy(original.array(), original.arrayOffset() + original.position(),
+            data, 0, data.length);
+        String msg = "Failed to parse the footer stored in cache for file ID "
+            + file.getFileId() + " " + original + " [ " + Hex.encodeHexString(data) + " ]";
+        LOG.error(msg, ex);
+        return null;
+      }
+      return new FileInfo(fs.getModificationTime(), fs.getLen(), fi.getStripes(), fi.getMetadata(),
+          fi.getFooter().getTypesList(), fi.getFooter().getStatisticsList(), fi.getFileMetaInfo(),
+          fi.getFileMetaInfo().writerVersion, file.getFileId());
+    }
+
+    @Override
+    public void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
+        throws IOException {
+      localCache.put(fileId, file, fileMetaInfo, orcReader);
+      if (fileId != null) {
+        try {
+          getHive().putFileMetadata(Lists.newArrayList(fileId),
+              Lists.newArrayList(((ReaderImpl)orcReader).getSerializedFileFooter()));
+        } catch (HiveException e) {
+          throw new IOException(e);
+        }
+      }
+    }
+
+    public void configure(HiveConf queryConfig) {
+      this.conf = queryConfig;
+    }
+  }
 }

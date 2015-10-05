@@ -103,6 +103,7 @@ import org.apache.thrift.TException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -241,13 +242,30 @@ public class Hive {
    *
    */
   public static Hive get(HiveConf c) throws HiveException {
+    return getInternal(c, false);
+  }
+
+  /**
+   * Same as {@link #get(HiveConf)}, except that it checks only the object identity of existing
+   * MS client, assuming the relevant settings would be unchanged within the same conf object.
+   */
+  public static Hive getWithFastCheck(HiveConf c) throws HiveException {
+    return getInternal(c, true);
+  }
+
+  private static Hive getInternal(HiveConf c, boolean isFastCheck) throws HiveException {
     Hive db = hiveDB.get();
     if (db == null || !db.isCurrentUserOwner() ||
-        (db.metaStoreClient != null && !db.metaStoreClient.isCompatibleWith(c))) {
+        (db.metaStoreClient != null && !isCompatible(db, c, isFastCheck))) {
       return get(c, true);
     }
     db.conf = c;
     return db;
+  }
+
+  private static boolean isCompatible(Hive db, HiveConf c, boolean isFastCheck) {
+    return isFastCheck
+        ? db.metaStoreClient.isSameConfObj(c) : db.metaStoreClient.isCompatibleWith(c);
   }
 
   /**
@@ -535,7 +553,7 @@ public class Hive {
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
-      newTbl.checkValidity();
+      newTbl.checkValidity(conf);
       getMSC().alter_table(names[0], names[1], newTbl.getTTable(), cascade);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
@@ -738,7 +756,7 @@ public class Hive {
         tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
             tbl.getDeserializer()));
       }
-      tbl.checkValidity();
+      tbl.checkValidity(conf);
       if (tbl.getParameters() != null) {
         tbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
@@ -3339,4 +3357,28 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return true;
   }
 
+  public Iterable<Map.Entry<Long, ByteBuffer>> getFileMetadata(
+      List<Long> fileIds, Configuration conf) throws HiveException {
+    try {
+      return getMSC().getFileMetadata(fileIds);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void clearFileMetadata(List<Long> fileIds) throws HiveException {
+    try {
+      getMSC().clearFileMetadata(fileIds);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws HiveException {
+    try {
+      getMSC().putFileMetadata(fileIds, metadata);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
 };

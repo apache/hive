@@ -95,10 +95,10 @@ public class HiveSplitGenerator extends InputInitializer {
     userPayloadProto =
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
 
-    this.conf =
-        TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
+    this.conf = TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
 
     this.jobConf = new JobConf(conf);
+
     // Read all credentials into the credentials instance stored in JobConf.
     ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 

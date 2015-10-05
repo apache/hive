@@ -239,8 +239,7 @@ public class ReaderImpl implements Reader {
       throw new FileFormatException("Malformed ORC file " + path +
           ". Invalid postscript length " + psLen);
     }
-    int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - 1
-        - len;
+    int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - 1 - len;
     byte[] array = buffer.array();
     // now look for the magic string at the end of the postscript.
     if (!Text.decode(array, offset, len).equals(OrcFile.MAGIC)) {

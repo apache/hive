@@ -205,10 +205,8 @@ public class SortedDynPartitionOptimizer implements Transform {
       RowSchema outRS = new RowSchema(fsParent.getSchema());
       ArrayList<ColumnInfo> valColInfo = Lists.newArrayList(fsParent.getSchema().getSignature());
       ArrayList<ExprNodeDesc> newValueCols = Lists.newArrayList();
-      Map<String, ExprNodeDesc> colExprMap = Maps.newHashMap();
       for (ColumnInfo ci : valColInfo) {
         newValueCols.add(new ExprNodeColumnDesc(ci));
-        colExprMap.put(ci.getInternalName(), newValueCols.get(newValueCols.size() - 1));
       }
       ReduceSinkDesc rsConf = getReduceSinkDesc(partitionPositions, sortPositions, sortOrder,
           newValueCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
@@ -223,6 +221,11 @@ public class SortedDynPartitionOptimizer implements Transform {
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
               rsConf, new RowSchema(outRS.getSignature()), fsParent);
+      List<String> valueColNames = rsConf.getOutputValueColumnNames();
+      Map<String, ExprNodeDesc> colExprMap = Maps.newHashMap();
+      for (int i = 0 ; i < valueColNames.size(); i++) {
+        colExprMap.put(Utilities.ReduceField.VALUE + "." + valueColNames.get(i), newValueCols.get(i));
+      }
       rsOp.setColumnExprMap(colExprMap);
 
       List<ExprNodeDesc> valCols = rsConf.getValueCols();

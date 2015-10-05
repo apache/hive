@@ -3212,7 +3212,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     if (allPartitions == null) {
       updateModifiedParameters(tbl.getTTable().getParameters(), conf);
-      tbl.checkValidity();
+      tbl.checkValidity(conf);
     } else {
       for (Partition tmpPart: allPartitions) {
         updateModifiedParameters(tmpPart.getParameters(), conf);
@@ -3635,7 +3635,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     int partitionBatchSize = HiveConf.getIntVar(conf,
-        ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
+        ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX);
 
     // drop the table
     db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());
@@ -4108,7 +4108,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         oldview.getTTable().getParameters().putAll(crtView.getTblProps());
       }
       oldview.setPartCols(crtView.getPartCols());
-      oldview.checkValidity();
+      oldview.checkValidity(null);
       try {
         db.alterTable(crtView.getViewName(), oldview);
       } catch (InvalidOperationException e) {
@@ -4280,7 +4280,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       {
         // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
         // instead
-        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), name.toLowerCase());
+        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), MetaStoreUtils.encodeTableName(name.toLowerCase()));
       }
     }
     else

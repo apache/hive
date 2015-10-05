@@ -117,6 +117,11 @@ public class CompactorMR {
     job.setInputFormat(CompactorInputFormat.class);
     job.setOutputFormat(NullOutputFormat.class);
     job.setOutputCommitter(CompactorOutputCommitter.class);
+    
+    String queueName = conf.getVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
+    if(queueName != null && queueName.length() > 0) {
+      job.setQueueName(queueName);
+    }
 
     job.set(FINAL_LOCATION, sd.getLocation());
     job.set(TMP_LOCATION, sd.getLocation() + "/" + TMPDIR + "_" + UUID.randomUUID().toString());
@@ -189,7 +194,10 @@ public class CompactorMR {
     LOG.debug("Setting maximume transaction to " + maxTxn);
 
     RunningJob rj = JobClient.runJob(job);
-    LOG.info("Submitted " + (isMajor ? CompactionType.MAJOR : CompactionType.MINOR) + " compaction job '" + jobName + "' with jobID=" + rj.getID());
+    LOG.info("Submitted " + (isMajor ? CompactionType.MAJOR : CompactionType.MINOR) + " compaction job '" +
+      jobName + "' with jobID=" + rj.getID() + " to " + job.getQueueName() + " queue.  " +
+      "(current delta dirs count=" + dir.getCurrentDirectories().size() +
+      ", obsolete delta dirs count=" + dir.getObsolete());
     rj.waitForCompletion();
     su.gatherStats();
   }

@@ -303,7 +303,7 @@ public class TestHive extends TestCase {
 
       ft = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       assertNotNull("Unable to fetch table", ft);
-      ft.checkValidity();
+      ft.checkValidity(hiveConf);
       assertEquals("Table names didn't match for table: " + tableName, tbl
           .getTableName(), ft.getTableName());
       assertEquals("Table owners didn't match for table: " + tableName, tbl

@@ -119,8 +119,8 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
         throw e;
       }
       if (parts.size() != 1) {
-        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition");
-        throw new MetaException("Too many partitions");
+        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " + parts);
+        throw new MetaException("Too many partitions for : " + ci.getFullPartitionName());
       }
       return parts.get(0);
     } else {
@@ -179,8 +179,9 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
         return wrapper.get(0);
       }
     }
-    LOG.error("Unable to stat file as either current user or table owner, giving up");
-    throw new IOException("Unable to stat file");
+    LOG.error("Unable to stat file " + p + " as either current user(" + UserGroupInformation.getLoginUser() +
+      ") or table owner(" + t.getOwner() + "), giving up");
+    throw new IOException("Unable to stat file: " + p);
   }
 
   /**
