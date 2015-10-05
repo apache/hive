@@ -113,6 +113,12 @@
       <version>${hadoop-23.version}</version>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>com.unboundid</groupId>
+      <artifactId>unboundid-ldapsdk</artifactId>
+      <version>${unboundid.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
