@@ -24,10 +24,14 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.hcatalog.data.HCatRecordObjectInspector;
 import org.apache.hive.hcatalog.data.JsonSerDe;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -36,6 +40,10 @@ import java.util.Properties;
  */
 public class StrictJsonWriter extends AbstractRecordWriter {
   private JsonSerDe serde;
+
+  private final HCatRecordObjectInspector recordObjInspector;
+  private final ObjectInspector[] bucketObjInspectors;
+  private final StructField[] bucketStructFields;
 
   /**
    *
@@ -46,7 +54,7 @@ public class StrictJsonWriter extends AbstractRecordWriter {
    */
   public StrictJsonWriter(HiveEndPoint endPoint)
           throws ConnectionError, SerializationError, StreamingException {
-    super(endPoint, null);
+    this(endPoint, null);
   }
 
   /**
@@ -60,23 +68,49 @@ public class StrictJsonWriter extends AbstractRecordWriter {
   public StrictJsonWriter(HiveEndPoint endPoint, HiveConf conf)
           throws ConnectionError, SerializationError, StreamingException {
     super(endPoint, conf);
+    this.serde = createSerde(tbl, conf);
+    // get ObjInspectors for entire record and bucketed cols
+    try {
+      recordObjInspector = ( HCatRecordObjectInspector ) serde.getObjectInspector();
+      this.bucketObjInspectors = getObjectInspectorsForBucketedCols(bucketIds, recordObjInspector);
+    } catch (SerDeException e) {
+      throw new SerializationError("Unable to get ObjectInspector for bucket columns", e);
+    }
+
+    // get StructFields for bucketed cols
+    bucketStructFields = new StructField[bucketIds.size()];
+    List<? extends StructField> allFields = recordObjInspector.getAllStructFieldRefs();
+    for (int i = 0; i < bucketIds.size(); i++) {
+      bucketStructFields[i] = allFields.get(bucketIds.get(i));
+    }
   }
 
   @Override
   SerDe getSerde() throws SerializationError {
-    if(serde!=null) {
-      return serde;
-    }
-    serde = createSerde(tbl, conf);
     return serde;
   }
+
+  protected HCatRecordObjectInspector getRecordObjectInspector() {
+    return recordObjInspector;
+  }
+
+  @Override
+  protected StructField[] getBucketStructFields() {
+    return bucketStructFields;
+  }
+
+  protected ObjectInspector[] getBucketObjectInspectors() {
+    return bucketObjInspectors;
+  }
+
 
   @Override
   public void write(long transactionId, byte[] record)
           throws StreamingIOFailure, SerializationError {
     try {
       Object encodedRow = encode(record);
-      updater.insert(transactionId, encodedRow);
+      int bucket = getBucket(encodedRow);
+      updaters.get(bucket).insert(transactionId, encodedRow);
     } catch (IOException e) {
       throw new StreamingIOFailure("Error writing record in transaction("
               + transactionId + ")", e);
