@@ -1,0 +1,59 @@
+dn: dc=example,dc=com
+distinguishedName: dc=example,dc=com
+objectClass: top
+objectClass: domain
+dc: example
+
+dn: ou=People,dc=example,dc=com
+distinguishedName: ou=People,dc=example,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: People
+description: Contains entries which describe persons (seamen)
+
+dn: ou=Groups,dc=example,dc=com
+distinguishedName: ou=Groups,dc=example,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: Groups
+description: Contains entries which describe groups (crews, for instance)
+
+dn: cn=group1,ou=Groups,dc=example,dc=com
+distinguishedName: cn=group1,ou=Groups,dc=example,dc=com
+objectClass: group
+objectClass: top
+givenName: Group1
+cn: Test Group1
+sn: group1
+
+dn: cn=group2,ou=Groups,dc=example,dc=com
+distinguishedName: cn=group2,ou=Groups,dc=example,dc=com
+objectClass: group
+objectClass: top
+givenName: Group2
+cn: Test Group2
+sn: group1
+
+dn: cn=user1,ou=People,dc=example,dc=com
+distinguishedName: cn=user1,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: person
+objectClass: top
+givenName: Test1
+cn: Test User1
+sn: user1
+uid: user1
+userPassword: user1
+memberOf: cn=group1,ou=Groups,dc=example,dc=com
+
+dn: cn=user2,ou=People,dc=example,dc=com
+distinguishedName: cn=user2,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: person
+objectClass: top
+givenName: Test2
+cn: Test User2
+sn: user2
+uid: user2
+userPassword: user2
+memberOf: cn=group2,ou=Groups,dc=example,dc=com
