@@ -595,7 +595,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private RawStore newRawStore() throws MetaException {
-      LOG.info(addPrefix("Opening raw store with implemenation class:"
+      LOG.info(addPrefix("Opening raw store with implementation class:"
           + rawStoreClassName));
       Configuration conf = getConf();
 
