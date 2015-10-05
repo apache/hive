@@ -715,21 +715,21 @@ struct FireEventResponse {
 }
     
 struct MetadataPpdResult {
-  1: required binary metadata,
-  2: required binary includeBitset
+  1: optional binary metadata,
+  2: optional binary includeBitset
 }
 
 // Return type for get_file_metadata_by_expr
 struct GetFileMetadataByExprResult {
   1: required map<i64, MetadataPpdResult> metadata,
-  2: required bool isSupported,
-  3: required list<i64> unknownFileIds
+  2: required bool isSupported
 }
 
 // Request type for get_file_metadata_by_expr
 struct GetFileMetadataByExprRequest {
   1: required list<i64> fileIds,
-  2: required binary expr
+  2: required binary expr,
+  3: optional bool doGetFooters
 }
 
 // Return type for get_file_metadata
