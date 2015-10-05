@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +73,7 @@ public class PTest {
 
   private final TestConfiguration mConfiguration;
   private final ListeningExecutorService mExecutor;
+  private final Set<String> mAddedTests;
   private final Set<String> mExecutedTests;
   private final Set<String> mFailedTests;
   private final List<Phase> mPhases;
@@ -92,6 +94,7 @@ public class PTest {
     mBuildTag = buildTag;
     mExecutedTests = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     mFailedTests = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+    mAddedTests = new HashSet<String>();
     mExecutionContext = executionContext;
     mSshCommandExecutor = sshCommandExecutor;
     mRsyncCommandExecutor = rsyncCommandExecutor;
@@ -148,6 +151,7 @@ public class PTest {
     }
     mHostExecutors = new CopyOnWriteArrayList<HostExecutor>(hostExecutors);
     mPhases = Lists.newArrayList();
+    mPhases.add(new TestCheckPhase(mHostExecutors, localCommandFactory, templateDefaults, patchFile, logger, mAddedTests));
     mPhases.add(new PrepPhase(mHostExecutors, localCommandFactory, templateDefaults, scratchDir, patchFile, logger));
     mPhases.add(new ExecutionPhase(mHostExecutors, mExecutionContext, hostExecutorBuilder, localCommandFactory, templateDefaults,
         succeededLogDir, failedLogDir, testParser.parse(), mExecutedTests, mFailedTests, logger));
@@ -213,7 +217,7 @@ public class PTest {
       for(Map.Entry<String, Long> entry : elapsedTimes.entrySet()) {
         mLogger.info(String.format("PERF: Phase %s took %d minutes", entry.getKey(), entry.getValue()));
       }
-      publishJiraComment(error, messages, failedTests);
+      publishJiraComment(error, messages, failedTests, mAddedTests);
       if(error || !mFailedTests.isEmpty()) {
         result = 1;
       }
@@ -221,7 +225,7 @@ public class PTest {
     return result;
   }
 
-  private void publishJiraComment(boolean error, List<String> messages, SortedSet<String> failedTests) {
+  private void publishJiraComment(boolean error, List<String> messages, SortedSet<String> failedTests, Set<String> addedTests) {
     if(mConfiguration.getJiraName().isEmpty()) {
       mLogger.info("Skipping JIRA comment as name is empty.");
       return;
@@ -238,8 +242,9 @@ public class PTest {
       mLogger.info("Skipping JIRA comment as password is empty.");
       return;
     }
+    mLogger.info("Added tests: " + addedTests);
     JIRAService jira = new JIRAService(mLogger, mConfiguration, mBuildTag);
-    jira.postComment(error, mExecutedTests.size(), failedTests, messages);
+    jira.postComment(error, mExecutedTests.size(), failedTests, messages, addedTests);
   }
 
   public static class Builder {

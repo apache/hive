@@ -111,6 +111,12 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.unboundid</groupId>
+      <artifactId>unboundid-ldapsdk</artifactId>
+      <version>${unboundid.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>

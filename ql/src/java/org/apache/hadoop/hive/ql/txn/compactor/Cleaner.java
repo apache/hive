@@ -212,7 +212,7 @@ public class Cleaner extends CompactorThread {
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);
       } else {
-        LOG.info("Cleaning as user " + ci.runAs);
+        LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
             UserGroupInformation.getLoginUser());
         ugi.doAs(new PrivilegedExceptionAction<Object>() {
@@ -245,6 +245,7 @@ public class Cleaner extends CompactorThread {
           ", that hardly seems right.");
       return;
     }
+    LOG.info("About to remove " + filesToDelete.size() + " obsolete directories from " + location);
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
 
     for (Path dead : filesToDelete) {

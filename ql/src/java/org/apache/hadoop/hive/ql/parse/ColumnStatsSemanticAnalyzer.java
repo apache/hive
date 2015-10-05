@@ -324,7 +324,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenQueryBuilder.append(" from ");
     rewrittenQueryBuilder.append(tbl.getDbName());
     rewrittenQueryBuilder.append(".");
-    rewrittenQueryBuilder.append(tbl.getTableName());
+    rewrittenQueryBuilder.append("`" + tbl.getTableName() + "`");
     isRewritten = true;
 
     // If partition level statistics is requested, add predicate and group by as needed to rewritten

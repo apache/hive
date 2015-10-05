@@ -42,15 +42,15 @@ public class TestHiveDecimal {
     Assert.assertTrue("Decimal scale should not go above maximum", dec.scale() <= HiveDecimal.MAX_SCALE);
 
     decStr = "57847525803324040144343378.09799306448796128931113691624";
-    BigDecimal bd = new BigDecimal(decStr);
-    BigDecimal bd1 = HiveDecimal.enforcePrecisionScale(bd, 20, 5);
+    HiveDecimal bd = HiveDecimal.create(decStr);
+    HiveDecimal bd1 = HiveDecimal.enforcePrecisionScale(bd, 20, 5);
     Assert.assertNull(bd1);
     bd1 = HiveDecimal.enforcePrecisionScale(bd, 35, 5);
     Assert.assertEquals("57847525803324040144343378.09799", bd1.toString());
     bd1 = HiveDecimal.enforcePrecisionScale(bd, 45, 20);
     Assert.assertNull(bd1);
 
-    dec = HiveDecimal.create(bd, false);
+    dec = HiveDecimal.create(new BigDecimal(decStr), false);
     Assert.assertNull(dec);
 
     dec = HiveDecimal.create("-1786135888657847525803324040144343378.09799306448796128931113691624");
@@ -65,10 +65,10 @@ public class TestHiveDecimal {
 
     // Rounding numbers that increase int digits
     Assert.assertEquals("10",
-        HiveDecimal.enforcePrecisionScale(new BigDecimal("9.5"), 2, 0).toString());
-    Assert.assertNull(HiveDecimal.enforcePrecisionScale(new BigDecimal("9.5"), 1, 0));
+        HiveDecimal.enforcePrecisionScale(HiveDecimal.create("9.5"), 2, 0).toString());
+    Assert.assertNull(HiveDecimal.enforcePrecisionScale(HiveDecimal.create("9.5"), 1, 0));
     Assert.assertEquals("9",
-        HiveDecimal.enforcePrecisionScale(new BigDecimal("9.4"), 1, 0).toString());
+        HiveDecimal.enforcePrecisionScale(HiveDecimal.create("9.4"), 1, 0).toString());
   }
 
   @Test

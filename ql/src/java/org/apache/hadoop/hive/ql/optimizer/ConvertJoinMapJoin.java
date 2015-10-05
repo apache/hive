@@ -634,6 +634,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             joinOp.getConf().getMapAliases(), bigTablePosition, true, removeReduceSink);
     mapJoinOp.getConf().setHybridHashJoin(HiveConf.getBoolVar(context.conf,
         HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN));
+    List<ExprNodeDesc> joinExprs = mapJoinOp.getConf().getKeys().values().iterator().next();
+    if (joinExprs.size() == 0) {  // In case of cross join, we disable hybrid grace hash join
+      mapJoinOp.getConf().setHybridHashJoin(false);
+    }
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);

@@ -77,7 +77,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
             LOG.warn("Unexpected format for groupDNPattern..ignoring " + groupTokens[i]);
           }
         }
-      } else {
+      } else if (baseDN != null) {
         groupBases.add("CN=%s," + baseDN);
       }
 
@@ -101,7 +101,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
             LOG.warn("Unexpected format for userDNPattern..ignoring " + userTokens[i]);
           }
         }
-      } else {
+      } else if (baseDN != null) {
         userBases.add("CN=%s," + baseDN);
       }
 
@@ -151,22 +151,22 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
       // Create initial context
       ctx = new InitialDirContext(env);
 
-      if (isDN(user)) {
+      if (isDN(user) || hasDomain(user)) {
         userName = extractName(user);
       } else {
         userName = user;
       }
 
-      if (userFilter == null && groupFilter == null && customQuery == null) {
+      if (userFilter == null && groupFilter == null && customQuery == null && userBases.size() > 0) {
         if (isDN(user)) {
-          userDN = findUserDNByDN(ctx, user);
+          userDN = findUserDNByDN(ctx, userName);
         } else {
           if (userDN == null) {
-            userDN = findUserDNByPattern(ctx, user);
+            userDN = findUserDNByPattern(ctx, userName);
           }
 
           if (userDN == null) {
-            userDN = findUserDNByName(ctx, baseDN, user);
+            userDN = findUserDNByName(ctx, baseDN, userName);
           }
         }
 
@@ -564,6 +564,11 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
   }
 
   public static String extractName(String dn) {
+    int domainIdx = ServiceUtils.indexOfDomainMatch(dn);
+    if (domainIdx > 0) {
+      return dn.substring(0, domainIdx);
+    }
+
     if (dn.indexOf("=") > -1) {
       return dn.substring(dn.indexOf("=") + 1, dn.indexOf(","));
     }
