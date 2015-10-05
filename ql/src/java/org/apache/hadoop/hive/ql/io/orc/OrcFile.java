@@ -107,6 +107,7 @@ public final class OrcFile {
     ORIGINAL(0),
       HIVE_8732(1), // corrupted stripe/file maximum column statistics
       HIVE_4243(2), // use real column names from Hive tables
+// Don't use any magic numbers here except for the below:
       FUTURE(Integer.MAX_VALUE); // a version from a future writer
 
     private final int id;
@@ -125,7 +126,7 @@ public final class OrcFile {
       int max = Integer.MIN_VALUE;
       for (WriterVersion v : WriterVersion.values()) {
         if (v.id < 0) throw new AssertionError();
-        if (v.id > max) {
+        if (v.id > max && FUTURE.id != v.id) {
           max = v.id;
         }
       }
@@ -136,6 +137,7 @@ public final class OrcFile {
     }
 
     public static WriterVersion from(int val) {
+      if (val == FUTURE.id) return FUTURE; // Special handling for the magic value.
       return values[val];
     }
   }
