@@ -4299,7 +4299,6 @@ STAGE PLANS:
                       input vertices:
                         1 Reducer 4
                       Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
