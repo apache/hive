@@ -62,10 +62,6 @@ public class MTableColumnStatistics {
     this.table = table;
   }
 
-  public String getTableName() {
-    return tableName;
-  }
-
   public void setTableName(String tableName) {
     this.tableName = tableName;
   }
@@ -140,10 +136,6 @@ public class MTableColumnStatistics {
 
   public void setLastAnalyzed(long lastAnalyzed) {
     this.lastAnalyzed = lastAnalyzed;
-  }
-
-  public String getDbName() {
-    return dbName;
   }
 
   public void setDbName(String dbName) {

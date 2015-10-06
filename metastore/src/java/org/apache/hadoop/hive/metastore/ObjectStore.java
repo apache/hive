@@ -6262,8 +6262,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void writeMTableColumnStatistics(Table table, MTableColumnStatistics mStatsObj)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    String dbName = mStatsObj.getDbName();
-    String tableName = mStatsObj.getTableName();
+    String tableName = mStatsObj.getTable().getTableName();
+    String dbName = mStatsObj.getTable().getDatabase().getName();
     String colName = mStatsObj.getColName();
     QueryWrapper queryWrapper = new QueryWrapper();
 
@@ -6289,9 +6289,9 @@ public class ObjectStore implements RawStore, Configurable {
   private void writeMPartitionColumnStatistics(Table table, Partition partition,
       MPartitionColumnStatistics mStatsObj) throws NoSuchObjectException,
         MetaException, InvalidObjectException, InvalidInputException {
-    String dbName = mStatsObj.getDbName();
-    String tableName = mStatsObj.getTableName();
-    String partName = mStatsObj.getPartitionName();
+    String partName = mStatsObj.getPartition().getPartitionName();
+    String tableName = mStatsObj.getPartition().getTable().getTableName();
+    String dbName = mStatsObj.getPartition().getTable().getDatabase().getName();
     String colName = mStatsObj.getColName();
 
     LOG.info("Updating partition level column statistics for db=" + dbName + " tableName=" +
@@ -6397,7 +6397,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<MTableColumnStatistics> result = null;
       validateTableCols(table, colNames);
       Query query = queryWrapper.query = pm.newQuery(MTableColumnStatistics.class);
-      String filter = "tableName == t1 && dbName == t2 && (";
+      String filter = "table.tableName == t1 && table.database.name == t2 && (";
       String paramStr = "java.lang.String t1, java.lang.String t2";
       Object[] params = new Object[colNames.size() + 2];
       params[0] = table.getTableName();
@@ -6523,7 +6523,7 @@ public class ObjectStore implements RawStore, Configurable {
           for (int i = 0; i <= mStats.size(); ++i) {
             boolean isLast = i == mStats.size();
             MPartitionColumnStatistics mStatsObj = isLast ? null : mStats.get(i);
-            String partName = isLast ? null : (String)mStatsObj.getPartitionName();
+            String partName = isLast ? null : (String)mStatsObj.getPartition().getPartitionName();
             if (isLast || !partName.equals(lastPartName)) {
               if (i != 0) {
                 result.add(new ColumnStatistics(csd, curList));
@@ -6589,14 +6589,14 @@ public class ObjectStore implements RawStore, Configurable {
       validateTableCols(table, colNames);
       Query query = queryWrapper.query = pm.newQuery(MPartitionColumnStatistics.class);
       String paramStr = "java.lang.String t1, java.lang.String t2";
-      String filter = "tableName == t1 && dbName == t2 && (";
+      String filter = "partition.table.tableName == t1 && partition.table.database.name == t2 && (";
       Object[] params = new Object[colNames.size() + partNames.size() + 2];
       int i = 0;
       params[i++] = table.getTableName();
       params[i++] = table.getDbName();
       int firstI = i;
       for (String s : partNames) {
-        filter += ((i == firstI) ? "" : " || ") + "partitionName == p" + i;
+        filter += ((i == firstI) ? "" : " || ") + "partition.partitionName == p" + i;
         paramStr += ", java.lang.String p" + i;
         params[i++] = s;
       }
@@ -6610,7 +6610,7 @@ public class ObjectStore implements RawStore, Configurable {
       filter += ")";
       query.setFilter(filter);
       query.declareParameters(paramStr);
-      query.setOrdering("partitionName ascending");
+      query.setOrdering("partition.partitionName ascending");
       @SuppressWarnings("unchecked")
       List<MPartitionColumnStatistics> result =
           (List<MPartitionColumnStatistics>) query.executeWithArray(params);
@@ -6635,7 +6635,7 @@ public class ObjectStore implements RawStore, Configurable {
       String dbName, String tableName, List<String> partNames) throws MetaException {
     ObjectPair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
         dbName, tableName, partNames, MPartitionColumnStatistics.class,
-        "tableName", "dbName", "partition.partitionName");
+        "partition.table.tableName", "partition.table.database.name", "partition.partitionName");
     queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
   }
 
@@ -6670,13 +6670,14 @@ public class ObjectStore implements RawStore, Configurable {
       String parameters;
       if (colName != null) {
         filter =
-            "partition.partitionName == t1 && dbName == t2 && tableName == t3 && "
-                + "colName == t4";
+            "partition.partitionName == t1 && partition.table.database.name == t2 && "
+            + "partition.table.tableName == t3 && colName == t4";
         parameters =
             "java.lang.String t1, java.lang.String t2, "
                 + "java.lang.String t3, java.lang.String t4";
       } else {
-        filter = "partition.partitionName == t1 && dbName == t2 && tableName == t3";
+        filter = "partition.partitionName == t1 && partition.table.database.name == t2 && "
+            + " partition.table.tableName == t3";
         parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
       }
       query.setFilter(filter);
@@ -6747,10 +6748,10 @@ public class ObjectStore implements RawStore, Configurable {
       String filter;
       String parameters;
       if (colName != null) {
-        filter = "table.tableName == t1 && dbName == t2 && colName == t3";
+        filter = "table.tableName == t1 && table.database.name == t2 && colName == t3";
         parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
       } else {
-        filter = "table.tableName == t1 && dbName == t2";
+        filter = "table.tableName == t1 && table.database.name == t2";
         parameters = "java.lang.String t1, java.lang.String t2";
       }
 
