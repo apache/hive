@@ -5419,12 +5419,17 @@ class FireEventResponse {
 
 void swap(FireEventResponse &a, FireEventResponse &b);
 
+typedef struct _MetadataPpdResult__isset {
+  _MetadataPpdResult__isset() : metadata(false), includeBitset(false) {}
+  bool metadata :1;
+  bool includeBitset :1;
+} _MetadataPpdResult__isset;
 
 class MetadataPpdResult {
  public:
 
-  static const char* ascii_fingerprint; // = "07A9615F837F7D0A952B595DD3020972";
-  static const uint8_t binary_fingerprint[16]; // = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+  static const char* ascii_fingerprint; // = "D0297FC5011701BD87898CC36146A565";
+  static const uint8_t binary_fingerprint[16]; // = {0xD0,0x29,0x7F,0xC5,0x01,0x17,0x01,0xBD,0x87,0x89,0x8C,0xC3,0x61,0x46,0xA5,0x65};
 
   MetadataPpdResult(const MetadataPpdResult&);
   MetadataPpdResult& operator=(const MetadataPpdResult&);
@@ -5435,15 +5440,21 @@ class MetadataPpdResult {
   std::string metadata;
   std::string includeBitset;
 
+  _MetadataPpdResult__isset __isset;
+
   void __set_metadata(const std::string& val);
 
   void __set_includeBitset(const std::string& val);
 
   bool operator == (const MetadataPpdResult & rhs) const
   {
-    if (!(metadata == rhs.metadata))
+    if (__isset.metadata != rhs.__isset.metadata)
       return false;
-    if (!(includeBitset == rhs.includeBitset))
+    else if (__isset.metadata && !(metadata == rhs.metadata))
+      return false;
+    if (__isset.includeBitset != rhs.__isset.includeBitset)
+      return false;
+    else if (__isset.includeBitset && !(includeBitset == rhs.includeBitset))
       return false;
     return true;
   }
@@ -5465,8 +5476,8 @@ void swap(MetadataPpdResult &a, MetadataPpdResult &b);
 class GetFileMetadataByExprResult {
  public:
 
-  static const char* ascii_fingerprint; // = "2B0C1B8D7599529A5797481BE308375D";
-  static const uint8_t binary_fingerprint[16]; // = {0x2B,0x0C,0x1B,0x8D,0x75,0x99,0x52,0x9A,0x57,0x97,0x48,0x1B,0xE3,0x08,0x37,0x5D};
+  static const char* ascii_fingerprint; // = "9927698B8A2D476882C8F24E9919B943";
+  static const uint8_t binary_fingerprint[16]; // = {0x99,0x27,0x69,0x8B,0x8A,0x2D,0x47,0x68,0x82,0xC8,0xF2,0x4E,0x99,0x19,0xB9,0x43};
 
   GetFileMetadataByExprResult(const GetFileMetadataByExprResult&);
   GetFileMetadataByExprResult& operator=(const GetFileMetadataByExprResult&);
@@ -5476,21 +5487,16 @@ class GetFileMetadataByExprResult {
   virtual ~GetFileMetadataByExprResult() throw();
   std::map<int64_t, MetadataPpdResult>  metadata;
   bool isSupported;
-  std::vector<int64_t>  unknownFileIds;
 
   void __set_metadata(const std::map<int64_t, MetadataPpdResult> & val);
 
   void __set_isSupported(const bool val);
-
-  void __set_unknownFileIds(const std::vector<int64_t> & val);
 
   bool operator == (const GetFileMetadataByExprResult & rhs) const
   {
     if (!(metadata == rhs.metadata))
       return false;
     if (!(isSupported == rhs.isSupported))
-      return false;
-    if (!(unknownFileIds == rhs.unknownFileIds))
       return false;
     return true;
   }
@@ -5508,31 +5514,44 @@ class GetFileMetadataByExprResult {
 
 void swap(GetFileMetadataByExprResult &a, GetFileMetadataByExprResult &b);
 
+typedef struct _GetFileMetadataByExprRequest__isset {
+  _GetFileMetadataByExprRequest__isset() : doGetFooters(false) {}
+  bool doGetFooters :1;
+} _GetFileMetadataByExprRequest__isset;
 
 class GetFileMetadataByExprRequest {
  public:
 
-  static const char* ascii_fingerprint; // = "925353917FC0AF87976A2338011F5A31";
-  static const uint8_t binary_fingerprint[16]; // = {0x92,0x53,0x53,0x91,0x7F,0xC0,0xAF,0x87,0x97,0x6A,0x23,0x38,0x01,0x1F,0x5A,0x31};
+  static const char* ascii_fingerprint; // = "C52686F0528367D7E6CE54B804FC33B5";
+  static const uint8_t binary_fingerprint[16]; // = {0xC5,0x26,0x86,0xF0,0x52,0x83,0x67,0xD7,0xE6,0xCE,0x54,0xB8,0x04,0xFC,0x33,0xB5};
 
   GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest&);
   GetFileMetadataByExprRequest& operator=(const GetFileMetadataByExprRequest&);
-  GetFileMetadataByExprRequest() : expr() {
+  GetFileMetadataByExprRequest() : expr(), doGetFooters(0) {
   }
 
   virtual ~GetFileMetadataByExprRequest() throw();
   std::vector<int64_t>  fileIds;
   std::string expr;
+  bool doGetFooters;
+
+  _GetFileMetadataByExprRequest__isset __isset;
 
   void __set_fileIds(const std::vector<int64_t> & val);
 
   void __set_expr(const std::string& val);
+
+  void __set_doGetFooters(const bool val);
 
   bool operator == (const GetFileMetadataByExprRequest & rhs) const
   {
     if (!(fileIds == rhs.fileIds))
       return false;
     if (!(expr == rhs.expr))
+      return false;
+    if (__isset.doGetFooters != rhs.__isset.doGetFooters)
+      return false;
+    else if (__isset.doGetFooters && !(doGetFooters == rhs.doGetFooters))
       return false;
     return true;
   }

@@ -25,6 +25,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +38,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -104,8 +107,19 @@ class VerifyingObjectStore extends ObjectStore {
         dbName, tableName, colNames, true, false);
     ColumnStatistics jdoResult = getTableColumnStatisticsInternal(
         dbName, tableName, colNames, false, true);
+    if (sqlResult != null && jdoResult != null) {
+      Collections.sort(sqlResult.getStatsObj(), new ColumnStatsComparator());
+      Collections.sort(jdoResult.getStatsObj(), new ColumnStatsComparator());
+    }
     verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
+  }
+
+  private static class ColumnStatsComparator implements Comparator<ColumnStatisticsObj> {
+    @Override
+    public int compare(ColumnStatisticsObj obj1, ColumnStatisticsObj obj2) {
+      return obj1.getColName().compareTo(obj2.getColName());
+    }
   }
 
   @Override
@@ -116,7 +130,19 @@ class VerifyingObjectStore extends ObjectStore {
         dbName, tableName, partNames, colNames, true, false);
     List<ColumnStatistics> jdoResult = getPartitionColumnStatisticsInternal(
         dbName, tableName, partNames, colNames,  false, true);
-    verifyLists(sqlResult, jdoResult, ColumnStatistics.class);
+
+    if (sqlResult.size() != jdoResult.size()) {
+      String msg = "Lists are not the same size: SQL " + sqlResult.size()
+          + ", ORM " + jdoResult.size();
+      LOG.error(msg);
+      throw new MetaException(msg);
+    }
+
+    for (int i = 0; i < jdoResult.size(); i++) {
+      Collections.sort(sqlResult.get(i).getStatsObj(), new ColumnStatsComparator());
+      Collections.sort(jdoResult.get(i).getStatsObj(), new ColumnStatsComparator());
+      verifyObjects(sqlResult.get(i), jdoResult.get(i), ColumnStatistics.class);
+    }
     return sqlResult;
   }
 

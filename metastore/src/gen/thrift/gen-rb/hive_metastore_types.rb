@@ -2237,15 +2237,13 @@ class MetadataPpdResult
   INCLUDEBITSET = 2
 
   FIELDS = {
-    METADATA => {:type => ::Thrift::Types::STRING, :name => 'metadata', :binary => true},
-    INCLUDEBITSET => {:type => ::Thrift::Types::STRING, :name => 'includeBitset', :binary => true}
+    METADATA => {:type => ::Thrift::Types::STRING, :name => 'metadata', :binary => true, :optional => true},
+    INCLUDEBITSET => {:type => ::Thrift::Types::STRING, :name => 'includeBitset', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metadata is unset!') unless @metadata
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field includeBitset is unset!') unless @includeBitset
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2255,12 +2253,10 @@ class GetFileMetadataByExprResult
   include ::Thrift::Struct, ::Thrift::Struct_Union
   METADATA = 1
   ISSUPPORTED = 2
-  UNKNOWNFILEIDS = 3
 
   FIELDS = {
     METADATA => {:type => ::Thrift::Types::MAP, :name => 'metadata', :key => {:type => ::Thrift::Types::I64}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::MetadataPpdResult}},
-    ISSUPPORTED => {:type => ::Thrift::Types::BOOL, :name => 'isSupported'},
-    UNKNOWNFILEIDS => {:type => ::Thrift::Types::LIST, :name => 'unknownFileIds', :element => {:type => ::Thrift::Types::I64}}
+    ISSUPPORTED => {:type => ::Thrift::Types::BOOL, :name => 'isSupported'}
   }
 
   def struct_fields; FIELDS; end
@@ -2268,7 +2264,6 @@ class GetFileMetadataByExprResult
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field metadata is unset!') unless @metadata
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field isSupported is unset!') if @isSupported.nil?
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field unknownFileIds is unset!') unless @unknownFileIds
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2278,10 +2273,12 @@ class GetFileMetadataByExprRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FILEIDS = 1
   EXPR = 2
+  DOGETFOOTERS = 3
 
   FIELDS = {
     FILEIDS => {:type => ::Thrift::Types::LIST, :name => 'fileIds', :element => {:type => ::Thrift::Types::I64}},
-    EXPR => {:type => ::Thrift::Types::STRING, :name => 'expr', :binary => true}
+    EXPR => {:type => ::Thrift::Types::STRING, :name => 'expr', :binary => true},
+    DOGETFOOTERS => {:type => ::Thrift::Types::BOOL, :name => 'doGetFooters', :optional => true}
   }
 
   def struct_fields; FIELDS; end

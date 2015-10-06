@@ -45,6 +45,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -666,6 +667,60 @@ public class TestJdbcWithMiniHS2 {
     if (fs.exists(scratchDirPath) && !isLocal) {
       assertEquals("DFS scratch dir permissions don't match", expectedFSPermission,
           fs.getFileStatus(scratchDirPath).getPermission());
+    }
+  }
+
+  /**
+   * Test for http header size
+   * @throws Exception
+   */
+  @Test
+  public void testHttpHeaderSize() throws Exception {
+    // Stop HiveServer2
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+    HiveConf conf = new HiveConf();
+    conf.set("hive.server2.transport.mode", "http");
+    conf.setInt("hive.server2.thrift.http.request.header.size", 1024);
+    conf.setInt("hive.server2.thrift.http.response.header.size", 1024);
+    miniHS2 = new MiniHS2(conf);
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+
+    // Username is added to the request header
+    String userName = StringUtils.leftPad("*", 100);
+    // This should go fine, since header should be less than the configured header size
+    try {
+      hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    } catch (Exception e) {
+      fail("Not expecting exception: " + e);
+    }
+
+    // This should fail with given HTTP response code 413 in error message, since header is more
+    // than the configured the header size
+    userName = StringUtils.leftPad("*", 2000);
+    try {
+      hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    } catch (Exception e) {
+      assertTrue("Header exception thrown", e != null);
+      assertTrue(e.getMessage().contains("HTTP Response code: 413"));
+    }
+
+    // Stop HiveServer2 to increase header size
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+    conf.setInt("hive.server2.thrift.http.request.header.size", 3000);
+    conf.setInt("hive.server2.thrift.http.response.header.size", 3000);
+    miniHS2 = new MiniHS2(conf);
+    miniHS2.start(confOverlay);
+
+    // This should now go fine, since we increased the configured header size
+    try {
+      hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    } catch (Exception e) {
+      fail("Not expecting exception: " + e);
     }
   }
 }

@@ -9808,10 +9808,6 @@ class MetadataPpdResult:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.metadata is None:
-      raise TProtocol.TProtocolException(message='Required field metadata is unset!')
-    if self.includeBitset is None:
-      raise TProtocol.TProtocolException(message='Required field includeBitset is unset!')
     return
 
 
@@ -9837,20 +9833,17 @@ class GetFileMetadataByExprResult:
   Attributes:
    - metadata
    - isSupported
-   - unknownFileIds
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.MAP, 'metadata', (TType.I64,None,TType.STRUCT,(MetadataPpdResult, MetadataPpdResult.thrift_spec)), None, ), # 1
     (2, TType.BOOL, 'isSupported', None, None, ), # 2
-    (3, TType.LIST, 'unknownFileIds', (TType.I64,None), None, ), # 3
   )
 
-  def __init__(self, metadata=None, isSupported=None, unknownFileIds=None,):
+  def __init__(self, metadata=None, isSupported=None,):
     self.metadata = metadata
     self.isSupported = isSupported
-    self.unknownFileIds = unknownFileIds
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9878,16 +9871,6 @@ class GetFileMetadataByExprResult:
           self.isSupported = iprot.readBool();
         else:
           iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.LIST:
-          self.unknownFileIds = []
-          (_etype472, _size469) = iprot.readListBegin()
-          for _i473 in xrange(_size469):
-            _elem474 = iprot.readI64();
-            self.unknownFileIds.append(_elem474)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -9901,21 +9884,14 @@ class GetFileMetadataByExprResult:
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.MAP, 1)
       oprot.writeMapBegin(TType.I64, TType.STRUCT, len(self.metadata))
-      for kiter475,viter476 in self.metadata.items():
-        oprot.writeI64(kiter475)
-        viter476.write(oprot)
+      for kiter469,viter470 in self.metadata.items():
+        oprot.writeI64(kiter469)
+        viter470.write(oprot)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.isSupported is not None:
       oprot.writeFieldBegin('isSupported', TType.BOOL, 2)
       oprot.writeBool(self.isSupported)
-      oprot.writeFieldEnd()
-    if self.unknownFileIds is not None:
-      oprot.writeFieldBegin('unknownFileIds', TType.LIST, 3)
-      oprot.writeListBegin(TType.I64, len(self.unknownFileIds))
-      for iter477 in self.unknownFileIds:
-        oprot.writeI64(iter477)
-      oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -9925,8 +9901,6 @@ class GetFileMetadataByExprResult:
       raise TProtocol.TProtocolException(message='Required field metadata is unset!')
     if self.isSupported is None:
       raise TProtocol.TProtocolException(message='Required field isSupported is unset!')
-    if self.unknownFileIds is None:
-      raise TProtocol.TProtocolException(message='Required field unknownFileIds is unset!')
     return
 
 
@@ -9934,7 +9908,6 @@ class GetFileMetadataByExprResult:
     value = 17
     value = (value * 31) ^ hash(self.metadata)
     value = (value * 31) ^ hash(self.isSupported)
-    value = (value * 31) ^ hash(self.unknownFileIds)
     return value
 
   def __repr__(self):
@@ -9953,17 +9926,20 @@ class GetFileMetadataByExprRequest:
   Attributes:
    - fileIds
    - expr
+   - doGetFooters
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'fileIds', (TType.I64,None), None, ), # 1
     (2, TType.STRING, 'expr', None, None, ), # 2
+    (3, TType.BOOL, 'doGetFooters', None, None, ), # 3
   )
 
-  def __init__(self, fileIds=None, expr=None,):
+  def __init__(self, fileIds=None, expr=None, doGetFooters=None,):
     self.fileIds = fileIds
     self.expr = expr
+    self.doGetFooters = doGetFooters
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9977,16 +9953,21 @@ class GetFileMetadataByExprRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fileIds = []
-          (_etype481, _size478) = iprot.readListBegin()
-          for _i482 in xrange(_size478):
-            _elem483 = iprot.readI64();
-            self.fileIds.append(_elem483)
+          (_etype474, _size471) = iprot.readListBegin()
+          for _i475 in xrange(_size471):
+            _elem476 = iprot.readI64();
+            self.fileIds.append(_elem476)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
           self.expr = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.BOOL:
+          self.doGetFooters = iprot.readBool();
         else:
           iprot.skip(ftype)
       else:
@@ -10002,13 +9983,17 @@ class GetFileMetadataByExprRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
-      for iter484 in self.fileIds:
-        oprot.writeI64(iter484)
+      for iter477 in self.fileIds:
+        oprot.writeI64(iter477)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.expr is not None:
       oprot.writeFieldBegin('expr', TType.STRING, 2)
       oprot.writeString(self.expr)
+      oprot.writeFieldEnd()
+    if self.doGetFooters is not None:
+      oprot.writeFieldBegin('doGetFooters', TType.BOOL, 3)
+      oprot.writeBool(self.doGetFooters)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -10025,6 +10010,7 @@ class GetFileMetadataByExprRequest:
     value = 17
     value = (value * 31) ^ hash(self.fileIds)
     value = (value * 31) ^ hash(self.expr)
+    value = (value * 31) ^ hash(self.doGetFooters)
     return value
 
   def __repr__(self):
@@ -10067,11 +10053,11 @@ class GetFileMetadataResult:
       if fid == 1:
         if ftype == TType.MAP:
           self.metadata = {}
-          (_ktype486, _vtype487, _size485 ) = iprot.readMapBegin()
-          for _i489 in xrange(_size485):
-            _key490 = iprot.readI64();
-            _val491 = iprot.readString();
-            self.metadata[_key490] = _val491
+          (_ktype479, _vtype480, _size478 ) = iprot.readMapBegin()
+          for _i482 in xrange(_size478):
+            _key483 = iprot.readI64();
+            _val484 = iprot.readString();
+            self.metadata[_key483] = _val484
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -10093,9 +10079,9 @@ class GetFileMetadataResult:
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.MAP, 1)
       oprot.writeMapBegin(TType.I64, TType.STRING, len(self.metadata))
-      for kiter492,viter493 in self.metadata.items():
-        oprot.writeI64(kiter492)
-        oprot.writeString(viter493)
+      for kiter485,viter486 in self.metadata.items():
+        oprot.writeI64(kiter485)
+        oprot.writeString(viter486)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.isSupported is not None:
@@ -10156,10 +10142,10 @@ class GetFileMetadataRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fileIds = []
-          (_etype497, _size494) = iprot.readListBegin()
-          for _i498 in xrange(_size494):
-            _elem499 = iprot.readI64();
-            self.fileIds.append(_elem499)
+          (_etype490, _size487) = iprot.readListBegin()
+          for _i491 in xrange(_size487):
+            _elem492 = iprot.readI64();
+            self.fileIds.append(_elem492)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -10176,8 +10162,8 @@ class GetFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
-      for iter500 in self.fileIds:
-        oprot.writeI64(iter500)
+      for iter493 in self.fileIds:
+        oprot.writeI64(iter493)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -10280,20 +10266,20 @@ class PutFileMetadataRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fileIds = []
-          (_etype504, _size501) = iprot.readListBegin()
-          for _i505 in xrange(_size501):
-            _elem506 = iprot.readI64();
-            self.fileIds.append(_elem506)
+          (_etype497, _size494) = iprot.readListBegin()
+          for _i498 in xrange(_size494):
+            _elem499 = iprot.readI64();
+            self.fileIds.append(_elem499)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.LIST:
           self.metadata = []
-          (_etype510, _size507) = iprot.readListBegin()
-          for _i511 in xrange(_size507):
-            _elem512 = iprot.readString();
-            self.metadata.append(_elem512)
+          (_etype503, _size500) = iprot.readListBegin()
+          for _i504 in xrange(_size500):
+            _elem505 = iprot.readString();
+            self.metadata.append(_elem505)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -10310,15 +10296,15 @@ class PutFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
-      for iter513 in self.fileIds:
-        oprot.writeI64(iter513)
+      for iter506 in self.fileIds:
+        oprot.writeI64(iter506)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.metadata))
-      for iter514 in self.metadata:
-        oprot.writeString(iter514)
+      for iter507 in self.metadata:
+        oprot.writeString(iter507)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -10421,10 +10407,10 @@ class ClearFileMetadataRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fileIds = []
-          (_etype518, _size515) = iprot.readListBegin()
-          for _i519 in xrange(_size515):
-            _elem520 = iprot.readI64();
-            self.fileIds.append(_elem520)
+          (_etype511, _size508) = iprot.readListBegin()
+          for _i512 in xrange(_size508):
+            _elem513 = iprot.readI64();
+            self.fileIds.append(_elem513)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -10441,8 +10427,8 @@ class ClearFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
-      for iter521 in self.fileIds:
-        oprot.writeI64(iter521)
+      for iter514 in self.fileIds:
+        oprot.writeI64(iter514)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -10496,11 +10482,11 @@ class GetAllFunctionsResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.functions = []
-          (_etype525, _size522) = iprot.readListBegin()
-          for _i526 in xrange(_size522):
-            _elem527 = Function()
-            _elem527.read(iprot)
-            self.functions.append(_elem527)
+          (_etype518, _size515) = iprot.readListBegin()
+          for _i519 in xrange(_size515):
+            _elem520 = Function()
+            _elem520.read(iprot)
+            self.functions.append(_elem520)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -10517,8 +10503,8 @@ class GetAllFunctionsResponse:
     if self.functions is not None:
       oprot.writeFieldBegin('functions', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.functions))
-      for iter528 in self.functions:
-        iter528.write(oprot)
+      for iter521 in self.functions:
+        iter521.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
