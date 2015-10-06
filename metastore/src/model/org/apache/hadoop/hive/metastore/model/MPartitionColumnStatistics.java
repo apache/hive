@@ -56,10 +56,6 @@ public class MPartitionColumnStatistics {
 
   public MPartitionColumnStatistics() {}
 
-  public String getTableName() {
-    return tableName;
-  }
-
   public void setTableName(String tableName) {
     this.tableName = tableName;
   }
@@ -128,10 +124,6 @@ public class MPartitionColumnStatistics {
     this.lastAnalyzed = lastAnalyzed;
   }
 
-  public String getDbName() {
-    return dbName;
-  }
-
   public void setDbName(String dbName) {
     this.dbName = dbName;
   }
@@ -142,10 +134,6 @@ public class MPartitionColumnStatistics {
 
   public void setPartition(MPartition partition) {
     this.partition = partition;
-  }
-
-  public String getPartitionName() {
-    return partitionName;
   }
 
   public void setPartitionName(String partitionName) {
