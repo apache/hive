@@ -6031,36 +6031,36 @@ Stage-0
          Reducer 2
          File Output Operator [FS_6]
             compressed:true
-            Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+            Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
-               Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Inner Join 0 to 1"}]
                |  keys:{"0":"key (type: int)","1":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
-               |  Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               |  Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
                |  Reduce Output Operator [RS_2]
                |     key expressions:key (type: int)
                |     Map-reduce partition columns:key (type: int)
                |     sort order:+
-               |     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |     value expressions:value (type: int)
                |     TableScan [TS_0]
                |        alias:a
-               |        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |<-Map 3 [SIMPLE_EDGE]
                   Reduce Output Operator [RS_3]
                      key expressions:key (type: int)
                      Map-reduce partition columns:key (type: int)
                      sort order:+
-                     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                      value expressions:value (type: int)
                      TableScan [TS_1]
                         alias:b
-                        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value
 PREHOOK: type: QUERY
@@ -6078,34 +6078,34 @@ Stage-0
          Reducer 2
          File Output Operator [FS_6]
             compressed:true
-            Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+            Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
-               Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Inner Join 0 to 1"}]
                |  keys:{"0":"key (type: int), value (type: int)","1":"key (type: int), value (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
-               |  Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               |  Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
                |  Reduce Output Operator [RS_2]
                |     key expressions:key (type: int), value (type: int)
                |     Map-reduce partition columns:key (type: int), value (type: int)
                |     sort order:++
-               |     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |     TableScan [TS_0]
                |        alias:a
-               |        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |<-Map 3 [SIMPLE_EDGE]
                   Reduce Output Operator [RS_3]
                      key expressions:key (type: int), value (type: int)
                      Map-reduce partition columns:key (type: int), value (type: int)
                      sort order:++
-                     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                      TableScan [TS_1]
                         alias:b
-                        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
@@ -6123,36 +6123,36 @@ Stage-0
          Reducer 2
          File Output Operator [FS_6]
             compressed:true
-            Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+            Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
-               Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Right Outer Join0 to 1"}]
                |  keys:{"0":"key (type: int)","1":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
-               |  Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               |  Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
                |  Reduce Output Operator [RS_2]
                |     key expressions:key (type: int)
                |     Map-reduce partition columns:key (type: int)
                |     sort order:+
-               |     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |     value expressions:value (type: int)
                |     TableScan [TS_0]
                |        alias:a
-               |        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |<-Map 3 [SIMPLE_EDGE]
                   Reduce Output Operator [RS_3]
                      key expressions:key (type: int)
                      Map-reduce partition columns:key (type: int)
                      sort order:+
-                     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                      value expressions:value (type: int)
                      TableScan [TS_1]
                         alias:b
-                        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
@@ -6170,36 +6170,36 @@ Stage-0
          Reducer 2
          File Output Operator [FS_6]
             compressed:true
-            Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+            Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
-               Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Inner Join 0 to 1"}]
                |  keys:{"0":"key (type: int)","1":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
-               |  Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               |  Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
                |  Reduce Output Operator [RS_2]
                |     key expressions:key (type: int)
                |     Map-reduce partition columns:key (type: int)
                |     sort order:+
-               |     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |     value expressions:value (type: int)
                |     TableScan [TS_0]
                |        alias:a
-               |        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |<-Map 3 [SIMPLE_EDGE]
                   Reduce Output Operator [RS_3]
                      key expressions:key (type: int)
                      Map-reduce partition columns:key (type: int)
                      sort order:+
-                     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                      value expressions:value (type: int)
                      TableScan [TS_1]
                         alias:b
-                        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
@@ -6217,36 +6217,36 @@ Stage-0
          Reducer 2
          File Output Operator [FS_6]
             compressed:true
-            Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+            Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Select Operator [SEL_5]
                outputColumnNames:["_col0","_col1","_col2","_col3"]
-               Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                Merge Join Operator [MERGEJOIN_7]
                |  condition map:[{"":"Left Outer Join0 to 1"}]
                |  keys:{"0":"key (type: int)","1":"key (type: int)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6"]
-               |  Statistics:Num rows: 24 Data size: 174 Basic stats: COMPLETE Column stats: NONE
+               |  Statistics:Num rows: 14 Data size: 122 Basic stats: COMPLETE Column stats: NONE
                |<-Map 1 [SIMPLE_EDGE]
                |  Reduce Output Operator [RS_2]
                |     key expressions:key (type: int)
                |     Map-reduce partition columns:key (type: int)
                |     sort order:+
-               |     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |     value expressions:value (type: int)
                |     TableScan [TS_0]
                |        alias:a
-               |        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+               |        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                |<-Map 3 [SIMPLE_EDGE]
                   Reduce Output Operator [RS_3]
                      key expressions:key (type: int)
                      Map-reduce partition columns:key (type: int)
                      sort order:+
-                     Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                     Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
                      value expressions:value (type: int)
                      TableScan [TS_1]
                         alias:b
-                        Statistics:Num rows: 22 Data size: 159 Basic stats: COMPLETE Column stats: NONE
+                        Statistics:Num rows: 13 Data size: 111 Basic stats: COMPLETE Column stats: NONE
 
 PREHOOK: query: drop table sales
 PREHOOK: type: DROPTABLE
