@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.hbase.avro.OfficePhone;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -1077,7 +1077,7 @@ public class TestHBaseSerDe extends TestCase {
   private Properties createPropertiesForHiveAvroSchemaInline() {
     Properties tbl = new Properties();
     tbl.setProperty("cola.avro.serialization.type", "avro");
-    tbl.setProperty("cola.avro." + AvroSerdeUtils.SCHEMA_LITERAL, RECORD_SCHEMA);
+    tbl.setProperty("cola.avro." + AvroTableProperties.SCHEMA_LITERAL.getPropName(), RECORD_SCHEMA);
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
     tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
 
@@ -1123,7 +1123,7 @@ public class TestHBaseSerDe extends TestCase {
   private Properties createPropertiesForHiveAvroForwardEvolvedSchema() {
     Properties tbl = new Properties();
     tbl.setProperty("cola.avro.serialization.type", "avro");
-    tbl.setProperty("cola.avro." + AvroSerdeUtils.SCHEMA_LITERAL, RECORD_SCHEMA_EVOLVED);
+    tbl.setProperty("cola.avro." + AvroTableProperties.SCHEMA_LITERAL.getPropName(), RECORD_SCHEMA_EVOLVED);
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
     tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
 
@@ -1168,7 +1168,7 @@ public class TestHBaseSerDe extends TestCase {
   private Properties createPropertiesForHiveAvroBackwardEvolvedSchema() {
     Properties tbl = new Properties();
     tbl.setProperty("cola.avro.serialization.type", "avro");
-    tbl.setProperty("cola.avro." + AvroSerdeUtils.SCHEMA_LITERAL, RECORD_SCHEMA);
+    tbl.setProperty("cola.avro." + AvroTableProperties.SCHEMA_LITERAL.getPropName(), RECORD_SCHEMA);
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
     tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
 
@@ -1283,7 +1283,7 @@ public class TestHBaseSerDe extends TestCase {
   private Properties createPropertiesForHiveAvroSchemaUrl(String schemaUrl) {
     Properties tbl = new Properties();
     tbl.setProperty("cola.avro.serialization.type", "avro");
-    tbl.setProperty("cola.avro." + AvroSerdeUtils.SCHEMA_URL, schemaUrl);
+    tbl.setProperty("cola.avro." + AvroTableProperties.SCHEMA_URL.getPropName(), schemaUrl);
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING, ":key,cola:avro");
     tbl.setProperty(HBaseSerDe.HBASE_AUTOGENERATE_STRUCT, "true");
 
@@ -1333,7 +1333,7 @@ public class TestHBaseSerDe extends TestCase {
   private Properties createPropertiesForHiveAvroExternalSchema() {
     Properties tbl = new Properties();
     tbl.setProperty("cola.avro.serialization.type", "avro");
-    tbl.setProperty(AvroSerdeUtils.SCHEMA_RETRIEVER,
+    tbl.setProperty(AvroTableProperties.SCHEMA_RETRIEVER.getPropName(),
         "org.apache.hadoop.hive.hbase.HBaseTestAvroSchemaRetriever");
     tbl.setProperty("cola.avro." + serdeConstants.SERIALIZATION_CLASS,
         "org.apache.hadoop.hive.hbase.avro.Employee");

@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.avro.AvroGenericRecordWritable;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -117,7 +118,7 @@ public class AvroGenericRecordReader implements
           }
 
           Properties props = pathsAndParts.getValue().getProperties();
-          if(props.containsKey(AvroSerdeUtils.SCHEMA_LITERAL) || props.containsKey(AvroSerdeUtils.SCHEMA_URL)) {
+          if(props.containsKey(AvroTableProperties.SCHEMA_LITERAL.getPropName()) || props.containsKey(AvroTableProperties.SCHEMA_URL.getPropName())) {
             return AvroSerdeUtils.determineSchemaOrThrowException(job, props);
           }
           else {
@@ -133,7 +134,7 @@ public class AvroGenericRecordReader implements
     // In "select * from table" situations (non-MR), we can add things to the job
     // It's safe to add this to the job since it's not *actually* a mapred job.
     // Here the global state is confined to just this process.
-    String s = job.get(AvroSerdeUtils.AVRO_SERDE_SCHEMA);
+    String s = job.get(AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName());
     if(s != null) {
       LOG.info("Found the avro schema in the job: " + s);
       return AvroSerdeUtils.getSchemaFor(s);
