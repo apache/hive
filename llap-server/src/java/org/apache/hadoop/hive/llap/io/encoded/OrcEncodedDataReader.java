@@ -2,6 +2,7 @@ package org.apache.hadoop.hive.llap.io.encoded;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 
 /**
@@ -121,6 +123,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final String[] columnNames;
   private final OrcEncodedDataConsumer consumer;
   private final QueryFragmentCounters counters;
+  private final UserGroupInformation ugi;
 
   // Read state.
   private int stripeIxFrom;
@@ -156,6 +159,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.columnNames = columnNames;
     this.consumer = consumer;
     this.counters = counters;
+    try {
+      this.ugi = UserGroupInformation.getCurrentUser();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -179,7 +187,16 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   @Override
-  protected Void callInternal() throws IOException {
+  protected Void callInternal() throws IOException, InterruptedException {
+    return ugi.doAs(new PrivilegedExceptionAction<Void>() {
+      @Override
+      public Void run() throws Exception {
+        return performDataRead();
+      }
+    });
+  }
+
+  protected Void performDataRead() throws IOException {
     long startTime = counters.startTimeCounter();
     if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Processing data for " + split.getPath());
@@ -653,7 +670,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   /**
    * Determines which RGs need to be read, after stripes have been determined.
    * SARG is applied, and readState is populated for each stripe accordingly.
-   * @param stripes All stripes in the file (field state is used to determine stripes to read).
    */
   private boolean determineRgsToRead(boolean[] globalIncludes, int rowIndexStride,
       ArrayList<OrcStripeMetadata> metadata) throws IOException {
