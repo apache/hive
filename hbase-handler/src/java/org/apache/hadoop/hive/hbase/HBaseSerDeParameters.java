@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
 import org.apache.hadoop.hive.hbase.struct.StructHBaseValueFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -302,20 +302,20 @@ public class HBaseSerDeParameters {
 
         schemaLiteral =
             tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
-                + AvroSerdeUtils.SCHEMA_LITERAL);
+                + AvroTableProperties.SCHEMA_LITERAL.getPropName());
 
         schemaUrl =
             tbl.getProperty(colMap.familyName + "." + colMap.qualifierPrefix + "."
-                + AvroSerdeUtils.SCHEMA_URL);
+                + AvroTableProperties.SCHEMA_URL.getPropName());
       } else {
         serType = tbl.getProperty(colMap.familyName + "." + HBaseSerDe.SERIALIZATION_TYPE);
 
         serClassName =
             tbl.getProperty(colMap.familyName + "." + serdeConstants.SERIALIZATION_CLASS);
 
-        schemaLiteral = tbl.getProperty(colMap.familyName + "." + AvroSerdeUtils.SCHEMA_LITERAL);
+        schemaLiteral = tbl.getProperty(colMap.familyName + "." + AvroTableProperties.SCHEMA_LITERAL.getPropName());
 
-        schemaUrl = tbl.getProperty(colMap.familyName + "." + AvroSerdeUtils.SCHEMA_URL);
+        schemaUrl = tbl.getProperty(colMap.familyName + "." + AvroTableProperties.SCHEMA_URL.getPropName());
       }
     } else if (!colMap.hbaseRowKey) {
       // not an hbase row key. This should either be a prefix or an individual qualifier
@@ -335,23 +335,23 @@ public class HBaseSerDeParameters {
 
       schemaLiteral =
           tbl.getProperty(colMap.familyName + "." + qualifierName + "."
-              + AvroSerdeUtils.SCHEMA_LITERAL);
+              + AvroTableProperties.SCHEMA_LITERAL.getPropName());
 
       schemaUrl =
-          tbl.getProperty(colMap.familyName + "." + qualifierName + "." + AvroSerdeUtils.SCHEMA_URL);
+          tbl.getProperty(colMap.familyName + "." + qualifierName + "." + AvroTableProperties.SCHEMA_URL.getPropName());
     }
 
     if (serType == null) {
       throw new IllegalArgumentException("serialization.type property is missing");
     }
 
-    String avroSchemaRetClass = tbl.getProperty(AvroSerdeUtils.SCHEMA_RETRIEVER);
+    String avroSchemaRetClass = tbl.getProperty(AvroTableProperties.SCHEMA_RETRIEVER.getPropName());
 
     if (schemaLiteral == null && serClassName == null && schemaUrl == null
         && avroSchemaRetClass == null) {
       throw new IllegalArgumentException("serialization.type was set to [" + serType
-          + "] but neither " + AvroSerdeUtils.SCHEMA_LITERAL + ", " + AvroSerdeUtils.SCHEMA_URL
-          + ", serialization.class or " + AvroSerdeUtils.SCHEMA_RETRIEVER + " property was set");
+          + "] but neither " + AvroTableProperties.SCHEMA_LITERAL.getPropName() + ", " + AvroTableProperties.SCHEMA_URL.getPropName()
+          + ", serialization.class or " + AvroTableProperties.SCHEMA_RETRIEVER.getPropName() + " property was set");
     }
 
     Class<?> deserializerClass = null;
