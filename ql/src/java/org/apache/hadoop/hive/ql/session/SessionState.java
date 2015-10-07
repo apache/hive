@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -452,6 +454,21 @@ public class SessionState {
    * when switching from one session to another.
    */
   public static SessionState start(SessionState startSs) {
+    start(startSs, false, null);
+    return startSs;
+  }
+
+  public static void beginStart(SessionState startSs, LogHelper console) {
+    start(startSs, true, console);
+  }
+
+  public static void endStart(SessionState startSs)
+      throws CancellationException, InterruptedException {
+    if (startSs.tezSessionState == null) return;
+    startSs.tezSessionState.endOpen();
+  }
+
+  private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
 
     if (startSs.hiveHist == null){
@@ -491,20 +508,31 @@ public class SessionState {
       throw new RuntimeException(e);
     }
 
-    if (HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)
-        .equals("tez") && (startSs.isHiveServerQuery == false)) {
-      try {
-        if (startSs.tezSessionState == null) {
-          startSs.tezSessionState = new TezSessionState(startSs.getSessionId());
-        }
-        if (!startSs.tezSessionState.isOpen()) {
-          startSs.tezSessionState.open(startSs.conf); // should use conf on session start-up
-        }
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+    String engine = HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+    if (!engine.equals("tez") || startSs.isHiveServerQuery) return;
+
+    try {
+      if (startSs.tezSessionState == null) {
+        startSs.tezSessionState = new TezSessionState(startSs.getSessionId());
       }
+      if (startSs.tezSessionState.isOpen()) {
+        return;
+      }
+      if (startSs.tezSessionState.isOpening()) {
+        if (!isAsync) {
+          startSs.tezSessionState.endOpen();
+        }
+        return;
+      }
+      // Neither open nor opening.
+      if (!isAsync) {
+        startSs.tezSessionState.open(startSs.conf); // should use conf on session start-up
+      } else {
+        startSs.tezSessionState.beginOpen(startSs.conf, null, console);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-    return startSs;
   }
 
   /**
