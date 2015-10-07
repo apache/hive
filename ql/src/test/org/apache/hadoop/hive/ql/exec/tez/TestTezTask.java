@@ -236,6 +236,7 @@ public class TestTezTask {
         .thenReturn(resources);
     when(utils.getBaseName(res)).thenReturn("foo.jar");
     when(sessionState.isOpen()).thenReturn(true);
+    when(sessionState.isOpening()).thenReturn(false);
     when(sessionState.hasResources(inputOutputJars)).thenReturn(false);
     task.updateSession(sessionState, conf, path, inputOutputJars, resMap);
     verify(session).addAppMasterLocalFiles(resMap);
@@ -254,6 +255,7 @@ public class TestTezTask {
         .thenReturn(resources);
     when(utils.getBaseName(res)).thenReturn("foo.jar");
     when(sessionState.isOpen()).thenReturn(true);
+    when(sessionState.isOpening()).thenReturn(false);
     when(sessionState.hasResources(inputOutputJars)).thenReturn(false);
     task.addExtraResourcesToDag(sessionState, dag, inputOutputJars, resMap);
     verify(dag).addTaskLocalFiles(resMap);
