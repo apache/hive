@@ -85,7 +85,7 @@ public class PerfLogger {
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 
 
-  public PerfLogger() {
+  private PerfLogger() {
     // Use getPerfLogger to get an instance of PerfLogger
   }
 

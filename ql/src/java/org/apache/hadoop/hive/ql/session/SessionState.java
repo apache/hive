@@ -206,8 +206,6 @@ public class SessionState {
    */
   LineageState ls;
 
-  private PerfLogger perfLogger;
-
   private final String userName;
 
   /**
@@ -1405,12 +1403,8 @@ public class SessionState {
     SessionState ss = get();
     if (ss == null) {
       return PerfLogger.getPerfLogger(null, resetPerfLogger);
-    } else if (ss.perfLogger != null && !resetPerfLogger) {
-      return ss.perfLogger;
     } else {
-      PerfLogger perfLogger = PerfLogger.getPerfLogger(ss.getConf(), resetPerfLogger);
-      ss.perfLogger = perfLogger;
-      return perfLogger;
+      return PerfLogger.getPerfLogger(ss.getConf(), resetPerfLogger);
     }
   }
 
