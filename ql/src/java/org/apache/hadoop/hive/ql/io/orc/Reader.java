@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -351,20 +350,44 @@ public interface Reader {
                     boolean[] include, SearchArgument sarg,
                     String[] neededColumns) throws IOException;
 
+  /**
+   * @return Metadata reader used to read file metadata.
+   */
   MetadataReader metadata() throws IOException;
 
+  /**
+   * @return List of integers representing version of the file, in order from major to minor.
+   */
   List<Integer> getVersionList();
 
+  /**
+   * @return Gets the size of metadata, in bytes.
+   */
   int getMetadataSize();
 
+  /**
+   * @return Stripe statistics, in original protobuf form.
+   */
   List<OrcProto.StripeStatistics> getOrcProtoStripeStatistics();
 
+  /**
+   * @return Stripe statistics.
+   */
   List<StripeStatistics> getStripeStatistics();
 
+  /**
+   * @return File statistics, in original protobuf form.
+   */
   List<OrcProto.ColumnStatistics> getOrcProtoFileStatistics();
 
+  /**
+   * @param useZeroCopy Whether zero-copy read should be used.
+   * @return The default data reader that ORC is using to read bytes from disk.
+   */
   DataReader createDefaultDataReader(boolean useZeroCopy);
 
-  /** Gets serialized file metadata read from disk for the purposes of caching, etc. */
+  /**
+   * @return Serialized file metadata read from disk for the purposes of caching, etc.
+   */
   ByteBuffer getSerializedFileFooter();
 }
