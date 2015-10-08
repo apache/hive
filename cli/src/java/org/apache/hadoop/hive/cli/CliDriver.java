@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -690,7 +691,13 @@ public class CliDriver {
     }).substitute(conf, prompt);
     prompt2 = spacesForString(prompt);
 
-    SessionState.start(ss);
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC)) {
+      // Start the session in a fire-and-forget manner. When the asynchronously initialized parts of
+      // the session are needed, the corresponding getters and other methods will wait as needed.
+      SessionState.beginStart(ss, console);
+    } else {
+      SessionState.start(ss);
+    }
 
     // execute cli driver work
     try {
