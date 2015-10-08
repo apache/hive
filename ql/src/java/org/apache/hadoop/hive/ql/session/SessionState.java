@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -1299,8 +1301,25 @@ public class SessionState {
         sparkSession = null;
       }
     }
-
     dropSessionPaths(conf);
+    // Hadoop's ReflectionUtils caches constructors for the classes it instantiated.
+    // In UDFs, this can result in classloaders not getting GCed for a temporary function,
+    // resulting in a PermGen leak when used extensively from HiveServer2
+    clearReflectionUtilsCache();
+  }
+
+  private void clearReflectionUtilsCache() {
+    Method clearCacheMethod;
+    try {
+      clearCacheMethod = ReflectionUtils.class.getDeclaredMethod("clearCache");
+      if (clearCacheMethod != null) {
+        clearCacheMethod.setAccessible(true);
+        clearCacheMethod.invoke(null);
+        LOG.debug("Cleared Hadoop ReflectionUtils CONSTRUCTOR_CACHE");
+      }
+    } catch (Exception e) {
+      LOG.info(e);
+    }
   }
 
   public AuthorizationMode getAuthorizationMode(){

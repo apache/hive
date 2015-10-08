@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -39,16 +40,20 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
-  private static Path dataFilePath;
+  private static String dataFileDir;
+  private static Path kvDataFilePath;
   private static final String tmpDir = System.getProperty("test.tmp.dir");
 
   private Connection hs2Conn = null;
@@ -59,9 +64,8 @@ public class TestJdbcWithMiniHS2 {
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     miniHS2 = new MiniHS2(conf);
-    String dataFileDir = conf.get("test.data.files").replace('\\', '/')
-        .replace("c:", "");
-    dataFilePath = new Path(dataFileDir, "kv1.txt");
+    dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+    kvDataFilePath = new Path(dataFileDir, "kv1.txt");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
   }
@@ -101,7 +105,7 @@ public class TestJdbcWithMiniHS2 {
 
     // load data
     stmt.execute("load data local inpath '"
-        + dataFilePath.toString() + "' into table " + tableName);
+        + kvDataFilePath.toString() + "' into table " + tableName);
 
     ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
     assertTrue(res.next());
@@ -544,5 +548,62 @@ public class TestJdbcWithMiniHS2 {
       assertEquals("DFS scratch dir permissions don't match", expectedFSPermission,
           fs.getFileStatus(scratchDirPath).getPermission());
     }
+  }
+
+  /**
+   * Tests that Hadoop's ReflectionUtils.CONSTRUCTOR_CACHE clears cached class objects (& hence
+   * doesn't leak classloaders) on closing any session
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testAddJarConstructorUnCaching() throws Exception {
+    Path jarFilePath = new Path(dataFileDir, "identity_udf.jar");
+    Connection conn = getConnection(miniHS2.getJdbcURL(), "foo", "bar");
+    String tableName = "testAddJar";
+    Statement stmt = conn.createStatement();
+    stmt.execute("SET hive.support.concurrency = false");
+    // Create table
+    stmt.execute("DROP TABLE IF EXISTS " + tableName);
+    stmt.execute("CREATE TABLE " + tableName + " (key INT, value STRING)");
+    // Load data
+    stmt.execute("LOAD DATA LOCAL INPATH '" + kvDataFilePath.toString() + "' INTO TABLE "
+        + tableName);
+    ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
+    // Ensure table is populated
+    assertTrue(res.next());
+
+    int cacheBeforeClose;
+    int cacheAfterClose;
+    // Add the jar file
+    stmt.execute("ADD JAR " + jarFilePath.toString());
+    // Create a temporary function using the jar
+    stmt.execute("CREATE TEMPORARY FUNCTION func AS 'IdentityStringUDF'");
+    // Execute the UDF
+    stmt.execute("SELECT func(value) from " + tableName);
+    cacheBeforeClose = getReflectionUtilsCacheSize();
+    System.out.println("Cache before connection close: " + cacheBeforeClose);
+    // Cache size should be > 0 now
+    Assert.assertTrue(cacheBeforeClose > 0);
+    conn.close();
+    cacheAfterClose = getReflectionUtilsCacheSize();
+    System.out.println("Cache after connection close: " + cacheAfterClose);
+    // Cache size should be 0 now
+    Assert.assertTrue("Failed: " + cacheAfterClose, cacheAfterClose == 0);
+  }
+
+  // Call ReflectionUtils#getCacheSize (which is private)
+  private int getReflectionUtilsCacheSize() {
+    Method getCacheSizeMethod;
+    try {
+      getCacheSizeMethod = ReflectionUtils.class.getDeclaredMethod("getCacheSize");
+      if (getCacheSizeMethod != null) {
+        getCacheSizeMethod.setAccessible(true);
+        return (Integer) getCacheSizeMethod.invoke(null);
+      }
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+    return -1;
   }
 }
