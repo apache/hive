@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -75,6 +76,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -243,7 +245,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     try {
       String partitioner = HiveConf.getVar(job, ConfVars.HIVEPARTITIONER);
-      job.setPartitionerClass((Class<? extends Partitioner>) JavaUtils.loadClass(partitioner));
+      job.setPartitionerClass(JavaUtils.loadClass(partitioner));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -289,7 +291,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     LOG.info("Using " + inpFormat);
 
     try {
-      job.setInputFormat((Class<? extends InputFormat>) JavaUtils.loadClass(inpFormat));
+      job.setInputFormat(JavaUtils.loadClass(inpFormat));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -408,7 +410,13 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         StatsFactory factory = StatsFactory.newFactory(job);
         if (factory != null) {
           statsPublisher = factory.getStatsPublisher();
-          if (!statsPublisher.init(job)) { // creating stats table if not exists
+          List<String> statsTmpDir = Utilities.getStatsTmpDirs(mWork, job);
+          if (rWork != null) {
+            statsTmpDir.addAll(Utilities.getStatsTmpDirs(rWork, job));
+          }
+          StatsCollectionContext sc = new StatsCollectionContext(job);
+          sc.setStatsTmpDirs(statsTmpDir);
+          if (!statsPublisher.init(sc)) { // creating stats table if not exists
             if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
               throw
                 new HiveException(ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());

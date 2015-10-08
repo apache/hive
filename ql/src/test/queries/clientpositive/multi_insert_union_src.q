@@ -1,7 +1,7 @@
 drop table if exists src2;
 drop table if exists src_multi1;
 drop table if exists src_multi1;
-
+set hive.stats.dbclass=fs;
 CREATE TABLE src2 as SELECT * FROM src;
 
 create table src_multi1 like src;

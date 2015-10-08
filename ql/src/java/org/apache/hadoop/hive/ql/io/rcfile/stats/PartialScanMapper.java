@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileKeyBufferWrapper;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileValueBufferWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
@@ -145,7 +146,9 @@ public class PartialScanMapper extends MapReduceBase implements
       throw new HiveException(ErrorMsg.STATSPUBLISHER_NOT_OBTAINED.getErrorCodedMsg());
     }
 
-    if (!statsPublisher.connect(jc)) {
+    StatsCollectionContext sc = new StatsCollectionContext(jc);
+    sc.setStatsTmpDir(jc.get(StatsSetupConst.STATS_TMP_LOC, ""));
+    if (!statsPublisher.connect(sc)) {
       // should fail since stats gathering is main purpose of the job
       LOG.error("StatsPublishing error: cannot connect to database");
       throw new HiveException(ErrorMsg.STATSPUBLISHER_CONNECTION_ERROR.getErrorCodedMsg());
@@ -170,7 +173,7 @@ public class PartialScanMapper extends MapReduceBase implements
       throw new HiveException(ErrorMsg.STATSPUBLISHER_PUBLISHING_ERROR.getErrorCodedMsg());
     }
 
-    if (!statsPublisher.closeConnection()) {
+    if (!statsPublisher.closeConnection(sc)) {
       // The original exception is lost.
       // Not changing the interface to maintain backward compatibility
       throw new HiveException(ErrorMsg.STATSPUBLISHER_CLOSING_ERROR.getErrorCodedMsg());

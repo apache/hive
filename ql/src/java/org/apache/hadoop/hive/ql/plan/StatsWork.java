@@ -57,6 +57,9 @@ public class StatsWork implements Serializable {
   // so this is set by DriverContext in runtime
   private transient Task sourceTask;
 
+  // used by FS based stats collector
+  private String statsTmpDir;
+
   public StatsWork() {
   }
 
@@ -70,10 +73,6 @@ public class StatsWork implements Serializable {
 
   public StatsWork(LoadFileDesc loadFileDesc) {
     this.loadFileDesc = loadFileDesc;
-  }
-
-  public StatsWork(boolean statsReliable) {
-    this.statsReliable = statsReliable;
   }
 
   public TableSpec getTableSpecs() {
@@ -95,6 +94,14 @@ public class StatsWork implements Serializable {
   @Explain(displayName = "Stats Aggregation Key Prefix", explainLevels = { Level.EXTENDED })
   public String getAggKey() {
     return aggKey;
+  }
+
+  public String getStatsTmpDir() {
+    return statsTmpDir;
+  }
+
+  public void setStatsTmpDir(String statsTmpDir) {
+    this.statsTmpDir = statsTmpDir;
   }
 
   public boolean getNoStatsAggregator() {

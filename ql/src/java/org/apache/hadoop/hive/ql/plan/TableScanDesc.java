@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.TableSample;
@@ -70,6 +69,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
   private boolean gatherStats;
   private boolean statsReliable;
   private int maxStatsKeyPrefixLength = -1;
+  private String tmpStatsDir;
 
   private ExprNodeGenericFuncDesc filterExpr;
   private transient Serializable filterObject;
@@ -203,6 +203,14 @@ public class TableScanDesc extends AbstractOperatorDesc {
     return gatherStats;
   }
 
+  public String getTmpStatsDir() {
+    return tmpStatsDir;
+  }
+
+  public void setTmpStatsDir(String tmpStatsDir) {
+    this.tmpStatsDir = tmpStatsDir;
+  }
+
   public List<VirtualColumn> getVirtualCols() {
     return virtualCols;
   }
@@ -264,7 +272,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
   public void setBucketFileNameMapping(Map<String, Integer> bucketFileNameMapping) {
     this.bucketFileNameMapping = bucketFileNameMapping;
   }
-  
+
   public void setIsMetadataOnly(boolean metadata_only) {
     isMetadataOnly = metadata_only;
   }
