@@ -150,7 +150,6 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
     Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
         command, partSpec, indexTableName, dbName);
-    super.setStatsDir(builderConf);
     return rootTask;
   }
 

@@ -65,6 +65,7 @@ public class GenMRTableScan1 implements NodeProcessor {
    * @param opProcCtx
    *          context
    */
+  @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
       Object... nodeOutputs) throws SemanticException {
     TableScanOperator op = (TableScanOperator) nd;
@@ -112,6 +113,7 @@ public class GenMRTableScan1 implements NodeProcessor {
 
             StatsWork statsWork = new StatsWork(parseCtx.getQB().getParseInfo().getTableSpec());
             statsWork.setAggKey(op.getConf().getStatsAggPrefix());
+            statsWork.setStatsTmpDir(op.getConf().getTmpStatsDir());
             statsWork.setSourceTask(currTask);
             statsWork.setStatsReliable(parseCtx.getConf().getBoolVar(
                 HiveConf.ConfVars.HIVE_STATS_RELIABLE));
@@ -187,6 +189,7 @@ public class GenMRTableScan1 implements NodeProcessor {
     PartialScanWork scanWork = new PartialScanWork(inputPaths);
     scanWork.setMapperCannotSpanPartns(true);
     scanWork.setAggKey(aggregationKey);
+    scanWork.setStatsTmpDir(op.getConf().getTmpStatsDir(), parseCtx.getConf());
 
     // stats work
     statsWork.setPartialScanAnalyzeCommand(true);

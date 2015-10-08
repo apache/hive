@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.filter.PrefixFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 
 
 /**
@@ -48,10 +49,10 @@ public class HBaseStatsAggregator implements StatsAggregator {
   /**
    * Does the necessary HBase initializations.
    */
-  public boolean connect(Configuration hiveconf, Task sourceTask) {
+  public boolean connect(StatsCollectionContext context) {
 
     try {
-      htable = new HTable(HBaseConfiguration.create(hiveconf),
+      htable = new HTable(HBaseConfiguration.create(context.getHiveConf()),
         HBaseStatsSetupConstants.PART_STAT_TABLE_NAME);
 
       return true;
@@ -100,7 +101,7 @@ public class HBaseStatsAggregator implements StatsAggregator {
     }
   }
 
-  public boolean closeConnection() {
+  public boolean closeConnection(StatsCollectionContext context) {
     if (htable != null) {
       IOUtils.closeQuietly(htable);
       htable = null;

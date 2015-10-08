@@ -4390,8 +4390,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                               name default.pcr_t2
                               numFiles 1
-                              numRows 0
-                              rawDataSize 0
+                              numRows 20
+                              rawDataSize 160
                               serialization.ddl struct pcr_t2 { i32 key, string value}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4429,8 +4429,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                               name default.pcr_t3
                               numFiles 1
-                              numRows 0
-                              rawDataSize 0
+                              numRows 20
+                              rawDataSize 160
                               serialization.ddl struct pcr_t3 { i32 key, string value}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4509,8 +4509,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.pcr_t2
                 numFiles 1
-                numRows 0
-                rawDataSize 0
+                numRows 20
+                rawDataSize 160
                 serialization.ddl struct pcr_t2 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4540,8 +4540,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.pcr_t3
                 numFiles 1
-                numRows 0
-                rawDataSize 0
+                numRows 20
+                rawDataSize 160
                 serialization.ddl struct pcr_t3 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

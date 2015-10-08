@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
@@ -36,8 +35,9 @@ public class DummyStatsPublisher implements StatsPublisher {
 
   // This is a test. The parameter hive.test.dummystats.publisher's value
   // denotes the method which needs to throw an error.
-  public boolean init(Configuration hconf) {
-    errorMethod = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVETESTMODEDUMMYSTATPUB);
+  @Override
+  public boolean init(StatsCollectionContext context) {
+    errorMethod = HiveConf.getVar(context.getHiveConf(), HiveConf.ConfVars.HIVETESTMODEDUMMYSTATPUB);
     if (errorMethod.equalsIgnoreCase("init")) {
       return false;
     }
@@ -45,8 +45,9 @@ public class DummyStatsPublisher implements StatsPublisher {
     return true;
   }
 
-  public boolean connect(Configuration hconf) {
-    errorMethod = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVETESTMODEDUMMYSTATPUB);
+  @Override
+  public boolean connect(StatsCollectionContext context) {
+    errorMethod = HiveConf.getVar(context.getHiveConf(), HiveConf.ConfVars.HIVETESTMODEDUMMYSTATPUB);
     if (errorMethod.equalsIgnoreCase("connect")) {
       return false;
     }
@@ -54,6 +55,7 @@ public class DummyStatsPublisher implements StatsPublisher {
     return true;
   }
 
+  @Override
   public boolean publishStat(String fileID, Map<String, String> stats) {
     if (errorMethod.equalsIgnoreCase("publishStat")) {
       return false;
@@ -61,7 +63,8 @@ public class DummyStatsPublisher implements StatsPublisher {
     return true;
   }
 
-  public boolean closeConnection() {
+  @Override
+  public boolean closeConnection(StatsCollectionContext context) {
     if (errorMethod.equalsIgnoreCase("closeConnection")) {
       return false;
     }

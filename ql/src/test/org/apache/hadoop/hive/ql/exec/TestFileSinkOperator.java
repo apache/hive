@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -203,8 +204,6 @@ public class TestFileSinkOperator {
   @Before
   public void setup() throws Exception {
     jc = new JobConf();
-    jc.set(StatsSetupConst.STATS_TMP_LOC, File.createTempFile("TestFileSinkOperator",
-        "stats").getPath());
     jc.set(HiveConf.ConfVars.HIVE_STATS_DEFAULT_PUBLISHER.varname,
         TFSOStatsPublisher.class.getName());
     jc.set(HiveConf.ConfVars.HIVE_STATS_DEFAULT_AGGREGATOR.varname,
@@ -728,12 +727,12 @@ public class TestFileSinkOperator {
     static Map<String, String> stats;
 
     @Override
-    public boolean init(Configuration hconf) {
+    public boolean init(StatsCollectionContext context) {
       return true;
     }
 
     @Override
-    public boolean connect(Configuration hconf) {
+    public boolean connect(StatsCollectionContext context) {
       return true;
     }
 
@@ -744,7 +743,7 @@ public class TestFileSinkOperator {
     }
 
     @Override
-    public boolean closeConnection() {
+    public boolean closeConnection(StatsCollectionContext context) {
       return true;
     }
   }
@@ -752,7 +751,7 @@ public class TestFileSinkOperator {
   public static class TFSOStatsAggregator implements StatsAggregator {
 
     @Override
-    public boolean connect(Configuration hconf, Task sourceTask) {
+    public boolean connect(StatsCollectionContext scc) {
       return true;
     }
 
@@ -762,7 +761,7 @@ public class TestFileSinkOperator {
     }
 
     @Override
-    public boolean closeConnection() {
+    public boolean closeConnection(StatsCollectionContext scc) {
       return true;
     }
 

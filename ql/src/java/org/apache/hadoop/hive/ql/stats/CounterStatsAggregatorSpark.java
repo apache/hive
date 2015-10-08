@@ -33,8 +33,8 @@ public class CounterStatsAggregatorSpark
 
   @SuppressWarnings("rawtypes")
   @Override
-  public boolean connect(Configuration hconf, Task sourceTask) {
-    SparkTask task = (SparkTask) sourceTask;
+  public boolean connect(StatsCollectionContext scc) {
+    SparkTask task = (SparkTask) scc.getTask();
     sparkCounters = task.getSparkCounters();
     if (sparkCounters == null) {
       return false;
@@ -52,7 +52,7 @@ public class CounterStatsAggregatorSpark
   }
 
   @Override
-  public boolean closeConnection() {
+  public boolean closeConnection(StatsCollectionContext scc) {
     return true;
   }
 

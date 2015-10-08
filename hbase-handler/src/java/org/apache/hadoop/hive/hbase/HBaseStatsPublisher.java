@@ -34,6 +34,7 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 
 /**
@@ -47,10 +48,10 @@ public class HBaseStatsPublisher implements StatsPublisher {
   /**
    * Does the necessary HBase initializations.
    */
-  public boolean connect(Configuration hiveconf) {
+  public boolean connect(StatsCollectionContext context) {
 
     try {
-      htable = new HTable(HBaseConfiguration.create(hiveconf),
+      htable = new HTable(HBaseConfiguration.create(context.getHiveConf()),
         HBaseStatsSetupConstants.PART_STAT_TABLE_NAME);
       // for performance reason, defer update until the closeConnection
       htable.setAutoFlush(false);
@@ -119,7 +120,7 @@ public class HBaseStatsPublisher implements StatsPublisher {
     }
   }
 
-  public boolean closeConnection() {
+  public boolean closeConnection(StatsCollectionContext context) {
     // batch update
     try {
       htable.flushCommits();
@@ -139,9 +140,9 @@ public class HBaseStatsPublisher implements StatsPublisher {
   /**
    * Does the necessary HBase initializations.
    */
-  public boolean init(Configuration hiveconf) {
+  public boolean init(StatsCollectionContext context) {
     try {
-      HBaseAdmin hbase = new HBaseAdmin(HBaseConfiguration.create(hiveconf));
+      HBaseAdmin hbase = new HBaseAdmin(HBaseConfiguration.create(context.getHiveConf()));
 
       // Creating table if not exists
       if (!hbase.tableExists(HBaseStatsSetupConstants.PART_STAT_TABLE_NAME)) {

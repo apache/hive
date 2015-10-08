@@ -1,5 +1,5 @@
 set hive.multi.insert.move.tasks.share.dependencies=true;
-
+set hive.stats.dbclass=fs;
 -- SORT_QUERY_RESULTS
 
 create table src_multi1 like src;

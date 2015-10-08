@@ -116,13 +116,6 @@ public abstract class TableBasedIndexHandler extends AbstractIndexHandler {
     return null;
   }
 
-  protected void setStatsDir(HiveConf builderConf) {
-    String statsDir;
-    if ((statsDir = builderConf.get(StatsSetupConst.STATS_TMP_LOC)) != null) {
-      getConf().set(StatsSetupConst.STATS_TMP_LOC, statsDir);
-    }
-   }
-
   protected List<String> getPartKVPairStringArray(
       LinkedHashMap<String, String> partSpec) {
     List<String> ret = new ArrayList<String>(partSpec.size());

@@ -132,12 +132,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -199,10 +199,10 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test_table1
               numFiles 16
-              numRows 0
+              numRows 500
               partition_columns ds
               partition_columns.types string
-              rawDataSize 0
+              rawDataSize 5312
               serialization.ddl struct test_table1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

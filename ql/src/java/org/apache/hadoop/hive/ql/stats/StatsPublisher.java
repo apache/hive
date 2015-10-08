@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
-
 /**
  * An interface for any possible implementation for publishing statics.
  */
@@ -37,14 +35,14 @@ public interface StatsPublisher {
    * intermediate stats database.
    * @return true if initialization is successful, false otherwise.
    */
-  public boolean init(Configuration hconf);
+  public boolean init(StatsCollectionContext context);
 
   /**
    * This method connects to the intermediate statistics database.
    * @param hconf HiveConf that contains the connection parameters.
    * @return true if connection is successful, false otherwise.
    */
-  public boolean connect(Configuration hconf);
+  public boolean connect(StatsCollectionContext context);
 
   /**
    * This method publishes a given statistic into a disk storage, possibly HBase or MySQL.
@@ -66,6 +64,6 @@ public interface StatsPublisher {
   /**
    * This method closes the connection to the temporary storage.
    */
-  public boolean closeConnection();
+  public boolean closeConnection(StatsCollectionContext context);
 
 }

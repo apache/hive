@@ -6658,8 +6658,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         statsTmpLoc = ctx.getTempDirForPath(dest_path).toString();
       }
-      LOG.info("Set stats collection dir : " + statsTmpLoc);
-      conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
+      fileSinkDesc.setStatsTmpDir(statsTmpLoc);
+      LOG.debug("Set stats collection dir : " + statsTmpLoc);
     }
 
     if (dest_part != null) {
@@ -9671,7 +9671,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
         String statsTmpLoc = ctx.getTempDirForPath(tab.getPath()).toString();
         LOG.info("Set stats collection dir : " + statsTmpLoc);
-        conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
+        tsDesc.setTmpStatsDir(statsTmpLoc);
       }
       tsDesc.setGatherStats(true);
       tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));

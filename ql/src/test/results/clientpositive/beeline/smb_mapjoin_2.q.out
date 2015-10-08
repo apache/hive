@@ -89,9 +89,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: org.apache.hive.jdbc.ClosedOrCancelledStatementException: Method getQueryLog() failed. The statement has been closed or cancelled. (state=,code=0)
-4	val_4	4	val_4
-10	val_10	10	val_10
 PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
@@ -102,6 +99,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
+4	val_4	4	val_4
+10	val_10	10	val_10
 PREHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY

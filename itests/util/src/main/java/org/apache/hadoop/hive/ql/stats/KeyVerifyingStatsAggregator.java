@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -30,10 +28,12 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class KeyVerifyingStatsAggregator implements StatsAggregator {
 
-  public boolean connect(Configuration hconf, Task sourceTask) {
+  @Override
+  public boolean connect(StatsCollectionContext scc) {
     return true;
   }
 
+  @Override
   public String aggregateStats(String keyPrefix, String statType) {
     SessionState ss = SessionState.get();
     // Have to use the length instead of the actual prefix because the prefix is location dependent
@@ -43,10 +43,12 @@ public class KeyVerifyingStatsAggregator implements StatsAggregator {
     return null;
   }
 
-  public boolean closeConnection() {
+  @Override
+  public boolean closeConnection(StatsCollectionContext scc) {
     return true;
   }
 
+  @Override
   public boolean cleanUp(String keyPrefix) {
     return true;
   }

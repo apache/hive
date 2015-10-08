@@ -83,6 +83,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private boolean statsReliable;
   private ListBucketingCtx lbCtx;
   private int maxStatsKeyPrefixLength = -1;
+  private String statsTmpDir;
 
   private boolean statsCollectRawDataSize;
 
@@ -149,7 +150,8 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setDpSortState(dpSortState);
     ret.setWriteType(writeType);
     ret.setTransactionId(txnId);
-    return (Object) ret;
+    ret.setStatsTmpDir(statsTmpDir);
+    return ret;
   }
 
   @Explain(displayName = "directory", normalExplain = false)
@@ -438,4 +440,14 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public void setTable(Table table) {
     this.table = table;
   }
+
+
+  public String getStatsTmpDir() {
+    return statsTmpDir;
+  }
+
+  public void setStatsTmpDir(String statsCollectionTempDir) {
+    this.statsTmpDir = statsCollectionTempDir;
+  }
+
 }
