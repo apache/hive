@@ -424,15 +424,15 @@ public final class OpProcFactory {
           }
           return null;
         }
+        logExpr(nd, ewi);
+        owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, ewi);
         if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
             HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
           // add this filter for deletion, if it does not have non-final candidates
-          if (ewi.getNonFinalCandidates().values().isEmpty()) {
-            owi.addCandidateFilterOp((FilterOperator)op);
-          }
+          owi.addCandidateFilterOp((FilterOperator)op);
+          Map<String, List<ExprNodeDesc>> residual = ewi.getResidualPredicates(true);
+          createFilter(op, residual, owi);
         }
-        logExpr(nd, ewi);
-        owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, ewi);
       }
       // merge it with children predicates
       boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, ewi, null);

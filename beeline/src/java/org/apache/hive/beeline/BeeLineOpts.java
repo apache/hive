@@ -100,6 +100,7 @@ class BeeLineOpts implements Completer {
 
   private Map<String, String> hiveVariables = new HashMap<String, String>();
   private Map<String, String> hiveConfVariables = new HashMap<String, String>();
+  private boolean helpAsked;
 
   public BeeLineOpts(BeeLine beeLine, Properties props) {
     this.beeLine = beeLine;
@@ -557,6 +558,14 @@ class BeeLineOpts implements Completer {
 
   public HiveConf getConf() {
     return conf;
+  }
+
+  public void setHelpAsked(boolean helpAsked) {
+    this.helpAsked = helpAsked;
+  }
+
+  public boolean isHelpAsked() {
+    return helpAsked;
   }
 }
 
