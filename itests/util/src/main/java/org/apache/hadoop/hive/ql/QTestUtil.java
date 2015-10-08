@@ -955,7 +955,7 @@ public class QTestUtil {
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
 
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap
+    if (oldSs != null && (clusterType == MiniClusterType.llap
         || clusterType == MiniClusterType.spark || clusterType == MiniClusterType.miniSparkOnYarn)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
@@ -1023,7 +1023,7 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap
+    if (oldSs != null && (clusterType == MiniClusterType.llap
         || clusterType == MiniClusterType.miniSparkOnYarn || clusterType == MiniClusterType.miniSparkOnYarn)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
