@@ -1124,8 +1124,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   + " on second table"));
         }
         ColumnInfo unionColInfo = new ColumnInfo(lInfo);
-        unionColInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
-            rInfo.getType()));
+        unionColInfo.setType(commonTypeInfo);
         unionoutRR.put(unionalias, field, unionColInfo);
       }
 
