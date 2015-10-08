@@ -507,6 +507,14 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return queryPlan;
   }
 
+  public DriverContext getDriverContext() {
+    return driverContext;
+  }
+
+  public void setDriverContext(DriverContext driverContext) {
+    this.driverContext = driverContext;
+  }
+
   public void setQueryPlan(QueryPlan queryPlan) {
     this.queryPlan = queryPlan;
   }
