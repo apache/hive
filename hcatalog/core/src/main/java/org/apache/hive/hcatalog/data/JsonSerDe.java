@@ -349,13 +349,7 @@ public class JsonSerDe implements SerDe {
       HCatFieldSchema valueSchema = hcatFieldSchema.getMapValueSchema().get(0);
       while ((valueToken = p.nextToken()) != JsonToken.END_OBJECT) {
         Object k = getObjectOfCorrespondingPrimitiveType(p.getCurrentName(), hcatFieldSchema.getMapKeyTypeInfo());
-        Object v;
-        if (valueSchema.getType() == HCatFieldSchema.Type.STRUCT) {
-          v = extractCurrentField(p, valueSchema, false);
-        } else {
-          v = extractCurrentField(p, valueSchema, true);
-        }
-
+        Object v = extractCurrentField(p, valueSchema, false);
         map.put(k, v);
       }
       val = map;
