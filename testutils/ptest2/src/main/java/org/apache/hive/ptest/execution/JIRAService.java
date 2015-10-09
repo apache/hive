@@ -101,37 +101,37 @@ class JIRAService {
 
   void postComment(boolean error, int numTestsExecuted, SortedSet<String> failedTests,
     List<String> messages, Set<String> addedTests) {
-    DefaultHttpClient httpClient = new DefaultHttpClient();
-    try {
-      BuildInfo buildInfo = formatBuildTag(mBuildTag);
-      String buildTagForLogs = formatBuildTagForLogs(mBuildTag);
-      List<String> comments = Lists.newArrayList();
-      comments.add("");
-      comments.add("");
-      if (!failedTests.isEmpty()) {
-        comments.add("{color:red}Overall{color}: -1 at least one tests failed");
-      } else if (numTestsExecuted == 0) {
-        comments.add("{color:red}Overall{color}: -1 no tests executed");
-      } else if (error) {
-        comments.add("{color:red}Overall{color}: -1 build exited with an error");
-      } else {
-        comments.add("{color:green}Overall{color}: +1 all checks pass");
-      }
-      comments.add("");
-      if (!mPatch.isEmpty()) {
-        comments.add("Here are the results of testing the latest attachment:");
-        comments.add(mPatch);
-      }
-      comments.add("");
+    String comments = generateComments(error, numTestsExecuted, failedTests, messages, addedTests);
+    publishComments(comments);
+  }
+
+  @VisibleForTesting
+  String generateComments(boolean error, int numTestsExecuted, SortedSet<String> failedTests,
+    List<String> messages, Set<String> addedTests) {
+    BuildInfo buildInfo = formatBuildTag(mBuildTag);
+    String buildTagForLogs = formatBuildTagForLogs(mBuildTag);
+    List<String> comments = Lists.newArrayList();
+    comments.add("");
+    comments.add("");
+    if (!mPatch.isEmpty()) {
+      comments.add("Here are the results of testing the latest attachment:");
+      comments.add(mPatch);
+    }
+    comments.add("");
+    if (error) {
+      comments.add(formatError("-1 due to build exiting with an error"));
+    } else {
       if (addedTests.size() > 0) {
         comments.add(formatSuccess("+1 due to " + addedTests.size() + " test(s) being added or modified."));
       } else {
         comments.add(formatError("-1 due to no test(s) being added or modified."));
       }
       comments.add("");
-      if (numTestsExecuted > 0) {
+      if (numTestsExecuted == 0) {
+        comments.add(formatError("-1 due to no tests executed"));
+      } else {
         if (failedTests.isEmpty()) {
-          comments.add(formatSuccess("+1 " + numTestsExecuted + " tests passed"));
+          comments.add(formatSuccess("+1 due to " + numTestsExecuted + " tests passed"));
         } else {
           comments.add(formatError("-1 due to " + failedTests.size()
             + " failed/errored test(s), " + numTestsExecuted + " tests executed"));
@@ -140,28 +140,34 @@ class JIRAService {
           comments.addAll(failedTests);
           comments.add("{noformat}");
         }
-        comments.add("");
       }
-      comments.add("Test results: " + mJenkinsURL + "/" +
-        buildInfo.getFormattedBuildTag() + "/testReport");
-      comments.add("Console output: " + mJenkinsURL + "/" +
-        buildInfo.getFormattedBuildTag() + "/console");
-      comments.add("Test logs: " + mLogsURL + buildTagForLogs);
+    }
+    comments.add("");
+    comments.add("Test results: " + mJenkinsURL + "/" +
+      buildInfo.getFormattedBuildTag() + "/testReport");
+    comments.add("Console output: " + mJenkinsURL + "/" +
+      buildInfo.getFormattedBuildTag() + "/console");
+    comments.add("Test logs: " + mLogsURL + buildTagForLogs);
+    comments.add("");
+    if (!messages.isEmpty()) {
+      comments.add("Messages:");
+      comments.add("{noformat}");
+      comments.addAll(trimMessages(messages));
+      comments.add("{noformat}");
       comments.add("");
-      if (!messages.isEmpty()) {
-        comments.add("Messages:");
-        comments.add("{noformat}");
-        comments.addAll(trimMessages(messages));
-        comments.add("{noformat}");
-        comments.add("");
-      }
-      comments.add("This message is automatically generated.");
-      String attachmentId = parseAttachementId(mPatch);
-      comments.add("");
-      comments.add("ATTACHMENT ID: " + attachmentId +
-        " - " + buildInfo.getBuildName());
-      mLogger.info("Comment: " + Joiner.on("\n").join(comments));
-      String body = Joiner.on("\n").join(comments);
+    }
+    comments.add("This message is automatically generated.");
+    String attachmentId = parseAttachementId(mPatch);
+    comments.add("");
+    comments.add("ATTACHMENT ID: " + attachmentId +
+      " - " + buildInfo.getBuildName());
+    mLogger.info("Comment: " + Joiner.on("\n").join(comments));
+    return Joiner.on("\n").join(comments);
+  }
+
+  void publishComments(String comments) {
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    try {
       String url = String.format("%s/rest/api/2/issue/%s/comment", mUrl, mName);
       URL apiURL = new URL(mUrl);
       httpClient.getCredentialsProvider()
@@ -174,7 +180,7 @@ class JIRAService {
       httpClient.addRequestInterceptor(new PreemptiveAuth(), 0);
       HttpPost request = new HttpPost(url);
       ObjectMapper mapper = new ObjectMapper();
-      StringEntity params = new StringEntity(mapper.writeValueAsString(new Body(body)));
+      StringEntity params = new StringEntity(mapper.writeValueAsString(new Body(comments)));
       request.addHeader("Content-Type", "application/json");
       request.setEntity(params);
       HttpResponse httpResponse = httpClient.execute(request, localcontext);

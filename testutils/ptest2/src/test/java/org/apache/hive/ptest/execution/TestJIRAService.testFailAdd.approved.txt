@@ -1,0 +1,21 @@
+
+
+Here are the results of testing the latest attachment:
+https://HIVE-10000.patch
+
+{color:green}SUCCESS:{color} +1 due to 2 test(s) being added or modified.
+
+{color:red}ERROR:{color} -1 due to 2 failed/errored test(s), 5 tests executed
+*Failed tests:*
+{noformat}
+FailedTest1
+FailedTest2
+{noformat}
+
+Test results: https://builds.apache.org/job/tag/10/testReport
+Console output: https://builds.apache.org/job/tag/10/console
+Test logs: http://builds.apache.org/logs/tag-10/
+
+This message is automatically generated.
+
+ATTACHMENT ID:  - tag
