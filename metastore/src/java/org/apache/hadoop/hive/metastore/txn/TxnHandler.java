@@ -1757,6 +1757,10 @@ public class TxnHandler {
         " where txn_id = " + txnid;
       LOG.debug("Going to execute update <" + s + ">");
       stmt.executeUpdate(s);
+      //update locks for this txn to the same heartbeat
+      s = "update HIVE_LOCKS set hl_last_heartbeat = " + now + " where hl_txnid = " + txnid;
+      LOG.debug("Going to execute update <" + s + ">");
+      stmt.executeUpdate(s);
       LOG.debug("Going to commit");
       dbConn.commit();
     } finally {
