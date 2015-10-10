@@ -293,17 +293,28 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public void heartbeat() throws LockException {
-    LOG.debug("Heartbeating lock and transaction " + JavaUtils.txnIdToString(txnId));
-    List<HiveLock> locks = lockMgr.getLocks(false, false);
-    if (locks.size() == 0) {
-      if (!isTxnOpen()) {
-        // No locks, no txn, we outta here.
-        return;
-      } else {
-        // Create one dummy lock so we can go through the loop below
-        DbLockManager.DbHiveLock dummyLock = new DbLockManager.DbHiveLock(0L);
-        locks.add(dummyLock);
+    List<HiveLock> locks;
+    if(isTxnOpen()) {
+      // Create one dummy lock so we can go through the loop below, though we only
+      //really need txnId
+      DbLockManager.DbHiveLock dummyLock = new DbLockManager.DbHiveLock(0L);
+      locks = new ArrayList<>(1);
+      locks.add(dummyLock);
+    }
+    else {
+      locks = lockMgr.getLocks(false, false);
+    }
+    if(LOG.isInfoEnabled()) {
+      StringBuilder sb = new StringBuilder("Sending heartbeat for ")
+        .append(JavaUtils.txnIdToString(txnId)).append(" and");
+      for(HiveLock lock : locks) {
+        sb.append(" ").append(lock.toString());
       }
+      LOG.info(sb.toString());
+    }
+    if(!isTxnOpen() && locks.isEmpty()) {
+      // No locks, no txn, we outta here.
+      return;
     }
     for (HiveLock lock : locks) {
       long lockId = ((DbLockManager.DbHiveLock)lock).lockId;
@@ -320,7 +331,8 @@ public class DbTxnManager extends HiveTxnManagerImpl {
         throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId));
       } catch (TException e) {
         throw new LockException(
-            ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+            ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg() + "(" + JavaUtils.txnIdToString(txnId)
+              + "," + lock.toString() + ")", e);
       }
     }
   }

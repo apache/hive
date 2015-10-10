@@ -236,7 +236,7 @@ public class TestDbTxnManager {
       exception = ex;
     }
     Assert.assertNotNull("Expected exception3", exception);
-    Assert.assertEquals("Wrong Exception3", ErrorMsg.LOCK_NO_SUCH_LOCK, exception.getCanonicalErrorMsg());
+    Assert.assertEquals("Wrong Exception3", ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
   }
 
   @Test
