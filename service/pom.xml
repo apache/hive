@@ -146,12 +146,6 @@
       <artifactId>jamon-runtime</artifactId>
       <version>${jamon-runtime.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.unboundid</groupId>
-      <artifactId>unboundid-ldapsdk</artifactId>
-      <version>${unboundid.version}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <profiles>
