@@ -23,7 +23,7 @@ public class TestBucketIdResolverImpl {
   public void testAttachBucketIdToRecord() {
     MutableRecord record = new MutableRecord(1, "hello");
     capturingBucketIdResolver.attachBucketIdToRecord(record);
-    assertThat(record.rowId, is(new RecordIdentifier(-1L, 8, -1L)));
+    assertThat(record.rowId, is(new RecordIdentifier(-1L, 1, -1L)));
     assertThat(record.id, is(1));
     assertThat(record.msg.toString(), is("hello"));
   }

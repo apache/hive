@@ -15,19 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-package org.apache.hadoop.hive.ql.io;
+import org.apache.calcite.plan.Context;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.mapred.lib.HashPartitioner;
 
-/** Partition keys by their {@link Object#hashCode()}. */
-public class DefaultHivePartitioner<K2, V2> extends HashPartitioner<K2, V2> implements HivePartitioner<K2, V2> {
+public class HiveHepPlannerContext implements Context {
+  private HiveRulesRegistry registry;
 
-  /** Use {@link Object#hashCode()} to partition. */
-  @Override
-  public int getBucket(K2 key, V2 value, int numBuckets) {
-    return ObjectInspectorUtils.getBucketNumber(key.hashCode(), numBuckets);
+  public HiveHepPlannerContext(HiveRulesRegistry registry) {
+    this.registry = registry;
   }
 
+  public <T> T unwrap(Class<T> clazz) {
+    if (clazz.isInstance(registry)) {
+      return clazz.cast(registry);
+    }
+    return null;
+  }
 }

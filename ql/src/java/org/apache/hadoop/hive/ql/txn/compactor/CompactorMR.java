@@ -402,10 +402,10 @@ public class CompactorMR {
             dir.getName().startsWith(AcidUtils.DELTA_PREFIX)) {
           boolean sawBase = dir.getName().startsWith(AcidUtils.BASE_PREFIX);
           FileStatus[] files = fs.listStatus(dir, AcidUtils.bucketFileFilter);
-          for (int j = 0; j < files.length; j++) {
+          for(FileStatus f : files) {
             // For each file, figure out which bucket it is.
-            Matcher matcher = AcidUtils.BUCKET_DIGIT_PATTERN.matcher(files[j].getPath().getName());
-            addFileToMap(matcher, files[j].getPath(), sawBase, splitToBucketMap);
+            Matcher matcher = AcidUtils.BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName());
+            addFileToMap(matcher, f.getPath(), sawBase, splitToBucketMap);
           }
         } else {
           // Legacy file, see if it's a bucket file
@@ -434,7 +434,7 @@ public class CompactorMR {
                               Map<Integer, BucketTracker> splitToBucketMap) {
       if (!matcher.find()) {
         LOG.warn("Found a non-bucket file that we thought matched the bucket pattern! " +
-            file.toString());
+            file.toString() + " Matcher=" + matcher.toString());
       }
       int bucketNum = Integer.valueOf(matcher.group());
       BucketTracker bt = splitToBucketMap.get(bucketNum);

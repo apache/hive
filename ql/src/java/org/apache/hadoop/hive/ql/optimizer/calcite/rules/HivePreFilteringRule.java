@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 
 public class HivePreFilteringRule extends RelOptRule {
@@ -76,14 +77,38 @@ public class HivePreFilteringRule extends RelOptRule {
     this.filterFactory = HiveFilter.DEFAULT_FILTER_FACTORY;
   }
 
-  public void onMatch(RelOptRuleCall call) {
+  @Override
+  public boolean matches(RelOptRuleCall call) {
     final Filter filter = call.rel(0);
     final RelNode filterChild = call.rel(1);
 
-    // 0. If the filter is already on top of a TableScan,
-    //    we can bail out
+    // If the filter is already on top of a TableScan,
+    // we can bail out
     if (filterChild instanceof TableScan) {
-      return;
+      return false;
+    }
+
+    HiveRulesRegistry registry = call.getPlanner().
+            getContext().unwrap(HiveRulesRegistry.class);
+
+    // If this operator has been visited already by the rule,
+    // we do not need to apply the optimization
+    if (registry != null && registry.getVisited(this).contains(filter)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public void onMatch(RelOptRuleCall call) {
+    final Filter filter = call.rel(0);
+
+    // 0. Register that we have visited this operator in this rule
+    HiveRulesRegistry registry = call.getPlanner().
+            getContext().unwrap(HiveRulesRegistry.class);
+    if (registry != null) {
+      registry.registerVisited(this, filter);
     }
 
     final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
@@ -114,7 +139,7 @@ public class HivePreFilteringRule extends RelOptRule {
     }
 
     // 3. If the new conjuncts are already present in the plan, we bail out
-    final RelOptPredicateList predicates = RelMetadataQuery.getPulledUpPredicates(filter);
+    final RelOptPredicateList predicates = RelMetadataQuery.getPulledUpPredicates(filter.getInput());
     final List<RexNode> newConjuncts = new ArrayList<>();
     for (RexNode commonOperand : commonOperands) {
       boolean found = false;
@@ -137,8 +162,14 @@ public class HivePreFilteringRule extends RelOptRule {
             RexUtil.composeConjunction(rexBuilder, newConjuncts, false));
 
     // 5. We create the new filter that might be pushed down
-    RelNode newFilter = filterFactory.createFilter(filterChild, newCondition);
+    RelNode newFilter = filterFactory.createFilter(filter.getInput(), newCondition);
     RelNode newTopFilter = filterFactory.createFilter(newFilter, condition);
+
+    // 6. We register both so we do not fire the rule on them again
+    if (registry != null) {
+      registry.registerVisited(this, newFilter);
+      registry.registerVisited(this, newTopFilter);
+    }
 
     call.transformTo(newTopFilter);
 
@@ -148,54 +179,67 @@ public class HivePreFilteringRule extends RelOptRule {
     assert condition.getKind() == SqlKind.OR;
     Multimap<String,RexNode> reductionCondition = LinkedHashMultimap.create();
 
+    // Data structure to control whether a certain reference is present in every operand
+    Set<String> refsInAllOperands = null;
+
     // 1. We extract the information necessary to create the predicate for the new
     //    filter; currently we support comparison functions, in and between
     ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
-    for (RexNode operand: operands) {
+    for (int i = 0; i < operands.size(); i++) {
+      final RexNode operand = operands.get(i);
+
       final RexNode operandCNF = RexUtil.toCnf(rexBuilder, operand);
       final List<RexNode> conjunctions = RelOptUtil.conjunctions(operandCNF);
-      boolean addedToReductionCondition = false; // Flag to control whether we have added a new factor
-                                                 // to the reduction predicate
+
+      Set<String> refsInCurrentOperand = Sets.newHashSet();
       for (RexNode conjunction: conjunctions) {
+        // We do not know what it is, we bail out for safety
         if (!(conjunction instanceof RexCall)) {
-          continue;
+          return new ArrayList<>();
         }
         RexCall conjCall = (RexCall) conjunction;
+        RexNode ref = null;
         if(COMPARISON.contains(conjCall.getOperator().getKind())) {
           if (conjCall.operands.get(0) instanceof RexInputRef &&
                   conjCall.operands.get(1) instanceof RexLiteral) {
-            reductionCondition.put(conjCall.operands.get(0).toString(),
-                    conjCall);
-            addedToReductionCondition = true;
+            ref = conjCall.operands.get(0);
           } else if (conjCall.operands.get(1) instanceof RexInputRef &&
                   conjCall.operands.get(0) instanceof RexLiteral) {
-            reductionCondition.put(conjCall.operands.get(1).toString(),
-                    conjCall);
-            addedToReductionCondition = true;
+            ref = conjCall.operands.get(1);
+          } else {
+            // We do not know what it is, we bail out for safety
+            return new ArrayList<>();
           }
         } else if(conjCall.getOperator().getKind().equals(SqlKind.IN)) {
-          reductionCondition.put(conjCall.operands.get(0).toString(),
-                  conjCall);
-          addedToReductionCondition = true;
+          ref = conjCall.operands.get(0);
         } else if(conjCall.getOperator().getKind().equals(SqlKind.BETWEEN)) {
-          reductionCondition.put(conjCall.operands.get(1).toString(),
-                  conjCall);
-          addedToReductionCondition = true;
+          ref = conjCall.operands.get(1);
+        } else {
+          // We do not know what it is, we bail out for safety
+          return new ArrayList<>();
         }
+
+        String stringRef = ref.toString();
+        reductionCondition.put(stringRef, conjCall);
+        refsInCurrentOperand.add(stringRef);
       }
 
-      // If we did not add any factor, we can bail out
-      if (!addedToReductionCondition) {
+      // Updates the references that are present in every operand up till now
+      if (i == 0) {
+        refsInAllOperands = refsInCurrentOperand;
+      } else {
+        refsInAllOperands = Sets.intersection(refsInAllOperands, refsInCurrentOperand);
+      }
+      // If we did not add any factor or there are no common factors, we can bail out
+      if (refsInAllOperands.isEmpty()) {
         return new ArrayList<>();
       }
     }
 
     // 2. We gather the common factors and return them
     List<RexNode> commonOperands = new ArrayList<>();
-    for (Entry<String,Collection<RexNode>> pair : reductionCondition.asMap().entrySet()) {
-      if (pair.getValue().size() == operands.size()) {
-        commonOperands.add(RexUtil.composeDisjunction(rexBuilder, pair.getValue(), false));
-      }
+    for (String ref : refsInAllOperands) {
+      commonOperands.add(RexUtil.composeDisjunction(rexBuilder, reductionCondition.get(ref), false));
     }
     return commonOperands;
   }

@@ -15,19 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-package org.apache.hadoop.hive.ql.io;
+import org.apache.calcite.plan.Context;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.mapred.lib.HashPartitioner;
 
-/** Partition keys by their {@link Object#hashCode()}. */
-public class DefaultHivePartitioner<K2, V2> extends HashPartitioner<K2, V2> implements HivePartitioner<K2, V2> {
+public class HiveVolcanoPlannerContext implements Context {
+  private HiveAlgorithmsConf config;
 
-  /** Use {@link Object#hashCode()} to partition. */
-  @Override
-  public int getBucket(K2 key, V2 value, int numBuckets) {
-    return ObjectInspectorUtils.getBucketNumber(key.hashCode(), numBuckets);
+  public HiveVolcanoPlannerContext(HiveAlgorithmsConf config) {
+    this.config = config;
   }
 
+  public <T> T unwrap(Class<T> clazz) {
+    if (clazz.isInstance(config)) {
+      return clazz.cast(config);
+    }
+    return null;
+  }
 }

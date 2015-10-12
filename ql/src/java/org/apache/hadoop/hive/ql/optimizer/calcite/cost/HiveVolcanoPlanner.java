@@ -22,7 +22,7 @@ import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.volcano.VolcanoPlanner;
 import org.apache.calcite.rel.RelCollationTraitDef;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfigContext;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveVolcanoPlannerContext;
 
 /**
  * Refinement of {@link org.apache.calcite.plan.volcano.VolcanoPlanner} for Hive.
@@ -35,11 +35,11 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
   private static final boolean ENABLE_COLLATION_TRAIT = true;
 
   /** Creates a HiveVolcanoPlanner. */
-  public HiveVolcanoPlanner(HiveConfigContext conf) {
+  public HiveVolcanoPlanner(HiveVolcanoPlannerContext conf) {
     super(HiveCost.FACTORY, conf);
   }
 
-  public static RelOptPlanner createPlanner(HiveConfigContext conf) {
+  public static RelOptPlanner createPlanner(HiveVolcanoPlannerContext conf) {
     final VolcanoPlanner planner = new HiveVolcanoPlanner(conf);
     planner.addRelTraitDef(ConventionTraitDef.INSTANCE);
     if (ENABLE_COLLATION_TRAIT) {

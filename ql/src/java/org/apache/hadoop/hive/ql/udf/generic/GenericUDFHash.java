@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -45,13 +44,11 @@ public class GenericUDFHash extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    // See
-    // http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html#hashCode()
-    int r = 0;
-    for (int i = 0; i < arguments.length; i++) {
-      r = r * 31
-          + ObjectInspectorUtils.hashCode(arguments[i].get(), argumentOIs[i]);
+    Object[] fieldValues = new Object[arguments.length];
+    for(int i = 0; i < arguments.length; i++) {
+      fieldValues[i] = arguments[i].get();
     }
+    int r = ObjectInspectorUtils.getBucketHashCode(fieldValues, argumentOIs);
     result.set(r);
     return result;
   }
