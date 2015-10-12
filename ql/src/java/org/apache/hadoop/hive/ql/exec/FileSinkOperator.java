@@ -792,12 +792,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     if (!multiFileSpray) {
       return 0;
     } else {
-      int keyHashCode = 0;
-      for (int i = 0; i < partitionEval.length; i++) {
-        Object o = partitionEval[i].evaluate(row);
-        keyHashCode = keyHashCode * 31
-            + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
+      Object[] bucketFieldValues = new Object[partitionEval.length];
+      for(int i = 0; i < partitionEval.length; i++) {
+        bucketFieldValues[i] = partitionEval[i].evaluate(row);
       }
+      int keyHashCode = ObjectInspectorUtils.getBucketHashCode(bucketFieldValues, partitionObjectInspectors);
       key.setHashCode(keyHashCode);
       int bucketNum = prtner.getBucket(key, null, totalFiles);
       return bucketMap.get(bucketNum);

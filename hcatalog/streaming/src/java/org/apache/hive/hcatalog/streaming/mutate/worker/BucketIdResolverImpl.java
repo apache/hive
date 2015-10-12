@@ -56,21 +56,15 @@ public class BucketIdResolverImpl implements BucketIdResolver {
     return record;
   }
 
-  /** Based on: {@link org.apache.hadoop.hive.ql.exec.ReduceSinkOperator#computeBucketNumber(Object, int)}. */
   @Override
   public int computeBucketId(Object record) {
-    int bucketId = 1;
-
+    Object[] bucketFieldValues = new Object[bucketFields.length];
+    ObjectInspector[] bucketFiledInspectors = new ObjectInspector[bucketFields.length];
     for (int columnIndex = 0; columnIndex < bucketFields.length; columnIndex++) {
-      Object columnValue = structObjectInspector.getStructFieldData(record, bucketFields[columnIndex]);
-      bucketId = bucketId * 31 + ObjectInspectorUtils.hashCode(columnValue, bucketFields[columnIndex].getFieldObjectInspector());
+      bucketFieldValues[columnIndex] = structObjectInspector.getStructFieldData(record, bucketFields[columnIndex]);
+      bucketFiledInspectors[columnIndex] = bucketFields[columnIndex].getFieldObjectInspector();
     }
-
-    if (bucketId < 0) {
-      bucketId = -1 * bucketId;
-    }
-
-    return bucketId % totalBuckets;
+    return ObjectInspectorUtils.getBucketNumber(bucketFieldValues, bucketFiledInspectors, totalBuckets);
   }
 
 }

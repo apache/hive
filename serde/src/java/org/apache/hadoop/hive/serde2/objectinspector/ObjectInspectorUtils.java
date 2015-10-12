@@ -502,18 +502,23 @@ public final class ObjectInspectorUtils {
    * @return the bucket number
    */
   public static int getBucketNumber(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors, int totalBuckets) {
-    int hashCode = getBucketHashCode(bucketFields, bucketFieldInspectors);
-    int bucketID = (hashCode & Integer.MAX_VALUE) % totalBuckets;
-    return bucketID;
+    return getBucketNumber(getBucketHashCode(bucketFields, bucketFieldInspectors), totalBuckets);
   }
 
+  /**
+   * https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables
+   * @param hashCode as produced by {@link #getBucketHashCode(Object[], ObjectInspector[])}
+   */
+  public static int getBucketNumber(int hashCode, int numberOfBuckets) {
+    return (hashCode & Integer.MAX_VALUE) % numberOfBuckets;
+  }
   /**
    * Computes the hash code for the given bucketed fields
    * @param bucketFields
    * @param bucketFieldInspectors
    * @return
    */
-  private static int getBucketHashCode(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
+  public static int getBucketHashCode(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
     int hashCode = 0;
     for (int i = 0; i < bucketFields.length; i++) {
       int fieldHash = ObjectInspectorUtils.hashCode(bucketFields[i], bucketFieldInspectors[i]);

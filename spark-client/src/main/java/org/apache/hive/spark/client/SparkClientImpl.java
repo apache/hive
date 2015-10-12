@@ -178,6 +178,11 @@ class SparkClientImpl implements SparkClient {
     return run(new GetDefaultParallelismJob());
   }
 
+  @Override
+  public boolean isActive() {
+    return isAlive && driverRpc.isActive();
+  }
+
   void cancel(String jobId) {
     protocol.cancel(jobId);
   }

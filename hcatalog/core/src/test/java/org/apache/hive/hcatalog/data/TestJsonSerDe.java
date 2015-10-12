@@ -307,4 +307,40 @@ public class TestJsonSerDe extends TestCase {
     assertTrue(HCatDataCheckUtil.recordsEqual((HCatRecord)rjsd.deserialize(text2), expected2));
 
   }
+
+  private static HashMap<String, Integer> createHashMapStringInteger(Object...vals) {
+    assertTrue(vals.length % 2 == 0);
+    HashMap<String, Integer> retval = new HashMap<String, Integer>();
+    for (int idx = 0; idx < vals.length; idx += 2) {
+      retval.put((String) vals[idx], (Integer) vals[idx+1]);
+    }
+    return retval;
+  }
+
+  public void testMapValues() throws Exception {
+    Configuration conf = new Configuration();
+    Properties props = new Properties();
+
+    props.put(serdeConstants.LIST_COLUMNS, "a,b");
+    props.put(serdeConstants.LIST_COLUMN_TYPES, "array<string>,map<string,int>");
+    JsonSerDe rjsd = new JsonSerDe();
+    SerDeUtils.initializeSerDe(rjsd, conf, props, null);
+
+    Text text1 = new Text("{ \"a\":[\"aaa\"],\"b\":{\"bbb\":1}} ");
+    Text text2 = new Text("{\"a\":[\"yyy\"],\"b\":{\"zzz\":123}}");
+    Text text3 = new Text("{\"a\":[\"a\"],\"b\":{\"x\":11, \"y\": 22, \"z\": null}}");
+
+    HCatRecord expected1 = new DefaultHCatRecord(Arrays.<Object>asList(
+        Arrays.<String>asList("aaa"),
+        createHashMapStringInteger("bbb", 1)));
+    HCatRecord expected2 = new DefaultHCatRecord(Arrays.<Object>asList(
+        Arrays.<String>asList("yyy"),
+        createHashMapStringInteger("zzz", 123)));
+    HCatRecord expected3 = new DefaultHCatRecord(Arrays.<Object>asList(
+        Arrays.<String>asList("a"),
+        createHashMapStringInteger("x", 11, "y", 22, "z", null)));
+
+    assertTrue(HCatDataCheckUtil.recordsEqual((HCatRecord)rjsd.deserialize(text1), expected1));
+    assertTrue(HCatDataCheckUtil.recordsEqual((HCatRecord)rjsd.deserialize(text2), expected2));
+  }
 }

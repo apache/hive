@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -386,6 +388,44 @@ public class TestStreaming {
   }
 
 
+  @Test
+  public void testTableValidation() throws Exception {
+    int bucketCount = 100;
+
+    String dbUri = "raw://" + new Path(dbFolder.newFolder().toString()).toUri().toString();
+    String tbl1 = "validation1";
+    String tbl2 = "validation2";
+
+    String tableLoc  = "'" + dbUri + Path.SEPARATOR + tbl1 + "'";
+    String tableLoc2 = "'" + dbUri + Path.SEPARATOR + tbl2 + "'";
+
+    runDDL(driver, "create database testBucketing3");
+    runDDL(driver, "use testBucketing3");
+
+    runDDL(driver, "create table " + tbl1 + " ( key1 string, data string ) clustered by ( key1 ) into "
+            + bucketCount + " buckets  stored as orc  location " + tableLoc) ;
+
+    runDDL(driver, "create table " + tbl2 + " ( key1 string, data string ) clustered by ( key1 ) into "
+            + bucketCount + " buckets  stored as orc  location " + tableLoc2 + " TBLPROPERTIES ('transactional'='false')") ;
+
+
+    try {
+      HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testBucketing3", "validation1", null);
+      endPt.newConnection(false);
+      Assert.assertTrue("InvalidTable exception was not thrown", false);
+    } catch (InvalidTable e) {
+      // expecting this exception
+    }
+    try {
+      HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testBucketing3", "validation2", null);
+      endPt.newConnection(false);
+      Assert.assertTrue("InvalidTable exception was not thrown", false);
+    } catch (InvalidTable e) {
+      // expecting this exception
+    }
+  }
+
+
   private void checkDataWritten(Path partitionPath, long minTxn, long maxTxn, int buckets, int numExpectedFiles,
                                 String... records) throws Exception {
     ValidTxnList txns = msClient.getValidTxns();
@@ -552,6 +592,31 @@ public class TestStreaming {
     }
     txnBatch.close();
     connection.close();
+  }
+
+  @Test
+  public void testHearbeat() throws Exception {
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, null);
+    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames2,",", endPt);
+    StreamingConnection connection = endPt.newConnection(false, null);
+
+    TransactionBatch txnBatch =  connection.fetchTransactionBatch(5, writer);
+    txnBatch.beginNextTransaction();
+    //todo: this should ideally check Transaction heartbeat as well, but heartbeat
+    //timestamp is not reported yet
+    //GetOpenTxnsInfoResponse txnresp = msClient.showTxns();
+    ShowLocksResponse response = msClient.showLocks();
+    Assert.assertEquals("Wrong nubmer of locks: " + response, 1, response.getLocks().size());
+    ShowLocksResponseElement lock = response.getLocks().get(0);
+    long acquiredAt = lock.getAcquiredat();
+    long heartbeatAt = lock.getAcquiredat();
+    txnBatch.heartbeat();
+    response = msClient.showLocks();
+    Assert.assertEquals("Wrong number of locks2: " + response, 1, response.getLocks().size());
+    lock = response.getLocks().get(0);
+    Assert.assertEquals("Acquired timestamp didn't match", acquiredAt, lock.getAcquiredat());
+    Assert.assertTrue("Expected new heartbeat (" + lock.getLastheartbeat() +
+      ") > old heartbeat(" + heartbeatAt +")", lock.getLastheartbeat() > heartbeatAt);
   }
   @Test
   public void testTransactionBatchEmptyAbort() throws Exception {
@@ -1164,7 +1229,8 @@ public class TestStreaming {
             " clustered by ( " + join(bucketCols, ",") + " )" +
             " into " + bucketCount + " buckets " +
             " stored as orc " +
-            " location '" + tableLoc +  "'";
+            " location '" + tableLoc +  "'" +
+            " TBLPROPERTIES ('transactional'='true') ";
     runDDL(driver, crtTbl);
     if(partNames!=null && partNames.length!=0) {
       return addPartition(driver, tableName, partVals, partNames);
