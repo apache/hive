@@ -5,7 +5,7 @@ create table src_multi2 like src;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
-
+set hive.stats.dbclass=fs;
 explain
 from src
 insert overwrite table src_multi1 select * where key < 10

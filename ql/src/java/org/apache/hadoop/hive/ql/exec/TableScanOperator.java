@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -277,7 +278,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
     // Initializing a stats publisher
     StatsPublisher statsPublisher = Utilities.getStatsPublisher(jc);
-    if (!statsPublisher.connect(jc)) {
+    StatsCollectionContext sc = new StatsCollectionContext(jc);
+    sc.setStatsTmpDir(conf.getTmpStatsDir());
+    if (!statsPublisher.connect(sc)) {
       // just return, stats gathering should not block the main query.
       if (isLogInfoEnabled) {
         LOG.info("StatsPublishing error: cannot connect to database.");
@@ -313,7 +316,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 	LOG.info("publishing : " + key + " : " + statsToPublish.toString());
       }
     }
-    if (!statsPublisher.closeConnection()) {
+    if (!statsPublisher.closeConnection(sc)) {
       if (isStatsReliable) {
         throw new HiveException(ErrorMsg.STATSPUBLISHER_CLOSING_ERROR.getErrorCodedMsg());
       }
