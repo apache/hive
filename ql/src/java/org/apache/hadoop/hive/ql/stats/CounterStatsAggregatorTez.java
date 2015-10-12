@@ -18,11 +18,8 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import java.io.IOException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.tez.common.counters.TezCounters;
@@ -46,10 +43,11 @@ public class CounterStatsAggregatorTez implements StatsAggregator, StatsCollecti
   }
 
   @Override
-  public boolean connect(Configuration hconf, Task sourceTask) {
+  public boolean connect(StatsCollectionContext scc) {
+    Task sourceTask = scc.getTask();
     if (!(sourceTask instanceof TezTask)) {
       delegate = true;
-      return mrAggregator.connect(hconf, sourceTask);
+      return mrAggregator.connect(scc);
     }
     counters = ((TezTask) sourceTask).getTezCounters();
     return counters != null;
@@ -75,7 +73,7 @@ public class CounterStatsAggregatorTez implements StatsAggregator, StatsCollecti
   }
 
   @Override
-  public boolean closeConnection() {
+  public boolean closeConnection(StatsCollectionContext scc) {
     return true;
   }
 

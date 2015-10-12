@@ -809,12 +809,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 71 Data size: 7718 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7218 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 18 Data size: 1956 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1804 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: int), value (type: string)
@@ -846,8 +846,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.test_table2
                     numFiles 16
-                    numRows 0
-                    rawDataSize 0
+                    numRows 500
+                    rawDataSize 7218
                     serialization.ddl struct test_table2 { i32 key, i32 key2, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -868,8 +868,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.test_table2
                       numFiles 16
-                      numRows 0
-                      rawDataSize 0
+                      numRows 500
+                      rawDataSize 7218
                       serialization.ddl struct test_table2 { i32 key, i32 key2, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

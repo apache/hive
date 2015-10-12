@@ -34,16 +34,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 
 public class JDBCStatsAggregator implements StatsAggregator {
 
   private Connection conn;
   private String connectionString;
   private Configuration hiveconf;
-  private Task<?> sourceTask;
   private final Map<String, PreparedStatement> columnMapping;
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private int timeout = 30;
@@ -58,8 +57,8 @@ public class JDBCStatsAggregator implements StatsAggregator {
   }
 
   @Override
-  public boolean connect(Configuration hiveconf, Task sourceTask) {
-    this.hiveconf = hiveconf;
+  public boolean connect(StatsCollectionContext scc) {
+    this.hiveconf = scc.getHiveConf();
     timeout = (int) HiveConf.getTimeVar(
         hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT, TimeUnit.SECONDS);
     connectionString = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
@@ -67,7 +66,6 @@ public class JDBCStatsAggregator implements StatsAggregator {
     maxRetries = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_MAX);
     waitWindow = HiveConf.getTimeVar(
         hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_WAIT, TimeUnit.MILLISECONDS);
-    this.sourceTask = sourceTask;
 
     try {
       JavaUtils.loadClass(driver).newInstance();
@@ -159,14 +157,14 @@ public class JDBCStatsAggregator implements StatsAggregator {
           return null;
         }
         // close the current connection
-        closeConnection();
+        closeConnection(null);
         long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
         try {
           Thread.sleep(waitTime);
         } catch (InterruptedException iex) {
         }
         // getting a new connection
-        if (!connect(hiveconf, sourceTask)) {
+        if (!connect(new StatsCollectionContext(hiveconf))) {
           // if cannot reconnect, just fail because connect() already handles retries.
           LOG.error("Error during publishing aggregation. " + e);
           return null;
@@ -181,7 +179,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
   }
 
   @Override
-  public boolean closeConnection() {
+  public boolean closeConnection(StatsCollectionContext scc) {
 
     if (conn == null) {
       return true;
@@ -238,14 +236,14 @@ public class JDBCStatsAggregator implements StatsAggregator {
             return false;
           }
           // close the current connection
-          closeConnection();
+          closeConnection(null);
           long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
           try {
             Thread.sleep(waitTime);
           } catch (InterruptedException iex) {
           }
           // getting a new connection
-          if (!connect(hiveconf, sourceTask)) {
+          if (!connect(new StatsCollectionContext(hiveconf))) {
             LOG.error("Error during clean-up. " + e);
             return false;
           }

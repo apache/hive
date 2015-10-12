@@ -289,7 +289,6 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
 
     Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
         command, partSpec, indexTableName, dbName);
-    super.setStatsDir(builderConf);
     return rootTask;
   }
 

@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.mapred.JobConf;
@@ -60,9 +61,10 @@ public class TestStatsPublisherEnhanced extends TestCase {
   protected void tearDown() {
     StatsAggregator sa = factory.getStatsAggregator();
     assertNotNull(sa);
-    assertTrue(sa.connect(conf, null));
+    StatsCollectionContext sc = new StatsCollectionContext(conf);
+    assertTrue(sa.connect(sc));
     assertTrue(sa.cleanUp("file_0"));
-    assertTrue(sa.closeConnection());
+    assertTrue(sa.closeConnection(sc));
   }
 
   private void fillStatMap(String numRows, String rawDataSize) {
@@ -80,13 +82,14 @@ public class TestStatsPublisherEnhanced extends TestCase {
       // instantiate stats publisher
       StatsPublisher statsPublisher = Utilities.getStatsPublisher((JobConf) conf);
       assertNotNull(statsPublisher);
-      assertTrue(statsPublisher.init(conf));
-      assertTrue(statsPublisher.connect(conf));
+      StatsCollectionContext sc = new StatsCollectionContext(conf);
+      assertTrue(statsPublisher.init(sc));
+      assertTrue(statsPublisher.connect(sc));
 
       // instantiate stats aggregator
       StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf, null));
+      assertTrue(statsAggregator.connect(sc));
 
       // publish stats
       fillStatMap("200", "1000");
@@ -109,8 +112,8 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertEquals("3000", usize1);
 
       // close connections
-      assertTrue(statsPublisher.closeConnection());
-      assertTrue(statsAggregator.closeConnection());
+      assertTrue(statsPublisher.closeConnection(sc));
+      assertTrue(statsAggregator.closeConnection(sc));
 
       System.out
           .println("StatsPublisher - one stat published per key - aggregating matching key - OK");
@@ -128,13 +131,14 @@ public class TestStatsPublisherEnhanced extends TestCase {
       StatsPublisher statsPublisher = Utilities.getStatsPublisher(
           (JobConf) conf);
       assertNotNull(statsPublisher);
-      assertTrue(statsPublisher.init(conf));
-      assertTrue(statsPublisher.connect(conf));
+      StatsCollectionContext sc = new StatsCollectionContext(conf);
+      assertTrue(statsPublisher.init(sc));
+      assertTrue(statsPublisher.connect(sc));
 
       // instantiate stats aggregator
       StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf, null));
+      assertTrue(statsAggregator.connect(sc));
       // statsAggregator.cleanUp("file_0000");
       // assertTrue(statsAggregator.connect(conf));
 
@@ -172,8 +176,8 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsAggregator.cleanUp("file_0000"));
 
       // close connections
-      assertTrue(statsPublisher.closeConnection());
-      assertTrue(statsAggregator.closeConnection());
+      assertTrue(statsPublisher.closeConnection(sc));
+      assertTrue(statsAggregator.closeConnection(sc));
 
       System.out.println("StatsPublisher - basic functionality - OK");
     } catch (Throwable e) {
@@ -189,13 +193,14 @@ public class TestStatsPublisherEnhanced extends TestCase {
       // instantiate stats publisher
       StatsPublisher statsPublisher = Utilities.getStatsPublisher((JobConf) conf);
       assertNotNull(statsPublisher);
-      assertTrue(statsPublisher.init(conf));
-      assertTrue(statsPublisher.connect(conf));
+      StatsCollectionContext sc = new StatsCollectionContext(conf);
+      assertTrue(statsPublisher.init(sc));
+      assertTrue(statsPublisher.connect(sc));
 
       // instantiate stats aggregator
       StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf, null));
+      assertTrue(statsAggregator.connect(sc));
 
       // publish stats
       fillStatMap("200", "1000");
@@ -236,8 +241,8 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsAggregator.cleanUp("file_0000"));
 
       // close connections
-      assertTrue(statsPublisher.closeConnection());
-      assertTrue(statsAggregator.closeConnection());
+      assertTrue(statsPublisher.closeConnection(sc));
+      assertTrue(statsAggregator.closeConnection(sc));
 
       System.out.println("StatsPublisher - multiple updates - OK");
     } catch (Throwable e) {
@@ -254,13 +259,14 @@ public class TestStatsPublisherEnhanced extends TestCase {
       // instantiate stats publisher
       StatsPublisher statsPublisher = Utilities.getStatsPublisher((JobConf) conf);
       assertNotNull(statsPublisher);
-      assertTrue(statsPublisher.init(conf));
-      assertTrue(statsPublisher.connect(conf));
+      StatsCollectionContext sc = new StatsCollectionContext(conf);
+      assertTrue(statsPublisher.init(sc));
+      assertTrue(statsPublisher.connect(sc));
 
       // instantiate stats aggregator
       StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf, null));
+      assertTrue(statsAggregator.connect(sc));
 
       // publish stats
       fillStatMap("200", "");
@@ -305,8 +311,8 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsAggregator.cleanUp("file_0000"));
 
       // close connections
-      assertTrue(statsPublisher.closeConnection());
-      assertTrue(statsAggregator.closeConnection());
+      assertTrue(statsPublisher.closeConnection(sc));
+      assertTrue(statsAggregator.closeConnection(sc));
 
       System.out
           .println("StatsPublisher - (multiple updates + publishing subset of supported statistics) - OK");
@@ -325,13 +331,14 @@ public class TestStatsPublisherEnhanced extends TestCase {
       // instantiate stats publisher
       StatsPublisher statsPublisher = Utilities.getStatsPublisher((JobConf) conf);
       assertNotNull(statsPublisher);
-      assertTrue(statsPublisher.init(conf));
-      assertTrue(statsPublisher.connect(conf));
+      StatsCollectionContext sc = new StatsCollectionContext(conf);
+      assertTrue(statsPublisher.init(sc));
+      assertTrue(statsPublisher.connect(sc));
 
       // instantiate stats aggregator
       StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf, null));
+      assertTrue(statsAggregator.connect(sc));
 
       // publish stats
       fillStatMap("200", "1000");
@@ -364,8 +371,8 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsAggregator.cleanUp("file_0000"));
 
       // close connections
-      assertTrue(statsPublisher.closeConnection());
-      assertTrue(statsAggregator.closeConnection());
+      assertTrue(statsPublisher.closeConnection(sc));
+      assertTrue(statsAggregator.closeConnection(sc));
 
       System.out.println("StatsAggregator - clean-up - OK");
     } catch (Throwable e) {
