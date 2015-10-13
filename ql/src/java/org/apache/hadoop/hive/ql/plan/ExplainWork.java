@@ -77,7 +77,9 @@ public class ExplainWork implements Serializable {
     this.fetchTask = fetchTask;
     this.astStringTree = astStringTree;
     this.analyzer = analyzer;
-    this.inputs = analyzer.getInputs();
+    if (analyzer != null) {
+      this.inputs = analyzer.getInputs();
+    }
     this.extended = extended;
     this.formatted = formatted;
     this.dependency = dependency;
