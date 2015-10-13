@@ -54,6 +54,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NotCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.RoundWithNumDigitsDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsFalse;
@@ -100,8 +102,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDoubl
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRoundDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLongColumn;
@@ -1490,5 +1490,97 @@ public class TestVectorizationContext {
     children1.set(2,  col3Expr);
     ve = vc.getVectorExpression(exprDesc);
     assertTrue(ve instanceof IfExprVarCharScalarStringGroupColumn);
+  }
+
+  @Test
+  public void testSIMDEqual() {
+    long a;
+    long b;
+
+    a = 0; b = 0; assertEquals(a == b ? 1 : 0, (((a - b) ^ (b - a)) >>> 63) ^ 1);
+    a = 1; b = 0; assertEquals(a == b ? 1 : 0, (((a - b) ^ (b - a)) >>> 63) ^ 1);
+    a = 0; b = 1; assertEquals(a == b ? 1 : 0, (((a - b) ^ (b - a)) >>> 63) ^ 1);
+  }
+
+  @Test
+  public void testSIMDGreaterThan() {
+    long a;
+    long b;
+
+    a = 0; b = 0; assertEquals(a > b ? 1 : 0, (b - a) >>> 63);
+    a = 1; b = 0; assertEquals(a > b ? 1 : 0, (b - a) >>> 63);
+    a = 0; b = 1; assertEquals(a > b ? 1 : 0, (b - a) >>> 63);
+  }
+
+  @Test
+  public void testSIMDGreaterEqual() {
+    long a;
+    long b;
+
+    a = 0;
+    b = 0;
+    assertEquals(a >= b ? 1 : 0, ((a - b) >>> 63) ^ 1);
+
+    a = 1;
+    b = 0;
+    assertEquals(a >= b ? 1 : 0, ((a - b) >>> 63) ^ 1);
+
+    a = 0;
+    b = 1;
+    assertEquals(a >= b ? 1 : 0, ((a - b) >>> 63) ^ 1);
+  }
+
+  @Test
+  public void testSIMDLessEqual() {
+    long a;
+    long b;
+
+    a = 0;
+    b = 0;
+    assertEquals(a <= b ? 1 : 0, ((b - a) >>> 63) ^ 1);
+
+    a = 1;
+    b = 0;
+    assertEquals(a <= b ? 1 : 0, ((b - a) >>> 63) ^ 1);
+
+    a = 0;
+    b = 1;
+    assertEquals(a <= b ? 1 : 0, ((b - a) >>> 63) ^ 1);
+  }
+
+  @Test
+  public void testSIMDLessThan() {
+    long a;
+    long b;
+
+    a = 0;
+    b = 0;
+    assertEquals(a < b ? 1 : 0, (a - b) >>> 63);
+
+    a = 1;
+    b = 0;
+    assertEquals(a < b ? 1 : 0, (a - b) >>> 63);
+
+    a = 0;
+    b = 1;
+    assertEquals(a < b ? 1 : 0, (a - b) >>> 63);
+  }
+
+  @Test
+  public void testSIMDNotEqual() {
+    long a;
+    long b;
+
+    a = 0;
+    b = 0;
+    assertEquals(a != b ? 1 : 0, ((a - b) ^ (b - a)) >>> 63);
+
+    a = 1;
+    b = 0;
+    assertEquals(a != b ? 1 : 0, ((a - b) ^ (b - a)) >>> 63);
+
+    a = 0;
+    b = 1;
+    assertEquals(a != b ? 1 : 0, ((a - b) ^ (b - a)) >>> 63);
   }
 }
