@@ -163,7 +163,14 @@ public final class ColumnPrunerProcFactory {
         if (child instanceof SelectOperator || child instanceof ReduceSinkOperator) {
           continue;
         }
-        Set<String> neededCols = new HashSet<String>(cppCtx.genColLists(gbOp, child));
+        List<String> colList = cppCtx.genColLists(gbOp, child);
+        Set<String> neededCols = new HashSet<String>();
+        if (colList != null) {
+          neededCols.addAll(colList);
+        } else {
+          // colList will be null for FS operators.
+          continue;
+        }
         if (neededCols.size() < gbOp.getSchema().getSignature().size()) {
           ArrayList<ExprNodeDesc> exprs = new ArrayList<ExprNodeDesc>();
           ArrayList<String> outputColNames = new ArrayList<String>();
