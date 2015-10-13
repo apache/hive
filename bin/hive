@@ -247,13 +247,13 @@ fi
 if [[ -e $HBASE_HOME/bin/hbase ]] ; then
   HBASE_BIN="$HBASE_HOME/bin/hbase"
 fi
-HBASE_BIN=${HBASE_BIN:-"$(which hbase 2>/dev/null)"}
+HBASE_BIN=${HBASE_BIN:-"$(which hbase)"}
 
 # perhaps we've located HBase. If so, include its details on the classpath
 if [[ -n $HBASE_BIN ]] ; then
   # exclude ZK, PB, and Guava (See HIVE-2055)
   # depends on HBASE-8438 (hbase-0.94.14+, hbase-0.96.1+) for `hbase mapredcp` command
-  for x in $($HBASE_BIN mapredcp 2>/dev/null | tr ':' '\n') ; do
+  for x in $($HBASE_BIN mapredcp | tr ':' '\n') ; do
     if [[ $x == *zookeeper* || $x == *protobuf-java* || $x == *guava* ]] ; then
       continue
     fi
