@@ -28,7 +28,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@B
-Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[8][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain select * from A join B
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join B
@@ -77,17 +77,13 @@ STAGE PLANS:
                   1 
                 outputColumnNames: key, value, key0, value0
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: key (type: string), value (type: string), key0 (type: string), value0 (type: string)
-                  outputColumnNames: key, value, key0, value0
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Local Work:
         Map Reduce Local Work
 

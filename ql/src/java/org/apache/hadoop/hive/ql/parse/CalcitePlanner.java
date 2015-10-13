@@ -647,8 +647,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-        introduceProjectIfNeeded(optimizedOptiqPlan), resultSchema, this.getQB()
-            .getTableDesc() != null);
+        optimizedOptiqPlan, resultSchema, this.getQB().getTableDesc() != null);
 
     LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
     Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps,
@@ -691,30 +690,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         columnNames), new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
     output.setColumnExprMap(colExprMap);
     return output;
-  }
-
-  private RelNode introduceProjectIfNeeded(RelNode optimizedOptiqPlan)
-      throws CalciteSemanticException {
-    RelNode parent = null;
-    RelNode input = optimizedOptiqPlan;
-    RelNode newRoot = optimizedOptiqPlan;
-
-    while (!(input instanceof Project) && (input instanceof Sort)) {
-      parent = input;
-      input = input.getInput(0);
-    }
-
-    if (!(input instanceof Project)) {
-      HiveProject hpRel = HiveProject.create(input,
-          HiveCalciteUtil.getProjsFromBelowAsInputRef(input), input.getRowType().getFieldNames());
-      if (input == optimizedOptiqPlan) {
-        newRoot = hpRel;
-      } else {
-        parent.replaceInput(0, hpRel);
-      }
-    }
-
-    return newRoot;
   }
 
   /***

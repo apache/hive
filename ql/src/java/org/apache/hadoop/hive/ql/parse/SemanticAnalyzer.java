@@ -10122,8 +10122,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (createVwDesc != null) {
       resultSchema = convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
     } else {
-      resultSchema = convertRowSchemaToResultSetSchema(opParseCtx.get(sinkOp).getRowResolver(),
-          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
+      // resultSchema will be null if
+      // (1) cbo is disabled;
+      // (2) or cbo is enabled with AST return path (whether succeeded or not,
+      // resultSchema will be re-initialized)
+      // It will only be not null if cbo is enabled with new return path and it
+      // succeeds.
+      if (resultSchema == null) {
+        resultSchema = convertRowSchemaToResultSetSchema(opParseCtx.get(sinkOp).getRowResolver(),
+            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
+      }
     }
 
     // 4. Generate Parse Context for Optimizer & Physical compiler

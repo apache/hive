@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
@@ -72,11 +73,11 @@ import org.junit.Test;
 
 
 /**
- * TestJdbcDriver2
+ * cbo_rp_TestJdbcDriver2
  *
  */
-public class TestJdbcDriver2 {
-  private static final Log LOG = LogFactory.getLog(TestJdbcDriver2.class);
+public class cbo_rp_TestJdbcDriver2 {
+  private static final Log LOG = LogFactory.getLog(cbo_rp_TestJdbcDriver2.class);
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String tableName = "testHiveJdbcDriver_Table";
   private static final String tableComment = "Simple table";
@@ -96,8 +97,8 @@ public class TestJdbcDriver2 {
   private static boolean standAloneServer = false;
   private static final float floatCompareDelta = 0.0001f;
 
-  public TestJdbcDriver2() {
-    conf = new HiveConf(TestJdbcDriver2.class);
+  public cbo_rp_TestJdbcDriver2() {
+    conf = new HiveConf(cbo_rp_TestJdbcDriver2.class);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
@@ -141,6 +142,7 @@ public class TestJdbcDriver2 {
     assertNotNull("Statement is null", stmt);
 
     stmt.execute("set hive.support.concurrency = false");
+    stmt.execute("set hive.cbo.returnpath.hiveop = true");
 
     // drop table. ignore error.
     try {
@@ -1636,7 +1638,7 @@ public class TestJdbcDriver2 {
     assertEquals(meta.getPrecision(12), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(12), colRS.getInt("DECIMAL_DIGITS"));
 
-    assertEquals("c12_1", meta.getColumnName(13));
+    assertEquals("_c12", meta.getColumnName(13));
     assertEquals(Types.INTEGER, meta.getColumnType(13));
     assertEquals("int", meta.getColumnTypeName(13));
     assertEquals(11, meta.getColumnDisplaySize(13));
@@ -1770,8 +1772,8 @@ public class TestJdbcDriver2 {
 
     assertTrue(colRS.next());
 
-    assertEquals("c2_2", meta.getColumnName(3));
-
+    assertEquals("_c2", meta.getColumnName(3));
+    
   }
   // [url] [host] [port] [db]
   private static final String[][] URL_PROPERTIES = new String[][] {
@@ -1924,7 +1926,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         + " where c1=1");
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 2); // only one result column
-    assertEquals(md.getColumnLabel(2), "c1" ); // verify the system generated column name
+    assertEquals(md.getColumnLabel(2), "_c1" ); // verify the system generated column name
     assertTrue(res.next());
     assertEquals(res.getLong(1), 1);
     assertEquals(res.getString(2), "1");
