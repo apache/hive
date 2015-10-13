@@ -142,6 +142,7 @@ public class QTestUtil {
   private final Set<String> qSortQuerySet;
   private final Set<String> qHashQuerySet;
   private final Set<String> qSortNHashQuerySet;
+  private final Set<String> qNoSessionReuseQuerySet;
   private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
   public static final HashSet<String> srcTables = new HashSet<String>();
@@ -401,6 +402,7 @@ public class QTestUtil {
     qSortQuerySet = new HashSet<String>();
     qHashQuerySet = new HashSet<String>();
     qSortNHashQuerySet = new HashSet<String>();
+    qNoSessionReuseQuerySet = new HashSet<String>();
     qJavaVersionSpecificOutput = new HashSet<String>();
     QTestUtil.clusterType = clusterType;
 
@@ -556,12 +558,16 @@ public class QTestUtil {
     } else if (matches(SORT_AND_HASH_QUERY_RESULTS, query)) {
       qSortNHashQuerySet.add(qf.getName());
     }
+    if (matches(NO_SESSION_REUSE, query)) {
+      qNoSessionReuseQuerySet.add(qf.getName());
+    }
   }
 
   private static final Pattern SORT_BEFORE_DIFF = Pattern.compile("-- SORT_BEFORE_DIFF");
   private static final Pattern SORT_QUERY_RESULTS = Pattern.compile("-- SORT_QUERY_RESULTS");
   private static final Pattern HASH_QUERY_RESULTS = Pattern.compile("-- HASH_QUERY_RESULTS");
   private static final Pattern SORT_AND_HASH_QUERY_RESULTS = Pattern.compile("-- SORT_AND_HASH_QUERY_RESULTS");
+  private static final Pattern NO_SESSION_REUSE = Pattern.compile("-- NO_SESSION_REUSE");
 
   private boolean matches(Pattern pattern, String query) {
     Matcher matcher = pattern.matcher(query);
@@ -803,8 +809,13 @@ public class QTestUtil {
   }
 
   public void cleanUp() throws Exception {
+    cleanUp(null);
+  }
+
+  public void cleanUp(String tname) throws Exception {
+    boolean canReuseSession = (tname == null) || !qNoSessionReuseQuerySet.contains(tname);
     if(!isSessionStateStarted) {
-      startSessionState();
+      startSessionState(canReuseSession);
     }
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
@@ -867,8 +878,13 @@ public class QTestUtil {
   }
 
   public void createSources() throws Exception {
+    createSources(null);
+  }
+
+  public void createSources(String tname) throws Exception {
+    boolean canReuseSession = (tname == null) || !qNoSessionReuseQuerySet.contains(tname);
     if(!isSessionStateStarted) {
-      startSessionState();
+      startSessionState(canReuseSession);
     }
 
     if(cliDriver == null) {
@@ -908,8 +924,8 @@ public class QTestUtil {
   }
 
   public void init(String tname) throws Exception {
-    cleanUp();
-    createSources();
+    cleanUp(tname);
+    createSources(tname);
     cliDriver.processCmd("set hive.cli.print.header=true;");
   }
 
@@ -919,8 +935,8 @@ public class QTestUtil {
 
   public String cliInit(String tname, boolean recreate) throws Exception {
     if (recreate) {
-      cleanUp();
-      createSources();
+      cleanUp(tname);
+      createSources(tname);
     }
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
@@ -955,15 +971,21 @@ public class QTestUtil {
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
 
-    if (oldSs != null && (clusterType == MiniClusterType.llap
-        || clusterType == MiniClusterType.spark || clusterType == MiniClusterType.miniSparkOnYarn)) {
-      sparkSession = oldSs.getSparkSession();
-      ss.setSparkSession(sparkSession);
-      oldSs.setSparkSession(null);
+    boolean canReuseSession = !qNoSessionReuseQuerySet.contains(tname);
+    if (oldSs != null && canReuseSession
+        && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap)) {
       // Copy the tezSessionState from the old CliSessionState.
       tezSessionState = oldSs.getTezSession();
       ss.setTezSession(tezSessionState);
       oldSs.setTezSession(null);
+      oldSs.close();
+    }
+
+    if (oldSs != null && (clusterType == MiniClusterType.spark
+        || clusterType == MiniClusterType.miniSparkOnYarn)) {
+      sparkSession = oldSs.getSparkSession();
+      ss.setSparkSession(sparkSession);
+      oldSs.setSparkSession(null);
       oldSs.close();
     }
 
@@ -1008,7 +1030,7 @@ public class QTestUtil {
     };
   }
 
-  private CliSessionState startSessionState()
+  private CliSessionState startSessionState(boolean canReuseSession)
       throws IOException {
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
@@ -1023,15 +1045,20 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && (clusterType == MiniClusterType.llap
-        || clusterType == MiniClusterType.miniSparkOnYarn || clusterType == MiniClusterType.miniSparkOnYarn)) {
-      sparkSession = oldSs.getSparkSession();
-      ss.setSparkSession(sparkSession);
-      oldSs.setSparkSession(null);
+    if (oldSs != null && canReuseSession
+        && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap)) {
       // Copy the tezSessionState from the old CliSessionState.
       tezSessionState = oldSs.getTezSession();
       ss.setTezSession(tezSessionState);
       oldSs.setTezSession(null);
+      oldSs.close();
+    }
+
+    if (oldSs != null && (clusterType == MiniClusterType.spark
+        || clusterType == MiniClusterType.miniSparkOnYarn)) {
+      sparkSession = oldSs.getSparkSession();
+      ss.setSparkSession(sparkSession);
+      oldSs.setSparkSession(null);
       oldSs.close();
     }
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
