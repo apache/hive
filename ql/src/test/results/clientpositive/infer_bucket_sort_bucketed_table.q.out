@@ -52,8 +52,8 @@ Table:              	test_table_bucketed
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	3                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	309                 
+	rawDataSize         	1482                
 	totalSize           	1791                
 #### A masked pattern was here ####
 	 	 
