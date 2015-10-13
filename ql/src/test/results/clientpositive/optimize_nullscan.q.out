@@ -75,9 +75,9 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
       Path -> Alias:
-        -mr-10002default.src{} [src]
+        -mr-10003default.src{} [src]
       Path -> Partition:
-        -mr-10002default.src{} 
+        -mr-10003default.src{} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -121,7 +121,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        -mr-10002default.src{} [src]
+        -mr-10003default.src{} [src]
 
   Stage: Stage-0
     Fetch Operator
@@ -337,12 +337,12 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10004default.srcpart{ds=2008-04-08, hr=11} [b:srcpart]
-        -mr-10005default.srcpart{ds=2008-04-08, hr=12} [b:srcpart]
-        -mr-10006default.srcpart{ds=2008-04-09, hr=11} [b:srcpart]
-        -mr-10007default.srcpart{ds=2008-04-09, hr=12} [b:srcpart]
+        -mr-10005default.srcpart{ds=2008-04-08, hr=11} [b:srcpart]
+        -mr-10006default.srcpart{ds=2008-04-08, hr=12} [b:srcpart]
+        -mr-10007default.srcpart{ds=2008-04-09, hr=11} [b:srcpart]
+        -mr-10008default.srcpart{ds=2008-04-09, hr=12} [b:srcpart]
       Path -> Partition:
-        -mr-10004default.srcpart{ds=2008-04-08, hr=11} 
+        -mr-10005default.srcpart{ds=2008-04-08, hr=11} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -387,7 +387,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        -mr-10005default.srcpart{ds=2008-04-08, hr=12} 
+        -mr-10006default.srcpart{ds=2008-04-08, hr=12} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -432,7 +432,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        -mr-10006default.srcpart{ds=2008-04-09, hr=11} 
+        -mr-10007default.srcpart{ds=2008-04-09, hr=11} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -477,7 +477,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        -mr-10007default.srcpart{ds=2008-04-09, hr=12} 
+        -mr-10008default.srcpart{ds=2008-04-09, hr=12} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -523,10 +523,10 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        -mr-10004default.srcpart{ds=2008-04-08, hr=11} [b:srcpart]
-        -mr-10005default.srcpart{ds=2008-04-08, hr=12} [b:srcpart]
-        -mr-10006default.srcpart{ds=2008-04-09, hr=11} [b:srcpart]
-        -mr-10007default.srcpart{ds=2008-04-09, hr=12} [b:srcpart]
+        -mr-10005default.srcpart{ds=2008-04-08, hr=11} [b:srcpart]
+        -mr-10006default.srcpart{ds=2008-04-08, hr=12} [b:srcpart]
+        -mr-10007default.srcpart{ds=2008-04-09, hr=11} [b:srcpart]
+        -mr-10008default.srcpart{ds=2008-04-09, hr=12} [b:srcpart]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -586,10 +586,10 @@ STAGE PLANS:
               tag: 1
               auto parallelism: false
       Path -> Alias:
-        -mr-10003default.src{} [a:src]
+        -mr-10004default.src{} [a:src]
 #### A masked pattern was here ####
       Path -> Partition:
-        -mr-10003default.src{} 
+        -mr-10004default.src{} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -634,7 +634,7 @@ STAGE PLANS:
             name: default.src
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -653,7 +653,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
               serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Truncated Path -> Alias:
-        -mr-10003default.src{} [a:src]
+        -mr-10004default.src{} [a:src]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -795,9 +795,9 @@ STAGE PLANS:
                   value expressions: _col0 (type: bigint)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10004default.src{} [null-subquery1:_u1-subquery1:src]
+        -mr-10005default.src{} [null-subquery1:_u1-subquery1:src]
       Path -> Partition:
-        -mr-10004default.src{} 
+        -mr-10005default.src{} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -841,7 +841,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        -mr-10004default.src{} [null-subquery1:_u1-subquery1:src]
+        -mr-10005default.src{} [null-subquery1:_u1-subquery1:src]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -925,7 +925,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -945,7 +945,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -1313,12 +1313,12 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10004default.srcpart{ds=2008-04-08, hr=11} [b:srcpart]
-        -mr-10005default.srcpart{ds=2008-04-08, hr=12} [b:srcpart]
-        -mr-10006default.srcpart{ds=2008-04-09, hr=11} [b:srcpart]
-        -mr-10007default.srcpart{ds=2008-04-09, hr=12} [b:srcpart]
+        -mr-10005default.srcpart{ds=2008-04-08, hr=11} [b:srcpart]
+        -mr-10006default.srcpart{ds=2008-04-08, hr=12} [b:srcpart]
+        -mr-10007default.srcpart{ds=2008-04-09, hr=11} [b:srcpart]
+        -mr-10008default.srcpart{ds=2008-04-09, hr=12} [b:srcpart]
       Path -> Partition:
-        -mr-10004default.srcpart{ds=2008-04-08, hr=11} 
+        -mr-10005default.srcpart{ds=2008-04-08, hr=11} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1363,7 +1363,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        -mr-10005default.srcpart{ds=2008-04-08, hr=12} 
+        -mr-10006default.srcpart{ds=2008-04-08, hr=12} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1408,7 +1408,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        -mr-10006default.srcpart{ds=2008-04-09, hr=11} 
+        -mr-10007default.srcpart{ds=2008-04-09, hr=11} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1453,7 +1453,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        -mr-10007default.srcpart{ds=2008-04-09, hr=12} 
+        -mr-10008default.srcpart{ds=2008-04-09, hr=12} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1499,10 +1499,10 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        -mr-10004default.srcpart{ds=2008-04-08, hr=11} [b:srcpart]
-        -mr-10005default.srcpart{ds=2008-04-08, hr=12} [b:srcpart]
-        -mr-10006default.srcpart{ds=2008-04-09, hr=11} [b:srcpart]
-        -mr-10007default.srcpart{ds=2008-04-09, hr=12} [b:srcpart]
+        -mr-10005default.srcpart{ds=2008-04-08, hr=11} [b:srcpart]
+        -mr-10006default.srcpart{ds=2008-04-08, hr=12} [b:srcpart]
+        -mr-10007default.srcpart{ds=2008-04-09, hr=11} [b:srcpart]
+        -mr-10008default.srcpart{ds=2008-04-09, hr=12} [b:srcpart]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -1560,10 +1560,10 @@ STAGE PLANS:
               value expressions: _col0 (type: string)
               auto parallelism: false
       Path -> Alias:
-        -mr-10003default.src{} [a:src]
+        -mr-10004default.src{} [a:src]
 #### A masked pattern was here ####
       Path -> Partition:
-        -mr-10003default.src{} 
+        -mr-10004default.src{} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1608,7 +1608,7 @@ STAGE PLANS:
             name: default.src
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -1627,7 +1627,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
               serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Truncated Path -> Alias:
-        -mr-10003default.src{} [a:src]
+        -mr-10004default.src{} [a:src]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -1791,9 +1791,9 @@ STAGE PLANS:
                 tag: 1
                 auto parallelism: false
       Path -> Alias:
-        -mr-10004default.src{} [null-subquery2:a-subquery2:src]
+        -mr-10005default.src{} [null-subquery2:a-subquery2:src]
       Path -> Partition:
-        -mr-10004default.src{} 
+        -mr-10005default.src{} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1837,7 +1837,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        -mr-10004default.src{} [null-subquery2:a-subquery2:src]
+        -mr-10005default.src{} [null-subquery2:a-subquery2:src]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -1930,10 +1930,10 @@ STAGE PLANS:
                 GatherStats: false
                 MultiFileSpray: false
       Path -> Alias:
-        -mr-10003default.src{} [null-subquery1:a-subquery1:src]
+        -mr-10004default.src{} [null-subquery1:a-subquery1:src]
 #### A masked pattern was here ####
       Path -> Partition:
-        -mr-10003default.src{} 
+        -mr-10004default.src{} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1978,7 +1978,7 @@ STAGE PLANS:
             name: default.src
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -1997,7 +1997,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
               serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Truncated Path -> Alias:
-        -mr-10003default.src{} [null-subquery1:a-subquery1:src]
+        -mr-10004default.src{} [null-subquery1:a-subquery1:src]
 #### A masked pattern was here ####
 
   Stage: Stage-0
@@ -2097,9 +2097,9 @@ STAGE PLANS:
                 value expressions: key (type: string)
                 auto parallelism: false
       Path -> Alias:
-        -mr-10002default.src{} [s1, s2]
+        -mr-10003default.src{} [s1, s2]
       Path -> Partition:
-        -mr-10002default.src{} 
+        -mr-10003default.src{} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2143,7 +2143,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        -mr-10002default.src{} [s1, s2]
+        -mr-10003default.src{} [s1, s2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -2250,9 +2250,9 @@ STAGE PLANS:
                   value expressions: _col0 (type: bigint)
                   auto parallelism: false
       Path -> Alias:
-        -mr-10002default.src{} [src]
+        -mr-10003default.src{} [src]
       Path -> Partition:
-        -mr-10002default.src{} 
+        -mr-10003default.src{} 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2296,7 +2296,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        -mr-10002default.src{} [src]
+        -mr-10003default.src{} [src]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
