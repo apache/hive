@@ -102,4 +102,8 @@ public class SplitSample implements Serializable{
   public long getTargetSize(long totalSize) {
     return totalLength != null ? totalLength : (long) (totalSize * percent / 100D);
   }
+
+  public long estimateSourceSize(long targetSize) {
+    return percent != null ? Math.round(targetSize * 100D / percent) : targetSize;
+  }
 }
