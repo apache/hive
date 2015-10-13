@@ -452,7 +452,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     // We store all caches in variables to change the main one based on config.
     // This is not thread safe between different split generations (and wasn't anyway).
-    private static FooterCache footerCache;
+    private FooterCache footerCache;
     private static LocalCache localCache;
     private static MetastoreCache metaCache;
     private static ExecutorService threadPool = null;
@@ -596,7 +596,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * ETL strategy is used when spending little more time in split generation is acceptable
    * (split generation reads and caches file footers).
    */
-  static final class ETLSplitStrategy implements SplitStrategy<SplitInfo> {
+  static final class ETLSplitStrategy implements SplitStrategy<SplitInfo>, Callable<Void> {
     Context context;
     FileSystem fs;
     List<HdfsFileStatusWithId> files;
@@ -604,6 +604,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<DeltaMetaData> deltas;
     Path dir;
     boolean[] covered;
+    private List<Future<List<OrcSplit>>> splitFuturesRef;
 
     public ETLSplitStrategy(Context context, FileSystem fs, Path dir,
         List<HdfsFileStatusWithId> children, boolean isOriginal, List<DeltaMetaData> deltas,
@@ -629,7 +630,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
       // Force local cache if we have deltas.
       FooterCache cache = context.cacheStripeDetails ?
-          (deltas == null ? Context.footerCache : Context.localCache) : null;
+          (deltas == null ? context.footerCache : Context.localCache) : null;
       if (cache != null) {
         FileInfo[] infos = cache.getAndValidate(files);
         for (int i = 0; i < files.size(); ++i) {
@@ -660,6 +661,34 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     @Override
     public String toString() {
       return ETLSplitStrategy.class.getSimpleName() + " strategy for " + dir;
+    }
+
+    public Future<Void> generateSplitWork(
+        Context context, List<Future<List<OrcSplit>>> splitFutures) throws IOException {
+      if (context.cacheStripeDetails && context.footerCache.isBlocking()) {
+        this.splitFuturesRef = splitFutures;
+        return Context.threadPool.submit(this);
+      } else {
+        runGetSplitsSync(splitFutures);
+        return null;
+      }
+    }
+
+    @Override
+    public Void call() throws IOException {
+      runGetSplitsSync(splitFuturesRef);
+      return null;
+    }
+
+    private void runGetSplitsSync(List<Future<List<OrcSplit>>> splitFutures) throws IOException {
+      List<SplitInfo> splits = getSplits();
+      List<Future<List<OrcSplit>>> localList = new ArrayList<>(splits.size());
+      for (SplitInfo splitInfo : splits) {
+        localList.add(Context.threadPool.submit(new SplitGenerator(splitInfo)));
+      }
+      synchronized (splitFutures) {
+        splitFutures.addAll(localList);
+      }
     }
   }
 
@@ -1028,7 +1057,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
               && fileInfo.writerVersion != null;
           // We assume that if we needed to create a reader, we need to cache it to meta cache.
           // TODO: This will also needlessly overwrite it in local cache for now.
-          Context.footerCache.put(fileWithId.getFileId(), file, fileInfo.fileMetaInfo, orcReader);
+          context.footerCache.put(fileWithId.getFileId(), file, fileInfo.fileMetaInfo, orcReader);
         }
       } else {
         Reader orcReader = createOrcReader();
@@ -1041,7 +1070,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             ((ReaderImpl) orcReader).getFileMetaInfo() : null;
         if (context.cacheStripeDetails) {
           Long fileId = fileWithId.getFileId();
-          Context.footerCache.put(fileId, file, fileMetaInfo, orcReader);
+          context.footerCache.put(fileId, file, fileMetaInfo, orcReader);
         }
       }
       includedCols = genIncludedColumns(types, context.conf, isOriginal);
@@ -1084,7 +1113,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     List<OrcSplit> splits = Lists.newArrayList();
     List<Future<AcidDirInfo>> pathFutures = Lists.newArrayList();
-    List<Future<List<OrcSplit>>> splitFutures = Lists.newArrayList();
+    List<Future<Void>> strategyFutures = Lists.newArrayList();
+    final List<Future<List<OrcSplit>>> splitFutures = Lists.newArrayList();
 
     // multi-threaded file statuses and split strategy
     Path[] paths = getInputPaths(conf);
@@ -1109,9 +1139,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         // Hack note - different split strategies return differently typed lists, yay Java.
         // This works purely by magic, because we know which strategy produces which type.
         if (splitStrategy instanceof ETLSplitStrategy) {
-          List<SplitInfo> splitInfos = ((ETLSplitStrategy)splitStrategy).getSplits();
-          for (SplitInfo splitInfo : splitInfos) {
-            splitFutures.add(Context.threadPool.submit(new SplitGenerator(splitInfo)));
+          Future<Void> ssFuture = ((ETLSplitStrategy)splitStrategy).generateSplitWork(
+              context, splitFutures);
+          if (ssFuture != null) {
+            strategyFutures.add(ssFuture);
           }
         } else {
           @SuppressWarnings("unchecked")
@@ -1121,11 +1152,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
 
       // complete split futures
+      for (Future<Void> ssFuture : strategyFutures) {
+         ssFuture.get(); // Make sure we get exceptions strategies might have thrown.
+      }
+      // All the split strategies are done, so it must be safe to access splitFutures.
       for (Future<List<OrcSplit>> splitFuture : splitFutures) {
         splits.addAll(splitFuture.get());
       }
     } catch (Exception e) {
       cancelFutures(pathFutures);
+      cancelFutures(strategyFutures);
       cancelFutures(splitFutures);
       throw new RuntimeException("ORC split generation failed with exception: " + e.getMessage(), e);
     }
@@ -1557,6 +1593,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    */
   public interface FooterCache {
     FileInfo[] getAndValidate(List<HdfsFileStatusWithId> files) throws IOException;
+    boolean isBlocking();
     void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
         throws IOException;
   }
@@ -1618,6 +1655,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           orcReader.getStripes(), orcReader.getStripeStatistics(), orcReader.getTypes(),
           orcReader.getOrcProtoFileStatistics(), fileMetaInfo, orcReader.getWriterVersion(),
           fileId));
+    }
+
+    @Override
+    public boolean isBlocking() {
+      return false;
     }
   }
 
@@ -1733,6 +1775,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     public void configure(HiveConf queryConfig) {
       this.conf = queryConfig;
+    }
+
+    @Override
+    public boolean isBlocking() {
+      return true;
     }
   }
 }
