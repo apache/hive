@@ -411,11 +411,10 @@ public class SimpleFetchOptimizer implements Transform {
       if (splitSample != null && splitSample.getTotalLength() != null) {
         return splitSample.getTotalLength();
       }
-      long length = calculateLength(pctx, remaining);
       if (splitSample != null) {
-        return splitSample.getTargetSize(length);
+        return splitSample.getTargetSize(calculateLength(pctx, splitSample.estimateSourceSize(remaining)));
       }
-      return length;
+      return calculateLength(pctx, remaining);
     }
 
     private long calculateLength(ParseContext pctx, long remaining) throws Exception {
@@ -440,6 +439,9 @@ public class SimpleFetchOptimizer implements Transform {
       for (Partition partition : partsList.getNotDeniedPartns()) {
         Path path = partition.getDataLocation();
         total += getFileLength(jobConf, path, partition.getInputFormatClass());
+        if (total > remaining) {
+          break;
+        }
       }
       return total;
     }
