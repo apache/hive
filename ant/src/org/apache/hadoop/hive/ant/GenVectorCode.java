@@ -224,17 +224,11 @@ public class GenVectorCode extends Task {
       {"ColumnCompareScalar", "GreaterEqual", "long", "double", ">="},
       {"ColumnCompareScalar", "GreaterEqual", "double", "double", ">="},
 
-      {"ColumnCompareScalar", "Equal", "long", "long", "=="},
       {"ColumnCompareScalar", "Equal", "double", "long", "=="},
-      {"ColumnCompareScalar", "NotEqual", "long", "long", "!="},
       {"ColumnCompareScalar", "NotEqual", "double", "long", "!="},
-      {"ColumnCompareScalar", "Less", "long", "long", "<"},
       {"ColumnCompareScalar", "Less", "double", "long", "<"},
-      {"ColumnCompareScalar", "LessEqual", "long", "long", "<="},
       {"ColumnCompareScalar", "LessEqual", "double", "long", "<="},
-      {"ColumnCompareScalar", "Greater", "long", "long", ">"},
       {"ColumnCompareScalar", "Greater", "double", "long", ">"},
-      {"ColumnCompareScalar", "GreaterEqual", "long", "long", ">="},
       {"ColumnCompareScalar", "GreaterEqual", "double", "long", ">="},
 
       {"ScalarCompareColumn", "Equal", "long", "double", "=="},
@@ -250,17 +244,11 @@ public class GenVectorCode extends Task {
       {"ScalarCompareColumn", "GreaterEqual", "long", "double", ">="},
       {"ScalarCompareColumn", "GreaterEqual", "double", "double", ">="},
 
-      {"ScalarCompareColumn", "Equal", "long", "long", "=="},
       {"ScalarCompareColumn", "Equal", "double", "long", "=="},
-      {"ScalarCompareColumn", "NotEqual", "long", "long", "!="},
       {"ScalarCompareColumn", "NotEqual", "double", "long", "!="},
-      {"ScalarCompareColumn", "Less", "long", "long", "<"},
       {"ScalarCompareColumn", "Less", "double", "long", "<"},
-      {"ScalarCompareColumn", "LessEqual", "long", "long", "<="},
       {"ScalarCompareColumn", "LessEqual", "double", "long", "<="},
-      {"ScalarCompareColumn", "Greater", "long", "long", ">"},
       {"ScalarCompareColumn", "Greater", "double", "long", ">"},
-      {"ScalarCompareColumn", "GreaterEqual", "long", "long", ">="},
       {"ScalarCompareColumn", "GreaterEqual", "double", "long", ">="},
 
       {"TimestampColumnCompareTimestampScalar", "Equal"},
@@ -598,17 +586,11 @@ public class GenVectorCode extends Task {
       {"ColumnCompareColumn", "GreaterEqual", "long", "double", ">="},
       {"ColumnCompareColumn", "GreaterEqual", "double", "double", ">="},
 
-      {"ColumnCompareColumn", "Equal", "long", "long", "=="},
       {"ColumnCompareColumn", "Equal", "double", "long", "=="},
-      {"ColumnCompareColumn", "NotEqual", "long", "long", "!="},
       {"ColumnCompareColumn", "NotEqual", "double", "long", "!="},
-      {"ColumnCompareColumn", "Less", "long", "long", "<"},
       {"ColumnCompareColumn", "Less", "double", "long", "<"},
-      {"ColumnCompareColumn", "LessEqual", "long", "long", "<="},
       {"ColumnCompareColumn", "LessEqual", "double", "long", "<="},
-      {"ColumnCompareColumn", "Greater", "long", "long", ">"},
       {"ColumnCompareColumn", "Greater", "double", "long", ">"},
-      {"ColumnCompareColumn", "GreaterEqual", "long", "long", ">="},
       {"ColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
 
       // Interval comparisons
@@ -1891,7 +1873,7 @@ public class GenVectorCode extends Task {
   private void generateTimestampScalarCompareTimestampColumn(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String className = "TimestampScalar" + operatorName + "TimestampColumn";
-    String baseClassName = "LongScalar" + operatorName + "LongColumn";
+    String baseClassName = "org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalar" + operatorName + "LongColumn";
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
@@ -1904,7 +1886,7 @@ public class GenVectorCode extends Task {
   private void generateTimestampColumnCompareTimestampScalar(String[] tdesc) throws Exception {
     String operatorName = tdesc[1];
     String className = "TimestampCol" + operatorName + "TimestampScalar";
-    String baseClassName = "LongCol" + operatorName + "LongScalar";
+    String baseClassName = "org.apache.hadoop.hive.ql.exec.vector.expressions.LongCol" + operatorName + "LongScalar";
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
@@ -1954,7 +1936,7 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType = tdesc[2];
     String className = getCamelCaseType(operandType) + "Scalar" + operatorName + "TimestampColumn";
-    String baseClassName = "LongScalar" + operatorName + "LongColumn";
+    String baseClassName = "org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalar" + operatorName + "LongColumn";
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
@@ -1970,7 +1952,7 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType = tdesc[2];
     String className = "TimestampCol" + operatorName + getCamelCaseType(operandType) + "Scalar";
-    String baseClassName = "LongCol" + operatorName + "LongScalar";
+    String baseClassName = "org.apache.hadoop.hive.ql.exec.vector.expressions.LongCol" + operatorName + "LongScalar";
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
@@ -2354,7 +2336,7 @@ public class GenVectorCode extends Task {
     String operandType = tdesc[2];
     String className = getCamelCaseType(operandType) + "Scalar" + operatorName
         + getCamelCaseType(operandType) + "Column";
-    String baseClassName = "LongScalar" + operatorName + "LongColumn";
+    String baseClassName = "org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalar" + operatorName + "LongColumn";
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
@@ -2386,7 +2368,7 @@ public class GenVectorCode extends Task {
     String operandType = tdesc[2];
     String className = getCamelCaseType(operandType) + "Col" + operatorName
         + getCamelCaseType(operandType) + "Scalar";
-    String baseClassName = "LongCol" + operatorName + "LongScalar";
+    String baseClassName = "org.apache.hadoop.hive.ql.exec.vector.expressions.LongCol" + operatorName + "LongScalar";
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
