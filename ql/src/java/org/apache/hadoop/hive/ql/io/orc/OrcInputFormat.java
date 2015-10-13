@@ -626,8 +626,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       //       huge metastore call result that cannot be handled with in-API batching. To have an
       //       optimal number of metastore calls, we should wait for batch-size number of files (a
       //       few hundreds) to become available, then call metastore.
-      if (context.cacheStripeDetails) {
-        FileInfo[] infos = Context.footerCache.getAndValidate(files);
+
+      // Force local cache if we have deltas.
+      FooterCache cache = context.cacheStripeDetails ?
+          (deltas == null ? Context.footerCache : Context.localCache) : null;
+      if (cache != null) {
+        FileInfo[] infos = cache.getAndValidate(files);
         for (int i = 0; i < files.size(); ++i) {
           FileInfo info = infos[i];
           if (info != null) {
