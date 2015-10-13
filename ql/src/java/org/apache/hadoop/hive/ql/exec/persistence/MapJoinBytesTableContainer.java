@@ -704,8 +704,6 @@ public class MapJoinBytesTableContainer
 
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
         BytesBytesMultiHashMap.Result hashMapResult) {
-
-      int keyHash = WriteBuffers.murmurHash(bytes, offset, length);
       aliasFilter = hashMap.getValueResult(bytes, offset, length, hashMapResult);
       dummyRow = null;
       if (hashMapResult.hasRows()) {
