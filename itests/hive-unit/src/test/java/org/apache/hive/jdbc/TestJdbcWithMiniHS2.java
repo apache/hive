@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -51,17 +52,23 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.datanucleus.ClassLoaderResolver;
+import org.datanucleus.NucleusContext;
+import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
-  private static Path dataFilePath;
+  private static String dataFileDir;
+  private static Path kvDataFilePath;
   private static final String tmpDir = System.getProperty("test.tmp.dir");
 
   private Connection hs2Conn = null;
@@ -72,9 +79,8 @@ public class TestJdbcWithMiniHS2 {
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     miniHS2 = new MiniHS2(conf);
-    String dataFileDir = conf.get("test.data.files").replace('\\', '/')
-        .replace("c:", "");
-    dataFilePath = new Path(dataFileDir, "kv1.txt");
+    dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+    kvDataFilePath = new Path(dataFileDir, "kv1.txt");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
   }
@@ -114,7 +120,7 @@ public class TestJdbcWithMiniHS2 {
 
     // load data
     stmt.execute("load data local inpath '"
-        + dataFilePath.toString() + "' into table " + tableName);
+        + kvDataFilePath.toString() + "' into table " + tableName);
 
     ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
     assertTrue(res.next());
@@ -135,7 +141,7 @@ public class TestJdbcWithMiniHS2 {
 
     // load data
     stmt.execute("load data local inpath '"
-        + dataFilePath.toString() + "' into table " + tableName);
+        + kvDataFilePath.toString() + "' into table " + tableName);
 
     ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
     assertTrue(res.next());
@@ -722,5 +728,85 @@ public class TestJdbcWithMiniHS2 {
     } catch (Exception e) {
       fail("Not expecting exception: " + e);
     }
+  }
+
+  /**
+   * Tests that DataNucleus' NucleusContext.classLoaderResolverMap clears cached class objects (& hence
+   * doesn't leak classloaders) on closing any session
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testAddJarDataNucleusUnCaching() throws Exception {
+    Path jarFilePath = new Path(dataFileDir, "identity_udf.jar");
+    Connection conn = getConnection(miniHS2.getJdbcURL(), "foo", "bar");
+    String tableName = "testAddJar";
+    Statement stmt = conn.createStatement();
+    stmt.execute("SET hive.support.concurrency = false");
+    // Create table
+    stmt.execute("DROP TABLE IF EXISTS " + tableName);
+    stmt.execute("CREATE TABLE " + tableName + " (key INT, value STRING)");
+    // Load data
+    stmt.execute("LOAD DATA LOCAL INPATH '" + kvDataFilePath.toString() + "' INTO TABLE "
+        + tableName);
+    ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
+    // Ensure table is populated
+    assertTrue(res.next());
+
+    int mapSizeBeforeClose;
+    int mapSizeAfterClose;
+    // Add the jar file
+    stmt.execute("ADD JAR " + jarFilePath.toString());
+    // Create a temporary function using the jar
+    stmt.execute("CREATE TEMPORARY FUNCTION func AS 'IdentityStringUDF'");
+    // Execute the UDF
+    stmt.execute("SELECT func(value) from " + tableName);
+    mapSizeBeforeClose = getNucleusClassLoaderResolverMapSize();
+    System.out
+        .println("classLoaderResolverMap size before connection close: " + mapSizeBeforeClose);
+    // Cache size should be > 0 now
+    Assert.assertTrue(mapSizeBeforeClose > 0);
+    conn.close();
+    mapSizeAfterClose = getNucleusClassLoaderResolverMapSize();
+    System.out.println("classLoaderResolverMap size after connection close: " + mapSizeAfterClose);
+    // Cache size should be 0 now
+    Assert.assertTrue("Failed; NucleusContext classLoaderResolverMap size: " + mapSizeAfterClose,
+        mapSizeAfterClose == 0);
+  }
+
+  @SuppressWarnings("unchecked")
+  private int getNucleusClassLoaderResolverMapSize() {
+    Field classLoaderResolverMap;
+    Field pmf;
+    JDOPersistenceManagerFactory jdoPmf = null;
+    NucleusContext nc = null;
+    Map<String, ClassLoaderResolver> cMap;
+    try {
+      pmf = ObjectStore.class.getDeclaredField("pmf");
+      if (pmf != null) {
+        pmf.setAccessible(true);
+        jdoPmf = (JDOPersistenceManagerFactory) pmf.get(null);
+        if (jdoPmf != null) {
+          nc = jdoPmf.getNucleusContext();
+        }
+      }
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+    if (nc != null) {
+      try {
+        classLoaderResolverMap = NucleusContext.class.getDeclaredField("classLoaderResolverMap");
+        if (classLoaderResolverMap != null) {
+          classLoaderResolverMap.setAccessible(true);
+          cMap = (Map<String, ClassLoaderResolver>) classLoaderResolverMap.get(nc);
+          if (cMap != null) {
+            return cMap.size();
+          }
+        }
+      } catch (Exception e) {
+        System.out.println(e);
+      }
+    }
+    return -1;
   }
 }

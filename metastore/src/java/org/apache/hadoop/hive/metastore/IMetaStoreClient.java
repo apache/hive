@@ -104,6 +104,13 @@ public interface IMetaStoreClient {
   void setHiveAddedJars(String addedJars);
 
   /**
+   * Returns true if the current client is using an in process metastore (local metastore).
+   *
+   * @return
+   */
+  boolean isLocalMetaStore();
+
+  /**
    *  Tries to reconnect this MetaStoreClient to the MetaStore.
    */
   void reconnect() throws MetaException;
