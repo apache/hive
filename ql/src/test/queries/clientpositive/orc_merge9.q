@@ -15,6 +15,7 @@ set hive.merge.orcfile.stripe.level=true;
 set hive.merge.tezfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
+set hive.merge.sparkfiles=true;
 
 select count(*) from ts_merge;
 alter table ts_merge concatenate;
