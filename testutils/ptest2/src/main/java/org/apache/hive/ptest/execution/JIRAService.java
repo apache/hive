@@ -118,7 +118,7 @@ class JIRAService {
       comments.add(mPatch);
     }
     comments.add("");
-    if (error) {
+    if (error && numTestsExecuted == 0) {
       comments.add(formatError("-1 due to build exiting with an error"));
     } else {
       if (addedTests.size() > 0) {
