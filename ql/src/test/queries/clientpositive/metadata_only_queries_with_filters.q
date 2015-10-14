@@ -51,4 +51,3 @@ select count(*) from stats_tbl_part;
 select count(*)/2 from stats_tbl_part;
 drop table stats_tbl_part;
 set hive.compute.query.using.stats=false;
-set hive.stats.dbclass=jdbc:derby;

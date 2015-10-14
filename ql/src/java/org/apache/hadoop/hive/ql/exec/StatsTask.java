@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -158,8 +157,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
       int maxPrefixLength = StatsFactory.getMaxPrefixLength(conf);
 
-      // "counter" or "fs" type does not need to collect stats per task
-      boolean taskIndependent = statsAggregator instanceof StatsCollectionTaskIndependent;
       if (partitions == null) {
         org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
         Map<String, String> parameters = tTable.getParameters();
@@ -175,7 +172,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
 
         if (statsAggregator != null) {
-          String prefix = getAggregationPrefix(taskIndependent, table, null);
+          String prefix = getAggregationPrefix(table, null);
           updateStats(statsAggregator, parameters, prefix, maxPrefixLength, atomic);
         }
 
@@ -211,7 +208,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           }
 
           if (statsAggregator != null) {
-            String prefix = getAggregationPrefix(taskIndependent, table, partn);
+            String prefix = getAggregationPrefix(table, partn);
             updateStats(statsAggregator, parameters, prefix, maxPrefixLength, atomic);
           }
 
@@ -251,23 +248,15 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     return ret;
   }
 
-  private String getAggregationPrefix(boolean counter, Table table, Partition partition)
+  private String getAggregationPrefix(Table table, Partition partition)
       throws MetaException {
-    if (!counter && partition == null) {
-      return work.getAggKey();
-    }
-    StringBuilder prefix = new StringBuilder();
-    if (counter) {
-      // prefix is of the form dbName.tblName
-      prefix.append(table.getDbName()).append('.').append(table.getTableName());
-    } else {
-      // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
-      prefix.append(work.getAggKey());
-    }
+
+    // prefix is of the form dbName.tblName
+    String prefix = table.getDbName()+"."+table.getTableName();
     if (partition != null) {
-      return Utilities.join(prefix.toString(), Warehouse.makePartPath(partition.getSpec()));
+      return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
     }
-    return prefix.toString();
+    return prefix;
   }
 
   private StatsAggregator createStatsAggregator(StatsCollectionContext scc) throws HiveException {
@@ -336,7 +325,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
       }
     }
-    statsAggregator.cleanUp(aggKey);
   }
 
   private void updateQuickStats(Warehouse wh, Map<String, String> parameters,

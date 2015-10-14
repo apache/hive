@@ -47,9 +47,4 @@ public class KeyVerifyingStatsAggregator implements StatsAggregator {
   public boolean closeConnection(StatsCollectionContext scc) {
     return true;
   }
-
-  @Override
-  public boolean cleanUp(String keyPrefix) {
-    return true;
-  }
 }

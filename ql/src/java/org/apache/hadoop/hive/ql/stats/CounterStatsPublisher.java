@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.mapred.Reporter;
 
-public class CounterStatsPublisher implements StatsPublisher, StatsCollectionTaskIndependent {
+public class CounterStatsPublisher implements StatsPublisher {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsPublisher.class.getName());
 

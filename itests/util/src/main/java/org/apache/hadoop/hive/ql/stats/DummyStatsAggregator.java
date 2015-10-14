@@ -54,12 +54,4 @@ public class DummyStatsAggregator implements StatsAggregator {
     }
     return true;
   }
-
-  @Override
-  public boolean cleanUp(String keyPrefix) {
-    if (errorMethod.equalsIgnoreCase("cleanUp")) {
-      return false;
-    }
-    return true;
-  }
 }

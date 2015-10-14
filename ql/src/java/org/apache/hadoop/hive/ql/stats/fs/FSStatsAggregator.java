@@ -34,11 +34,10 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 
 import com.esotericsoftware.kryo.io.Input;
 
-public class FSStatsAggregator implements StatsAggregator, StatsCollectionTaskIndependent {
+public class FSStatsAggregator implements StatsAggregator {
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private List<Map<String,Map<String,String>>> statsList;
   private Map<String, Map<String,String>> statsMap;
@@ -111,10 +110,5 @@ public class FSStatsAggregator implements StatsAggregator, StatsCollectionTaskIn
       LOG.error(e);
       return true;
     }
-  }
-
-  @Override
-  public boolean cleanUp(String keyPrefix) {
-    return true;
   }
 }

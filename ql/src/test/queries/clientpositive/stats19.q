@@ -27,7 +27,7 @@ set hive.stats.key.prefix.max.length=-1;
 -- The stats key should not be hashed since negative values should imply hashing is turned off
 insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src;
 
-set hive.stats.dbclass=jdbc:derby;
+set hive.stats.dbclass=fs;
 set hive.stats.default.publisher=;
 set hive.stats.default.aggregator=;
 
@@ -76,7 +76,7 @@ set hive.stats.key.prefix.max.length=-1;
 -- The stats key should not be hashed since negative values should imply hashing is turned off
 insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src;
 
-set hive.stats.dbclass=jdbc:derby;
+set hive.stats.dbclass=fs;
 set hive.stats.default.publisher=;
 set hive.stats.default.aggregator=;
 

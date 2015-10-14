@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hive.spark.counter.SparkCounters;
 
 public class CounterStatsAggregatorSpark
-  implements StatsAggregator, StatsCollectionTaskIndependent {
+  implements StatsAggregator {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsAggregatorSpark.class);
 
@@ -53,11 +53,6 @@ public class CounterStatsAggregatorSpark
 
   @Override
   public boolean closeConnection(StatsCollectionContext scc) {
-    return true;
-  }
-
-  @Override
-  public boolean cleanUp(String keyPrefix) {
     return true;
   }
 }

@@ -1341,32 +1341,16 @@ public class HiveConf extends Configuration {
     // Statistics
     HIVESTATSAUTOGATHER("hive.stats.autogather", true,
         "A flag to gather statistics automatically during the INSERT OVERWRITE command."),
-    HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("jdbc(:.*)", "counter", "custom", "fs"),
+    HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("counter", "custom", "fs"),
         "The storage that stores temporary Hive statistics. In filesystem based statistics collection ('fs'), \n" +
         "each task writes statistics it has collected in a file on the filesystem, which will be aggregated \n" +
-        "after the job has finished. Supported values are fs (filesystem), jdbc:database (where database \n" +
-        "can be derby, mysql, etc.), counter, and custom as defined in StatsSetupConst.java."), // StatsSetupConst.StatDB
-    HIVESTATSJDBCDRIVER("hive.stats.jdbcdriver",
-        "org.apache.derby.jdbc.EmbeddedDriver",
-        "The JDBC driver for the database that stores temporary Hive statistics."),
-    HIVESTATSDBCONNECTIONSTRING("hive.stats.dbconnectionstring",
-        "jdbc:derby:;databaseName=TempStatsStore;create=true",
-        "The default connection string for the database that stores temporary Hive statistics."), // automatically create database
+        "after the job has finished. Supported values are fs (filesystem), counter, and custom as defined in StatsSetupConst.java."), // StatsSetupConst.StatDB
     HIVE_STATS_DEFAULT_PUBLISHER("hive.stats.default.publisher", "",
         "The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type."),
     HIVE_STATS_DEFAULT_AGGREGATOR("hive.stats.default.aggregator", "",
         "The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type."),
-    HIVE_STATS_JDBC_TIMEOUT("hive.stats.jdbc.timeout", "30s", new TimeValidator(TimeUnit.SECONDS),
-        "Timeout value used by JDBC connection and statements."),
     HIVE_STATS_ATOMIC("hive.stats.atomic", false,
         "whether to update metastore stats only if all stats are available"),
-    HIVE_STATS_RETRIES_MAX("hive.stats.retries.max", 0,
-        "Maximum number of retries when stats publisher/aggregator got an exception updating intermediate database. \n" +
-        "Default is no tries on failures."),
-    HIVE_STATS_RETRIES_WAIT("hive.stats.retries.wait", "3000ms",
-        new TimeValidator(TimeUnit.MILLISECONDS),
-        "The base waiting window before the next retry. The actual wait time is calculated by " +
-        "baseWindow * failures baseWindow * (failure + 1) * (random number between [0.0,1.0])."),
     HIVE_STATS_COLLECT_RAWDATASIZE("hive.stats.collect.rawdatasize", true,
         "should the raw data size be collected when analyzing tables"),
     CLIENT_STATS_COUNTERS("hive.client.stats.counters", "",

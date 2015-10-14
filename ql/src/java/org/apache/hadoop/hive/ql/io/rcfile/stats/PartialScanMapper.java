@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileKeyBufferWrapper;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileValueBufferWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
@@ -157,10 +156,6 @@ public class PartialScanMapper extends MapReduceBase implements
     int maxPrefixLength = StatsFactory.getMaxPrefixLength(jc);
     // construct key used to store stats in intermediate db
     String key = Utilities.getHashedStatsPrefix(statsAggKeyPrefix, maxPrefixLength);
-    if (!(statsPublisher instanceof StatsCollectionTaskIndependent)) {
-      String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(jc));
-      key = Utilities.join(key, taskID);
-    }
 
     // construct statistics to be stored
     Map<String, String> statsToPublish = new HashMap<String, String>();

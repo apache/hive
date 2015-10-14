@@ -74,12 +74,6 @@
 </property>
 
 <property>
-  <name>hive.stats.dbconnectionstring</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/TempStatsStore;create=true</value>
-</property>
-
-
-<property>
   <name>javax.jdo.option.ConnectionDriverName</name>
   <value>org.apache.derby.jdbc.EmbeddedDriver</value>
 </property>

@@ -30,13 +30,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 
 import com.esotericsoftware.kryo.io.Output;
 
-public class FSStatsPublisher implements StatsPublisher, StatsCollectionTaskIndependent {
+public class FSStatsPublisher implements StatsPublisher {
 
   private Configuration conf;
   private final Log LOG = LogFactory.getLog(this.getClass().getName());

@@ -63,20 +63,4 @@ public interface StatsAggregator {
    * @return true if close connection is successful, false otherwise.
    */
   public boolean closeConnection(StatsCollectionContext scc);
-
-  /**
-   * This method is called after all statistics have been aggregated. Since we support multiple
-   * statistics, we do not perform automatic cleanup after aggregation.
-   * After this method is called, closeConnection must be called as well.
-   * This method is also used to clear the temporary statistics that have been published without
-   * being aggregated.
-   * Typically this happens when a job fails, or is forcibly stopped after publishing some
-   * statistics.
-   *
-   * @param keyPrefix
-   *          a prefix of the keys used in StatsPublisher to publish stats. It is the same
-   *          as the first parameter in aggregateStats().
-   * @return true if cleanup is successful, false otherwise.
-   */
-  public boolean cleanUp(String keyPrefix);
 }

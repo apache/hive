@@ -59,5 +59,3 @@ describe formatted t1 partition (ds='2008-04-09',hr='12');
 
 drop table t1;
 set hive.exec.dynamic.partition.mode=strict;
-
-set hive.stats.dbclass=jdbc:derby;

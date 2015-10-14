@@ -101,6 +101,7 @@ public class TestFileSinkOperator {
   public static void classSetup() {
     Properties properties = new Properties();
     properties.setProperty(serdeConstants.SERIALIZATION_LIB, TFSOSerDe.class.getName());
+    properties.setProperty(hive_metastoreConstants.META_TABLE_NAME, "tfs");
     nonAcidTableDescriptor = new TableDesc(TFSOInputFormat.class, TFSOOutputFormat.class, properties);
     properties.setProperty(serdeConstants.LIST_COLUMNS,"data");
     properties = new Properties(properties);
@@ -891,11 +892,6 @@ public class TestFileSinkOperator {
 
     @Override
     public boolean closeConnection(StatsCollectionContext scc) {
-      return true;
-    }
-
-    @Override
-    public boolean cleanUp(String keyPrefix) {
       return true;
     }
   }
