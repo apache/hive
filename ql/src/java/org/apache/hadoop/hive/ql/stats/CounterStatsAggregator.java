@@ -31,7 +31,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 
-public class CounterStatsAggregator implements StatsAggregator, StatsCollectionTaskIndependent {
+public class CounterStatsAggregator implements StatsAggregator {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsAggregator.class.getName());
 
@@ -77,11 +77,6 @@ public class CounterStatsAggregator implements StatsAggregator, StatsCollectionT
     } catch (IOException e) {
       LOG.error("Error closing job client for stats aggregator.", e);
     }
-    return true;
-  }
-
-  @Override
-  public boolean cleanUp(String keyPrefix) {
     return true;
   }
 }

@@ -62,9 +62,9 @@ public class TestMiniHS2 {
     hiveConf.set(DUMMY_CONF_KEY, DUMMY_CONF_VAL);
 
     // also check a config that has default in hiveconf
-    final String STATS_TIMEOUT_KEY = ConfVars.HIVE_STATS_JDBC_TIMEOUT.varname;
-    final String STATS_TIMEOUT = "2562";
-    hiveConf.set(STATS_TIMEOUT_KEY, STATS_TIMEOUT);
+    final String ZK_TIMEOUT_KEY = ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT.varname;
+    final String ZK_TIMEOUT = "2562";
+    hiveConf.set(ZK_TIMEOUT_KEY, ZK_TIMEOUT);
 
     // check the config used very often!
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
@@ -77,7 +77,7 @@ public class TestMiniHS2 {
     Statement stmt = hs2Conn.createStatement();
 
     checkConfVal(DUMMY_CONF_KEY, DUMMY_CONF_KEY + "=" + DUMMY_CONF_VAL, stmt);
-    checkConfVal(STATS_TIMEOUT_KEY, STATS_TIMEOUT_KEY + "=" + STATS_TIMEOUT, stmt);
+    checkConfVal(ZK_TIMEOUT_KEY, ZK_TIMEOUT_KEY + "=" + ZK_TIMEOUT, stmt);
     checkConfVal(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname,
         ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=" + "false", stmt);
 

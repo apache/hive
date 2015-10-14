@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -1153,7 +1152,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String spSpec = conf.getStaticSpec();
 
     int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
-    boolean taskIndependent = statsPublisher instanceof StatsCollectionTaskIndependent;
 
     for (Map.Entry<String, FSPaths> entry : valToPaths.entrySet()) {
       String fspKey = entry.getKey();     // DP/LB
@@ -1176,30 +1174,18 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // split[0] = DP, split[1] = LB
       String[] split = splitKey(fspKey);
       String dpSpec = split[0];
-      String lbSpec = split[1];
-
-      String prefix;
-      String postfix=null;
-      if (taskIndependent) {
-        // key = "database.table/SP/DP/"LB/
-        // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
-        // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
-        prefix = conf.getTableInfo().getTableName().toLowerCase();
-      } else {
-        // key = "prefix/SP/DP/"LB/taskID/
-        prefix = conf.getStatsAggPrefix();
-        postfix = Utilities.join(lbSpec, taskID);
-      }
+      // key = "database.table/SP/DP/"LB/
+      // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
+      // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
+      String prefix = conf.getTableInfo().getTableName().toLowerCase();
       prefix = Utilities.join(prefix, spSpec, dpSpec);
       prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
-
-      String key = Utilities.join(prefix, postfix);
 
       Map<String, String> statsToPublish = new HashMap<String, String>();
       for (String statType : fspValue.stat.getStoredStats()) {
         statsToPublish.put(statType, Long.toString(fspValue.stat.getStat(statType)));
       }
-      if (!statsPublisher.publishStat(key, statsToPublish)) {
+      if (!statsPublisher.publishStat(prefix, statsToPublish)) {
         // The original exception is lost.
         // Not changing the interface to maintain backward compatibility
         if (isStatsReliable) {

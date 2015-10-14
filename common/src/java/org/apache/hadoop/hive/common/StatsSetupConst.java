@@ -31,14 +31,6 @@ import java.util.Map;
 public class StatsSetupConst {
 
   public enum StatDB {
-    jdbc {
-      @Override
-      public String getPublisher(Configuration conf) {
-        return "org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsPublisher"; }
-      @Override
-      public String getAggregator(Configuration conf) {
-        return "org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsAggregator"; }
-    },
     counter {
       @Override
       public String getPublisher(Configuration conf) {

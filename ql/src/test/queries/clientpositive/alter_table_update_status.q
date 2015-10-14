@@ -7,8 +7,6 @@ create table src_stat_int (
 
 LOAD DATA LOCAL INPATH '../../data/files/kv3.txt' INTO TABLE src_stat_int;
 
-set hive.stats.dbclass=jdbc:derby;
-
 ANALYZE TABLE src_stat COMPUTE STATISTICS for columns key;
 
 describe formatted src_stat.key;

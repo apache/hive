@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -38,7 +36,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -59,7 +56,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private static final long serialVersionUID = 1L;
 
   protected transient JobConf jc;
-  private transient Configuration hconf;
   private transient boolean inputFileChanged = false;
   private TableDesc tableDesc;
 
@@ -207,7 +203,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       return;
     }
 
-    this.hconf = hconf;
     if (hconf instanceof JobConf) {
       jc = (JobConf) hconf;
     } else {
@@ -291,7 +286,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       return;
     }
 
-    String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(hconf));
     Map<String, String> statsToPublish = new HashMap<String, String>();
 
     for (String pspecs : stats.keySet()) {
@@ -300,10 +294,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
       int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
       String key = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
-      if (!(statsPublisher instanceof StatsCollectionTaskIndependent)) {
-        // stats publisher except counter or fs type needs postfix 'taskID'
-        key = Utilities.join(prefix, taskID);
-      }
       for(String statType : stats.get(pspecs).getStoredStats()) {
         statsToPublish.put(statType, Long.toString(stats.get(pspecs).getStat(statType)));
       }
