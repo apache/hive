@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.google.common.base.Preconditions;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
@@ -212,6 +214,20 @@ public class SparkPlanGenerator {
     checkSpecs(work, newJobConf);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
     if (work instanceof MapWork) {
+      // Create tmp dir for MergeFileWork
+      if (work instanceof MergeFileWork) {
+        Path outputPath = ((MergeFileWork) work).getOutputDir();
+        Path tempOutPath = Utilities.toTempPath(outputPath);
+        FileSystem fs = outputPath.getFileSystem(jobConf);
+        try {
+          if (!fs.exists(tempOutPath)) {
+            fs.mkdirs(tempOutPath);
+          }
+        } catch (IOException e) {
+          throw new RuntimeException(
+              "Can't make path " + outputPath + " : " + e.getMessage());
+        }
+      }
       MapTran mapTran = new MapTran();
       HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
       mapTran.setMapFunction(mapFunc);
