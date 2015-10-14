@@ -302,6 +302,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public boolean isLocalMetaStore() {
+    return localMetaStore;
+  }
+
+  @Override
   public boolean isCompatibleWith(HiveConf conf) {
     if (currentMetaVars == null) {
       return false; // recreate

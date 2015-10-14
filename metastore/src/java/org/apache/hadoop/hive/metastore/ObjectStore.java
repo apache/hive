@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -154,6 +155,9 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
+import org.datanucleus.ClassLoaderResolver;
+import org.datanucleus.NucleusContext;
+import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 
 import com.google.common.collect.Lists;
@@ -7656,4 +7660,33 @@ public class ObjectStore implements RawStore, Configurable {
   public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
     // Not supported for now.
   }
+
+  /**
+   * Removed cached classloaders from DataNucleus
+   * DataNucleus caches classloaders in NucleusContext.
+   * In UDFs, this can result in classloaders not getting GCed resulting in PermGen leaks.
+   * This is particularly an issue when using embedded metastore with HiveServer2,
+   * since the current classloader gets modified with each new add jar,
+   * becoming the classloader for downstream classes, which DataNucleus ends up using.
+   * The NucleusContext cache gets freed up only on calling a close on it.
+   * We're not closing NucleusContext since it does a bunch of other things which we don't want.
+   * We're not clearing the cache HashMap by calling HashMap#clear to avoid concurrency issues.
+   */
+  public static void unCacheDataNucleusClassLoaders() {
+    PersistenceManagerFactory pmf = ObjectStore.getPMF();
+    if ((pmf != null) && (pmf instanceof JDOPersistenceManagerFactory)) {
+      JDOPersistenceManagerFactory jdoPmf = (JDOPersistenceManagerFactory) pmf;
+      NucleusContext nc = jdoPmf.getNucleusContext();
+      try {
+        Field classLoaderResolverMap =
+            NucleusContext.class.getDeclaredField("classLoaderResolverMap");
+        classLoaderResolverMap.setAccessible(true);
+        classLoaderResolverMap.set(nc, new HashMap<String, ClassLoaderResolver>());
+        LOG.debug("Removed cached classloaders from DataNucleus NucleusContext");
+      } catch (Exception e) {
+        LOG.warn(e);
+      }
+    }
+  }
+
 }

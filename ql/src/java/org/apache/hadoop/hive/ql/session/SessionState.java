@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLClassLoader;
@@ -53,6 +55,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -1537,6 +1540,21 @@ public class SessionState {
     closeSparkSession();
     registry.closeCUDFLoaders();
     dropSessionPaths(conf);
+    unCacheDataNucleusClassLoaders();
+  }
+
+  private void unCacheDataNucleusClassLoaders() {
+    try {
+      Hive threadLocalHive = Hive.get(conf);
+      if ((threadLocalHive != null) && (threadLocalHive.getMSC() != null)
+          && (threadLocalHive.getMSC().isLocalMetaStore())) {
+        if (conf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL).equals(ObjectStore.class.getName())) {
+          ObjectStore.unCacheDataNucleusClassLoaders();
+        }
+      }
+    } catch (Exception e) {
+      LOG.info(e);
+    }
   }
 
   public void closeSparkSession() {
