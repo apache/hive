@@ -1003,9 +1003,11 @@ public class Server {
     }
 
     // Sort the list as requested
+    boolean isAscendingOrder = true;
     switch (appConf.getListJobsOrder()) {
     case lexicographicaldesc:
       Collections.sort(list, Collections.reverseOrder());
+      isAscendingOrder = false;
       break;
     case lexicographicalasc:
     default:
@@ -1021,9 +1023,12 @@ public class Server {
         if (currRecord >= numRecords) {
           break;
         }
+        else if (jobid == null || jobid.trim().length() == 0) {
+            currRecord++;
+        }
         // If the current record needs to be returned based on the
         // filter conditions specified by the user, increment the counter
-        else if ((jobid != null && job.compareTo(jobid) > 0) || jobid == null) {
+        else if (isAscendingOrder && job.compareTo(jobid) > 0 || !isAscendingOrder && job.compareTo(jobid) < 0) {
           currRecord++;
         }
         // The current record should not be included in the output detailList.
