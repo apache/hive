@@ -778,7 +778,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
       ++stripeIx;
     }
-    if (stripeIxTo == -1) {
+    if (stripeIxFrom == -1) {
+      if (LlapIoImpl.LOG.isInfoEnabled()) {
+        LlapIoImpl.LOG.info("Not including any stripes - empty split");
+      }
+    }
+    if (stripeIxTo == -1 && stripeIxFrom != -1) {
       stripeIxTo = stripeIx;
       if (DebugUtils.isTraceOrcEnabled()) {
         LlapIoImpl.LOG.info("Including stripes until " + stripeIx + " (end of file); "
