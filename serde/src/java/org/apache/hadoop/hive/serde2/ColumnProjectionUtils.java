@@ -71,8 +71,6 @@ public final class ColumnProjectionUtils {
     appendReadColumns(conf, ids);
   }
 
-
-
   /**
    * Sets the <em>READ_ALL_COLUMNS</em> flag and removes any previously
    * set column ids.
@@ -90,6 +88,15 @@ public final class ColumnProjectionUtils {
   }
 
   /**
+   * Sets the <em>READ_ALL_COLUMNS</em> flag to false and overwrites column ids
+   * with the provided list.
+   */
+  public static void setReadColumns(Configuration conf, List<Integer> ids) {
+    setReadColumnIDConf(conf, READ_COLUMN_IDS_CONF_STR_DEFAULT);
+    appendReadColumns(conf, ids);
+  }
+
+  /**
    * Appends read columns' ids (start from zero). Once a column
    * is included in the list, a underlying record reader of a columnar file format
    * (e.g. RCFile and ORC) can know what columns are needed.
@@ -98,7 +105,7 @@ public final class ColumnProjectionUtils {
     String id = toReadColumnIDString(ids);
     String old = conf.get(READ_COLUMN_IDS_CONF_STR, null);
     String newConfStr = id;
-    if (old != null) {
+    if (old != null && !old.isEmpty()) {
       newConfStr = newConfStr + StringUtils.COMMA_STR + old;
     }
     setReadColumnIDConf(conf, newConfStr);
