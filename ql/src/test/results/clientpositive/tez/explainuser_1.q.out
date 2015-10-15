@@ -8050,12 +8050,21 @@ Plan not optimized by CBO due to missing feature [Others].
 Stage-0
    Fetch Operator
       limit:-1
-      UDTF Operator [UDTF_2]
-         function name:explode
-         Select Operator [SEL_1]
-            outputColumnNames:["_col0"]
-            TableScan [TS_0]
-               alias:_dummy_table
+      Stage-1
+         Map 1
+         File Output Operator [FS_3]
+            compressed:true
+            Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
+            UDTF Operator [UDTF_2]
+               function name:explode
+               Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+               Select Operator [SEL_1]
+                  outputColumnNames:["_col0"]
+                  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  TableScan [TS_0]
+                     alias:_dummy_table
+                     Statistics:Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
 
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
