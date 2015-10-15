@@ -55,3 +55,23 @@ SELECT LEAST(11.4, 13.5, 12.2),
        LEAST(1.1, 2.2, null),
        LEAST(cast(null as double), null, null)
 FROM src tablesample (1 rows);
+
+SELECT LEAST(101Y, -101S, 100, -100L, null),
+       LEAST(-101Y, 101S, 100, -100L, 0),
+       LEAST(100Y, -100S, 101, -101L, null),
+       LEAST(100Y, -100S, -101, 101L, 0)
+FROM src tablesample (1 rows);
+
+SELECT LEAST(cast(1.1 as float), cast(-1.1 as double), cast(0.5 as decimal)),
+       LEAST(cast(-1.1 as float), cast(1.1 as double), cast(0.5 as decimal)),
+       LEAST(cast(0.1 as float), cast(-0.1 as double), cast(0.5 as decimal)),
+       LEAST(null, cast(-0.1 as double), cast(0.5 as decimal))
+FROM src tablesample (1 rows);
+
+SELECT LEAST(-100Y, -80S, -60, -40L, cast(-20 as float), cast(0 as double), cast(0.5 as decimal)),
+       LEAST(100Y, 80S, 60, 40L, cast(20 as float), cast(0 as double), cast(-0.5 as decimal)),
+       LEAST(100Y, 80S, 60, 40L, null, cast(0 as double), cast(-0.5 as decimal))
+FROM src tablesample (1 rows);
+
+SELECT LEAST(10L, 'a', date('2001-01-28'))
+FROM src tablesample (1 rows);

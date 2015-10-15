@@ -17,20 +17,22 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-
 import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+
+import java.sql.Date;
 
 public class TestGenericUDFGreatest extends TestCase {
 
@@ -49,21 +51,27 @@ public class TestGenericUDFGreatest extends TestCase {
     assertNotNull("greatest() test ", ex);
   }
 
-  public void testDifferentType() throws HiveException {
-    @SuppressWarnings("resource")
+  public void testVoids() throws HiveException {
+    GenericUDFGreatest udf = new GenericUDFGreatest();
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableVoidObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    ObjectInspector valueOI3 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector[] arguments = { valueOI1, valueOI2, valueOI3 };
+    udf.initialize(arguments);
+    runAndVerify(new Object[] { null, 1, "test"}, null, udf);
+  }
+
+  public void testGreatestMixed() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
     ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
-    ObjectInspector[] arguments = { valueOI1, valueOI2 };
-
-    UDFArgumentException ex = null;
-    try {
-      udf.initialize(arguments);
-    } catch (UDFArgumentException e) {
-      ex = e;
-    }
-    assertNotNull("greatest() test ", ex);
+    ObjectInspector valueOI3 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
+    ObjectInspector valueOI4 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector[] arguments = { valueOI1, valueOI2, valueOI3, valueOI4 };
+    udf.initialize(arguments);
+    runAndVerify(new Object[] { 1, 11.1, Date.valueOf("2015-03-20"), "test"}, "test", udf);  //string comparisons
   }
+
 
   public void testGreatestStr() throws HiveException {
     GenericUDFGreatest udf = new GenericUDFGreatest();
@@ -84,12 +92,12 @@ public class TestGenericUDFGreatest extends TestCase {
     runAndVerify(new String[] { "01", "03", "02" }, "03", udf);
     runAndVerify(new String[] { "01", "1", "02" }, "1", udf);
 
-    runAndVerify(new String[] { null, "b", "c" }, "c", udf);
-    runAndVerify(new String[] { "a", null, "c" }, "c", udf);
-    runAndVerify(new String[] { "a", "b", null }, "b", udf);
+    runAndVerify(new String[] { null, "b", "c" }, null, udf);
+    runAndVerify(new String[] { "a", null, "c" }, null, udf);
+    runAndVerify(new String[] { "a", "b", null }, null, udf);
 
-    runAndVerify(new String[] { "a", null, null }, "a", udf);
-    runAndVerify(new String[] { null, "b", null }, "b", udf);
+    runAndVerify(new String[] { "a", null, null }, null, udf);
+    runAndVerify(new String[] { null, "b", null }, null, udf);
     runAndVerify(new String[] { null, null, null }, null, udf);
   }
 
@@ -108,9 +116,9 @@ public class TestGenericUDFGreatest extends TestCase {
     runAndVerify(new Integer[] { -11, -13, -12 }, -11, udf);
     runAndVerify(new Integer[] { 1, -13, 2 }, 2, udf);
 
-    runAndVerify(new Integer[] { null, 1, 2 }, 2, udf);
-    runAndVerify(new Integer[] { 1, null, 2 }, 2, udf);
-    runAndVerify(new Integer[] { 1, 2, null }, 2, udf);
+    runAndVerify(new Integer[] { null, 1, 2 }, null, udf);
+    runAndVerify(new Integer[] { 1, null, 2 }, null, udf);
+    runAndVerify(new Integer[] { 1, 2, null }, null, udf);
 
     runAndVerify(new Integer[] { null, null, null }, null, udf);
   }
@@ -130,9 +138,9 @@ public class TestGenericUDFGreatest extends TestCase {
     runAndVerify(new Double[] { -11.4, -13.1, -12.2 }, -11.4, udf);
     runAndVerify(new Double[] { 1.0, -13.3, 2.2 }, 2.2, udf);
 
-    runAndVerify(new Double[] { null, 1.1, 2.2 }, 2.2, udf);
-    runAndVerify(new Double[] { 1.1, null, 2.2 }, 2.2, udf);
-    runAndVerify(new Double[] { 1.1, 2.2, null }, 2.2, udf);
+    runAndVerify(new Double[] { null, 1.1, 2.2 }, null, udf);
+    runAndVerify(new Double[] { 1.1, null, 2.2 }, null, udf);
+    runAndVerify(new Double[] { 1.1, 2.2, null }, null, udf);
 
     runAndVerify(new Double[] { null, null, null }, null, udf);
   }
@@ -152,49 +160,86 @@ public class TestGenericUDFGreatest extends TestCase {
 
     runAndVerify(new Date[] { d1, d2, d3 }, d2, udf);
 
-    runAndVerify(new Date[] { null, d2, d3 }, d2, udf);
-    runAndVerify(new Date[] { d1, null, d3 }, d1, udf);
-    runAndVerify(new Date[] { d1, d2, null }, d2, udf);
+    runAndVerify(new Date[] { null, d2, d3 }, null, udf);
+    runAndVerify(new Date[] { d1, null, d3 }, null, udf);
+    runAndVerify(new Date[] { d1, d2, null }, null, udf);
 
     runAndVerify(new Date[] { null, null, null }, null, udf);
   }
 
-  private void runAndVerify(String[] v, String expResult, GenericUDF udf) throws HiveException {
-    DeferredObject[] args = new DeferredObject[v.length];
-    for (int i = 0; i < v.length; i++) {
-      args[i] = new DeferredJavaObject(v[i] != null ? new Text(v[i]) : null);
-    }
-    Text output = (Text) udf.evaluate(args);
-    assertEquals("greatest() test ", expResult, output != null ? output.toString() : null);
+  public void testGreatestIntTypes() throws HiveException {
+    GenericUDFGreatest udf = new GenericUDFGreatest();
+    ObjectInspector[] arguments = new ObjectInspector[4];
+
+    arguments[0] = PrimitiveObjectInspectorFactory.writableByteObjectInspector;
+    arguments[1] = PrimitiveObjectInspectorFactory.writableShortObjectInspector;
+    arguments[2] = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    arguments[3] = PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+
+
+    udf.initialize(arguments);
+
+    runAndVerify(new Object[] { (byte) 11, (short) 13, 12, 14L }, 14L, udf);
+    runAndVerify(new Object[] { (byte) 1, (short) 13, 2, 0L }, 13L, udf);
+
+    runAndVerify(new Object[] { (byte) -11, (short) -13, -12, 0L }, 0L, udf);
+    runAndVerify(new Object[] { (byte) 1, (short) -13, 2, 0L}, 2L, udf);
+
+    runAndVerify(new Object[] { null, (short) 1, 2, 0L }, null, udf);
+    runAndVerify(new Object[] { (byte) 1, null, 2, -1L }, null, udf);
+    runAndVerify(new Object[] { (byte) 1, (short) 2, null, -1L }, null, udf);
+
+    runAndVerify(new Integer[] { null, null, null, null }, null, udf);
   }
 
-  private void runAndVerify(Integer[] v, Integer expResult, GenericUDF udf) throws HiveException {
+  private void runAndVerify(Object[] v, Object expResult, GenericUDF udf) throws HiveException {
     DeferredObject[] args = new DeferredObject[v.length];
     for (int i = 0; i < v.length; i++) {
-      args[i] = new DeferredJavaObject(v[i] != null ? new IntWritable(v[i]) : null);
+      args[i] = new DeferredJavaObject(getWritable(v[i]));
     }
-    IntWritable output = (IntWritable) udf.evaluate(args);
-    Integer res = output != null ? Integer.valueOf(output.get()) : null;
-    assertEquals("greatest() test ", expResult, res);
+    Object output = udf.evaluate(args);
+    output = parseOutput(output);
+    assertEquals("greatest() test ", expResult, output != null ? output : null);
   }
 
-  private void runAndVerify(Double[] v, Double expResult, GenericUDF udf) throws HiveException {
-    DeferredObject[] args = new DeferredObject[v.length];
-    for (int i = 0; i < v.length; i++) {
-      args[i] = new DeferredJavaObject(v[i] != null ? new DoubleWritable(v[i]) : null);
+  private Object getWritable(Object o) {
+    if (o instanceof String) {
+      return o != null ? new Text((String) o) : null;
+    } else if (o instanceof Integer) {
+      return o != null ? new IntWritable((Integer) o) : null;
+    } else if (o instanceof Double) {
+      return o != null ? new DoubleWritable((Double) o) : null;
+    } else if (o instanceof Date) {
+      return o != null ? new DateWritable((Date) o) : null;
+    } else if (o instanceof Byte) {
+      return o != null ? new ByteWritable((Byte) o): null;
+    } else if (o instanceof Short) {
+      return o != null ? new ShortWritable((Short) o) : null;
+    } else if (o instanceof Long) {
+      return o != null ? new LongWritable((Long) o) : null;
     }
-    DoubleWritable output = (DoubleWritable) udf.evaluate(args);
-    Double res = output != null ? Double.valueOf(output.get()) : null;
-    assertEquals("greatest() test ", expResult, res);
+    return null;
   }
 
-  private void runAndVerify(Date[] v, Date expResult, GenericUDF udf) throws HiveException {
-    DeferredObject[] args = new DeferredObject[v.length];
-    for (int i = 0; i < v.length; i++) {
-      args[i] = new DeferredJavaObject(v[i] != null ? new DateWritable(v[i]) : null);
+  private Object parseOutput(Object o) {
+    if (o == null) {
+      return null;
     }
-    DateWritable output = (DateWritable) udf.evaluate(args);
-    Date res = output != null ? output.get() : null;
-    assertEquals("greatest() test ", expResult, res);
+    if (o instanceof Text) {
+      return o.toString();
+    } else if (o instanceof IntWritable) {
+      return ((IntWritable) o).get();
+    } else if (o instanceof DoubleWritable) {
+      return ((DoubleWritable) o).get();
+    } else if (o instanceof DateWritable) {
+      return ((DateWritable) o).get();
+    } else if (o instanceof ByteWritable) {
+      return ((ByteWritable) o).get();
+    } else if (o instanceof ShortWritable) {
+      return ((ShortWritable) o).get();
+    } else if (o instanceof LongWritable) {
+      return ((LongWritable) o).get();
+    }
+    return null;
   }
 }

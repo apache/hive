@@ -22,15 +22,12 @@ import org.apache.hadoop.hive.ql.exec.Description;
 
 /**
  * GenericUDF Class for SQL construct "least(v1, v2, .. vn)".
- *
- * NOTES: 1. v1, v2 and vn should have the same TypeInfo, or an exception will
- * be thrown.
  */
 @Description(name = "least",
     value = "_FUNC_(v1, v2, ...) - Returns the least value in a list of values",
     extended = "Example:\n"
     + "  > SELECT _FUNC_(2, 3, 1) FROM src LIMIT 1;\n" + "  1")
-public class GenericUDFLeast extends GenericUDFGreatest {
+public class GenericUDFLeast extends GenericUDFBaseNwayCompare {
 
   @Override
   protected String getFuncName() {
@@ -38,7 +35,7 @@ public class GenericUDFLeast extends GenericUDFGreatest {
   }
 
   @Override
-  protected boolean isGreatest() {
-    return false;
+  protected int getOrder() {
+    return -1;
   }
 }
