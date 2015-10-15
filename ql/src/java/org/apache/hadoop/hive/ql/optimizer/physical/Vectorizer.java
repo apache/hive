@@ -1706,8 +1706,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           // With the fast hash table implementation, we currently do not support
           // Hybrid Grace Hash Join.
 
-          if (HiveConf.getBoolVar(hiveConf,
-              HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN)) {
+          if (desc.isHybridHashJoin()) {
             specialize = false;
           }
         }
