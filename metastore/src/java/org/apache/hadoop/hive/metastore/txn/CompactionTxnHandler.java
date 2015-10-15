@@ -554,18 +554,15 @@ public class CompactionTxnHandler extends TxnHandler {
         StringBuilder bldr = new StringBuilder();
         bldr.append("SELECT ").append(quote).append("COLUMN_NAME").append(quote)
           .append(" FROM ")
-          .append((ci.partName == null ?
-              getTableColStatsJoinedTables(quote) : getPartitionColStatsJoinedTables(quote)))
+          .append(quote).append((ci.partName == null ? "TAB_COL_STATS" : "PART_COL_STATS"))
+          .append(quote)
           .append(" WHERE ")
-          .append(quote).append("DBS").append(quote).append(".").append(quote).append("NAME").append(quote)
-          .append(" = '").append(ci.dbname)
-          .append("' AND ")
-          .append(quote).append("TBLS").append(quote).append(".").append(quote).append("TBL_NAME").append(quote)
+          .append(quote).append("DB_NAME").append(quote).append(" = '").append(ci.dbname)
+          .append("' AND ").append(quote).append("TABLE_NAME").append(quote)
           .append(" = '").append(ci.tableName).append("'");
         if (ci.partName != null) {
-          bldr.append(" AND ")
-          .append(quote).append("PARTITIONS").append(quote).append(".").append(quote).append("PART_NAME").append(quote)
-          .append(" = '").append(ci.partName).append("'");
+          bldr.append(" AND ").append(quote).append("PARTITION_NAME").append(quote).append(" = '")
+            .append(ci.partName).append("'");
         }
         String s = bldr.toString();
 
@@ -615,41 +612,6 @@ public class CompactionTxnHandler extends TxnHandler {
     }
     return new ValidCompactorTxnList(exceptions, minOpenTxn, highWater);
   }
-
-  private String getTableColStatsJoinedTables(String quote) {
-    return (new StringBuffer(quote)).append("TAB_COL_STATS").append(quote)
-        .append(" JOIN ").append(quote).append("TBLS").append(quote)
-        .append(" ON ").append(quote).append("TAB_COL_STATS").append(quote)
-        .append(".").append(quote).append("TBL_ID").append(quote)
-        .append(" = ").append(quote).append("TBLS").append(quote)
-        .append(".").append(quote).append("TBL_ID").append(quote)
-        .append(" JOIN ").append(quote).append("DBS").append(quote)
-        .append(" ON ").append(quote).append("TBLS").append(quote)
-        .append(".").append(quote).append("DB_ID").append(quote)
-        .append(" = ").append(quote).append("DBS").append(quote)
-        .append(".").append(quote).append("DB_ID").append(quote).toString();
-    }
-
-  private String getPartitionColStatsJoinedTables(String quote) {
-    //actually we do not have to get the quote from database since double quoted identifier
-    //should work on all favors of db so far Hive supports.
-    return (new StringBuffer(quote)).append("PART_COL_STATS").append(quote)
-        .append(" JOIN ").append(quote).append("PARTITIONS").append(quote)
-        .append(" ON ").append(quote).append("PART_COL_STATS").append(quote)
-        .append(".").append(quote).append("PART_ID").append(quote)
-        .append(" = ").append(quote).append("PARTITIONS").append(quote)
-        .append(".").append(quote).append("PART_ID").append(quote)
-        .append(" JOIN ").append(quote).append("TBLS").append(quote)
-        .append(" ON ").append(quote).append("PARTITIONS").append(quote)
-        .append(".").append(quote).append("TBL_ID").append(quote)
-        .append(" = ").append(quote).append("TBLS").append(quote)
-        .append(".").append(quote).append("TBL_ID").append(quote)
-        .append(" JOIN ").append(quote).append("DBS").append(quote)
-        .append(" ON ").append(quote).append("TBLS").append(quote)
-        .append(".").append(quote).append("DB_ID").append(quote)
-        .append(" = ").append(quote).append("DBS").append(quote)
-        .append(".").append(quote).append("DB_ID").append(quote).toString();
-    }
 }
 
 

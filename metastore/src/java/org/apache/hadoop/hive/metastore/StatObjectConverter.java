@@ -58,8 +58,8 @@ public class StatObjectConverter {
 
      MTableColumnStatistics mColStats = new MTableColumnStatistics();
      mColStats.setTable(table);
-     mColStats.setDbName("Deprecated");
-     mColStats.setTableName("Deprecated");
+     mColStats.setDbName(statsDesc.getDbName());
+     mColStats.setTableName(statsDesc.getTableName());
      mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
      mColStats.setColName(statsObj.getColName());
      mColStats.setColType(statsObj.getColType());
@@ -289,8 +289,8 @@ public class StatObjectConverter {
       MTableColumnStatistics mStatsObj) {
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
     statsDesc.setIsTblLevel(true);
-    statsDesc.setTableName(mStatsObj.getTable().getTableName());
-    statsDesc.setDbName(mStatsObj.getTable().getDatabase().getName());
+    statsDesc.setDbName(mStatsObj.getDbName());
+    statsDesc.setTableName(mStatsObj.getTableName());
     statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
     return statsDesc;
   }
@@ -304,9 +304,9 @@ public class StatObjectConverter {
 
     MPartitionColumnStatistics mColStats = new MPartitionColumnStatistics();
     mColStats.setPartition(partition);
-    mColStats.setDbName("Deprecated");
-    mColStats.setTableName("Deprecated");
-    mColStats.setPartitionName("Deprecated");
+    mColStats.setDbName(statsDesc.getDbName());
+    mColStats.setTableName(statsDesc.getTableName());
+    mColStats.setPartitionName(statsDesc.getPartName());
     mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
     mColStats.setColName(statsObj.getColName());
     mColStats.setColType(statsObj.getColType());
@@ -442,9 +442,9 @@ public class StatObjectConverter {
     MPartitionColumnStatistics mStatsObj) {
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
     statsDesc.setIsTblLevel(false);
-    statsDesc.setPartName(mStatsObj.getPartition().getPartitionName());
-    statsDesc.setTableName(mStatsObj.getPartition().getTable().getTableName());
-    statsDesc.setDbName(mStatsObj.getPartition().getTable().getDatabase().getName());
+    statsDesc.setDbName(mStatsObj.getDbName());
+    statsDesc.setTableName(mStatsObj.getTableName());
+    statsDesc.setPartName(mStatsObj.getPartitionName());
     statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
     return statsDesc;
   }
