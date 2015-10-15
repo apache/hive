@@ -55,3 +55,23 @@ SELECT GREATEST(11.4, 13.5, 12.2),
        GREATEST(1.1, 2.2, null),
        GREATEST(cast(null as double), null, null)
 FROM src tablesample (1 rows);
+
+SELECT GREATEST(101Y, -101S, 100, -100L, null),
+       GREATEST(-101Y, 101S, 100, -100L, 0),
+       GREATEST(100Y, -100S, 101, -101L, null),
+       GREATEST(100Y, -100S, -101, 101L, 0)
+FROM src tablesample (1 rows);
+
+SELECT GREATEST(cast(1.1 as float), cast(-1.1 as double), cast(0.5 as decimal)),
+       GREATEST(cast(-1.1 as float), cast(1.1 as double), cast(0.5 as decimal)),
+       GREATEST(cast(0.1 as float), cast(-0.1 as double), cast(0.5 as decimal)),
+       GREATEST(null, cast(-0.1 as double), cast(0.5 as decimal))
+FROM src tablesample (1 rows);
+
+SELECT GREATEST(-100Y, -80S, -60, -40L, cast(-20 as float), cast(0 as double), cast(0.5 as decimal)),
+       GREATEST(100Y, 80S, 60, 40L, cast(20 as float), cast(0 as double), cast(-0.5 as decimal)),
+       GREATEST(100Y, 80S, 60, 40L, null, cast(0 as double), cast(-0.5 as decimal))
+FROM src tablesample (1 rows);
+
+SELECT GREATEST(10L, 'a', date('2001-01-28'))
+FROM src tablesample (1 rows);
