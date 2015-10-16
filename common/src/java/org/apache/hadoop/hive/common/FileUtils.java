@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.common;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
+import org.apache.hive.common.util.ShutdownHookManager;
 
 
 /**
@@ -795,5 +797,57 @@ public final class FileUtils {
     throw new IOException(msg);
 
   }
+  
+  /**
+   * Attempts to get file status.  This method differs from the FileSystem API in that it returns
+   * null instead of throwing FileNotFoundException if the path does not exist.
+   *
+   * @param fs file system to check
+   * @param path file system path to check
+   * @return FileStatus for path or null if path does not exist
+   * @throws IOException if there is an I/O error
+   */
+  public static FileStatus getFileStatusOrNull(FileSystem fs, Path path) throws IOException {
+    try {
+      return fs.getFileStatus(path);
+    } catch (FileNotFoundException e) {
+      return null;
+    }
+  }
 
+  public static void deleteDirectory(File directory) throws IOException {
+    org.apache.commons.io.FileUtils.deleteDirectory(directory);
+  }
+
+  /**
+   * create temporary file and register it to delete-on-exit hook.
+   * File.deleteOnExit is not used for possible memory leakage.
+   */
+  public static File createTempFile(String lScratchDir, String prefix, String suffix) throws IOException {
+    File tmpDir = lScratchDir == null ? null : new File(lScratchDir);
+    if (tmpDir != null && !tmpDir.exists() && !tmpDir.mkdirs()) {
+      // Do another exists to check to handle possible race condition
+      // Another thread might have created the dir, if that is why
+      // mkdirs returned false, that is fine
+      if (!tmpDir.exists()) {
+        throw new RuntimeException("Unable to create temp directory "
+            + lScratchDir);
+      }
+    }
+    File tmpFile = File.createTempFile(prefix, suffix, tmpDir);
+    ShutdownHookManager.deleteOnExit(tmpFile);
+    return tmpFile;
+  }
+
+  /**
+   * delete a temporary file and remove it from delete-on-exit hook.
+   */
+  public static boolean deleteTmpFile(File tempFile) {
+    if (tempFile != null) {
+      tempFile.delete();
+      ShutdownHookManager.cancelDeleteOnExit(tempFile);
+      return true;
+    }
+    return false;
+  }
 }

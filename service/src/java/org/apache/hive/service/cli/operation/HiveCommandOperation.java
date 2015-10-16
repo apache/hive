@@ -208,10 +208,8 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
   private void cleanTmpFile() {
     resetResultReader();
     SessionState sessionState = getParentSession().getSessionState();
-    File tmp = sessionState.getTmpOutputFile();
-    tmp.delete();
-    tmp = sessionState.getTmpErrOutputFile();
-    tmp.delete();
+    sessionState.deleteTmpOutputFile();
+    sessionState.deleteTmpErrOutputFile();
   }
 
   private void resetResultReader() {
