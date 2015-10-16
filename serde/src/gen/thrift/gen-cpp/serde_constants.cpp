@@ -21,6 +21,8 @@ serdeConstants::serdeConstants() {
 
   SERIALIZATION_NULL_FORMAT = "serialization.null.format";
 
+  SERIALIZATION_ESCAPE_CRLF = "serialization.escape.crlf";
+
   SERIALIZATION_LAST_COLUMN_TAKES_REST = "serialization.last.column.takes.rest";
 
   SERIALIZATION_SORT_ORDER = "serialization.sort.order";

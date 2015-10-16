@@ -70,6 +70,7 @@ import org.apache.hive.common.util.HiveStringUtils;
     serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
     serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
     serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_ESCAPE_CRLF,
     serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
     serdeConstants.ESCAPE_CHAR,
     serdeConstants.SERIALIZATION_ENCODING,
@@ -127,12 +128,6 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
     cachedLazyStruct = (LazyStruct) LazyFactory
         .createLazyObject(cachedObjectInspector);
-
-    LOG.debug(getClass().getName() + " initialized with: columnNames="
-        + serdeParams.getColumnNames() + " columnTypes=" + serdeParams.getColumnTypes()
-        + " separator=" + Arrays.asList(serdeParams.getSeparators())
-        + " nullstring=" + serdeParams.getNullString() + " lastColumnTakesRest="
-        + serdeParams.isLastColumnTakesRest() + " timestampFormats=" + serdeParams.getTimestampFormats());
 
     serializedSize = 0;
     stats = new SerDeStats();

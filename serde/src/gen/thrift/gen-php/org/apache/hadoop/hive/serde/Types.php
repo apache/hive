@@ -26,6 +26,8 @@ $GLOBALS['serde_CONSTANTS']['SERIALIZATION_DDL'] = "serialization.ddl";
 
 $GLOBALS['serde_CONSTANTS']['SERIALIZATION_NULL_FORMAT'] = "serialization.null.format";
 
+$GLOBALS['serde_CONSTANTS']['SERIALIZATION_ESCAPE_CRLF'] = "serialization.escape.crlf";
+
 $GLOBALS['serde_CONSTANTS']['SERIALIZATION_LAST_COLUMN_TAKES_REST'] = "serialization.last.column.takes.rest";
 
 $GLOBALS['serde_CONSTANTS']['SERIALIZATION_SORT_ORDER'] = "serialization.sort.order";
