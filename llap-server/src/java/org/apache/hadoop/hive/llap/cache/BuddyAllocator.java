@@ -282,7 +282,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
           int nextHeaderIx = freeList.listHead;
           while (nextHeaderIx >= 0) {
             result.append(nextHeaderIx + ", ");
-            nextHeaderIx = data.getInt(offsetFromHeaderIndex(nextHeaderIx));
+            nextHeaderIx = getNextFreeListItem(offsetFromHeaderIndex(nextHeaderIx));
           }
         } finally {
           freeList.lock.unlock();
