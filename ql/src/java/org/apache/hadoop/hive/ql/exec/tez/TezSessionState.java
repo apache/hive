@@ -272,7 +272,6 @@ public class TezSessionState {
               TaskCommunicatorDescriptor.create(LLAP_SERVICE, LLAP_TASK_COMMUNICATOR)
                   .setUserPayload(servicePluginPayload)});
     } else {
-      // we need plugins to handle llap and uber mode
       servicePluginsDescriptor = ServicePluginsDescriptor.create(true);
     }
 
