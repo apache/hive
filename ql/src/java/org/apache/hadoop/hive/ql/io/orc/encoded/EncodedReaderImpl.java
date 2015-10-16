@@ -956,16 +956,16 @@ class EncodedReaderImpl implements EncodedReader {
   private static void copyAndReplaceUncompressedChunks(
       UncompressedCacheChunk candidateCached, ByteBuffer dest, CacheChunk tcc) {
     int startPos = dest.position(), startLim = dest.limit();
-    BufferChunk chunk = candidateCached.getChunk();
+    DiskRangeList next = null;
     for (int i = 0; i < candidateCached.getCount(); ++i) {
+      BufferChunk chunk = (i == 0) ? candidateCached.getChunk() : (BufferChunk)next;
       dest.put(chunk.getData());
-      BufferChunk next = (BufferChunk)(chunk.next);
+      next = chunk.next;
       if (i == 0) {
         chunk.replaceSelfWith(tcc);
       } else {
         chunk.removeSelf();
       }
-      chunk = next;
     }
     int newPos = dest.position();
     if (newPos > startLim) {
