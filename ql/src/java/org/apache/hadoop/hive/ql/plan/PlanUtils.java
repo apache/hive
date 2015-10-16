@@ -282,9 +282,10 @@ public final class PlanUtils {
         false, false, fileFormat);
     //enable escaping
     tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
+    tblDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_ESCAPE_CRLF, "true");
     //enable extended nesting levels
     tblDesc.getProperties().setProperty(
-    		LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS, "true");
+        LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS, "true");
     return tblDesc;
   }
 

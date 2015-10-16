@@ -181,10 +181,19 @@ public final class LazyUtils {
           if (i > start) {
             out.write(bytes, start, i - start);
           }
-          start = i;
-          if (i < len) {
-            out.write(escapeChar);
+
+          if (i == end) break;
+
+          out.write(escapeChar);
+          if (bytes[i] == '\r') {
+            out.write('r');
+            start = i + 1;
+          } else if (bytes[i] == '\n') {
+            out.write('n');
+            start = i + 1;
+          } else {
             // the current char will be written out later.
+            start = i;
           }
         }
       }
@@ -443,12 +452,19 @@ public final class LazyUtils {
       byte[] outputBytes = data.getBytes();
       for (int i = 0; i < length; i++) {
         byte b = inputBytes[start + i];
-        if (b != escapeChar || i == length - 1) {
-          outputBytes[k++] = b;
+        if (b == escapeChar && i < length - 1) {
+          ++i;
+          // Check if it's '\r' or '\n'
+          if (inputBytes[start + i] == 'r') {
+            outputBytes[k++] = '\r';
+          } else if (inputBytes[start + i] == 'n') {
+            outputBytes[k++] = '\n';
+          } else {
+            // get the next byte
+            outputBytes[k++] = inputBytes[start + i];
+          }
         } else {
-          // get the next byte
-          i++;
-          outputBytes[k++] = inputBytes[start + i];
+          outputBytes[k++] = b;
         }
       }
       assert (k == outputLength);
