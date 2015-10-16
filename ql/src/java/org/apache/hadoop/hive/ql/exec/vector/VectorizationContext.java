@@ -629,7 +629,8 @@ public class VectorizationContext {
     } else {
 
       // Casts to exact types including long to double etc. are needed in some special cases.
-      if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFElt) {
+      if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFNvl
+          || udf instanceof GenericUDFElt) {
         GenericUDF genericUdf = getGenericUDFForCast(castType);
         List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
         children.add(child);
@@ -1175,13 +1176,14 @@ public class VectorizationContext {
       return getInExpression(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFOPPositive) {
       return getIdentityExpression(childExpr);
-    } else if (udf instanceof GenericUDFCoalesce) {
+    } else if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFNvl) {
 
       // Coalesce is a special case because it can take variable number of arguments.
+      // Nvl is a specialization of the Coalesce.
       return getCoalesceExpression(childExpr, returnType);
     } else if (udf instanceof GenericUDFElt) {
 
-      // Coalesce is a special case because it can take variable number of arguments.
+      // Elt is a special case because it can take variable number of arguments.
       return getEltExpression(childExpr, returnType);
     } else if (udf instanceof GenericUDFBridge) {
       VectorExpression v = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,

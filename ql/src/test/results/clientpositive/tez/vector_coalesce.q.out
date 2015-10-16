@@ -360,3 +360,144 @@ NULL	1969-12-31 15:59:43.684	1969-12-31 15:59:43.684
 NULL	1969-12-31 15:59:43.703	1969-12-31 15:59:43.703
 NULL	1969-12-31 15:59:43.704	1969-12-31 15:59:43.704
 NULL	1969-12-31 15:59:43.709	1969-12-31 15:59:43.709
+PREHOOK: query: EXPLAIN SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cfloat is null and cbigint is null) (type: boolean)
+                    Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: null (type: float), null (type: bigint), null (type: float)
+                        sort order: +++
+                        Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: null (type: float), null (type: bigint), null (type: float)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+PREHOOK: query: EXPLAIN SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        TableScan
+          alias: alltypesorc
+          Filter Operator
+            predicate: cbigint is null (type: boolean)
+            Select Operator
+              expressions: null (type: bigint), ctinyint (type: tinyint), COALESCE(null,ctinyint) (type: bigint)
+              outputColumnNames: _col0, _col1, _col2
+              Limit
+                Number of rows: 10
+                ListSink
+
+PREHOOK: query: SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	-11	-11
+NULL	-28	-28
+NULL	-34	-34
+NULL	-50	-50
+NULL	27	27
+NULL	29	29
+NULL	31	31
+NULL	31	31
+NULL	61	61
+NULL	NULL	NULL
