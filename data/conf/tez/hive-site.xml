@@ -268,4 +268,9 @@
   <value>org.apache.hadoop.hive.metastore.hbase.HBaseStore</value>
 </property>
 
+<property>
+  <name>hive.orc.splits.ms.footer.cache.enabled</name>
+  <value>true</value>
+</property>
+
 </configuration>

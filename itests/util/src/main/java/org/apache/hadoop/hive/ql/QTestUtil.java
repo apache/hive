@@ -288,9 +288,11 @@ public class QTestUtil {
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     }
 
-    // Plug verifying metastore in for testing.
-    conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-      "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+    if (!useHBaseMetastore) {
+      // Plug verifying metastore in for testing DirectSQL.
+      conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
+        "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+    }
 
     if (mr != null) {
       assert dfs != null;
@@ -393,8 +395,9 @@ public class QTestUtil {
     }
     if (useHBaseMetastore) {
       startMiniHBaseCluster();
+    } else {
+      conf = new HiveConf(Driver.class);
     }
-    conf = new HiveConf(Driver.class);
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
