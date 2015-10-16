@@ -18,6 +18,9 @@
 
 package org.apache.hive.common.util;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,15 +47,18 @@ public class ShutdownHookManager {
 
   private static final ShutdownHookManager MGR = new ShutdownHookManager();
 
+  private static final DeleteOnExitHook DELETE_ON_EXIT_HOOK = new DeleteOnExitHook();
+
   private static final Log LOG = LogFactory.getLog(ShutdownHookManager.class);
 
   static {
+    MGR.addShutdownHookInternal(DELETE_ON_EXIT_HOOK, -1);
     Runtime.getRuntime().addShutdownHook(
       new Thread() {
         @Override
         public void run() {
           MGR.shutdownInProgress.set(true);
-          for (Runnable hook: MGR.getShutdownHooksInOrder()) {
+          for (Runnable hook : getShutdownHooksInOrder()) {
             try {
               hook.run();
             } catch (Throwable ex) {
@@ -115,7 +121,7 @@ public class ShutdownHookManager {
     return MGR.getShutdownHooksInOrderInternal();
   }
 
-  List<Runnable> getShutdownHooksInOrderInternal() {
+  private List<Runnable> getShutdownHooksInOrderInternal() {
     List<HookEntry> list;
     synchronized (MGR.hooks) {
       list = new ArrayList<HookEntry>(MGR.hooks);
@@ -145,6 +151,9 @@ public class ShutdownHookManager {
    * @param priority priority of the shutdownHook.
    */
   public static void addShutdownHook(Runnable shutdownHook, int priority) {
+    if (priority < 0) {
+      throw new IllegalArgumentException("Priority should be greater than or equal to zero");
+    }
     MGR.addShutdownHookInternal(shutdownHook, priority);
   }
 
@@ -201,5 +210,44 @@ public class ShutdownHookManager {
 
   private boolean isShutdownInProgressInternal() {
     return shutdownInProgress.get();
+  }
+
+  /**
+   * register file to delete-on-exit hook
+   *
+   * @see {@link org.apache.hadoop.hive.common.FileUtils#createTempFile}
+   */
+  public static void deleteOnExit(File file) {
+    if (isShutdownInProgress()) {
+      throw new IllegalStateException("Shutdown in progress, cannot add a deleteOnExit");
+    }
+    DELETE_ON_EXIT_HOOK.deleteTargets.add(file);
+  }
+
+  /**
+   * deregister file from delete-on-exit hook
+   */
+  public static void cancelDeleteOnExit(File file) {
+    if (isShutdownInProgress()) {
+      throw new IllegalStateException("Shutdown in progress, cannot cancel a deleteOnExit");
+    }
+    DELETE_ON_EXIT_HOOK.deleteTargets.remove(file);
+  }
+
+  @VisibleForTesting
+  static boolean isRegisteredToDeleteOnExit(File file) {
+    return DELETE_ON_EXIT_HOOK.deleteTargets.contains(file);
+  }
+
+  private static class DeleteOnExitHook implements Runnable {
+    private final Set<File> deleteTargets = Collections.synchronizedSet(new HashSet<File>());
+
+    @Override
+    public void run() {
+      for (File deleteTarget : deleteTargets) {
+        deleteTarget.delete();
+      }
+      deleteTargets.clear();
+    }
   }
 }
