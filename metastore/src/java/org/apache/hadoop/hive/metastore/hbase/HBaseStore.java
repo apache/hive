@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -2356,11 +2357,41 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
+  public boolean isFileMetadataSupported() {
+    return true;
+  }
+
+  @Override
   public ByteBuffer[] getFileMetadata(List<Long> fileIds) throws MetaException {
     openTransaction();
     boolean commit = true;
     try {
       return getHBase().getFileMetadata(fileIds);
+    } catch (IOException e) {
+      commit = false;
+      LOG.error("Unable to get file metadata", e);
+      throw new MetaException("Error reading file metadata " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  @Override
+  public void getFileMetadataByExpr(List<Long> fileIds, byte[] expr, ByteBuffer[] metadatas,
+      ByteBuffer[] results, boolean[] eliminated) throws MetaException {
+    SearchArgument sarg = expressionProxy.createSarg(expr);
+    boolean commit = true;
+    try {
+      // For now, don't push anything into HBase, nor store anything special in HBase
+      getHBase().getFileMetadata(fileIds, metadatas);
+      for (int i = 0; i < metadatas.length;  ++i) {
+        if (metadatas[i] == null) continue;
+        ByteBuffer result = expressionProxy.applySargToFileMetadata(sarg, metadatas[i]);
+        eliminated[i] = (result == null);
+        if (!eliminated[i]) {
+          results[i] = result;
+        }
+      }
     } catch (IOException e) {
       commit = false;
       LOG.error("Unable to get file metadata", e);

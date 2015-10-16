@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
  * that is useful for Reader implementation
  *
  */
-class FileMetaInfo {
+public class FileMetaInfo {
   ByteBuffer footerMetaAndPsBuffer;
   final String compressionType;
   final int bufferSize;
@@ -56,5 +56,9 @@ class FileMetaInfo {
     this.versionList = versionList;
     this.writerVersion = writerVersion;
     this.footerMetaAndPsBuffer = fullFooterBuffer;
+  }
+
+  public OrcFile.WriterVersion getWriterVersion() {
+    return writerVersion;
   }
 }

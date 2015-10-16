@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
@@ -48,4 +51,21 @@ public interface PartitionExpressionProxy {
   public boolean filterPartitionsByExpr(List<String> partColumnNames,
       List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr,
       String defaultPartitionName, List<String> partitionNames) throws MetaException;
+
+  /**
+   * Creates SARG from serialized representation.
+   * @param expr SARG, serialized as Kryo.
+   * @return SARG.
+   */
+  public SearchArgument createSarg(byte[] expr);
+
+  /**
+   * Applies SARG to file metadata, and produces some result for this file.
+   * @param sarg SARG
+   * @param byteBuffer File metadata from metastore cache.
+   * @return The result to return to client for this file, or null if file is eliminated.
+   * @throws IOException
+   */
+  public ByteBuffer applySargToFileMetadata(SearchArgument sarg, ByteBuffer byteBuffer)
+      throws IOException;
 }

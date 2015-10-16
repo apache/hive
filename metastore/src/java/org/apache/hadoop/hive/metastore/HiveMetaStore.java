@@ -45,105 +45,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
-import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
-import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
-import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
-import org.apache.hadoop.hive.metastore.api.ClearFileMetadataRequest;
-import org.apache.hadoop.hive.metastore.api.ClearFileMetadataResult;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
-import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
-import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FireEventRequest;
-import org.apache.hadoop.hive.metastore.api.FireEventResponse;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
-import org.apache.hadoop.hive.metastore.api.GetFileMetadataByExprRequest;
-import org.apache.hadoop.hive.metastore.api.GetFileMetadataByExprResult;
-import org.apache.hadoop.hive.metastore.api.GetFileMetadataRequest;
-import org.apache.hadoop.hive.metastore.api.GetFileMetadataResult;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
-import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
-import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeRequest;
-import org.apache.hadoop.hive.metastore.api.GrantRevokePrivilegeResponse;
-import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleRequest;
-import org.apache.hadoop.hive.metastore.api.GrantRevokeRoleResponse;
-import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
-import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
-import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
-import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
-import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionsStatsResult;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
-import org.apache.hadoop.hive.metastore.api.PutFileMetadataRequest;
-import org.apache.hadoop.hive.metastore.api.PutFileMetadataResult;
-import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
-import org.apache.hadoop.hive.metastore.api.TableStatsResult;
-import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
-import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.metastore.api.TxnOpenException;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.UnlockRequest;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
@@ -5707,26 +5609,64 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public GetFileMetadataByExprResult get_file_metadata_by_expr(GetFileMetadataByExprRequest req)
         throws TException {
-      throw new UnsupportedOperationException("Not implemented yet");
+      GetFileMetadataByExprResult result = new GetFileMetadataByExprResult();
+      RawStore ms = getMS();
+      if (!ms.isFileMetadataSupported()) {
+        result.setIsSupported(false);
+        result.setMetadata(EMPTY_MAP_FM2); // Set the required field.
+        return result;
+      }
+      result.setIsSupported(true);
+      List<Long> fileIds = req.getFileIds();
+      byte[] expr = req.getExpr();
+      boolean needMetadata = req.isDoGetFooters();
+      ByteBuffer[] metadatas = new ByteBuffer[fileIds.size()];
+      ByteBuffer[] stripeBitsets = new ByteBuffer[fileIds.size()];
+      boolean[] eliminated = new boolean[fileIds.size()];
+      getMS().getFileMetadataByExpr(fileIds, expr, metadatas, stripeBitsets, eliminated);
+      for (int i = 0; i < metadatas.length; ++i) {
+        long fileId = fileIds.get(i);
+        ByteBuffer metadata = metadatas[i];
+        if (metadata == null) continue;
+        metadata = (eliminated[i] || !needMetadata) ? null
+            : handleReadOnlyBufferForThrift(metadata);
+        MetadataPpdResult mpr = new MetadataPpdResult();
+        ByteBuffer bitset = eliminated[i] ? null : handleReadOnlyBufferForThrift(stripeBitsets[i]);
+        mpr.setMetadata(metadata);
+        mpr.setIncludeBitset(bitset);
+        result.putToMetadata(fileId, mpr);
+      }
+      if (!result.isSetMetadata()) {
+        result.setMetadata(EMPTY_MAP_FM2); // Set the required field.
+      }
+      return result;
     }
+
+    private final static Map<Long, ByteBuffer> EMPTY_MAP_FM1 = new HashMap<Long, ByteBuffer>(1);
+    private final static Map<Long, MetadataPpdResult> EMPTY_MAP_FM2 =
+        new HashMap<Long, MetadataPpdResult>(1);
 
     @Override
     public GetFileMetadataResult get_file_metadata(GetFileMetadataRequest req) throws TException {
-      List<Long> fileIds = req.getFileIds();
-      ByteBuffer[] metadatas = getMS().getFileMetadata(fileIds);
       GetFileMetadataResult result = new GetFileMetadataResult();
-      result.setIsSupported(metadatas != null);
-      if (metadatas != null) {
-        assert metadatas.length == fileIds.size();
-        for (int i = 0; i < metadatas.length; ++i) {
-          ByteBuffer bb = metadatas[i];
-          if (bb == null) continue;
-          bb = handleReadOnlyBufferForThrift(bb);
-          result.putToMetadata(fileIds.get(i), bb);
-        }
+      RawStore ms = getMS();
+      if (!ms.isFileMetadataSupported()) {
+        result.setIsSupported(false);
+        result.setMetadata(EMPTY_MAP_FM1); // Set the required field.
+        return result;
+      }
+      result.setIsSupported(true);
+      List<Long> fileIds = req.getFileIds();
+      ByteBuffer[] metadatas = ms.getFileMetadata(fileIds);
+      assert metadatas.length == fileIds.size();
+      for (int i = 0; i < metadatas.length; ++i) {
+        ByteBuffer bb = metadatas[i];
+        if (bb == null) continue;
+        bb = handleReadOnlyBufferForThrift(bb);
+        result.putToMetadata(fileIds.get(i), bb);
       }
       if (!result.isSetMetadata()) {
-        result.setMetadata(new HashMap<Long, ByteBuffer>()); // Set the required field.
+        result.setMetadata(EMPTY_MAP_FM1); // Set the required field.
       }
       return result;
     }
@@ -5744,7 +5684,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public PutFileMetadataResult put_file_metadata(PutFileMetadataRequest req) throws TException {
-      getMS().putFileMetadata(req.getFileIds(), req.getMetadata());
+      RawStore ms = getMS();
+      if (ms.isFileMetadataSupported()) {
+        ms.putFileMetadata(req.getFileIds(), req.getMetadata());
+      }
       return new PutFileMetadataResult();
     }
 

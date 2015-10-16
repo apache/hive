@@ -31,12 +31,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +65,16 @@ public class MockUtils {
         List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr, String defaultPartitionName,
         List<String> partitionNames) throws MetaException {
       return false;
+    }
+
+    @Override
+    public SearchArgument createSarg(byte[] expr) {
+      return null;
+    }
+
+    @Override
+    public ByteBuffer applySargToFileMetadata(SearchArgument sarg, ByteBuffer byteBuffer) {
+      return null;
     }
 
   }

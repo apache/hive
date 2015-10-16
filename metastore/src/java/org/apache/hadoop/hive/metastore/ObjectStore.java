@@ -7652,12 +7652,23 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public ByteBuffer[] getFileMetadata(List<Long> fileIds) {
-    return null; // Not supported for now; callers have to handle this accordingly.
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
-    // Not supported for now.
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean isFileMetadataSupported() {
+    return false;
+  }
+
+  @Override
+  public void getFileMetadataByExpr(List<Long> fileIds, byte[] expr,
+      ByteBuffer[] metadatas, ByteBuffer[] stripeBitsets, boolean[] eliminated) {
+    throw new UnsupportedOperationException();
   }
 
   /**

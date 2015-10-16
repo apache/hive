@@ -1738,13 +1738,21 @@ public class HBaseReadWrite {
    * @return Serialized file metadata.
    */
   ByteBuffer[] getFileMetadata(List<Long> fileIds) throws IOException {
+    ByteBuffer[] result = new ByteBuffer[fileIds.size()];
+    getFileMetadata(fileIds, result);
+    return result;
+  }
+
+  /**
+   * @param fileIds file ID list.
+   * @return Serialized file metadata.
+   */
+  void getFileMetadata(List<Long> fileIds, ByteBuffer[] result) throws IOException {
     byte[][] keys = new byte[fileIds.size()][];
     for (int i = 0; i < fileIds.size(); ++i) {
       keys[i] = HBaseUtils.makeLongKey(fileIds.get(i));
     }
-    ByteBuffer[] result = new ByteBuffer[keys.length];
     multiRead(FILE_METADATA_TABLE, CATALOG_CF, CATALOG_COL, keys, result);
-    return result;
   }
 
   /**

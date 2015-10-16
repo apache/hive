@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.junit.After;
 import org.junit.Assert;
@@ -66,6 +68,16 @@ public class TestObjectStore {
         String defaultPartitionName, List<String> partitionNames)
         throws MetaException {
       return false;
+    }
+
+    @Override
+    public SearchArgument createSarg(byte[] expr) {
+      return null;
+    }
+
+    @Override
+    public ByteBuffer applySargToFileMetadata(SearchArgument sarg, ByteBuffer byteBuffer) {
+      return null;
     }
   }
 

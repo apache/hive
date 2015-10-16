@@ -786,6 +786,16 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) {
   }
+
+  @Override
+  public boolean isFileMetadataSupported() {
+    return false;
+  }
+
+  @Override
+  public void getFileMetadataByExpr(List<Long> fileIds, byte[] expr,
+      ByteBuffer[] metadatas, ByteBuffer[] stripeBitsets, boolean[] eliminated) {
+  }
 }
 
 
