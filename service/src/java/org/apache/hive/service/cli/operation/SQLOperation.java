@@ -287,9 +287,8 @@ public class SQLOperation extends ExecuteStatementOperation {
     driver = null;
 
     SessionState ss = SessionState.get();
-    if (ss.getTmpOutputFile() != null) {
-      ss.getTmpOutputFile().delete();
-    }
+    ss.deleteTmpOutputFile();
+    ss.deleteTmpErrOutputFile();
   }
 
   @Override
