@@ -48,6 +48,7 @@ import org.apache.hadoop.mapred.JobConf;
     serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
     serdeConstants.FIELD_DELIM, serdeConstants.COLLECTION_DELIM, serdeConstants.MAPKEY_DELIM,
     serdeConstants.SERIALIZATION_FORMAT, serdeConstants.SERIALIZATION_NULL_FORMAT,
+    serdeConstants.SERIALIZATION_ESCAPE_CRLF,
     serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
     serdeConstants.ESCAPE_CHAR,
     serdeConstants.SERIALIZATION_ENCODING,

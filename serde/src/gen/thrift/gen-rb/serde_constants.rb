@@ -17,6 +17,8 @@ SERIALIZATION_DDL = %q"serialization.ddl"
 
 SERIALIZATION_NULL_FORMAT = %q"serialization.null.format"
 
+SERIALIZATION_ESCAPE_CRLF = %q"serialization.escape.crlf"
+
 SERIALIZATION_LAST_COLUMN_TAKES_REST = %q"serialization.last.column.takes.rest"
 
 SERIALIZATION_SORT_ORDER = %q"serialization.sort.order"

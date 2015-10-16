@@ -46,6 +46,8 @@ public class serdeConstants {
 
   public static final String SERIALIZATION_NULL_FORMAT = "serialization.null.format";
 
+  public static final String SERIALIZATION_ESCAPE_CRLF = "serialization.escape.crlf";
+
   public static final String SERIALIZATION_LAST_COLUMN_TAKES_REST = "serialization.last.column.takes.rest";
 
   public static final String SERIALIZATION_SORT_ORDER = "serialization.sort.order";

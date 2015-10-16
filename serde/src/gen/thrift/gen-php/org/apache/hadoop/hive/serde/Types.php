@@ -23,6 +23,7 @@ final class Constant extends \Thrift\Type\TConstant {
   static protected $SERIALIZATION_FORMAT;
   static protected $SERIALIZATION_DDL;
   static protected $SERIALIZATION_NULL_FORMAT;
+  static protected $SERIALIZATION_ESCAPE_CRLF;
   static protected $SERIALIZATION_LAST_COLUMN_TAKES_REST;
   static protected $SERIALIZATION_SORT_ORDER;
   static protected $SERIALIZATION_USE_JSON_OBJECTS;
@@ -82,6 +83,10 @@ final class Constant extends \Thrift\Type\TConstant {
 
   static protected function init_SERIALIZATION_NULL_FORMAT() {
     return "serialization.null.format";
+  }
+
+  static protected function init_SERIALIZATION_ESCAPE_CRLF() {
+    return "serialization.escape.crlf";
   }
 
   static protected function init_SERIALIZATION_LAST_COLUMN_TAKES_REST() {

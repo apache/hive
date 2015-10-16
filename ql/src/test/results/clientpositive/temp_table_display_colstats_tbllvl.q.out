@@ -216,6 +216,7 @@ STAGE PLANS:
                   columns.types struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint>:struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint>:struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint>
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
