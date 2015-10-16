@@ -418,9 +418,16 @@ public class ConvertAstToSearchArg {
   }
 
 
+  private final static ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
+    protected Kryo initialValue() { return new Kryo(); }
+  };
+
   public static SearchArgument create(String kryo) {
-    Input input = new Input(Base64.decodeBase64(kryo));
-    return new Kryo().readObject(input, SearchArgumentImpl.class);
+    return create(Base64.decodeBase64(kryo));
+  }
+
+  public static SearchArgument create(byte[] kryoBytes) {
+    return kryo.get().readObject(new Input(kryoBytes), SearchArgumentImpl.class);
   }
 
   public static SearchArgument createFromConf(Configuration conf) {

@@ -594,7 +594,37 @@ public interface RawStore extends Configurable {
    */
   public void flushCache();
 
+  /**
+   * @param fileIds List of file IDs from the filesystem.
+   * @return File metadata buffers from file metadata cache. The array is fileIds-sized, and
+   *         the entries (or nulls, if metadata is not in cache) correspond to fileIds in the list
+   */
   ByteBuffer[] getFileMetadata(List<Long> fileIds) throws MetaException;
 
+  /**
+   * @param fileIds List of file IDs from the filesystem.
+   * @param metadata Metadata buffers corresponding to fileIds in the list.
+   */
   void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws MetaException;
+
+  /**
+   * @return Whether file metadata cache is supported by this implementation.
+   */
+  boolean isFileMetadataSupported();
+
+  /**
+   * Gets file metadata from cache after applying a format-specific expression that can
+   * produce additional information based on file metadata and also filter the file list.
+   * @param fileIds List of file IDs from the filesystem.
+   * @param expr Format-specific serialized expression applicable to the files' metadatas.
+   * @param metadatas Output parameter; fileIds-sized array to receive the metadatas
+   *                  for corresponding files, if any.
+   * @param exprResults Output parameter; fileIds-sized array to receive the format-specific
+   *                    expression results for the corresponding files.
+   * @param eliminated Output parameter; fileIds-sized array to receive the indication of whether
+   *                   the corresponding files are entirely eliminated by the expression.
+   */
+  void getFileMetadataByExpr(
+      List<Long> fileIds, byte[] expr, ByteBuffer[] metadatas,
+      ByteBuffer[] exprResults, boolean[] eliminated) throws MetaException;
 }
