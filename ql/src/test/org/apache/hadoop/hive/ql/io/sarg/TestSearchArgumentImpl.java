@@ -28,20 +28,14 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.PredicateLeafImpl;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.junit.Test;
 
-import java.beans.XMLDecoder;
-import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.parquet.filter2.predicate.FilterPredicate;
 
 /**
  * These test the SARG implementation.
@@ -53,6 +47,7 @@ import org.apache.parquet.filter2.predicate.FilterPredicate;
  * In each case, the corresponding part of the where clause is in the
  * comment above the blob.
  */
+@SuppressWarnings("deprecation")
 public class TestSearchArgumentImpl {
 
   private ExpressionTree not(ExpressionTree arg) {
@@ -303,28 +298,6 @@ public class TestSearchArgumentImpl {
     }
   }
 
-  private ExprNodeGenericFuncDesc getFuncDesc(String xmlSerialized) {
-    byte[] bytes;
-    try {
-      bytes = xmlSerialized.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
-
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    XMLDecoder decoder = new XMLDecoder(bais, null, null);
-
-    try {
-      return (ExprNodeGenericFuncDesc) decoder.readObject();
-    } finally {
-      decoder.close();
-    }
-  }
-
-  private static TruthValue[] values(TruthValue... vals) {
-    return vals;
-  }
-
   @Test
   public void testBuilder() throws Exception {
     SearchArgument sarg =
@@ -335,9 +308,9 @@ public class TestSearchArgumentImpl {
             .equals("z", PredicateLeaf.Type.FLOAT, 1.0)
             .end()
             .build();
-    assertEquals("leaf-0 = (LESS_THAN x 10)\n" +
-        "leaf-1 = (LESS_THAN_EQUALS y hi)\n" +
-        "leaf-2 = (EQUALS z 1.0)\n" +
+    assertEquals("leaf-0 = (LESS_THAN x 10), " +
+        "leaf-1 = (LESS_THAN_EQUALS y hi), " +
+        "leaf-2 = (EQUALS z 1.0), " +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -349,10 +322,10 @@ public class TestSearchArgumentImpl {
         .end()
         .end()
         .build();
-    assertEquals("leaf-0 = (IS_NULL x)\n" +
-        "leaf-1 = (BETWEEN y 10 20)\n" +
-        "leaf-2 = (IN z 1 2 3)\n" +
-        "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
+    assertEquals("leaf-0 = (IS_NULL x), " +
+        "leaf-1 = (BETWEEN y 10 20), " +
+        "leaf-2 = (IN z 1 2 3), " +
+        "leaf-3 = (NULL_SAFE_EQUALS a stinger), " +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
   }
 
@@ -368,9 +341,9 @@ public class TestSearchArgumentImpl {
             .equals("z", PredicateLeaf.Type.DECIMAL, new HiveDecimalWritable("1.0"))
             .end()
             .build();
-    assertEquals("leaf-0 = (LESS_THAN x 1970-01-11)\n" +
-        "leaf-1 = (LESS_THAN_EQUALS y hi        )\n" +
-        "leaf-2 = (EQUALS z 1)\n" +
+    assertEquals("leaf-0 = (LESS_THAN x 1970-01-11), " +
+        "leaf-1 = (LESS_THAN_EQUALS y hi        ), " +
+        "leaf-2 = (EQUALS z 1), " +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
 
     sarg = SearchArgumentFactory.newBuilder()
@@ -385,10 +358,10 @@ public class TestSearchArgumentImpl {
         .end()
         .end()
         .build();
-    assertEquals("leaf-0 = (IS_NULL x)\n" +
-        "leaf-1 = (BETWEEN y 10 20)\n" +
-        "leaf-2 = (IN z 1 2 3)\n" +
-        "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
+    assertEquals("leaf-0 = (IS_NULL x), " +
+        "leaf-1 = (BETWEEN y 10 20), " +
+        "leaf-2 = (IN z 1 2 3), " +
+        "leaf-3 = (NULL_SAFE_EQUALS a stinger), " +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))",
         sarg.toString());
   }
@@ -405,9 +378,9 @@ public class TestSearchArgumentImpl {
                 new HiveDecimalWritable("1.0"))
             .end()
             .build();
-    assertEquals("leaf-0 = (LESS_THAN x 2005-03-12)\n" +
-        "leaf-1 = (LESS_THAN_EQUALS y hi        )\n" +
-        "leaf-2 = (EQUALS z 1)\n" +
+    assertEquals("leaf-0 = (LESS_THAN x 2005-03-12), " +
+        "leaf-1 = (LESS_THAN_EQUALS y hi        ), " +
+        "leaf-2 = (EQUALS z 1), " +
         "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
 
     sarg = SearchArgumentFactory.newBuilder()
@@ -422,10 +395,10 @@ public class TestSearchArgumentImpl {
         .end()
         .end()
         .build();
-    assertEquals("leaf-0 = (IS_NULL x)\n" +
-        "leaf-1 = (BETWEEN y 10 20)\n" +
-        "leaf-2 = (IN z 1 2 3)\n" +
-        "leaf-3 = (NULL_SAFE_EQUALS a stinger)\n" +
+    assertEquals("leaf-0 = (IS_NULL x), " +
+        "leaf-1 = (BETWEEN y 10 20), " +
+        "leaf-2 = (IN z 1 2 3), " +
+        "leaf-3 = (NULL_SAFE_EQUALS a stinger), " +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))",
         sarg.toString());
   }
@@ -443,11 +416,11 @@ public class TestSearchArgumentImpl {
             .equals("z1", PredicateLeaf.Type.FLOAT, new Double(0.22))
             .end()
             .build();
-    assertEquals("leaf-0 = (LESS_THAN x 22)\n" +
-        "leaf-1 = (LESS_THAN x1 22)\n" +
-        "leaf-2 = (LESS_THAN_EQUALS y hi        )\n" +
-        "leaf-3 = (EQUALS z 0.22)\n" +
-        "leaf-4 = (EQUALS z1 0.22)\n" +
+    assertEquals("leaf-0 = (LESS_THAN x 22), " +
+        "leaf-1 = (LESS_THAN x1 22), " +
+        "leaf-2 = (LESS_THAN_EQUALS y hi        ), " +
+        "leaf-3 = (EQUALS z 0.22), " +
+        "leaf-4 = (EQUALS z1 0.22), " +
         "expr = (and leaf-0 leaf-1 leaf-2 leaf-3 leaf-4)", sarg.toString());
   }
 
@@ -477,8 +450,7 @@ public class TestSearchArgumentImpl {
 
   @Test(expected = IllegalArgumentException.class)
   public void testBadLiteral() throws Exception {
-    SearchArgument sarg =
-        SearchArgumentFactory.newBuilder()
+    SearchArgumentFactory.newBuilder()
         .startAnd()
         .lessThan("x", PredicateLeaf.Type.LONG, "hi")
         .end()
@@ -487,8 +459,7 @@ public class TestSearchArgumentImpl {
 
   @Test(expected = IllegalArgumentException.class)
   public void testBadLiteralList() throws Exception {
-    SearchArgument sarg =
-        SearchArgumentFactory.newBuilder()
+    SearchArgumentFactory.newBuilder()
             .startAnd()
             .in("x", PredicateLeaf.Type.STRING, "hi", 23)
             .end()

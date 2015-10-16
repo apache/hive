@@ -366,7 +366,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       return;
     }
 
-    LOG.info("ORC pushdown predicate: " + sarg);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("ORC pushdown predicate: " + sarg);
+    }
     options.searchArgument(sarg, getSargColumnNames(
         neededColumnNames.split(","), types, options.getInclude(), isOriginal));
   }
@@ -466,6 +468,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final AtomicInteger numFilesCounter = new AtomicInteger(0);
     private ValidTxnList transactionList;
     private SplitStrategyKind splitStrategyKind;
+    private final SearchArgument sarg;
 
     Context(Configuration conf) {
       this(conf, 1);
@@ -473,6 +476,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     Context(Configuration conf, final int minSplits) {
       this.conf = conf;
+      this.sarg = ConvertAstToSearchArg.createFromConf(conf);
       minSize = conf.getLong(MIN_SPLIT_SIZE, DEFAULT_MIN_SPLIT_SIZE);
       maxSize = conf.getLong(MAX_SPLIT_SIZE, DEFAULT_MAX_SPLIT_SIZE);
       String ss = conf.get(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
@@ -981,10 +985,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
       // we can't eliminate stripes if there are deltas because the
       // deltas may change the rows making them match the predicate.
-      if (deltas.isEmpty() && canCreateSargFromConf(context.conf)) {
+      if ((deltas == null || deltas.isEmpty()) && context.sarg != null) {
         SearchArgument sarg = ConvertAstToSearchArg.createFromConf(context.conf);
-        String[] sargColNames = extractNeededColNames(types, context.conf, includedCols, isOriginal);
-        includeStripe = pickStripes(sarg, sargColNames, writerVersion, isOriginal,
+        String[] colNames = extractNeededColNames(types, context.conf, includedCols, isOriginal);
+        includeStripe = pickStripes(context.sarg, colNames, writerVersion, isOriginal,
             stripeStats, stripes.size(), file.getPath());
       }
 
@@ -1110,6 +1114,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       conf = new HiveConf(conf, OrcInputFormat.class);
     }
     Context context = new Context(conf, numSplits);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("ORC pushdown predicate: " + context.sarg);
+    }
     boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     List<OrcSplit> splits = Lists.newArrayList();
     List<Future<AcidDirInfo>> pathFutures = Lists.newArrayList();
@@ -1469,7 +1476,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   private static boolean[] pickStripes(SearchArgument sarg, String[] sargColNames,
       WriterVersion writerVersion, boolean isOriginal, List<StripeStatistics> stripeStats,
       int stripeCount, Path filePath) {
-    LOG.info("ORC pushdown predicate: " + sarg);
     if (sarg == null || stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
       return null; // only do split pruning if HIVE-8732 has been fixed in the writer
     }
