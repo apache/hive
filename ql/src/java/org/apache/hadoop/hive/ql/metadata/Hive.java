@@ -3115,7 +3115,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
-      return null;
+      return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
     }
   }
 
