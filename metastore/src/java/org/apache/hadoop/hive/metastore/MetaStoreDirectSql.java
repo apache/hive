@@ -1184,7 +1184,10 @@ class MetaStoreDirectSql {
 
   public AggrStats aggrColStatsForPartitions(String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException {
-    if (colNames.isEmpty() || partNames.isEmpty()) return new AggrStats(); // Nothing to aggregate.
+    if (colNames.isEmpty() || partNames.isEmpty()) {
+      LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval");
+      return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0); // Nothing to aggregate
+    }
     long partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
     List<ColumnStatisticsObj> stats = columnStatisticsObjForPartitions(dbName,
         tableName, partNames, colNames, partsFound);
