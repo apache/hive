@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -1394,6 +1395,68 @@ public abstract class TestHiveMetaStore extends TestCase {
       System.err.println("testSimpleTable() failed.");
       throw e;
     }
+  }
+
+  // Tests that in the absence of stats for partitions, and/or absence of columns
+  // to get stats for, the metastore does not break. See HIVE-12083 for motivation.
+  public void testStatsFastTrivial() throws Throwable {
+    String dbName = "tstatsfast";
+    String tblName = "t1";
+    String tblOwner = "statstester";
+    String typeName = "Person";
+    int lastAccessed = 12083;
+
+    cleanUp(dbName,tblName,typeName);
+
+    List<List<String>> values = new ArrayList<List<String>>();
+    values.add(makeVals("2008-07-01 14:13:12", "14"));
+    values.add(makeVals("2008-07-01 14:13:12", "15"));
+    values.add(makeVals("2008-07-02 14:13:12", "15"));
+    values.add(makeVals("2008-07-03 14:13:12", "151"));
+
+    createMultiPartitionTableSchema(dbName, tblName, typeName, values);
+
+    List<String> emptyColNames = new ArrayList<String>();
+    List<String> emptyPartNames = new ArrayList<String>();
+
+    List<String> colNames = new ArrayList<String>();
+    colNames.add("name");
+    colNames.add("income");
+    List<String> partNames = client.listPartitionNames(dbName,tblName,(short)-1);
+
+    assertEquals(0,emptyColNames.size());
+    assertEquals(0,emptyPartNames.size());
+    assertEquals(2,colNames.size());
+    assertEquals(4,partNames.size());
+
+    // Test for both colNames and partNames being empty:
+    AggrStats aggrStatsEmpty = client.getAggrColStatsFor(dbName,tblName,emptyColNames,emptyPartNames);
+    assertNotNull(aggrStatsEmpty); // short-circuited on client-side, verifying that it's an empty object, not null
+    assertEquals(0,aggrStatsEmpty.getPartsFound());
+    assertNotNull(aggrStatsEmpty.getColStats());
+    assert(aggrStatsEmpty.getColStats().isEmpty());
+
+    // Test for only colNames being empty
+    AggrStats aggrStatsOnlyParts = client.getAggrColStatsFor(dbName,tblName,emptyColNames,partNames);
+    assertNotNull(aggrStatsOnlyParts); // short-circuited on client-side, verifying that it's an empty object, not null
+    assertEquals(0,aggrStatsOnlyParts.getPartsFound());
+    assertNotNull(aggrStatsOnlyParts.getColStats());
+    assert(aggrStatsOnlyParts.getColStats().isEmpty());
+
+    // Test for only partNames being empty
+    AggrStats aggrStatsOnlyCols = client.getAggrColStatsFor(dbName,tblName,colNames,emptyPartNames);
+    assertNotNull(aggrStatsOnlyCols); // short-circuited on client-side, verifying that it's an empty object, not null
+    assertEquals(0,aggrStatsOnlyCols.getPartsFound());
+    assertNotNull(aggrStatsOnlyCols.getColStats());
+    assert(aggrStatsOnlyCols.getColStats().isEmpty());
+
+    // Test for valid values for both.
+    AggrStats aggrStatsFull = client.getAggrColStatsFor(dbName,tblName,colNames,partNames);
+    assertNotNull(aggrStatsFull);
+    assertEquals(0,aggrStatsFull.getPartsFound()); // would still be empty, because no stats are actually populated.
+    assertNotNull(aggrStatsFull.getColStats());
+    assert(aggrStatsFull.getColStats().isEmpty());
+
   }
 
   public void testColumnStatistics() throws Throwable {
