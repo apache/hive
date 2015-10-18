@@ -37,11 +37,14 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlCastFunction;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.calcite.util.ConversionUtil;
+import org.apache.calcite.util.NlsString;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -289,6 +292,10 @@ public class RexNodeConverter {
   private static final BigInteger MIN_LONG_BI = BigInteger.valueOf(Long.MIN_VALUE),
       MAX_LONG_BI = BigInteger.valueOf(Long.MAX_VALUE);
 
+  private static NlsString asUnicodeString(String text) {
+    return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
+  }
+
   protected RexNode convert(ExprNodeConstantDesc literal) throws CalciteSemanticException {
     RexBuilder rexBuilder = cluster.getRexBuilder();
     RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
@@ -364,15 +371,15 @@ public class RexNodeConverter {
     case CHAR:
       if (value instanceof HiveChar)
         value = ((HiveChar) value).getValue();
-      calciteLiteral = rexBuilder.makeLiteral((String) value);
+      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case VARCHAR:
       if (value instanceof HiveVarchar)
         value = ((HiveVarchar) value).getValue();
-      calciteLiteral = rexBuilder.makeLiteral((String) value);
+      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case STRING:
-      calciteLiteral = rexBuilder.makeLiteral((String) value);
+      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case DATE:
       Calendar cal = new GregorianCalendar();
