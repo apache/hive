@@ -710,6 +710,9 @@ public abstract class FolderPermissionBase {
     ret = driver.run("TRUNCATE TABLE " + tableName);
     Assert.assertEquals(0, ret.getResponseCode());
 
+    assertExistence(warehouseDir + "/" + tableName);
+    verifyPermission(warehouseDir + "/" + tableName);
+
     ret = driver.run("insert into table " + tableName + " partition(part1='1') select key,value from mysrc where part1='1' and part2='1'");
     Assert.assertEquals(0, ret.getResponseCode());
 
@@ -717,6 +720,13 @@ public abstract class FolderPermissionBase {
 
     assertExistence(partition);
     verifyPermission(partition);    
+
+    // Also test the partition folder if the partition is truncated
+    ret = driver.run("TRUNCATE TABLE " + tableName + " partition(part1='1')");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    assertExistence(partition);
+    verifyPermission(partition);
   }
 
   private void setSinglePartition(String tableLoc, int index) throws Exception {
