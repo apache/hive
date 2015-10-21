@@ -148,9 +148,25 @@ FROM src WHERE key=98 OR key=100;
 
 SELECT * FROM hbase_table_8 ORDER BY key;
 
+DROP TABLE IF EXISTS hbase_table_3_like;
+CREATE TABLE hbase_table_3_like LIKE hbase_table_3;
+DESCRIBE EXTENDED hbase_table_3_like;
+
+INSERT OVERWRITE TABLE hbase_table_3_like SELECT * FROM hbase_table_3;
+SELECT * FROM hbase_table_3_like ORDER BY key, value LIMIT 5;
+
+DROP TABLE IF EXISTS hbase_table_1_like;
+CREATE EXTERNAL TABLE hbase_table_1_like LIKE hbase_table_1;
+DESCRIBE EXTENDED hbase_table_1_like;
+
+INSERT OVERWRITE TABLE hbase_table_1_like SELECT * FROM hbase_table_1;
+SELECT COUNT(*) FROM hbase_table_1_like;
+
 DROP TABLE hbase_table_1;
+DROP TABLE hbase_table_1_like;
 DROP TABLE hbase_table_2;
 DROP TABLE hbase_table_3;
+DROP TABLE hbase_table_3_like;
 DROP TABLE hbase_table_4;
 DROP TABLE hbase_table_5;
 DROP TABLE hbase_table_6;
