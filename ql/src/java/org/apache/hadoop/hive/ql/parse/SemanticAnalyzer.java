@@ -6141,25 +6141,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setPartnCols(partnColsNoConvert);
     }
   }
-  /**
-   * Check for HOLD_DDLTIME hint.
-   *
-   * @param qb
-   * @return true if HOLD_DDLTIME is set, false otherwise.
-   */
-  private boolean checkHoldDDLTime(QB qb) {
-    ASTNode hints = qb.getParseInfo().getHints();
-    if (hints == null) {
-      return false;
-    }
-    for (int pos = 0; pos < hints.getChildCount(); pos++) {
-      ASTNode hint = (ASTNode) hints.getChild(pos);
-      if (((ASTNode) hint.getChild(0)).getToken().getType() == HiveParser.TOK_HOLD_DDLTIME) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   @SuppressWarnings("nls")
   protected Operator genFileSinkPlan(String dest, QB qb, Operator input)
@@ -6181,7 +6162,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     SortBucketRSCtx rsCtx = new SortBucketRSCtx();
     DynamicPartitionCtx dpCtx = null;
     LoadTableDesc ltd = null;
-    boolean holdDDLTime = checkHoldDDLTime(qb);
     ListBucketingCtx lbCtx = null;
 
     switch (dest_type.intValue()) {
@@ -6227,13 +6207,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(generateErrorMessage(
               qb.getParseInfo().getDestForClause(dest),
               ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
-        }
-        // the HOLD_DDLTIIME hint should not be used with dynamic partition since the
-        // newly generated partitions should always update their DDLTIME
-        if (holdDDLTime) {
-          throw new SemanticException(generateErrorMessage(
-              qb.getParseInfo().getDestForClause(dest),
-              ErrorMsg.HOLD_DDLTIME_ON_NONEXIST_PARTITIONS.getMsg()));
         }
         dpCtx = qbm.getDPCtx(dest);
         if (dpCtx == null) {
@@ -6294,11 +6267,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
             dest_tab.getTableName()));
         ltd.setLbCtx(lbCtx);
-
-        if (holdDDLTime) {
-          LOG.info("this query will not update transient_lastDdlTime!");
-          ltd.setHoldDDLTime(true);
-        }
         loadTableWork.add(ltd);
       }
 
@@ -6404,20 +6372,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           dest_tab.getTableName()));
       ltd.setLbCtx(lbCtx);
 
-      if (holdDDLTime) {
-        try {
-          Partition part = db.getPartition(dest_tab, dest_part.getSpec(), false);
-          if (part == null) {
-            throw new SemanticException(generateErrorMessage(
-                qb.getParseInfo().getDestForClause(dest),
-                ErrorMsg.HOLD_DDLTIME_ON_NONEXIST_PARTITIONS.getMsg()));
-          }
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
-        LOG.info("this query will not update transient_lastDdlTime!");
-        ltd.setHoldDDLTime(true);
-      }
       loadTableWork.add(ltd);
       if (!outputs.add(new WriteEntity(dest_part, (ltd.getReplace() ?
           WriteEntity.WriteType.INSERT_OVERWRITE :

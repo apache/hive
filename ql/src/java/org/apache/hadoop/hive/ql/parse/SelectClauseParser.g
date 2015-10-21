@@ -107,7 +107,6 @@ hintName
     :
     KW_MAPJOIN -> TOK_MAPJOIN
     | KW_STREAMTABLE -> TOK_STREAMTABLE
-    | KW_HOLD_DDLTIME -> TOK_HOLD_DDLTIME
     ;
 
 hintArgs
