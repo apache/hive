@@ -1,0 +1,46 @@
+PREHOOK: query: create table map_txt (
+  id int,
+  content map<int,string>
+)
+row format delimited 
+null defined as '\\N'
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@map_txt
+POSTHOOK: query: create table map_txt (
+  id int,
+  content map<int,string>
+)
+row format delimited 
+null defined as '\\N'
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@map_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/mapNull.txt' INTO TABLE map_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@map_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/mapNull.txt' INTO TABLE map_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@map_txt
+PREHOOK: query: select * from map_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@map_txt
+#### A masked pattern was here ####
+POSTHOOK: query: select * from map_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@map_txt
+#### A masked pattern was here ####
+1	NULL
+PREHOOK: query: select id, map_keys(content) from map_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@map_txt
+#### A masked pattern was here ####
+POSTHOOK: query: select id, map_keys(content) from map_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@map_txt
+#### A masked pattern was here ####
+1	[]
