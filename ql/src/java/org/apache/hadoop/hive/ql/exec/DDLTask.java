@@ -213,6 +213,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.util.StringUtils.stringifyException;
 
@@ -2154,11 +2155,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl_row_format.append("OUTPUTFORMAT \n  '" +
             escapeHiveCommand(sd.getOutputFormat()) + "'");
       } else {
-        duplicateProps.add(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
+        duplicateProps.add(META_TABLE_STORAGE);
         tbl_row_format.append(" SERDE \n  '" +
             escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
         tbl_row_format.append("STORED BY \n  '" + escapeHiveCommand(tbl.getParameters().get(
-            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)) + "' \n");
+            META_TABLE_STORAGE)) + "' \n");
         // SerDe Properties
         if (serdeInfo.getParametersSize() > 0) {
           appendSerdeParams(tbl_row_format, serdeInfo.getParameters());
@@ -3789,9 +3790,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     if (crtTbl.getStorageHandler() != null) {
-      tbl.setProperty(
-          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
-          crtTbl.getStorageHandler());
+      tbl.setProperty(META_TABLE_STORAGE, crtTbl.getStorageHandler());
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
@@ -4028,6 +4027,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       String paramsStr = HiveConf.getVar(conf, HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
 
       Set<String> retainer = new HashSet<String>();
+      // for non-native table, property storage_handler should be retained
+      retainer.add(META_TABLE_STORAGE);
       if (spec != null && spec.schemaProps() != null) {
         retainer.addAll(Arrays.asList(spec.schemaProps()));
       }
