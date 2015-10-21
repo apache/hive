@@ -217,7 +217,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
               serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
               objectRegistry,
               pid,
-              executionContext, memoryAvailable);
+              executionContext, memoryAvailable, false);
         }
       }
       if (taskRunner == null) {
