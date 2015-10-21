@@ -18,16 +18,11 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import co.cask.tephra.hbase10.coprocessor.TransactionProcessor;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,7 +33,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,7 +79,7 @@ public class HBaseIntegrationTests {
     // This chicanery is necessary to make the driver work.  Hive tests need the pfile file
     // system, while the hbase one uses something else.  So first make sure we've configured our
     // hbase connection, then get a new config file and populate it as desired.
-    HBaseReadWrite.getInstance(conf);
+    HBaseReadWrite.setConf(conf);
     conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,

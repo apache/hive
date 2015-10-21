@@ -97,7 +97,7 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
       Assert.assertEquals("file:/tmp/pc=" + val, p.getSd().getLocation());
     }
 
-    Assert.assertEquals(1, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(1, HBaseReadWrite.getInstance().countStorageDescriptor());
 
     String tableName2 = "differentTable";
     sd = new StorageDescriptor(cols, "file:/tmp", "input2", "output", false, 0,
@@ -106,11 +106,11 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
         emptyParameters, null, null, null);
     store.createTable(table);
 
-    Assert.assertEquals(2, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(2, HBaseReadWrite.getInstance().countStorageDescriptor());
 
     // Drop one of the partitions and make sure it doesn't drop the storage descriptor
     store.dropPartition(dbName, tableName, Arrays.asList(partVals.get(0)));
-    Assert.assertEquals(2, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(2, HBaseReadWrite.getInstance().countStorageDescriptor());
 
     // Alter the second table in a few ways to make sure it changes it's descriptor properly
     table = store.getTable(dbName, tableName2);
@@ -119,7 +119,7 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
     // Alter the table without touching the storage descriptor
     table.setLastAccessTime(startTime + 1);
     store.alterTable(dbName, tableName2, table);
-    Assert.assertEquals(2, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(2, HBaseReadWrite.getInstance().countStorageDescriptor());
     table = store.getTable(dbName, tableName2);
     byte[] alteredHash = HBaseUtils.hashStorageDescriptor(table.getSd(), md);
     Assert.assertArrayEquals(sdHash, alteredHash);
@@ -127,7 +127,7 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
     // Alter the table, changing the storage descriptor
     table.getSd().setOutputFormat("output_changed");
     store.alterTable(dbName, tableName2, table);
-    Assert.assertEquals(2, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(2, HBaseReadWrite.getInstance().countStorageDescriptor());
     table = store.getTable(dbName, tableName2);
     alteredHash = HBaseUtils.hashStorageDescriptor(table.getSd(), md);
     Assert.assertFalse(Arrays.equals(sdHash, alteredHash));
@@ -137,7 +137,7 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
     sdHash = HBaseUtils.hashStorageDescriptor(part.getSd(), md);
     part.setLastAccessTime(part.getLastAccessTime() + 1);
     store.alterPartition(dbName, tableName, Arrays.asList(partVals.get(1)), part);
-    Assert.assertEquals(2, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(2, HBaseReadWrite.getInstance().countStorageDescriptor());
     part = store.getPartition(dbName, tableName, Arrays.asList(partVals.get(1)));
     alteredHash = HBaseUtils.hashStorageDescriptor(part.getSd(), md);
     Assert.assertArrayEquals(sdHash, alteredHash);
@@ -145,7 +145,7 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
     // Alter the partition, changing the storage descriptor
     part.getSd().setOutputFormat("output_changed_some_more");
     store.alterPartition(dbName, tableName, Arrays.asList(partVals.get(1)), part);
-    Assert.assertEquals(3, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(3, HBaseReadWrite.getInstance().countStorageDescriptor());
     part = store.getPartition(dbName, tableName, Arrays.asList(partVals.get(1)));
     alteredHash = HBaseUtils.hashStorageDescriptor(part.getSd(), md);
     Assert.assertFalse(Arrays.equals(sdHash, alteredHash));
@@ -161,7 +161,7 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
       listPartVals.add(Arrays.asList(pv));
     }
     store.alterPartitions(dbName, tableName, listPartVals, parts);
-    Assert.assertEquals(3, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(3, HBaseReadWrite.getInstance().countStorageDescriptor());
     parts = store.getPartitions(dbName, tableName, -1);
     alteredHash = HBaseUtils.hashStorageDescriptor(parts.get(1).getSd(), md);
     Assert.assertArrayEquals(sdHash, alteredHash);
@@ -173,7 +173,7 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
       parts.get(i).getSd().setOutputFormat("yet_a_different_of");
     }
     store.alterPartitions(dbName, tableName, listPartVals, parts);
-    Assert.assertEquals(4, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(4, HBaseReadWrite.getInstance().countStorageDescriptor());
     parts = store.getPartitions(dbName, tableName, -1);
     alteredHash = HBaseUtils.hashStorageDescriptor(parts.get(1).getSd(), md);
     Assert.assertFalse(Arrays.equals(sdHash, alteredHash));
@@ -184,7 +184,7 @@ public class TestStorageDescriptorSharing extends HBaseIntegrationTests {
     store.dropTable(dbName, tableName);
     store.dropTable(dbName, tableName2);
 
-    Assert.assertEquals(0, HBaseReadWrite.getInstance(conf).countStorageDescriptor());
+    Assert.assertEquals(0, HBaseReadWrite.getInstance().countStorageDescriptor());
 
 
   }

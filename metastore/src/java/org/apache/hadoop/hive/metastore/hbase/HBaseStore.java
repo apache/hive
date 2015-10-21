@@ -2254,7 +2254,10 @@ public class HBaseStore implements RawStore {
   }
 
   private HBaseReadWrite getHBase() {
-    if (hbase == null) hbase = HBaseReadWrite.getInstance(conf);
+    if (hbase == null) {
+      HBaseReadWrite.setConf(conf);
+      hbase = HBaseReadWrite.getInstance();
+    }
     return hbase;
   }
 

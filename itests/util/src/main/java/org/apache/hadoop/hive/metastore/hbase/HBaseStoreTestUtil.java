@@ -18,13 +18,13 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import java.util.List;
-
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hive.conf.HiveConf;
+
+import java.util.List;
 
 public class HBaseStoreTestUtil {
   public static void initHBaseMetastore(HBaseAdmin admin, HiveConf conf) throws Exception {
@@ -39,7 +39,7 @@ public class HBaseStoreTestUtil {
     }
     admin.close();
     if (conf != null) {
-      HBaseReadWrite.getInstance(conf);
+      HBaseReadWrite.setConf(conf);
     }
   }
 }

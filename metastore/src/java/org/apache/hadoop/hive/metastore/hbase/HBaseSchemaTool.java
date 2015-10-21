@@ -155,7 +155,8 @@ public class HBaseSchemaTool {
     roleName = rn;
     colNames = cn;
     hasStats = s;
-    hrw = HBaseReadWrite.getInstance(new Configuration());
+    HBaseReadWrite.setConf(new Configuration());
+    hrw = HBaseReadWrite.getInstance();
   }
 
   public void db() throws IOException, TException {

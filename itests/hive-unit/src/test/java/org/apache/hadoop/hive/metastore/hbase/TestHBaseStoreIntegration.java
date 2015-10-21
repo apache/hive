@@ -837,7 +837,8 @@ public class TestHBaseStoreIntegration extends HBaseIntegrationTests {
     store.grantRole(role2, user1, PrincipalType.USER, "admin", PrincipalType.ROLE, false);
     store.grantRole(role1, user2, PrincipalType.USER, "bob", PrincipalType.USER, false);
 
-    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user2);
+    HBaseReadWrite.setConf(conf);
+    roles = HBaseReadWrite.getInstance().getUserRoles(user2);
     Assert.assertEquals(2, roles.size());
     roleNames = roles.toArray(new String[roles.size()]);
     Arrays.sort(roleNames);
@@ -847,13 +848,13 @@ public class TestHBaseStoreIntegration extends HBaseIntegrationTests {
 
     // user1 should still have both roles since she was granted into role1 specifically.  user2
     // should only have role2 now since role2 was revoked from role1.
-    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user1);
+    roles = HBaseReadWrite.getInstance().getUserRoles(user1);
     Assert.assertEquals(2, roles.size());
     roleNames = roles.toArray(new String[roles.size()]);
     Arrays.sort(roleNames);
     Assert.assertArrayEquals(new String[]{roleName1, roleName2}, roleNames);
 
-    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user2);
+    roles = HBaseReadWrite.getInstance().getUserRoles(user2);
     Assert.assertEquals(1, roles.size());
     Assert.assertEquals(roleName1, roles.get(0));
   }
@@ -882,11 +883,12 @@ public class TestHBaseStoreIntegration extends HBaseIntegrationTests {
 
     store.removeRole(roleName2);
 
-    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user1);
+    HBaseReadWrite.setConf(conf);
+    roles = HBaseReadWrite.getInstance().getUserRoles(user1);
     Assert.assertEquals(1, roles.size());
     Assert.assertEquals(roleName1, roles.get(0));
 
-    roles = HBaseReadWrite.getInstance(conf).getUserRoles(user2);
+    roles = HBaseReadWrite.getInstance().getUserRoles(user2);
     Assert.assertEquals(1, roles.size());
     Assert.assertEquals(roleName1, roles.get(0));
   }
