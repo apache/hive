@@ -19,16 +19,14 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTableInterface;
@@ -41,7 +39,6 @@ import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.filter.RowFilter;
-import org.apache.hadoop.hbase.protobuf.generated.ClientProtos.MultiRequest;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -185,23 +182,26 @@ public class HBaseReadWrite {
   boolean entireRoleTableInCache;
 
   /**
-   * Get the instance of HBaseReadWrite for the current thread.  This is intended to be used by
-   * {@link org.apache.hadoop.hive.metastore.hbase.HBaseStore} since it creates the thread local
-   * version of this class.
+   * Set the configuration for all HBaseReadWrite instances.
    * @param configuration Configuration object
-   * @return thread's instance of HBaseReadWrite
    */
-  public static HBaseReadWrite getInstance(Configuration configuration) {
-    staticConf = configuration;
-    return self.get();
+  public static synchronized void setConf(Configuration configuration) {
+    if (staticConf == null) {
+      staticConf = configuration;
+    } else {
+      LOG.info("Attempt to set conf when it has already been set.");
+    }
   }
 
   /**
-   * Get the instance of HBaseReadWrite for the current thread.  This is inteded to be used after
-   * the thread has been initialized.  Woe betide you if that's not the case.
+   * Get the instance of HBaseReadWrite for the current thread.  This can only be called after
+   * {@link #setConf} has been called. Woe betide you if that's not the case.
    * @return thread's instance of HBaseReadWrite
    */
   static HBaseReadWrite getInstance() {
+    if (staticConf == null) {
+      throw new RuntimeException("Must set conf object before getting an instance");
+    }
     return self.get();
   }
 

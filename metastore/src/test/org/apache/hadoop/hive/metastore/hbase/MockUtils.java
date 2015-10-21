@@ -203,7 +203,7 @@ public class MockUtils {
     Mockito.when(hconn.getHBaseTable(Mockito.anyString())).thenReturn(htable);
     HiveConf.setVar(conf, HiveConf.ConfVars.METASTORE_HBASE_CONNECTION_CLASS, HBaseReadWrite.TEST_CONN);
     HBaseReadWrite.setTestConnection(hconn);
-    HBaseReadWrite hbase = HBaseReadWrite.getInstance(conf);
+    HBaseReadWrite.setConf(conf);
     HBaseStore store = new HBaseStore();
     store.setConf(conf);
     return store;
