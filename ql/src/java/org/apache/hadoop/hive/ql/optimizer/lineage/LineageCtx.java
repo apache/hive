@@ -216,6 +216,7 @@ public class LineageCtx implements NodeProcessorCtx {
     public void clear() {
       finalSelectOps.clear();
       depMap.clear();
+      condMap.clear();
     }
   }
 
