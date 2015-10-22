@@ -32,18 +32,22 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MuxOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -61,6 +65,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import com.google.common.collect.ImmutableSet;
+
 /**
  * ConvertJoinMapJoin is an optimization that replaces a common join
  * (aka shuffle join) with a map join (aka broadcast or fragment replicate
@@ -70,7 +76,18 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class ConvertJoinMapJoin implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(ConvertJoinMapJoin.class.getName());
+  private static final Log LOG = LogFactory.getLog(ConvertJoinMapJoin.class.getName());
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private static final Set<Class<? extends Operator<?>>> COSTLY_OPERATORS =
+          new ImmutableSet.Builder()
+                  .add(CommonJoinOperator.class)
+                  .add(GroupByOperator.class)
+                  .add(LateralViewJoinOperator.class)
+                  .add(PTFOperator.class)
+                  .add(ReduceSinkOperator.class)
+                  .add(UDTFOperator.class)
+                  .build();
 
   @Override
   /*
@@ -538,16 +555,20 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
 
     int bigTablePosition = -1;
-
+    // number of costly ops (Join, GB, PTF/Windowing, TF) below the big input
+    int bigInputNumberCostlyOps = -1;
+    // stats of the big input
     Statistics bigInputStat = null;
-    long totalSize = 0;
-    int pos = 0;
 
     // bigTableFound means we've encountered a table that's bigger than the
     // max. This table is either the the big table or we cannot convert.
-    boolean bigTableFound = false;
+    boolean foundInputNotFittingInMemory = false;
 
-    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+    // total size of the inputs
+    long totalSize = 0;
+
+    for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
+      Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
 
       Statistics currInputStat = parentOp.getStatistics();
       if (currInputStat == null) {
@@ -556,15 +577,17 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
 
       long inputSize = currInputStat.getDataSize();
-      if ((bigInputStat == null)
-          || ((bigInputStat != null) && (inputSize > bigInputStat.getDataSize()))) {
 
-        if (bigTableFound) {
+      boolean currentInputNotFittingInMemory = false;
+      if ((bigInputStat == null)
+              || ((bigInputStat != null) && (inputSize > bigInputStat.getDataSize()))) {
+
+        if (foundInputNotFittingInMemory) {
           // cannot convert to map join; we've already chosen a big table
           // on size and there's another one that's bigger.
           return -1;
         }
-
+        
         if (inputSize/buckets > maxSize) {
           if (!bigTableCandidateSet.contains(pos)) {
             // can't use the current table as the big table, but it's too
@@ -572,33 +595,46 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             return -1;
           }
 
-          bigTableFound = true;
-        }
-
-        if (bigInputStat != null) {
-          // we're replacing the current big table with a new one. Need
-          // to count the current one as a map table then.
-          totalSize += bigInputStat.getDataSize();
-        }
-
-        if (totalSize/buckets > maxSize) {
-          // sum of small tables size in this join exceeds configured limit
-          // hence cannot convert.
-          return -1;
-        }
-
-        if (bigTableCandidateSet.contains(pos)) {
-          bigTablePosition = pos;
-          bigInputStat = currInputStat;
-        }
-      } else {
-        totalSize += currInputStat.getDataSize();
-        if (totalSize/buckets > maxSize) {
-          // cannot hold all map tables in memory. Cannot convert.
-          return -1;
+          currentInputNotFittingInMemory = true;
+          foundInputNotFittingInMemory = true;
         }
       }
-      pos++;
+
+      int currentInputNumberCostlyOps = foundInputNotFittingInMemory ?
+              -1 : OperatorUtils.countOperatorsUpstream(parentOp, COSTLY_OPERATORS);
+
+      // This input is the big table if it is contained in the big candidates set, and either:
+      // 1) we have not chosen a big table yet, or
+      // 2) it has been chosen as the big table above, or
+      // 3) the number of costly operators for this input is higher, or
+      // 4) the number of costly operators is equal, but the size is bigger,
+      boolean selectedBigTable = bigTableCandidateSet.contains(pos) &&
+              (bigInputStat == null || currentInputNotFittingInMemory ||
+                      (!foundInputNotFittingInMemory && (currentInputNumberCostlyOps > bigInputNumberCostlyOps ||
+                              (currentInputNumberCostlyOps == bigInputNumberCostlyOps && inputSize > bigInputStat.getDataSize()))));
+
+      if (bigInputStat != null && selectedBigTable) {
+        // We are replacing the current big table with a new one, thus
+        // we need to count the current one as a map table then.
+        totalSize += bigInputStat.getDataSize();
+      } else if (!selectedBigTable) {
+        // This is not the first table and we are not using it as big table,
+        // in fact, we're adding this table as a map table
+        totalSize += inputSize;
+      }
+
+      if (totalSize/buckets > maxSize) {
+        // sum of small tables size in this join exceeds configured limit
+        // hence cannot convert.
+        return -1;
+      }
+
+      if (selectedBigTable) {
+        bigTablePosition = pos;
+        bigInputNumberCostlyOps = currentInputNumberCostlyOps;
+        bigInputStat = currInputStat;
+      }
+
     }
 
     return bigTablePosition;
@@ -616,7 +652,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
    *
    * for tez.
    */
-
   public MapJoinOperator convertJoinMapJoin(JoinOperator joinOp, OptimizeTezProcContext context,
       int bigTablePosition, boolean removeReduceSink) throws SemanticException {
     // bail on mux operator because currently the mux operator masks the emit keys

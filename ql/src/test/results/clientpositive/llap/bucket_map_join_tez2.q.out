@@ -527,8 +527,7 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 3 <- Reducer 2 (CUSTOM_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -558,38 +557,38 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1
-                      input vertices:
-                        0 Reducer 2
-                      Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Reduce Output Operator
+                      key expressions: key (type: int)
+                      sort order: +
+                      Map-reduce partition columns: key (type: int)
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 key (type: int)
+                  outputColumnNames: _col0, _col1
+                  input vertices:
+                    1 Map 3
+                  Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -609,8 +608,7 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 3 <- Reducer 2 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -640,43 +638,43 @@ STAGE PLANS:
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(key) (type: double)
-                      outputColumnNames: _col0, _col2
-                      input vertices:
-                        0 Reducer 2
-                      Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Select Operator
-                        expressions: _col0 (type: string), _col2 (type: string)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Reduce Output Operator
+                      key expressions: UDFToDouble(key) (type: double)
+                      sort order: +
+                      Map-reduce partition columns: UDFToDouble(key) (type: double)
+                      Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
             Execution mode: llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: UDFToDouble(_col0) (type: double)
-                  sort order: +
-                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                  Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string)
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 UDFToDouble(_col0) (type: double)
+                    1 UDFToDouble(key) (type: double)
+                  outputColumnNames: _col0, _col2
+                  input vertices:
+                    1 Map 3
+                  Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
+                  Select Operator
+                    expressions: _col0 (type: string), _col2 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
