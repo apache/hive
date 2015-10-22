@@ -19,6 +19,7 @@
 package org.apache.hive.service.cli.operation;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.PrivilegedExceptionAction;
@@ -31,6 +32,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
@@ -81,7 +83,23 @@ public class SQLOperation extends ExecuteStatementOperation {
       String> confOverlay, boolean runInBackground) {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
     super(parentSession, statement, confOverlay, runInBackground);
+    setupSessionIO(parentSession.getSessionState());
   }
+
+  private void setupSessionIO(SessionState sessionState) {
+    try {
+      sessionState.in = null; // hive server's session input stream is not used
+      sessionState.out = new PrintStream(System.out, true, CharEncoding.UTF_8);
+      sessionState.info = new PrintStream(System.err, true, CharEncoding.UTF_8);
+      sessionState.err = new PrintStream(System.err, true, CharEncoding.UTF_8);
+    } catch (UnsupportedEncodingException e) {
+        LOG.error("Error creating PrintStream", e);
+        e.printStackTrace();
+        sessionState.out = null;
+        sessionState.info = null;
+        sessionState.err = null;
+      }
+    }
 
   /***
    * Compile the query and extract metadata
