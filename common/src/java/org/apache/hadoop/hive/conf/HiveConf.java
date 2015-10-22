@@ -2878,7 +2878,7 @@ public class HiveConf extends Configuration {
     return getProperties(this);
   }
 
-  private static Properties getProperties(Configuration conf) {
+  public static Properties getProperties(Configuration conf) {
     Iterator<Map.Entry<String, String>> iter = conf.iterator();
     Properties p = new Properties();
     while (iter.hasNext()) {

@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
@@ -288,7 +289,22 @@ public class SetProcessor implements CommandProcessor {
     }
 
     if (nwcmd.equals("-v")) {
-      dumpOptions(ss.getConf().getAllProperties());
+      Properties properties = null;
+      if (ss.getConf().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        Class<?> clazz;
+        try {
+          clazz = Class.forName("org.apache.tez.dag.api.TezConfiguration");
+
+          Configuration tezConf =
+              (Configuration) clazz.getConstructor(Configuration.class).newInstance(ss.getConf());
+          properties = HiveConf.getProperties(tezConf);
+        } catch (Exception e) {
+          return new CommandProcessorResponse(1, e.getMessage(), "42000", e);
+        }
+      } else {
+        properties = ss.getConf().getAllProperties();
+      }
+      dumpOptions(properties);
       return createProcessorSuccessResponse();
     }
 
