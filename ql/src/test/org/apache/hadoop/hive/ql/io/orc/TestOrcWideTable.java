@@ -38,241 +38,39 @@ import org.junit.rules.TestName;
 
 public class TestOrcWideTable {
 
-  private static final int MEMORY_FOR_ORC = 512 * 1024 * 1024;
-  Path workDir = new Path(System.getProperty("test.tmp.dir", "target" + File.separator + "test"
-      + File.separator + "tmp"));
-
-  Configuration conf;
-  FileSystem fs;
-  Path testFilePath;
-  float memoryPercent;
-
-  @Rule
-  public TestName testCaseName = new TestName();
-
-  @Before
-  public void openFileSystem() throws Exception {
-    conf = new Configuration();
-    fs = FileSystem.getLocal(conf);
-    testFilePath = new Path(workDir, "TestOrcFile." + testCaseName.getMethodName() + ".orc");
-    fs.delete(testFilePath, false);
-    // make sure constant memory is available for ORC always
-    memoryPercent = (float) MEMORY_FOR_ORC / (float) ManagementFactory.getMemoryMXBean().
-        getHeapMemoryUsage().getMax();
-    conf.setFloat(HiveConf.ConfVars.HIVE_ORC_FILE_MEMORY_POOL.varname, memoryPercent);
+  @Test
+  public void testBufferSizeFor1Col() throws IOException {
+    assertEquals(128 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+        1, 128*1024));
   }
 
   @Test
-  public void testBufferSizeFor1Col() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 128 * 1024;
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.NONE).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      assertEquals(bufferSize, newBufferSize);
-    }
+  public void testBufferSizeFor50Col() throws IOException {
+    assertEquals(256 * 1024, WriterImpl.getEstimatedBufferSize(256 * 1024 * 1024,
+        50, 256*1024));
   }
 
   @Test
   public void testBufferSizeFor1000Col() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 128 * 1024;
-    String columns = getRandomColumnNames(1000);
-    // just for testing. manually write the column names
-    conf.set(IOConstants.COLUMNS, columns);
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.NONE).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      assertEquals(bufferSize, newBufferSize);
-    }
+    assertEquals(32 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+        1000, 128*1024));
   }
 
   @Test
   public void testBufferSizeFor2000Col() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 256 * 1024;
-    String columns = getRandomColumnNames(2000);
-    // just for testing. manually write the column names
-    conf.set(IOConstants.COLUMNS, columns);
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.ZLIB).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      assertEquals(32 * 1024, newBufferSize);
-    }
-  }
-
-  @Test
-  public void testBufferSizeFor2000ColNoCompression() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 256 * 1024;
-    String columns = getRandomColumnNames(2000);
-    // just for testing. manually write the column names
-    conf.set(IOConstants.COLUMNS, columns);
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.NONE).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      assertEquals(64 * 1024, newBufferSize);
-    }
+    assertEquals(16 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+        2000, 256*1024));
   }
 
   @Test
   public void testBufferSizeFor4000Col() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 256 * 1024;
-    String columns = getRandomColumnNames(4000);
-    // just for testing. manually write the column names
-    conf.set(IOConstants.COLUMNS, columns);
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.ZLIB).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      assertEquals(16 * 1024, newBufferSize);
-    }
-  }
-
-  @Test
-  public void testBufferSizeFor4000ColNoCompression() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 256 * 1024;
-    String columns = getRandomColumnNames(4000);
-    // just for testing. manually write the column names
-    conf.set(IOConstants.COLUMNS, columns);
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.NONE).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      assertEquals(32 * 1024, newBufferSize);
-    }
+    assertEquals(8 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+        4000, 256*1024));
   }
 
   @Test
   public void testBufferSizeFor25000Col() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 256 * 1024;
-    String columns = getRandomColumnNames(25000);
-    // just for testing. manually write the column names
-    conf.set(IOConstants.COLUMNS, columns);
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.NONE).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      // 4K is the minimum buffer size
-      assertEquals(4 * 1024, newBufferSize);
-    }
-  }
-
-  @Test
-  public void testBufferSizeManualOverride1() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 1024;
-    String columns = getRandomColumnNames(2000);
-    // just for testing. manually write the column names
-    conf.set(IOConstants.COLUMNS, columns);
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.NONE).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      assertEquals(bufferSize, newBufferSize);
-    }
-  }
-
-  @Test
-  public void testBufferSizeManualOverride2() throws IOException {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    int bufferSize = 2 * 1024;
-    String columns = getRandomColumnNames(4000);
-    // just for testing. manually write the column names
-    conf.set(IOConstants.COLUMNS, columns);
-    Writer writer = OrcFile.createWriter(
-        testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
-            .compress(CompressionKind.NONE).bufferSize(bufferSize));
-    final int newBufferSize;
-    if (writer instanceof WriterImpl) {
-      WriterImpl orcWriter = (WriterImpl) writer;
-      newBufferSize = orcWriter.getEstimatedBufferSize(bufferSize);
-      assertEquals(bufferSize, newBufferSize);
-    }
-  }
-
-  private String getRandomColumnNames(int n) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < n - 1; i++) {
-      sb.append("col").append(i).append(",");
-    }
-    sb.append("col").append(n - 1);
-    return sb.toString();
+    assertEquals(4 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+        25000, 256*1024));
   }
 }
