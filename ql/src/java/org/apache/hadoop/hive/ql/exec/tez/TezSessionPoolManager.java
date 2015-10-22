@@ -203,6 +203,21 @@ public class TezSessionPoolManager {
     }
   }
 
+  /**
+   * This is called only in extreme cases where even our retry of submit fails. This method would
+   * close even default sessions and remove it from the queue.
+   *
+   * @param tezSessionState
+   *          the session to be closed
+   * @throws Exception
+   */
+  public void destroySession(TezSessionState tezSessionState) throws Exception {
+    LOG.warn("We are closing a " + (tezSessionState.isDefault() ? "default" : "non-default")
+        + " session because of retry failure.");
+    tezSessionState.close(false);
+    openSessions.remove(tezSessionState);
+  }
+
   protected TezSessionState createSession(String sessionId) {
     return new TezSessionState(sessionId);
   }

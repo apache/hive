@@ -20,17 +20,22 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class TestTezSessionPool {
 
+  private static final Log LOG = LogFactory.getLog(TestTezSessionPoolManager.class);
   HiveConf conf;
   Random random;
   private TezSessionPoolManager poolManager;
@@ -174,6 +179,15 @@ public class TestTezSessionPool {
 
     Mockito.verify(session).close(false);
     Mockito.verify(session).open(conf, null);
+  }
+
+  @Test
+  public void testSessionDestroy() throws Exception {
+    poolManager = new TestTezSessionPoolManager();
+    TezSessionState session = Mockito.mock(TezSessionState.class);
+    Mockito.when(session.isDefault()).thenReturn(false);
+
+    poolManager.destroySession(session);
   }
 
   @Test
