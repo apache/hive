@@ -45,6 +45,7 @@ import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexRangeRef;
+import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
@@ -708,11 +709,18 @@ public class HiveCalciteUtil {
       String inputTabAlias) {
     List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
     List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
+    List<RexNode> exprs = inputRel.getChildExps();
     // TODO: Change ExprNodeConverter to be independent of Partition Expr
     ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
         new HashSet<Integer>(), inputRel.getCluster().getTypeFactory());
-    for (RexNode iRef : rexInputRefs) {
-      exprNodes.add(iRef.accept(exprConv));
+    for (int index = 0; index < rexInputRefs.size(); index++) {
+      if (exprs.get(index) instanceof RexLiteral) {
+        ExprNodeDesc exprNodeDesc = exprConv.visitLiteral((RexLiteral) exprs.get(index));
+        exprNodes.add(exprNodeDesc);
+      } else {
+        RexNode iRef = rexInputRefs.get(index);
+        exprNodes.add(iRef.accept(exprConv));
+      }
     }
     return exprNodes;
   }
