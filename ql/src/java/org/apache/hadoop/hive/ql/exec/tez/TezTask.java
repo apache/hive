@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -422,17 +423,33 @@ public class TezTask extends Task<TezWork> {
     }
 
     try {
-      // ready to start execution on the cluster
-      sessionState.getSession().addAppMasterLocalFiles(resourceMap);
-      dagClient = sessionState.getSession().submitDAG(dag);
-    } catch (SessionNotRunning nr) {
-      console.printInfo("Tez session was closed. Reopening...");
+      try {
+        // ready to start execution on the cluster
+        sessionState.getSession().addAppMasterLocalFiles(resourceMap);
+        dagClient = sessionState.getSession().submitDAG(dag);
+      } catch (SessionNotRunning nr) {
+        console.printInfo("Tez session was closed. Reopening...");
 
-      // close the old one, but keep the tmp files around
-      TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars, true);
-      console.printInfo("Session re-established.");
+        // close the old one, but keep the tmp files around
+        TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars,
+            true);
+        console.printInfo("Session re-established.");
 
-      dagClient = sessionState.getSession().submitDAG(dag);
+        dagClient = sessionState.getSession().submitDAG(dag);
+      }
+    } catch (Exception e) {
+      // In case of any other exception, retry. If this also fails, report original error and exit.
+      try {
+        TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars,
+            true);
+        console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
+            + Arrays.toString(e.getStackTrace()) + " retrying...");
+        dagClient = sessionState.getSession().submitDAG(dag);
+      } catch (Exception retryException) {
+        // we failed to submit after retrying. Destroy session and bail.
+        TezSessionPoolManager.getInstance().destroySession(sessionState);
+        throw retryException;
+      }
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
