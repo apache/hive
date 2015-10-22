@@ -277,4 +277,25 @@ public class OperatorUtils {
     }
     return resultMap.build();
   }
+
+  /**
+   * Given an operator and a set of classes, it returns the number of operators it finds
+   * upstream that instantiate any of the given classes.
+   *
+   * @param start the start operator
+   * @param classes the set of classes
+   * @return the number of operators
+   */
+  public static int countOperatorsUpstream(Operator<?> start, Set<Class<? extends Operator<?>>> classes) {
+    Multimap<Class<? extends Operator<?>>, Operator<?>> ops = classifyOperatorsUpstream(start, classes);
+    int numberOperators = 0;
+    Set<Operator<?>> uniqueOperators = new HashSet<Operator<?>>();
+    for (Operator<?> op : ops.values()) {
+      if (uniqueOperators.add(op)) {
+        numberOperators++;
+      }
+    }
+    return numberOperators;
+  }
+
 }
