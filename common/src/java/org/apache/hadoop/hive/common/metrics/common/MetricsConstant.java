@@ -22,20 +22,20 @@ package org.apache.hadoop.hive.common.metrics.common;
  */
 public class MetricsConstant {
 
-  public static String JVM_PAUSE_INFO = "jvm.pause.info-threshold";
-  public static String JVM_PAUSE_WARN = "jvm.pause.warn-threshold";
-  public static String JVM_EXTRA_SLEEP = "jvm.pause.extraSleepTime";
+  public static final String JVM_PAUSE_INFO = "jvm.pause.info-threshold";
+  public static final String JVM_PAUSE_WARN = "jvm.pause.warn-threshold";
+  public static final String JVM_EXTRA_SLEEP = "jvm.pause.extraSleepTime";
 
-  public static String OPEN_CONNECTIONS = "open_connections";
-  public static String OPEN_OPERATIONS = "open_operations";
+  public static final String OPEN_CONNECTIONS = "open_connections";
+  public static final String OPEN_OPERATIONS = "open_operations";
 
-  public static String JDO_ACTIVE_TRANSACTIONS = "active_jdo_transactions";
-  public static String JDO_ROLLBACK_TRANSACTIONS = "rollbacked_jdo_transactions";
-  public static String JDO_COMMIT_TRANSACTIONS = "committed_jdo_transactions";
-  public static String JDO_OPEN_TRANSACTIONS = "opened_jdo_transactions";
+  public static final String JDO_ACTIVE_TRANSACTIONS = "active_jdo_transactions";
+  public static final String JDO_ROLLBACK_TRANSACTIONS = "rollbacked_jdo_transactions";
+  public static final String JDO_COMMIT_TRANSACTIONS = "committed_jdo_transactions";
+  public static final String JDO_OPEN_TRANSACTIONS = "opened_jdo_transactions";
 
-  public static String METASTORE_HIVE_LOCKS = "metastore_hive_locks";
-  public static String ZOOKEEPER_HIVE_SHAREDLOCKS = "zookeeper_hive_sharedlocks";
-  public static String ZOOKEEPER_HIVE_EXCLUSIVELOCKS = "zookeeper_hive_exclusivelocks";
-  public static String ZOOKEEPER_HIVE_SEMISHAREDLOCKS = "zookeeper_hive_semisharedlocks";
+  public static final String METASTORE_HIVE_LOCKS = "metastore_hive_locks";
+  public static final String ZOOKEEPER_HIVE_SHAREDLOCKS = "zookeeper_hive_sharedlocks";
+  public static final String ZOOKEEPER_HIVE_EXCLUSIVELOCKS = "zookeeper_hive_exclusivelocks";
+  public static final String ZOOKEEPER_HIVE_SEMISHAREDLOCKS = "zookeeper_hive_semisharedlocks";
 }
