@@ -47,3 +47,5 @@ function get_regex_excluded_tests() {
 
 regex_tests=`get_regex_excluded_tests`
 mvn clean install -Phadoop-2 -Dtest.excludes.additional="$regex_tests"
+cd itests/
+mvn clean install -Phadoop-2 -DskipTests
