@@ -147,8 +147,8 @@
     <json.version>20090211</json.version>
     <junit.version>4.11</junit.version>
     <kryo.version>2.22</kryo.version>
-    <libfb303.version>0.9.2</libfb303.version>
-    <libthrift.version>0.9.2</libthrift.version>
+    <libfb303.version>0.9.3</libfb303.version>
+    <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.4</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
     <mockito-all.version>1.9.5</mockito-all.version>
@@ -956,7 +956,7 @@
                   <target>
                     <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
                       classpathref="maven.plugin.classpath" />
-                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode --gen cpp --gen php --gen py --gen rb"/>
+                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
                     <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
                     <delete dir="${thrift.gen.dir}"/>
                     <mkdir dir="${thrift.gen.dir}"/>
