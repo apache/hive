@@ -76,6 +76,12 @@ public class TestStorageBasedClientSideAuthorizationProvider extends
     setPermissions(location,"-rwxr--r--");
   }
 
+  @Override
+  protected void allowSelectOnTable(String tblName, String userName, String location)
+      throws Exception {
+    setPermissions(location,"-r--r--r--");
+  }
+
   private void setPermissions(String locn, String permissions) throws Exception {
     FileSystem fs = FileSystem.get(new URI(locn), clientHiveConf);
     fs.setPermission(new Path(locn), FsPermission.valueOf(permissions));
