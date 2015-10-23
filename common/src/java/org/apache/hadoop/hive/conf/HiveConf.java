@@ -2305,7 +2305,8 @@ public class HiveConf extends Configuration {
     LLAP_USE_LRFU("hive.llap.io.use.lrfu", false,
         "Whether ORC low-level cache should use LRFU cache policy instead of default (FIFO)."),
     LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f,
-        "Lambda for ORC low-level cache LRFU cache policy."),
+        "Lambda for ORC low-level cache LRFU cache policy. Must be in [0, 1]. 0 makes LRFU\n" +
+        "behave like LFU, 1 makes it behave like LRU, values in between balance accordingly."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", true,

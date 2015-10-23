@@ -205,7 +205,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
           listHead = listTail = null; // We have evicted the entire list.
         } else {
           // Splice the section that we have evicted out of the list.
-          removeFromListUnderLock(nextCandidate.next, firstCandidate);
+          // We have already updated the state above so no need to do that again.
+          removeFromListUnderLockNoStateUpdate(nextCandidate.next, firstCandidate);
         }
       }
     } finally {
@@ -333,7 +334,6 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     try {
       if (buffer.indexInHeap != LlapCacheableBuffer.IN_LIST) return;
       removeFromListUnderLock(buffer);
-      buffer.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
     } finally {
       listLock.unlock();
     }
@@ -350,9 +350,11 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     } else {
       buffer.prev.next = buffer.next;
     }
+    buffer.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
   }
 
-  private void removeFromListUnderLock(LlapCacheableBuffer from, LlapCacheableBuffer to) {
+  private void removeFromListUnderLockNoStateUpdate(
+      LlapCacheableBuffer from, LlapCacheableBuffer to) {
     if (to == listTail) {
       listTail = from.prev;
     } else {
