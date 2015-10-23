@@ -101,12 +101,6 @@ module ResourceType
   VALID_VALUES = Set.new([JAR, FILE, ARCHIVE]).freeze
 end
 
-module FileMetadataExprType
-  ORC_SARG = 1
-  VALUE_MAP = {1 => "ORC_SARG"}
-  VALID_VALUES = Set.new([ORC_SARG]).freeze
-end
-
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -2280,13 +2274,11 @@ class GetFileMetadataByExprRequest
   FILEIDS = 1
   EXPR = 2
   DOGETFOOTERS = 3
-  TYPE = 4
 
   FIELDS = {
     FILEIDS => {:type => ::Thrift::Types::LIST, :name => 'fileIds', :element => {:type => ::Thrift::Types::I64}},
     EXPR => {:type => ::Thrift::Types::STRING, :name => 'expr', :binary => true},
-    DOGETFOOTERS => {:type => ::Thrift::Types::BOOL, :name => 'doGetFooters', :optional => true},
-    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :optional => true, :enum_class => ::FileMetadataExprType}
+    DOGETFOOTERS => {:type => ::Thrift::Types::BOOL, :name => 'doGetFooters', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2294,9 +2286,6 @@ class GetFileMetadataByExprRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fileIds is unset!') unless @fileIds
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field expr is unset!') unless @expr
-    unless @type.nil? || ::FileMetadataExprType::VALID_VALUES.include?(@type)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self

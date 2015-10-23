@@ -1747,7 +1747,7 @@ public class HBaseReadWrite {
    * @param fileIds file ID list.
    * @return Serialized file metadata.
    */
-  public void getFileMetadata(List<Long> fileIds, ByteBuffer[] result) throws IOException {
+  void getFileMetadata(List<Long> fileIds, ByteBuffer[] result) throws IOException {
     byte[][] keys = new byte[fileIds.size()][];
     for (int i = 0; i < fileIds.size(); ++i) {
       keys[i] = HBaseUtils.makeLongKey(fileIds.get(i));

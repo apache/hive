@@ -41,7 +41,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
   private static final org.apache.thrift.protocol.TField FILE_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("fileIds", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField EXPR_FIELD_DESC = new org.apache.thrift.protocol.TField("expr", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField DO_GET_FOOTERS_FIELD_DESC = new org.apache.thrift.protocol.TField("doGetFooters", org.apache.thrift.protocol.TType.BOOL, (short)3);
-  private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -52,18 +51,12 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
   private List<Long> fileIds; // required
   private ByteBuffer expr; // required
   private boolean doGetFooters; // optional
-  private FileMetadataExprType type; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     FILE_IDS((short)1, "fileIds"),
     EXPR((short)2, "expr"),
-    DO_GET_FOOTERS((short)3, "doGetFooters"),
-    /**
-     * 
-     * @see FileMetadataExprType
-     */
-    TYPE((short)4, "type");
+    DO_GET_FOOTERS((short)3, "doGetFooters");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -84,8 +77,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
           return EXPR;
         case 3: // DO_GET_FOOTERS
           return DO_GET_FOOTERS;
-        case 4: // TYPE
-          return TYPE;
         default:
           return null;
       }
@@ -128,7 +119,7 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
   // isset id assignments
   private static final int __DOGETFOOTERS_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DO_GET_FOOTERS,_Fields.TYPE};
+  private static final _Fields optionals[] = {_Fields.DO_GET_FOOTERS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -139,8 +130,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     tmpMap.put(_Fields.DO_GET_FOOTERS, new org.apache.thrift.meta_data.FieldMetaData("doGetFooters", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, FileMetadataExprType.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetFileMetadataByExprRequest.class, metaDataMap);
   }
@@ -170,9 +159,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
       this.expr = org.apache.thrift.TBaseHelper.copyBinary(other.expr);
     }
     this.doGetFooters = other.doGetFooters;
-    if (other.isSetType()) {
-      this.type = other.type;
-    }
   }
 
   public GetFileMetadataByExprRequest deepCopy() {
@@ -185,7 +171,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
     this.expr = null;
     setDoGetFootersIsSet(false);
     this.doGetFooters = false;
-    this.type = null;
   }
 
   public int getFileIdsSize() {
@@ -280,37 +265,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __DOGETFOOTERS_ISSET_ID, value);
   }
 
-  /**
-   * 
-   * @see FileMetadataExprType
-   */
-  public FileMetadataExprType getType() {
-    return this.type;
-  }
-
-  /**
-   * 
-   * @see FileMetadataExprType
-   */
-  public void setType(FileMetadataExprType type) {
-    this.type = type;
-  }
-
-  public void unsetType() {
-    this.type = null;
-  }
-
-  /** Returns true if field type is set (has been assigned a value) and false otherwise */
-  public boolean isSetType() {
-    return this.type != null;
-  }
-
-  public void setTypeIsSet(boolean value) {
-    if (!value) {
-      this.type = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case FILE_IDS:
@@ -337,14 +291,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
       }
       break;
 
-    case TYPE:
-      if (value == null) {
-        unsetType();
-      } else {
-        setType((FileMetadataExprType)value);
-      }
-      break;
-
     }
   }
 
@@ -358,9 +304,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
 
     case DO_GET_FOOTERS:
       return isDoGetFooters();
-
-    case TYPE:
-      return getType();
 
     }
     throw new IllegalStateException();
@@ -379,8 +322,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
       return isSetExpr();
     case DO_GET_FOOTERS:
       return isSetDoGetFooters();
-    case TYPE:
-      return isSetType();
     }
     throw new IllegalStateException();
   }
@@ -425,15 +366,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
         return false;
     }
 
-    boolean this_present_type = true && this.isSetType();
-    boolean that_present_type = true && that.isSetType();
-    if (this_present_type || that_present_type) {
-      if (!(this_present_type && that_present_type))
-        return false;
-      if (!this.type.equals(that.type))
-        return false;
-    }
-
     return true;
   }
 
@@ -455,11 +387,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
     list.add(present_doGetFooters);
     if (present_doGetFooters)
       list.add(doGetFooters);
-
-    boolean present_type = true && (isSetType());
-    list.add(present_type);
-    if (present_type)
-      list.add(type.getValue());
 
     return list.hashCode();
   }
@@ -498,16 +425,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
     }
     if (isSetDoGetFooters()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.doGetFooters, other.doGetFooters);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetType()).compareTo(other.isSetType());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetType()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, other.type);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -551,16 +468,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
       if (!first) sb.append(", ");
       sb.append("doGetFooters:");
       sb.append(this.doGetFooters);
-      first = false;
-    }
-    if (isSetType()) {
-      if (!first) sb.append(", ");
-      sb.append("type:");
-      if (this.type == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.type);
-      }
       first = false;
     }
     sb.append(")");
@@ -650,14 +557,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // TYPE
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.type = org.apache.hadoop.hive.metastore.api.FileMetadataExprType.findByValue(iprot.readI32());
-              struct.setTypeIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -693,13 +592,6 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
         oprot.writeBool(struct.doGetFooters);
         oprot.writeFieldEnd();
       }
-      if (struct.type != null) {
-        if (struct.isSetType()) {
-          oprot.writeFieldBegin(TYPE_FIELD_DESC);
-          oprot.writeI32(struct.type.getValue());
-          oprot.writeFieldEnd();
-        }
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -729,15 +621,9 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
       if (struct.isSetDoGetFooters()) {
         optionals.set(0);
       }
-      if (struct.isSetType()) {
-        optionals.set(1);
-      }
-      oprot.writeBitSet(optionals, 2);
+      oprot.writeBitSet(optionals, 1);
       if (struct.isSetDoGetFooters()) {
         oprot.writeBool(struct.doGetFooters);
-      }
-      if (struct.isSetType()) {
-        oprot.writeI32(struct.type.getValue());
       }
     }
 
@@ -757,14 +643,10 @@ public class GetFileMetadataByExprRequest implements org.apache.thrift.TBase<Get
       struct.setFileIdsIsSet(true);
       struct.expr = iprot.readBinary();
       struct.setExprIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         struct.doGetFooters = iprot.readBool();
         struct.setDoGetFootersIsSet(true);
-      }
-      if (incoming.get(1)) {
-        struct.type = org.apache.hadoop.hive.metastore.api.FileMetadataExprType.findByValue(iprot.readI32());
-        struct.setTypeIsSet(true);
       }
     }
   }

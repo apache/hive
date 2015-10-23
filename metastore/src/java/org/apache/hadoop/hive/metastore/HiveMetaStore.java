@@ -5617,16 +5617,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return result;
       }
       result.setIsSupported(true);
-
       List<Long> fileIds = req.getFileIds();
-      boolean needMetadata = !req.isSetDoGetFooters() || req.isDoGetFooters();
-      FileMetadataExprType type = req.isSetType() ? req.getType() : FileMetadataExprType.ORC_SARG;
-
-      ByteBuffer[] metadatas = needMetadata ? new ByteBuffer[fileIds.size()] : null;
-      ByteBuffer[] ppdResults = new ByteBuffer[fileIds.size()];
+      byte[] expr = req.getExpr();
+      boolean needMetadata = req.isDoGetFooters();
+      ByteBuffer[] metadatas = new ByteBuffer[fileIds.size()];
+      ByteBuffer[] stripeBitsets = new ByteBuffer[fileIds.size()];
       boolean[] eliminated = new boolean[fileIds.size()];
-
-      getMS().getFileMetadataByExpr(fileIds, type, req.getExpr(), metadatas, ppdResults, eliminated);
+      getMS().getFileMetadataByExpr(fileIds, expr, metadatas, stripeBitsets, eliminated);
       for (int i = 0; i < metadatas.length; ++i) {
         long fileId = fileIds.get(i);
         ByteBuffer metadata = metadatas[i];
@@ -5634,7 +5631,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         metadata = (eliminated[i] || !needMetadata) ? null
             : handleReadOnlyBufferForThrift(metadata);
         MetadataPpdResult mpr = new MetadataPpdResult();
-        ByteBuffer bitset = eliminated[i] ? null : handleReadOnlyBufferForThrift(ppdResults[i]);
+        ByteBuffer bitset = eliminated[i] ? null : handleReadOnlyBufferForThrift(stripeBitsets[i]);
         mpr.setMetadata(metadata);
         mpr.setIncludeBitset(bitset);
         result.putToMetadata(fileId, mpr);

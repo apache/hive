@@ -213,17 +213,6 @@ class ResourceType:
     "ARCHIVE": 3,
   }
 
-class FileMetadataExprType:
-  ORC_SARG = 1
-
-  _VALUES_TO_NAMES = {
-    1: "ORC_SARG",
-  }
-
-  _NAMES_TO_VALUES = {
-    "ORC_SARG": 1,
-  }
-
 
 class Version:
   """
@@ -9938,7 +9927,6 @@ class GetFileMetadataByExprRequest:
    - fileIds
    - expr
    - doGetFooters
-   - type
   """
 
   thrift_spec = (
@@ -9946,14 +9934,12 @@ class GetFileMetadataByExprRequest:
     (1, TType.LIST, 'fileIds', (TType.I64,None), None, ), # 1
     (2, TType.STRING, 'expr', None, None, ), # 2
     (3, TType.BOOL, 'doGetFooters', None, None, ), # 3
-    (4, TType.I32, 'type', None, None, ), # 4
   )
 
-  def __init__(self, fileIds=None, expr=None, doGetFooters=None, type=None,):
+  def __init__(self, fileIds=None, expr=None, doGetFooters=None,):
     self.fileIds = fileIds
     self.expr = expr
     self.doGetFooters = doGetFooters
-    self.type = type
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9984,11 +9970,6 @@ class GetFileMetadataByExprRequest:
           self.doGetFooters = iprot.readBool()
         else:
           iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.I32:
-          self.type = iprot.readI32()
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -10014,10 +9995,6 @@ class GetFileMetadataByExprRequest:
       oprot.writeFieldBegin('doGetFooters', TType.BOOL, 3)
       oprot.writeBool(self.doGetFooters)
       oprot.writeFieldEnd()
-    if self.type is not None:
-      oprot.writeFieldBegin('type', TType.I32, 4)
-      oprot.writeI32(self.type)
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -10034,7 +10011,6 @@ class GetFileMetadataByExprRequest:
     value = (value * 31) ^ hash(self.fileIds)
     value = (value * 31) ^ hash(self.expr)
     value = (value * 31) ^ hash(self.doGetFooters)
-    value = (value * 31) ^ hash(self.type)
     return value
 
   def __repr__(self):

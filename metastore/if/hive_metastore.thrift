@@ -725,17 +725,11 @@ struct GetFileMetadataByExprResult {
   2: required bool isSupported
 }
 
-enum FileMetadataExprType {
-  ORC_SARG = 1
-}
-
-
 // Request type for get_file_metadata_by_expr
 struct GetFileMetadataByExprRequest {
   1: required list<i64> fileIds,
   2: required binary expr,
-  3: optional bool doGetFooters,
-  4: optional FileMetadataExprType type
+  3: optional bool doGetFooters
 }
 
 // Return type for get_file_metadata
