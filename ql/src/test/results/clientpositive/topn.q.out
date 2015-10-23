@@ -1,0 +1,42 @@
+PREHOOK: query: CREATE TABLE `sample_07` ( `code` string , `description` string , `total_emp` int , `salary` int ) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TextFile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sample_07
+POSTHOOK: query: CREATE TABLE `sample_07` ( `code` string , `description` string , `total_emp` int , `salary` int ) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TextFile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sample_07
+PREHOOK: query: select * from sample_07 order by salary LIMIT 999999999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sample_07
+#### A masked pattern was here ####
+POSTHOOK: query: select * from sample_07 order by salary LIMIT 999999999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sample_07
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM (
+SELECT *, rank() over(PARTITION BY code ORDER BY salary DESC) as rank
+FROM sample_07
+) ranked_claim
+WHERE ranked_claim.rank < 2
+ORDER BY code
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sample_07
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+SELECT *, rank() over(PARTITION BY code ORDER BY salary DESC) as rank
+FROM sample_07
+) ranked_claim
+WHERE ranked_claim.rank < 2
+ORDER BY code
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sample_07
+#### A masked pattern was here ####
+PREHOOK: query: select sum(total_emp) over(partition by salary+salary order by code) from sample_07 limit 9999999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sample_07
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(total_emp) over(partition by salary+salary order by code) from sample_07 limit 9999999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sample_07
+#### A masked pattern was here ####
