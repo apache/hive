@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -618,7 +617,6 @@ public interface RawStore extends Configurable {
    * produce additional information based on file metadata and also filter the file list.
    * @param fileIds List of file IDs from the filesystem.
    * @param expr Format-specific serialized expression applicable to the files' metadatas.
-   * @param type Expression type; used to determine the class that handles the metadata.
    * @param metadatas Output parameter; fileIds-sized array to receive the metadatas
    *                  for corresponding files, if any.
    * @param exprResults Output parameter; fileIds-sized array to receive the format-specific
@@ -626,7 +624,7 @@ public interface RawStore extends Configurable {
    * @param eliminated Output parameter; fileIds-sized array to receive the indication of whether
    *                   the corresponding files are entirely eliminated by the expression.
    */
-  void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
-      ByteBuffer[] metadatas, ByteBuffer[] exprResults, boolean[] eliminated)
-          throws MetaException;
+  void getFileMetadataByExpr(
+      List<Long> fileIds, byte[] expr, ByteBuffer[] metadatas,
+      ByteBuffer[] exprResults, boolean[] eliminated) throws MetaException;
 }
