@@ -17,17 +17,14 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +37,45 @@ import org.junit.Test;
 
 public class TestLowLevelLrfuCachePolicy {
   private static final Log LOG = LogFactory.getLog(TestLowLevelLrfuCachePolicy.class);
+
+  @Test
+  public void testRegression_HIVE_12178() throws Exception {
+    LOG.info("Testing wrong list status after eviction");
+    EvictionTracker et = new EvictionTracker();
+    int memSize = 2, lambda = 1; // Set lambda to 1 so the heap size becomes 1 (LRU).
+    Configuration conf = createConf(1, memSize, (double)lambda);
+    final LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(conf);
+    Field f = LowLevelLrfuCachePolicy.class.getDeclaredField("listLock");
+    f.setAccessible(true);
+    ReentrantLock listLock = (ReentrantLock)f.get(lrfu);
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(conf, lrfu,
+        LlapDaemonCacheMetrics.create("test", "1"));
+    lrfu.setEvictionListener(et);
+    final LlapDataBuffer buffer1 = LowLevelCacheImpl.allocateFake();
+    LlapDataBuffer buffer2 = LowLevelCacheImpl.allocateFake();
+    assertTrue(cache(mm, lrfu, et, buffer1));
+    assertTrue(cache(mm, lrfu, et, buffer2));
+    // buffer2 is now in the heap, buffer1 is in the list. "Use" buffer1 again;
+    // before we notify though, lock the list, so lock cannot remove it from the list.
+    buffer1.incRef();
+    assertEquals(LlapCacheableBuffer.IN_LIST, buffer1.indexInHeap);
+    listLock.lock();
+    try {
+      Thread otherThread = new Thread(new Runnable() {
+        public void run() {
+          lrfu.notifyLock(buffer1);
+        }
+      });
+      otherThread.start();
+      otherThread.join();
+    } finally {
+      listLock.unlock();
+    }
+    // Now try to evict with locked buffer still in the list.
+    mm.reserveMemory(1, false);
+    assertSame(buffer2, et.evicted.get(0));
+    unlock(lrfu, buffer1);
+  }
 
   @Test
   public void testHeapSize2() {
@@ -100,11 +136,18 @@ public class TestLowLevelLrfuCachePolicy {
     verifyOrder(mm, lfu, et, inserted);
   }
 
-  private Configuration createConf(int min, int heapSize) {
+  private Configuration createConf(int min, int heapSize, Double lambda) {
     Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.varname, min);
     conf.setInt(HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, heapSize);
+    if (lambda != null) {
+      conf.setDouble(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, lambda.doubleValue());
+    }
     return conf;
+  }
+
+  private Configuration createConf(int min, int heapSize) {
+    return createConf(min, heapSize, null);
   }
 
   @Test
