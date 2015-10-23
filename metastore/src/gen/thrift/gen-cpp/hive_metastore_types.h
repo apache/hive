@@ -137,6 +137,14 @@ struct ResourceType {
 
 extern const std::map<int, const char*> _ResourceType_VALUES_TO_NAMES;
 
+struct FileMetadataExprType {
+  enum type {
+    ORC_SARG = 1
+  };
+};
+
+extern const std::map<int, const char*> _FileMetadataExprType_VALUES_TO_NAMES;
+
 class Version;
 
 class FieldSchema;
@@ -5515,25 +5523,27 @@ class GetFileMetadataByExprResult {
 void swap(GetFileMetadataByExprResult &a, GetFileMetadataByExprResult &b);
 
 typedef struct _GetFileMetadataByExprRequest__isset {
-  _GetFileMetadataByExprRequest__isset() : doGetFooters(false) {}
+  _GetFileMetadataByExprRequest__isset() : doGetFooters(false), type(false) {}
   bool doGetFooters :1;
+  bool type :1;
 } _GetFileMetadataByExprRequest__isset;
 
 class GetFileMetadataByExprRequest {
  public:
 
-  static const char* ascii_fingerprint; // = "C52686F0528367D7E6CE54B804FC33B5";
-  static const uint8_t binary_fingerprint[16]; // = {0xC5,0x26,0x86,0xF0,0x52,0x83,0x67,0xD7,0xE6,0xCE,0x54,0xB8,0x04,0xFC,0x33,0xB5};
+  static const char* ascii_fingerprint; // = "0EC46840220832B58E8CCC6C1ABC857A";
+  static const uint8_t binary_fingerprint[16]; // = {0x0E,0xC4,0x68,0x40,0x22,0x08,0x32,0xB5,0x8E,0x8C,0xCC,0x6C,0x1A,0xBC,0x85,0x7A};
 
   GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest&);
   GetFileMetadataByExprRequest& operator=(const GetFileMetadataByExprRequest&);
-  GetFileMetadataByExprRequest() : expr(), doGetFooters(0) {
+  GetFileMetadataByExprRequest() : expr(), doGetFooters(0), type((FileMetadataExprType::type)0) {
   }
 
   virtual ~GetFileMetadataByExprRequest() throw();
   std::vector<int64_t>  fileIds;
   std::string expr;
   bool doGetFooters;
+  FileMetadataExprType::type type;
 
   _GetFileMetadataByExprRequest__isset __isset;
 
@@ -5542,6 +5552,8 @@ class GetFileMetadataByExprRequest {
   void __set_expr(const std::string& val);
 
   void __set_doGetFooters(const bool val);
+
+  void __set_type(const FileMetadataExprType::type val);
 
   bool operator == (const GetFileMetadataByExprRequest & rhs) const
   {
@@ -5552,6 +5564,10 @@ class GetFileMetadataByExprRequest {
     if (__isset.doGetFooters != rhs.__isset.doGetFooters)
       return false;
     else if (__isset.doGetFooters && !(doGetFooters == rhs.doGetFooters))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
       return false;
     return true;
   }

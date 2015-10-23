@@ -18311,8 +18311,8 @@ typedef struct _ThriftHiveMetastore_get_file_metadata_by_expr_args__isset {
 class ThriftHiveMetastore_get_file_metadata_by_expr_args {
  public:
 
-  static const char* ascii_fingerprint; // = "1B2CE6D5868EE3B66298C49A0F501BCA";
-  static const uint8_t binary_fingerprint[16]; // = {0x1B,0x2C,0xE6,0xD5,0x86,0x8E,0xE3,0xB6,0x62,0x98,0xC4,0x9A,0x0F,0x50,0x1B,0xCA};
+  static const char* ascii_fingerprint; // = "54EB83B41E6FDCB6B9D253FD50F36738";
+  static const uint8_t binary_fingerprint[16]; // = {0x54,0xEB,0x83,0xB4,0x1E,0x6F,0xDC,0xB6,0xB9,0xD2,0x53,0xFD,0x50,0xF3,0x67,0x38};
 
   ThriftHiveMetastore_get_file_metadata_by_expr_args(const ThriftHiveMetastore_get_file_metadata_by_expr_args&);
   ThriftHiveMetastore_get_file_metadata_by_expr_args& operator=(const ThriftHiveMetastore_get_file_metadata_by_expr_args&);
@@ -18348,8 +18348,8 @@ class ThriftHiveMetastore_get_file_metadata_by_expr_args {
 class ThriftHiveMetastore_get_file_metadata_by_expr_pargs {
  public:
 
-  static const char* ascii_fingerprint; // = "1B2CE6D5868EE3B66298C49A0F501BCA";
-  static const uint8_t binary_fingerprint[16]; // = {0x1B,0x2C,0xE6,0xD5,0x86,0x8E,0xE3,0xB6,0x62,0x98,0xC4,0x9A,0x0F,0x50,0x1B,0xCA};
+  static const char* ascii_fingerprint; // = "54EB83B41E6FDCB6B9D253FD50F36738";
+  static const uint8_t binary_fingerprint[16]; // = {0x54,0xEB,0x83,0xB4,0x1E,0x6F,0xDC,0xB6,0xB9,0xD2,0x53,0xFD,0x50,0xF3,0x67,0x38};
 
 
   virtual ~ThriftHiveMetastore_get_file_metadata_by_expr_pargs() throw();
