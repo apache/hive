@@ -157,6 +157,10 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     InjectableDummyAuthenticator.injectGroupNames(fakeGroupNames);
     InjectableDummyAuthenticator.injectMode(true);
 
+    allowSelectOnTable(tbl.getTableName(), fakeUser, tbl.getSd().getLocation());
+    ret = driver.run(String.format("select * from %s limit 10", tblName));
+    assertEquals(0,ret.getResponseCode());
+
     ret = driver.run(
         String.format("create table %s (a string) partitioned by (b string)", tblName+"mal"));
 
@@ -216,6 +220,11 @@ public class TestClientSideAuthorizationProvider extends TestCase {
   protected void allowDropOnDb(String dbName, String userName, String location)
       throws Exception {
     driver.run("grant drop on database "+dbName+" to user "+userName);
+  }
+
+  protected void allowSelectOnTable(String tblName, String userName, String location)
+      throws Exception {
+    driver.run("grant select on table "+tblName+" to user "+userName);
   }
 
   protected void assertNoPrivileges(CommandProcessorResponse ret){
