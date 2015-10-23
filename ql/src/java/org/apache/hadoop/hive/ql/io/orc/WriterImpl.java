@@ -207,8 +207,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     buildIndex = rowIndexStride > 0;
     codec = createCodec(compress);
     int numColumns = schema.getMaximumId() + 1;
-    this.bufferSize = getEstimatedBufferSize(getMemoryAvailableForORC(),
-        codec != null, numColumns, bufferSize);
+    this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
+        numColumns, bufferSize);
     if (version == OrcFile.Version.V_0_11) {
       /* do not write bloom filters for ORC v11 */
       this.bloomFilterColumns = new boolean[schema.getMaximumId() + 1];
@@ -227,39 +227,21 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     memoryManager.addWriter(path, stripeSize, this);
   }
 
-  static int getEstimatedBufferSize(long availableMem,
-                                    boolean isCompressed,
-                                    int columnCount, int bs) {
-    if (columnCount > COLUMN_COUNT_THRESHOLD) {
-      // In BufferedStream, there are 3 outstream buffers (compressed,
-      // uncompressed and overflow) and list of previously compressed buffers.
-      // Since overflow buffer is rarely used, lets consider only 2 allocation.
-      // Also, initially, the list of compression buffers will be empty.
-      final int outStreamBuffers = isCompressed ? 2 : 1;
-
-      // max possible streams per column is 5. For string columns, there is
-      // ROW_INDEX, PRESENT, DATA, LENGTH, DICTIONARY_DATA streams.
-      final int maxStreams = 5;
-
-      // Lets assume 10% memory for holding dictionary in memory and other
-      // object allocations
-      final long miscAllocation = (long) (0.1f * availableMem);
-
-      // compute the available memory
-      final long remainingMem = availableMem - miscAllocation;
-
-      int estBufferSize = (int) (remainingMem /
-          (maxStreams * outStreamBuffers * columnCount));
-      estBufferSize = getClosestBufferSize(estBufferSize);
-      if (estBufferSize > bs) {
-        estBufferSize = bs;
-      }
-
-      LOG.info("WIDE TABLE - Number of columns: " + columnCount +
+  @VisibleForTesting
+  static int getEstimatedBufferSize(long stripeSize, int numColumns, int bs) {
+    // The worst case is that there are 2 big streams per a column and
+    // we want to guarantee that each stream gets ~10 buffers.
+    // This keeps buffers small enough that we don't get really small stripe
+    // sizes.
+    int estBufferSize = (int) (stripeSize / (20 * numColumns));
+    estBufferSize = getClosestBufferSize(estBufferSize);
+    if (estBufferSize > bs) {
+      estBufferSize = bs;
+    } else {
+      LOG.info("WIDE TABLE - Number of columns: " + numColumns +
           " Chosen compression buffer size: " + estBufferSize);
-      return estBufferSize;
     }
-    return bs;
+    return estBufferSize;
   }
 
   private static int getClosestBufferSize(int estBufferSize) {
@@ -285,15 +267,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     } else {
       return kb256;
     }
-  }
-
-  // the assumption is only one ORC writer open at a time, which holds true for
-  // most of the cases. HIVE-6455 forces single writer case.
-  private long getMemoryAvailableForORC() {
-    double maxLoad = OrcConf.MEMORY_POOL.getDouble(conf);
-    long totalMemoryPool = Math.round(ManagementFactory.getMemoryMXBean().
-        getHeapMemoryUsage().getMax() * maxLoad);
-    return totalMemoryPool;
   }
 
   public static CompressionCodec createCodec(CompressionKind kind) {
