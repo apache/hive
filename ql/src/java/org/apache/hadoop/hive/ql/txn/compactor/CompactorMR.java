@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -94,18 +95,8 @@ public class CompactorMR {
   public CompactorMR() {
   }
 
-  /**
-   * Run a compactor job.
-   * @param conf Hive configuration file
-   * @param jobName name to run this job with
-   * @param t metastore table
-   * @param sd metastore storage descriptor
-   * @param txns list of valid transactions
-   * @param isMajor is this a major compaction?
-   * @throws java.io.IOException if the job fails
-   */
-  void run(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
-           ValidTxnList txns, boolean isMajor, Worker.StatsUpdater su) throws IOException {
+  private JobConf createBaseJobConf(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
+                                    ValidTxnList txns) {
     JobConf job = new JobConf(conf);
     job.setJobName(jobName);
     job.setOutputKeyClass(NullWritable.class);
@@ -117,7 +108,7 @@ public class CompactorMR {
     job.setInputFormat(CompactorInputFormat.class);
     job.setOutputFormat(NullOutputFormat.class);
     job.setOutputCommitter(CompactorOutputCommitter.class);
-    
+
     String queueName = conf.getVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
     if(queueName != null && queueName.length() > 0) {
       job.setQueueName(queueName);
@@ -127,23 +118,63 @@ public class CompactorMR {
     job.set(TMP_LOCATION, sd.getLocation() + "/" + TMPDIR + "_" + UUID.randomUUID().toString());
     job.set(INPUT_FORMAT_CLASS_NAME, sd.getInputFormat());
     job.set(OUTPUT_FORMAT_CLASS_NAME, sd.getOutputFormat());
-    job.setBoolean(IS_MAJOR, isMajor);
     job.setBoolean(IS_COMPRESSED, sd.isCompressed());
     job.set(TABLE_PROPS, new StringableMap(t.getParameters()).toString());
     job.setInt(NUM_BUCKETS, sd.getNumBuckets());
     job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
     setColumnTypes(job, sd.getCols());
+    return job;
+  }
+  /**
+   * Run Compaction which may consist of several jobs on the cluster.
+   * @param conf Hive configuration file
+   * @param jobName name to run this job with
+   * @param t metastore table
+   * @param sd metastore storage descriptor
+   * @param txns list of valid transactions
+   * @param ci CompactionInfo
+   * @throws java.io.IOException if the job fails
+   */
+  void run(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
+           ValidTxnList txns, CompactionInfo ci, Worker.StatsUpdater su) throws IOException {
+    JobConf job = createBaseJobConf(conf, jobName, t, sd, txns);
 
     // Figure out and encode what files we need to read.  We do this here (rather than in
     // getSplits below) because as part of this we discover our minimum and maximum transactions,
     // and discovering that in getSplits is too late as we then have no way to pass it to our
     // mapper.
 
-    AcidUtils.Directory dir = AcidUtils.getAcidState(
-        new Path(sd.getLocation()), conf, txns, false);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, txns, false);
+    List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
+    int maxDeltastoHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
+    if(parsedDeltas.size() > maxDeltastoHandle) {
+      /**
+       * if here, that means we have very high number of delta files.  This may be sign of a temporary
+       * glitch or a real issue.  For example, if transaction batch size or transaction size is set too
+       * low for the event flow rate in Streaming API, it may generate lots of delta files very
+       * quickly.  Another possibility is that Compaction is repeatedly failing and not actually compacting.
+       * Thus, force N minor compactions first to reduce number of deltas and then follow up with
+       * the compaction actually requested in {@link ci} which now needs to compact a lot fewer deltas
+       */
+      LOG.warn(parsedDeltas.size() + " delta files found for " + ci.getFullPartitionName()
+        + " located at " + sd.getLocation() + "! This is likely a sign of misconfiguration, " +
+        "especially if this message repeats.  Check that compaction is running properly.  Check for any " +
+        "runaway/mis-configured process writing to ACID tables, especially using Streaming Ingest API.");
+      int numMinorCompactions = parsedDeltas.size() / maxDeltastoHandle;
+      for(int jobSubId = 0; jobSubId < numMinorCompactions; jobSubId++) {
+        JobConf jobMinorCompact = createBaseJobConf(conf, jobName + "_" + jobSubId, t, sd, txns);
+        launchCompactionJob(jobMinorCompact,
+          null, CompactionType.MINOR, null,
+          parsedDeltas.subList(jobSubId * maxDeltastoHandle, (jobSubId + 1) * maxDeltastoHandle),
+          maxDeltastoHandle, -1);
+      }
+      //now recompute state since we've done minor compactions and have different 'best' set of deltas
+      dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, txns);
+    }
+
     StringableList dirsToSearch = new StringableList();
     Path baseDir = null;
-    if (isMajor) {
+    if (ci.isMajorCompaction()) {
       // There may not be a base dir if the partition was empty before inserts or if this
       // partition is just now being converted to ACID.
       baseDir = dir.getBaseDirectory();
@@ -166,14 +197,26 @@ public class CompactorMR {
       }
     }
 
-    List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
-
-    if (parsedDeltas == null || parsedDeltas.size() == 0) {
+    if (parsedDeltas.size() == 0) {
       // Seriously, no deltas?  Can't compact that.
       LOG.error(  "No delta files found to compact in " + sd.getLocation());
+      //couldn't someone want to run a Major compaction to convert old table to ACID?
       return;
     }
 
+    launchCompactionJob(job, baseDir, ci.type, dirsToSearch, dir.getCurrentDirectories(),
+      dir.getCurrentDirectories().size(), dir.getObsolete().size());
+
+    su.gatherStats();
+  }
+  private void launchCompactionJob(JobConf job, Path baseDir, CompactionType compactionType,
+                                   StringableList dirsToSearch,
+                                   List<AcidUtils.ParsedDelta> parsedDeltas,
+                                   int curDirNumber, int obsoleteDirNumber) throws IOException {
+    job.setBoolean(IS_MAJOR, compactionType == CompactionType.MAJOR);
+    if(dirsToSearch == null) {
+      dirsToSearch = new StringableList();
+    }
     StringableList deltaDirs = new StringableList();
     long minTxn = Long.MAX_VALUE;
     long maxTxn = Long.MIN_VALUE;
@@ -190,18 +233,15 @@ public class CompactorMR {
     job.set(DIRS_TO_SEARCH, dirsToSearch.toString());
     job.setLong(MIN_TXN, minTxn);
     job.setLong(MAX_TXN, maxTxn);
-    LOG.debug("Setting minimum transaction to " + minTxn);
-    LOG.debug("Setting maximume transaction to " + maxTxn);
 
+    LOG.info("Submitting " + compactionType + " compaction job '" +
+      job.getJobName() + "' to " + job.getQueueName() + " queue.  " +
+      "(current delta dirs count=" + curDirNumber +
+      ", obsolete delta dirs count=" + obsoleteDirNumber + ". TxnIdRange[" + minTxn + "," + maxTxn + "]");
     RunningJob rj = JobClient.runJob(job);
-    LOG.info("Submitted " + (isMajor ? CompactionType.MAJOR : CompactionType.MINOR) + " compaction job '" +
-      jobName + "' with jobID=" + rj.getID() + " to " + job.getQueueName() + " queue.  " +
-      "(current delta dirs count=" + dir.getCurrentDirectories().size() +
-      ", obsolete delta dirs count=" + dir.getObsolete());
+    LOG.info("Submitted compaction job '" + job.getJobName() + "' with jobID=" + rj.getID());
     rj.waitForCompletion();
-    su.gatherStats();
   }
-
   /**
    * Set the column names and types into the job conf for the input format
    * to use.

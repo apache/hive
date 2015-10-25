@@ -516,6 +516,10 @@ public abstract class CompactorTest {
   abstract boolean useHive130DeltaDirName();
 
   String makeDeltaDirName(long minTxnId, long maxTxnId) {
+    if(minTxnId != maxTxnId) {
+      //covers both streaming api and post compaction style.
+      return makeDeltaDirNameCompacted(minTxnId, maxTxnId);
+    }
     return useHive130DeltaDirName() ?
       AcidUtils.deltaSubdir(minTxnId, maxTxnId, 0) : AcidUtils.deltaSubdir(minTxnId, maxTxnId);
   }
