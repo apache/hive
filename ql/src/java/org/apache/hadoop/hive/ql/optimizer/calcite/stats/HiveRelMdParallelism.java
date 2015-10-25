@@ -27,7 +27,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 public class HiveRelMdParallelism extends RelMdParallelism {
@@ -52,7 +52,7 @@ public class HiveRelMdParallelism extends RelMdParallelism {
     return join.isPhaseTransition();
   }
 
-  public Boolean isPhaseTransition(HiveSort sort) {
+  public Boolean isPhaseTransition(HiveSortLimit sort) {
     // As Exchange operator is introduced later on, we make a
     // sort operator create a new stage for the moment
     return true;

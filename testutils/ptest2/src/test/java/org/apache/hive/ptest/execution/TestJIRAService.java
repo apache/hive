@@ -20,13 +20,42 @@ package org.apache.hive.ptest.execution;
 
 import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import com.google.common.io.Resources;
 import junit.framework.Assert;
 
 import org.apache.hive.ptest.execution.JIRAService.BuildInfo;
+import org.apache.hive.ptest.execution.conf.TestConfiguration;
+import org.approvaltests.Approvals;
+import org.approvaltests.reporters.JunitReporter;
+import org.approvaltests.reporters.UseReporter;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class TestJIRAService  {
+@UseReporter(JunitReporter.class)
+public class TestJIRAService extends AbstractTestPhase {
+
+  TestConfiguration conf;
+  JIRAService jiraService;
+
+  @Before
+  public void setup() throws Exception {
+    initialize(getClass().getSimpleName());
+    conf = TestConfiguration.fromInputStream(
+      Resources.getResource("test-configuration.properties").openStream(), logger);
+    conf.setPatch("https://HIVE-10000.patch");
+    jiraService = new JIRAService(logger, conf, "tag-10");
+  }
+
 
   @Test
   public void testFormatBuildTagPositive() throws Throwable {
@@ -74,5 +103,63 @@ public class TestJIRAService  {
     expected.remove(0);
     expected.add(0, JIRAService.TRIMMED_MESSAGE);
     Assert.assertEquals(expected, JIRAService.trimMessages(messages));
+  }
+
+  @Test
+  public void testErrorWithMessages() throws Exception {
+    SortedSet<String> failedTests = new TreeSet<String>();
+    List<String> messages = new ArrayList<String>();
+    messages.add("Error message 1");
+    messages.add("Error message 2");
+    Set<String> addedTests = new HashSet<String>();
+    Approvals.verify(jiraService.generateComments(true, 0, failedTests, messages, addedTests));
+  }
+
+  @Test
+  public void testErrorWithoutMessages() throws Exception {
+    SortedSet<String> failedTests = new TreeSet<String>();
+    List<String> messages = new ArrayList<String>();
+    Set<String> addedTests = new HashSet<String>();
+    Approvals.verify(jiraService.generateComments(true, 0, failedTests, messages, addedTests));
+  }
+
+  @Test
+  public void testFailNoAdd() throws Exception {
+    SortedSet<String> failedTests = new TreeSet<String>();
+    failedTests.add("FailedTest1");
+    failedTests.add("FailedTest2");
+    List<String> messages = new ArrayList<String>();
+    Set<String> addedTests = new HashSet<String>();
+    Approvals.verify(jiraService.generateComments(false, 5, failedTests, messages, addedTests));
+  }
+
+  @Test
+  public void testFailAdd() throws Exception {
+    SortedSet<String> failedTests = new TreeSet<String>();
+    failedTests.add("FailedTest1");
+    failedTests.add("FailedTest2");
+    List<String> messages = new ArrayList<String>();
+    Set<String> addedTests = new HashSet<String>();
+    addedTests.add("AddedTest1");
+    addedTests.add("AddedTest2");
+    Approvals.verify(jiraService.generateComments(false, 5, failedTests, messages, addedTests));
+  }
+
+  @Test
+  public void testSuccessNoAdd() throws Exception {
+    SortedSet<String> failedTests = new TreeSet<String>();
+    List<String> messages = new ArrayList<String>();
+    Set<String> addedTests = new HashSet<String>();
+    Approvals.verify(jiraService.generateComments(false, 5, failedTests, messages, addedTests));
+  }
+
+  @Test
+  public void testSuccessAdd() throws Exception {
+    SortedSet<String> failedTests = new TreeSet<String>();
+    List<String> messages = new ArrayList<String>();
+    Set<String> addedTests = new HashSet<String>();
+    addedTests.add("AddedTest1");
+    addedTests.add("AddedTest2");
+    Approvals.verify(jiraService.generateComments(false, 5, failedTests, messages, addedTests));
   }
 }

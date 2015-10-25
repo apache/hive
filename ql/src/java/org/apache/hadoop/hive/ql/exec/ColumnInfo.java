@@ -107,7 +107,6 @@ public class ColumnInfo implements Serializable {
     this.isVirtualCol = columnInfo.getIsVirtualCol();
     this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
     this.setType(columnInfo.getType());
-    this.typeName = columnInfo.getType().getTypeName();
   }
 
   public String getTypeName() {
@@ -133,6 +132,7 @@ public class ColumnInfo implements Serializable {
   public void setType(TypeInfo type) {
     objectInspector =
         TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(type);
+    setTypeName(type.getTypeName());
   }
 
   public void setInternalName(String internalName) {

@@ -27,8 +27,8 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
  * each run with positive values 0 to 127 meaning 3 to 130 repetitions. If the
  * byte is -1 to -128, 1 to 128 literal byte values follow.
  */
-class RunLengthByteReader {
-  private final InStream input;
+public class RunLengthByteReader {
+  private InStream input;
   private final byte[] literals =
     new byte[RunLengthByteWriter.MAX_LITERAL_SIZE];
   private int numLiterals = 0;
@@ -39,11 +39,19 @@ class RunLengthByteReader {
     this.input = input;
   }
 
-  private void readValues() throws IOException {
+  public void setInStream(InStream input) {
+    this.input = input;
+  }
+
+  private void readValues(boolean ignoreEof) throws IOException {
     int control = input.read();
     used = 0;
     if (control == -1) {
-      throw new EOFException("Read past end of buffer RLE byte from " + input);
+      if (!ignoreEof) {
+        throw new EOFException("Read past end of buffer RLE byte from " + input);
+      }
+      used = numLiterals = 0;
+      return;
     } else if (control < 0x80) {
       repeat = true;
       numLiterals = control + RunLengthByteWriter.MIN_REPEAT_SIZE;
@@ -73,14 +81,14 @@ class RunLengthByteReader {
   byte next() throws IOException {
     byte result;
     if (used == numLiterals) {
-      readValues();
+      readValues(false);
     }
     if (repeat) {
-      used += 1;
       result = literals[0];
     } else {
-      result = literals[used++];
+      result = literals[used];
     }
+    ++used;
     return result;
   }
 
@@ -107,13 +115,13 @@ class RunLengthByteReader {
     }
   }
 
-  void seek(PositionProvider index) throws IOException {
+  public void seek(PositionProvider index) throws IOException {
     input.seek(index);
     int consumed = (int) index.getNext();
     if (consumed != 0) {
       // a loop is required for cases where we break the run into two parts
       while (consumed > 0) {
-        readValues();
+        readValues(false);
         used = consumed;
         consumed -= numLiterals;
       }
@@ -126,7 +134,7 @@ class RunLengthByteReader {
   void skip(long items) throws IOException {
     while (items > 0) {
       if (used == numLiterals) {
-        readValues();
+        readValues(false);
       }
       long consume = Math.min(items, numLiterals - used);
       used += consume;

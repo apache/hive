@@ -30,13 +30,13 @@ POSTHOOK: Input: default@tmp_tmp
 #### A masked pattern was here ####
 1	2	NULL
 1	2	NULL
-1	NULL
+1
 2	NULL
-1	NULL
+1
 2	NULL
-1	NULL
+1
 2	NULL
-1	NULL
+1
 2	NULL
 #### A masked pattern was here ####
 PREHOOK: query: drop table tmp_tmp

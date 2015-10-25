@@ -17,6 +17,8 @@ select * from t2 sort by key;
 create table t3 stored as orc as select * from (select * from t1 union all select * from t2) b;
 select * from t3 sort by key, value;
 
+analyze table t3 compute statistics;
+
 create table t4 (key int, value string) stored as orc;
 select * from t4;
 

@@ -30,8 +30,10 @@ import com.google.common.collect.Iterators;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -111,6 +113,19 @@ public class IdentityProjectRemover implements Transform {
         // For RS-SEL-RS case. reducer operator in reducer task cannot be null in task compiler
         return null;
       }
+      List<Operator<? extends OperatorDesc>> ancestorList = new ArrayList<Operator<? extends OperatorDesc>>();
+      ancestorList.addAll(sel.getParentOperators());
+      while (!ancestorList.isEmpty()) {
+        Operator<? extends OperatorDesc> curParent = ancestorList.remove(0);
+            // PTF need a SelectOp.
+        if ((curParent instanceof PTFOperator)) {
+          return null;
+        }
+        if ((curParent instanceof FilterOperator) && curParent.getParentOperators() != null) {
+          ancestorList.addAll(curParent.getParentOperators());
+        }
+      }
+
       if(sel.isIdentitySelect()) {
         parent.removeChildAndAdoptItsChildren(sel);
         LOG.debug("Identity project remover optimization removed : " + sel);

@@ -755,7 +755,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
@@ -905,7 +905,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
@@ -1123,7 +1123,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
@@ -1273,7 +1273,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 10) or ((key > 10) and (key < 20))) (type: boolean)
+              predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
               Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)

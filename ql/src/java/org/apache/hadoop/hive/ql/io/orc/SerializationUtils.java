@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 
-final class SerializationUtils {
+public final class SerializationUtils {
 
   private final static int BUFFER_SIZE = 64;
   private final byte[] readBuffer;
@@ -72,7 +72,7 @@ final class SerializationUtils {
     return (result >>> 1) ^ -(result & 1);
   }
 
-  float readFloat(InputStream in) throws IOException {
+  public float readFloat(InputStream in) throws IOException {
     int ser = in.read() | (in.read() << 8) | (in.read() << 16) |
       (in.read() << 24);
     return Float.intBitsToFloat(ser);
@@ -86,7 +86,7 @@ final class SerializationUtils {
     output.write((ser >> 24) & 0xff);
   }
 
-  double readDouble(InputStream in) throws IOException {
+  public double readDouble(InputStream in) throws IOException {
     return Double.longBitsToDouble(readLongLE(in));
   }
 

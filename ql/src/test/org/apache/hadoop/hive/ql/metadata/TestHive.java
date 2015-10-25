@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,8 +27,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -56,14 +53,18 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.Assert;
 
 import com.google.common.collect.ImmutableMap;
+
+import junit.framework.TestCase;
 
 /**
  * TestHive.
@@ -248,36 +249,39 @@ public class TestHive extends TestCase {
    * @throws Throwable
    */
   public void testMetaStoreApiTiming() throws Throwable {
-    // set log level to DEBUG, as this is logged at debug level
-    Logger logger = Logger.getLogger("hive.ql.metadata.Hive");
-    Level origLevel = logger.getLevel();
-    logger.setLevel(Level.DEBUG);
+    // Get the RootLogger which, if you don't have log4j2-test.xml defined, will only log ERRORs
+    Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
+    Level oldLevel = logger.getLevel();
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+    loggerConfig.setLevel(Level.DEBUG);
+    ctx.updateLoggers();
 
-    // create an appender to capture the logs in a string
-    StringWriter writer = new StringWriter();
-    WriterAppender appender = new WriterAppender(new PatternLayout(), writer);
+    // Create a String Appender to capture log output
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.DEBUG);
+    appender.start();
 
     try {
-      logger.addAppender(appender);
-
       hm.clearMetaCallTiming();
       hm.getAllDatabases();
       hm.dumpAndClearMetaCallTiming("test");
-      String logStr = writer.toString();
+      String logStr = appender.getOutput();
       String expectedString = "getAllDatabases_()=";
       Assert.assertTrue(logStr + " should contain <" + expectedString,
           logStr.contains(expectedString));
 
       // reset the log buffer, verify new dump without any api call does not contain func
-      writer.getBuffer().setLength(0);
+      appender.reset();
       hm.dumpAndClearMetaCallTiming("test");
-      logStr = writer.toString();
+      logStr = appender.getOutput();
       Assert.assertFalse(logStr + " should not contain <" + expectedString,
           logStr.contains(expectedString));
-
     } finally {
-      logger.setLevel(origLevel);
-      logger.removeAppender(appender);
+      loggerConfig.setLevel(oldLevel);
+      ctx.updateLoggers();
+      appender.removeFromLogger(logger.getName());
     }
   }
 
@@ -299,7 +303,7 @@ public class TestHive extends TestCase {
 
       ft = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       assertNotNull("Unable to fetch table", ft);
-      ft.checkValidity();
+      ft.checkValidity(hiveConf);
       assertEquals("Table names didn't match for table: " + tableName, tbl
           .getTableName(), ft.getTableName());
       assertEquals("Table owners didn't match for table: " + tableName, tbl

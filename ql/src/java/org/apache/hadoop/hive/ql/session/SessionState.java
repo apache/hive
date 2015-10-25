@@ -38,9 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,9 +49,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -85,7 +87,6 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
 
 import com.google.common.base.Preconditions;
@@ -104,6 +105,7 @@ public class SessionState {
   private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
   private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
+
   private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
   private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
       new HashMap<String, Map<String, ColumnStatisticsObj>>();
@@ -161,6 +163,11 @@ public class SessionState {
   protected File tmpOutputFile;
 
   /**
+   * Temporary file name used to store error output of executing non-Hive commands (e.g., set, dfs)
+   */
+  protected File tmpErrOutputFile;
+
+  /**
    * type of the command.
    */
   private HiveOperation commandType;
@@ -212,8 +219,6 @@ public class SessionState {
    * Lineage state.
    */
   LineageState ls;
-
-  private PerfLogger perfLogger;
 
   private final String userName;
 
@@ -283,6 +288,22 @@ public class SessionState {
 
   public void setTmpOutputFile(File f) {
     tmpOutputFile = f;
+  }
+
+  public File getTmpErrOutputFile() {
+    return tmpErrOutputFile;
+  }
+
+  public void setTmpErrOutputFile(File tmpErrOutputFile) {
+    this.tmpErrOutputFile = tmpErrOutputFile;
+  }
+
+  public void deleteTmpOutputFile() {
+    FileUtils.deleteTmpFile(tmpOutputFile);
+  }
+
+  public void deleteTmpErrOutputFile() {
+    FileUtils.deleteTmpFile(tmpErrOutputFile);
   }
 
   public boolean getIsSilent() {
@@ -460,6 +481,21 @@ public class SessionState {
    * when switching from one session to another.
    */
   public static SessionState start(SessionState startSs) {
+    start(startSs, false, null);
+    return startSs;
+  }
+
+  public static void beginStart(SessionState startSs, LogHelper console) {
+    start(startSs, true, console);
+  }
+
+  public static void endStart(SessionState startSs)
+      throws CancellationException, InterruptedException {
+    if (startSs.tezSessionState == null) return;
+    startSs.tezSessionState.endOpen();
+  }
+
+  private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
 
     if (startSs.hiveHist == null){
@@ -493,26 +529,45 @@ public class SessionState {
         }
       }
 
+      // Set temp file containing error output to be sent to client
+      if (startSs.getTmpErrOutputFile() == null) {
+        try {
+          startSs.setTmpErrOutputFile(createTempFile(startSs.getConf()));
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
     } catch (Exception e) {
       // Catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
       throw new RuntimeException(e);
     }
 
-    if (HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)
-        .equals("tez") && (startSs.isHiveServerQuery == false)) {
-      try {
-        if (startSs.tezSessionState == null) {
-          startSs.tezSessionState = new TezSessionState(startSs.getSessionId());
-        }
-        if (!startSs.tezSessionState.isOpen()) {
-          startSs.tezSessionState.open(startSs.conf); // should use conf on session start-up
-        }
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+    String engine = HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+    if (!engine.equals("tez") || startSs.isHiveServerQuery) return;
+
+    try {
+      if (startSs.tezSessionState == null) {
+        startSs.tezSessionState = new TezSessionState(startSs.getSessionId());
       }
+      if (startSs.tezSessionState.isOpen()) {
+        return;
+      }
+      if (startSs.tezSessionState.isOpening()) {
+        if (!isAsync) {
+          startSs.tezSessionState.endOpen();
+        }
+        return;
+      }
+      // Neither open nor opening.
+      if (!isAsync) {
+        startSs.tezSessionState.open(startSs.conf); // should use conf on session start-up
+      } else {
+        startSs.tezSessionState.beginOpen(startSs.conf, null, console);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-    return startSs;
   }
 
   /**
@@ -596,7 +651,7 @@ public class SessionState {
    * Create a given path if it doesn't exist.
    *
    * @param conf
-   * @param pathString
+   * @param path
    * @param permission
    * @param isLocal
    * @param isCleanUp
@@ -676,6 +731,8 @@ public class SessionState {
     if (localSessionPath != null) {
       FileSystem.getLocal(conf).delete(localSessionPath, true);
     }
+    deleteTmpOutputFile();
+    deleteTmpErrOutputFile();
   }
 
   /**
@@ -762,7 +819,7 @@ public class SessionState {
         getAuthorizer() : getAuthorizerV2();
   }
 
-  public Class getAuthorizerInterface() {
+  public Class<?> getAuthorizerInterface() {
     return getAuthorizationMode() == AuthorizationMode.V1 ?
         HiveAuthorizationProvider.class : HiveAuthorizer.class;
   }
@@ -783,25 +840,10 @@ public class SessionState {
    * @throws IOException
    */
   private static File createTempFile(HiveConf conf) throws IOException {
-    String lScratchDir =
-        HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR);
-
-    File tmpDir = new File(lScratchDir);
+    String lScratchDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR);
     String sessionID = conf.getVar(HiveConf.ConfVars.HIVESESSIONID);
-    if (!tmpDir.exists()) {
-      if (!tmpDir.mkdirs()) {
-        //Do another exists to check to handle possible race condition
-        // Another thread might have created the dir, if that is why
-        // mkdirs returned false, that is fine
-        if(!tmpDir.exists()){
-          throw new RuntimeException("Unable to create log directory "
-              + lScratchDir);
-        }
-      }
-    }
-    File tmpFile = File.createTempFile(sessionID, ".pipeout", tmpDir);
-    tmpFile.deleteOnExit();
-    return tmpFile;
+
+    return FileUtils.createTempFile(lScratchDir, sessionID, ".pipeout");
   }
 
   /**
@@ -1227,11 +1269,8 @@ public class SessionState {
     String scheme = uri.getScheme() == null ? null : uri.getScheme().toLowerCase();
     if (scheme == null || scheme.equals("file")) {
       return "file";
-    } else if (scheme.equals("hdfs") || scheme.equals("ivy")) {
-      return scheme;
-    } else {
-      throw new RuntimeException("invalid url: " + uri + ", expecting ( file | hdfs | ivy)  as url scheme. ");
     }
+    return scheme;
   }
 
   List<URI> resolveAndDownload(ResourceType t, String value, boolean convertToUnix) throws URISyntaxException,
@@ -1241,10 +1280,8 @@ public class SessionState {
       return Arrays.asList(uri);
     } else if (getURLType(value).equals("ivy")) {
       return dependencyResolver.downloadDependencies(uri);
-    } else if (getURLType(value).equals("hdfs")) {
-      return Arrays.asList(createURI(downloadResource(value, convertToUnix)));
     } else {
-      throw new RuntimeException("Invalid url " + uri);
+      return Arrays.asList(createURI(downloadResource(value, convertToUnix)));
     }
   }
 
@@ -1490,6 +1527,27 @@ public class SessionState {
       tezSessionState = null;
     }
 
+    closeSparkSession();
+    registry.closeCUDFLoaders();
+    dropSessionPaths(conf);
+    unCacheDataNucleusClassLoaders();
+  }
+
+  private void unCacheDataNucleusClassLoaders() {
+    try {
+      Hive threadLocalHive = Hive.get(conf);
+      if ((threadLocalHive != null) && (threadLocalHive.getMSC() != null)
+          && (threadLocalHive.getMSC().isLocalMetaStore())) {
+        if (conf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL).equals(ObjectStore.class.getName())) {
+          ObjectStore.unCacheDataNucleusClassLoaders();
+        }
+      }
+    } catch (Exception e) {
+      LOG.info(e);
+    }
+  }
+
+  public void closeSparkSession() {
     if (sparkSession != null) {
       try {
         SparkSessionManagerImpl.getInstance().closeSession(sparkSession);
@@ -1499,8 +1557,6 @@ public class SessionState {
         sparkSession = null;
       }
     }
-    registry.closeCUDFLoaders();
-    dropSessionPaths(conf);
   }
 
   public AuthorizationMode getAuthorizationMode(){
@@ -1519,23 +1575,29 @@ public class SessionState {
   }
 
   /**
+   * @return  Tries to return an instance of the class whose name is configured in
+   *          hive.exec.perf.logger, but if it can't it just returns an instance of
+   *          the base PerfLogger class
+   *
+   */
+  public static PerfLogger getPerfLogger() {
+    return getPerfLogger(false);
+  }
+
+  /**
    * @param resetPerfLogger
    * @return  Tries to return an instance of the class whose name is configured in
    *          hive.exec.perf.logger, but if it can't it just returns an instance of
    *          the base PerfLogger class
-
+   *
    */
-  public PerfLogger getPerfLogger(boolean resetPerfLogger) {
-    if ((perfLogger == null) || resetPerfLogger) {
-      try {
-        perfLogger = (PerfLogger) ReflectionUtils.newInstance(conf.getClassByName(
-            conf.getVar(ConfVars.HIVE_PERF_LOGGER)), conf);
-      } catch (ClassNotFoundException e) {
-        LOG.error("Performance Logger Class not found:" + e.getMessage());
-        perfLogger = new PerfLogger();
-      }
+  public static PerfLogger getPerfLogger(boolean resetPerfLogger) {
+    SessionState ss = get();
+    if (ss == null) {
+      return PerfLogger.getPerfLogger(null, resetPerfLogger);
+    } else {
+      return PerfLogger.getPerfLogger(ss.getConf(), resetPerfLogger);
     }
-    return perfLogger;
   }
 
   public TezSessionState getTezSession() {

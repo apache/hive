@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.ql.io.rcfile.stats;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -42,6 +46,7 @@ public class PartialScanWork extends MapWork implements Serializable {
 
   private transient List<Path> inputPaths;
   private String aggKey;
+  private String statsTmpDir;
 
   public PartialScanWork() {
   }
@@ -99,6 +104,15 @@ public class PartialScanWork extends MapWork implements Serializable {
    */
   public void setAggKey(String aggKey) {
     this.aggKey = aggKey;
+  }
+
+  public String getStatsTmpDir() {
+    return statsTmpDir;
+  }
+
+  public void setStatsTmpDir(String statsTmpDir, HiveConf conf) {
+    this.statsTmpDir = HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())
+      ?  statsTmpDir : "";
   }
 
 }

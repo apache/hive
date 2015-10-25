@@ -52,6 +52,13 @@ public interface Reader {
   long getRawDataSizeOfColumns(List<String> colNames);
 
   /**
+   * Get the deserialized data size of the specified columns ids
+   * @param colIds - internal column id (check orcfiledump for column ids)
+   * @return raw data size of columns
+   */
+  long getRawDataSizeFromColIndices(List<Integer> colIds);
+
+  /**
    * Get the user metadata keys.
    * @return the set of metadata keys
    */
@@ -113,13 +120,6 @@ public interface Reader {
    * @return the information about the column
    */
   ColumnStatistics[] getStatistics();
-
-  /**
-   * Get the metadata information like stripe level column statistics etc.
-   * @return the information about the column
-   * @throws IOException
-   */
-  Metadata getMetadata() throws IOException;
 
   /**
    * Get the list of types contained in the file. The root type is the first
@@ -350,5 +350,44 @@ public interface Reader {
                     boolean[] include, SearchArgument sarg,
                     String[] neededColumns) throws IOException;
 
+  /**
+   * @return Metadata reader used to read file metadata.
+   */
   MetadataReader metadata() throws IOException;
+
+  /**
+   * @return List of integers representing version of the file, in order from major to minor.
+   */
+  List<Integer> getVersionList();
+
+  /**
+   * @return Gets the size of metadata, in bytes.
+   */
+  int getMetadataSize();
+
+  /**
+   * @return Stripe statistics, in original protobuf form.
+   */
+  List<OrcProto.StripeStatistics> getOrcProtoStripeStatistics();
+
+  /**
+   * @return Stripe statistics.
+   */
+  List<StripeStatistics> getStripeStatistics();
+
+  /**
+   * @return File statistics, in original protobuf form.
+   */
+  List<OrcProto.ColumnStatistics> getOrcProtoFileStatistics();
+
+  /**
+   * @param useZeroCopy Whether zero-copy read should be used.
+   * @return The default data reader that ORC is using to read bytes from disk.
+   */
+  DataReader createDefaultDataReader(boolean useZeroCopy);
+
+  /**
+   * @return Serialized file metadata read from disk for the purposes of caching, etc.
+   */
+  ByteBuffer getSerializedFileFooter();
 }

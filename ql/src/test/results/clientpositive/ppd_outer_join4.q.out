@@ -122,7 +122,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 31 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 > '10') and ((_col0 < '20') and ((_col0 > '15') and (_col0 < '25')))) (type: boolean)
+                  predicate: ((_col0 > '10') and (_col0 < '20') and (_col0 > '15') and (_col0 < '25')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)

@@ -155,7 +155,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -177,7 +177,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -260,7 +260,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -329,7 +329,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -492,7 +492,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -514,7 +514,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -750,7 +750,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -772,7 +772,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -865,7 +865,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -949,7 +949,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1158,7 +1158,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -1180,7 +1180,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -1273,7 +1273,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1357,7 +1357,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1557,7 +1557,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -1579,7 +1579,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -1662,7 +1662,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1731,7 +1731,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1898,7 +1898,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -1920,7 +1920,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -2119,7 +2119,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -2141,7 +2141,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -2386,7 +2386,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -2408,7 +2408,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -2734,7 +2734,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -2756,7 +2756,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -2849,7 +2849,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -2933,7 +2933,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3159,7 +3159,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -3181,7 +3181,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -3322,7 +3322,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -3355,7 +3355,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -3377,7 +3377,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -3471,7 +3471,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3555,7 +3555,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3816,7 +3816,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -3838,7 +3838,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -4098,7 +4098,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -4120,7 +4120,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -4199,7 +4199,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10004
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -4232,7 +4232,7 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.t1
-              numFiles 1
+              numFiles 2
               numRows 6
               rawDataSize 24
               serialization.ddl struct t1 { string key, string val}
@@ -4254,7 +4254,7 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
+                numFiles 2
                 numRows 6
                 rawDataSize 24
                 serialization.ddl struct t1 { string key, string val}
@@ -4293,6 +4293,7 @@ STAGE PLANS:
                   columns.types string:bigint:string:string:bigint
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -4789,7 +4790,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -4873,7 +4874,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5189,7 +5190,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5258,7 +5259,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5593,7 +5594,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5677,7 +5678,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -6051,7 +6052,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -6135,7 +6136,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10001
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:

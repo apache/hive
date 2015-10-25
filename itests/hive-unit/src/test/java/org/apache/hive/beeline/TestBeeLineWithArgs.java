@@ -739,4 +739,17 @@ public class TestBeeLineWithArgs {
     final String QUERY_TEXT_DROP = "drop table multiCmdTbl;show tables;";
     testCommandEnclosedQuery(QUERY_TEXT_DROP, EXPECTED_PATTERN, false, argList);
   }
+
+  @Test
+  public void testEmbeddedBeelineOutputs() throws Throwable{
+    String embeddedJdbcURL = BeeLine.BEELINE_DEFAULT_JDBC_URL+"/Default";
+    List<String> argList = getBaseArgs(embeddedJdbcURL);
+    // Set to non-zk lock manager to avoid trying to connect to zookeeper
+    final String SCRIPT_TEXT =
+        "set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;\n" +
+        "create table if not exists embeddedBeelineOutputs(d int);\n" +
+        "set a=1;\nselect count(*) from embeddedBeelineOutputs;\n";
+    final String EXPECTED_PATTERN = "Stage-1 map =";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
 }

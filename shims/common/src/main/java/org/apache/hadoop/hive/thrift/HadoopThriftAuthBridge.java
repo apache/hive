@@ -671,6 +671,9 @@ public class HadoopThriftAuthBridge {
           if (useProxy) {
             clientUgi = UserGroupInformation.createProxyUser(
                 endUser, UserGroupInformation.getLoginUser());
+
+            ProxyUsers.authorize(clientUgi, getRemoteAddress().getHostAddress(), null);
+
             remoteUser.set(clientUgi.getShortUserName());
             LOG.debug("Set remoteUser :" + remoteUser.get());
             return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {

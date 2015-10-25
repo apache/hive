@@ -232,8 +232,8 @@ STAGE PLANS:
               name: default.alter_coltype
             name: default.alter_coltype
       Truncated Path -> Alias:
-        /alter_coltype/dt=100/ts=3.0 [$hdt$_0:alter_coltype]
-        /alter_coltype/dt=100/ts=6.30 [$hdt$_0:alter_coltype]
+        /alter_coltype/dt=100/ts=3.0 [alter_coltype]
+        /alter_coltype/dt=100/ts=6.30 [alter_coltype]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -256,6 +256,7 @@ STAGE PLANS:
                   columns.types bigint
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -411,7 +412,7 @@ STAGE PLANS:
               name: default.alter_coltype
             name: default.alter_coltype
       Truncated Path -> Alias:
-        /alter_coltype/dt=100/ts=6.30 [$hdt$_0:alter_coltype]
+        /alter_coltype/dt=100/ts=6.30 [alter_coltype]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -434,6 +435,7 @@ STAGE PLANS:
                   columns.types bigint
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -568,7 +570,7 @@ STAGE PLANS:
               name: default.alter_coltype
             name: default.alter_coltype
       Truncated Path -> Alias:
-        /alter_coltype/dt=100/ts=3.0 [$hdt$_0:alter_coltype]
+        /alter_coltype/dt=100/ts=3.0 [alter_coltype]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -591,6 +593,7 @@ STAGE PLANS:
                   columns.types bigint
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

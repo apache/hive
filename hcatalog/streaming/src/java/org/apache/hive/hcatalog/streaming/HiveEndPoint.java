@@ -49,6 +49,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Information about the hive end point (i.e. table or partition) to write to.
@@ -272,8 +273,28 @@ public class HiveEndPoint {
       }
       this.secureMode = ugi==null ? false : ugi.hasKerberosCredentials();
       this.msClient = getMetaStoreClient(endPoint, conf, secureMode);
+      checkEndPoint(endPoint, msClient);
       if (createPart  &&  !endPoint.partitionVals.isEmpty()) {
         createPartitionIfNotExists(endPoint, msClient, conf);
+      }
+    }
+
+    private void checkEndPoint(HiveEndPoint endPoint, IMetaStoreClient msClient) throws InvalidTable {
+      // 1 - check if TBLPROPERTIES ('transactional'='true') is set on table
+      try {
+        Table t = msClient.getTable(endPoint.database, endPoint.table);
+        Map<String, String> params = t.getParameters();
+        if(params != null) {
+          String transactionalProp = params.get("transactional");
+          if (transactionalProp != null && transactionalProp.equalsIgnoreCase("true")) {
+            return;
+          }
+        }
+        LOG.error("'transactional' property is not set on Table " + endPoint);
+        throw new InvalidTable(endPoint.database, endPoint.table, "\'transactional\' property is not set on Table");
+      } catch (Exception e) {
+        LOG.warn("Unable to check if Table is transactional. " + endPoint, e);
+        throw new InvalidTable(endPoint.database, endPoint.table, e);
       }
     }
 

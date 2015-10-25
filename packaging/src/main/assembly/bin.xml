@@ -41,7 +41,9 @@
       <excludes>
         <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.apache.hive.hcatalog:*</exclude>
-		    <exclude>org.slf4j:*</exclude>
+        <exclude>org.slf4j:*</exclude>
+        <exclude>log4j:*</exclude>
+        <exclude>commons-configuration:commons-configuration</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
@@ -124,6 +126,7 @@
       <directory>${project.parent.basedir}/bin</directory>
       <includes>
         <include>hive</include>
+        <include>llap/**/*</include>
         <include>metatool</include>
         <include>schematool</include>
         <include>beeline</include>
@@ -132,6 +135,24 @@
         <include>ext/**/*</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <fileMode>755</fileMode>
+      <directory>${project.parent.basedir}/llap-server/bin</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/llap/bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/llap-server/src/main/resources/</directory>
+      <includes>
+        <include>**/*.py</include>
+        <include>**/*.xml</include>
+      </includes>
+      <outputDirectory>scripts/llap/slider</outputDirectory>
     </fileSet>
 
     <fileSet>
@@ -274,7 +295,7 @@
       <fileMode>644</fileMode>
       <includes>
         <include>webhcat-default.xml</include>
-        <include>webhcat-log4j.properties</include>
+        <include>webhcat-log4j2.xml</include>
       </includes>
       <filtered>true</filtered>
       <outputDirectory>hcatalog/etc/webhcat</outputDirectory>
@@ -322,19 +343,24 @@
 
   <files>
     <file>
-      <source>${project.parent.basedir}/common/src/main/resources/hive-log4j.properties</source>
+      <source>${project.parent.basedir}/common/src/main/resources/hive-log4j2.xml</source>
       <outputDirectory>conf</outputDirectory>
-      <destName>hive-log4j.properties.template</destName>
+      <destName>hive-log4j2.xml.template</destName>
     </file>
     <file>
-      <source>${project.parent.basedir}/ql/src/main/resources/hive-exec-log4j.properties</source>
+      <source>${project.parent.basedir}/ql/src/main/resources/hive-exec-log4j2.xml</source>
       <outputDirectory>conf</outputDirectory>
-      <destName>hive-exec-log4j.properties.template</destName>
+      <destName>hive-exec-log4j2.xml.template</destName>
     </file>
     <file>
-      <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j.properties</source>
+      <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j2.xml</source>
       <outputDirectory>conf</outputDirectory>
-      <destName>beeline-log4j.properties.template</destName>
+      <destName>beeline-log4j2.xml.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/llap-server/src/main/resources/llap-daemon-log4j.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>llap-daemon-log4j.properties.template</destName>
     </file>
     <file>
       <source>${project.parent.basedir}/hcatalog/README.txt</source>

@@ -211,13 +211,13 @@ public class HiveConnection implements java.sql.Connection {
         break;
       } catch (TTransportException e) {
         LOG.info("Could not open client transport with JDBC Uri: " + jdbcUriString);
-        // We'll retry till we exhaust all HiveServer2 uris from ZooKeeper
+        // We'll retry till we exhaust all HiveServer2 nodes from ZooKeeper
         if ((sessConfMap.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE) != null)
             && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(sessConfMap
                 .get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE)))) {
           try {
             // Update jdbcUriString, host & port variables in connParams
-            // Throw an exception if all HiveServer2 uris have been exhausted,
+            // Throw an exception if all HiveServer2 nodes have been exhausted,
             // or if we're unable to connect to ZooKeeper.
             Utils.updateConnParamsFromZooKeeper(connParams);
           } catch (ZooKeeperHiveClientException ze) {
@@ -419,6 +419,38 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   /**
+   * Create underlying SSL or non-SSL transport
+   *
+   * @return TTransport
+   * @throws TTransportException
+   */
+  private TTransport createUnderlyingTransport() throws TTransportException {
+    TTransport transport = null;
+    // Note: Thrift returns an SSL socket that is already bound to the specified host:port
+    // Therefore an open called on this would be a no-op later
+    // Hence, any TTransportException related to connecting with the peer are thrown here.
+    // Bubbling them up the call hierarchy so that a retry can happen in openTransport,
+    // if dynamic service discovery is configured.
+    if (isSslConnection()) {
+      // get SSL socket
+      String sslTrustStore = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
+      String sslTrustStorePassword = sessConfMap.get(
+        JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
+
+      if (sslTrustStore == null || sslTrustStore.isEmpty()) {
+        transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
+      } else {
+        transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
+            sslTrustStore, sslTrustStorePassword);
+      }
+    } else {
+      // get non-SSL socket transport
+      transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
+    }
+    return transport;
+  }
+
+  /**
    * Create transport per the connection options
    * Supported transport options are:
    *   - SASL based transports over
@@ -433,6 +465,7 @@ public class HiveConnection implements java.sql.Connection {
    */
   private TTransport createBinaryTransport() throws SQLException, TTransportException {
     try {
+      TTransport socketTransport = createUnderlyingTransport();
       // handle secure connection if specified
       if (!JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
         // If Kerberos
@@ -454,46 +487,24 @@ public class HiveConnection implements java.sql.Connection {
         if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)) {
           transport = KerberosSaslHelper.getKerberosTransport(
               sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
-              HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps,
-              assumeSubject);
+              socketTransport, saslProps, assumeSubject);
         } else {
           // If there's a delegation token available then use token based connection
           String tokenStr = getClientDelegationToken(sessConfMap);
           if (tokenStr != null) {
             transport = KerberosSaslHelper.getTokenTransport(tokenStr,
-                host, HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps);
+                host, socketTransport, saslProps);
           } else {
             // we are using PLAIN Sasl connection with user/password
             String userName = getUserName();
             String passwd = getPassword();
-            // Note: Thrift returns an SSL socket that is already bound to the specified host:port
-            // Therefore an open called on this would be a no-op later
-            // Hence, any TTransportException related to connecting with the peer are thrown here.
-            // Bubbling them up the call hierarchy so that a retry can happen in openTransport,
-            // if dynamic service discovery is configured.
-            if (isSslConnection()) {
-              // get SSL socket
-              String sslTrustStore = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
-              String sslTrustStorePassword = sessConfMap.get(
-                JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
-
-              if (sslTrustStore == null || sslTrustStore.isEmpty()) {
-                transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
-              } else {
-                transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
-                    sslTrustStore, sslTrustStorePassword);
-              }
-            } else {
-              // get non-SSL socket transport
-              transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
-            }
             // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
-            transport = PlainSaslHelper.getPlainTransport(userName, passwd, transport);
+            transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
           }
         }
       } else {
         // Raw socket connection (non-sasl)
-        transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
+        transport = socketTransport;
       }
     } catch (SaslException e) {
       throw new SQLException("Could not create secure connection to "
@@ -959,15 +970,13 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Connection is closed");
     }
-    Statement stmt = createStatement();
-    ResultSet res = stmt.executeQuery("SELECT current_database()");
-    if (!res.next()) {
-      throw new SQLException("Failed to get schema information");
+    try (Statement stmt = createStatement();
+         ResultSet res = stmt.executeQuery("SELECT current_database()")) {
+      if (!res.next()) {
+        throw new SQLException("Failed to get schema information");
+      }
+      return res.getString(1);
     }
-    String schemaName = res.getString(1);
-    res.close();
-    stmt.close();
-    return schemaName;
   }
 
   /*
@@ -1279,8 +1288,16 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public void setReadOnly(boolean readOnly) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    // Per JDBC spec, if the connection is closed a SQLException should be thrown.
+    if (isClosed) {
+      throw new SQLException("Connection is closed");
+    }
+    // Per JDBC spec, the request defines a hint to the driver to enable database optimizations.
+    // The read-only mode for this connection is disabled and cannot be enabled (isReadOnly always returns false).
+    // The most correct behavior is to throw only if the request tries to enable the read-only mode.
+    if(readOnly) {
+      throw new SQLException("Enabling read-only mode not supported");
+    }
   }
 
   /*

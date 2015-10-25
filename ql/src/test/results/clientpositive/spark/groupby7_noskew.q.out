@@ -40,25 +40,10 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 4 (GROUP, 31)
-        Reducer 3 <- Map 5 (GROUP, 31)
+        Reducer 3 <- Map 4 (GROUP, 31)
 #### A masked pattern was here ####
       Vertices:
         Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: substr(value, 5) (type: string)
-        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src

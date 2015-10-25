@@ -61,9 +61,8 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc.DPSortState;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -82,6 +81,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import com.google.common.collect.Lists;
 
 /**
  * File Sink operator implementation.
@@ -325,8 +326,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     try {
       this.hconf = hconf;
       filesCreated = false;
@@ -445,7 +446,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       e.printStackTrace();
       throw new HiveException(e);
     }
-    return result;
   }
 
   private void logOutputFormatError(Configuration hconf, HiveException ex) {
@@ -493,24 +493,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       assert inputObjInspectors.length == 1 : "FileSinkOperator should have 1 parent, but it has "
           + inputObjInspectors.length;
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[0];
-      // remove the last dpMapping.size() columns from the OI
-      List<? extends StructField> fieldOI = soi.getAllStructFieldRefs();
-      ArrayList<ObjectInspector> newFieldsOI = new ArrayList<ObjectInspector>();
-      ArrayList<String> newFieldsName = new ArrayList<String>();
-      this.dpStartCol = 0;
-      for (StructField sf : fieldOI) {
-        String fn = sf.getFieldName();
-        if (!dpCtx.getInputToDPCols().containsKey(fn)) {
-          newFieldsOI.add(sf.getFieldObjectInspector());
-          newFieldsName.add(sf.getFieldName());
-          this.dpStartCol++;
-        } else {
-          // once we found the start column for partition column we are done
-          break;
-        }
-      }
-      assert newFieldsOI.size() > 0 : "new Fields ObjectInspector is empty";
-
+      this.dpStartCol = Utilities.getDPColOffset(conf);
       this.subSetOI = new SubStructObjectInspector(soi, 0, this.dpStartCol);
       this.dpVals = new ArrayList<String>(numDynParts);
       this.dpWritables = new ArrayList<Object>(numDynParts);
@@ -569,7 +552,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       assert filesIdx == numFiles;
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
-      if (isNativeTable) {
+      if (isNativeTable && fs != null && fsp != null) {
         autoDelete = fs.deleteOnExit(fsp.outPaths[0]);
       }
     } catch (Exception e) {
@@ -808,12 +791,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     if (!multiFileSpray) {
       return 0;
     } else {
-      int keyHashCode = 0;
-      for (int i = 0; i < partitionEval.length; i++) {
-        Object o = partitionEval[i].evaluate(row);
-        keyHashCode = keyHashCode * 31
-            + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
+      Object[] bucketFieldValues = new Object[partitionEval.length];
+      for(int i = 0; i < partitionEval.length; i++) {
+        bucketFieldValues[i] = partitionEval[i].evaluate(row);
       }
+      int keyHashCode = ObjectInspectorUtils.getBucketHashCode(bucketFieldValues, partitionObjectInspectors);
       key.setHashCode(keyHashCode);
       int bucketNum = prtner.getBucket(key, null, totalFiles);
       return bucketMap.get(bucketNum);
@@ -900,7 +882,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       /* create default directory. */
       lbDirName = FileUtils.makeDefaultListBucketingDirName(skewedCols,
           lbCtx.getDefaultDirName());
-      List<String> defaultKey = Arrays.asList(lbCtx.getDefaultKey());
+      List<String> defaultKey = Lists.newArrayList(lbCtx.getDefaultKey());
       if (!locationMap.containsKey(defaultKey)) {
         locationMap.put(defaultKey, lbDirName);
       }
@@ -1155,7 +1137,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       return;
     }
 
-    if (!statsPublisher.connect(hconf)) {
+    StatsCollectionContext sContext = new StatsCollectionContext(hconf);
+    sContext.setStatsTmpDir(conf.getStatsTmpDir());
+    if (!statsPublisher.connect(sContext)) {
       // just return, stats gathering should not block the main query
       LOG.error("StatsPublishing error: cannot connect to database");
       if (isStatsReliable) {
@@ -1168,7 +1152,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String spSpec = conf.getStaticSpec();
 
     int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
-    boolean taskIndependent = statsPublisher instanceof StatsCollectionTaskIndependent;
 
     for (Map.Entry<String, FSPaths> entry : valToPaths.entrySet()) {
       String fspKey = entry.getKey();     // DP/LB
@@ -1191,30 +1174,18 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // split[0] = DP, split[1] = LB
       String[] split = splitKey(fspKey);
       String dpSpec = split[0];
-      String lbSpec = split[1];
-
-      String prefix;
-      String postfix=null;
-      if (taskIndependent) {
-        // key = "database.table/SP/DP/"LB/
-        // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
-        // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
-        prefix = conf.getTableInfo().getTableName().toLowerCase();
-      } else {
-        // key = "prefix/SP/DP/"LB/taskID/
-        prefix = conf.getStatsAggPrefix();
-        postfix = Utilities.join(lbSpec, taskID);
-      }
+      // key = "database.table/SP/DP/"LB/
+      // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
+      // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
+      String prefix = conf.getTableInfo().getTableName().toLowerCase();
       prefix = Utilities.join(prefix, spSpec, dpSpec);
       prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength);
-
-      String key = Utilities.join(prefix, postfix);
 
       Map<String, String> statsToPublish = new HashMap<String, String>();
       for (String statType : fspValue.stat.getStoredStats()) {
         statsToPublish.put(statType, Long.toString(fspValue.stat.getStat(statType)));
       }
-      if (!statsPublisher.publishStat(key, statsToPublish)) {
+      if (!statsPublisher.publishStat(prefix, statsToPublish)) {
         // The original exception is lost.
         // Not changing the interface to maintain backward compatibility
         if (isStatsReliable) {
@@ -1222,7 +1193,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     }
-    if (!statsPublisher.closeConnection()) {
+    if (!statsPublisher.closeConnection(sContext)) {
       // The original exception is lost.
       // Not changing the interface to maintain backward compatibility
       if (isStatsReliable) {

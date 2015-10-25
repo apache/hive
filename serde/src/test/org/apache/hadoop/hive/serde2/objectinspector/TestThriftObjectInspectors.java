@@ -23,13 +23,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.serde2.thrift.test.IntString;
+import org.apache.hadoop.hive.serde2.thrift.test.PropValueUnion;
 import org.apache.hadoop.hive.serde2.thrift.test.SetIntString;
+
+import junit.framework.TestCase;
 
 /**
  * TestThriftObjectInspectors.
@@ -59,6 +60,11 @@ public class TestThriftObjectInspectors extends TestCase {
       for (int i = 0; i < fields.size(); i++) {
         assertNull(soi.getStructFieldData(null, fields.get(i)));
       }
+
+      ObjectInspector oi = ObjectInspectorFactory
+          .getReflectionObjectInspector(PropValueUnion.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.THRIFT);
+      assertNotNull(oi.toString());
 
       // real object
       Complex c = new Complex();

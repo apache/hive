@@ -1,0 +1,250 @@
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE DECIMAL_4_1(key decimal(35,25), value int) 
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_4_1
+POSTHOOK: query: CREATE TABLE DECIMAL_4_1(key decimal(35,25), value int) 
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_4_1
+PREHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,25)) 
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_4_2
+POSTHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,25)) 
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_4_2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@decimal_4_1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@decimal_4_1
+PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_4_2 SELECT key, key * 3 FROM DECIMAL_4_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_4_1
+PREHOOK: Output: default@decimal_4_2
+POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_4_2 SELECT key, key * 3 FROM DECIMAL_4_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_4_1
+POSTHOOK: Output: default@decimal_4_2
+POSTHOOK: Lineage: decimal_4_2.key SIMPLE [(decimal_4_1)decimal_4_1.FieldSchema(name:key, type:decimal(35,25), comment:null), ]
+POSTHOOK: Lineage: decimal_4_2.value EXPRESSION [(decimal_4_1)decimal_4_1.FieldSchema(name:key, type:decimal(35,25), comment:null), ]
+PREHOOK: query: SELECT * FROM DECIMAL_4_1 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_4_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_4_1 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_4_1
+#### A masked pattern was here ####
+NULL	0
+-1234567890.123456789	-1234567890
+-4400	4400
+-1255.49	-1255
+-1.122	-11
+-1.12	-1
+-1.12	-1
+-0.333	0
+-0.33	0
+-0.3	0
+0	0
+0	0
+0	0
+0.01	0
+0.02	0
+0.1	0
+0.2	0
+0.3	0
+0.33	0
+0.333	0
+0.9999999999999999999999999	1
+1	1
+1	1
+1.12	1
+1.122	1
+2	2
+2	2
+3.14	3
+3.14	3
+3.14	3
+3.14	4
+10	10
+20	20
+100	100
+124	124
+125.2	125
+200	200
+1234567890.12345678	1234567890
+PREHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_4_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_4_2
+#### A masked pattern was here ####
+NULL	NULL
+-1234567890.123456789	-3703703670.370370367
+-4400	-13200
+-1255.49	-3766.47
+-1.122	-3.366
+-1.12	-3.36
+-1.12	-3.36
+-0.333	-0.999
+-0.33	-0.99
+-0.3	-0.9
+0	0
+0	0
+0	0
+0.01	0.03
+0.02	0.06
+0.1	0.3
+0.2	0.6
+0.3	0.9
+0.33	0.99
+0.333	0.999
+0.9999999999999999999999999	2.9999999999999999999999997
+1	3
+1	3
+1.12	3.36
+1.122	3.366
+2	6
+2	6
+3.14	9.42
+3.14	9.42
+3.14	9.42
+3.14	9.42
+10	30
+20	60
+100	300
+124	372
+125.2	375.6
+200	600
+1234567890.12345678	3703703670.37037034
+PREHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_4_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_4_2
+#### A masked pattern was here ####
+NULL	NULL
+-1234567890.123456789	-3703703670.370370367
+-4400	-13200
+-1255.49	-3766.47
+-1.122	-3.366
+-1.12	-3.36
+-1.12	-3.36
+-0.333	-0.999
+-0.33	-0.99
+-0.3	-0.9
+0	0
+0	0
+0	0
+0.01	0.03
+0.02	0.06
+0.1	0.3
+0.2	0.6
+0.3	0.9
+0.33	0.99
+0.333	0.999
+0.9999999999999999999999999	2.9999999999999999999999997
+1	3
+1	3
+1.12	3.36
+1.122	3.366
+2	6
+2	6
+3.14	9.42
+3.14	9.42
+3.14	9.42
+3.14	9.42
+10	30
+20	60
+100	300
+124	372
+125.2	375.6
+200	600
+1234567890.12345678	3703703670.37037034
+PREHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_4_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_4_2
+#### A masked pattern was here ####
+NULL	NULL
+-1234567890.123456789	-3703703670.370370367
+-4400	-13200
+-1255.49	-3766.47
+-1.122	-3.366
+-1.12	-3.36
+-1.12	-3.36
+-0.333	-0.999
+-0.33	-0.99
+-0.3	-0.9
+0	0
+0	0
+0	0
+0.01	0.03
+0.02	0.06
+0.1	0.3
+0.2	0.6
+0.3	0.9
+0.33	0.99
+0.333	0.999
+0.9999999999999999999999999	2.9999999999999999999999997
+1	3
+1	3
+1.12	3.36
+1.122	3.366
+2	6
+2	6
+3.14	9.42
+3.14	9.42
+3.14	9.42
+3.14	9.42
+10	30
+20	60
+100	300
+124	372
+125.2	375.6
+200	600
+1234567890.12345678	3703703670.37037034
+PREHOOK: query: DROP TABLE DECIMAL_4_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_4_1
+PREHOOK: Output: default@decimal_4_1
+POSTHOOK: query: DROP TABLE DECIMAL_4_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_4_1
+POSTHOOK: Output: default@decimal_4_1
+PREHOOK: query: DROP TABLE DECIMAL_4_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_4_2
+PREHOOK: Output: default@decimal_4_2
+POSTHOOK: query: DROP TABLE DECIMAL_4_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_4_2
+POSTHOOK: Output: default@decimal_4_2

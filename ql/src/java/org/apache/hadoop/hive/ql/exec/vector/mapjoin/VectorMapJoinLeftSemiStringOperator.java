@@ -230,8 +230,8 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
            */
 
           if (!haveSaveKey ||
-              StringExpr.compare(vector[saveKeyBatchIndex], start[saveKeyBatchIndex], length[saveKeyBatchIndex],
-                                 vector[batchIndex], start[batchIndex], length[batchIndex]) != 0) {
+              StringExpr.equal(vector[saveKeyBatchIndex], start[saveKeyBatchIndex], length[saveKeyBatchIndex],
+                                 vector[batchIndex], start[batchIndex], length[batchIndex]) == false) {
 
             // New key.
 

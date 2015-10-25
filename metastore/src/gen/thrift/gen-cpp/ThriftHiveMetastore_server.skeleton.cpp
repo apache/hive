@@ -462,6 +462,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_function\n");
   }
 
+  void get_all_functions(GetAllFunctionsResponse& _return) {
+    // Your implementation goes here
+    printf("get_all_functions\n");
+  }
+
   bool create_role(const Role& role) {
     // Your implementation goes here
     printf("create_role\n");
@@ -635,6 +640,31 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) {
     // Your implementation goes here
     printf("fire_listener_event\n");
+  }
+
+  void flushCache() {
+    // Your implementation goes here
+    printf("flushCache\n");
+  }
+
+  void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) {
+    // Your implementation goes here
+    printf("get_file_metadata_by_expr\n");
+  }
+
+  void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("get_file_metadata\n");
+  }
+
+  void put_file_metadata(PutFileMetadataResult& _return, const PutFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("put_file_metadata\n");
+  }
+
+  void clear_file_metadata(ClearFileMetadataResult& _return, const ClearFileMetadataRequest& req) {
+    // Your implementation goes here
+    printf("clear_file_metadata\n");
   }
 
 };

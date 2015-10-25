@@ -18,35 +18,14 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
-import java.math.BigDecimal;
-
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 
 public class HiveDecimalUtils {
 
   public static HiveDecimal enforcePrecisionScale(HiveDecimal dec, DecimalTypeInfo typeInfo) {
-    return enforcePrecisionScale(dec, typeInfo.precision(), typeInfo.scale());
-  }
-
-  public static HiveDecimal enforcePrecisionScale(HiveDecimal dec,int maxPrecision, int maxScale) {
-    if (dec == null) {
-      return null;
-    }
-
-    // Minor optimization, avoiding creating new objects.
-    if (dec.precision() - dec.scale() <= maxPrecision - maxScale && dec.scale() <= maxScale) {
-      return dec;
-    }
-
-    BigDecimal bd = HiveDecimal.enforcePrecisionScale(dec.bigDecimalValue(),
-        maxPrecision, maxScale);
-    if (bd == null) {
-      return null;
-    }
-
-    return HiveDecimal.create(bd);
+    return HiveDecimal.enforcePrecisionScale(dec, typeInfo.precision(),
+        typeInfo.scale());
   }
 
   public static HiveDecimalWritable enforcePrecisionScale(HiveDecimalWritable writable,
@@ -56,16 +35,6 @@ public class HiveDecimalUtils {
     }
 
     HiveDecimal dec = enforcePrecisionScale(writable.getHiveDecimal(), typeInfo);
-    return dec == null ? null : new HiveDecimalWritable(dec);
-  }
-
-  public static HiveDecimalWritable enforcePrecisionScale(HiveDecimalWritable writable,
-      int precision, int scale) {
-    if (writable == null) {
-      return null;
-    }
-
-    HiveDecimal dec = enforcePrecisionScale(writable.getHiveDecimal(), precision, scale);
     return dec == null ? null : new HiveDecimalWritable(dec);
   }
 

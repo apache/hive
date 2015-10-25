@@ -99,7 +99,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  public void initializeOp(Configuration hconf) throws HiveException {
     // Use a final variable to properly parameterize the processVectorInspector closure.
     // Using a member variable in the closure will not do the right thing...
     final int parameterizePosBigTable = conf.getPosBigTable();
@@ -117,7 +117,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
         });
     singleRow = new Object[rowWriters.length];
 
-    Collection<Future<?>> result = super.initializeOp(hconf);
+    super.initializeOp(hconf);
 
     List<ExprNodeDesc> keyDesc = conf.getKeys().get(posBigTable);
     keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
@@ -175,8 +175,6 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
 
     // Filtering is handled in the input batch processing
     filterMaps[posBigTable] = null;
-
-    return result;
   }
 
   @Override

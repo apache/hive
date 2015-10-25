@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.shims;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -49,6 +50,7 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobProfile;
@@ -95,7 +97,7 @@ public interface HadoopShims {
       String nameNode, int numDir) throws IOException;
 
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-      String nameNode, int numDir) throws IOException;
+      String nameNode, boolean isLlap) throws IOException;
 
   public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException;
@@ -256,6 +258,10 @@ public interface HadoopShims {
   List<FileStatus> listLocatedStatus(FileSystem fs, Path path,
                                      PathFilter filter) throws IOException;
 
+
+  List<HdfsFileStatusWithId> listLocatedHdfsStatus(
+      FileSystem fs, Path path, PathFilter filter) throws IOException;
+
   /**
    * For file status returned by listLocatedStatus, convert them into a list
    * of block locations.
@@ -314,6 +320,11 @@ public interface HadoopShims {
   public interface HdfsFileStatus {
     public FileStatus getFileStatus();
     public void debugLog();
+  }
+
+  public interface HdfsFileStatusWithId {
+    public FileStatus getFileStatus();
+    public Long getFileId();
   }
 
   public HCatHadoopShims getHCatShim();
@@ -731,4 +742,30 @@ public interface HadoopShims {
    * @throws IOException If an error occurred on adding the token.
    */
   public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException;
+
+  /**
+   * Gets file ID. Only supported on hadoop-2.
+   * @return inode ID of the file.
+   */
+  long getFileId(FileSystem fs, String path) throws IOException;
+
+  /**
+   * Read data into a Text object in the fastest way possible
+   */
+  public interface TextReaderShim {
+    /**
+     * @param txt
+     * @param len
+     * @return bytes read
+     * @throws IOException
+     */
+    void read(Text txt, int size) throws IOException;
+  }
+
+  /**
+   * Wrap a TextReaderShim around an input stream. The reader shim will not
+   * buffer any reads from the underlying stream and will only consume bytes
+   * which are required for TextReaderShim.read() input.
+   */
+  public TextReaderShim getTextReaderShim(InputStream input) throws IOException;
 }

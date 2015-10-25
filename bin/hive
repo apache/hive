@@ -111,7 +111,7 @@ for f in ${HIVE_LIB}/*.jar; do
 done
 
 # add Spark assembly jar to the classpath
-if [[ -n "$SPARK_HOME" ]]
+if [[ -n "$SPARK_HOME" && !("$HIVE_SKIP_SPARK_ASSEMBLY" = "true") ]]
 then
   sparkAssemblyPath=`ls ${SPARK_HOME}/lib/spark-assembly-*.jar`
   CLASSPATH="${CLASSPATH}:${sparkAssemblyPath}"
@@ -171,7 +171,7 @@ export HADOOP_HOME_WARN_SUPPRESS=true
 
 # pass classpath to hadoop
 if [ "$HADOOP_CLASSPATH" != "" ]; then
-  export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${CLASSPATH}"
+  export HADOOP_CLASSPATH="${CLASSPATH}:${HADOOP_CLASSPATH}"
 else
   export HADOOP_CLASSPATH="$CLASSPATH"
 fi
@@ -192,6 +192,9 @@ if [ "$HADOOP_HOME" == "" ]; then
   echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
   exit 4;
 fi
+
+# to avoid errors from log4j2 automatic configuration loading
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=hive-log4j2.xml "
 
 HADOOP=$HADOOP_HOME/bin/hadoop
 if [ ! -f ${HADOOP} ]; then
@@ -244,13 +247,13 @@ fi
 if [[ -e $HBASE_HOME/bin/hbase ]] ; then
   HBASE_BIN="$HBASE_HOME/bin/hbase"
 fi
-HBASE_BIN=${HBASE_BIN:-"$(which hbase 2>/dev/null)"}
+HBASE_BIN=${HBASE_BIN:-"$(which hbase)"}
 
 # perhaps we've located HBase. If so, include its details on the classpath
 if [[ -n $HBASE_BIN ]] ; then
   # exclude ZK, PB, and Guava (See HIVE-2055)
   # depends on HBASE-8438 (hbase-0.94.14+, hbase-0.96.1+) for `hbase mapredcp` command
-  for x in $($HBASE_BIN mapredcp 2>/dev/null | tr ':' '\n') ; do
+  for x in $($HBASE_BIN mapredcp | tr ':' '\n') ; do
     if [[ $x == *zookeeper* || $x == *protobuf-java* || $x == *guava* ]] ; then
       continue
     fi

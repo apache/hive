@@ -55,15 +55,15 @@ public class TestSSL {
   private static final String HS2_HTTP_MODE = "http";
   private static final String HS2_HTTP_ENDPOINT = "cliservice";
   private static final String HS2_BINARY_AUTH_MODE = "NONE";
-  private static final String HS2_HTTP_AUTH_MODE = "NOSASL";
 
   private MiniHS2 miniHS2 = null;
   private static HiveConf conf = new HiveConf();
   private Connection hs2Conn = null;
   private String dataFileDir = conf.get("test.data.files");
   private Map<String, String> confOverlay;
-  private final String SSL_CONN_PARAMS = ";ssl=true;sslTrustStore=" + URLEncoder.encode(dataFileDir + File.separator +
-      TRUST_STORE_NAME) + ";trustStorePassword=" + KEY_STORE_PASSWORD;
+  private final String SSL_CONN_PARAMS = ";ssl=true;sslTrustStore="
+      + URLEncoder.encode(dataFileDir + File.separator + TRUST_STORE_NAME) + ";trustStorePassword="
+      + KEY_STORE_PASSWORD;
 
   @BeforeClass
   public static void beforeTest() throws Exception {
@@ -111,9 +111,10 @@ public class TestSSL {
    */
   @Test
   public void testSSLVersion() throws Exception {
-    Assume.assumeTrue(execCommand("which openssl") == 0); // we need openssl
-    Assume.assumeTrue(System.getProperty("os.name").toLowerCase()
-      .contains("linux")); // we depend on linux openssl exit codes
+    // we need openssl
+    Assume.assumeTrue(execCommand("which openssl") == 0);
+    // we depend on linux openssl exit codes
+    Assume.assumeTrue(System.getProperty("os.name").toLowerCase().contains("linux"));
 
     setSslConfOverlay(confOverlay);
     // Test in binary mode
@@ -122,16 +123,15 @@ public class TestSSL {
     miniHS2.start(confOverlay);
 
     // make SSL connection
-    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true;sslTrustStore=" +
-        dataFileDir + File.separator + TRUST_STORE_NAME + ";trustStorePassword=" +
-        KEY_STORE_PASSWORD, System.getProperty("user.name"), "bar");
+    hs2Conn =
+        DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true;sslTrustStore=" + dataFileDir
+            + File.separator + TRUST_STORE_NAME + ";trustStorePassword=" + KEY_STORE_PASSWORD,
+            System.getProperty("user.name"), "bar");
     hs2Conn.close();
-    Assert.assertEquals("Expected exit code of 1", 1,
-      execCommand("openssl s_client -connect " + miniHS2.getHost() + ":" + miniHS2.getBinaryPort()
-      + " -ssl2 < /dev/null"));
-    Assert.assertEquals("Expected exit code of 1", 1,
-      execCommand("openssl s_client -connect " + miniHS2.getHost() + ":" + miniHS2.getBinaryPort()
-      + " -ssl3 < /dev/null"));
+    Assert.assertEquals("Expected exit code of 1", 1, execCommand("openssl s_client -connect "
+        + miniHS2.getHost() + ":" + miniHS2.getBinaryPort() + " -ssl2 < /dev/null"));
+    Assert.assertEquals("Expected exit code of 1", 1, execCommand("openssl s_client -connect "
+        + miniHS2.getHost() + ":" + miniHS2.getBinaryPort() + " -ssl3 < /dev/null"));
     miniHS2.stop();
 
     // Test in http mode
@@ -139,12 +139,10 @@ public class TestSSL {
     miniHS2.start(confOverlay);
     // make SSL connection
     try {
-      hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() +
-          ";ssl=true;sslTrustStore=" + dataFileDir + File.separator +
-          TRUST_STORE_NAME + ";trustStorePassword=" + KEY_STORE_PASSWORD +
-          "?hive.server2.transport.mode=" + HS2_HTTP_MODE +
-          ";hive.server2.thrift.http.path=" + HS2_HTTP_ENDPOINT,
-          System.getProperty("user.name"), "bar");
+      hs2Conn =
+          DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true;sslTrustStore="
+              + dataFileDir + File.separator + TRUST_STORE_NAME + ";trustStorePassword="
+              + KEY_STORE_PASSWORD, System.getProperty("user.name"), "bar");
       Assert.fail("Expected SQLException during connect");
     } catch (SQLException e) {
       LOG.info("Expected exception: " + e, e);
@@ -402,12 +400,10 @@ public class TestSSL {
     confOverlay.put(ConfVars.HIVE_SERVER2_USE_SSL.varname, "false");
   }
 
-  // Currently http mode works with server in NOSASL auth mode & doesn't support doAs
   private void setHttpConfOverlay(Map<String, String> confOverlay) {
     confOverlay.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, HS2_HTTP_MODE);
     confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, HS2_HTTP_ENDPOINT);
-    confOverlay.put(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,  HS2_HTTP_AUTH_MODE);
-    confOverlay.put(ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
+    confOverlay.put(ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "true");
   }
 
   private void setBinaryConfOverlay(Map<String, String> confOverlay) {

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
@@ -35,6 +34,8 @@ import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * LazyObject for storing an HBase row.  The field of an HBase row can be
@@ -148,7 +149,7 @@ public class LazyHBaseRow extends LazyStruct {
         // qualifier prefix to cherry pick the qualifiers that match the prefix instead of picking
         // up everything
         ((LazyHBaseCellMap) fields[fieldID]).init(
-            result, colMap.familyNameBytes, colMap.binaryStorage, colMap.qualifierPrefixBytes);
+            result, colMap.familyNameBytes, colMap.binaryStorage, colMap.qualifierPrefixBytes, colMap.isDoPrefixCut());
         return fields[fieldID].getObject();
       }
 

@@ -51,8 +51,8 @@ public class FunctionOra extends Function {
    * Print a text message
    */
   void execDbmsOutputPutLine(HplsqlParser.Expr_func_paramsContext ctx) {
-    if (ctx.expr().size() > 0) {
-      visit(ctx.expr(0));
+    if (ctx.func_param().size() > 0) {
+      visit(ctx.func_param(0).expr());
       System.out.println(exec.stackPop().toString());
     }
   }
@@ -65,18 +65,18 @@ public class FunctionOra extends Function {
     String name = "";
     boolean write = true;
     boolean overwrite = false;
-    int cnt = ctx.expr().size();    
+    int cnt = ctx.func_param().size();    
     // Directory
     if (cnt > 0) {
-      dir = evalPop(ctx.expr(0)).toString();
+      dir = evalPop(ctx.func_param(0).expr()).toString();
     }    
     // File name
     if (cnt > 1) {
-      name = evalPop(ctx.expr(1)).toString();
+      name = evalPop(ctx.func_param(1).expr()).toString();
     }    
     // Mode
     if (cnt >= 2) {
-      String mode = evalPop(ctx.expr(2)).toString();
+      String mode = evalPop(ctx.func_param(2).expr()).toString();
       if (mode.equalsIgnoreCase("r")) {
         write = false;
       }
@@ -99,19 +99,18 @@ public class FunctionOra extends Function {
    * Read a text line from an open file
    */
   void execUtlFileGetLine(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     Var file = null;
     Var str = null;
-    StringBuilder out = new StringBuilder();
-    
+    StringBuilder out = new StringBuilder();    
     // File handle
     if(cnt > 0) {
-      visit(ctx.expr(0));
+      visit(ctx.func_param(0).expr());
       file = exec.stackPop();
     }    
     // String variable
     if(cnt > 1) {
-      visit(ctx.expr(1));
+      visit(ctx.func_param(1).expr());
       str = exec.stackPop();
     }
     
@@ -168,18 +167,18 @@ public class FunctionOra extends Function {
    * Write a string to file
    */
   void execUtlFilePut(HplsqlParser.Expr_func_paramsContext ctx, boolean newline) {
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     Var file = null;
     String str = "";
     
     // File handle
     if(cnt > 0) {
-      visit(ctx.expr(0));
+      visit(ctx.func_param(0).expr());
       file = exec.stackPop();
     }    
     // Text string
     if(cnt > 1) {
-      visit(ctx.expr(1));
+      visit(ctx.func_param(1).expr());
       str = exec.stackPop().toString();
     }
     
@@ -205,12 +204,12 @@ public class FunctionOra extends Function {
    * Execute UTL_FILE.FCLOSE function
    */
   void execUtlFileFclose(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = ctx.expr().size();
+    int cnt = ctx.func_param().size();
     Var file = null;
     
     // File handle
     if(cnt > 0) {
-      visit(ctx.expr(0));
+      visit(ctx.func_param(0).expr());
       file = exec.stackPop();
     }    
         

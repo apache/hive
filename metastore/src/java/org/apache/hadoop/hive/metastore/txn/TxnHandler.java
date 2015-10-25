@@ -46,6 +46,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * A handler to answer transaction related calls that come into the metastore
  * server.
+ *
+ * Note on log messages:  Please include txnid:X and lockid info using
+ * {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)}
+ * and {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
+ * The txnid:X and lockid:Y matches how Thrift object toString() methods are generated,
+ * so keeping the format consistent makes grep'ing the logs much easier.
  */
 public class TxnHandler {
   // Compactor states
@@ -79,14 +85,15 @@ public class TxnHandler {
   static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
 
   static private DataSource connPool;
+  static private boolean doRetryOnConnPool = false;
   private final static Object lockLock = new Object(); // Random object to lock on for the lock
   // method
 
   /**
    * Number of consecutive deadlocks we have seen
    */
-  protected int deadlockCnt;
-  private long deadlockRetryInterval;
+  private int deadlockCnt;
+  private final long deadlockRetryInterval;
   protected HiveConf conf;
   protected DatabaseProduct dbProduct;
 
@@ -109,10 +116,8 @@ public class TxnHandler {
   //
   // All public methods that write to the database have to check for deadlocks when a SQLException
   // comes back and handle it if they see one.  This has to be done with the connection pooling
-  // in mind.  To do this they should call detectDeadlock AFTER rolling back the db transaction,
-  // and then in an outer loop they should catch DeadlockException.  In the catch for this they
-  // should increment the deadlock counter and recall themselves.  See commitTxn for an example.
-  // the connection has been closed and returned to the pool.
+  // in mind.  To do this they should call checkRetryable() AFTER rolling back the db transaction,
+  // and then they should catch RetryException and call themselves recursively. See commitTxn for an example.
 
   public TxnHandler(HiveConf conf) {
     this.conf = conf;
@@ -129,7 +134,6 @@ public class TxnHandler {
     }
 
     timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    deadlockCnt = 0;
     buildJumpTable();
     retryInterval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HMSHANDLERINTERVAL,
         TimeUnit.MILLISECONDS);
@@ -163,7 +167,8 @@ public class TxnHandler {
         }
 
         List<TxnInfo> txnInfo = new ArrayList<TxnInfo>();
-        s = "select txn_id, txn_state, txn_user, txn_host from TXNS";
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id, txn_state, txn_user, txn_host from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -212,7 +217,6 @@ public class TxnHandler {
       Statement stmt = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        timeOutTxns(dbConn);
         stmt = dbConn.createStatement();
         String s = "select ntxn_next - 1 from NEXT_TXN_ID";
         LOG.debug("Going to execute query <" + s + ">");
@@ -228,7 +232,8 @@ public class TxnHandler {
         }
 
         Set<Long> openList = new HashSet<Long>();
-        s = "select txn_id from TXNS";
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -275,7 +280,6 @@ public class TxnHandler {
   }
 
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {
-    deadlockCnt = 0;  // Reset deadlock count since this is a new transaction
     int numTxns = rqst.getNum_txns();
     try {
       Connection dbConn = null;
@@ -339,7 +343,7 @@ public class TxnHandler {
         if (abortTxns(dbConn, Collections.singletonList(txnid)) != 1) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
-          throw new NoSuchTxnException("No such transaction: " + txnid);
+          throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
         }
 
         LOG.debug("Going to commit");
@@ -382,7 +386,7 @@ public class TxnHandler {
         if (stmt.executeUpdate(s) < 1) {
           //this can be reasonable for an empty txn START/COMMIT
           LOG.info("Expected to move at least one record from txn_components to " +
-            "completed_txn_components when committing txn! txnid:" + txnid);
+            "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
         }
 
         // Always access TXN_COMPONENTS before HIVE_LOCKS;
@@ -415,7 +419,6 @@ public class TxnHandler {
 
   public LockResponse lock(LockRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException {
-    deadlockCnt = 0;
     try {
       Connection dbConn = null;
       try {
@@ -463,8 +466,6 @@ public class TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
         long extLockId = rqst.getLockid();
-        // Clean up timed out locks
-        timeOutLocks(dbConn);
 
         // Heartbeat on the lockid first, to assure that our lock is still valid.
         // Then look up the lock info (hopefully in the cache).  If these locks
@@ -508,8 +509,8 @@ public class TxnHandler {
           LOG.debug("Going to rollback");
           dbConn.rollback();
           String msg = "Unlocking locks associated with transaction" +
-            " not permitted.  Lockid " + extLockId + " is associated with " +
-            "transaction " + txnid;
+            " not permitted.  Lockid " + JavaUtils.lockIdToString(extLockId) + " is associated with " +
+            "transaction " + JavaUtils.txnIdToString(txnid);
           LOG.error(msg);
           throw new TxnOpenException(msg);
         }
@@ -520,7 +521,7 @@ public class TxnHandler {
         if (rc < 1) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
-          throw new NoSuchLockException("No such lock: " + extLockId);
+          throw new NoSuchLockException("No such lock " + JavaUtils.lockIdToString(extLockId));
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -619,7 +620,7 @@ public class TxnHandler {
     try {
       Connection dbConn = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         heartbeatLock(dbConn, ids.getLockid());
         heartbeatTxn(dbConn, ids.getTxnid());
       } catch (SQLException e) {
@@ -633,8 +634,6 @@ public class TxnHandler {
       }
     } catch (RetryException e) {
       heartbeat(ids);
-    } finally {
-      deadlockCnt = 0;
     }
   }
 
@@ -883,30 +882,31 @@ public class TxnHandler {
 
   }
 
-  /**
-   * Get a connection to the database
-   * @param isolationLevel desired isolation level.  If you are doing _any_ data modifications
-   *                       you should request serializable, else read committed should be fine.
-   * @return db connection
-   * @throws MetaException if the connection cannot be obtained
-   */
   protected Connection getDbConn(int isolationLevel) throws SQLException {
-    Connection dbConn = connPool.getConnection();
-    dbConn.setAutoCommit(false);
-    dbConn.setTransactionIsolation(isolationLevel);
-    return dbConn;
+    int rc = doRetryOnConnPool ? 10 : 1;
+    while (true) {
+      try {
+        Connection dbConn = connPool.getConnection();
+        dbConn.setAutoCommit(false);
+        dbConn.setTransactionIsolation(isolationLevel);
+        return dbConn;
+      } catch (SQLException e){
+        if ((--rc) <= 0) throw e;
+        LOG.error("There is a problem with a connection from the pool, retrying", e);
+      }
+    }
   }
 
   void rollbackDBConn(Connection dbConn) {
     try {
-      if (dbConn != null) dbConn.rollback();
+      if (dbConn != null && !dbConn.isClosed()) dbConn.rollback();
     } catch (SQLException e) {
       LOG.warn("Failed to rollback db connection " + getMessage(e));
     }
   }
   protected void closeDbConn(Connection dbConn) {
     try {
-      if (dbConn != null) dbConn.close();
+      if (dbConn != null && !dbConn.isClosed()) dbConn.close();
     } catch (SQLException e) {
       LOG.warn("Failed to close db connection " + getMessage(e));
     }
@@ -918,7 +918,7 @@ public class TxnHandler {
    */
   protected void closeStmt(Statement stmt) {
     try {
-      if (stmt != null) stmt.close();
+      if (stmt != null && !stmt.isClosed()) stmt.close();
     } catch (SQLException e) {
       LOG.warn("Failed to close statement " + getMessage(e));
     }
@@ -948,15 +948,14 @@ public class TxnHandler {
     closeDbConn(dbConn);
   }
   /**
-   * Determine if an exception was such that it makse sense to retry.  Unfortunately there is no standard way to do
+   * Determine if an exception was such that it makes sense to retry.  Unfortunately there is no standard way to do
    * this, so we have to inspect the error messages and catch the telltale signs for each
-   * different database.
+   * different database.  This method will throw {@code RetryException}
+   * if the error is retry-able.
    * @param conn database connection
    * @param e exception that was thrown.
-   * @param caller name of the method calling this
-   * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.RetryException when deadlock
-   * detected and retry count has not been exceeded.
-   * TODO: make "caller" more elaborate like include lockId for example
+   * @param caller name of the method calling this (and other info useful to log)
+   * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.RetryException when the operation should be retried
    */
   protected void checkRetryable(Connection conn,
                                 SQLException e,
@@ -969,53 +968,57 @@ public class TxnHandler {
     // so I've tried to capture the different error messages (there appear to be fewer different
     // error messages than SQL states).
     // Derby and newer MySQL driver use the new SQLTransactionRollbackException
-    if (dbProduct == null && conn != null) {
-      determineDatabaseProduct(conn);
-    }
-    if (e instanceof SQLTransactionRollbackException ||
-      ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
-        dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
-      (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
-      (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
-        || e.getMessage().contains("can't serialize access for this transaction")))) {
-      if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
-        long waitInterval = deadlockRetryInterval * deadlockCnt;
-        LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
-          "ms try again up to " + (ALLOWED_REPEATED_DEADLOCKS - deadlockCnt + 1) + " times.");
-        // Pause for a just a bit for retrying to avoid immediately jumping back into the deadlock.
-        try {
-          Thread.sleep(waitInterval);
-        } catch (InterruptedException ie) {
-          // NOP
+    boolean sendRetrySignal = false;
+    try {
+      if (dbProduct == null && conn != null) {
+        determineDatabaseProduct(conn);
+      }
+      if (e instanceof SQLTransactionRollbackException ||
+        ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
+          dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
+        (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
+        (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
+          || e.getMessage().contains("can't serialize access for this transaction")))) {
+        if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
+          long waitInterval = deadlockRetryInterval * deadlockCnt;
+          LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
+            "ms try again up to " + (ALLOWED_REPEATED_DEADLOCKS - deadlockCnt + 1) + " times.");
+          // Pause for a just a bit for retrying to avoid immediately jumping back into the deadlock.
+          try {
+            Thread.sleep(waitInterval);
+          } catch (InterruptedException ie) {
+            // NOP
+          }
+          sendRetrySignal = true;
+        } else {
+          LOG.error("Too many repeated deadlocks in " + caller + ", giving up.");
         }
-        throw new RetryException();
-      } else {
-        LOG.error("Too many repeated deadlocks in " + caller + ", giving up.");
+      } else if (isRetryable(e)) {
+        //in MSSQL this means Communication Link Failure
+        if (retryNum++ < retryLimit) {
+          LOG.warn("Retryable error detected in " + caller + ".  Will wait " + retryInterval +
+            "ms and retry up to " + (retryLimit - retryNum + 1) + " times.  Error: " + getMessage(e));
+          try {
+            Thread.sleep(retryInterval);
+          } catch (InterruptedException ex) {
+            //
+          }
+          sendRetrySignal = true;
+        } else {
+          LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
+        }
+      }
+    }
+    finally {
+      /*if this method ends with anything except a retry signal, the caller should fail the operation
+      and propagate the error up to the its caller (Metastore client); thus must reset retry counters*/
+      if(!sendRetrySignal) {
         deadlockCnt = 0;
-      }
-    }
-    else if(isRetryable(e)) {
-      //in MSSQL this means Communication Link Failure
-      if(retryNum++ < retryLimit) {
-        LOG.warn("Retryable error detected in " + caller + ".  Will wait " + retryInterval +
-          "ms and retry up to " + (retryLimit - retryNum + 1) + " times.  Error: " + getMessage(e));
-        try {
-          Thread.sleep(retryInterval);
-        }
-        catch(InterruptedException ex) {
-          //
-        }
-        throw new RetryException();
-      }
-      else {
-        LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
         retryNum = 0;
       }
     }
-    else {
-      //if here, we got something that will propagate the error (rather than retry), so reset counters
-      deadlockCnt = 0;
-      retryNum = 0;
+    if(sendRetrySignal) {
+      throw new RetryException();
     }
   }
 
@@ -1175,8 +1178,8 @@ public class TxnHandler {
     @Override
     public String toString() {
       return JavaUtils.lockIdToString(extLockId) + " intLockId:" +
-        intLockId + " txnId:" + Long.toString
-        (txnId) + " db:" + db + " table:" + table + " partition:" +
+        intLockId + " " + JavaUtils.txnIdToString(txnId)
+        + " db:" + db + " table:" + table + " partition:" +
         partition + " state:" + (state == null ? "null" : state.toString())
         + " type:" + (type == null ? "null" : type.toString());
     }
@@ -1300,6 +1303,9 @@ public class TxnHandler {
   private int abortTxns(Connection dbConn, List<Long> txnids) throws SQLException {
     Statement stmt = null;
     int updateCnt = 0;
+    if (txnids.isEmpty()) {
+      return 0;
+    }
     try {
       stmt = dbConn.createStatement();
 
@@ -1315,7 +1321,8 @@ public class TxnHandler {
       LOG.debug("Going to execute update <" + buf.toString() + ">");
       stmt.executeUpdate(buf.toString());
 
-      buf = new StringBuilder("update TXNS set txn_state = '" + TXN_ABORTED + "' where txn_id in (");
+      buf = new StringBuilder("update TXNS set txn_state = '" + TXN_ABORTED +
+        "' where txn_state = '" + TXN_OPEN + "' and txn_id in (");
       first = true;
       for (Long id : txnids) {
         if (first) first = false;
@@ -1344,7 +1351,7 @@ public class TxnHandler {
    *             of NOT_ACQUIRED.  The caller will need to call
    *             {@link #lockNoWait(org.apache.hadoop.hive.metastore.api.LockRequest)} again to
    *             attempt another lock.
-   * @return informatino on whether the lock was acquired.
+   * @return information on whether the lock was acquired.
    * @throws NoSuchTxnException
    * @throws TxnAbortedException
    */
@@ -1360,8 +1367,6 @@ public class TxnHandler {
     // and prevent other operations (such as committing transactions, showing locks,
     // etc.) that should not interfere with this one.
     synchronized (lockLock) {
-      // Clean up timed out locks before we attempt to acquire any.
-      timeOutLocks(dbConn);
       Statement stmt = null;
       try {
         stmt = dbConn.createStatement();
@@ -1457,7 +1462,7 @@ public class TxnHandler {
     LockResponse response = new LockResponse();
     response.setLockid(extLockId);
 
-    LOG.debug("checkLock(): Setting savepoint. extLockId=" + extLockId);
+    LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
     Savepoint save = dbConn.setSavepoint();
     StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
       "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
@@ -1683,7 +1688,7 @@ public class TxnHandler {
     if (rc < 1) {
       LOG.debug("Going to rollback");
       dbConn.rollback();
-      throw new NoSuchLockException("No such lock: (" + extLockId + "," +
+      throw new NoSuchLockException("No such lock: (" + JavaUtils.lockIdToString(extLockId) + "," +
         + intLockId + ")");
     }
     // We update the database, but we don't commit because there may be other
@@ -1708,7 +1713,7 @@ public class TxnHandler {
       if (rc < 1) {
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        throw new NoSuchLockException("No such lock: " + extLockId);
+        throw new NoSuchLockException("No such lock: " + JavaUtils.lockIdToString(extLockId));
       }
       LOG.debug("Going to commit");
       dbConn.commit();
@@ -1726,29 +1731,51 @@ public class TxnHandler {
     try {
       stmt = dbConn.createStatement();
       long now = getDbTime(dbConn);
-      // We need to check whether this transaction is valid and open
-      String s = "select txn_state from TXNS where txn_id = " + txnid;
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        LOG.debug("Going to rollback");
+      ensureValidTxn(dbConn, txnid, stmt);
+      String s = "update TXNS set txn_last_heartbeat = " + now +
+        " where txn_id = " + txnid + " and txn_state = '" + TXN_OPEN + "'";
+      LOG.debug("Going to execute update <" + s + ">");
+      int rc = stmt.executeUpdate(s);
+      if (rc < 1) {
+        ensureValidTxn(dbConn, txnid, stmt); // This should now throw some useful exception.
+        LOG.warn("Can neither heartbeat txn nor confirm it as invalid.");
         dbConn.rollback();
-        throw new NoSuchTxnException("No such transaction: " + txnid);
+        throw new NoSuchTxnException("No such txn: " + txnid);
       }
-      if (rs.getString(1).charAt(0) == TXN_ABORTED) {
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        throw new TxnAbortedException("Transaction " + txnid +
-          " already aborted");
-      }
-      s = "update TXNS set txn_last_heartbeat = " + now +
-        " where txn_id = " + txnid;
+      //update locks for this txn to the same heartbeat
+      s = "update HIVE_LOCKS set hl_last_heartbeat = " + now + " where hl_txnid = " + txnid;
       LOG.debug("Going to execute update <" + s + ">");
       stmt.executeUpdate(s);
       LOG.debug("Going to commit");
       dbConn.commit();
     } finally {
       closeStmt(stmt);
+    }
+  }
+
+  private static void ensureValidTxn(Connection dbConn, long txnid, Statement stmt)
+      throws SQLException, NoSuchTxnException, TxnAbortedException {
+    // We need to check whether this transaction is valid and open
+    String s = "select txn_state from TXNS where txn_id = " + txnid;
+    LOG.debug("Going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
+      ResultSet rs2 = stmt.executeQuery(s);
+      boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      if(alreadyCommitted) {
+        //makes the message more informative - helps to find bugs in client code
+        throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
+      }
+      throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
+    }
+    if (rs.getString(1).charAt(0) == TXN_ABORTED) {
+      LOG.debug("Going to rollback");
+      dbConn.rollback();
+      throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
+        " already aborted");//todo: add time of abort, which is not currently tracked
     }
   }
 
@@ -1767,7 +1794,7 @@ public class TxnHandler {
           "checked the lock existed but now we can't find it!");
       }
       long txnid = rs.getLong(1);
-      LOG.debug("Return txnid " + (rs.wasNull() ? -1 : txnid));
+      LOG.debug("Return " + JavaUtils.txnIdToString(rs.wasNull() ? -1 : txnid));
       return (rs.wasNull() ? -1 : txnid);
     } finally {
       closeStmt(stmt);
@@ -1801,61 +1828,121 @@ public class TxnHandler {
     }
   }
 
-  // Clean time out locks from the database.  This does a commit,
+  // Clean time out locks from the database not associated with a transactions, i.e. locks
+  // for read-only autoCommit=true statements.  This does a commit,
   // and thus should be done before any calls to heartbeat that will leave
   // open transactions.
-  private void timeOutLocks(Connection dbConn) throws SQLException, MetaException {
-    long now = getDbTime(dbConn);
+  private void timeOutLocks(Connection dbConn) {
     Statement stmt = null;
     try {
+      long now = getDbTime(dbConn);
       stmt = dbConn.createStatement();
       // Remove any timed out locks from the table.
       String s = "delete from HIVE_LOCKS where hl_last_heartbeat < " +
-        (now - timeout);
+        (now - timeout) + " and (hl_txnid = 0 or hl_txnid is NULL)";//when txnid is > 0, the lock is
+      //associated with a txn and is handled by performTimeOuts()
+      //want to avoid expiring locks for a txn w/o expiring the txn itself
       LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
+      int deletedLocks = stmt.executeUpdate(s);
+      if(deletedLocks > 0) {
+        LOG.info("Deleted " + deletedLocks + " locks from HIVE_LOCKS due to timeout");
+      }
       LOG.debug("Going to commit");
       dbConn.commit();
+    }
+    catch(SQLException ex) {
+      LOG.error("Failed to purge timedout locks due to: " + getMessage(ex), ex);
+    }
+    catch(Exception ex) {
+      LOG.error("Failed to purge timedout locks due to: " + ex.getMessage(), ex);
     } finally {
       closeStmt(stmt);
     }
   }
 
-  // Abort timed out transactions.  This does a commit,
-  // and thus should be done before any calls to heartbeat that will leave
-  // open transactions on the underlying database.
-  private void timeOutTxns(Connection dbConn) throws SQLException, MetaException, RetryException {
-    long now = getDbTime(dbConn);
+  /**
+   * Suppose you have a query "select a,b from T" and you want to limit the result set
+   * to the first 5 rows.  The mechanism to do that differs in different DB.
+   * Make {@code noSelectsqlQuery} to be "a,b from T" and this method will return the
+   * appropriately modified row limiting query.
+   */
+  private String addLimitClause(Connection dbConn, int numRows, String noSelectsqlQuery) throws MetaException {
+    DatabaseProduct prod = determineDatabaseProduct(dbConn);
+    switch (prod) {
+      case DERBY:
+        //http://db.apache.org/derby/docs/10.7/ref/rrefsqljoffsetfetch.html
+        return "select " + noSelectsqlQuery + " fetch first " + numRows + " rows only";
+      case MYSQL:
+        //http://www.postgresql.org/docs/7.3/static/queries-limit.html
+      case POSTGRES:
+        //https://dev.mysql.com/doc/refman/5.0/en/select.html
+        return "select " + noSelectsqlQuery + " limit " + numRows;
+      case ORACLE:
+        //newer versions (12c and later) support OFFSET/FETCH
+        return "select * from (select " + noSelectsqlQuery + ") where rownum <= " + numRows;
+      case SQLSERVER:
+        //newer versions (2012 and later) support OFFSET/FETCH
+        //https://msdn.microsoft.com/en-us/library/ms189463.aspx
+        return "select TOP(" + numRows + ") " + noSelectsqlQuery;
+      default:
+        String msg = "Unrecognized database product name <" + prod + ">";
+        LOG.error(msg);
+        throw new MetaException(msg);
+    }
+  }
+  /**
+   * This will find transactions that have timed out and abort them.
+   * Will also delete locks which are not associated with a transaction and have timed out
+   * Tries to keep transactions (against metastore db) small to reduce lock contention.
+   */
+  public void performTimeOuts() {
+    Connection dbConn = null;
     Statement stmt = null;
+    ResultSet rs = null;
     try {
-      stmt = dbConn.createStatement();
-      // Abort any timed out locks from the table.
-      String s = "select txn_id from TXNS where txn_state = '" + TXN_OPEN +
-        "' and txn_last_heartbeat <  " + (now - timeout);
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs = stmt.executeQuery(s);
-      List<Long> deadTxns = new ArrayList<Long>();
-      // Limit the number of timed out transactions we do in one pass to keep from generating a
-      // huge delete statement
-      do {
-        deadTxns.clear();
-        for (int i = 0; i <  TIMED_OUT_TXN_ABORT_BATCH_SIZE && rs.next(); i++) {
-          deadTxns.add(rs.getLong(1));
+      dbConn = getDbConn(Connection.TRANSACTION_SERIALIZABLE);
+      long now = getDbTime(dbConn);
+      timeOutLocks(dbConn);
+      while(true) {
+        stmt = dbConn.createStatement();
+        String s = " txn_id from TXNS where txn_state = '" + TXN_OPEN +
+          "' and txn_last_heartbeat <  " + (now - timeout);
+        s = addLimitClause(dbConn, 2500, s);
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if(!rs.next()) {
+          return;//no more timedout txns
         }
-        // We don't care whether all of the transactions get deleted or not,
-        // if some didn't it most likely means someone else deleted them in the interum
-        if (deadTxns.size() > 0) abortTxns(dbConn, deadTxns);
-      } while (deadTxns.size() > 0);
-      LOG.debug("Going to commit");
-      dbConn.commit();
-    } catch (SQLException e) {
-      LOG.debug("Going to rollback");
-      rollbackDBConn(dbConn);
-      checkRetryable(dbConn, e, "abortTxn");
-      throw new MetaException("Unable to update transaction database "
-        + StringUtils.stringifyException(e));
-    } finally {
-      closeStmt(stmt);
+        List<List<Long>> timedOutTxns = new ArrayList<>();
+        List<Long> currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+        timedOutTxns.add(currentBatch);
+        do {
+          currentBatch.add(rs.getLong(1));
+          if(currentBatch.size() == TIMED_OUT_TXN_ABORT_BATCH_SIZE) {
+            currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
+            timedOutTxns.add(currentBatch);
+          }
+        } while(rs.next());
+        close(rs, stmt, null);
+        dbConn.commit();
+        for(List<Long> batchToAbort : timedOutTxns) {
+          abortTxns(dbConn, batchToAbort);
+          dbConn.commit();
+          //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
+          LOG.info("Aborted the following transactions due to timeout: " + batchToAbort.toString());
+        }
+        int numTxnsAborted = (timedOutTxns.size() - 1) * TIMED_OUT_TXN_ABORT_BATCH_SIZE +
+          timedOutTxns.get(timedOutTxns.size() - 1).size();
+        LOG.info("Aborted " + numTxnsAborted + " transactions due to timeout");
+      }
+    } catch (SQLException ex) {
+      LOG.warn("Aborting timedout transactions failed due to " + getMessage(ex), ex);
+    }
+    catch(MetaException e) {
+      LOG.warn("Aborting timedout transactions failed due to " + e.getMessage(), e);
+    }
+    finally {
+      close(rs, stmt, dbConn);
     }
   }
 
@@ -1882,6 +1969,7 @@ public class TxnHandler {
       config.setUser(user);
       config.setPassword(passwd);
       connPool = new BoneCPDataSource(config);
+      doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
     } else if ("dbcp".equals(connectionPooler)) {
       ObjectPool objectPool = new GenericObjectPool();
       ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
@@ -2015,6 +2103,7 @@ public class TxnHandler {
         //in MSSQL this means Communication Link Failure
         return true;
       }
+      //see https://issues.apache.org/jira/browse/HIVE-9938
     }
     return false;
   }

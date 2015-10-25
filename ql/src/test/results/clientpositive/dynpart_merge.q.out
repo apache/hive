@@ -1,0 +1,99 @@
+PREHOOK: query: create external table sdp (
+  dataint bigint,
+  hour int,
+  req string,
+  cid string,
+  caid string
+)
+row format delimited
+fields terminated by ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sdp
+POSTHOOK: query: create external table sdp (
+  dataint bigint,
+  hour int,
+  req string,
+  cid string,
+  caid string
+)
+row format delimited
+fields terminated by ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sdp
+PREHOOK: query: load data local inpath '../../data/files/dynpartdata1.txt' into table sdp
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sdp
+POSTHOOK: query: load data local inpath '../../data/files/dynpartdata1.txt' into table sdp
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sdp
+PREHOOK: query: load data local inpath '../../data/files/dynpartdata2.txt' into table sdp
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sdp
+POSTHOOK: query: load data local inpath '../../data/files/dynpartdata2.txt' into table sdp
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sdp
+PREHOOK: query: create table tdp (cid string, caid string)
+partitioned by (dataint bigint, hour int, req string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tdp
+POSTHOOK: query: create table tdp (cid string, caid string)
+partitioned by (dataint bigint, hour int, req string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tdp
+PREHOOK: query: insert overwrite table tdp partition (dataint=20150316, hour=16, req)
+select cid, caid, req from sdp where dataint=20150316 and hour=16
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sdp
+PREHOOK: Output: default@tdp@dataint=20150316/hour=16
+POSTHOOK: query: insert overwrite table tdp partition (dataint=20150316, hour=16, req)
+select cid, caid, req from sdp where dataint=20150316 and hour=16
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sdp
+POSTHOOK: Output: default@tdp@dataint=20150316/hour=16/req=reqA
+POSTHOOK: Output: default@tdp@dataint=20150316/hour=16/req=reqB
+POSTHOOK: Output: default@tdp@dataint=20150316/hour=16/req=reqD
+POSTHOOK: Lineage: tdp PARTITION(dataint=20150316,hour=16,req=reqA).caid SIMPLE [(sdp)sdp.FieldSchema(name:caid, type:string, comment:null), ]
+POSTHOOK: Lineage: tdp PARTITION(dataint=20150316,hour=16,req=reqA).cid SIMPLE [(sdp)sdp.FieldSchema(name:cid, type:string, comment:null), ]
+POSTHOOK: Lineage: tdp PARTITION(dataint=20150316,hour=16,req=reqB).caid SIMPLE [(sdp)sdp.FieldSchema(name:caid, type:string, comment:null), ]
+POSTHOOK: Lineage: tdp PARTITION(dataint=20150316,hour=16,req=reqB).cid SIMPLE [(sdp)sdp.FieldSchema(name:cid, type:string, comment:null), ]
+POSTHOOK: Lineage: tdp PARTITION(dataint=20150316,hour=16,req=reqD).caid SIMPLE [(sdp)sdp.FieldSchema(name:caid, type:string, comment:null), ]
+POSTHOOK: Lineage: tdp PARTITION(dataint=20150316,hour=16,req=reqD).cid SIMPLE [(sdp)sdp.FieldSchema(name:cid, type:string, comment:null), ]
+PREHOOK: query: select * from tdp order by caid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tdp
+PREHOOK: Input: default@tdp@dataint=20150316/hour=16/req=reqA
+PREHOOK: Input: default@tdp@dataint=20150316/hour=16/req=reqB
+PREHOOK: Input: default@tdp@dataint=20150316/hour=16/req=reqD
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tdp order by caid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tdp
+POSTHOOK: Input: default@tdp@dataint=20150316/hour=16/req=reqA
+POSTHOOK: Input: default@tdp@dataint=20150316/hour=16/req=reqB
+POSTHOOK: Input: default@tdp@dataint=20150316/hour=16/req=reqD
+#### A masked pattern was here ####
+clusterIdA	cacheId1	20150316	16	reqB
+clusterIdA	cacheId1	20150316	16	reqA
+clusterIdB	cacheId2	20150316	16	reqB
+clusterIdC	cacheId3	20150316	16	reqA
+clusterIdD	cacheId4	20150316	16	reqD
+clusterIdA	cacheId5	20150316	16	reqA
+clusterIdD	cacheId8	20150316	16	reqA
+clusterIdB	cacheId9	20150316	16	reqD
+PREHOOK: query: show partitions tdp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tdp
+POSTHOOK: query: show partitions tdp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tdp
+dataint=20150316/hour=16/req=reqA
+dataint=20150316/hour=16/req=reqB
+dataint=20150316/hour=16/req=reqD

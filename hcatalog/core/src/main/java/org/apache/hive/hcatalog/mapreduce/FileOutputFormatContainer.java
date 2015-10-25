@@ -97,7 +97,8 @@ class FileOutputFormatContainer extends OutputFormatContainer {
           (org.apache.hadoop.mapred.RecordWriter)null, context);
     } else {
       Path parentDir = new Path(context.getConfiguration().get("mapred.work.output.dir"));
-      Path childPath = new Path(parentDir,FileOutputFormat.getUniqueName(new JobConf(context.getConfiguration()), "part"));
+      Path childPath = new Path(parentDir,FileOutputFormat.getUniqueName(new JobConf(context.getConfiguration()),
+               context.getConfiguration().get("mapreduce.output.basename", "part")));
 
       rw = new StaticPartitionFileRecordWriterContainer(
           getBaseOutputFormat().getRecordWriter(

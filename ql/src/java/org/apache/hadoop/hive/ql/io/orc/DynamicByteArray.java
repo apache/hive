@@ -28,7 +28,7 @@ import org.apache.hadoop.io.Text;
  * A class that is a growable array of bytes. Growth is managed in terms of
  * chunks that are allocated when needed.
  */
-final class DynamicByteArray {
+public final class DynamicByteArray {
   static final int DEFAULT_CHUNKSIZE = 32 * 1024;
   static final int DEFAULT_NUM_CHUNKS = 128;
 

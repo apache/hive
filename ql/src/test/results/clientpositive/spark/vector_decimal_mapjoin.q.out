@@ -100,6 +100,7 @@ STAGE PLANS:
                       keys:
                         0 dec (type: decimal(6,2))
                         1 dec (type: decimal(6,2))
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -136,9 +137,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

@@ -41,10 +41,10 @@ STAGE PLANS:
             Statistics: Num rows: 4 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 4 Data size: 30 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: _col0 (type: string)
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0
                 Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
@@ -109,11 +109,11 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 60 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 8 Data size: 60 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 bucketGroup: true
-                keys: _col0 (type: string)
+                keys: key (type: string)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 8 Data size: 60 Basic stats: COMPLETE Column stats: NONE

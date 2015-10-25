@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.lib;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -125,17 +127,22 @@ public class RuleRegExp implements Rule {
    */
   private int costPatternWithoutWildCardChar(Stack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
-    String name = new String("");
-    int patLen = patternWithoutWildCardChar.length();
 
+    // No elements
+    if (numElems == 0) {
+      return -1;
+    }
+
+    int patLen = patternWithoutWildCardChar.length();
+    StringBuilder name = new StringBuilder(patLen + numElems);
     for (int pos = numElems - 1; pos >= 0; pos--) {
-        name = stack.get(pos).getName() + "%" + name;
+      String nodeName = stack.get(pos).getName() + "%";
+      name.insert(0, nodeName);
       if (name.length() >= patLen) {
-        if (patternWithoutWildCardChar.equals(name)) {
+        if (patternWithoutWildCardChar.contentEquals(name)) {
           return patLen;
-        } else {
-          return -1;
         }
+        break;
       }
     }
     return -1;
@@ -152,19 +159,54 @@ public class RuleRegExp implements Rule {
    */
   private int costPatternWithORWildCardChar(Stack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
+
+    // No elements
+    if (numElems == 0) {
+      return -1;
+    }
+
+    // These DS are used to cache previously created String
+    Map<Integer,String> cachedNames = new HashMap<Integer,String>();
+    int maxDepth = numElems;
+    int maxLength = 0;
+
+    // For every pattern
     for (String pattern : patternORWildChar) {
-      String name = new String("");
       int patLen = pattern.length();
 
-      for (int pos = numElems - 1; pos >= 0; pos--) {
-        name = stack.get(pos).getName() + "%" + name;
-        if (name.length() >= patLen) {
-          if (pattern.equals(name)) {
-            return patLen;
-          } else {
+      // If the stack has been explored already till that level,
+      // obtained cached String
+      if (cachedNames.containsKey(patLen)) {
+        if (pattern.contentEquals(cachedNames.get(patLen))) {
+          return patLen;
+        }
+      } else if (maxLength >= patLen) {
+        // We have already explored the stack deep enough, but
+        // we do not have a matching
+        continue;
+      } else {
+        // We are going to build the name
+        StringBuilder name = new StringBuilder(patLen + numElems);
+        if (maxLength != 0) {
+          name.append(cachedNames.get(maxLength));
+        }
+        for (int pos = maxDepth - 1; pos >= 0; pos--) {
+          String nodeName = stack.get(pos).getName() + "%";
+          name.insert(0, nodeName);
+
+          // We cache the values
+          cachedNames.put(name.length(), name.toString());
+          maxLength = name.length();
+          maxDepth--;
+
+          if (name.length() >= patLen) {
+            if (pattern.contentEquals(name)) {
+              return patLen;
+            }
             break;
           }
         }
+        
       }
     }
     return -1;
@@ -181,11 +223,12 @@ public class RuleRegExp implements Rule {
    * @throws SemanticException
    */
   private int costPatternWithWildCardChar(Stack<Node> stack) throws SemanticException {
-	int numElems = (stack != null ? stack.size() : 0);
-    String name = "";
+    int numElems = (stack != null ? stack.size() : 0);
+    StringBuilder name = new StringBuilder();
     Matcher m = patternWithWildCardChar.matcher("");
     for (int pos = numElems - 1; pos >= 0; pos--) {
-      name = stack.get(pos).getName() + "%" + name;
+      String nodeName = stack.get(pos).getName() + "%";
+      name.insert(0, nodeName);
       m.reset(name);
       if (m.matches()) {
         return name.length();

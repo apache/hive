@@ -42,3 +42,29 @@ use default;
 DROP DATABASE two CASCADE;
 
 DROP TABLE bay;
+
+create table s as select * from src limit 10;
+
+select count(*) from s;
+
+create temporary table s as select * from s limit 2;
+
+select count(*) from s;
+
+with s as ( select * from src limit 1)
+select count(*) from s;
+
+with src as ( select * from s)
+select count(*) from src;
+
+drop table s;
+
+select count(*) from s;
+
+with s as ( select * from src limit 1)
+select count(*) from s;
+
+with src as ( select * from s)
+select count(*) from src;
+
+drop table s;

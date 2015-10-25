@@ -122,8 +122,9 @@ public class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_run_as = '" + user + "' where cq_id = " + cq_id;
         LOG.debug("Going to execute update <" + s + ">");
-        if (stmt.executeUpdate(s) != 1) {
-          LOG.error("Unable to update compaction record");
+        int updCnt = stmt.executeUpdate(s);
+        if (updCnt != 1) {
+          LOG.error("Unable to set cq_run_as=" + user + " for compaction record with cq_id=" + cq_id + ".  updCnt=" + updCnt);
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
@@ -182,8 +183,10 @@ public class CompactionTxnHandler extends TxnHandler {
         s = "update COMPACTION_QUEUE set cq_worker_id = '" + workerId + "', " +
           "cq_start = " + now + ", cq_state = '" + WORKING_STATE + "' where cq_id = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
-        if (stmt.executeUpdate(s) != 1) {
-          LOG.error("Unable to update compaction record");
+        int updCount = stmt.executeUpdate(s);
+        if (updCount != 1) {
+          LOG.error("Unable to set to cq_state=" + WORKING_STATE + " for compaction record: " +
+            info + ". updCnt=" + updCount);
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
@@ -221,8 +224,9 @@ public class CompactionTxnHandler extends TxnHandler {
         String s = "update COMPACTION_QUEUE set cq_state = '" + READY_FOR_CLEANING + "', " +
           "cq_worker_id = null where cq_id = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
-        if (stmt.executeUpdate(s) != 1) {
-          LOG.error("Unable to update compaction record");
+        int updCnt = stmt.executeUpdate(s);
+        if (updCnt != 1) {
+          LOG.error("Unable to set cq_state=" + READY_FOR_CLEANING + " for compaction record: " + info + ". updCnt=" + updCnt);
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
@@ -298,6 +302,17 @@ public class CompactionTxnHandler extends TxnHandler {
   /**
    * This will remove an entry from the queue after
    * it has been compacted.
+   * 
+   * todo: possibly a problem?  Worker will start with DB in state X (wrt this partition).
+   * while it's working more txns will happen, against partition it's compacting.
+   * then this will delete state up to X and since then.  There may be new delta files created
+   * between compaction starting and cleaning.  These will not be compacted until more
+   * transactions happen.  So this ideally should only delete
+   * up to TXN_ID that was compacted (i.e. HWM in Worker?)  Then this can also run
+   * at READ_COMMITTED
+   * 
+   * Also, by using this method when Worker fails, we prevent future compactions from
+   * running until more data is written to tale or compaction is invoked explicitly
    * @param info info on the compaction entry to remove
    */
   public void markCleaned(CompactionInfo info) throws MetaException {
@@ -309,8 +324,9 @@ public class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         String s = "delete from COMPACTION_QUEUE where cq_id = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
-        if (stmt.executeUpdate(s) != 1) {
-          LOG.error("Unable to delete compaction record");
+        int updCount = stmt.executeUpdate(s);
+        if (updCount != 1) {
+          LOG.error("Unable to delete compaction record: " + info +  ".  Update count=" + updCount);
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
@@ -348,7 +364,7 @@ public class CompactionTxnHandler extends TxnHandler {
             else buf.append(", ");
             buf.append(id);
           }
-
+          //because 1 txn may include different partitions/tables even in auto commit mode
           buf.append(") and tc_database = '");
           buf.append(info.dbname);
           buf.append("' and tc_table = '");
@@ -415,7 +431,7 @@ public class CompactionTxnHandler extends TxnHandler {
           String bufStr = buf.toString();
           LOG.debug("Going to execute update <" + bufStr + ">");
           int rc = stmt.executeUpdate(bufStr);
-          LOG.debug("Removed " + rc + " records from txns");
+          LOG.info("Removed " + rc + "  empty Aborted transactions: " + txnids + " from TXNS");
           LOG.debug("Going to commit");
           dbConn.commit();
         }

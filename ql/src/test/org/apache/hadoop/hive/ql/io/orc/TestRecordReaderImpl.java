@@ -35,14 +35,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
-import org.apache.hadoop.hive.common.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Location;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.TestSearchArgumentImpl;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.junit.Test;
 import org.mockito.MockSettings;
@@ -351,14 +353,14 @@ public class TestRecordReaderImpl {
         RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 0), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.BOOLEAN, "x", "true", null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.BOOLEAN, "x", true, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 10), pred, null));
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 0), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.BOOLEAN, "x", "hello", null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.BOOLEAN, "x", false, null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 10), pred, null));
     assertEquals(TruthValue.YES_NO,
@@ -368,7 +370,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithIntStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
 
@@ -390,7 +392,7 @@ public class TestRecordReaderImpl {
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+        PredicateLeaf.Type.DECIMAL, "x", new HiveDecimalWritable("15"), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
 
@@ -403,7 +405,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithDoubleStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
 
@@ -425,7 +427,7 @@ public class TestRecordReaderImpl {
         RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+        PredicateLeaf.Type.DECIMAL, "x", new HiveDecimalWritable("15"), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDoubleStats(10.0, 100.0), pred, null));
 
@@ -443,7 +445,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithStringStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 100, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 100L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createStringStats("10", "1000"), pred, null));
 
@@ -461,10 +463,10 @@ public class TestRecordReaderImpl {
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.DATE, "x", new DateWritable(100).get(), null);
     assertEquals(TruthValue.YES_NO,
-        RecordReaderImpl.evaluatePredicateProto(createStringStats("10", "1000"), pred, null));
+        RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 1000), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(100), null);
+        PredicateLeaf.Type.DECIMAL, "x", new HiveDecimalWritable("100"), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createStringStats("10", "1000"), pred, null));
 
@@ -477,7 +479,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithDateStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     // Date to Integer conversion is not possible.
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
@@ -530,7 +532,7 @@ public class TestRecordReaderImpl {
 
     // Date to Decimal conversion is also not possible.
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+        PredicateLeaf.Type.DECIMAL, "x", new HiveDecimalWritable("15"), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDateStats(10, 100), pred, null));
 
@@ -548,7 +550,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithDecimalStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
 
@@ -570,7 +572,7 @@ public class TestRecordReaderImpl {
         RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+        PredicateLeaf.Type.DECIMAL, "x", new HiveDecimalWritable("15"), null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createDecimalStats("10.0", "100.0"), pred, null));
 
@@ -588,7 +590,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testPredEvalWithTimestampStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
 
@@ -618,7 +620,7 @@ public class TestRecordReaderImpl {
             100 * 24L * 60L * 60L * 1000L), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-        PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15), null);
+        PredicateLeaf.Type.DECIMAL, "x", new HiveDecimalWritable("15"), null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
     assertEquals(TruthValue.YES_NO,
@@ -635,7 +637,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testEquals() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.LONG,
             "x", 15L, null);
     assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), pred, null));
@@ -654,7 +656,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testNullSafeEquals() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG,
             "x", 15L, null);
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), pred, null));
@@ -673,7 +675,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testLessThan() throws Exception {
     PredicateLeaf lessThan = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.LESS_THAN, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.LESS_THAN, PredicateLeaf.Type.LONG,
             "x", 15L, null);
     assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), lessThan, null));
@@ -690,7 +692,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testLessThanEquals() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.LESS_THAN_EQUALS, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.LESS_THAN_EQUALS, PredicateLeaf.Type.LONG,
             "x", 15L, null);
     assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), pred, null));
@@ -710,7 +712,7 @@ public class TestRecordReaderImpl {
     args.add(10L);
     args.add(20L);
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.IN, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.IN, PredicateLeaf.Type.LONG,
             "x", null, args);
     assertEquals(TruthValue.YES_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 20L), pred, null));
@@ -728,7 +730,7 @@ public class TestRecordReaderImpl {
     args.add(10L);
     args.add(20L);
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.BETWEEN, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.BETWEEN, PredicateLeaf.Type.LONG,
             "x", null, args);
     assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(0L, 5L), pred, null));
@@ -749,7 +751,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testIsNull() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.IS_NULL, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.IS_NULL, PredicateLeaf.Type.LONG,
             "x", null, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(20L, 30L), pred, null));
@@ -1274,7 +1276,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testIntNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong(i);
@@ -1289,7 +1291,7 @@ public class TestRecordReaderImpl {
   @Test
   public void testIntEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.INTEGER, "x", 15L, null);
+        PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
       bf.addLong(i);
@@ -1304,10 +1306,10 @@ public class TestRecordReaderImpl {
   @Test
   public void testIntInBloomFilter() throws Exception {
     List<Object> args = new ArrayList<Object>();
-    args.add(15);
-    args.add(19);
+    args.add(15L);
+    args.add(19L);
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
-        (PredicateLeaf.Operator.IN, PredicateLeaf.Type.INTEGER,
+        (PredicateLeaf.Operator.IN, PredicateLeaf.Type.LONG,
             "x", null, args);
     BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
@@ -1539,7 +1541,7 @@ public class TestRecordReaderImpl {
   public void testDecimalNullSafeEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.DECIMAL, "x",
-        HiveDecimal.create(15),
+        new HiveDecimalWritable("15"),
         null);
     BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
@@ -1555,7 +1557,8 @@ public class TestRecordReaderImpl {
   @Test
   public void testDecimalEqualsBloomFilter() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.DECIMAL, "x", HiveDecimal.create(15),
+        PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.DECIMAL, "x",
+        new HiveDecimalWritable("15"),
         null);
     BloomFilterIO bf = new BloomFilterIO(10000);
     for (int i = 20; i < 1000; i++) {
@@ -1571,8 +1574,8 @@ public class TestRecordReaderImpl {
   @Test
   public void testDecimalInBloomFilter() throws Exception {
     List<Object> args = new ArrayList<Object>();
-    args.add(HiveDecimal.create(15));
-    args.add(HiveDecimal.create(19));
+    args.add(new HiveDecimalWritable("15"));
+    args.add(new HiveDecimalWritable("19"));
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.DECIMAL,
             "x", null, args);
@@ -1593,9 +1596,9 @@ public class TestRecordReaderImpl {
   @Test
   public void testNullsInBloomFilter() throws Exception {
     List<Object> args = new ArrayList<Object>();
-    args.add(HiveDecimal.create(15));
+    args.add(new HiveDecimalWritable("15"));
     args.add(null);
-    args.add(HiveDecimal.create(19));
+    args.add(new HiveDecimalWritable("19"));
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.DECIMAL,
             "x", null, args);

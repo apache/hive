@@ -245,7 +245,7 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
     }    
 
     // Use type promotion
-    PrimitiveCategory commonCat = FunctionRegistry.getCommonCategory(left, right);
+    PrimitiveCategory commonCat = FunctionRegistry.getPrimitiveCommonCategory(left, right);
     if (commonCat == PrimitiveCategory.DECIMAL) {
       // Hive 0.12 behavior where double * decimal -> decimal is gone.
       return TypeInfoFactory.doubleTypeInfo;
@@ -267,7 +267,7 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
     PrimitiveTypeInfo right = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(rightOI);
 
     // Now we are handling exact types. Base implementation handles type promotion.
-    PrimitiveCategory commonCat = FunctionRegistry.getCommonCategory(left, right);
+    PrimitiveCategory commonCat = FunctionRegistry.getPrimitiveCommonCategory(left, right);
     if (commonCat == PrimitiveCategory.DECIMAL) {
       return deriveResultDecimalTypeInfo();
     } else {

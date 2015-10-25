@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hive.ptest.api.server.TestLogger;
@@ -94,111 +95,134 @@ class JIRAService {
   }
 
   void postComment(boolean error, int numTestsExecuted, SortedSet<String> failedTests,
-      List<String> messages) {
-    DefaultHttpClient httpClient = new DefaultHttpClient();
-    try {
-      BuildInfo buildInfo = formatBuildTag(mBuildTag);
-      String buildTagForLogs = formatBuildTagForLogs(mBuildTag);
-      List<String> comments = Lists.newArrayList();
-      comments.add("");
-      comments.add("");
-      if(!failedTests.isEmpty()) {
-        comments.add("{color:red}Overall{color}: -1 at least one tests failed");
-      } else if(numTestsExecuted == 0) {
-        comments.add("{color:red}Overall{color}: -1 no tests executed");
-      } else if (error) {
-        comments.add("{color:red}Overall{color}: -1 build exited with an error");
+    List<String> messages) {
+    postComment(error, numTestsExecuted, failedTests, messages, new HashSet<String>());
+  }
+
+  void postComment(boolean error, int numTestsExecuted, SortedSet<String> failedTests,
+    List<String> messages, Set<String> addedTests) {
+    String comments = generateComments(error, numTestsExecuted, failedTests, messages, addedTests);
+    publishComments(comments);
+  }
+
+  @VisibleForTesting
+  String generateComments(boolean error, int numTestsExecuted, SortedSet<String> failedTests,
+    List<String> messages, Set<String> addedTests) {
+    BuildInfo buildInfo = formatBuildTag(mBuildTag);
+    String buildTagForLogs = formatBuildTagForLogs(mBuildTag);
+    List<String> comments = Lists.newArrayList();
+    comments.add("");
+    comments.add("");
+    if (!mPatch.isEmpty()) {
+      comments.add("Here are the results of testing the latest attachment:");
+      comments.add(mPatch);
+    }
+    comments.add("");
+    if (error && numTestsExecuted == 0) {
+      comments.add(formatError("-1 due to build exiting with an error"));
+    } else {
+      if (addedTests.size() > 0) {
+        comments.add(formatSuccess("+1 due to " + addedTests.size() + " test(s) being added or modified."));
       } else {
-        comments.add("{color:green}Overall{color}: +1 all checks pass");
+        comments.add(formatError("-1 due to no test(s) being added or modified."));
       }
       comments.add("");
-      if(!mPatch.isEmpty()) {
-        comments.add("Here are the results of testing the latest attachment:");
-        comments.add(mPatch);
-      }
-      comments.add("");
-      if(numTestsExecuted > 0) {
+      if (numTestsExecuted == 0) {
+        comments.add(formatError("-1 due to no tests executed"));
+      } else {
         if (failedTests.isEmpty()) {
-          comments.add(formatSuccess("+1 "+ numTestsExecuted + " tests passed"));
+          comments.add(formatSuccess("+1 due to " + numTestsExecuted + " tests passed"));
         } else {
           comments.add(formatError("-1 due to " + failedTests.size()
-              + " failed/errored test(s), " + numTestsExecuted + " tests executed"));
+            + " failed/errored test(s), " + numTestsExecuted + " tests executed"));
           comments.add("*Failed tests:*");
           comments.add("{noformat}");
           comments.addAll(failedTests);
           comments.add("{noformat}");
         }
-        comments.add("");
       }
-      comments.add("Test results: " + mJenkinsURL + "/" +
-          buildInfo.getFormattedBuildTag() + "/testReport");
-      comments.add("Console output: " + mJenkinsURL + "/" +
-          buildInfo.getFormattedBuildTag() + "/console");
-      comments.add("Test logs: " + mLogsURL + buildTagForLogs);
+    }
+    comments.add("");
+    comments.add("Test results: " + mJenkinsURL + "/" +
+      buildInfo.getFormattedBuildTag() + "/testReport");
+    comments.add("Console output: " + mJenkinsURL + "/" +
+      buildInfo.getFormattedBuildTag() + "/console");
+    comments.add("Test logs: " + mLogsURL + buildTagForLogs);
+    comments.add("");
+    if (!messages.isEmpty()) {
+      comments.add("Messages:");
+      comments.add("{noformat}");
+      comments.addAll(trimMessages(messages));
+      comments.add("{noformat}");
       comments.add("");
-      if(!messages.isEmpty()) {
-        comments.add("Messages:");
-        comments.add("{noformat}");
-        comments.addAll(trimMessages(messages));
-        comments.add("{noformat}");
-        comments.add("");
-      }
-      comments.add("This message is automatically generated.");
-      String attachmentId = parseAttachementId(mPatch);
-      comments.add("");
-      comments.add("ATTACHMENT ID: " + attachmentId +
-          " - " + buildInfo.getBuildName());
-      mLogger.info("Comment: " + Joiner.on("\n").join(comments));
-      String body = Joiner.on("\n").join(comments);
+    }
+    comments.add("This message is automatically generated.");
+    String attachmentId = parseAttachementId(mPatch);
+    comments.add("");
+    comments.add("ATTACHMENT ID: " + attachmentId +
+      " - " + buildInfo.getBuildName());
+    mLogger.info("Comment: " + Joiner.on("\n").join(comments));
+    return Joiner.on("\n").join(comments);
+  }
+
+  void publishComments(String comments) {
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    try {
       String url = String.format("%s/rest/api/2/issue/%s/comment", mUrl, mName);
       URL apiURL = new URL(mUrl);
       httpClient.getCredentialsProvider()
-      .setCredentials(
+        .setCredentials(
           new AuthScope(apiURL.getHost(), apiURL.getPort(),
-              AuthScope.ANY_REALM),
-              new UsernamePasswordCredentials(mUser, mPassword));
+            AuthScope.ANY_REALM),
+          new UsernamePasswordCredentials(mUser, mPassword));
       BasicHttpContext localcontext = new BasicHttpContext();
       localcontext.setAttribute("preemptive-auth", new BasicScheme());
       httpClient.addRequestInterceptor(new PreemptiveAuth(), 0);
       HttpPost request = new HttpPost(url);
       ObjectMapper mapper = new ObjectMapper();
-      StringEntity params = new StringEntity(mapper.writeValueAsString(new Body(body)));
+      StringEntity params = new StringEntity(mapper.writeValueAsString(new Body(comments)));
       request.addHeader("Content-Type", "application/json");
       request.setEntity(params);
       HttpResponse httpResponse = httpClient.execute(request, localcontext);
       StatusLine statusLine = httpResponse.getStatusLine();
       if (statusLine.getStatusCode() != 201) {
         throw new RuntimeException(statusLine.getStatusCode() + " "
-            + statusLine.getReasonPhrase());
+          + statusLine.getReasonPhrase());
       }
       mLogger.info("JIRA Response Metadata: " + httpResponse);
     } catch (Exception e) {
       mLogger.error("Encountered error attempting to post comment to " + mName,
-          e);
+        e);
     } finally {
       httpClient.getConnectionManager().shutdown();
     }
   }
+
   static List<String> trimMessages(List<String> messages) {
     int size = messages.size();
-    if(size > MAX_MESSAGES) {
+    if (size > MAX_MESSAGES) {
       messages = messages.subList(size - MAX_MESSAGES, size);
       messages.add(0, TRIMMED_MESSAGE);
     }
     return messages;
   }
+
   @SuppressWarnings("unused")
   private static class Body {
     private String body;
+
     public Body() {
 
     }
+
     public Body(String body) {
       this.body = body;
     }
+
     public String getBody() {
       return body;
     }
+
     public void setBody(String body) {
       this.body = body;
     }
@@ -209,7 +233,7 @@ class JIRAService {
     private String buildName;
     private String formattedBuildTag;
 
-    public BuildInfo (String buildName, String formattedBuildTag) {
+    public BuildInfo(String buildName, String formattedBuildTag) {
       this.buildName = buildName;
       this.formattedBuildTag = formattedBuildTag;
     }
@@ -228,7 +252,7 @@ class JIRAService {
    */
   @VisibleForTesting
   static BuildInfo formatBuildTag(String buildTag) {
-    if(buildTag.contains("-")) {
+    if (buildTag.contains("-")) {
       int lastDashIndex = buildTag.lastIndexOf("-");
       String buildName = buildTag.substring(0, lastDashIndex);
       String buildId = buildTag.substring(lastDashIndex + 1);
@@ -237,6 +261,7 @@ class JIRAService {
     }
     throw new IllegalArgumentException("Build tag '" + buildTag + "' must contain a -");
   }
+
   static String formatBuildTagForLogs(String buildTag) {
     if (buildTag.endsWith("/")) {
       return buildTag;
@@ -244,6 +269,7 @@ class JIRAService {
       return buildTag + "/";
     }
   }
+
   private static String formatError(String msg) {
     return String.format("{color:red}ERROR:{color} %s", msg);
   }
@@ -255,7 +281,7 @@ class JIRAService {
   static class PreemptiveAuth implements HttpRequestInterceptor {
 
     public void process(final HttpRequest request, final HttpContext context)
-        throws HttpException, IOException {
+      throws HttpException, IOException {
       AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
       if (authState.getAuthScheme() == null) {
         AuthScheme authScheme = (AuthScheme) context.getAttribute("preemptive-auth");
@@ -263,34 +289,35 @@ class JIRAService {
         HttpHost targetHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
         if (authScheme != null) {
           Credentials creds = credsProvider.getCredentials(new AuthScope(
-              targetHost.getHostName(), targetHost.getPort()));
+            targetHost.getHostName(), targetHost.getPort()));
           if (creds == null) {
             throw new HttpException(
-                "No credentials for preemptive authentication");
+              "No credentials for preemptive authentication");
           }
           authState.update(authScheme, creds);
         }
       }
     }
   }
+
   private static String parseAttachementId(String patch) {
-    if(patch == null) {
+    if (patch == null) {
       return "";
     }
     String result = FilenameUtils.getPathNoEndSeparator(patch.trim());
-    if(result == null) {
+    if (result == null) {
       return "";
     }
     result = FilenameUtils.getName(result.trim());
-    if(result == null) {
+    if (result == null) {
       return "";
     }
     return result.trim();
   }
 
   private static void assertRequired(CommandLine commandLine, String[] requiredOptions) throws IllegalArgumentException {
-    for(String requiredOption : requiredOptions) {
-      if(!commandLine.hasOption(requiredOption)) {
+    for (String requiredOption : requiredOptions) {
+      if (!commandLine.hasOption(requiredOption)) {
         throw new IllegalArgumentException("--" + requiredOption + " is required");
       }
     }
@@ -311,7 +338,7 @@ class JIRAService {
   private static final String FIELD_FAILED_TESTS = "failedTests";
   private static final String FIELD_MESSAGES = "messages";
   private static final String FIELD_JIRA_USER = "jiraUser";
-  private static final String FIELD_JIRA_PASS= "jiraPassword";
+  private static final String FIELD_JIRA_PASS = "jiraPassword";
 
   private static Map<String, Class> supportedJsonFields = new HashMap<String, Class>() {
     {
@@ -387,9 +414,9 @@ class JIRAService {
     }
 
     assertRequired(cmd, new String[]{
-        OPT_USER_LONG,
-        OPT_PASS_LONG,
-        OPT_FILE_LONG
+      OPT_USER_LONG,
+      OPT_PASS_LONG,
+      OPT_FILE_LONG
     });
 
     return cmd;
@@ -400,7 +427,7 @@ class JIRAService {
 
     try {
       cmd = parseCommandLine(args);
-    } catch(ParseException e) {
+    } catch (ParseException e) {
       System.out.println("Error parsing command arguments: " + e.getMessage());
       System.exit(1);
     }
@@ -413,25 +440,25 @@ class JIRAService {
     Map<String, Object> jsonValues = parseJsonFile(cmd.getOptionValue(OPT_FILE_LONG));
 
     Map<String, String> context = Maps.newHashMap();
-    context.put(FIELD_JIRA_URL, (String)jsonValues.get(FIELD_JIRA_URL));
+    context.put(FIELD_JIRA_URL, (String) jsonValues.get(FIELD_JIRA_URL));
     context.put(FIELD_JIRA_USER, cmd.getOptionValue(OPT_USER_LONG));
     context.put(FIELD_JIRA_PASS, cmd.getOptionValue(OPT_PASS_LONG));
-    context.put(FIELD_LOGS_URL, (String)jsonValues.get(FIELD_LOGS_URL));
-    context.put(FIELD_REPO, (String)jsonValues.get(FIELD_REPO));
-    context.put(FIELD_REPO_NAME, (String)jsonValues.get(FIELD_REPO_NAME));
-    context.put(FIELD_REPO_TYPE, (String)jsonValues.get(FIELD_REPO_TYPE));
-    context.put(FIELD_REPO_BRANCH, (String)jsonValues.get(FIELD_REPO_BRANCH));
-    context.put(FIELD_JENKINS_URL, (String)jsonValues.get(FIELD_JENKINS_URL));
+    context.put(FIELD_LOGS_URL, (String) jsonValues.get(FIELD_LOGS_URL));
+    context.put(FIELD_REPO, (String) jsonValues.get(FIELD_REPO));
+    context.put(FIELD_REPO_NAME, (String) jsonValues.get(FIELD_REPO_NAME));
+    context.put(FIELD_REPO_TYPE, (String) jsonValues.get(FIELD_REPO_TYPE));
+    context.put(FIELD_REPO_BRANCH, (String) jsonValues.get(FIELD_REPO_BRANCH));
+    context.put(FIELD_JENKINS_URL, (String) jsonValues.get(FIELD_JENKINS_URL));
 
     TestLogger logger = new TestLogger(System.err, TestLogger.LEVEL.TRACE);
     TestConfiguration configuration = new TestConfiguration(new Context(context), logger);
-    configuration.setJiraName((String)jsonValues.get(FIELD_JIRA_NAME));
-    configuration.setPatch((String)jsonValues.get(FIELD_PATCH_URL));
+    configuration.setJiraName((String) jsonValues.get(FIELD_JIRA_NAME));
+    configuration.setPatch((String) jsonValues.get(FIELD_PATCH_URL));
 
-    JIRAService service = new JIRAService(logger, configuration, (String)jsonValues.get(FIELD_BUILD_TAG));
-    List<String> messages = (List)jsonValues.get(FIELD_MESSAGES);
-    SortedSet<String> failedTests = (SortedSet)jsonValues.get(FIELD_FAILED_TESTS);
-    boolean error = (Integer)jsonValues.get(FIELD_BUILD_STATUS) == 0 ? false : true;
-    service.postComment(error, (Integer)jsonValues.get(FIELD_NUM_TESTS_EXECUTED), failedTests, messages);
+    JIRAService service = new JIRAService(logger, configuration, (String) jsonValues.get(FIELD_BUILD_TAG));
+    List<String> messages = (List) jsonValues.get(FIELD_MESSAGES);
+    SortedSet<String> failedTests = (SortedSet) jsonValues.get(FIELD_FAILED_TESTS);
+    boolean error = (Integer) jsonValues.get(FIELD_BUILD_STATUS) == 0 ? false : true;
+    service.postComment(error, (Integer) jsonValues.get(FIELD_NUM_TESTS_EXECUTED), failedTests, messages);
   }
 }

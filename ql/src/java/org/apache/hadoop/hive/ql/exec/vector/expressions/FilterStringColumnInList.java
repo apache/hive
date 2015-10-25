@@ -20,16 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.UDFLike;
-import org.apache.hadoop.io.Text;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Evaluate an IN filter on a batch for a vector of strings.
@@ -163,6 +154,10 @@ public class FilterStringColumnInList extends VectorExpression implements IStrin
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+
+  public void setInputColumn(int inputCol) {
+    this.inputCol = inputCol;
   }
 
   @Override

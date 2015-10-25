@@ -1,0 +1,66 @@
+PREHOOK: query: explain
+SELECT key
+FROM src
+WHERE
+   ((key = '0'
+   AND value = '8') OR (key = '1'
+   AND value = '5') OR (key = '2'
+   AND value = '6') OR (key = '3'
+   AND value = '8') OR (key = '4'
+   AND value = '1') OR (key = '5'
+   AND value = '6') OR (key = '6'
+   AND value = '1') OR (key = '7'
+   AND value = '1') OR (key = '8'
+   AND value = '1') OR (key = '9'
+   AND value = '1') OR (key = '10'
+   AND value = '3'))
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT key
+FROM src
+WHERE
+   ((key = '0'
+   AND value = '8') OR (key = '1'
+   AND value = '5') OR (key = '2'
+   AND value = '6') OR (key = '3'
+   AND value = '8') OR (key = '4'
+   AND value = '1') OR (key = '5'
+   AND value = '6') OR (key = '6'
+   AND value = '1') OR (key = '7'
+   AND value = '1') OR (key = '8'
+   AND value = '1') OR (key = '9'
+   AND value = '1') OR (key = '10'
+   AND value = '3'))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((key = '0') and (value = '8')) or ((key = '1') and (value = '5')) or ((key = '2') and (value = '6')) or ((key = '3') and (value = '8')) or ((key = '4') and (value = '1')) or ((key = '5') and (value = '6')) or ((key = '6') and (value = '1')) or ((key = '7') and (value = '1')) or ((key = '8') and (value = '1')) or ((key = '9') and (value = '1')) or ((key = '10') and (value = '3'))) (type: boolean)
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

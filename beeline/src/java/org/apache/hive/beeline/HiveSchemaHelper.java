@@ -165,7 +165,7 @@ public class HiveSchemaHelper {
   }
 
   /***
-   * Base implemenation of NestedScriptParser
+   * Base implementation of NestedScriptParser
    * abstractCommandParser.
    *
    */

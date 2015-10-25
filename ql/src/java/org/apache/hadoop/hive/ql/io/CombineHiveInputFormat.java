@@ -25,10 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -38,11 +36,9 @@ import java.util.concurrent.Future;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -51,19 +47,18 @@ import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims.CombineFileInputFormatShim;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure.InputSplitShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 
 
@@ -373,45 +368,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       }
       FileSystem inpFs = path.getFileSystem(job);
 
-      // Since there is no easy way of knowing whether MAPREDUCE-1597 is present in the tree or not,
-      // we use a configuration variable for the same
-      if (this.mrwork != null && !this.mrwork.getHadoopSupportsSplittable()) {
-        // The following code should be removed, once
-        // https://issues.apache.org/jira/browse/MAPREDUCE-1597 is fixed.
-        // Hadoop does not handle non-splittable files correctly for CombineFileInputFormat,
-        // so don't use CombineFileInputFormat for non-splittable files
-
-        //ie, dont't combine if inputformat is a TextInputFormat and has compression turned on
-
-        if (inputFormat instanceof TextInputFormat) {
-          Queue<Path> dirs = new LinkedList<Path>();
-          FileStatus fStats = inpFs.getFileStatus(path);
-
-          // If path is a directory
-          if (fStats.isDir()) {
-            dirs.offer(path);
-          } else if ((new CompressionCodecFactory(job)).getCodec(path) != null) {
-            //if compresssion codec is set, use HiveInputFormat.getSplits (don't combine)
-            splits = super.getSplits(job, numSplits);
-            return splits;
-          }
-
-          while (dirs.peek() != null) {
-            Path tstPath = dirs.remove();
-            FileStatus[] fStatus = inpFs.listStatus(tstPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-            for (int idx = 0; idx < fStatus.length; idx++) {
-              if (fStatus[idx].isDir()) {
-                dirs.offer(fStatus[idx].getPath());
-              } else if ((new CompressionCodecFactory(job)).getCodec(
-                  fStatus[idx].getPath()) != null) {
-                //if compresssion codec is set, use HiveInputFormat.getSplits (don't combine)
-                splits = super.getSplits(job, numSplits);
-                return splits;
-              }
-            }
-          }
-        }
-      }
       //don't combine if inputformat is a SymlinkTextInputFormat
       if (inputFormat instanceof SymlinkTextInputFormat) {
         splits = super.getSplits(job, numSplits);
@@ -500,7 +456,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    */
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
 
@@ -514,34 +470,40 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     int numThreads = Math.min(MAX_CHECK_NONCOMBINABLE_THREAD_NUM,
         (int) Math.ceil((double) paths.length / DEFAULT_NUM_PATH_PER_THREAD));
     int numPathPerThread = (int) Math.ceil((double) paths.length / numThreads);
-    LOG.info("Total number of paths: " + paths.length +
-        ", launching " + numThreads + " threads to check non-combinable ones.");
-    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-    List<Future<Set<Integer>>> futureList = new ArrayList<Future<Set<Integer>>>(numThreads);
-    try {
-      for (int i = 0; i < numThreads; i++) {
-        int start = i * numPathPerThread;
-        int length = i != numThreads - 1 ? numPathPerThread : paths.length - start;
-        futureList.add(executor.submit(
-            new CheckNonCombinablePathCallable(paths, start, length, job)));
-      }
-      Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
-      for (Future<Set<Integer>> future : futureList) {
-        nonCombinablePathIndices.addAll(future.get());
-      }
-      for (int i = 0; i < paths.length; i++) {
-        if (nonCombinablePathIndices.contains(i)) {
-          nonCombinablePaths.add(paths[i]);
-        } else {
-          combinablePaths.add(paths[i]);
+
+    // This check is necessary because for Spark branch, the result array from
+    // getInputPaths() above could be empty, and therefore numThreads could be 0.
+    // In that case, Executors.newFixedThreadPool will fail.
+    if (numThreads > 0) {
+      LOG.info("Total number of paths: " + paths.length +
+          ", launching " + numThreads + " threads to check non-combinable ones.");
+      ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+      List<Future<Set<Integer>>> futureList = new ArrayList<Future<Set<Integer>>>(numThreads);
+      try {
+        for (int i = 0; i < numThreads; i++) {
+          int start = i * numPathPerThread;
+          int length = i != numThreads - 1 ? numPathPerThread : paths.length - start;
+          futureList.add(executor.submit(
+              new CheckNonCombinablePathCallable(paths, start, length, job)));
         }
+        Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
+        for (Future<Set<Integer>> future : futureList) {
+          nonCombinablePathIndices.addAll(future.get());
+        }
+        for (int i = 0; i < paths.length; i++) {
+          if (nonCombinablePathIndices.contains(i)) {
+            nonCombinablePaths.add(paths[i]);
+          } else {
+            combinablePaths.add(paths[i]);
+          }
+        }
+      } catch (Exception e) {
+        LOG.error("Error checking non-combinable path", e);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+        throw new IOException(e);
+      } finally {
+        executor.shutdownNow();
       }
-    } catch (Exception e) {
-      LOG.error("Error checking non-combinable path", e);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
-      throw new IOException(e);
-    } finally {
-      executor.shutdownNow();
     }
 
     // Store the previous value for the path specification

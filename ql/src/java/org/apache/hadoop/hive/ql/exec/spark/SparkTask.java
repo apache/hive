@@ -80,7 +80,7 @@ public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
   private static final Log LOG = LogFactory.getLog(CLASS_NAME);
   private static final LogHelper console = new LogHelper(LOG);
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final long serialVersionUID = 1L;
   private SparkCounters sparkCounters;
 
@@ -118,6 +118,7 @@ public class SparkTask extends Task<SparkWork> {
           LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
           logSparkStatistic(sparkStatistics);
         }
+        LOG.info("Execution completed successfully");
       } else if (rc == 2) { // Cancel job if the monitor found job submission timeout.
         jobRef.cancelJob();
       }

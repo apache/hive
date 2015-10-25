@@ -124,9 +124,9 @@ public class StandardUnionObjectInspector extends SettableUnionObjectInspector {
   }
 
   @Override
-  public Object addField(Object union, ObjectInspector oi) {
+  public Object addField(Object union, Object field) {
     ArrayList<Object> a = (ArrayList<Object>) union;
-    a.add(oi);
+    a.add(field);
     return a;
   }
 

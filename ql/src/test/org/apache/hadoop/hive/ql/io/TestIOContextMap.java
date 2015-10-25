@@ -99,7 +99,81 @@ public class TestIOContextMap {
   }
 
   @Test
-  public void testSparkThreadLocal() throws Exception {
+  public void testTezLlapAttemptMap() throws Exception {
+    // Tests that different threads get the same object per attempt per input, and different
+    // between attempts/inputs; that attempt is inherited between threads; and that clearing
+    // the attempt produces a different result.
+    final int THREAD_COUNT = 2, ITER_COUNT = 1000, ATTEMPT_COUNT = 3;
+    final AtomicInteger countdown = new AtomicInteger(ITER_COUNT);
+    final IOContext[] results = new IOContext[ITER_COUNT * ATTEMPT_COUNT];
+    ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+    final CountDownLatch cdlIn = new CountDownLatch(THREAD_COUNT), cdlOut = new CountDownLatch(1);
+
+    @SuppressWarnings("unchecked")
+    FutureTask<Void>[] tasks = new FutureTask[THREAD_COUNT];
+    for (int i = 0; i < tasks.length; ++i) {
+      tasks[i] = new FutureTask<Void>(new Callable<Void>() {
+        public Void call() throws Exception {
+          final Configuration conf = new Configuration(), conf2 = new Configuration();
+          syncThreadStart(cdlIn, cdlOut);
+          while (true) {
+            int nextIx = countdown.decrementAndGet();
+            if (nextIx < 0) break;
+            String input1 = "Input " + nextIx;
+            conf.set(Utilities.INPUT_NAME, input1);
+            for (int j = 0; j < ATTEMPT_COUNT; ++j) {
+              String attemptId = "Attempt " + nextIx + ":" + j;
+              IOContextMap.setThreadAttemptId(attemptId);
+              final IOContext r1 = results[(nextIx * ATTEMPT_COUNT) + j] = IOContextMap.get(conf);
+              // For some attempts, check inheritance.
+              if ((nextIx % (ITER_COUNT / 10)) == 0) {
+                String input2 = "Input2 " + nextIx;
+                conf2.set(Utilities.INPUT_NAME, input2);
+                final AtomicReference<IOContext> ref2 = new AtomicReference<>();
+                Thread t = new Thread(new Runnable() {
+                  public void run() {
+                    assertSame(r1, IOContextMap.get(conf));
+                    ref2.set(IOContextMap.get(conf2));
+                  }
+                });
+                t.start();
+                t.join();
+                assertSame(ref2.get(), IOContextMap.get(conf2));
+              }
+              // Don't clear the attempt ID, or the stuff will be cleared.
+            }
+            if (nextIx == 0) break;
+          }
+          return null;
+        }
+      });
+      executor.execute(tasks[i]);
+    }
+
+    cdlIn.await(); // Wait for all threads to be ready.
+    cdlOut.countDown(); // Release them at the same time.
+    for (int i = 0; i < tasks.length; ++i) {
+      tasks[i].get();
+    }
+    Configuration conf = new Configuration();
+    Set<IOContext> resultSet = Sets.newIdentityHashSet();
+    for (int i = 0; i < ITER_COUNT; ++i) {
+      conf.set(Utilities.INPUT_NAME, "Input " + i);
+      for (int j = 0; j < ATTEMPT_COUNT; ++j) {
+        String attemptId = "Attempt " + i + ":" + j;
+        IOContext result = results[(i * ATTEMPT_COUNT) + j];
+        assertTrue(resultSet.add(result)); // All the objects must be different.
+        IOContextMap.setThreadAttemptId(attemptId);
+        assertSame(result, IOContextMap.get(conf)); // Matching result for attemptId + input.
+        IOContextMap.clearThreadAttempt(attemptId);
+        IOContextMap.setThreadAttemptId(attemptId);
+        assertNotSame(result, IOContextMap.get(conf)); // Different result after clearing.
+      }
+    }
+  }
+
+  @Test
+    public void testSparkThreadLocal() throws Exception {
     // Test that input name does not change IOContext returned, and that each thread gets its own.
     final Configuration conf1 = new Configuration();
     conf1.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "spark");

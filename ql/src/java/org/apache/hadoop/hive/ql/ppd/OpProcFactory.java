@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.ppd.ExprWalkerInfo.ExprInfo;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFDenseRank.GenericUDAFDenseRankEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.GenericUDAFLeadEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRank.GenericUDAFRankEvaluator;
@@ -423,15 +424,15 @@ public final class OpProcFactory {
           }
           return null;
         }
+        logExpr(nd, ewi);
+        owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, ewi);
         if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
             HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
           // add this filter for deletion, if it does not have non-final candidates
-          if (ewi.getNonFinalCandidates().values().isEmpty()) {
-            owi.addCandidateFilterOp((FilterOperator)op);
-          }
+          owi.addCandidateFilterOp((FilterOperator)op);
+          Map<String, List<ExprNodeDesc>> residual = ewi.getResidualPredicates(true);
+          createFilter(op, residual, owi);
         }
-        logExpr(nd, ewi);
-        owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, ewi);
       }
       // merge it with children predicates
       boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, ewi, null);
@@ -483,8 +484,14 @@ public final class OpProcFactory {
             prunePreds.getFinalCandidates().get(alias)) {
             // add expr to the list of predicates rejected from further pushing
             // so that we know to add it in createFilter()
-            prunePreds.addAlias(expr, alias);
-            prunePreds.addNonFinalCandidate(expr);
+            ExprInfo exprInfo;
+            if (alias != null) {
+              exprInfo = prunePreds.addOrGetExprInfo(expr);
+              exprInfo.alias = alias;
+            } else {
+              exprInfo = prunePreds.getExprInfo(expr);
+            }
+            prunePreds.addNonFinalCandidate(exprInfo != null ? exprInfo.alias : null, expr);
           }
           prunePreds.getFinalCandidates().remove(alias);
         }

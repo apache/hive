@@ -125,10 +125,12 @@ public class HiveSchemaTool {
    */
   public void showInfo() throws HiveMetaException {
     Connection metastoreConn = getConnectionToMetastore(true);
-    System.out.println("Hive distribution version:\t " +
-        MetaStoreSchemaInfo.getHiveSchemaVersion());
-    System.out.println("Metastore schema version:\t " +
-        getMetaStoreSchemaVersion(metastoreConn));
+    String hiveVersion = MetaStoreSchemaInfo.getHiveSchemaVersion();
+    String dbVersion = getMetaStoreSchemaVersion(metastoreConn);
+    System.out.println("Hive distribution version:\t " + hiveVersion);
+    System.out.println("Metastore schema version:\t " + dbVersion);
+    assertSameVersion(hiveVersion, dbVersion);
+
   }
 
   // read schema version from metastore
@@ -140,17 +142,23 @@ public class HiveSchemaTool {
     } else {
       versionQuery = "select t.SCHEMA_VERSION from VERSION t";
     }
-    try {
-      Statement stmt = metastoreConn.createStatement();
-      ResultSet res = stmt.executeQuery(versionQuery);
+    try(Statement stmt = metastoreConn.createStatement();
+        ResultSet res = stmt.executeQuery(versionQuery)) {
       if (!res.next()) {
         throw new HiveMetaException("Didn't find version data in metastore");
       }
       String currentSchemaVersion = res.getString(1);
-      metastoreConn.close();
       return currentSchemaVersion;
     } catch (SQLException e) {
       throw new HiveMetaException("Failed to get schema version.", e);
+    }
+    finally {
+      try {
+        metastoreConn.close();
+      } catch (SQLException e) {
+        System.err.println("Failed to close the metastore connection");
+        e.printStackTrace(System.err);
+      }
     }
   }
 
@@ -177,9 +185,15 @@ public class HiveSchemaTool {
     String newSchemaVersion = getMetaStoreSchemaVersion(
         getConnectionToMetastore(false));
     // verify that the new version is added to schema
-    if (!MetaStoreSchemaInfo.getHiveSchemaVersion().equalsIgnoreCase(newSchemaVersion)) {
-      throw new HiveMetaException("Expected schema version " + MetaStoreSchemaInfo.getHiveSchemaVersion() +
-        ", found version " + newSchemaVersion);
+    assertSameVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
+
+  }
+
+  private void assertSameVersion(String hiveSchemaVersion, String dbSchemaVersion)
+      throws HiveMetaException {
+    if (!hiveSchemaVersion.equalsIgnoreCase(dbSchemaVersion)) {
+      throw new HiveMetaException("Expected schema version " + hiveSchemaVersion
+          + ", found version " + dbSchemaVersion);
     }
   }
 

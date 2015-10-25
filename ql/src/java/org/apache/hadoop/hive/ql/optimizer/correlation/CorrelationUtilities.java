@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication.ReduceSinkDeduplicateProcCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -163,10 +165,10 @@ public final class CorrelationUtilities {
     return type.isInstance(parent) ? (T)parent : null;
   }
 
-  protected static Operator<?> getStartForGroupBy(ReduceSinkOperator cRS)
+  protected static Operator<?> getStartForGroupBy(ReduceSinkOperator cRS, ReduceSinkDeduplicateProcCtx dedupCtx)
       throws SemanticException {
     Operator<? extends Serializable> parent = getSingleParent(cRS);
-    return parent instanceof GroupByOperator ? parent : cRS;  // skip map-aggr GBY
+    return parent instanceof GroupByOperator && dedupCtx.isMapAggr() ? parent : cRS;  // skip map-aggr GBY
   }
 
 
@@ -240,6 +242,7 @@ public final class CorrelationUtilities {
           || cursor instanceof FilterOperator
           || cursor instanceof ForwardOperator
           || cursor instanceof ScriptOperator
+          || cursor instanceof GroupByOperator
           || cursor instanceof ReduceSinkOperator)) {
         return null;
       }
@@ -351,43 +354,10 @@ public final class CorrelationUtilities {
       ch.replaceParent(childRS, sel);
     }
 
-    removeChildSelIfApplicable(getSingleChild(childRS), sel, context, procCtx);
     childRS.setChildOperators(null);
     childRS.setParentOperators(null);
     procCtx.addRemovedOperator(childRS);
     return sel;
-  }
-
-  //TODO: ideally this method should be removed in future, as in we need not to rely on removing
-  // this select operator which likely is introduced by SortedDynPartitionOptimizer.
-  // NonblockingdedupOptimizer should be able to merge this select Operator with its
-  // parent. But, that is not working at the moment. See: dynpart_sort_optimization2.q
-
-  private static void removeChildSelIfApplicable(Operator<?> child, SelectOperator sel,
-      ParseContext context, AbstractCorrelationProcCtx procCtx) throws SemanticException {
-
-    if (!(child instanceof SelectOperator)) {
-     return;
-   }
-   if (child.getColumnExprMap() != null) {
-     return;
-   }
-
-   SelectOperator selOp = (SelectOperator) child;
-
-   for (ExprNodeDesc desc : selOp.getConf().getColList()) {
-     if (!(desc instanceof ExprNodeColumnDesc)) {
-       return;
-     }
-     ExprNodeColumnDesc col = (ExprNodeColumnDesc) desc;
-     if(!col.getColumn().startsWith(ReduceField.VALUE.toString()+".") ||
-         col.getTabAlias() != null || col.getIsPartitionColOrVirtualCol()){
-       return;
-     }
-   }
-
-   removeOperator(child, getSingleChild(child), sel, context);
-   procCtx.addRemovedOperator(child);
   }
 
   protected static void removeReduceSinkForGroupBy(ReduceSinkOperator cRS, GroupByOperator cGBYr,
@@ -395,7 +365,7 @@ public final class CorrelationUtilities {
 
     Operator<?> parent = getSingleParent(cRS);
 
-    if (parent instanceof GroupByOperator) {
+    if ((parent instanceof GroupByOperator) && procCtx.isMapAggr()) {
       // pRS-cGBYm-cRS-cGBYr (map aggregation) --> pRS-cGBYr(COMPLETE)
       // copies desc of cGBYm to cGBYr and remove cGBYm and cRS
       GroupByOperator cGBYm = (GroupByOperator) parent;
@@ -440,7 +410,7 @@ public final class CorrelationUtilities {
     removeOperator(cRS, cGBYr, parent, context);
     procCtx.addRemovedOperator(cRS);
 
-    if (parent instanceof GroupByOperator) {
+    if ((parent instanceof GroupByOperator) && procCtx.isMapAggr()) {
       removeOperator(parent, cGBYr, getSingleParent(parent), context);
       procCtx.addRemovedOperator(cGBYr);
     }

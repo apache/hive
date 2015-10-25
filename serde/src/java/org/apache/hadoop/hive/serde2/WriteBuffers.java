@@ -56,12 +56,11 @@ public final class WriteBuffers implements RandomAccessOutput {
 
 
   public WriteBuffers(int wbSize, long maxSize) {
-    this.wbSize = Integer.bitCount(wbSize) == 1 ? wbSize : (Integer.highestOneBit(wbSize) << 1);
+    this.wbSize = Integer.bitCount(wbSize) == 1 ? wbSize : Integer.highestOneBit(wbSize);
     this.wbSizeLog2 = 31 - Integer.numberOfLeadingZeros(this.wbSize);
     this.offsetMask = this.wbSize - 1;
     this.maxSize = maxSize;
     writePos.bufferIndex = -1;
-    nextBufferToWrite();
   }
 
   public int readVInt() {
@@ -207,6 +206,9 @@ public final class WriteBuffers implements RandomAccessOutput {
 
   @Override
   public void write(byte[] b, int off, int len) {
+    if (writePos.bufferIndex == -1) {
+      nextBufferToWrite();
+    }
     int srcOffset = 0;
     while (srcOffset < len) {
       int toWrite = Math.min(len - srcOffset, wbSize - writePos.offset);
@@ -347,7 +349,7 @@ public final class WriteBuffers implements RandomAccessOutput {
     writeBuffers.clear();
     clearState();
   }
-
+ 
   private void clearState() {
     writePos.clear();
     defaultReadPos.clear();
@@ -355,6 +357,9 @@ public final class WriteBuffers implements RandomAccessOutput {
 
 
   public long getWritePoint() {
+    if (writePos.bufferIndex == -1) {
+      nextBufferToWrite();
+    }
     return ((long)writePos.bufferIndex << wbSizeLog2) + writePos.offset;
   }
 
@@ -498,6 +503,9 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   public void seal() {
+    if (writePos.bufferIndex == -1) {
+      return;
+    }
     if (writePos.offset < (wbSize * 0.8)) { // arbitrary
       byte[] smallerBuffer = new byte[writePos.offset];
       System.arraycopy(writePos.buffer, 0, smallerBuffer, 0, writePos.offset);

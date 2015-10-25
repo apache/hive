@@ -520,3 +520,110 @@ POSTHOOK: query: DROP TABLE bay
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bay
 POSTHOOK: Output: default@bay
+PREHOOK: query: create table s as select * from src limit 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s
+POSTHOOK: query: create table s as select * from src limit 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s
+PREHOOK: query: select count(*) from s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s
+#### A masked pattern was here ####
+10
+PREHOOK: query: create temporary table s as select * from s limit 2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@s
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s
+POSTHOOK: query: create temporary table s as select * from s limit 2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@s
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s
+PREHOOK: query: select count(*) from s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s
+#### A masked pattern was here ####
+2
+PREHOOK: query: with s as ( select * from src limit 1)
+select count(*) from s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: with s as ( select * from src limit 1)
+select count(*) from s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: with src as ( select * from s)
+select count(*) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s
+#### A masked pattern was here ####
+POSTHOOK: query: with src as ( select * from s)
+select count(*) from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s
+#### A masked pattern was here ####
+2
+PREHOOK: query: drop table s
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@s
+PREHOOK: Output: default@s
+POSTHOOK: query: drop table s
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@s
+POSTHOOK: Output: default@s
+PREHOOK: query: select count(*) from s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s
+#### A masked pattern was here ####
+10
+PREHOOK: query: with s as ( select * from src limit 1)
+select count(*) from s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: with s as ( select * from src limit 1)
+select count(*) from s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: with src as ( select * from s)
+select count(*) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s
+#### A masked pattern was here ####
+POSTHOOK: query: with src as ( select * from s)
+select count(*) from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s
+#### A masked pattern was here ####
+10
+PREHOOK: query: drop table s
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@s
+PREHOOK: Output: default@s
+POSTHOOK: query: drop table s
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@s
+POSTHOOK: Output: default@s

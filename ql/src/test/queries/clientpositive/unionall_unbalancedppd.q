@@ -1,4 +1,7 @@
 set hive.optimize.ppd=true;
+
+-- SORT_QUERY_RESULTS
+
 drop table if exists union_all_bug_test_1;
 drop table if exists union_all_bug_test_2;
 create table if not exists union_all_bug_test_1
@@ -102,6 +105,8 @@ from union_all_bug_test_2
 ) A
 WHERE (filter = 1 or filter = 0);
 
+explain
+
 SELECT f1
 FROM (
 
@@ -118,3 +123,73 @@ f1
 from union_all_bug_test_2
 ) A
 WHERE (f1 = 1);
+
+SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (f1 = 1);
+
+explain
+
+SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (filter = 1 and f1 = 1);
+
+SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (filter = 1 and f1 = 1);
+
+SELECT f1
+FROM (
+
+SELECT
+f1
+, if('helloworld' like '%hello%' ,f1,f2) as filter
+FROM union_all_bug_test_1
+
+union all
+
+select
+f1
+, 0 as filter
+from union_all_bug_test_2
+) A
+WHERE (f1 = 1 and filter = 1);

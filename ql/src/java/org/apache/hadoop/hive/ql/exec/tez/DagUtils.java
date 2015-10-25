@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.Utils;
@@ -108,6 +109,7 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.dag.api.Vertex.VertexExecutionContext;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.VertexManagerPluginDescriptor;
 import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
@@ -624,10 +626,14 @@ public class DagUtils {
     if (mapWork instanceof MergeFileWork) {
       procClassName = MergeFileTezProcessor.class.getName();
     }
+
+    VertexExecutionContext executionContext = createVertexExecutionContext(mapWork);
+
     map = Vertex.create(mapWork.getName(), ProcessorDescriptor.create(procClassName)
         .setUserPayload(serializedConf), numTasks, getContainerResource(conf));
 
     map.setTaskEnvironment(getContainerEnvironment(conf, true));
+    map.setExecutionContext(executionContext);
     map.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     assert mapWork.getAliasToWork().keySet().size() == 1;
@@ -665,6 +671,19 @@ public class DagUtils {
     return conf;
   }
 
+  private VertexExecutionContext createVertexExecutionContext(BaseWork work) {
+    VertexExecutionContext vertexExecutionContext = VertexExecutionContext.createExecuteInContainers(true);
+    if (work.getLlapMode()) {
+      vertexExecutionContext = VertexExecutionContext
+          .create(TezSessionState.LLAP_SERVICE, TezSessionState.LLAP_SERVICE,
+              TezSessionState.LLAP_SERVICE);
+    }
+    if (work.getUberMode()) {
+      vertexExecutionContext = VertexExecutionContext.createExecuteInAm(true);
+    }
+    return vertexExecutionContext;
+  }
+
   /*
    * Helper function to create Vertex for given ReduceWork.
    */
@@ -679,14 +698,18 @@ public class DagUtils {
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, reduceWork);
 
+    VertexExecutionContext vertexExecutionContext = createVertexExecutionContext(reduceWork);
+
     // create the vertex
     Vertex reducer = Vertex.create(reduceWork.getName(),
         ProcessorDescriptor.create(ReduceTezProcessor.class.getName()).
-        setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
-            reduceWork.isAutoReduceParallelism() ? reduceWork.getMaxReduceTasks() : reduceWork
-                .getNumReduceTasks(), getContainerResource(conf));
+            setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
+        reduceWork.isAutoReduceParallelism() ?
+            reduceWork.getMaxReduceTasks() :
+            reduceWork.getNumReduceTasks(), getContainerResource(conf));
 
     reducer.setTaskEnvironment(getContainerEnvironment(conf, false));
+    reducer.setExecutionContext(vertexExecutionContext);
     reducer.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
@@ -1015,6 +1038,9 @@ public class DagUtils {
     conf.set("mapred.partitioner.class", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEPARTITIONER));
     conf.set("tez.runtime.partitioner.class", MRPartitioner.class.getName());
 
+    // Removing job credential entry/ cannot be set on the tasks
+    conf.unset("mapreduce.job.credentials.binary");
+
     Utilities.stripHivePasswordDetails(conf);
     return conf;
   }
@@ -1091,8 +1117,10 @@ public class DagUtils {
       StatsPublisher statsPublisher;
       StatsFactory factory = StatsFactory.newFactory(conf);
       if (factory != null) {
+        StatsCollectionContext sCntxt = new StatsCollectionContext(conf);
+        sCntxt.setStatsTmpDirs(Utilities.getStatsTmpDirs(work, conf));
         statsPublisher = factory.getStatsPublisher();
-        if (!statsPublisher.init(conf)) { // creating stats table if not exists
+        if (!statsPublisher.init(sCntxt)) { // creating stats table if not exists
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
             throw
               new HiveException(ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());

@@ -23,6 +23,7 @@ import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -105,6 +106,7 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
+import org.apache.hadoop.hive.ql.plan.ShowCreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
@@ -137,6 +139,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
 
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -410,6 +413,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWPARTITIONS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowPartitions(ast);
+      break;
+    case HiveParser.TOK_SHOW_CREATEDATABASE:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      analyzeShowCreateDatabase(ast);
       break;
     case HiveParser.TOK_SHOW_CREATETABLE:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -1464,6 +1471,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       HashMap<String, String> partSpec) throws SemanticException {
 
     String newLocation = unescapeSQLString(ast.getChild(0).getText());
+    try {
+      // To make sure host/port pair is valid, the status of the location
+      // does not matter
+      FileSystem.get(new URI(newLocation), conf).getFileStatus(new Path(newLocation));
+    } catch (FileNotFoundException e) {
+      // Only check host/port pair is valid, wheter the file exist or not does not matter
+    } catch (Exception e) {
+      throw new SemanticException("Cannot connect to namenode, please check if host/port pair for " + newLocation + " is valid", e);
+    }
     addLocationToOutputs(newLocation);
     AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, newLocation, partSpec);
 
@@ -2065,6 +2081,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showPartsDesc), conf));
     setFetchTask(createFetchTask(showPartsDesc.getSchema()));
+  }
+
+  private void analyzeShowCreateDatabase(ASTNode ast) throws SemanticException {
+    String dbName = getUnescapedName((ASTNode)ast.getChild(0));
+    ShowCreateDatabaseDesc showCreateDbDesc =
+        new ShowCreateDatabaseDesc(dbName, ctx.getResFile().toString());
+
+    Database database = getDatabase(dbName);
+    inputs.add(new ReadEntity(database));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showCreateDbDesc), conf));
+    setFetchTask(createFetchTask(showCreateDbDesc.getSchema()));
   }
 
   private void analyzeShowCreateTable(ASTNode ast) throws SemanticException {

@@ -1,6 +1,1 @@
-FAILED: SemanticException Line 6:8 Unsupported SubQuery Expression '1' in definition of SubQuery sq_1 [
-a.p_size in 
-  (select first_value(p_size) over(partition by p_mfgr order by p_size) 
-   from part b 
-   where a.p_brand = b.p_brand)
-] used as sq_1 at Line 4:15: Correlated Sub Queries cannot contain Windowing clauses.
+FAILED: SemanticException [Error 10249]: Line 6:8 Unsupported SubQuery Expression '1': Correlated Sub Queries cannot contain Windowing clauses.

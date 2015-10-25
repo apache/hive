@@ -35,6 +35,14 @@ explain
 SELECT COUNT(*) FROM insert_into1;
 select count(*) from insert_into1;
 
+explain insert overwrite table insert_into1 select 1, 'a';
+insert overwrite table insert_into1 select 1, 'a';
+
+explain insert into insert_into1 select 2, 'b';
+insert into insert_into1 select 2, 'b';
+
+select * from insert_into1;
+
 DROP TABLE insert_into1;
 
 set hive.compute.query.using.stats=false;

@@ -97,6 +97,20 @@
   <profiles>
     <profile>
       <id>hadoop-1</id>
+        <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.3.2</version>
+           <configuration>
+              <excludes>
+                <exclude>**/metastore/hbase/**</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+        </build>
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -117,6 +131,12 @@
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-common</artifactId>
           <version>${hbase.hadoop1.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-common</artifactId>
+          <version>${hbase.hadoop1.version}</version>
+          <classifier>tests</classifier>
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>
@@ -165,6 +185,18 @@
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-common</artifactId>
           <version>${hbase.hadoop2.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-server</artifactId>
+          <version>${hbase.hadoop2.version}</version>
+          <type>test-jar</type>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-common</artifactId>
+          <version>${hbase.hadoop2.version}</version>
+          <type>test-jar</type>
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -40,7 +41,6 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
-import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -138,6 +138,13 @@ public class GenSparkProcContext implements NodeProcessorCtx {
   // This is necessary as sometimes semantic analyzer's mapping is different than operator's own alias.
   public final Map<String, Operator<? extends OperatorDesc>> topOps;
 
+  // The set of pruning sinks
+  public final Set<Operator<?>> pruningSinkSet;
+
+  // The set of TableScanOperators for pruning OP trees
+  public final Set<Operator<?>> clonedPruningTableScanSet;
+
+
   @SuppressWarnings("unchecked")
   public GenSparkProcContext(HiveConf conf,
       ParseContext parseContext,
@@ -153,8 +160,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
     this.inputs = inputs;
     this.outputs = outputs;
     this.topOps = topOps;
-    this.currentTask = (SparkTask) TaskFactory.get(
-        new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
+    this.currentTask = SparkUtilities.createSparkTask(conf);
     this.rootTasks.add(currentTask);
     this.leafOpToFollowingWorkInfo =
         new LinkedHashMap<ReduceSinkOperator, ObjectPair<SparkEdgeProperty, ReduceWork>>();
@@ -177,5 +183,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
     this.clonedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
     this.fileSinkSet = new LinkedHashSet<FileSinkOperator>();
     this.fileSinkMap = new LinkedHashMap<FileSinkOperator, List<FileSinkOperator>>();
+    this.pruningSinkSet = new LinkedHashSet<Operator<?>>();
+    this.clonedPruningTableScanSet = new LinkedHashSet<Operator<?>>();
   }
 }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -77,6 +79,12 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     Map<Integer, String> parentToInput = desc.getParentToInput();
     Map<Integer, Long> parentKeyCounts = desc.getParentKeyCounts();
 
+    boolean isCrossProduct = false;
+    List<ExprNodeDesc> joinExprs = desc.getKeys().values().iterator().next();
+    if (joinExprs.size() == 0) {
+      isCrossProduct = true;
+    }
+
     boolean useOptimizedTables = HiveConf.getBoolVar(
         hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
     boolean useHybridGraceHashJoin = desc.isHybridHashJoin();
@@ -84,6 +92,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
     // Get the total available memory from memory manager
     long totalMapJoinMemory = desc.getMemoryNeeded();
+    LOG.info("Memory manager allocates " + totalMapJoinMemory + " bytes for the loading hashtable.");
     if (totalMapJoinMemory <= 0) {
       totalMapJoinMemory = HiveConf.getLongVar(
         hconf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
@@ -128,11 +137,9 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       long memory = tableMemorySizes.get(biggest);
       int numPartitions = 0;
       try {
-        numPartitions = HybridHashTableContainer.calcNumPartitions(memory,
-            maxSize,
+        numPartitions = HybridHashTableContainer.calcNumPartitions(memory, maxSize,
             HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
-            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
-            nwayConf);
+            HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE));
       } catch (IOException e) {
         throw new HiveException(e);
       }
@@ -185,11 +192,18 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           }
         }
 
-        MapJoinTableContainer tableContainer = useOptimizedTables
-            ? (useHybridGraceHashJoin ? new HybridHashTableContainer(hconf, keyCount,
-                                            memory, desc.getParentDataSizes().get(pos), nwayConf)
-                                      : new MapJoinBytesTableContainer(hconf, valCtx, keyCount, 0))
-            : new HashMapWrapper(hconf, keyCount);
+        MapJoinTableContainer tableContainer;
+        if (useOptimizedTables) {
+          if (!useHybridGraceHashJoin || isCrossProduct) {
+            tableContainer = new MapJoinBytesTableContainer(hconf, valCtx, keyCount, 0);
+          } else {
+            tableContainer = new HybridHashTableContainer(hconf, keyCount, memory,
+                desc.getParentDataSizes().get(pos), nwayConf);
+          }
+        } else {
+          tableContainer = new HashMapWrapper(hconf, keyCount);
+        }
+
         LOG.info("Using tableContainer " + tableContainer.getClass().getSimpleName());
 
         while (kvReader.next()) {

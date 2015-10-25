@@ -115,12 +115,12 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: ((rand(1) < 0.1) and (not ((UDFToDouble(key) > 50.0) or (UDFToDouble(key) < 10.0)))) (type: boolean)
-            Statistics: Num rows: 56 Data size: 594 Basic stats: COMPLETE Column stats: NONE
+            predicate: ((rand(1) < 0.1) and ((UDFToDouble(key) <= 50.0) and (UDFToDouble(key) >= 10.0))) (type: boolean)
+            Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 56 Data size: 594 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
@@ -247,12 +247,12 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (not ((UDFToDouble(key) > 50.0) or (UDFToDouble(key) < 10.0))) (type: boolean)
-            Statistics: Num rows: 168 Data size: 1784 Basic stats: COMPLETE Column stats: NONE
+            predicate: ((UDFToDouble(key) <= 50.0) and (UDFToDouble(key) >= 10.0)) (type: boolean)
+            Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 168 Data size: 1784 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'

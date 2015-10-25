@@ -89,7 +89,8 @@ public final class MetaDataPrettyFormatUtils {
     String columnHeaders[] = MetaDataFormatUtils.getColumnsHeader(null);
     formatOutputPretty(columnHeaders[0], columnHeaders[1], columnHeaders[2],
                         columnInformation, maxColNameLen, prettyOutputNumCols);
-    columnInformation.append(MetaDataFormatUtils.LINE_DELIM);
+    columnInformation.append(MetaDataFormatUtils.FIELD_DELIM)
+        .append(MetaDataFormatUtils.FIELD_DELIM).append(MetaDataFormatUtils.LINE_DELIM);
   }
 
   private static void formatAllFieldsPretty(StringBuilder tableInfo,
@@ -202,6 +203,7 @@ public final class MetaDataPrettyFormatUtils {
     String delim = StringUtils.repeat(" ", delimCount);
     sb.append(paddedText);
     sb.append(delim);
+    sb.append(MetaDataFormatUtils.FIELD_DELIM);
 
     return paddedText.length() + delim.length();
   }
@@ -209,23 +211,29 @@ public final class MetaDataPrettyFormatUtils {
   private static void formatOutputPretty(String colName, String colType,
       String colComment, StringBuilder tableInfo, int maxColNameLength,
       int prettyOutputNumCols) {
-    int colsConsumed = 0;
-    colsConsumed += appendFormattedColumn(tableInfo, colName, maxColNameLength + 1);
-    colsConsumed += appendFormattedColumn(tableInfo, colType, PRETTY_ALIGNMENT);
+    int colsNameConsumed = appendFormattedColumn(tableInfo, colName, maxColNameLength + 1);
+    int colsTypeConsumed =appendFormattedColumn(tableInfo, colType, PRETTY_ALIGNMENT);
 
-    colComment = breakCommentIntoMultipleLines(colComment, colsConsumed, prettyOutputNumCols);
+    colComment = breakCommentIntoMultipleLines(colComment, colsNameConsumed + colsTypeConsumed,
+        prettyOutputNumCols);
 
     /* Comment indent processing for multi-line comments.
      * Comments should be indented the same amount on each line
      * if the first line comment starts indented by k,
-     * the following line comments should also be indented by k.
+     * the following line comments should also be indented by k
+     * The following line comments will as a new line,so we need to
+     * add colsNameConsumed spaces as the first column and
+     * colsTypeConsumed spaces as the second column and the
+     * comment as the last column.we use two FIELD_DELIM to
+     * split them.
      */
     String[] commentSegments = colComment.split("\n|\r|\r\n");
     tableInfo.append(trimTrailingWS(commentSegments[0]));
     tableInfo.append(MetaDataFormatUtils.LINE_DELIM);
     for (int i = 1; i < commentSegments.length; i++) {
-      tableInfo.append(StringUtils.repeat(" ", colsConsumed));
-      tableInfo.append(trimTrailingWS(commentSegments[i]));
+      tableInfo.append(String.format(
+          "%" + colsNameConsumed + "s" + MetaDataFormatUtils.FIELD_DELIM + "%" + colsTypeConsumed
+              + "s" + MetaDataFormatUtils.FIELD_DELIM + "%s", "", "", commentSegments[i]));
       tableInfo.append(MetaDataFormatUtils.LINE_DELIM);
     }
   }

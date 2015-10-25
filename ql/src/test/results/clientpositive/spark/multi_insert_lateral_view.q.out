@@ -597,7 +597,7 @@ STAGE PLANS:
                   alias: src_10
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key > 200) or (key < 200)) (type: boolean)
+                    predicate: ((key < 200) or (key > 200)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -1267,7 +1267,7 @@ STAGE PLANS:
                   alias: src_10
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key > 200) or (key < 200)) (type: boolean)
+                    predicate: ((key < 200) or (key > 200)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string), key (type: string)

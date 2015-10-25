@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.tez.mapreduce.lib.MRReader;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
 /**
@@ -63,11 +64,13 @@ public class MapRecordSource implements RecordSource {
         try {
           value = reader.getCurrentValue();
         } catch (IOException e) {
+          closeReader();
           throw new HiveException(e);
         }
         return processRow(value);
       }
     } catch (IOException e) {
+      closeReader();
       throw new HiveException(e);
     }
     return false;
@@ -88,10 +91,25 @@ public class MapRecordSource implements RecordSource {
         throw (OutOfMemoryError) e;
       } else {
         LOG.fatal(StringUtils.stringifyException(e));
+        closeReader();
         throw new RuntimeException(e);
       }
     }
     return true; // give me more
+  }
+
+  private void closeReader() {
+    if (!(reader instanceof MRReader)) {
+      LOG.warn("Cannot close " + (reader == null ? null : reader.getClass()));
+      return;
+    }
+    LOG.info("Closing MRReader on error");
+    MRReader mrReader = (MRReader)reader;
+    try {
+      mrReader.close();
+    } catch (IOException ex) {
+      LOG.error("Failed to close the reader; ignoring", ex);
+    }
   }
 
 }

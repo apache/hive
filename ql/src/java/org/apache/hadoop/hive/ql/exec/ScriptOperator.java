@@ -18,25 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -56,6 +37,26 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.spark.SparkFiles;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ScriptOperator.
@@ -146,16 +147,19 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     return value;
   }
 
-  boolean blackListed(String name) {
+  /**
+   * Checks whether a given configuration name is blacklisted and should not be converted
+   * to an environment variable.
+   */
+  boolean blackListed(Configuration conf, String name) {
     if (blackListedConfEntries == null) {
       blackListedConfEntries = new HashSet<String>();
-      if (hconf != null) {
-        String bl = hconf.get(HiveConf.ConfVars.HIVESCRIPT_ENV_BLACKLIST.toString());
-        if (bl != null && bl.length() > 0) {
+      if (conf != null) {
+        String bl = conf.get(HiveConf.ConfVars.HIVESCRIPT_ENV_BLACKLIST.toString(),
+          HiveConf.ConfVars.HIVESCRIPT_ENV_BLACKLIST.getDefaultValue());
+        if (bl != null && !bl.isEmpty()) {
           String[] bls = bl.split(",");
-          for (String b : bls) {
-            blackListedConfEntries.add(b);
-          }
+          Collections.addAll(blackListedConfEntries, bls);
         }
       }
     }
@@ -171,7 +175,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     while (it.hasNext()) {
       Map.Entry<String, String> en = it.next();
       String name = en.getKey();
-      if (!blackListed(name)) {
+      if (!blackListed(conf, name)) {
         // String value = (String)en.getValue(); // does not apply variable
         // expansion
         String value = conf.get(name); // does variable expansion
@@ -261,8 +265,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     firstRow = true;
 
     statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
@@ -286,7 +290,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     } catch (Exception e) {
       throw new HiveException(ErrorMsg.SCRIPT_INIT_ERROR.getErrorCodedMsg(), e);
     }
-    return result;
   }
 
   boolean isBrokenPipeException(IOException e) {
@@ -306,8 +309,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   void displayBrokenPipeInfo() {
     if (isLogInfoEnabled) {
       LOG.info("The script did not consume all input data. This is considered as an error.");
-      LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString()
-	  + "=true; to ignore it.");
+      LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString() + "=true; to ignore it.");
     }
     return;
   }
@@ -349,12 +351,12 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         }
 
         String[] wrappedCmdArgs = addWrapper(cmdArgs);
-	if (isLogInfoEnabled) {
-	  LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
-	  LOG.info("tablename=" + tableName);
-	  LOG.info("partname=" + partitionName);
-	  LOG.info("alias=" + alias);
-	}
+        if (isLogInfoEnabled) {
+          LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
+          LOG.info("tablename=" + tableName);
+          LOG.info("partname=" + partitionName);
+          LOG.info("alias=" + alias);
+        }
 
         ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);
         Map<String, String> env = pb.environment();
@@ -672,9 +674,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       long now = System.currentTimeMillis();
       // reporter is a member variable of the Operator class.
       if (now - lastReportTime > 60 * 1000 && reporter != null) {
-	if (isLogInfoEnabled) {
-	  LOG.info("ErrorStreamProcessor calling reporter.progress()");
-	}
+        if (isLogInfoEnabled) {
+          LOG.info("ErrorStreamProcessor calling reporter.progress()");
+        }
         lastReportTime = now;
         reporter.progress();
       }
@@ -730,9 +732,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           }
           proc.processLine(row);
         }
-	if (isLogInfoEnabled) {
-	  LOG.info("StreamThread " + name + " done");
-	}
+        if (isLogInfoEnabled) {
+          LOG.info("StreamThread " + name + " done");
+        }
 
       } catch (Throwable th) {
         scriptError = th;

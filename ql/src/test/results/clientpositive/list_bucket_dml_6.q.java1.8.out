@@ -295,8 +295,8 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:srcpart]
-        /srcpart/ds=2008-04-08/hr=12 [$hdt$_0:srcpart]
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-08/hr=12 [srcpart]
 
   Stage: Stage-0
     Move Operator
@@ -540,7 +540,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.list_bucketing_dynamic_part
                       partition_columns hr
-                      partition_columns.types string:string
+                      partition_columns.types string
                       serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
@@ -646,8 +646,8 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:srcpart]
-        /srcpart/ds=2008-04-08/hr=12 [$hdt$_0:srcpart]
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-08/hr=12 [srcpart]
 
   Stage: Stage-7
     Conditional Operator
@@ -677,7 +677,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.list_bucketing_dynamic_part
                 partition_columns hr
-                partition_columns.types string:string
+                partition_columns.types string
                 serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
@@ -709,7 +709,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.list_bucketing_dynamic_part
               partition_columns hr
-              partition_columns.types string:string
+              partition_columns.types string
               serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
@@ -726,7 +726,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.list_bucketing_dynamic_part
                 partition_columns hr
-                partition_columns.types string:string
+                partition_columns.types string
                 serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
@@ -758,7 +758,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.list_bucketing_dynamic_part
               partition_columns hr
-              partition_columns.types string:string
+              partition_columns.types string
               serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
@@ -775,7 +775,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.list_bucketing_dynamic_part
                 partition_columns hr
-                partition_columns.types string:string
+                partition_columns.types string
                 serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe

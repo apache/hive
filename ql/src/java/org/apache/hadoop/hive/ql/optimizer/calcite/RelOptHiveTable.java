@@ -312,6 +312,19 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           setOfFiledCols.removeAll(setOfObtainedColStats);
 
           colNamesFailedStats.addAll(setOfFiledCols);
+        } else {
+          // Column stats in hiveColStats might not be in the same order as the columns in
+          // nonPartColNamesThatRqrStats. reorder hiveColStats so we can build hiveColStatsMap
+          // using nonPartColIndxsThatRqrStats as below
+          Map<String, ColStatistics> columnStatsMap =
+              new HashMap<String, ColStatistics>(hiveColStats.size());
+          for (ColStatistics cs : hiveColStats) {
+            columnStatsMap.put(cs.getColumnName(), cs);
+          }
+          hiveColStats.clear();
+          for (String colName : nonPartColNamesThatRqrStats) {
+            hiveColStats.add(columnStatsMap.get(colName));
+          }
         }
       } else {
         // 2.2 Obtain col stats for partitioned table.
@@ -349,6 +362,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
       if (hiveColStats != null && hiveColStats.size() == nonPartColNamesThatRqrStats.size()) {
         for (int i = 0; i < hiveColStats.size(); i++) {
+          // the columns in nonPartColIndxsThatRqrStats/nonPartColNamesThatRqrStats/hiveColStats
+          // are in same order
           hiveColStatsMap.put(nonPartColIndxsThatRqrStats.get(i), hiveColStats.get(i));
         }
       }

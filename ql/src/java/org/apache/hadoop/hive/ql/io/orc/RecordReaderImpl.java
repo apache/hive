@@ -32,37 +32,31 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
-import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory.TreeReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.hadoop.io.Text;
 
-class RecordReaderImpl implements RecordReader {
-
+public class RecordReaderImpl implements RecordReader {
   static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
   private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
-
   private final Path path;
-  private final FSDataInputStream file;
   private final long firstRow;
   private final List<StripeInformation> stripes =
-    new ArrayList<StripeInformation>();
+      new ArrayList<StripeInformation>();
   private OrcProto.StripeFooter stripeFooter;
   private final long totalRowCount;
   private final CompressionCodec codec;
@@ -77,7 +71,7 @@ class RecordReaderImpl implements RecordReader {
   private final Map<StreamName, InStream> streams =
       new HashMap<StreamName, InStream>();
   DiskRangeList bufferChunks = null;
-  private final TreeReader reader;
+  private final TreeReaderFactory.TreeReader reader;
   private final OrcProto.RowIndex[] indexes;
   private final OrcProto.BloomFilterIndex[] bloomFilterIndices;
   private final SargApplier sargApp;
@@ -85,15 +79,13 @@ class RecordReaderImpl implements RecordReader {
   private boolean[] includedRowGroups = null;
   private final Configuration conf;
   private final MetadataReader metadata;
-
-  private final ByteBufferAllocatorPool pool = new ByteBufferAllocatorPool();
-  private final ZeroCopyReaderShim zcr;
+  private final DataReader dataReader;
 
   public final static class Index {
     OrcProto.RowIndex[] rowGroupIndex;
     OrcProto.BloomFilterIndex[] bloomFilterIndex;
 
-    Index(OrcProto.RowIndex[] rgIndex, OrcProto.BloomFilterIndex[] bfIndex) {
+    public Index(OrcProto.RowIndex[] rgIndex, OrcProto.BloomFilterIndex[] bfIndex) {
       this.rowGroupIndex = rgIndex;
       this.bloomFilterIndex = bfIndex;
     }
@@ -113,9 +105,10 @@ class RecordReaderImpl implements RecordReader {
 
   /**
    * Given a list of column names, find the given column and return the index.
+   *
    * @param columnNames the list of potential column names
-   * @param columnName the column name to look for
-   * @param rootColumn offset the result with the rootColumn
+   * @param columnName  the column name to look for
+   * @param rootColumn  offset the result with the rootColumn
    * @return the column number or -1 if the column wasn't found
    */
   static int findColumns(String[] columnNames,
@@ -137,7 +130,7 @@ class RecordReaderImpl implements RecordReader {
    *                   result
    * @return an array mapping the sarg leaves to concrete column numbers
    */
-  public static int[] mapSargColumns(List<PredicateLeaf> sargLeaves,
+  public static int[] mapSargColumnsToOrcInternalColIdx(List<PredicateLeaf> sargLeaves,
                              String[] columnNames,
                              int rootColumn) {
     int[] result = new int[sargLeaves.size()];
@@ -160,14 +153,13 @@ class RecordReaderImpl implements RecordReader {
                              Configuration conf
                              ) throws IOException {
     this.path = path;
-    this.file = fileSystem.open(path);
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
     this.included = options.getInclude();
     this.conf = conf;
     this.rowIndexStride = strideRate;
-    this.metadata = new MetadataReader(file, codec, bufferSize, types.size());
+    this.metadata = new MetadataReaderImpl(fileSystem, path, codec, bufferSize, types.size());
     SearchArgument sarg = options.getSearchArgument();
     if (sarg != null && strideRate != 0) {
       sargApp = new SargApplier(
@@ -193,7 +185,9 @@ class RecordReaderImpl implements RecordReader {
     if (zeroCopy == null) {
       zeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(conf);
     }
-    zcr = zeroCopy ? RecordReaderUtils.createZeroCopyShim(file, codec, pool) : null;
+    // TODO: we could change the ctor to pass this externally
+    this.dataReader = RecordReaderUtils.createDefaultDataReader(fileSystem, path, zeroCopy, codec);
+    this.dataReader.open();
 
     firstRow = skippedRows;
     totalRowCount = rows;
@@ -376,7 +370,7 @@ class RecordReaderImpl implements RecordReader {
       Object predObj = getBaseObjectForComparison(predicate.getType(), baseObj);
 
       result = evaluatePredicateMinMax(predicate, predObj, minValue, maxValue, hasNull);
-      if (bloomFilter != null && result != TruthValue.NO_NULL && result != TruthValue.NO) {
+      if (shouldEvaluateBloomFilter(predicate, result, bloomFilter)) {
         result = evaluatePredicateBloomFilter(predicate, predObj, bloomFilter, hasNull);
       }
       // in case failed conversion, return the default YES_NO_NULL truth value
@@ -392,6 +386,22 @@ class RecordReaderImpl implements RecordReader {
       }
     }
     return result;
+  }
+
+  private static boolean shouldEvaluateBloomFilter(PredicateLeaf predicate,
+      TruthValue result, BloomFilterIO bloomFilter) {
+    // evaluate bloom filter only when
+    // 1) Bloom filter is available
+    // 2) Min/Max evaluation yield YES or MAYBE
+    // 3) Predicate is EQUALS or IN list
+    if (bloomFilter != null
+        && result != TruthValue.NO_NULL && result != TruthValue.NO
+        && (predicate.getOperator().equals(PredicateLeaf.Operator.EQUALS)
+            || predicate.getOperator().equals(PredicateLeaf.Operator.NULL_SAFE_EQUALS)
+            || predicate.getOperator().equals(PredicateLeaf.Operator.IN))) {
+      return true;
+    }
+    return false;
   }
 
   private static TruthValue evaluatePredicateMinMax(PredicateLeaf predicate, Object predObj,
@@ -523,7 +533,8 @@ class RecordReaderImpl implements RecordReader {
         result = TruthValue.YES_NO_NULL;
       }
     } else if (predObj instanceof String || predObj instanceof Text ||
-        predObj instanceof HiveDecimal || predObj instanceof BigDecimal) {
+        predObj instanceof HiveDecimalWritable ||
+        predObj instanceof BigDecimal) {
       if (bf.testString(predObj.toString())) {
         result = TruthValue.YES_NO_NULL;
       }
@@ -560,11 +571,7 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static Object getBaseObjectForComparison(PredicateLeaf.Type type, Object obj) {
-    if (obj != null) {
-      if (obj instanceof ExprNodeConstantDesc) {
-        obj = ((ExprNodeConstantDesc) obj).getValue();
-      }
-    } else {
+    if (obj == null) {
       return null;
     }
     switch (type) {
@@ -588,20 +595,23 @@ class RecordReaderImpl implements RecordReader {
         break;
       case DECIMAL:
         if (obj instanceof Boolean) {
-          return ((Boolean) obj).booleanValue() ? HiveDecimal.ONE : HiveDecimal.ZERO;
+          return new HiveDecimalWritable(((Boolean) obj).booleanValue() ?
+              HiveDecimal.ONE : HiveDecimal.ZERO);
         } else if (obj instanceof Integer) {
-          return HiveDecimal.create(((Integer) obj).intValue());
+          return new HiveDecimalWritable(((Integer) obj).intValue());
         } else if (obj instanceof Long) {
-          return HiveDecimal.create(((Long) obj));
+          return new HiveDecimalWritable(((Long) obj));
         } else if (obj instanceof Float || obj instanceof Double ||
             obj instanceof String) {
-          return HiveDecimal.create(obj.toString());
+          return new HiveDecimalWritable(obj.toString());
         } else if (obj instanceof BigDecimal) {
-          return HiveDecimal.create((BigDecimal) obj);
+          return new HiveDecimalWritable(HiveDecimal.create((BigDecimal) obj));
         } else if (obj instanceof HiveDecimal) {
+          return new HiveDecimalWritable((HiveDecimal) obj);
+        } else if (obj instanceof HiveDecimalWritable) {
           return obj;
         } else if (obj instanceof Timestamp) {
-          return HiveDecimal.create(
+          return new HiveDecimalWritable(
               new Double(new TimestampWritable((Timestamp) obj).getDouble()).toString());
         }
         break;
@@ -621,8 +631,6 @@ class RecordReaderImpl implements RecordReader {
           return ((BigDecimal) obj).doubleValue();
         }
         break;
-      case INTEGER:
-        // fall through
       case LONG:
         if (obj instanceof Number) {
           // widening conversion
@@ -641,12 +649,16 @@ class RecordReaderImpl implements RecordReader {
       case TIMESTAMP:
         if (obj instanceof Timestamp) {
           return obj;
+        } else if (obj instanceof Integer) {
+          return TimestampWritable.longToTimestamp(((Number) obj).longValue(), false);
         } else if (obj instanceof Float) {
           return TimestampWritable.doubleToTimestamp(((Float) obj).doubleValue());
         } else if (obj instanceof Double) {
           return TimestampWritable.doubleToTimestamp(((Double) obj).doubleValue());
         } else if (obj instanceof HiveDecimal) {
           return TimestampWritable.decimalToTimestamp((HiveDecimal) obj);
+        } else if (obj instanceof HiveDecimalWritable) {
+          return TimestampWritable.decimalToTimestamp(((HiveDecimalWritable) obj).getHiveDecimal());
         } else if (obj instanceof Date) {
           return new Timestamp(((Date) obj).getTime());
         }
@@ -665,17 +677,21 @@ class RecordReaderImpl implements RecordReader {
   }
 
   public static class SargApplier {
+    public final static boolean[] READ_ALL_RGS = null;
+    public final static boolean[] READ_NO_RGS = new boolean[0];
+
     private final SearchArgument sarg;
     private final List<PredicateLeaf> sargLeaves;
     private final int[] filterColumns;
     private final long rowIndexStride;
     // same as the above array, but indices are set to true
     private final boolean[] sargColumns;
+
     public SargApplier(SearchArgument sarg, String[] columnNames, long rowIndexStride,
         List<OrcProto.Type> types, int includedCount) {
       this.sarg = sarg;
       sargLeaves = sarg.getLeaves();
-      filterColumns = mapSargColumns(sargLeaves, columnNames, 0);
+      filterColumns = mapSargColumnsToOrcInternalColIdx(sargLeaves, columnNames, 0);
       this.rowIndexStride = rowIndexStride;
       // included will not be null, row options will fill the array with trues if null
       sargColumns = new boolean[includedCount];
@@ -694,27 +710,33 @@ class RecordReaderImpl implements RecordReader {
      * row groups must be read.
      * @throws IOException
      */
-    public boolean[] pickRowGroups(
-        StripeInformation stripe, OrcProto.RowIndex[] indexes,
-        OrcProto.BloomFilterIndex[] bloomFilterIndices) throws IOException {
+    public boolean[] pickRowGroups(StripeInformation stripe, OrcProto.RowIndex[] indexes,
+        OrcProto.BloomFilterIndex[] bloomFilterIndices, boolean returnNone) throws IOException {
       long rowsInStripe = stripe.getNumberOfRows();
       int groupsInStripe = (int) ((rowsInStripe + rowIndexStride - 1) / rowIndexStride);
       boolean[] result = new boolean[groupsInStripe]; // TODO: avoid alloc?
       TruthValue[] leafValues = new TruthValue[sargLeaves.size()];
+      boolean hasSelected = false, hasSkipped = false;
       for (int rowGroup = 0; rowGroup < result.length; ++rowGroup) {
         for (int pred = 0; pred < leafValues.length; ++pred) {
-          if (filterColumns[pred] != -1) {
-            OrcProto.ColumnStatistics stats =
-                indexes[filterColumns[pred]].getEntry(rowGroup).getStatistics();
+          int columnIx = filterColumns[pred];
+          if (columnIx != -1) {
+            if (indexes[columnIx] == null) {
+              throw new AssertionError("Index is not populated for " + columnIx);
+            }
+            RowIndexEntry entry = indexes[columnIx].getEntry(rowGroup);
+            if (entry == null) {
+              throw new AssertionError("RG is not populated for " + columnIx + " rg " + rowGroup);
+            }
+            OrcProto.ColumnStatistics stats = entry.getStatistics();
             OrcProto.BloomFilter bf = null;
             if (bloomFilterIndices != null && bloomFilterIndices[filterColumns[pred]] != null) {
               bf = bloomFilterIndices[filterColumns[pred]].getBloomFilter(rowGroup);
             }
             leafValues[pred] = evaluatePredicateProto(stats, sargLeaves.get(pred), bf);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Stats = " + stats);
-              LOG.debug("Setting " + sargLeaves.get(pred) + " to " +
-                  leafValues[pred]);
+            if (LOG.isTraceEnabled()) {
+              LOG.trace("Stats = " + stats);
+              LOG.trace("Setting " + sargLeaves.get(pred) + " to " + leafValues[pred]);
             }
           } else {
             // the column is a virtual column
@@ -722,6 +744,8 @@ class RecordReaderImpl implements RecordReader {
           }
         }
         result[rowGroup] = sarg.evaluate(leafValues).isNeeded();
+        hasSelected = hasSelected || result[rowGroup];
+        hasSkipped = hasSkipped || (!result[rowGroup]);
         if (LOG.isDebugEnabled()) {
           LOG.debug("Row group " + (rowIndexStride * rowGroup) + " to " +
               (rowIndexStride * (rowGroup + 1) - 1) + " is " +
@@ -729,20 +753,15 @@ class RecordReaderImpl implements RecordReader {
         }
       }
 
-      // if we found something to skip, use the array. otherwise, return null.
-      for (boolean b : result) {
-        if (!b) {
-          return result;
-        }
-      }
-      return null;
+      return hasSkipped ? ((hasSelected || !returnNone) ? result : READ_NO_RGS) : READ_ALL_RGS;
     }
   }
 
   /**
    * Pick the row groups that we need to load from the current stripe.
+   *
    * @return an array with a boolean for each row group or null if all of the
-   *    row groups must be read.
+   * row groups must be read.
    * @throws IOException
    */
   protected boolean[] pickRowGroups() throws IOException {
@@ -751,28 +770,31 @@ class RecordReaderImpl implements RecordReader {
       return null;
     }
     readRowIndex(currentStripe, included, sargApp.sargColumns);
-    return sargApp.pickRowGroups(stripes.get(currentStripe), indexes, bloomFilterIndices);
+    return sargApp.pickRowGroups(stripes.get(currentStripe), indexes, bloomFilterIndices, false);
   }
 
   private void clearStreams() throws IOException {
     // explicit close of all streams to de-ref ByteBuffers
-    for(InStream is: streams.values()) {
+    for (InStream is : streams.values()) {
       is.close();
     }
     if (bufferChunks != null) {
-      if (zcr != null) {
+      if (dataReader.isTrackingDiskRanges()) {
         for (DiskRangeList range = bufferChunks; range != null; range = range.next) {
-          if (!(range instanceof BufferChunk)) continue;
-          zcr.releaseBuffer(((BufferChunk)range).chunk);
+          if (!(range instanceof BufferChunk)) {
+            continue;
+          }
+          dataReader.releaseBuffer(((BufferChunk) range).chunk);
         }
       }
-      bufferChunks = null;
     }
+    bufferChunks = null;
     streams.clear();
   }
 
   /**
    * Read the current stripe into memory.
+   *
    * @throws IOException
    */
   private void readStripe() throws IOException {
@@ -782,7 +804,7 @@ class RecordReaderImpl implements RecordReader {
     // move forward to the first unskipped row
     if (includedRowGroups != null) {
       while (rowInStripe < rowCountInStripe &&
-             !includedRowGroups[(int) (rowInStripe / rowIndexStride)]) {
+          !includedRowGroups[(int) (rowInStripe / rowIndexStride)]) {
         rowInStripe = Math.min(rowCountInStripe, rowInStripe + rowIndexStride);
       }
     }
@@ -811,11 +833,11 @@ class RecordReaderImpl implements RecordReader {
     rowCountInStripe = stripe.getNumberOfRows();
     rowInStripe = 0;
     rowBaseInStripe = 0;
-    for(int i=0; i < currentStripe; ++i) {
+    for (int i = 0; i < currentStripe; ++i) {
       rowBaseInStripe += stripes.get(i).getNumberOfRows();
     }
     // reset all of the indexes
-    for(int i=0; i < indexes.length; ++i) {
+    for (int i = 0; i < indexes.length; ++i) {
       indexes[i] = null;
     }
     return stripe;
@@ -826,10 +848,9 @@ class RecordReaderImpl implements RecordReader {
     long end = start + stripe.getDataLength();
     // explicitly trigger 1 big read
     DiskRangeList toRead = new DiskRangeList(start, end);
-    bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
+    bufferChunks = dataReader.readFileData(toRead, stripe.getOffset(), false);
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
-    createStreams(
-        streamDescriptions, bufferChunks, null, codec, bufferSize, streams);
+    createStreams(streamDescriptions, bufferChunks, null, codec, bufferSize, streams);
   }
 
   /**
@@ -839,9 +860,13 @@ class RecordReaderImpl implements RecordReader {
   public static class BufferChunk extends DiskRangeList {
     final ByteBuffer chunk;
 
-    BufferChunk(ByteBuffer chunk, long offset) {
+    public BufferChunk(ByteBuffer chunk, long offset) {
       super(offset, offset + chunk.remaining());
       this.chunk = chunk;
+    }
+
+    public ByteBuffer getChunk() {
+      return chunk;
     }
 
     @Override
@@ -861,8 +886,8 @@ class RecordReaderImpl implements RecordReader {
       assert offset <= end && offset >= this.offset && end <= this.end;
       assert offset + shiftBy >= 0;
       ByteBuffer sliceBuf = chunk.slice();
-      int newPos = (int)(offset - this.offset);
-      int newLimit = newPos + (int)(end - offset);
+      int newPos = (int) (offset - this.offset);
+      int newLimit = newPos + (int) (end - offset);
       try {
         sliceBuf.position(newPos);
         sliceBuf.limit(newLimit);
@@ -885,30 +910,31 @@ class RecordReaderImpl implements RecordReader {
   /**
    * Plan the ranges of the file that we need to read given the list of
    * columns and row groups.
-   * @param streamList the list of streams avaiable
-   * @param indexes the indexes that have been loaded
-   * @param includedColumns which columns are needed
+   *
+   * @param streamList        the list of streams available
+   * @param indexes           the indexes that have been loaded
+   * @param includedColumns   which columns are needed
    * @param includedRowGroups which row groups are needed
-   * @param isCompressed does the file have generic compression
-   * @param encodings the encodings for each column
-   * @param types the types of the columns
-   * @param compressionSize the compression block size
+   * @param isCompressed      does the file have generic compression
+   * @param encodings         the encodings for each column
+   * @param types             the types of the columns
+   * @param compressionSize   the compression block size
    * @return the list of disk ranges that will be loaded
    */
   static DiskRangeList planReadPartialDataStreams
-      (List<OrcProto.Stream> streamList,
-       OrcProto.RowIndex[] indexes,
-       boolean[] includedColumns,
-       boolean[] includedRowGroups,
-       boolean isCompressed,
-       List<OrcProto.ColumnEncoding> encodings,
-       List<OrcProto.Type> types,
-       int compressionSize,
-       boolean doMergeBuffers) {
+  (List<OrcProto.Stream> streamList,
+      OrcProto.RowIndex[] indexes,
+      boolean[] includedColumns,
+      boolean[] includedRowGroups,
+      boolean isCompressed,
+      List<OrcProto.ColumnEncoding> encodings,
+      List<OrcProto.Type> types,
+      int compressionSize,
+      boolean doMergeBuffers) {
     long offset = 0;
     // figure out which columns have a present stream
     boolean[] hasNull = RecordReaderUtils.findPresentStreamsByColumn(streamList, types);
-    DiskRangeListCreateHelper list = new DiskRangeListCreateHelper();
+    CreateHelper list = new CreateHelper();
     for (OrcProto.Stream stream : streamList) {
       long length = stream.getLength();
       int column = stream.getColumn();
@@ -933,24 +959,24 @@ class RecordReaderImpl implements RecordReader {
   }
 
   void createStreams(List<OrcProto.Stream> streamDescriptions,
-                            DiskRangeList ranges,
-                            boolean[] includeColumn,
-                            CompressionCodec codec,
-                            int bufferSize,
-                            Map<StreamName, InStream> streams) throws IOException {
+      DiskRangeList ranges,
+      boolean[] includeColumn,
+      CompressionCodec codec,
+      int bufferSize,
+      Map<StreamName, InStream> streams) throws IOException {
     long streamOffset = 0;
-    for (OrcProto.Stream streamDesc: streamDescriptions) {
+    for (OrcProto.Stream streamDesc : streamDescriptions) {
       int column = streamDesc.getColumn();
       if ((includeColumn != null && !includeColumn[column]) ||
           streamDesc.hasKind() &&
-          (StreamName.getArea(streamDesc.getKind()) != StreamName.Area.DATA)) {
+              (StreamName.getArea(streamDesc.getKind()) != StreamName.Area.DATA)) {
         streamOffset += streamDesc.getLength();
         continue;
       }
       List<DiskRange> buffers = RecordReaderUtils.getStreamBuffers(
           ranges, streamOffset, streamDesc.getLength());
       StreamName name = new StreamName(column, streamDesc.getKind());
-      streams.put(name, InStream.create(name.toString(), buffers,
+      streams.put(name, InStream.create(null, name.toString(), buffers,
           streamDesc.getLength(), codec, bufferSize));
       streamOffset += streamDesc.getLength();
     }
@@ -959,12 +985,12 @@ class RecordReaderImpl implements RecordReader {
   private void readPartialDataStreams(StripeInformation stripe) throws IOException {
     List<OrcProto.Stream> streamList = stripeFooter.getStreamsList();
     DiskRangeList toRead = planReadPartialDataStreams(streamList,
-            indexes, included, includedRowGroups, codec != null,
-            stripeFooter.getColumnsList(), types, bufferSize, true);
+        indexes, included, includedRowGroups, codec != null,
+        stripeFooter.getColumnsList(), types, bufferSize, true);
     if (LOG.isDebugEnabled()) {
       LOG.debug("chunks = " + RecordReaderUtils.stringifyDiskRanges(toRead));
     }
-    bufferChunks = RecordReaderUtils.readDiskRanges(file, zcr, stripe.getOffset(), toRead, false);
+    bufferChunks = dataReader.readFileData(toRead, stripe.getOffset(), false);
     if (LOG.isDebugEnabled()) {
       LOG.debug("merge = " + RecordReaderUtils.stringifyDiskRanges(bufferChunks));
     }
@@ -979,6 +1005,7 @@ class RecordReaderImpl implements RecordReader {
 
   /**
    * Read the next stripe until we find a row that we don't skip.
+   *
    * @throws IOException
    */
   private void advanceStripe() throws IOException {
@@ -993,11 +1020,13 @@ class RecordReaderImpl implements RecordReader {
   /**
    * Skip over rows that we aren't selecting, so that the next row is
    * one that we will read.
+   *
    * @param nextRow the row we want to go to
    * @throws IOException
    */
   private boolean advanceToNextRow(
-      TreeReader reader, long nextRow, boolean canAdvanceStripe) throws IOException {
+      TreeReaderFactory.TreeReader reader, long nextRow, boolean canAdvanceStripe)
+      throws IOException {
     long nextRowInStripe = nextRow - rowBaseInStripe;
     // check for row skipping
     if (rowIndexStride != 0 &&
@@ -1115,12 +1144,10 @@ class RecordReaderImpl implements RecordReader {
     return batchSize;
   }
 
-
   @Override
   public void close() throws IOException {
     clearStreams();
-    pool.clear();
-    file.close();
+    dataReader.close();
   }
 
   @Override
@@ -1131,6 +1158,7 @@ class RecordReaderImpl implements RecordReader {
   /**
    * Return the fraction of rows that have been read from the selected.
    * section of the file
+   *
    * @return fraction between 0.0 and 1.0 of rows consumed
    */
   @Override
@@ -1139,7 +1167,7 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private int findStripe(long rowNumber) {
-    for(int i=0; i < stripes.size(); i++) {
+    for (int i = 0; i < stripes.size(); i++) {
       StripeInformation stripe = stripes.get(i);
       if (stripe.getNumberOfRows() > rowNumber) {
         return i;
@@ -1166,11 +1194,12 @@ class RecordReaderImpl implements RecordReader {
       sargColumns = sargColumns == null ?
           (sargApp == null ? null : sargApp.sargColumns) : sargColumns;
     }
-    return metadata.readRowIndex(
-        stripe, stripeFooter, included, indexes, sargColumns, bloomFilterIndex);
+    return metadata.readRowIndex(stripe, stripeFooter, included, indexes, sargColumns,
+        bloomFilterIndex);
   }
 
-  private void seekToRowEntry(TreeReader reader, int rowEntry) throws IOException {
+  private void seekToRowEntry(TreeReaderFactory.TreeReader reader, int rowEntry)
+      throws IOException {
     PositionProvider[] index = new PositionProvider[indexes.length];
     for (int i = 0; i < indexes.length; ++i) {
       if (indexes[i] != null) {
@@ -1202,5 +1231,40 @@ class RecordReaderImpl implements RecordReader {
 
     // if we aren't to the right row yet, advance in the stripe.
     advanceToNextRow(reader, rowNumber, true);
+  }
+
+  private static final String TRANSLATED_SARG_SEPARATOR = "_";
+  public static String encodeTranslatedSargColumn(int rootColumn, Integer indexInSourceTable) {
+    return rootColumn + TRANSLATED_SARG_SEPARATOR
+        + ((indexInSourceTable == null) ? -1 : indexInSourceTable);
+  }
+
+  public static int[] mapTranslatedSargColumns(
+      List<OrcProto.Type> types, List<PredicateLeaf> sargLeaves) {
+    int[] result = new int[sargLeaves.size()];
+    OrcProto.Type lastRoot = null; // Root will be the same for everyone as of now.
+    String lastRootStr = null;
+    for (int i = 0; i < result.length; ++i) {
+      String[] rootAndIndex = sargLeaves.get(i).getColumnName().split(TRANSLATED_SARG_SEPARATOR);
+      assert rootAndIndex.length == 2;
+      String rootStr = rootAndIndex[0], indexStr = rootAndIndex[1];
+      int index = Integer.parseInt(indexStr);
+      // First, check if the column even maps to anything.
+      if (index == -1) {
+        result[i] = -1;
+        continue;
+      }
+      assert index >= 0;
+      // Then, find the root type if needed.
+      if (!rootStr.equals(lastRootStr)) {
+        lastRoot = types.get(Integer.parseInt(rootStr));
+        lastRootStr = rootStr;
+      }
+      // Subtypes of the root types correspond, in order, to the columns in the table schema
+      // (disregarding schema evolution that doesn't presently work). Get the index for the
+      // corresponding subtype.
+      result[i] = lastRoot.getSubtypes(index);
+    }
+    return result;
   }
 }

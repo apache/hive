@@ -86,9 +86,8 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     vrbCtx = new VectorizedRowBatchCtx();
     vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) this.outputObjInspector);
@@ -96,8 +95,6 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
     outputBatch = vrbCtx.createVectorizedRowBatch();
 
     outputVectorAssignRowMap = new HashMap<ObjectInspector, VectorAssignRowSameBatch>();
-
-    return result;
   }
 
   /**

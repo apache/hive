@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.mapred.lib.HashPartitioner;
 
 /** Partition keys by their {@link Object#hashCode()}. */
@@ -26,7 +27,7 @@ public class DefaultHivePartitioner<K2, V2> extends HashPartitioner<K2, V2> impl
   /** Use {@link Object#hashCode()} to partition. */
   @Override
   public int getBucket(K2 key, V2 value, int numBuckets) {
-    return (key.hashCode() & Integer.MAX_VALUE) % numBuckets;
+    return ObjectInspectorUtils.getBucketNumber(key.hashCode(), numBuckets);
   }
 
 }

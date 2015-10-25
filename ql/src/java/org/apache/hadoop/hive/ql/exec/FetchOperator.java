@@ -200,12 +200,13 @@ public class FetchOperator implements Serializable {
   private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
 
   @SuppressWarnings("unchecked")
-  static InputFormat getInputFormatFromCache(Class<? extends InputFormat> inputFormatClass,
-       JobConf conf) throws IOException {
+  static InputFormat getInputFormatFromCache(
+    Class<? extends InputFormat> inputFormatClass, JobConf conf) throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
         JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
       return ReflectionUtil.newInstance(inputFormatClass, conf);
     }
+    // TODO: why is this copy-pasted from HiveInputFormat?
     InputFormat format = inputFormats.get(inputFormatClass.getName());
     if (format == null) {
       try {
@@ -216,7 +217,7 @@ public class FetchOperator implements Serializable {
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return format;
+    return HiveInputFormat.wrapForLlap(format, conf);
   }
 
   private StructObjectInspector getPartitionKeyOI(TableDesc tableDesc) throws Exception {

@@ -65,21 +65,18 @@ STAGE PLANS:
                   Filter Operator
                     predicate: l_partkey is not null (type: boolean)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: l_partkey (type: int)
+                    Group By Operator
+                      keys: l_partkey (type: int)
+                      mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -204,21 +201,21 @@ STAGE PLANS:
                   alias: lineitem
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((l_shipmode = 'AIR') and l_orderkey is not null) and l_linenumber is not null) (type: boolean)
+                    predicate: (((l_shipmode = 'AIR') and (l_linenumber = 1)) and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 13 Data size: 1559 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: l_orderkey (type: int), l_linenumber (type: int)
-                      outputColumnNames: _col0, _col1
+                      expressions: l_orderkey (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 13 Data size: 1559 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        keys: _col0 (type: int), _col1 (type: int)
+                        keys: _col0 (type: int)
                         mode: hash
-                        outputColumnNames: _col0, _col1
+                        outputColumnNames: _col0
                         Statistics: Num rows: 13 Data size: 1559 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
                           keys:
-                            0 _col0 (type: int), _col3 (type: int)
-                            1 _col0 (type: int), _col1 (type: int)
+                            0 _col0 (type: int)
+                            1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
 
@@ -235,15 +232,15 @@ STAGE PLANS:
                     predicate: (((l_linenumber = 1) and l_orderkey is not null) and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 13 Data size: 1559 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 13 Data size: 1559 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
                         keys:
-                          0 _col0 (type: int), _col3 (type: int)
-                          1 _col0 (type: int), _col1 (type: int)
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
                         outputColumnNames: _col1, _col2
                         input vertices:
                           1 Map 2
@@ -269,21 +266,18 @@ STAGE PLANS:
                   Filter Operator
                     predicate: l_partkey is not null (type: boolean)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: l_partkey (type: int)
+                    Group By Operator
+                      keys: l_partkey (type: int)
+                      mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -313,7 +307,6 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

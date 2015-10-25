@@ -16,14 +16,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alltypesorc
-          Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (cdouble / 0.0) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 100
-              Statistics: Num rows: 100 Data size: 3000 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: select cdouble / 0.0 from alltypesorc limit 100
@@ -178,6 +175,7 @@ STAGE PLANS:
                         value expressions: _col2 (type: double)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: double), VALUE._col0 (type: double)
@@ -193,7 +191,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -353,6 +350,7 @@ STAGE PLANS:
                         value expressions: _col2 (type: double), _col4 (type: double), _col5 (type: double)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: double), VALUE._col0 (type: double), KEY.reducesinkkey1 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double)
@@ -368,7 +366,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

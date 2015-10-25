@@ -56,8 +56,8 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
    * needsTransform[].
    */
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     int parents = parentOperators.size();
     parentObjInspectors = new StructObjectInspector[parents];
@@ -119,7 +119,6 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
             + "] from " + inputObjInspectors[p] + " to " + outputObjInspector);
       }
     }
-    return result;
   }
 
   @Override

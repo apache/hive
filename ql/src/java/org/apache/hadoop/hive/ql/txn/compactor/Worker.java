@@ -77,7 +77,7 @@ public class Worker extends CompactorThread {
       // Make sure nothing escapes this run method and kills the metastore at large,
       // so wrap it in a big catch Throwable statement.
       try {
-        CompactionInfo ci = txnHandler.findNextToCompact(name);
+        final CompactionInfo ci = txnHandler.findNextToCompact(name);
 
         if (ci == null && !stop.get()) {
           try {
@@ -158,14 +158,14 @@ public class Worker extends CompactorThread {
         launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
-            mr.run(conf, jobName.toString(), t, sd, txns, isMajor, su);
+            mr.run(conf, jobName.toString(), t, sd, txns, ci, su);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, sd, txns, isMajor, su);
+                mr.run(conf, jobName.toString(), t, sd, txns, ci, su);
                 return null;
               }
             });
@@ -264,7 +264,7 @@ public class Worker extends CompactorThread {
         sb.append(colName).append(",");
       }
       sb.setLength(sb.length() - 1);//remove trailing ,
-      LOG.debug("running '" + sb.toString() + "'");
+      LOG.info("running '" + sb.toString() + "'");
       Driver d = new Driver(conf, userName);
       SessionState localSession = null;
       if(SessionState.get() == null) {

@@ -21,20 +21,16 @@ import org.apache.avro.Schema;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.io.Writable;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Properties;
 
-import static org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AVRO_SERDE_SCHEMA;
-import static org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.SCHEMA_LITERAL;
+//import static org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AVRO_SERDE_SCHEMA;
+//import static org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.SCHEMA_LITERAL;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class TestAvroSerde {
@@ -70,10 +66,10 @@ public class TestAvroSerde {
     // initialized.  Therefore we need to make sure we don't look for any
     // old schemas within it.
     Configuration conf = new Configuration();
-    conf.set(AVRO_SERDE_SCHEMA, originalSchema.toString(false));
+    conf.set(AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(), originalSchema.toString(false));
 
     Properties props = new Properties();
-    props.put(SCHEMA_LITERAL, newSchemaString);
+    props.put(AvroTableProperties.SCHEMA_LITERAL.getPropName(), newSchemaString);
 
 
     AvroSerDe asd = new AvroSerDe();
@@ -81,7 +77,7 @@ public class TestAvroSerde {
 
     // Verify that the schema now within the configuration is the one passed
     // in via the properties
-    assertEquals(newSchema, AvroSerdeUtils.getSchemaFor(conf.get(AVRO_SERDE_SCHEMA)));
+    assertEquals(newSchema, AvroSerdeUtils.getSchemaFor(conf.get(AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName())));
   }
 
   @Test
@@ -94,7 +90,7 @@ public class TestAvroSerde {
   @Test
   public void gibberishSchemaProvidedReturnsErrorSchema() {
     Properties props = new Properties();
-    props.put(AvroSerdeUtils.SCHEMA_LITERAL, "blahblahblah");
+    props.put(AvroTableProperties.SCHEMA_LITERAL.getPropName(), "blahblahblah");
 
     verifyExpectedException(props);
   }
@@ -102,7 +98,7 @@ public class TestAvroSerde {
   @Test
   public void emptySchemaProvidedThrowsException() {
     Properties props = new Properties();
-    props.put(AvroSerdeUtils.SCHEMA_LITERAL, "");
+    props.put(AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
 
     verifyExpectedException(props);
   }
@@ -110,7 +106,7 @@ public class TestAvroSerde {
   @Test
   public void badSchemaURLProvidedThrowsException() {
     Properties props = new Properties();
-    props.put(AvroSerdeUtils.SCHEMA_URL, "not://a/url");
+    props.put(AvroTableProperties.SCHEMA_URL.getPropName(), "not://a/url");
 
     verifyExpectedException(props);
   }
@@ -118,7 +114,7 @@ public class TestAvroSerde {
   @Test
   public void emptySchemaURLProvidedThrowsException() {
     Properties props = new Properties();
-    props.put(AvroSerdeUtils.SCHEMA_URL, "");
+    props.put(AvroTableProperties.SCHEMA_URL.getPropName(), "");
 
     verifyExpectedException(props);
   }
@@ -126,8 +122,8 @@ public class TestAvroSerde {
   @Test
   public void bothPropertiesSetToNoneThrowsException() {
     Properties props = new Properties();
-    props.put(AvroSerdeUtils.SCHEMA_URL, AvroSerdeUtils.SCHEMA_NONE);
-    props.put(AvroSerdeUtils.SCHEMA_LITERAL, AvroSerdeUtils.SCHEMA_NONE);
+    props.put(AvroTableProperties.SCHEMA_URL.getPropName(), AvroSerdeUtils.SCHEMA_NONE);
+    props.put(AvroTableProperties.SCHEMA_LITERAL.getPropName(), AvroSerdeUtils.SCHEMA_NONE);
 
     verifyExpectedException(props);
   }

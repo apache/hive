@@ -1,0 +1,606 @@
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/optimizer/ColumnPrunerProcCtx.java b/ql/src/java/org/apache/hadoop/hive/ql/optimizer/ColumnPrunerProcCtx.java
+index c076d4e112a7edab2106f11fe6224247887313cf..8bcb464de540eda7c14a8c6783bb19a09071af7b 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/optimizer/ColumnPrunerProcCtx.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/optimizer/ColumnPrunerProcCtx.java
+@@ -25,7 +25,9 @@
+ 
+ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+ import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
++import org.apache.hadoop.hive.ql.exec.FilterOperator;
+ import org.apache.hadoop.hive.ql.exec.Operator;
++import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+ import org.apache.hadoop.hive.ql.exec.RowSchema;
+ import org.apache.hadoop.hive.ql.exec.SelectOperator;
+ import org.apache.hadoop.hive.ql.exec.UnionOperator;
+@@ -33,6 +35,7 @@
+ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+ import org.apache.hadoop.hive.ql.parse.ParseContext;
+ import org.apache.hadoop.hive.ql.parse.SemanticException;
++import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+ import org.apache.hadoop.hive.ql.plan.SelectDesc;
+@@ -241,4 +244,65 @@ public ParseContext getParseContext() {
+     }
+     return columns;
+   }
++
++  /**
++   * If the input filter operator has direct child(ren) which are union operator,
++   * and the filter's column is not the same as union's
++   * create select operator between them. The select operator has same number of columns as
++   * pruned child operator.
++   *
++   * @param curOp
++   *          The filter operator which need to handle children.
++   * @throws SemanticException
++   */
++  public void handleFilterUnionChildren(Operator<? extends OperatorDesc> curOp)
++      throws SemanticException {
++    if (curOp.getChildOperators() == null || !(curOp instanceof FilterOperator)) {
++      return;
++    }
++    List<String> parentPrunList = prunedColLists.get(curOp);
++    if(parentPrunList == null || parentPrunList.size() == 0) {
++      return;
++    }
++    FilterOperator filOp = (FilterOperator)curOp;
++    List<String> prunList = null;
++    List<Integer>[] childToParentIndex = null;
++
++    for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
++      if (child instanceof UnionOperator) {
++        prunList = prunedColLists.get(child);
++        if (prunList == null || prunList.size() == 0 || parentPrunList.size() == prunList.size()) {
++          continue;
++        }
++
++        ArrayList<ExprNodeDesc> exprs = new ArrayList<ExprNodeDesc>();
++        ArrayList<String> outputColNames = new ArrayList<String>();
++        Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
++        ArrayList<ColumnInfo> outputRS = new ArrayList<ColumnInfo>();
++        for (ColumnInfo colInfo : child.getSchema().getSignature()) {
++          if (!prunList.contains(colInfo.getInternalName())) {
++            continue;
++          }
++          ExprNodeDesc colDesc = new ExprNodeColumnDesc(colInfo.getType(),
++              colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
++          exprs.add(colDesc);
++          outputColNames.add(colInfo.getInternalName());
++          ColumnInfo newCol = new ColumnInfo(colInfo.getInternalName(), colInfo.getType(),
++                  colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
++          newCol.setAlias(colInfo.getAlias());
++          outputRS.add(newCol);
++          colExprMap.put(colInfo.getInternalName(), colDesc);
++        }
++        SelectDesc select = new SelectDesc(exprs, outputColNames, false);
++        curOp.removeChild(child);
++        SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(
++            select, new RowSchema(outputRS), curOp);
++        OperatorFactory.makeChild(sel, child);
++        sel.setColumnExprMap(colExprMap);
++
++      }
++
++    }
++  }
++
+ }
+diff --git a/ql/src/java/org/apache/hadoop/hive/ql/optimizer/ColumnPrunerProcFactory.java b/ql/src/java/org/apache/hadoop/hive/ql/optimizer/ColumnPrunerProcFactory.java
+index ac4236c53adf6fa36ad43b2e9029d335f12efde2..2dc15f9f0ae96bdc7f33f3d97ad41c88117734d0 100644
+--- a/ql/src/java/org/apache/hadoop/hive/ql/optimizer/ColumnPrunerProcFactory.java
++++ b/ql/src/java/org/apache/hadoop/hive/ql/optimizer/ColumnPrunerProcFactory.java
+@@ -108,7 +108,7 @@ public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+           filterOpPrunedColListsOrderPreserved);
+ 
+       pruneOperator(cppCtx, op, cppCtx.getPrunedColLists().get(op));
+-
++      cppCtx.handleFilterUnionChildren(op);
+       return null;
+     }
+   }
+diff --git a/ql/src/test/queries/clientpositive/unionall_unbalancedppd.q b/ql/src/test/queries/clientpositive/unionall_unbalancedppd.q
+new file mode 100644
+index 0000000000000000000000000000000000000000..0825c2d94d0f9815c7ff88549c77662e53adf928
+--- /dev/null
++++ b/ql/src/test/queries/clientpositive/unionall_unbalancedppd.q
+@@ -0,0 +1,120 @@
++set hive.optimize.ppd=true;
++drop table if exists union_all_bug_test_1;
++drop table if exists union_all_bug_test_2;
++create table if not exists union_all_bug_test_1
++(
++f1 int,
++f2 int
++);
++
++create table if not exists union_all_bug_test_2
++(
++f1 int
++);
++
++explain SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1);
++
++SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1);
++
++insert into table union_all_bug_test_1 values (1,1);
++insert into table union_all_bug_test_2 values (1);
++insert into table union_all_bug_test_1 values (0,0);
++insert into table union_all_bug_test_2 values (0);
++
++SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1);
++
++SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 0);
++
++SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1 or filter = 0);
++
++SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (f1 = 1);
+diff --git a/ql/src/test/results/clientpositive/unionall_unbalancedppd.q.out b/ql/src/test/results/clientpositive/unionall_unbalancedppd.q.out
+new file mode 100644
+index 0000000000000000000000000000000000000000..46828e9db772f20b47c3ae6aac1239bbcbabd752
+--- /dev/null
++++ b/ql/src/test/results/clientpositive/unionall_unbalancedppd.q.out
+@@ -0,0 +1,373 @@
++PREHOOK: query: drop table if exists union_all_bug_test_1
++PREHOOK: type: DROPTABLE
++POSTHOOK: query: drop table if exists union_all_bug_test_1
++POSTHOOK: type: DROPTABLE
++PREHOOK: query: drop table if exists union_all_bug_test_2
++PREHOOK: type: DROPTABLE
++POSTHOOK: query: drop table if exists union_all_bug_test_2
++POSTHOOK: type: DROPTABLE
++PREHOOK: query: create table if not exists union_all_bug_test_1
++(
++f1 int,
++f2 int
++)
++PREHOOK: type: CREATETABLE
++PREHOOK: Output: database:default
++PREHOOK: Output: default@union_all_bug_test_1
++POSTHOOK: query: create table if not exists union_all_bug_test_1
++(
++f1 int,
++f2 int
++)
++POSTHOOK: type: CREATETABLE
++POSTHOOK: Output: database:default
++POSTHOOK: Output: default@union_all_bug_test_1
++PREHOOK: query: create table if not exists union_all_bug_test_2
++(
++f1 int
++)
++PREHOOK: type: CREATETABLE
++PREHOOK: Output: database:default
++PREHOOK: Output: default@union_all_bug_test_2
++POSTHOOK: query: create table if not exists union_all_bug_test_2
++(
++f1 int
++)
++POSTHOOK: type: CREATETABLE
++POSTHOOK: Output: database:default
++POSTHOOK: Output: default@union_all_bug_test_2
++PREHOOK: query: explain SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1)
++PREHOOK: type: QUERY
++POSTHOOK: query: explain SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1)
++POSTHOOK: type: QUERY
++STAGE DEPENDENCIES:
++  Stage-1 is a root stage
++  Stage-0 depends on stages: Stage-1
++
++STAGE PLANS:
++  Stage: Stage-1
++    Map Reduce
++      Map Operator Tree:
++          TableScan
++            alias: union_all_bug_test_1
++            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++            Filter Operator
++              predicate: (if(true, f1, f2) = 1) (type: boolean)
++              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++              Select Operator
++                expressions: f1 (type: int)
++                outputColumnNames: _col0
++                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++                Union
++                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++                  File Output Operator
++                    compressed: false
++                    Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++                    table:
++                        input format: org.apache.hadoop.mapred.TextInputFormat
++                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
++                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
++          TableScan
++            alias: union_all_bug_test_2
++            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++            Filter Operator
++              predicate: false (type: boolean)
++              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++              Select Operator
++                expressions: f1 (type: int)
++                outputColumnNames: _col0
++                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++                Union
++                  Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++                  File Output Operator
++                    compressed: false
++                    Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
++                    table:
++                        input format: org.apache.hadoop.mapred.TextInputFormat
++                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
++                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
++
++  Stage: Stage-0
++    Fetch Operator
++      limit: -1
++      Processor Tree:
++        ListSink
++
++PREHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@union_all_bug_test_1
++PREHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++POSTHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@union_all_bug_test_1
++POSTHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++PREHOOK: query: insert into table union_all_bug_test_1 values (1,1)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@values__tmp__table__1
++PREHOOK: Output: default@union_all_bug_test_1
++POSTHOOK: query: insert into table union_all_bug_test_1 values (1,1)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@values__tmp__table__1
++POSTHOOK: Output: default@union_all_bug_test_1
++POSTHOOK: Lineage: union_all_bug_test_1.f1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
++POSTHOOK: Lineage: union_all_bug_test_1.f2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
++PREHOOK: query: insert into table union_all_bug_test_2 values (1)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@values__tmp__table__2
++PREHOOK: Output: default@union_all_bug_test_2
++POSTHOOK: query: insert into table union_all_bug_test_2 values (1)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@values__tmp__table__2
++POSTHOOK: Output: default@union_all_bug_test_2
++POSTHOOK: Lineage: union_all_bug_test_2.f1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
++PREHOOK: query: insert into table union_all_bug_test_1 values (0,0)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@values__tmp__table__3
++PREHOOK: Output: default@union_all_bug_test_1
++POSTHOOK: query: insert into table union_all_bug_test_1 values (0,0)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@values__tmp__table__3
++POSTHOOK: Output: default@union_all_bug_test_1
++POSTHOOK: Lineage: union_all_bug_test_1.f1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
++POSTHOOK: Lineage: union_all_bug_test_1.f2 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
++PREHOOK: query: insert into table union_all_bug_test_2 values (0)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@values__tmp__table__4
++PREHOOK: Output: default@union_all_bug_test_2
++POSTHOOK: query: insert into table union_all_bug_test_2 values (0)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@values__tmp__table__4
++POSTHOOK: Output: default@union_all_bug_test_2
++POSTHOOK: Lineage: union_all_bug_test_2.f1 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
++PREHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@union_all_bug_test_1
++PREHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++POSTHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@union_all_bug_test_1
++POSTHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++1
++PREHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 0)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@union_all_bug_test_1
++PREHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++POSTHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 0)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@union_all_bug_test_1
++POSTHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++0
++1
++0
++PREHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1 or filter = 0)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@union_all_bug_test_1
++PREHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++POSTHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (filter = 1 or filter = 0)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@union_all_bug_test_1
++POSTHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++1
++0
++1
++0
++PREHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (f1 = 1)
++PREHOOK: type: QUERY
++PREHOOK: Input: default@union_all_bug_test_1
++PREHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++POSTHOOK: query: SELECT f1
++FROM (
++
++SELECT
++f1
++, if('helloworld' like '%hello%' ,f1,f2) as filter
++FROM union_all_bug_test_1
++
++union all
++
++select
++f1
++, 0 as filter
++from union_all_bug_test_2
++) A
++WHERE (f1 = 1)
++POSTHOOK: type: QUERY
++POSTHOOK: Input: default@union_all_bug_test_1
++POSTHOOK: Input: default@union_all_bug_test_2
++#### A masked pattern was here ####
++1
++1

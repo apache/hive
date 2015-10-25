@@ -187,8 +187,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   @Override
   @SuppressWarnings("unchecked")
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     this.handleSkewJoin = conf.getHandleSkewJoin();
     this.hconf = hconf;
 
@@ -322,7 +322,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     if (isLogInfoEnabled) {
       LOG.info("JOIN " + outputObjInspector.getTypeName() + " totalsz = " + totalSz);
     }
-    return result;
   }
 
   transient boolean newGroupStarted = false;

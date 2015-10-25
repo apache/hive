@@ -28,12 +28,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -175,7 +176,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         } else {
           whereClause.append(" and ");
         }
-        whereClause.append(partKey).append(" = ").append(genPartValueString(partKey, value));
+        whereClause.append("`").append(partKey).append("` = ").append(genPartValueString(partKey, value));
       }
     }
 
@@ -216,10 +217,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       //for other usually not used types, just quote the value
       returnVal = "'" + partVal + "'";
     }
-    
+
     return returnVal;
   }
-  
+
   private String getColTypeOf (String partKey) throws SemanticException{
 
     for (FieldSchema fs : tbl.getPartitionKeys()) {
@@ -308,9 +309,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       if (i > 0) {
         rewrittenQueryBuilder.append(" , ");
       }
-      rewrittenQueryBuilder.append("compute_stats(");
+      rewrittenQueryBuilder.append("compute_stats(`");
       rewrittenQueryBuilder.append(colNames.get(i));
-      rewrittenQueryBuilder.append(" , ");
+      rewrittenQueryBuilder.append("` , ");
       rewrittenQueryBuilder.append(numBitVectors);
       rewrittenQueryBuilder.append(" )");
     }
@@ -323,7 +324,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenQueryBuilder.append(" from ");
     rewrittenQueryBuilder.append(tbl.getDbName());
     rewrittenQueryBuilder.append(".");
-    rewrittenQueryBuilder.append(tbl.getTableName());
+    rewrittenQueryBuilder.append("`" + tbl.getTableName() + "`");
     isRewritten = true;
 
     // If partition level statistics is requested, add predicate and group by as needed to rewritten
@@ -333,7 +334,12 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     rewrittenQuery = rewrittenQueryBuilder.toString();
-    rewrittenQuery = new VariableSubstitution().substitute(conf, rewrittenQuery);
+    rewrittenQuery = new VariableSubstitution(new HiveVariableSource() {
+      @Override
+      public Map<String, String> getHiveVariable() {
+        return SessionState.get().getHiveVariables();
+      }
+    }).substitute(conf, rewrittenQuery);
     return rewrittenQuery;
   }
 

@@ -45,8 +45,9 @@ public class LazyHBaseCellMap extends LazyMap {
   private byte [] columnFamilyBytes;
   private byte[] qualPrefix;
   private List<Boolean> binaryStorage;
+  private boolean hideQualPrefix;
 
-  /**
+	/**
    * Construct a LazyCellMap object with the ObjectInspector.
    * @param oi
    */
@@ -62,15 +63,23 @@ public class LazyHBaseCellMap extends LazyMap {
     init(r, columnFamilyBytes, binaryStorage, null);
   }
 
+	public void init(
+			Result r,
+			byte [] columnFamilyBytes,
+			List<Boolean> binaryStorage, byte[] qualPrefix) {
+		init(r, columnFamilyBytes, binaryStorage, qualPrefix, false);
+	}
+
   public void init(
       Result r,
       byte [] columnFamilyBytes,
-      List<Boolean> binaryStorage, byte[] qualPrefix) {
+      List<Boolean> binaryStorage, byte[] qualPrefix, boolean hideQualPrefix) {
     this.isNull = false;
     this.result = r;
     this.columnFamilyBytes = columnFamilyBytes;
     this.binaryStorage = binaryStorage;
     this.qualPrefix = qualPrefix;
+    this.hideQualPrefix = hideQualPrefix;
     setParsed(false);
   }
 
@@ -106,7 +115,11 @@ public class LazyHBaseCellMap extends LazyMap {
               binaryStorage.get(0));
 
         ByteArrayRef keyRef = new ByteArrayRef();
-        keyRef.setData(e.getKey());
+		  if (qualPrefix!=null && hideQualPrefix){
+			  keyRef.setData(Bytes.tail(e.getKey(), e.getKey().length-qualPrefix.length)); //cut prefix from hive's map key
+		  }else{
+			  keyRef.setData(e.getKey()); //for non-prefix maps
+		  }
         key.init(keyRef, 0, keyRef.getData().length);
 
         // Value

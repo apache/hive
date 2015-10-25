@@ -22,8 +22,6 @@ import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -964,35 +962,30 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     return builder;
   }
 
-  static ColumnStatisticsImpl create(ObjectInspector inspector) {
-    switch (inspector.getCategory()) {
-      case PRIMITIVE:
-        switch (((PrimitiveObjectInspector) inspector).getPrimitiveCategory()) {
-          case BOOLEAN:
-            return new BooleanStatisticsImpl();
-          case BYTE:
-          case SHORT:
-          case INT:
-          case LONG:
-            return new IntegerStatisticsImpl();
-          case FLOAT:
-          case DOUBLE:
-            return new DoubleStatisticsImpl();
-          case STRING:
-          case CHAR:
-          case VARCHAR:
-            return new StringStatisticsImpl();
-          case DECIMAL:
-            return new DecimalStatisticsImpl();
-          case DATE:
-            return new DateStatisticsImpl();
-          case TIMESTAMP:
-            return new TimestampStatisticsImpl();
-          case BINARY:
-            return new BinaryStatisticsImpl();
-          default:
-            return new ColumnStatisticsImpl();
-        }
+  static ColumnStatisticsImpl create(TypeDescription schema) {
+    switch (schema.getCategory()) {
+      case BOOLEAN:
+        return new BooleanStatisticsImpl();
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+        return new IntegerStatisticsImpl();
+      case FLOAT:
+      case DOUBLE:
+        return new DoubleStatisticsImpl();
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+        return new StringStatisticsImpl();
+      case DECIMAL:
+        return new DecimalStatisticsImpl();
+      case DATE:
+        return new DateStatisticsImpl();
+      case TIMESTAMP:
+        return new TimestampStatisticsImpl();
+      case BINARY:
+        return new BinaryStatisticsImpl();
       default:
         return new ColumnStatisticsImpl();
     }

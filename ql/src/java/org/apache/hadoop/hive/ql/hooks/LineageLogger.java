@@ -33,6 +33,7 @@ import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -147,8 +148,11 @@ public class LineageLogger implements ExecuteWithHookContext {
           // Don't emit user/timestamp info in test mode,
           // so that the test golden output file is fixed.
           long queryTime = plan.getQueryStartTime().longValue();
+          if (queryTime == 0) queryTime = System.currentTimeMillis();
+          long duration = System.currentTimeMillis() - queryTime;
           writer.name("user").value(hookContext.getUgi().getUserName());
           writer.name("timestamp").value(queryTime/1000);
+          writer.name("duration").value(duration);
           writer.name("jobIds");
           writer.beginArray();
           List<TaskRunner> tasks = hookContext.getCompleteTaskList();
@@ -209,23 +213,27 @@ public class LineageLogger implements ExecuteWithHookContext {
    * For each target column, find out its sources based on the dependency index.
    */
   private List<Edge> getEdges(QueryPlan plan, Index index) {
-    List<FieldSchema> fieldSchemas = plan.getResultSchema().getFieldSchemas();
-    int fields = fieldSchemas == null ? 0 : fieldSchemas.size();
-    SelectOperator finalSelOp = index.getFinalSelectOp();
+    LinkedHashMap<String, ObjectPair<SelectOperator,
+      org.apache.hadoop.hive.ql.metadata.Table>> finalSelOps = index.getFinalSelectOps();
+    Map<String, Vertex> vertexCache = new LinkedHashMap<String, Vertex>();
     List<Edge> edges = new ArrayList<Edge>();
-    if (finalSelOp != null && fields > 0) {
-      Map<ColumnInfo, Dependency> colMap = index.getDependencies(finalSelOp);
-      List<Dependency> dependencies = colMap != null ? Lists.newArrayList(colMap.values()) : null;
-      if (dependencies == null || dependencies.size() != fields) {
-        log("Result schema has " + fields
-          + " fields, but we don't get as many dependencies");
+    for (ObjectPair<SelectOperator,
+        org.apache.hadoop.hive.ql.metadata.Table> pair: finalSelOps.values()) {
+      List<FieldSchema> fieldSchemas = plan.getResultSchema().getFieldSchemas();
+      SelectOperator finalSelOp = pair.getFirst();
+      org.apache.hadoop.hive.ql.metadata.Table t = pair.getSecond();
+      String destTableName = null;
+      List<String> colNames = null;
+      if (t != null) {
+        destTableName = t.getDbName() + "." + t.getTableName();
+        fieldSchemas = t.getCols();
       } else {
-        String destTableName = null;
-        List<String> colNames = null;
         // Based on the plan outputs, find out the target table name and column names.
         for (WriteEntity output : plan.getOutputs()) {
-          if (output.getType() == Entity.Type.TABLE) {
-            org.apache.hadoop.hive.ql.metadata.Table t = output.getTable();
+          Entity.Type entityType = output.getType();
+          if (entityType == Entity.Type.TABLE
+              || entityType == Entity.Type.PARTITION) {
+            t = output.getTable();
             destTableName = t.getDbName() + "." + t.getTableName();
             List<FieldSchema> cols = t.getCols();
             if (cols != null && !cols.isEmpty()) {
@@ -234,37 +242,47 @@ public class LineageLogger implements ExecuteWithHookContext {
             break;
           }
         }
-
-        // Go through each target column, generate the lineage edges.
-        Set<Vertex> allTargets = new LinkedHashSet<Vertex>();
-        Map<String, Vertex> allSources = new LinkedHashMap<String, Vertex>();
-        for (int i = 0; i < fields; i++) {
-          Vertex target = new Vertex(
-            getTargetFieldName(i, destTableName, colNames, fieldSchemas));
-          allTargets.add(target);
-          Dependency dep = dependencies.get(i);
-          String expr = dep.getExpr();
-          Set<Vertex> sources = createSourceVertices(allSources, dep.getBaseCols());
-          Edge edge = findSimilarEdgeBySources(edges, sources, expr, Edge.Type.PROJECTION);
-          if (edge == null) {
-            Set<Vertex> targets = new LinkedHashSet<Vertex>();
-            targets.add(target);
-            edges.add(new Edge(sources, targets, expr, Edge.Type.PROJECTION));
-          } else {
-            edge.targets.add(target);
+      }
+      Map<ColumnInfo, Dependency> colMap = index.getDependencies(finalSelOp);
+      List<Dependency> dependencies = colMap != null ? Lists.newArrayList(colMap.values()) : null;
+      int fields = fieldSchemas.size();
+      if (t != null && colMap != null && fields < colMap.size()) {
+        // Dynamic partition keys should be added to field schemas.
+        List<FieldSchema> partitionKeys = t.getPartitionKeys();
+        int dynamicKeyCount = colMap.size() - fields;
+        int keyOffset = partitionKeys.size() - dynamicKeyCount;
+        if (keyOffset >= 0) {
+          fields += dynamicKeyCount;
+          for (int i = 0; i < dynamicKeyCount; i++) {
+            FieldSchema field = partitionKeys.get(keyOffset + i);
+            fieldSchemas.add(field);
+            if (colNames != null) {
+              colNames.add(field.getName());
+            }
           }
+        }
+      }
+      if (dependencies == null || dependencies.size() != fields) {
+        log("Result schema has " + fields
+          + " fields, but we don't get as many dependencies");
+      } else {
+        // Go through each target column, generate the lineage edges.
+        Set<Vertex> targets = new LinkedHashSet<Vertex>();
+        for (int i = 0; i < fields; i++) {
+          Vertex target = getOrCreateVertex(vertexCache,
+            getTargetFieldName(i, destTableName, colNames, fieldSchemas),
+            Vertex.Type.COLUMN);
+          targets.add(target);
+          Dependency dep = dependencies.get(i);
+          addEdge(vertexCache, edges, dep.getBaseCols(), target,
+            dep.getExpr(), Edge.Type.PROJECTION);
         }
         Set<Predicate> conds = index.getPredicates(finalSelOp);
         if (conds != null && !conds.isEmpty()) {
           for (Predicate cond: conds) {
-            String expr = cond.getExpr();
-            Set<Vertex> sources = createSourceVertices(allSources, cond.getBaseCols());
-            Edge edge = findSimilarEdgeByTargets(edges, allTargets, expr, Edge.Type.PREDICATE);
-            if (edge == null) {
-              edges.add(new Edge(sources, allTargets, expr, Edge.Type.PREDICATE));
-            } else {
-              edge.sources.addAll(sources);
-            }
+            addEdge(vertexCache, edges, cond.getBaseCols(),
+              new LinkedHashSet<Vertex>(targets), cond.getExpr(),
+              Edge.Type.PREDICATE);
           }
         }
       }
@@ -272,12 +290,35 @@ public class LineageLogger implements ExecuteWithHookContext {
     return edges;
   }
 
+  private void addEdge(Map<String, Vertex> vertexCache, List<Edge> edges,
+      Set<BaseColumnInfo> srcCols, Vertex target, String expr, Edge.Type type) {
+    Set<Vertex> targets = new LinkedHashSet<Vertex>();
+    targets.add(target);
+    addEdge(vertexCache, edges, srcCols, targets, expr, type);
+  }
+
+  /**
+   * Find an edge from all edges that has the same source vertices.
+   * If found, add the more targets to this edge's target vertex list.
+   * Otherwise, create a new edge and add to edge list.
+   */
+  private void addEdge(Map<String, Vertex> vertexCache, List<Edge> edges,
+      Set<BaseColumnInfo> srcCols, Set<Vertex> targets, String expr, Edge.Type type) {
+    Set<Vertex> sources = createSourceVertices(vertexCache, srcCols);
+    Edge edge = findSimilarEdgeBySources(edges, sources, expr, type);
+    if (edge == null) {
+      edges.add(new Edge(sources, targets, expr, type));
+    } else {
+      edge.targets.addAll(targets);
+    }
+  }
+
   /**
    * Convert a list of columns to a set of vertices.
    * Use cached vertices if possible.
    */
   private Set<Vertex> createSourceVertices(
-      Map<String, Vertex> srcVertexCache, Collection<BaseColumnInfo> baseCols) {
+      Map<String, Vertex> vertexCache, Collection<BaseColumnInfo> baseCols) {
     Set<Vertex> sources = new LinkedHashSet<Vertex>();
     if (baseCols != null && !baseCols.isEmpty()) {
       for(BaseColumnInfo col: baseCols) {
@@ -294,7 +335,7 @@ public class LineageLogger implements ExecuteWithHookContext {
           type = Vertex.Type.COLUMN;
           label = tableName + "." + fieldSchema.getName();
         }
-        sources.add(getOrCreateVertex(srcVertexCache, label, type));
+        sources.add(getOrCreateVertex(vertexCache, label, type));
       }
     }
     return sources;
@@ -321,20 +362,6 @@ public class LineageLogger implements ExecuteWithHookContext {
     for (Edge edge: edges) {
       if (edge.type == type && StringUtils.equals(edge.expr, expr)
           && SetUtils.isEqualSet(edge.sources, sources)) {
-        return edge;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Find an edge that has the same type, expression, and targets.
-   */
-  private Edge findSimilarEdgeByTargets(
-      List<Edge> edges, Set<Vertex> targets, String expr, Edge.Type type) {
-    for (Edge edge: edges) {
-      if (edge.type == type && StringUtils.equals(edge.expr, expr)
-          && SetUtils.isEqualSet(edge.targets, targets)) {
         return edge;
       }
     }

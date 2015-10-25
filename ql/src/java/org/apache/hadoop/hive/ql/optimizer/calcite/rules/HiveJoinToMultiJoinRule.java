@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -95,13 +96,13 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
     //    The result of the swapping operation is either
     //    i)  a Project or,
     //    ii) if the project is trivial, a raw join
-    final Join newJoin;
+    final HiveJoin newJoin;
     Project topProject = null;
-    if (swapped instanceof Join) {
-      newJoin = (Join) swapped;
+    if (swapped instanceof HiveJoin) {
+      newJoin = (HiveJoin) swapped;
     } else {
       topProject = (Project) swapped;
-      newJoin = (Join) swapped.getInput(0);
+      newJoin = (HiveJoin) swapped.getInput(0);
     }
 
     // 3. We try to merge the join with the right child
@@ -119,7 +120,7 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
 
   // This method tries to merge the join with its left child. The left
   // child should be a join for this to happen.
-  private static RelNode mergeJoin(Join join, RelNode left, RelNode right) {
+  private static RelNode mergeJoin(HiveJoin join, RelNode left, RelNode right) {
     final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
 
     // We check whether the join can be combined with any of its children
@@ -135,28 +136,33 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
       final List<Pair<Integer,Integer>> leftJoinInputs;
       final List<JoinRelType> leftJoinTypes;
       final List<RexNode> leftJoinFilters;
+      boolean combinable;
       if (left instanceof HiveJoin) {
         HiveJoin hj = (HiveJoin) left;
         leftCondition = hj.getCondition();
         leftJoinInputs = ImmutableList.of(Pair.of(0, 1));
         leftJoinTypes = ImmutableList.of(hj.getJoinType());
         leftJoinFilters = ImmutableList.of(hj.getJoinFilter());
+        try {
+          combinable = isCombinableJoin(join, hj);
+        } catch (CalciteSemanticException e) {
+          LOG.trace("Failed to merge join-join", e);
+          combinable = false;
+        }
       } else {
         HiveMultiJoin hmj = (HiveMultiJoin) left;
         leftCondition = hmj.getCondition();
         leftJoinInputs = hmj.getJoinInputs();
         leftJoinTypes = hmj.getJoinTypes();
         leftJoinFilters = hmj.getJoinFilters();
+        try {
+          combinable = isCombinableJoin(join, hmj);
+        } catch (CalciteSemanticException e) {
+          LOG.trace("Failed to merge join-multijoin", e);
+          combinable = false;
+        }
       }
 
-      boolean combinable;
-      try {
-        combinable = isCombinablePredicate(join, join.getCondition(),
-                leftCondition);
-      } catch (CalciteSemanticException e) {
-        LOG.trace("Failed to merge joins", e);
-        combinable = false;
-      }
       if (combinable) {
         newJoinCondition.add(leftCondition);
         for (int i = 0; i < leftJoinInputs.size(); i++) {
@@ -243,20 +249,48 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
             joinFilters);
   }
 
-  private static boolean isCombinablePredicate(Join join,
-          RexNode condition, RexNode otherCondition) throws CalciteSemanticException {
+  /*
+   * Returns true if the join conditions execute over the same keys
+   */
+  private static boolean isCombinableJoin(HiveJoin join, HiveJoin leftChildJoin)
+          throws CalciteSemanticException {
     final JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
-            constructJoinPredicateInfo(join, condition);
-    final JoinPredicateInfo otherJoinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
-            constructJoinPredicateInfo(join, otherCondition);
-    if (joinPredInfo.getProjsFromLeftPartOfJoinKeysInJoinSchema().
-            equals(otherJoinPredInfo.getProjsFromLeftPartOfJoinKeysInJoinSchema())) {
+            constructJoinPredicateInfo(join, join.getCondition());
+    final JoinPredicateInfo leftChildJoinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
+            constructJoinPredicateInfo(leftChildJoin, leftChildJoin.getCondition());
+    return isCombinablePredicate(joinPredInfo, leftChildJoinPredInfo, leftChildJoin.getInputs().size());
+  }
+
+  /*
+   * Returns true if the join conditions execute over the same keys
+   */
+  private static boolean isCombinableJoin(HiveJoin join, HiveMultiJoin leftChildJoin)
+          throws CalciteSemanticException {
+    final JoinPredicateInfo joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
+            constructJoinPredicateInfo(join, join.getCondition());
+    final JoinPredicateInfo leftChildJoinPredInfo = HiveCalciteUtil.JoinPredicateInfo.
+            constructJoinPredicateInfo(leftChildJoin, leftChildJoin.getCondition());
+    return isCombinablePredicate(joinPredInfo, leftChildJoinPredInfo, leftChildJoin.getInputs().size());
+  }
+
+  /*
+   * To be able to combine a parent join and its left input join child,
+   * the left keys over which the parent join is executed need to be the same
+   * than those of the child join.
+   * Thus, we iterate over the different inputs of the child, checking if the
+   * keys of the parent are the same
+   */
+  private static boolean isCombinablePredicate(JoinPredicateInfo joinPredInfo,
+          JoinPredicateInfo leftChildJoinPredInfo, int noLeftChildInputs) throws CalciteSemanticException {
+    Set<Integer> keys = joinPredInfo.getProjsJoinKeysInChildSchema(0);
+    if (keys.isEmpty()) {
       return false;
     }
-    if (joinPredInfo.getProjsFromRightPartOfJoinKeysInJoinSchema().
-            equals(otherJoinPredInfo.getProjsFromRightPartOfJoinKeysInJoinSchema())) {
-      return false;
+    for (int i = 0; i < noLeftChildInputs; i++) {
+      if (keys.equals(leftChildJoinPredInfo.getProjsJoinKeysInJoinSchema(i))) {
+        return true;
+      }
     }
-    return true;
+    return false;
   }
 }

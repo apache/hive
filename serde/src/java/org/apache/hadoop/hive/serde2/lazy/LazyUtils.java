@@ -81,6 +81,34 @@ public final class LazyUtils {
   }
 
   /**
+   * returns false, when the bytes definitely cannot be parsed into a base-10
+   * Number (Long or a Double)
+   * 
+   * If it returns true, the bytes might still be invalid, but not obviously.
+   */
+
+  public static boolean isNumberMaybe(byte[] buf, int offset, int len) {
+    switch (len) {
+    case 0:
+      return false;
+    case 1:
+      // space usually
+      return Character.isDigit(buf[offset]);
+    case 2:
+      // \N or -1 (allow latter)
+      return Character.isDigit(buf[offset + 1])
+          || Character.isDigit(buf[offset + 0]);
+    case 4:
+      // null or NULL
+      if (buf[offset] == 'N' || buf[offset] == 'n') {
+        return false;
+      }
+    }
+    // maybe valid - too expensive to check without a parse
+    return true;
+  }
+
+  /**
    * Returns -1 if the first byte sequence is lexicographically less than the
    * second; returns +1 if the second byte sequence is lexicographically less
    * than the first; otherwise return 0.
@@ -153,10 +181,19 @@ public final class LazyUtils {
           if (i > start) {
             out.write(bytes, start, i - start);
           }
-          start = i;
-          if (i < len) {
-            out.write(escapeChar);
+
+          if (i == end) break;
+
+          out.write(escapeChar);
+          if (bytes[i] == '\r') {
+            out.write('r');
+            start = i + 1;
+          } else if (bytes[i] == '\n') {
+            out.write('n');
+            start = i + 1;
+          } else {
             // the current char will be written out later.
+            start = i;
           }
         }
       }
@@ -415,12 +452,19 @@ public final class LazyUtils {
       byte[] outputBytes = data.getBytes();
       for (int i = 0; i < length; i++) {
         byte b = inputBytes[start + i];
-        if (b != escapeChar || i == length - 1) {
-          outputBytes[k++] = b;
+        if (b == escapeChar && i < length - 1) {
+          ++i;
+          // Check if it's '\r' or '\n'
+          if (inputBytes[start + i] == 'r') {
+            outputBytes[k++] = '\r';
+          } else if (inputBytes[start + i] == 'n') {
+            outputBytes[k++] = '\n';
+          } else {
+            // get the next byte
+            outputBytes[k++] = inputBytes[start + i];
+          }
         } else {
-          // get the next byte
-          i++;
-          outputBytes[k++] = inputBytes[start + i];
+          outputBytes[k++] = b;
         }
       }
       assert (k == outputLength);

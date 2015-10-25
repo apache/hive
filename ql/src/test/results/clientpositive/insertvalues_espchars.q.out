@@ -1,0 +1,30 @@
+PREHOOK: query: drop table if exists escstr
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists escstr
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table escstr(val string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@escstr
+POSTHOOK: query: create table escstr(val string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@escstr
+PREHOOK: query: insert into escstr values('It\'s a simple test')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@escstr
+POSTHOOK: query: insert into escstr values('It\'s a simple test')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@escstr
+POSTHOOK: Lineage: escstr.val SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from escstr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@escstr
+#### A masked pattern was here ####
+POSTHOOK: query: select * from escstr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@escstr
+#### A masked pattern was here ####
+It's a simple test

@@ -26,6 +26,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -41,8 +44,11 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
-import org.apache.log4j.Appender;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
 /**
  * OperationManager.
@@ -50,7 +56,6 @@ import org.apache.log4j.Logger;
  */
 public class OperationManager extends AbstractService {
   private final Log LOG = LogFactory.getLog(OperationManager.class.getName());
-
   private final Map<OperationHandle, Operation> handleToOperation =
       new HashMap<OperationHandle, Operation>();
 
@@ -83,8 +88,13 @@ public class OperationManager extends AbstractService {
 
   private void initOperationLogCapture(String loggingMode) {
     // Register another Appender (with the same layout) that talks to us.
-    Appender ap = new LogDivertAppender(this, OperationLog.getLoggingLevel(loggingMode));
-    Logger.getRootLogger().addAppender(ap);
+    Appender ap = LogDivertAppender.createInstance(this, OperationLog.getLoggingLevel(loggingMode));
+    LoggerContext context = (LoggerContext) LogManager.getContext(false);
+    Configuration configuration = context.getConfiguration();
+    LoggerConfig loggerConfig = configuration.getLoggerConfig(LogManager.getLogger().getName());
+    loggerConfig.addAppender(ap, null, null);
+    context.updateLoggers();
+    ap.start();
   }
 
   public ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,
@@ -201,6 +211,14 @@ public class OperationManager extends AbstractService {
     Operation operation = removeOperation(opHandle);
     if (operation == null) {
       throw new HiveSQLException("Operation does not exist!");
+    }
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      try {
+        metrics.decrementCounter(MetricsConstant.OPEN_OPERATIONS);
+      } catch (Exception e) {
+        LOG.warn("Error Reporting close operation to Metrics system", e);
+      }
     }
     operation.close();
   }

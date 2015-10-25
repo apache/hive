@@ -59,9 +59,9 @@ setlocal enabledelayedexpansion
 
   if not defined TEMPLETON_LOG4J (
     @rem must be prefixed with file: otherwise config is not picked up
-    set TEMPLETON_LOG4J=file:%WEBHCAT_CONF_DIR%\webhcat-log4j.properties
+    set TEMPLETON_LOG4J=file:%WEBHCAT_CONF_DIR%\webhcat-log4j2.xml
   )
-  set TEMPLETON_OPTS=-Dtempleton.log.dir=%TEMPLETON_LOG_DIR% -Dlog4j.configuration=%TEMPLETON_LOG4J% %HADOOP_OPTS%
+  set TEMPLETON_OPTS=-Dtempleton.log.dir=%TEMPLETON_LOG_DIR% -Dlog4j.configurationFile=%TEMPLETON_LOG4J% %HADOOP_OPTS%
   set arguments=%JAVA_HEAP_MAX% %TEMPLETON_OPTS% -classpath %CLASSPATH% org.apache.hive.hcatalog.templeton.Main
   
   if defined service_entry (

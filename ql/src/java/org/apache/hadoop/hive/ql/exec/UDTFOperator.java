@@ -59,8 +59,8 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
   transient AutoProgressor autoProgressor;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     genericUDTF = conf.getGenericUDTF();
     collector = new UDTFCollector(this);
 
@@ -93,7 +93,6 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
               hconf, HiveConf.ConfVars.HIVES_AUTO_PROGRESS_TIMEOUT, TimeUnit.MILLISECONDS));
       autoProgressor.go();
     }
-    return result;
   }
 
   @Override

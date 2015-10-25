@@ -48,6 +48,10 @@ public class LazyShort extends
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
+    if (!LazyUtils.isNumberMaybe(bytes.getData(), start, length)) {
+      isNull = true;
+      return;
+    }
     try {
       data.set(parseShort(bytes.getData(), start, length));
       isNull = false;

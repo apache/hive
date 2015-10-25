@@ -39,11 +39,6 @@
 </property>
 
 <property>
-  <name>mapred.tez.java.opts</name>
-  <value>-Xmx128m</value>
-</property>
-
-<property>
   <name>hive.tez.container.size</name>
   <value>128</value>
   <description></description>
@@ -77,12 +72,6 @@
   <name>javax.jdo.option.ConnectionURL</name>
   <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
 </property>
-
-<property>
-  <name>hive.stats.dbconnectionstring</name>
-  <value>jdbc:derby:;databaseName=${test.tmp.dir}/TempStatsStore;create=true</value>
-</property>
-
 
 <property>
   <name>javax.jdo.option.ConnectionDriverName</name>
@@ -253,5 +242,29 @@
   </description>
 </property>
 
+<property>
+  <name>hive.tez.java.opts</name>
+  <value> -Dlog4j.configurationFile=tez-container-log4j2.xml -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
+
+<property>
+  <name>tez.am.launch.cmd-opts</name>
+  <value> -Dlog4j.configurationFile=tez-container-log4j2.xml -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
+
+<property>
+  <name>hive.metastore.fastpath</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.metastore.rawstore.impl</name>
+  <value>org.apache.hadoop.hive.metastore.hbase.HBaseStore</value>
+</property>
+
+<property>
+  <name>hive.orc.splits.ms.footer.cache.enabled</name>
+  <value>true</value>
+</property>
 
 </configuration>

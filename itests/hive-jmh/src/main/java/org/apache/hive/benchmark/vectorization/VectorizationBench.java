@@ -17,8 +17,32 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprLongColumnLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDoubleColumnDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NotCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarGreaterLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarLessEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarLessLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarNotEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColAddDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
@@ -37,6 +61,8 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.util.Arrays;
+import java.lang.Override;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -81,6 +107,7 @@ public class VectorizationBench {
         rowBatch.cols[i] = cols[i];
       }
       rowBatch.cols[colNum] = output;
+//      rowBatch.selectedInUse = true;
       return rowBatch;
     }
 
@@ -120,6 +147,34 @@ public class VectorizationBench {
           columnVector.isNull[i] = true;
         }
         columnVector.vector[i] = random.nextLong();
+      }
+      return columnVector;
+    }
+
+    protected LongColumnVector getBooleanLongColumnVector() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      Random random = new Random();
+      for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+        columnVector.vector[i] = random.nextInt(2);
+      }
+      return columnVector;
+    }
+
+    protected LongColumnVector getBooleanRepeatingLongColumnVector() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      columnVector.fill(1);
+      return columnVector;
+    }
+
+    protected LongColumnVector getBooleanLongColumnVectorWithNull() {
+      LongColumnVector columnVector = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      columnVector.noNulls = false;
+      Random random = new Random();
+      for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+        if (i % 100 == 0) {
+          columnVector.isNull[i] = true;
+        }
+        columnVector.vector[i] = random.nextInt(2);
       }
       return columnVector;
     }
@@ -206,6 +261,240 @@ public class VectorizationBench {
       rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getLongColumnVector(),
         getRepeatingLongColumnVector());
       expression = new LongColDivideLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class ColAndColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
+        getBooleanLongColumnVector());
+      expression = new ColAndCol(0, 1, 2);
+    }
+  }
+
+  public static class ColAndRepeatingColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
+          getBooleanRepeatingLongColumnVector());
+      expression = new ColAndCol(0, 1, 2);
+    }
+  }
+
+  public static class RepeatingColAndColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanRepeatingLongColumnVector(),
+          getBooleanLongColumnVector());
+      expression = new ColAndCol(0, 1, 2);
+    }
+  }
+
+  public static class ColOrColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
+          getBooleanLongColumnVector());
+      expression = new ColOrCol(0, 1, 2);
+    }
+  }
+
+  public static class ColOrRepeatingColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
+          getBooleanRepeatingLongColumnVector());
+      expression = new ColOrCol(0, 1, 2);
+    }
+  }
+
+  public static class RepeatingColOrColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanRepeatingLongColumnVector(),
+          getBooleanLongColumnVector());
+      expression = new ColOrCol(0, 1, 2);
+    }
+  }
+
+  public static class NotColBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getBooleanLongColumnVector());
+      expression = new NotCol(0, 1);
+    }
+  }
+
+  public static class IfExprLongColumnLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 3, getBooleanLongColumnVector(),
+        getLongColumnVector(), getLongColumnVector());
+      expression = new IfExprLongColumnLongColumn(0, 1, 2, 3);
+    }
+  }
+
+  public static class IfExprRepeatingLongColumnLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 3, getBooleanLongColumnVector(),
+          getRepeatingLongColumnVector(), getLongColumnVector());
+      expression = new IfExprLongColumnLongColumn(0, 1, 2, 3);
+    }
+  }
+
+  public static class IfExprLongColumnRepeatingLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 3, getBooleanLongColumnVector(),
+          getLongColumnVector(), getRepeatingLongColumnVector());
+      expression = new IfExprLongColumnLongColumn(0, 1, 2, 3);
+    }
+  }
+
+  public static class LongColEqualLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(), getLongColumnVector());
+      expression = new LongColEqualLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class LongColGreaterEqualLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(), getLongColumnVector());
+      expression = new LongColGreaterEqualLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class LongColGreaterLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(), getLongColumnVector());
+      expression = new LongColGreaterLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class LongColLessEqualLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(), getLongColumnVector());
+      expression = new LongColLessEqualLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class LongColLessLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(), getLongColumnVector());
+      expression = new LongColLessLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class LongColNotEqualLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(), getLongColumnVector());
+      expression = new LongColNotEqualLongColumn(0, 1, 2);
+    }
+  }
+
+  public static class LongColEqualLongScalarBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongColEqualLongScalar(0, 0, 1);
+    }
+  }
+
+  public static class LongColGreaterEqualLongScalarBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongColGreaterEqualLongScalar(0, 0, 1);
+    }
+  }
+
+  public static class LongColGreaterLongScalarBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongColGreaterLongScalar(0, 0, 1);
+    }
+  }
+
+  public static class LongColLessEqualLongScalarBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongColLessEqualLongScalar(0, 0, 1);
+    }
+  }
+
+  public static class LongColLessLongScalarBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongColLessLongScalar(0, 0, 1);
+    }
+  }
+
+  public static class LongColNotEqualLongScalarBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongColNotEqualLongScalar(0, 0, 1);
+    }
+  }
+
+
+  public static class LongScalarEqualLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongScalarEqualLongColumn(0, 0, 1);
+    }
+  }
+
+  public static class LongScalarGreaterEqualLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongScalarGreaterEqualLongColumn(0, 0, 1);
+    }
+  }
+
+  public static class LongScalarGreaterLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongScalarGreaterLongColumn(0, 0, 1);
+    }
+  }
+
+  public static class LongScalarLessEqualLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongScalarLessEqualLongColumn(0, 0, 1);
+    }
+  }
+
+  public static class LongScalarLessLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongScalarLessLongColumn(0, 0, 1);
+    }
+  }
+
+  public static class LongScalarNotEqualLongColumnBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 1, getLongColumnVector());
+      expression = new LongScalarNotEqualLongColumn(0, 0, 1);
     }
   }
 

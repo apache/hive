@@ -26,9 +26,8 @@ import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 
@@ -73,15 +72,11 @@ public class HiveRelMdMemory extends RelMdMemory {
     return join.getCumulativeMemoryWithinPhaseSplit();
   }
 
-  public Double memory(HiveLimit limit) {
-    return 0.0;
-  }
-
   public Double memory(HiveProject project) {
     return 0.0;
   }
 
-  public Double memory(HiveSort sort) {
+  public Double memory(HiveSortLimit sort) {
     if (sort.getCollation() != RelCollations.EMPTY) {
       // It sorts
       final Double avgRowSize = RelMetadataQuery.getAverageRowSize(sort.getInput());

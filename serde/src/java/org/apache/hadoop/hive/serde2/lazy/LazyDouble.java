@@ -46,6 +46,10 @@ public class LazyDouble extends
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     String byteData = null;
+    if (!LazyUtils.isNumberMaybe(bytes.getData(), start, length)) {
+      isNull = true;
+      return;
+    }
     try {
       byteData = Text.decode(bytes.getData(), start, length);
       data.set(Double.parseDouble(byteData));

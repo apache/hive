@@ -1,0 +1,33 @@
+diff --git a/ql/src/test/queries/clientpositive/join0.q b/ql/src/test/queries/clientpositive/join0.q
+deleted file mode 100644
+index 6ef6843..0000000
+--- a/ql/src/test/queries/clientpositive/join0.q
++++ /dev/null
+@@ -1,27 +0,0 @@
+-set hive.explain.user=false;
+--- JAVA_VERSION_SPECIFIC_OUTPUT
+--- SORT_QUERY_RESULTS
+-
+-EXPLAIN
+-SELECT src1.key as k1, src1.value as v1, 
+-       src2.key as k2, src2.value as v2 FROM 
+-  (SELECT * FROM src WHERE src.key < 10) src1 
+-    JOIN 
+-  (SELECT * FROM src WHERE src.key < 10) src2
+-  SORT BY k1, v1, k2, v2;
+-
+-EXPLAIN FORMATTED
+-SELECT src1.key as k1, src1.value as v1, 
+-       src2.key as k2, src2.value as v2 FROM 
+-  (SELECT * FROM src WHERE src.key < 10) src1 
+-    JOIN 
+-  (SELECT * FROM src WHERE src.key < 10) src2
+-  SORT BY k1, v1, k2, v2;
+-
+-SELECT src1.key as k1, src1.value as v1, 
+-       src2.key as k2, src2.value as v2 FROM 
+-  (SELECT * FROM src WHERE src.key < 10) src1 
+-    JOIN 
+-  (SELECT * FROM src WHERE src.key < 10) src2
+-  SORT BY k1, v1, k2, v2;
+-

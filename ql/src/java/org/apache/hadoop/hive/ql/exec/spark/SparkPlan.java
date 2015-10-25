@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
@@ -39,7 +40,7 @@ import com.google.common.base.Preconditions;
 public class SparkPlan {
   private static final String CLASS_NAME = SparkPlan.class.getName();
   private static final Log LOG = LogFactory.getLog(SparkPlan.class);
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   private final Set<SparkTran> rootTrans = new HashSet<SparkTran>();
   private final Set<SparkTran> leafTrans = new HashSet<SparkTran>();
@@ -288,9 +289,6 @@ public class SparkPlan {
    * @param child
    */
   public void connect(SparkTran parent, SparkTran child) {
-    if (getChildren(parent).contains(child)) {
-      throw new IllegalStateException("Connection already exists");
-    }
     rootTrans.remove(child);
     leafTrans.remove(parent);
     if (transGraph.get(parent) == null) {

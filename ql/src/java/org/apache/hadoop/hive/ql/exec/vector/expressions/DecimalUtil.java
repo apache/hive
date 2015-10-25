@@ -314,6 +314,24 @@ public class DecimalUtil {
     }
   }
 
+  public static void bround(int i, HiveDecimalWritable input, int decimalPlaces, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, RoundUtils.bround(input.getHiveDecimal(), decimalPlaces));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void bround(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, RoundUtils.bround(input.getHiveDecimal(), outputColVector.scale));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
   public static void sign(int i, HiveDecimal input, LongColumnVector outputColVector) {
     outputColVector.vector[i] = input.signum();
   }

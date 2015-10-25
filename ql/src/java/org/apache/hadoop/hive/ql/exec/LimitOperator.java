@@ -39,13 +39,12 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   protected transient boolean isMap;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     limit = conf.getLimit();
     leastRow = conf.getLeastRows();
     currCount = 0;
     isMap = hconf.getBoolean("mapred.task.is.map", true);
-    return result;
   }
 
   @Override

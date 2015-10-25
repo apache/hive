@@ -1,0 +1,82 @@
+PREHOOK: query: create table acid_ivot(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_ivot
+POSTHOOK: query: create table acid_ivot(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_ivot
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@acid_ivot
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@acid_ivot
+PREHOOK: query: select count(*) from acid_ivot
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid_ivot
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
+12288
+PREHOOK: query: insert into table acid_ivot values
+        (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
+        (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@acid_ivot
+POSTHOOK: query: insert into table acid_ivot values
+        (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
+        (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@acid_ivot
+POSTHOOK: Lineage: acid_ivot.cbigint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cboolean1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cboolean2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cdouble EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cfloat EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.csmallint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cstring1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cstring2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.ctimestamp1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.ctimestamp2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.ctinyint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select count(*) from acid_ivot
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid_ivot
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
+12290

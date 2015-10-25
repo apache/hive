@@ -82,7 +82,7 @@ public class CuckooSetBytes {
   }
 
   private static boolean entryEqual(byte[][] t, int hash, byte[] b, int start, int len) {
-    return t[hash] != null && StringExpr.compare(t[hash], 0, t[hash].length, b, start, len) == 0;
+    return t[hash] != null && StringExpr.equal(t[hash], 0, t[hash].length, b, start, len);
   }
 
   public void insert(byte[] x) {

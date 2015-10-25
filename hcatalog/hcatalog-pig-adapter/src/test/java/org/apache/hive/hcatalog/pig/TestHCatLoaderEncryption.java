@@ -426,6 +426,9 @@ public class TestHCatLoaderEncryption {
       }
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
+      if (dfs != null) {
+        dfs.shutdown();
+      }
     }
   }
 

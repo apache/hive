@@ -65,11 +65,11 @@ public class JsonFileDump {
       writer.endArray();
 
       writer.key("stripeStatistics").array();
-      Metadata metadata = reader.getMetadata();
-      for (int n = 0; n < metadata.getStripeStatistics().size(); n++) {
+      List<StripeStatistics> stripeStatistics = reader.getStripeStatistics();
+      for (int n = 0; n < stripeStatistics.size(); n++) {
         writer.object();
         writer.key("stripeNumber").value(n + 1);
-        StripeStatistics ss = metadata.getStripeStatistics().get(n);
+        StripeStatistics ss = stripeStatistics.get(n);
         writer.key("columnStatistics").array();
         for (int i = 0; i < ss.getColumnStatistics().length; i++) {
           writer.object();

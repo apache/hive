@@ -48,10 +48,10 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: max(_col0)
+                      aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -84,6 +84,7 @@ STAGE PLANS:
                         columns.types string
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -155,10 +156,10 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: max(_col0)
+                      aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -235,6 +236,7 @@ STAGE PLANS:
                         columns.types string
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -301,11 +303,11 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: count(DISTINCT _col0)
-                      keys: _col0 (type: string)
+                      aggregations: count(DISTINCT ds)
+                      keys: ds (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -382,6 +384,7 @@ STAGE PLANS:
                         columns.types bigint
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -448,10 +451,10 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: count(_col0)
+                      aggregations: count(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -529,6 +532,7 @@ STAGE PLANS:
                         columns.types bigint
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -736,10 +740,10 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: max(_col0)
+                      aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -880,6 +884,7 @@ STAGE PLANS:
                         columns.types bigint
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1017,11 +1022,11 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string), hr (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: ds, hr
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: count(DISTINCT _col1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      aggregations: count(DISTINCT hr)
+                      keys: ds (type: string), hr (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -1185,6 +1190,7 @@ STAGE PLANS:
                         columns.types string:bigint
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1261,11 +1267,11 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string), hr (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: ds, hr
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: count(_col1)
-                      keys: _col0 (type: string)
+                      aggregations: count(hr)
+                      keys: ds (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -1431,6 +1437,7 @@ STAGE PLANS:
                         columns.types string:bigint
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1500,10 +1507,10 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: ds
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: max(_col0)
+                      aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -1621,6 +1628,7 @@ STAGE PLANS:
                         columns.types string
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1746,11 +1754,11 @@ STAGE PLANS:
                   GatherStats: false
                   Select Operator
                     expressions: ds (type: string), hr (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: ds, hr
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
-                      aggregations: count(DISTINCT _col1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      aggregations: count(DISTINCT hr)
+                      keys: ds (type: string), hr (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -1998,6 +2006,7 @@ STAGE PLANS:
                         columns.types string:bigint
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

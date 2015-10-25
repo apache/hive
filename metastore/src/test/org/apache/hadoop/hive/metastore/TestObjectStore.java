@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.junit.After;
 import org.junit.Assert;
@@ -66,25 +69,26 @@ public class TestObjectStore {
         throws MetaException {
       return false;
     }
+
+    @Override
+    public SearchArgument createSarg(byte[] expr) {
+      return null;
+    }
+
+    @Override
+    public ByteBuffer applySargToFileMetadata(SearchArgument sarg, ByteBuffer byteBuffer) {
+      return null;
+    }
   }
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS, MockPartitionExpressionProxy.class.getName());
 
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
-
-    Deadline.registerIfNot(100000);
-    try {
-      objectStore.dropDatabase(DB1);
-    } catch (Exception e) {
-    }
-    try {
-      objectStore.dropDatabase(DB2);
-    } catch (Exception e) {
-    }
+    dropAllStoreObjects(objectStore);
   }
 
   @After
@@ -226,5 +230,34 @@ public class TestObjectStore {
     objectStore.grantRole(role1, USER1, PrincipalType.USER, OWNER, PrincipalType.ROLE, true);
     objectStore.revokeRole(role1, USER1, PrincipalType.USER, false);
     objectStore.removeRole(ROLE1);
+  }
+
+  public static void dropAllStoreObjects(RawStore store) throws MetaException, InvalidObjectException, InvalidInputException {
+    try {
+      Deadline.registerIfNot(100000);
+      List<Function> funcs = store.getAllFunctions();
+      for (Function func : funcs) {
+        store.dropFunction(func.getDbName(), func.getFunctionName());
+      }
+      List<String> dbs = store.getAllDatabases();
+      for (int i = 0; i < dbs.size(); i++) {
+        String db = dbs.get(i);
+        List<String> tbls = store.getAllTables(db);
+        for (String tbl : tbls) {
+          Deadline.startTimer("getPartition");
+          List<Partition> parts = store.getPartitions(db, tbl, 100);
+          for (Partition part : parts) {
+            store.dropPartition(db, tbl, part.getValues());
+          }
+          store.dropTable(db, tbl);
+        }
+        store.dropDatabase(db);
+      }
+      List<String> roles = store.listRoleNames();
+      for (String role : roles) {
+        store.removeRole(role);
+      }
+    } catch (NoSuchObjectException e) {
+    }
   }
 }

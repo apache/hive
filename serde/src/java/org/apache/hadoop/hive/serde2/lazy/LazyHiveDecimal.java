@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.io.Text;
 
 public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspector, HiveDecimalWritable> {
@@ -89,7 +88,7 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
   }
 
   private HiveDecimal enforcePrecisionScale(HiveDecimal dec) {
-    return HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
+    return HiveDecimal.enforcePrecisionScale(dec, precision, scale);
   }
 
   @Override

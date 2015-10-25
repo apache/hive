@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -78,7 +79,9 @@ public class ReduceSinkDeDuplication implements Transform {
 
     // for auto convert map-joins, it not safe to dedup in here (todo)
     boolean mergeJoins = !pctx.getConf().getBoolVar(HIVECONVERTJOIN) &&
-        !pctx.getConf().getBoolVar(HIVECONVERTJOINNOCONDITIONALTASK);
+        !pctx.getConf().getBoolVar(HIVECONVERTJOINNOCONDITIONALTASK) &&
+        !pctx.getConf().getBoolVar(ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ) &&
+        !pctx.getConf().getBoolVar(ConfVars.HIVEDYNAMICPARTITIONHASHJOIN);
 
     // If multiple rules can be matched with same cost, last rule will be choosen as a processor
     // see DefaultRuleDispatcher#dispatch()
@@ -177,17 +180,17 @@ public class ReduceSinkDeDuplication implements Transform {
         ReduceSinkDeduplicateProcCtx dedupCtx) throws SemanticException;
 
     // for JOIN-RS case, it's not possible generally to merge if child has
-    // more key/partition columns than parents
+    // less key/partition columns than parents
     protected boolean merge(ReduceSinkOperator cRS, JoinOperator pJoin, int minReducer)
         throws SemanticException {
       List<Operator<?>> parents = pJoin.getParentOperators();
       ReduceSinkOperator[] pRSs = parents.toArray(new ReduceSinkOperator[parents.size()]);
       ReduceSinkDesc cRSc = cRS.getConf();
       ReduceSinkDesc pRS0c = pRSs[0].getConf();
-      if (cRSc.getKeyCols().size() > pRS0c.getKeyCols().size()) {
+      if (cRSc.getKeyCols().size() < pRS0c.getKeyCols().size()) {
         return false;
       }
-      if (cRSc.getPartitionCols().size() > pRS0c.getPartitionCols().size()) {
+      if (cRSc.getPartitionCols().size() != pRS0c.getPartitionCols().size()) {
         return false;
       }
       Integer moveReducerNumTo = checkNumReducer(cRSc.getNumReducers(), pRS0c.getNumReducers());
@@ -211,7 +214,7 @@ public class ReduceSinkDeDuplication implements Transform {
           pexprs[tag] = pRSs[tag].getConf().getKeyCols().get(i);
         }
         int found = CorrelationUtilities.indexOf(cexpr, pexprs, cRS, pRSs, sorted);
-        if (found < 0) {
+        if (found != i) {
           return false;
         }
       }
@@ -223,7 +226,7 @@ public class ReduceSinkDeDuplication implements Transform {
           pexprs[tag] = pRSs[tag].getConf().getPartitionCols().get(i);
         }
         int found = CorrelationUtilities.indexOf(cexpr, pexprs, cRS, pRSs, sorted);
-        if (found < 0) {
+        if (found != i) {
           return false;
         }
       }
@@ -500,7 +503,7 @@ public class ReduceSinkDeDuplication implements Transform {
     public Object process(ReduceSinkOperator cRS, GroupByOperator cGBY,
         ReduceSinkDeduplicateProcCtx dedupCtx)
         throws SemanticException {
-      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS);
+      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       GroupByOperator pGBY =
           CorrelationUtilities.findPossibleParent(
               start, GroupByOperator.class, dedupCtx.trustScript());
@@ -547,7 +550,7 @@ public class ReduceSinkDeDuplication implements Transform {
     public Object process(ReduceSinkOperator cRS, GroupByOperator cGBY,
         ReduceSinkDeduplicateProcCtx dedupCtx)
         throws SemanticException {
-      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS);
+      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       JoinOperator pJoin =
           CorrelationUtilities.findPossibleParent(
               start, JoinOperator.class, dedupCtx.trustScript());
@@ -590,7 +593,7 @@ public class ReduceSinkDeDuplication implements Transform {
     public Object process(ReduceSinkOperator cRS, GroupByOperator cGBY,
         ReduceSinkDeduplicateProcCtx dedupCtx)
         throws SemanticException {
-      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS);
+      Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       ReduceSinkOperator pRS =
           CorrelationUtilities.findPossibleParent(
               start, ReduceSinkOperator.class, dedupCtx.trustScript());

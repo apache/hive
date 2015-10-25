@@ -21,6 +21,7 @@ package org.apache.hive.hplsql;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -32,6 +33,7 @@ public class Query {
   
   Connection conn;
   Statement stmt;
+  PreparedStatement pstmt;
   ResultSet rs;
   Exception exception;
 
@@ -57,6 +59,11 @@ public class Query {
     if (rs != null) {
       state = State.OPEN;
     }
+  }
+  
+  public void set(Connection conn, PreparedStatement pstmt) {
+    this.conn = conn;
+    this.pstmt = pstmt;
   }
   
   /**
@@ -132,6 +139,10 @@ public class Query {
         stmt.close();
         stmt = null;
       }
+      if(pstmt != null) {
+        pstmt.close();
+        pstmt = null;
+      }
       state = State.CLOSE;
     } catch (SQLException e) {
       e.printStackTrace();
@@ -187,6 +198,13 @@ public class Query {
    */
   public ResultSet getResultSet() {
     return rs;
+  }
+  
+  /**
+   * Get the prepared statement object
+   */
+  public PreparedStatement getPreparedStatement() {
+    return pstmt;
   }
   
   /**

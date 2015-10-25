@@ -39,6 +39,7 @@ STAGE PLANS:
                       keys:
                         0 _col1 (type: int)
                         1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 4 
@@ -54,6 +55,7 @@ STAGE PLANS:
                       keys:
                         0 _col0 (type: tinyint)
                         1 _col0 (type: tinyint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -100,10 +102,11 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -117,7 +120,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

@@ -60,6 +60,14 @@ public abstract class ExprNodeDesc implements Serializable, Node {
     return typeInfo.hashCode();
   }
 
+  @Override
+  public final boolean equals(Object o) {
+    // prevent equals from being overridden in sub-classes
+    // always use ExprNodeDescEqualityWrapper
+    // if you need any other equality than Object.equals()
+    return (o == this);
+  }
+
   public TypeInfo getTypeInfo() {
     return typeInfo;
   }
@@ -98,19 +106,20 @@ public abstract class ExprNodeDesc implements Serializable, Node {
 
   // This wraps an instance of an ExprNodeDesc, and makes equals work like isSame, see comment on
   // isSame
-  public static class ExprNodeDescEqualityWrapper {
-    private ExprNodeDesc exprNodeDesc;
+  public final static class ExprNodeDescEqualityWrapper {
+    private final ExprNodeDesc exprNodeDesc;
+    // beware of any implementation whose hashcode is mutable by reference
+    // inserting into a Map and then changing the hashcode can make it 
+    // disappear out of the Map during lookups
+    private final int hashcode;
 
     public ExprNodeDescEqualityWrapper(ExprNodeDesc exprNodeDesc) {
       this.exprNodeDesc = exprNodeDesc;
+      this.hashcode = exprNodeDesc == null ? 0 : exprNodeDesc.hashCode();
     }
 
     public ExprNodeDesc getExprNodeDesc() {
       return exprNodeDesc;
-    }
-
-    public void setExprNodeDesc(ExprNodeDesc exprNodeDesc) {
-      this.exprNodeDesc = exprNodeDesc;
     }
 
     @Override
@@ -125,7 +134,7 @@ public abstract class ExprNodeDesc implements Serializable, Node {
 
     @Override
     public int hashCode() {
-      return exprNodeDesc == null ? 0 : exprNodeDesc.hashCode();
+      return hashcode;
     }
 
     /* helper function to allow Set()/Collection() operations with ExprNodeDesc */

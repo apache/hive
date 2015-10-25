@@ -96,8 +96,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   @SuppressWarnings("unchecked")
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     firstFetchHappened = false;
     fetchInputAtClose = getFetchInputAtCloseList();
 
@@ -149,7 +149,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     }
 
     sources = ((TezContext) MapredContext.get()).getRecordSources();
-    return result;
   }
 
   /*
@@ -637,7 +636,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       }
     }
     super.initializeLocalWork(hconf);
-    return;
   }
 
   public boolean isBigTableWork() {

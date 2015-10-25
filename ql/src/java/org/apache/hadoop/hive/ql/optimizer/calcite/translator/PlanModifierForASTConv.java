@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -141,12 +141,12 @@ public class PlanModifierForASTConv {
         if (!validFilterParent(rel, parent)) {
           introduceDerivedTable(rel, parent);
         }
-      } else if (rel instanceof HiveSort) {
+      } else if (rel instanceof HiveSortLimit) {
         if (!validSortParent(rel, parent)) {
           introduceDerivedTable(rel, parent);
         }
-        if (!validSortChild((HiveSort) rel)) {
-          introduceDerivedTable(((HiveSort) rel).getInput(), rel);
+        if (!validSortChild((HiveSortLimit) rel)) {
+          introduceDerivedTable(((HiveSortLimit) rel).getInput(), rel);
         }
       } else if (rel instanceof HiveAggregate) {
         RelNode newParent = parent;
@@ -169,7 +169,7 @@ public class PlanModifierForASTConv {
     }
   }
 
-  private static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
+  public static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
       Pair<RelNode, RelNode> topSelparentPair, List<FieldSchema> resultSchema)
       throws CalciteSemanticException {
     RelNode parentOforiginalProjRel = topSelparentPair.getKey();
@@ -190,6 +190,7 @@ public class PlanModifierForASTConv {
       colAlias = resultSchema.get(i).getName();
       if (colAlias.startsWith("_")) {
         colAlias = colAlias.substring(1);
+        colAlias = getNewColAlias(newSelAliases, colAlias);
       }
       newSelAliases.add(colAlias);
     }
@@ -203,6 +204,16 @@ public class PlanModifierForASTConv {
       parentOforiginalProjRel.replaceInput(0, replacementProjectRel);
       return rootRel;
     }
+  }
+
+  private static String getNewColAlias(List<String> newSelAliases, String colAlias) {
+    int index = 1;
+    String newColAlias = colAlias;
+    while (newSelAliases.contains(newColAlias)) {
+      //This means that the derived colAlias collides with existing ones.
+      newColAlias = colAlias + "_" + (index++);
+    }
+    return newColAlias;
   }
 
   private static RelNode introduceDerivedTable(final RelNode rel) {
@@ -265,8 +276,8 @@ public class PlanModifierForASTConv {
 
     // TODO: Verify GB having is not a separate filter (if so we shouldn't
     // introduce derived table)
-    if (parent instanceof Filter || parent instanceof Join
-        || parent instanceof SetOp) {
+    if (parent instanceof Filter || parent instanceof Join || parent instanceof SetOp ||
+       (parent instanceof Aggregate && filterNode.getInputs().get(0) instanceof Aggregate)) {
       validParent = false;
     }
 
@@ -297,7 +308,7 @@ public class PlanModifierForASTConv {
     return validParent;
   }
 
-  private static boolean validSortChild(HiveSort sortNode) {
+  private static boolean validSortChild(HiveSortLimit sortNode) {
     boolean validChild = true;
     RelNode child = sortNode.getInput();
 

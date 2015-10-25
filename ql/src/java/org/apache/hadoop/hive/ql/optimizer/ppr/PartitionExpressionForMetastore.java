@@ -18,13 +18,23 @@
 
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.Metastore.SplitInfo;
+import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.ReaderImpl;
+import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -70,5 +80,35 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
       throw new MetaException("Failed to deserialize expression - ExprNodeDesc not present");
     }
     return expr;
+  }
+
+  @Override
+  public SearchArgument createSarg(byte[] expr) {
+    return ConvertAstToSearchArg.create(expr);
+  }
+
+  @Override
+  public ByteBuffer applySargToFileMetadata(
+      SearchArgument sarg, ByteBuffer byteBuffer) throws IOException {
+    // TODO: ideally we should store shortened representation of only the necessary fields
+    //       in HBase; it will probably require custom SARG application code.
+    ReaderImpl.FooterInfo fi = ReaderImpl.extractMetaInfoFromFooter(byteBuffer, null);
+    OrcProto.Footer footer = fi.getFooter();
+    int stripeCount = footer.getStripesCount();
+    boolean[] result = OrcInputFormat.pickStripesViaTranslatedSarg(
+        sarg, fi.getFileMetaInfo().getWriterVersion(),
+        footer.getTypesList(), fi.getMetadata(), stripeCount);
+    // For ORC case, send the boundaries of the stripes so we don't have to send the footer.
+    SplitInfos.Builder sb = SplitInfos.newBuilder();
+    List<StripeInformation> stripes = fi.getStripes();
+    boolean isEliminated = true;
+    for (int i = 0; i < result.length; ++i) {
+      if (result != null && !result[i]) continue;
+      isEliminated = false;
+      StripeInformation si = stripes.get(i);
+      sb.addInfos(SplitInfo.newBuilder().setIndex(i)
+          .setOffset(si.getOffset()).setLength(si.getLength()));
+    }
+    return isEliminated ? null : ByteBuffer.wrap(sb.build().toByteArray());
   }
 }

@@ -88,7 +88,7 @@
 <property>
   <name>hive.semantic.analyzer.factory.impl</name>
   <value>org.apache.hive.hcatalog.cli.HCatSemanticAnalyzerFactory</value>
-  <description>controls which SemanticAnalyzerFactory implemenation class is used by CLI</description>
+  <description>controls which SemanticAnalyzerFactory implementation class is used by CLI</description>
 </property>
 
 <property>

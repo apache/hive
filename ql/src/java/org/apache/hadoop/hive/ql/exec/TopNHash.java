@@ -104,7 +104,7 @@ public class TopNHash {
     }
 
     // limit * 64 : compensation of arrays for key/value/hashcodes
-    this.threshold = (long) (memUsage * Runtime.getRuntime().maxMemory()) - topN * 64;
+    this.threshold = (long) (memUsage * Runtime.getRuntime().freeMemory()) - topN * 64L;
     if (threshold < 0) {
       return;
     }

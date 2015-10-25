@@ -625,8 +625,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
           rowsToFlush[flushMark] = currentStreamingAggregators;
           if (keysToFlush[flushMark] == null) {
             keysToFlush[flushMark] = (VectorHashKeyWrapper) streamingKey.copyKey();
-          }
-          else {
+          } else {
             streamingKey.duplicateTo(keysToFlush[flushMark]);
           }
 
@@ -775,9 +774,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
-    assert result.isEmpty();
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -836,12 +834,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     } else if (conf.getVectorDesc().isReduceMergePartial()) {
       // Sorted GroupBy of vector batches where an individual batch has the same group key (e.g. reduce).
       processingMode = this.new ProcessingModeReduceMergePartialKeys();
+    } else if (conf.getVectorDesc().isReduceStreaming()) {
+      processingMode = this.new ProcessingModeUnsortedStreaming();
     } else {
       // We start in hash mode and may dynamically switch to unsorted stream mode.
       processingMode = this.new ProcessingModeHashAggregate();
     }
     processingMode.initialize(hconf);
-    return result;
   }
 
   /**

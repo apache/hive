@@ -494,6 +494,40 @@ public final class ObjectInspectorUtils {
     }
   }
 
+  /**
+   * Computes the bucket number to which the bucketFields belong to
+   * @param bucketFields  the bucketed fields of the row
+   * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
+   * @param totalBuckets the number of buckets in the table
+   * @return the bucket number
+   */
+  public static int getBucketNumber(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors, int totalBuckets) {
+    return getBucketNumber(getBucketHashCode(bucketFields, bucketFieldInspectors), totalBuckets);
+  }
+
+  /**
+   * https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables
+   * @param hashCode as produced by {@link #getBucketHashCode(Object[], ObjectInspector[])}
+   */
+  public static int getBucketNumber(int hashCode, int numberOfBuckets) {
+    return (hashCode & Integer.MAX_VALUE) % numberOfBuckets;
+  }
+  /**
+   * Computes the hash code for the given bucketed fields
+   * @param bucketFields
+   * @param bucketFieldInspectors
+   * @return
+   */
+  public static int getBucketHashCode(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
+    int hashCode = 0;
+    for (int i = 0; i < bucketFields.length; i++) {
+      int fieldHash = ObjectInspectorUtils.hashCode(bucketFields[i], bucketFieldInspectors[i]);
+      hashCode = 31 * hashCode + fieldHash;
+    }
+    return hashCode;
+  }
+
+
   public static int hashCode(Object o, ObjectInspector objIns) {
     if (o == null) {
       return 0;
@@ -1073,6 +1107,24 @@ public final class ObjectInspectorUtils {
               ObjectInspectorCopyOption.WRITABLE
             ),
             (Map<?, ?>)writableValue);
+      case STRUCT:
+          StructObjectInspector soi = (StructObjectInspector) oi;
+          List<? extends StructField> fields = soi.getAllStructFieldRefs();
+          List<String> fieldNames = new ArrayList<String>(fields.size());
+          List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(
+            fields.size());
+          for (StructField f : fields) {
+            fieldNames.add(f.getFieldName());
+            fieldObjectInspectors.add(getStandardObjectInspector(f
+            .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE));
+          }
+          if (value != null && (writableValue.getClass().isArray())) {
+            writableValue = java.util.Arrays.asList((Object[])writableValue);
+          }
+          return ObjectInspectorFactory.getStandardConstantStructObjectInspector(
+            fieldNames,
+            fieldObjectInspectors,
+            (List<?>)writableValue);
       default:
        throw new IllegalArgumentException(
            writableOI.getCategory() + " not yet supported for constant OI");
@@ -1088,6 +1140,7 @@ public final class ObjectInspectorUtils {
       case PRIMITIVE:
       case LIST:
       case MAP:
+      case STRUCT:
         return true;
       default:
         return false;

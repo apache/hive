@@ -43,11 +43,10 @@ public class CollectOperator extends Operator<CollectDesc> implements
   transient int maxSize;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     rowList = new ArrayList<Object>();
     maxSize = conf.getBufferSize().intValue();
-    return result;
   }
 
   boolean firstRow = true;

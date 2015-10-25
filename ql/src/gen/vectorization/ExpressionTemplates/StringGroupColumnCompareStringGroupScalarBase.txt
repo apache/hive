@@ -63,7 +63,7 @@ public abstract class <ClassName> extends VectorExpression {
       outputColVector.noNulls = true;
       if (inputColVector.isRepeating) {
         outputColVector.isRepeating = true; 
-        if (StringExpr.compare(vector[0], start[0], length[0], value, 0, value.length) <OperatorSymbol> 0) {
+        if (<CompareOrEqual>(vector[0], start[0], length[0], value, 0, value.length)<OptionalCompare>) {
           outVector[0] = 1;
         } else {
           outVector[0] = 0;
@@ -71,7 +71,7 @@ public abstract class <ClassName> extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
+          if (<CompareOrEqual>(vector[i], start[i], length[i], value, 0, value.length)<OptionalCompare>) {
             outVector[i] = 1;
           } else {
             outVector[i] = 0;
@@ -79,7 +79,7 @@ public abstract class <ClassName> extends VectorExpression {
         }
       } else {
         for(int i = 0; i != n; i++) {
-          if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
+          if (<CompareOrEqual>(vector[i], start[i], length[i], value, 0, value.length)<OptionalCompare>) {
             outVector[i] = 1;
           } else {
             outVector[i] = 0;
@@ -92,7 +92,7 @@ public abstract class <ClassName> extends VectorExpression {
         outputColVector.isRepeating = true;
         outNull[0] = nullPos[0];
         if (!nullPos[0]) {
-          if (StringExpr.compare(vector[0], start[0], length[0], value, 0, value.length) <OperatorSymbol> 0) {
+          if (<CompareOrEqual>(vector[0], start[0], length[0], value, 0, value.length)<OptionalCompare>) {
             outVector[0] = 1;
           } else {
             outVector[0] = 0;
@@ -103,7 +103,7 @@ public abstract class <ClassName> extends VectorExpression {
           int i = sel[j];
           outNull[i] = nullPos[i];
           if (!nullPos[i]) {
-            if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector[i], start[i], length[i], value, 0, value.length)<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;
@@ -114,7 +114,7 @@ public abstract class <ClassName> extends VectorExpression {
         for(int i = 0; i != n; i++) {
           outNull[i] = nullPos[i];
           if (!nullPos[i]) {
-            if (StringExpr.compare(vector[i], start[i], length[i], value, 0, value.length) <OperatorSymbol> 0) {
+            if (<CompareOrEqual>(vector[i], start[i], length[i], value, 0, value.length)<OptionalCompare>) {
               outVector[i] = 1;
             } else {
               outVector[i] = 0;

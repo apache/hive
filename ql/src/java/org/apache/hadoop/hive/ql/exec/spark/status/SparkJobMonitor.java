@@ -38,7 +38,7 @@ abstract class SparkJobMonitor {
   protected static final String CLASS_NAME = SparkJobMonitor.class.getName();
   protected static final Log LOG = LogFactory.getLog(CLASS_NAME);
   protected static SessionState.LogHelper console = new SessionState.LogHelper(LOG);
-  protected final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  protected final PerfLogger perfLogger = SessionState.getPerfLogger();
   protected final int checkInterval = 1000;
   protected final long monitorTimeoutInteval;
 

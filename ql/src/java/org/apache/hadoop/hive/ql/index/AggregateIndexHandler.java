@@ -153,7 +153,6 @@ public class AggregateIndexHandler extends CompactIndexHandler {
       builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
       Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
           command, (LinkedHashMap<String, String>) partSpec, indexTableName, dbName);
-      super.setStatsDir(builderConf);
       return rootTask;
     }
   }

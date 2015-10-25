@@ -448,4 +448,5 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   public void setHasOrderBy(boolean hasOrderBy) {
     this.hasOrderBy = hasOrderBy;
   }
+
 }

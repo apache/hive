@@ -42,11 +42,12 @@ import org.apache.hive.service.cli.thrift.TProtocolVersion;
  */
 public class HiveSessionImplwithUGI extends HiveSessionImpl {
   public static final String HS2TOKEN = "HiveServer2ImpersonationToken";
+  static final Log LOG = LogFactory.getLog(HiveSessionImplwithUGI.class);
 
   private UserGroupInformation sessionUgi = null;
   private String hmsDelegationTokenStr = null;
   private HiveSession proxySession = null;
-  static final Log LOG = LogFactory.getLog(HiveSessionImplwithUGI.class);
+
 
   public HiveSessionImplwithUGI(TProtocolVersion protocol, String username, String password,
       HiveConf hiveConf, String ipAddress, String delegationToken) throws HiveSQLException {

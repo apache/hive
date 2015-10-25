@@ -356,7 +356,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
    */
   public static class GenericUDAFSumLong extends GenericUDAFEvaluator {
     private PrimitiveObjectInspector inputOI;
-    private LongWritable result;
+    protected LongWritable result;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {

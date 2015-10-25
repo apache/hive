@@ -22,7 +22,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +32,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
@@ -46,6 +48,9 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONWriter;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  * A tool for printing out the file structure of ORC files.
@@ -82,23 +87,59 @@ public final class FileDump {
     boolean printTimeZone = cli.hasOption('t');
     boolean jsonFormat = cli.hasOption('j');
     String[] files = cli.getArgs();
+    if (files.length == 0) {
+      System.err.println("Error : ORC files are not specified");
+      return;
+    }
+
+    // if the specified path is directory, iterate through all files and print the file dump
+    List<String> filesInPath = Lists.newArrayList();
+    for (String filename : files) {
+      Path path = new Path(filename);
+      filesInPath.addAll(getAllFilesInPath(path, conf));
+    }
+
     if (dumpData) {
-      printData(Arrays.asList(files), conf);
+      printData(filesInPath, conf);
     } else {
       if (jsonFormat) {
         boolean prettyPrint = cli.hasOption('p');
-        JsonFileDump.printJsonMetaData(Arrays.asList(files), conf, rowIndexCols, prettyPrint,
+        JsonFileDump.printJsonMetaData(filesInPath, conf, rowIndexCols, prettyPrint,
             printTimeZone);
       } else {
-        printMetaData(Arrays.asList(files), conf, rowIndexCols, printTimeZone);
+        printMetaData(filesInPath, conf, rowIndexCols, printTimeZone);
       }
     }
+  }
+
+  private static Collection<? extends String> getAllFilesInPath(final Path path,
+      final Configuration conf) throws IOException {
+    List<String> filesInPath = Lists.newArrayList();
+    FileSystem fs = path.getFileSystem(conf);
+    FileStatus fileStatus = fs.getFileStatus(path);
+    if (fileStatus.isDir()) {
+      FileStatus[] fileStatuses = fs.listStatus(path, AcidUtils.hiddenFileFilter);
+      for (FileStatus fileInPath : fileStatuses) {
+        if (fileInPath.isDir()) {
+          filesInPath.addAll(getAllFilesInPath(fileInPath.getPath(), conf));
+        } else {
+          filesInPath.add(fileInPath.getPath().toString());
+        }
+      }
+    } else {
+      filesInPath.add(path.toString());
+    }
+
+    return filesInPath;
   }
 
   private static void printData(List<String> files, Configuration conf) throws IOException,
       JSONException {
     for (String file : files) {
       printJsonData(conf, file);
+      if (files.size() > 1) {
+        System.out.println(Strings.repeat("=", 80) + "\n");
+      }
     }
   }
 
@@ -118,10 +159,10 @@ public final class FileDump {
       }
       System.out.println("Type: " + reader.getObjectInspector().getTypeName());
       System.out.println("\nStripe Statistics:");
-      Metadata metadata = reader.getMetadata();
-      for (int n = 0; n < metadata.getStripeStatistics().size(); n++) {
+      List<StripeStatistics> stripeStats = reader.getStripeStatistics();
+      for (int n = 0; n < stripeStats.size(); n++) {
         System.out.println("  Stripe " + (n + 1) + ":");
-        StripeStatistics ss = metadata.getStripeStatistics().get(n);
+        StripeStatistics ss = stripeStats.get(n);
         for (int i = 0; i < ss.getColumnStatistics().length; ++i) {
           System.out.println("    Column " + i + ": " +
               ss.getColumnStatistics()[i].toString());
@@ -178,7 +219,7 @@ public final class FileDump {
           for (int colIdx : rowIndexCols) {
             sargColumns[colIdx] = true;
           }
-          RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, sargColumns);
+          RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, null, null, sargColumns);
           for (int col : rowIndexCols) {
             StringBuilder buf = new StringBuilder();
             String rowIdxString = getFormattedRowIndices(col, indices.getRowGroupIndex());
@@ -200,6 +241,9 @@ public final class FileDump {
       System.out.println("Padding length: " + paddedBytes + " bytes");
       System.out.println("Padding ratio: " + format.format(percentPadding) + "%");
       rows.close();
+      if (files.size() > 1) {
+        System.out.println(Strings.repeat("=", 80) + "\n");
+      }
     }
   }
 
