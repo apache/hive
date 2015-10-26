@@ -71,8 +71,11 @@ import org.apache.thrift.transport.TTransportFactory;
 /**
  * Functions that bridge Thrift's SASL transports to Hadoop's
  * SASL callback handlers and authentication classes.
+ * HIVE-11378 This class is not directly used anymore.  It now exists only as a shell to be
+ * extended by HadoopThriftAuthBridge23 in 0.23 shims.  I have made it abstract
+ * to avoid maintenance errors.
  */
-public class HadoopThriftAuthBridge {
+public abstract class HadoopThriftAuthBridge {
   private static final Log LOG = LogFactory.getLog(HadoopThriftAuthBridge.class);
 
   public Client createClient() {
@@ -164,11 +167,7 @@ public class HadoopThriftAuthBridge {
    * @return Hadoop SASL configuration
    */
 
-  public Map<String, String> getHadoopSaslProperties(Configuration conf) {
-    // Initialize the SaslRpcServer to ensure QOP parameters are read from conf
-    SaslRpcServer.init(conf);
-    return SaslRpcServer.SASL_PROPS;
-  }
+  public abstract Map<String, String> getHadoopSaslProperties(Configuration conf);
 
   public static class Client {
     /**

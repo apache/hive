@@ -174,6 +174,74 @@
       <version>${libfb303.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-archives</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-common</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-api</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-common</artifactId>
+      <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-client</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.ivy</groupId>
       <artifactId>ivy</artifactId>
       <version>${ivy.version}</version>
@@ -494,91 +562,6 @@
 
   <profiles>
     <profile>
-      <id>hadoop-1</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>2.3.2</version>
-            <configuration>
-              <excludes>
-                <exclude>**/ATSHook.java</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-core</artifactId>
-          <version>${hadoop-20S.version}</version>
-         <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-tools</artifactId>
-          <version>${hadoop-20S.version}</version>
-          <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>hadoop-2</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-archives</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-mapreduce-client-core</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-mapreduce-client-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-api</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-       </dependency>
-       <dependency>
-         <groupId>org.apache.hadoop</groupId>
-         <artifactId>hadoop-yarn-common</artifactId>
-         <version>${hadoop-23.version}</version>
-         <optional>true</optional>
-       </dependency>
-       <dependency>
-         <groupId>org.apache.hadoop</groupId>
-         <artifactId>hadoop-yarn-client</artifactId>
-         <version>${hadoop-23.version}</version>
-         <optional>true</optional>
-       </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <id>protobuf</id>
       <build>
         <plugins>
@@ -722,7 +705,6 @@
                   <include>org.json:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
-                  <include>org.apache.hive.shims:hive-shims-0.20S</include>
                   <include>org.apache.hive.shims:hive-shims-0.23</include>
                   <include>org.apache.hive.shims:hive-shims-0.23</include>
                   <include>org.apache.hive.shims:hive-shims-common</include>

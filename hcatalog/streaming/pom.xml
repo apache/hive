@@ -32,34 +32,6 @@
     <hive.path.to.root>../..</hive.path.to.root>
   </properties>
 
-  <profiles>
-  <profile>
-    <id>hadoop-1</id>
-    <dependencies>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-core</artifactId>
-        <optional>true</optional>
-      </dependency>
-    </dependencies>
-  </profile>
-  <profile>
-    <id>hadoop-2</id>
-    <dependencies>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-common</artifactId>
-        <optional>true</optional>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-mapreduce-client-core</artifactId>
-        <optional>true</optional>
-      </dependency>
-    </dependencies>
-  </profile>
-  </profiles>
-
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- intra-project -->
@@ -95,6 +67,18 @@
       <optional>true</optional>
       <version>3.3.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <optional>true</optional>
+      <version>${hadoop.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <optional>true</optional>
+      <version>${hadoop.version}</version>
+    </dependency>
 
     <!-- test -->
     <dependency>
@@ -108,7 +92,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-common</artifactId>
       <scope>test</scope>
-      <version>${hadoop-23.version}</version>
+      <version>${hadoop.version}</version>
     </dependency>
 
   </dependencies>
