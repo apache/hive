@@ -129,7 +129,7 @@ public class HiveSchemaTool {
     String dbVersion = getMetaStoreSchemaVersion(metastoreConn);
     System.out.println("Hive distribution version:\t " + hiveVersion);
     System.out.println("Metastore schema version:\t " + dbVersion);
-    assertSameVersion(hiveVersion, dbVersion);
+    assertCompatibleVersion(hiveVersion, dbVersion);
 
   }
 
@@ -185,15 +185,15 @@ public class HiveSchemaTool {
     String newSchemaVersion = getMetaStoreSchemaVersion(
         getConnectionToMetastore(false));
     // verify that the new version is added to schema
-    assertSameVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
+    assertCompatibleVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
 
   }
 
-  private void assertSameVersion(String hiveSchemaVersion, String dbSchemaVersion)
+  private void assertCompatibleVersion(String hiveSchemaVersion, String dbSchemaVersion)
       throws HiveMetaException {
-    if (!hiveSchemaVersion.equalsIgnoreCase(dbSchemaVersion)) {
-      throw new HiveMetaException("Expected schema version " + hiveSchemaVersion
-          + ", found version " + dbSchemaVersion);
+    if (!MetaStoreSchemaInfo.isVersionCompatible(hiveSchemaVersion, dbSchemaVersion)) {
+      throw new HiveMetaException("Metastore schema version is not compatible. Hive Version: "
+          + hiveSchemaVersion + ", Database Schema Version: " + dbSchemaVersion);
     }
   }
 
