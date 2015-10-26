@@ -292,9 +292,7 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver() {
-    if (SessionState.get() != null) {
-      conf = SessionState.get().getConf();
-    }
+    this((SessionState.get() != null) ? SessionState.get().getConf() : null);
   }
 
   /**
@@ -1042,6 +1040,10 @@ public class Driver implements CommandProcessor {
    * while keeping the result around.
    */
   private void releaseResources() {
+    if (SessionState.get() != null) {
+      SessionState.get().getLineageState().clear();
+    }
+
     if (plan != null) {
       fetchTask = plan.getFetchTask();
       if (fetchTask != null) {
@@ -1592,7 +1594,6 @@ public class Driver implements CommandProcessor {
 
     if (SessionState.get() != null) {
       try {
-        SessionState.get().getLineageState().clear();
         SessionState.get().getHiveHistory().logPlanProgress(plan);
       } catch (Exception e) {
         // ignore
