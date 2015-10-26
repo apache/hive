@@ -255,7 +255,7 @@ public class TezSessionState {
 
     // set up the staging directory to use
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
-    Utilities.stripHivePasswordDetails(tezConfig);
+    conf.stripHiddenConfigurations(tezConfig);
 
     ServicePluginsDescriptor servicePluginsDescriptor;
     UserPayload servicePluginPayload = TezUtils.createUserPayloadFromConf(tezConfig);
