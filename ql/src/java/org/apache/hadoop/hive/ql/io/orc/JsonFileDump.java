@@ -45,130 +45,138 @@ public class JsonFileDump {
       writer.object();
     }
     for (String filename : files) {
-      if (multiFile) {
-        writer.object();
-      }
-      writer.key("fileName").value(filename);
-      Path path = new Path(filename);
-      Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
-      writer.key("fileVersion").value(reader.getFileVersion().getName());
-      writer.key("writerVersion").value(reader.getWriterVersion());
-      RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
-      writer.key("numberOfRows").value(reader.getNumberOfRows());
-      writer.key("compression").value(reader.getCompression());
-      if (reader.getCompression() != CompressionKind.NONE) {
-        writer.key("compressionBufferSize").value(reader.getCompressionSize());
-      }
-      writer.key("schemaString").value(reader.getObjectInspector().getTypeName());
-      writer.key("schema").array();
-      writeSchema(writer, reader.getTypes());
-      writer.endArray();
-
-      writer.key("stripeStatistics").array();
-      List<StripeStatistics> stripeStatistics = reader.getStripeStatistics();
-      for (int n = 0; n < stripeStatistics.size(); n++) {
-        writer.object();
-        writer.key("stripeNumber").value(n + 1);
-        StripeStatistics ss = stripeStatistics.get(n);
-        writer.key("columnStatistics").array();
-        for (int i = 0; i < ss.getColumnStatistics().length; i++) {
+      try {
+        if (multiFile) {
           writer.object();
-          writer.key("columnId").value(i);
-          writeColumnStatistics(writer, ss.getColumnStatistics()[i]);
-          writer.endObject();
         }
-        writer.endArray();
-        writer.endObject();
-      }
-      writer.endArray();
-
-      ColumnStatistics[] stats = reader.getStatistics();
-      int colCount = stats.length;
-      writer.key("fileStatistics").array();
-      for (int i = 0; i < stats.length; ++i) {
-        writer.object();
-        writer.key("columnId").value(i);
-        writeColumnStatistics(writer, stats[i]);
-        writer.endObject();
-      }
-      writer.endArray();
-
-      writer.key("stripes").array();
-      int stripeIx = -1;
-      for (StripeInformation stripe : reader.getStripes()) {
-        ++stripeIx;
-        long stripeStart = stripe.getOffset();
-        OrcProto.StripeFooter footer = rows.readStripeFooter(stripe);
-        writer.object(); // start of stripe information
-        writer.key("stripeNumber").value(stripeIx + 1);
-        writer.key("stripeInformation");
-        writeStripeInformation(writer, stripe);
-        if (printTimeZone) {
-          writer.key("writerTimezone").value(
-              footer.hasWriterTimezone() ? footer.getWriterTimezone() : FileDump.UNKNOWN);
+        writer.key("fileName").value(filename);
+        Path path = new Path(filename);
+        Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
+        writer.key("fileVersion").value(reader.getFileVersion().getName());
+        writer.key("writerVersion").value(reader.getWriterVersion());
+        RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
+        writer.key("numberOfRows").value(reader.getNumberOfRows());
+        writer.key("compression").value(reader.getCompression());
+        if (reader.getCompression() != CompressionKind.NONE) {
+          writer.key("compressionBufferSize").value(reader.getCompressionSize());
         }
-        long sectionStart = stripeStart;
-
-        writer.key("streams").array();
-        for (OrcProto.Stream section : footer.getStreamsList()) {
-          writer.object();
-          String kind = section.hasKind() ? section.getKind().name() : FileDump.UNKNOWN;
-          writer.key("columnId").value(section.getColumn());
-          writer.key("section").value(kind);
-          writer.key("startOffset").value(sectionStart);
-          writer.key("length").value(section.getLength());
-          sectionStart += section.getLength();
-          writer.endObject();
-        }
+        writer.key("schemaString").value(reader.getObjectInspector().getTypeName());
+        writer.key("schema").array();
+        writeSchema(writer, reader.getTypes());
         writer.endArray();
 
-        writer.key("encodings").array();
-        for (int i = 0; i < footer.getColumnsCount(); ++i) {
+        writer.key("stripeStatistics").array();
+        List<StripeStatistics> stripeStatistics = reader.getStripeStatistics();
+        for (int n = 0; n < stripeStatistics.size(); n++) {
           writer.object();
-          OrcProto.ColumnEncoding encoding = footer.getColumns(i);
-          writer.key("columnId").value(i);
-          writer.key("kind").value(encoding.getKind());
-          if (encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
-              encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
-            writer.key("dictionarySize").value(encoding.getDictionarySize());
-          }
-          writer.endObject();
-        }
-        writer.endArray();
-
-        if (rowIndexCols != null && !rowIndexCols.isEmpty()) {
-          // include the columns that are specified, only if the columns are included, bloom filter
-          // will be read
-          boolean[] sargColumns = new boolean[colCount];
-          for (int colIdx : rowIndexCols) {
-            sargColumns[colIdx] = true;
-          }
-          RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, sargColumns);
-          writer.key("indexes").array();
-          for (int col : rowIndexCols) {
+          writer.key("stripeNumber").value(n + 1);
+          StripeStatistics ss = stripeStatistics.get(n);
+          writer.key("columnStatistics").array();
+          for (int i = 0; i < ss.getColumnStatistics().length; i++) {
             writer.object();
-            writer.key("columnId").value(col);
-            writeRowGroupIndexes(writer, col, indices.getRowGroupIndex());
-            writeBloomFilterIndexes(writer, col, indices.getBloomFilterIndex());
+            writer.key("columnId").value(i);
+            writeColumnStatistics(writer, ss.getColumnStatistics()[i]);
             writer.endObject();
           }
           writer.endArray();
+          writer.endObject();
         }
-        writer.endObject(); // end of stripe information
+        writer.endArray();
+
+        ColumnStatistics[] stats = reader.getStatistics();
+        int colCount = stats.length;
+        writer.key("fileStatistics").array();
+        for (int i = 0; i < stats.length; ++i) {
+          writer.object();
+          writer.key("columnId").value(i);
+          writeColumnStatistics(writer, stats[i]);
+          writer.endObject();
+        }
+        writer.endArray();
+
+        writer.key("stripes").array();
+        int stripeIx = -1;
+        for (StripeInformation stripe : reader.getStripes()) {
+          ++stripeIx;
+          long stripeStart = stripe.getOffset();
+          OrcProto.StripeFooter footer = rows.readStripeFooter(stripe);
+          writer.object(); // start of stripe information
+          writer.key("stripeNumber").value(stripeIx + 1);
+          writer.key("stripeInformation");
+          writeStripeInformation(writer, stripe);
+          if (printTimeZone) {
+            writer.key("writerTimezone").value(
+                footer.hasWriterTimezone() ? footer.getWriterTimezone() : FileDump.UNKNOWN);
+          }
+          long sectionStart = stripeStart;
+
+          writer.key("streams").array();
+          for (OrcProto.Stream section : footer.getStreamsList()) {
+            writer.object();
+            String kind = section.hasKind() ? section.getKind().name() : FileDump.UNKNOWN;
+            writer.key("columnId").value(section.getColumn());
+            writer.key("section").value(kind);
+            writer.key("startOffset").value(sectionStart);
+            writer.key("length").value(section.getLength());
+            sectionStart += section.getLength();
+            writer.endObject();
+          }
+          writer.endArray();
+
+          writer.key("encodings").array();
+          for (int i = 0; i < footer.getColumnsCount(); ++i) {
+            writer.object();
+            OrcProto.ColumnEncoding encoding = footer.getColumns(i);
+            writer.key("columnId").value(i);
+            writer.key("kind").value(encoding.getKind());
+            if (encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
+                encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
+              writer.key("dictionarySize").value(encoding.getDictionarySize());
+            }
+            writer.endObject();
+          }
+          writer.endArray();
+
+          if (rowIndexCols != null && !rowIndexCols.isEmpty()) {
+            // include the columns that are specified, only if the columns are included, bloom filter
+            // will be read
+            boolean[] sargColumns = new boolean[colCount];
+            for (int colIdx : rowIndexCols) {
+              sargColumns[colIdx] = true;
+            }
+            RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, sargColumns);
+            writer.key("indexes").array();
+            for (int col : rowIndexCols) {
+              writer.object();
+              writer.key("columnId").value(col);
+              writeRowGroupIndexes(writer, col, indices.getRowGroupIndex());
+              writeBloomFilterIndexes(writer, col, indices.getBloomFilterIndex());
+              writer.endObject();
+            }
+            writer.endArray();
+          }
+          writer.endObject(); // end of stripe information
+        }
+        writer.endArray();
+
+        FileSystem fs = path.getFileSystem(conf);
+        long fileLen = fs.getContentSummary(path).getLength();
+        long paddedBytes = FileDump.getTotalPaddingSize(reader);
+        // empty ORC file is ~45 bytes. Assumption here is file length always >0
+        double percentPadding = ((double) paddedBytes / (double) fileLen) * 100;
+        writer.key("fileLength").value(fileLen);
+        writer.key("paddingLength").value(paddedBytes);
+        writer.key("paddingRatio").value(percentPadding);
+        writer.key("status").value("OK");
+        rows.close();
+
+        writer.endObject();
+      } catch (Exception e) {
+        writer.key("status").value("FAILED");
+        System.err.println("Unable to dump data for file: " + filename);
+        e.printStackTrace();
+        throw e;
       }
-      writer.endArray();
-
-      FileSystem fs = path.getFileSystem(conf);
-      long fileLen = fs.getContentSummary(path).getLength();
-      long paddedBytes = FileDump.getTotalPaddingSize(reader);
-      // empty ORC file is ~45 bytes. Assumption here is file length always >0
-      double percentPadding = ((double) paddedBytes / (double) fileLen) * 100;
-      writer.key("fileLength").value(fileLen);
-      writer.key("paddingLength").value(paddedBytes);
-      writer.key("paddingRatio").value(percentPadding);
-      rows.close();
-
-      writer.endObject();
     }
     if (multiFile) {
       writer.endArray();
