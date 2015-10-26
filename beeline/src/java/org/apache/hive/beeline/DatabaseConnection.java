@@ -201,7 +201,6 @@ class DatabaseConnection {
     return null;
   }
 
-
   public Connection getConnection() throws SQLException {
     if (connection != null) {
       return connection;
@@ -210,6 +209,9 @@ class DatabaseConnection {
     return connection;
   }
 
+  public Connection getCurrentConnection() {
+    return connection;
+  }
 
   public void reconnect() throws Exception {
     close();
