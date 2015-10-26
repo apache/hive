@@ -167,7 +167,10 @@ public class MetaStoreSchemaInfo {
   /**
    * A dbVersion is compatible with hive version if it is greater or equal to
    * the hive version. This is result of the db schema upgrade design principles
-   * followed in hive project.
+   * followed in hive project. The state where db schema version is ahead of 
+   * hive software version is often seen when a 'rolling upgrade' or 
+   * 'rolling downgrade' is happening. This is a state where hive is functional 
+   * and returning non zero status for it is misleading.
    *
    * @param hiveVersion
    *          version of hive software
