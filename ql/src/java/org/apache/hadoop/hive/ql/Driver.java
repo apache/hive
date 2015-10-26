@@ -298,9 +298,7 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver() {
-    conf = (SessionState.get() != null) ? SessionState.get().getConf() : null;
-    isParallelEnabled = (conf != null)
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
+    this((SessionState.get() != null) ? SessionState.get().getConf() : null);
   }
 
   /**
@@ -1085,6 +1083,10 @@ public class Driver implements CommandProcessor {
    * while keeping the result around.
    */
   private void releaseResources() {
+    if (SessionState.get() != null) {
+      SessionState.get().getLineageState().clear();
+    }
+
     if (plan != null) {
       fetchTask = plan.getFetchTask();
       if (fetchTask != null) {
@@ -1713,7 +1715,6 @@ public class Driver implements CommandProcessor {
 
     if (SessionState.get() != null) {
       try {
-        SessionState.get().getLineageState().clear();
         SessionState.get().getHiveHistory().logPlanProgress(plan);
       } catch (Exception e) {
         // ignore
