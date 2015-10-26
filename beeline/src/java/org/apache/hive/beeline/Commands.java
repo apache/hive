@@ -1226,11 +1226,11 @@ public class Commands {
       return false;
     }
     try {
-      if (beeLine.getDatabaseConnection().getConnection() != null
-          && !(beeLine.getDatabaseConnection().getConnection().isClosed())) {
+      if (beeLine.getDatabaseConnection().getCurrentConnection() != null
+          && !(beeLine.getDatabaseConnection().getCurrentConnection().isClosed())) {
         int index = beeLine.getDatabaseConnections().getIndex();
         beeLine.info(beeLine.loc("closing", index, beeLine.getDatabaseConnection()));
-        beeLine.getDatabaseConnection().getConnection().close();
+        beeLine.getDatabaseConnection().getCurrentConnection().close();
       } else {
         beeLine.info(beeLine.loc("already-closed"));
       }
