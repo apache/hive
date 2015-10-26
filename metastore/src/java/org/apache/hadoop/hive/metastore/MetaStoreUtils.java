@@ -185,11 +185,13 @@ public class MetaStoreUtils {
 
   public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
       boolean madeDir, boolean forceRecompute) throws MetaException {
-    FileStatus[] fileStatuses = {};
-    if (tbl.getPartitionKeysSize() == 0) { // Update stats only when unpartitioned
-      fileStatuses = wh.getFileStatusesForUnpartitionedTable(db, tbl);
+    if (tbl.getPartitionKeysSize() == 0) {
+      // Update stats only when unpartitioned
+      FileStatus[] fileStatuses = wh.getFileStatusesForUnpartitionedTable(db, tbl);
+      return updateTableStatsFast(tbl, fileStatuses, madeDir, forceRecompute);
+    } else {
+      return false;
     }
-    return updateTableStatsFast(tbl, fileStatuses, madeDir, forceRecompute);
   }
 
   /**
