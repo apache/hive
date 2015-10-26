@@ -228,7 +228,13 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   public void addFinalCandidate(String alias, ExprNodeDesc expr) {
-    getPushdownPreds(alias).add(expr);
+    List<ExprNodeDesc> predicates = getPushdownPreds(alias);
+    for (ExprNodeDesc curPred: predicates) {
+      if (curPred.isSame(expr)) {
+        return;
+      }
+    }
+    predicates.add(expr);
   }
 
   /**
@@ -238,7 +244,20 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @param pushDowns
    */
   public void addPushDowns(String alias, List<ExprNodeDesc> pushDowns) {
-    getPushdownPreds(alias).addAll(pushDowns);
+    List<ExprNodeDesc> predicates = getPushdownPreds(alias);
+    boolean isNew;
+    for (ExprNodeDesc newPred: pushDowns) {
+      isNew = true;
+      for (ExprNodeDesc curPred: predicates) {
+        if (curPred.isSame(newPred)) {
+          isNew = false;
+          break;
+        }
+      }
+      if (isNew) {
+        predicates.add(newPred);
+      }
+    }
   }
 
   /**
