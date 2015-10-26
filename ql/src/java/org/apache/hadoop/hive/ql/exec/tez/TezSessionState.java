@@ -213,7 +213,7 @@ public class TezSessionState {
     // generate basic tez config
     final TezConfiguration tezConfig = new TezConfiguration(conf);
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
-    Utilities.stripHivePasswordDetails(tezConfig);
+    conf.stripHiddenConfigurations(tezConfig);
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
       int n = HiveConf.getIntVar(conf, ConfVars.HIVE_PREWARM_NUM_CONTAINERS);
