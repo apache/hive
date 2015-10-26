@@ -1013,6 +1013,7 @@ public class DagUtils {
     conf.set("mapred.partitioner.class", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEPARTITIONER));
     conf.set("tez.runtime.partitioner.class", MRPartitioner.class.getName());
 
+    hiveConf.stripHiddenConfigurations(conf);
     return conf;
   }
 

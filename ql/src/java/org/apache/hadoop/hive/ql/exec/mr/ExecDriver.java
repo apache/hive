@@ -164,6 +164,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     if (StringUtils.isNotBlank(addedArchives)) {
       HiveConf.setVar(job, ConfVars.HIVEADDEDARCHIVES, addedArchives);
     }
+    conf.stripHiddenConfigurations(job);
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
 
