@@ -41,12 +41,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
-      <artifactId>hive-shims-0.20S</artifactId>
-      <version>${project.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-0.23</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
