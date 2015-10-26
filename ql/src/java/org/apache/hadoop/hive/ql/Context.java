@@ -347,7 +347,9 @@ public class Context {
     for (Map.Entry<String, Path> entry : fsScratchDirs.entrySet()) {
       try {
         Path p = entry.getValue();
-        p.getFileSystem(conf).delete(p, true);
+        FileSystem fs = p.getFileSystem(conf);
+        fs.delete(p, true);
+        fs.cancelDeleteOnExit(p);
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch: "
             + StringUtils.stringifyException(e));
