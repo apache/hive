@@ -151,6 +151,10 @@ public class MetaStoreSchemaInfo {
 
   public static String getHiveSchemaVersion() {
     String hiveVersion = HiveVersionInfo.getShortVersion();
+    return getEquivalentVersion(hiveVersion);
+  }
+
+  private static String getEquivalentVersion(String hiveVersion) {
     // if there is an equivalent version, return that, else return this version
     String equivalentVersion = EQUIVALENT_VERSIONS.get(hiveVersion);
     if (equivalentVersion != null) {
@@ -158,6 +162,46 @@ public class MetaStoreSchemaInfo {
     } else {
       return hiveVersion;
     }
+  }
+
+  /**
+   * A dbVersion is compatible with hive version if it is greater or equal to
+   * the hive version. This is result of the db schema upgrade design principles
+   * followed in hive project.
+   *
+   * @param hiveVersion
+   *          version of hive software
+   * @param dbVersion
+   *          version of metastore rdbms schema
+   * @return true if versions are compatible
+   */
+  public static boolean isVersionCompatible(String hiveVersion, String dbVersion) {
+    hiveVersion = getEquivalentVersion(hiveVersion);
+    dbVersion = getEquivalentVersion(dbVersion);
+    if (hiveVersion.equals(dbVersion)) {
+      return true;
+    }
+    String[] hiveVerParts = hiveVersion.split("\\.");
+    String[] dbVerParts = dbVersion.split("\\.");
+    if (hiveVerParts.length != 3 || dbVerParts.length != 3) {
+      // these are non standard version numbers. can't perform the
+      // comparison on these, so assume that they are incompatible
+      return false;
+    }
+
+    for (int i = 0; i < dbVerParts.length; i++) {
+      Integer dbVerPart = Integer.valueOf(dbVerParts[i]);
+      Integer hiveVerPart = Integer.valueOf(hiveVerParts[i]);
+      if (dbVerPart > hiveVerPart) {
+        return true;
+      } else if (dbVerPart < hiveVerPart) {
+        return false;
+      } else {
+        continue; // compare next part
+      }
+    }
+
+    return true;
   }
 
 }
