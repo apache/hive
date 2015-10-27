@@ -784,6 +784,12 @@ public final class FunctionRegistry {
       return PrimitiveCategory.STRING;
     }
 
+    if (pgA == PrimitiveGrouping.DATE_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
+      return PrimitiveCategory.STRING;
+    }
+    if (pgB == PrimitiveGrouping.DATE_GROUP && pgA == PrimitiveGrouping.STRING_GROUP) {
+      return PrimitiveCategory.STRING;
+    }
     Integer ai = numericTypes.get(pcA);
     Integer bi = numericTypes.get(pcB);
     if (ai == null || bi == null) {
