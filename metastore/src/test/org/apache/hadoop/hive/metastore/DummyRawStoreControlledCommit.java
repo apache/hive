@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -777,7 +778,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
 
   @Override
-  public void getFileMetadataByExpr(List<Long> fileIds, byte[] expr,
+  public void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
       ByteBuffer[] metadatas, ByteBuffer[] stripeBitsets, boolean[] eliminated) {
   }
 }

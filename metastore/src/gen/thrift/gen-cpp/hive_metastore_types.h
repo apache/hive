@@ -137,6 +137,14 @@ struct ResourceType {
 
 extern const std::map<int, const char*> _ResourceType_VALUES_TO_NAMES;
 
+struct FileMetadataExprType {
+  enum type {
+    ORC_SARG = 1
+  };
+};
+
+extern const std::map<int, const char*> _FileMetadataExprType_VALUES_TO_NAMES;
+
 class Version;
 
 class FieldSchema;
@@ -5797,8 +5805,9 @@ inline std::ostream& operator<<(std::ostream& out, const GetFileMetadataByExprRe
 }
 
 typedef struct _GetFileMetadataByExprRequest__isset {
-  _GetFileMetadataByExprRequest__isset() : doGetFooters(false) {}
+  _GetFileMetadataByExprRequest__isset() : doGetFooters(false), type(false) {}
   bool doGetFooters :1;
+  bool type :1;
 } _GetFileMetadataByExprRequest__isset;
 
 class GetFileMetadataByExprRequest {
@@ -5806,13 +5815,14 @@ class GetFileMetadataByExprRequest {
 
   GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest&);
   GetFileMetadataByExprRequest& operator=(const GetFileMetadataByExprRequest&);
-  GetFileMetadataByExprRequest() : expr(), doGetFooters(0) {
+  GetFileMetadataByExprRequest() : expr(), doGetFooters(0), type((FileMetadataExprType::type)0) {
   }
 
   virtual ~GetFileMetadataByExprRequest() throw();
   std::vector<int64_t>  fileIds;
   std::string expr;
   bool doGetFooters;
+  FileMetadataExprType::type type;
 
   _GetFileMetadataByExprRequest__isset __isset;
 
@@ -5821,6 +5831,8 @@ class GetFileMetadataByExprRequest {
   void __set_expr(const std::string& val);
 
   void __set_doGetFooters(const bool val);
+
+  void __set_type(const FileMetadataExprType::type val);
 
   bool operator == (const GetFileMetadataByExprRequest & rhs) const
   {
@@ -5831,6 +5843,10 @@ class GetFileMetadataByExprRequest {
     if (__isset.doGetFooters != rhs.__isset.doGetFooters)
       return false;
     else if (__isset.doGetFooters && !(doGetFooters == rhs.doGetFooters))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
       return false;
     return true;
   }
