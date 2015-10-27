@@ -1108,8 +1108,8 @@ public class BeeLine implements Closeable {
     }
 
     if (isBeeLine) {
-      if (line.startsWith(COMMAND_PREFIX) && !line.contains(";")) {
-        // handle the case "!cmd" for beeline
+      if (line.startsWith(COMMAND_PREFIX)) {
+        // handle SQLLine command in beeline which starts with ! and does not end with ;
         return execCommandWithPrefix(line);
       } else {
         return commands.sql(line, getOpts().getEntireLineAsCommand());
