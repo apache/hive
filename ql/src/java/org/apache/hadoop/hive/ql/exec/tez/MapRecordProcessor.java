@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
@@ -199,9 +200,27 @@ public class MapRecordProcessor extends RecordProcessor {
             l4j.info("Input name is " + mergeMapWork.getName());
             jconf.set(Utilities.INPUT_NAME, mergeMapWork.getName());
             mergeMapOp.initialize(jconf, null);
-            mergeMapOp.setChildren(jconf);
+            // if there are no files/partitions to read, we need to skip trying to read
+            boolean skipRead = mergeMapOp.getConf().getPathToAliases().isEmpty();
+            if (skipRead) {
+              List<Operator<?>> children = new ArrayList<Operator<?>>();
+              children.addAll(mergeMapOp.getConf().getAliasToWork().values());
+              // do the same thing as setChildren when there is nothing to read.
+              // the setChildren method initializes the object inspector needed by the operators
+              // based on path and partition information which we don't have in this case.
+              mergeMapOp.initEmptyInputChildren(children, jconf);
+            } else {
+              // the setChildren method initializes the object inspector needed by the operators
+              // based on path and partition information.
+              mergeMapOp.setChildren(jconf);
+            }
 
             DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
+            if (dummyOp instanceof TezDummyStoreOperator) {
+              // we ensure that we don't try to read any data for this table.
+              ((TezDummyStoreOperator) dummyOp).setFetchDone(skipRead);
+            }
+
             mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
 
             mergeMapOp.passExecContext(new ExecMapperContext(jconf));
@@ -281,8 +300,10 @@ public class MapRecordProcessor extends RecordProcessor {
       MultiMRInput multiMRInput = multiMRInputMap.get(inputName);
       Collection<KeyValueReader> kvReaders = multiMRInput.getKeyValueReaders();
       l4j.debug("There are " + kvReaders.size() + " key-value readers for input " + inputName);
-      reader = getKeyValueReader(kvReaders, mapOp);
-      sources[tag].init(jconf, mapOp, reader);
+      if (kvReaders.size() > 0) {
+        reader = getKeyValueReader(kvReaders, mapOp);
+        sources[tag].init(jconf, mapOp, reader);
+      }
     }
     ((TezContext) MapredContext.get()).setRecordSources(sources);
   }

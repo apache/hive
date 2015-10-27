@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.MapOperator.MapOpCtx;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -330,6 +332,31 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
       throw new HiveException(e);
     }
     return tableDescOI;
+  }
+
+  /*
+   * This is the same as the setChildren method below but for empty tables.
+   * It takes care of the following:
+   * 1. Create the right object inspector.
+   * 2. Set up the childrenOpToOI with the object inspector.
+   * So as to ensure that the initialization happens correctly.
+   */
+  public void initEmptyInputChildren(List<Operator<?>> children, Configuration hconf)
+    throws SerDeException, Exception {
+    setChildOperators(children);
+    for (Operator<?> child : children) {
+      TableScanOperator tsOp = (TableScanOperator) child;
+      StructObjectInspector soi = null;
+      PartitionDesc partDesc = conf.getAliasToPartnInfo().get(tsOp.getConf().getAlias());
+      Deserializer serde = partDesc.getTableDesc().getDeserializer();
+      partDesc.setProperties(partDesc.getProperties());
+      MapOpCtx opCtx = new MapOpCtx(tsOp.getConf().getAlias(), child, partDesc);
+      StructObjectInspector tableRowOI = (StructObjectInspector) serde.getObjectInspector();
+      initObjectInspector(hconf, opCtx, tableRowOI);
+      soi = opCtx.rowObjectInspector;
+      child.getParentOperators().add(this);
+      childrenOpToOI.put(child, soi);
+    }
   }
 
   public void setChildren(Configuration hconf) throws Exception {
