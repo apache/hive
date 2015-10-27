@@ -43,6 +43,14 @@ insert into insert_into1 select 2, 'b';
 
 select * from insert_into1;
 
-DROP TABLE insert_into1;
+set hive.stats.autogather=false;                                                                                                                                    
+explain
+insert into table insert_into1 values(1, 'abc');                                                                                                                    
+insert into table insert_into1 values(1, 'abc');                                                                                                                    
+explain
+SELECT COUNT(*) FROM insert_into1;                                                                                                                                  
+select count(*) from insert_into1;
 
+DROP TABLE insert_into1;
+set hive.stats.autogather=true;
 set hive.compute.query.using.stats=false;

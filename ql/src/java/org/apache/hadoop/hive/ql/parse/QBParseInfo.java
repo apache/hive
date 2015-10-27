@@ -65,7 +65,6 @@ public class QBParseInfo {
   private final HashSet<String> insertIntoTables;
 
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
-  private boolean isInsertToTable;  // used for insert overwrite command (statistics)
   private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
   private boolean isPartialScanAnalyzeCommand; // used for the analyze command (statistics)
                                                // (partialscan)
@@ -548,14 +547,6 @@ public class QBParseInfo {
 
   public boolean isAnalyzeCommand() {
     return isAnalyzeCommand;
-  }
-
-  public void setIsInsertToTable(boolean isInsertToTable) {
-    this.isInsertToTable = isInsertToTable;
-  }
-
-  public boolean isInsertToTable() {
-    return isInsertToTable;
   }
 
   public void addTableSpec(String tName, TableSpec tSpec) {

@@ -144,17 +144,23 @@ public class StatsOptimizer implements Transform {
     }
 
     enum LongSubType {
-      BIGINT { Object cast(long longValue) { return longValue; } }, 
-      INT { Object cast(long longValue) { return (int)longValue; } },
-      SMALLINT { Object cast(long longValue) { return (short)longValue; } },
-      TINYINT { Object cast(long longValue) { return (byte)longValue; } };
+      BIGINT { @Override
+      Object cast(long longValue) { return longValue; } },
+      INT { @Override
+      Object cast(long longValue) { return (int)longValue; } },
+      SMALLINT { @Override
+      Object cast(long longValue) { return (short)longValue; } },
+      TINYINT { @Override
+      Object cast(long longValue) { return (byte)longValue; } };
 
       abstract Object cast(long longValue);
     }
 
     enum DoubleSubType {
-      DOUBLE { Object cast(double doubleValue) { return doubleValue; } },
-      FLOAT { Object cast(double doubleValue) { return (float) doubleValue; } };
+      DOUBLE { @Override
+      Object cast(double doubleValue) { return doubleValue; } },
+      FLOAT { @Override
+      Object cast(double doubleValue) { return (float) doubleValue; } };
 
       abstract Object cast(double doubleValue);
     }
@@ -221,7 +227,7 @@ public class StatsOptimizer implements Transform {
         // Since we have done an exact match on TS-SEL-GBY-RS-GBY-(SEL)-FS
         // we need not to do any instanceof checks for following.
         GroupByOperator pgbyOp = (GroupByOperator)stack.get(2);
-        if (pgbyOp.getConf().getOutputColumnNames().size() != 
+        if (pgbyOp.getConf().getOutputColumnNames().size() !=
             pgbyOp.getConf().getAggregators().size()) {
           return null;
         }
@@ -260,7 +266,7 @@ public class StatsOptimizer implements Transform {
         FileSinkOperator fsOp = (FileSinkOperator)last;
         if (fsOp.getNumChild() > 0) {
           // looks like a subq plan.
-          return null;  // todo we can collapse this part of tree into single TS 
+          return null;  // todo we can collapse this part of tree into single TS
         }
 
         Table tbl = tsOp.getConf().getTableMetadata();
@@ -296,7 +302,7 @@ public class StatsOptimizer implements Transform {
               return null;
             }
             switch (category) {
-              case LONG: 
+              case LONG:
                 oneRow.add(Long.valueOf(constant) * rowCnt);
                 break;
               case DOUBLE:
@@ -436,7 +442,7 @@ public class StatsOptimizer implements Transform {
               switch (type) {
                 case Integeral: {
                   LongSubType subType = LongSubType.valueOf(name);
-                  
+
                   Long maxVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
@@ -462,7 +468,7 @@ public class StatsOptimizer implements Transform {
                 }
                 case Double: {
                   DoubleSubType subType = DoubleSubType.valueOf(name);
-                  
+
                   Double maxVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
@@ -537,7 +543,7 @@ public class StatsOptimizer implements Transform {
               switch(type) {
                 case Integeral: {
                   LongSubType subType = LongSubType.valueOf(name);
-                  
+
                   Long minVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
@@ -563,7 +569,7 @@ public class StatsOptimizer implements Transform {
                 }
                 case Double: {
                   DoubleSubType subType = DoubleSubType.valueOf(name);
-                  
+
                   Double minVal = null;
                   Collection<List<ColumnStatisticsObj>> result =
                       verifyAndGetPartStats(hive, tbl, colName, parts);
@@ -680,6 +686,9 @@ public class StatsOptimizer implements Transform {
       if (tbl.isPartitioned()) {
         for (Partition part : pctx.getPrunedPartitions(
             tsOp.getConf().getAlias(), tsOp).getPartitions()) {
+          if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
+            return null;
+          }
           long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
           if (partRowCnt < 1) {
             Log.debug("Partition doesn't have upto date stats " + part.getSpec());
@@ -688,6 +697,9 @@ public class StatsOptimizer implements Transform {
           rowCnt += partRowCnt;
         }
       } else { // unpartitioned table
+        if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
+          return null;
+        }
         rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
         if (rowCnt < 1) {
           // if rowCnt < 1 than its either empty table or table on which stats are not
