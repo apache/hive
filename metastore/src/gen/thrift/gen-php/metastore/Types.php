@@ -143,6 +143,13 @@ final class ResourceType {
   );
 }
 
+final class FileMetadataExprType {
+  const ORC_SARG = 1;
+  static public $__names = array(
+    1 => 'ORC_SARG',
+  );
+}
+
 class Version {
   static $_TSPEC;
 
@@ -14108,6 +14115,10 @@ class GetFileMetadataByExprRequest {
    * @var bool
    */
   public $doGetFooters = null;
+  /**
+   * @var int
+   */
+  public $type = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -14128,6 +14139,10 @@ class GetFileMetadataByExprRequest {
           'var' => 'doGetFooters',
           'type' => TType::BOOL,
           ),
+        4 => array(
+          'var' => 'type',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -14139,6 +14154,9 @@ class GetFileMetadataByExprRequest {
       }
       if (isset($vals['doGetFooters'])) {
         $this->doGetFooters = $vals['doGetFooters'];
+      }
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
       }
     }
   }
@@ -14193,6 +14211,13 @@ class GetFileMetadataByExprRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -14231,6 +14256,11 @@ class GetFileMetadataByExprRequest {
     if ($this->doGetFooters !== null) {
       $xfer += $output->writeFieldBegin('doGetFooters', TType::BOOL, 3);
       $xfer += $output->writeBool($this->doGetFooters);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::I32, 4);
+      $xfer += $output->writeI32($this->type);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

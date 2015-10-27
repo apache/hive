@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.FileMetadataHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -64,6 +66,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.filemeta.OrcFileMetadataHandler;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -96,6 +99,7 @@ public class HBaseStore implements RawStore {
   private Configuration conf;
   private int txnNestLevel = 0;
   private PartitionExpressionProxy expressionProxy = null;
+  private Map<FileMetadataExprType, FileMetadataHandler> fmHandlers = new HashMap<>();
 
   public HBaseStore() {
   }
@@ -2241,10 +2245,24 @@ public class HBaseStore implements RawStore {
     // initialize expressionProxy. Also re-initialize it if
     // setConf is being called with new configuration object (though that
     // is not expected to happen, doing it just for safety)
-    if(expressionProxy == null || conf != configuration) {
+    // TODO: why not re-intialize HBaseReadWrite?
+    if (expressionProxy == null || conf != configuration) {
       expressionProxy = PartFilterExprUtil.createExpressionProxy(configuration);
     }
     conf = configuration;
+    createFileMetadataHandlers();
+  }
+
+  private void createFileMetadataHandlers() {
+    for (FileMetadataExprType v : FileMetadataExprType.values()) {
+      switch (v) {
+      case ORC_SARG:
+        fmHandlers.put(v, new OrcFileMetadataHandler(conf, expressionProxy, getHBase()));
+        break;
+      default:
+        throw new AssertionError("Unsupported type " + v);
+      }
+    }
   }
 
   @Override
@@ -2380,25 +2398,16 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public void getFileMetadataByExpr(List<Long> fileIds, byte[] expr, ByteBuffer[] metadatas,
-      ByteBuffer[] results, boolean[] eliminated) throws MetaException {
-    SearchArgument sarg = expressionProxy.createSarg(expr);
+  public void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
+      ByteBuffer[] metadatas, ByteBuffer[] results, boolean[] eliminated) throws MetaException {
+    FileMetadataHandler fmh = fmHandlers.get(type);
     boolean commit = true;
     try {
-      // For now, don't push anything into HBase, nor store anything special in HBase
-      getHBase().getFileMetadata(fileIds, metadatas);
-      for (int i = 0; i < metadatas.length;  ++i) {
-        if (metadatas[i] == null) continue;
-        ByteBuffer result = expressionProxy.applySargToFileMetadata(sarg, metadatas[i]);
-        eliminated[i] = (result == null);
-        if (!eliminated[i]) {
-          results[i] = result;
-        }
-      }
+      fmh.getFileMetadataByExpr(fileIds, expr, metadatas, results, eliminated);
     } catch (IOException e) {
+      LOG.error("Unable to get file metadata by expr", e);
       commit = false;
-      LOG.error("Unable to get file metadata", e);
-      throw new MetaException("Error reading file metadata " + e.getMessage());
+      throw new MetaException("Error reading file metadata by expr" + e.getMessage());
     } finally {
       commitOrRoleBack(commit);
     }
