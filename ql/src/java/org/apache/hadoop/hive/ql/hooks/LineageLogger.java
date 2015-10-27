@@ -134,7 +134,8 @@ public class LineageLogger implements ExecuteWithHookContext {
     Index index = hookContext.getIndex();
     SessionState ss = SessionState.get();
     if (ss != null && index != null
-        && OPERATION_NAMES.contains(plan.getOperationName())) {
+        && OPERATION_NAMES.contains(plan.getOperationName())
+        && !plan.isExplain()) {
       try {
         StringBuilderWriter out = new StringBuilderWriter(1024);
         JsonWriter writer = new JsonWriter(out);
