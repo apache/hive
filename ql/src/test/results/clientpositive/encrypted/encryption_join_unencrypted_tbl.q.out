@@ -673,8 +673,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -693,8 +691,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

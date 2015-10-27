@@ -1464,6 +1464,7 @@ public class Hive {
 
       newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(),
           inheritTableSpecs, newFiles);
+
       // recreate the partition if it existed before
       if (isSkewedStoreAsSubdir) {
         org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
@@ -1474,12 +1475,18 @@ public class Hive {
         /* Add list bucketing location mappings. */
         skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
         newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
+        if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+          newTPart.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+        }
         alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
         newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs,
             newFiles);
         return new Partition(tbl, newCreatedTpart);
       }
-
+      if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        newTPart.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()));
+      }
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -1714,6 +1721,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } catch (IOException e) {
         throw new HiveException("addFiles: filesystem error in check phase", e);
       }
+    }
+    if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      tbl.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+    }  else {
       tbl.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, "true");
     }
 
