@@ -107,6 +107,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     try {
       recordReader.initialize(tableSplit, tac);
     } catch (InterruptedException e) {
+      closeTable(); // Free up the HTable connections
       throw new IOException("Failed to initialize RecordReader", e);
     }
 
@@ -445,65 +446,69 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
     boolean doColumnRegexMatching = jobConf.getBoolean(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, true);
 
-    if (hbaseColumnsMapping == null) {
-      throw new IOException(HBaseSerDe.HBASE_COLUMNS_MAPPING + " required for HBase Table.");
-    }
-
-    ColumnMappings columnMappings = null;
     try {
-      columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
-    } catch (SerDeException e) {
-      throw new IOException(e);
-    }
-
-    int iKey = columnMappings.getKeyIndex();
-    int iTimestamp = columnMappings.getTimestampIndex();
-    ColumnMapping keyMapping = columnMappings.getKeyMapping();
-
-    // Take filter pushdown into account while calculating splits; this
-    // allows us to prune off regions immediately.  Note that although
-    // the Javadoc for the superclass getSplits says that it returns one
-    // split per region, the implementation actually takes the scan
-    // definition into account and excludes regions which don't satisfy
-    // the start/stop row conditions (HBASE-1829).
-    Scan scan = createFilterScan(jobConf, iKey, iTimestamp,
-        HiveHBaseInputFormatUtil.getStorageFormatOfKey(keyMapping.mappingSpec,
-            jobConf.get(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE, "string")));
-
-    // The list of families that have been added to the scan
-    List<String> addedFamilies = new ArrayList<String>();
-
-    // REVIEW:  are we supposed to be applying the getReadColumnIDs
-    // same as in getRecordReader?
-    for (ColumnMapping colMap : columnMappings) {
-      if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
-        continue;
+      if (hbaseColumnsMapping == null) {
+        throw new IOException(HBaseSerDe.HBASE_COLUMNS_MAPPING + " required for HBase Table.");
       }
 
-      if (colMap.qualifierName == null) {
-        scan.addFamily(colMap.familyNameBytes);
-        addedFamilies.add(colMap.familyName);
-      } else {
-        if(!addedFamilies.contains(colMap.familyName)){
-          // add the column only if the family has not already been added
-          scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+      ColumnMappings columnMappings = null;
+      try {
+        columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
+      } catch (SerDeException e) {
+        throw new IOException(e);
+      }
+
+      int iKey = columnMappings.getKeyIndex();
+      int iTimestamp = columnMappings.getTimestampIndex();
+      ColumnMapping keyMapping = columnMappings.getKeyMapping();
+
+      // Take filter pushdown into account while calculating splits; this
+      // allows us to prune off regions immediately.  Note that although
+      // the Javadoc for the superclass getSplits says that it returns one
+      // split per region, the implementation actually takes the scan
+      // definition into account and excludes regions which don't satisfy
+      // the start/stop row conditions (HBASE-1829).
+      Scan scan = createFilterScan(jobConf, iKey, iTimestamp,
+          HiveHBaseInputFormatUtil.getStorageFormatOfKey(keyMapping.mappingSpec,
+              jobConf.get(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE, "string")));
+
+      // The list of families that have been added to the scan
+      List<String> addedFamilies = new ArrayList<String>();
+
+      // REVIEW:  are we supposed to be applying the getReadColumnIDs
+      // same as in getRecordReader?
+      for (ColumnMapping colMap : columnMappings) {
+        if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
+          continue;
+        }
+
+        if (colMap.qualifierName == null) {
+          scan.addFamily(colMap.familyNameBytes);
+          addedFamilies.add(colMap.familyName);
+        } else {
+          if(!addedFamilies.contains(colMap.familyName)){
+            // add the column only if the family has not already been added
+            scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+          }
         }
       }
+      setScan(scan);
+
+      Job job = new Job(jobConf);
+      JobContext jobContext = ShimLoader.getHadoopShims().newJobContext(job);
+      Path [] tablePaths = FileInputFormat.getInputPaths(jobContext);
+
+      List<org.apache.hadoop.mapreduce.InputSplit> splits =
+        super.getSplits(jobContext);
+      InputSplit [] results = new InputSplit[splits.size()];
+
+      for (int i = 0; i < splits.size(); i++) {
+        results[i] = new HBaseSplit((TableSplit) splits.get(i), tablePaths[0]);
+      }
+
+      return results;
+    } finally {
+      closeTable();
     }
-    setScan(scan);
-
-    Job job = new Job(jobConf);
-    JobContext jobContext = ShimLoader.getHadoopShims().newJobContext(job);
-    Path [] tablePaths = FileInputFormat.getInputPaths(jobContext);
-
-    List<org.apache.hadoop.mapreduce.InputSplit> splits =
-      super.getSplits(jobContext);
-    InputSplit [] results = new InputSplit[splits.size()];
-
-    for (int i = 0; i < splits.size(); i++) {
-      results[i] = new HBaseSplit((TableSplit) splits.get(i), tablePaths[0]);
-    }
-
-    return results;
   }
 }
