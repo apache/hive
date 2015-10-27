@@ -336,6 +336,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         + " multi mr inputs. " + bucketToTaskMap);
 
     Integer[] numSplitsForTask = new Integer[taskCount];
+    Arrays.fill(numSplitsForTask, 0);
 
     Multimap<Integer, ByteBuffer> bucketToSerializedSplitMap = LinkedListMultimap.create();
 
