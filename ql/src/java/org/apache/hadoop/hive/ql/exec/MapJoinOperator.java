@@ -383,6 +383,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             joinResult = adaptor.setFromOther(firstSetKey);
           }
           MapJoinRowContainer rowContainer = adaptor.getCurrentRows();
+          if (joinResult != JoinUtil.JoinResult.MATCH) {
+            assert (rowContainer == null || !rowContainer.hasRows()) :
+                "Expecting an empty result set for no match";
+          }
           if (rowContainer != null && unwrapContainer[pos] != null) {
             Object[] currentKey = firstSetKey.getCurrentKey();
             rowContainer = unwrapContainer[pos].setInternal(rowContainer, currentKey);
@@ -392,10 +396,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             if (!noOuterJoin) {
               // For Hybrid Grace Hash Join, during the 1st round processing,
               // we only keep the LEFT side if the row is not spilled
-              if (!conf.isHybridHashJoin() || hybridMapJoinLeftover
-                  || (!hybridMapJoinLeftover && joinResult != JoinUtil.JoinResult.SPILL)) {
+              if (!conf.isHybridHashJoin() || hybridMapJoinLeftover ||
+                  (joinResult != JoinUtil.JoinResult.SPILL && !bigTableRowSpilled)) {
                 joinNeeded = true;
                 storage[pos] = dummyObjVectors[pos];
+              } else {
+                joinNeeded = false;
               }
             } else {
               storage[pos] = emptyList;
