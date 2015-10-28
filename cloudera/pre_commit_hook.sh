@@ -12,10 +12,28 @@
 set -ex
 
 # Script created by Cloudcat with useful environment information
-. /opt/toolchain/toolchain.sh
+[ -f /opt/toolchain/toolchain.sh ] && . /opt/toolchain/toolchain.sh
 
-export JAVA_HOME=$JAVA7_HOME
+# Use JAVA7_HOME if exists
+export JAVA_HOME=${JAVA7_HOME:-$JAVA_HOME}
+
+# If USE_JDK_VERSION exists, then try to get the value from JAVAX_HOME
+if [ -n "$USE_JDK_VERSION" ]; then
+  # Get JAVAX_HOME value, where X is the JDK version
+  java_home=`eval echo \\$JAVA${USE_JDK_VERSION}_HOME`
+  if [ -n "$java_home" ]; then
+    export JAVA_HOME="$java_home"
+  else
+    echo "ERROR: USE_JDK_VERSION=$USE_JDK_VERSION, but JAVA${USE_JDK_VERSION}_HOME is not found."
+    exit 1
+  fi
+fi
+
 export PATH=${JAVA_HOME}/bin:${PATH}
+
+# WORKSPACE is an environment variable created by Jenkins, and it is the directory where the build is executed.
+# If not set, then default to $HOME
+MVN_REPO_LOCAL=${WORKSPACE:-$HOME}/.m2
 
 # Add any test to be excluded in alphabetical order to keep readability, starting with files, and
 # then directories.
@@ -46,6 +64,6 @@ function get_regex_excluded_tests() {
 }
 
 regex_tests=`get_regex_excluded_tests`
-mvn clean install -Phadoop-2 -Dtest.excludes.additional="$regex_tests"
+mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest.excludes.additional="$regex_tests"
 cd itests/
-mvn clean install -Phadoop-2 -DskipTests
+mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -DskipTests
