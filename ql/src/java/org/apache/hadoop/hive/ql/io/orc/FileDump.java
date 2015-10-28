@@ -249,6 +249,10 @@ public final class FileDump {
         System.out.println("\nFile length: " + fileLen + " bytes");
         System.out.println("Padding length: " + paddedBytes + " bytes");
         System.out.println("Padding ratio: " + format.format(percentPadding) + "%");
+        OrcRecordUpdater.AcidStats acidStats = OrcRecordUpdater.parseAcidStats(reader);
+        if (acidStats != null) {
+          System.out.println("ACID stats:" + acidStats);
+        }
         rows.close();
         if (files.size() > 1) {
           System.out.println(Strings.repeat("=", 80) + "\n");

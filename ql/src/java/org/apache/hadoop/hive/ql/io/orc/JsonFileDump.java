@@ -167,6 +167,12 @@ public class JsonFileDump {
         writer.key("fileLength").value(fileLen);
         writer.key("paddingLength").value(paddedBytes);
         writer.key("paddingRatio").value(percentPadding);
+        OrcRecordUpdater.AcidStats acidStats = OrcRecordUpdater.parseAcidStats(reader);
+        if (acidStats != null) {
+          writer.key("numInserts").value(acidStats.inserts);
+          writer.key("numDeletes").value(acidStats.deletes);
+          writer.key("numUpdates").value(acidStats.updates);
+        }
         writer.key("status").value("OK");
         rows.close();
 
