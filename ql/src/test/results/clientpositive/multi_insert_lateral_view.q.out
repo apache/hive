@@ -285,10 +285,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_10
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
-POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -548,10 +548,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_10
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
-POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -800,8 +800,8 @@ POSTHOOK: Input: default@src_10
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
 POSTHOOK: Output: default@src_lv3
-POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
@@ -1133,10 +1133,10 @@ POSTHOOK: Input: default@src_10
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
 POSTHOOK: Output: default@src_lv3
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: select * from src_lv1
@@ -1512,10 +1512,10 @@ POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
 POSTHOOK: Output: default@src_lv3
 POSTHOOK: Output: default@src_lv4
-POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv4.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]

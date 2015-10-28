@@ -236,9 +236,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@test_union_lateral_view
-POSTHOOK: Lineage: test_union_lateral_view.arr_ele EXPRESSION []
+POSTHOOK: Lineage: test_union_lateral_view.arr_ele SCRIPT []
 POSTHOOK: Lineage: test_union_lateral_view.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_union_lateral_view.value EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_union_lateral_view.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select key, arr_ele, value from test_union_lateral_view order by key, arr_ele limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_union_lateral_view

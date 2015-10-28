@@ -324,26 +324,19 @@ public class OpProcFactory {
       }
 
       // Dirty hack!!
-      // For the select path the columns are the ones at the end of the
+      // For the select path the columns are the ones at the beginning of the
       // current operators schema and for the udtf path the columns are
-      // at the beginning of the operator schema.
+      // at the end of the operator schema.
       ArrayList<ColumnInfo> out_cols = op.getSchema().getSignature();
       int out_cols_size = out_cols.size();
       int cols_size = cols.size();
-      if (isUdtfPath) {
-        int cnt = 0;
-        while (cnt < cols_size) {
-          lCtx.getIndex().mergeDependency(op, out_cols.get(cnt),
-              lCtx.getIndex().getDependency(inpOp, cols.get(cnt)));
-          cnt++;
-        }
-      }
-      else {
-        int cnt = cols_size - 1;
-        while (cnt >= 0) {
-          lCtx.getIndex().mergeDependency(op, out_cols.get(out_cols_size - cols_size + cnt),
-              lCtx.getIndex().getDependency(inpOp, cols.get(cnt)));
-          cnt--;
+      int outColOffset = isUdtfPath ? out_cols_size - cols_size : 0;
+      for (int cnt = 0; cnt < cols_size; cnt++) {
+        ColumnInfo outCol = out_cols.get(outColOffset + cnt);
+        if (!outCol.isHiddenVirtualCol()) {
+          ColumnInfo col = cols.get(cnt);
+          lCtx.getIndex().mergeDependency(op, outCol,
+            lCtx.getIndex().getDependency(inpOp, col));
         }
       }
       return null;
