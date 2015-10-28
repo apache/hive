@@ -26,9 +26,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@load_dyn_part15_test@part_key=%7B2
 POSTHOOK: Output: default@load_dyn_part15_test@part_key=1
 POSTHOOK: Output: default@load_dyn_part15_test@part_key=3%5D
-POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key=1).key SCRIPT []
-POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key=3]).key SCRIPT []
-POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key={2).key SCRIPT []
+POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key=3]).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key={2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: show partitions load_dyn_part15_test
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@load_dyn_part15_test
