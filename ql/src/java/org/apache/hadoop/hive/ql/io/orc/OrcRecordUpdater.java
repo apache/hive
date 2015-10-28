@@ -128,6 +128,15 @@ public class OrcRecordUpdater implements RecordUpdater {
       builder.append(deletes);
       return builder.toString();
     }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append(" inserts: ").append(inserts);
+      builder.append(" updates: ").append(updates);
+      builder.append(" deletes: ").append(deletes);
+      return builder.toString();
+    }
   }
 
   static Path getSideFile(Path main) {
@@ -453,17 +462,21 @@ public class OrcRecordUpdater implements RecordUpdater {
    * {@link KeyIndexBuilder} creates these
    */
   static AcidStats parseAcidStats(Reader reader) {
-    String statsSerialized;
-    try {
-      ByteBuffer val =
-        reader.getMetadataValue(OrcRecordUpdater.ACID_STATS)
-          .duplicate();
-      statsSerialized = utf8Decoder.decode(val).toString();
-    } catch (CharacterCodingException e) {
-      throw new IllegalArgumentException("Bad string encoding for " +
-        OrcRecordUpdater.ACID_STATS, e);
+    if (reader.hasMetadataValue(OrcRecordUpdater.ACID_STATS)) {
+      String statsSerialized;
+      try {
+        ByteBuffer val =
+            reader.getMetadataValue(OrcRecordUpdater.ACID_STATS)
+                .duplicate();
+        statsSerialized = utf8Decoder.decode(val).toString();
+      } catch (CharacterCodingException e) {
+        throw new IllegalArgumentException("Bad string encoding for " +
+            OrcRecordUpdater.ACID_STATS, e);
+      }
+      return new AcidStats(statsSerialized);
+    } else {
+      return null;
     }
-    return new AcidStats(statsSerialized);
   }
 
   static class KeyIndexBuilder implements OrcFile.WriterCallback {
