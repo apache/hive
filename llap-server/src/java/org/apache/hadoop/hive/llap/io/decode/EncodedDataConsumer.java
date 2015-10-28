@@ -42,9 +42,8 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   private final Consumer<ColumnVectorBatch> downstreamConsumer;
   private Callable<Void> readCallable;
   private final LlapDaemonQueueMetrics queueMetrics;
-  // TODO: if we were using Exchanger, pool would not be necessary here - it would be 1/N items
-  private final static int CVB_POOL_SIZE = 8;
   // Note that the pool is per EDC - within EDC, CVBs are expected to have the same schema.
+  private final static int CVB_POOL_SIZE = 128;
   protected final FixedSizedObjectPool<ColumnVectorBatch> cvbPool;
 
   public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, final int colCount,
@@ -59,6 +58,7 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
           }
           @Override
           public void resetBeforeOffer(ColumnVectorBatch t) {
+            // Don't reset anything, we are reusing column vectors.
           }
         });
   }
