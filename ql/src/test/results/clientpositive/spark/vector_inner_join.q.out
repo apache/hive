@@ -60,9 +60,9 @@ STAGE PLANS:
                       keys:
                         0 c (type: int)
                         1 a (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -97,9 +97,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -155,9 +155,9 @@ STAGE PLANS:
                           keys:
                             0 _col0 (type: int)
                             1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -192,9 +192,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -277,9 +277,9 @@ STAGE PLANS:
                       keys:
                         0 c (type: int)
                         1 a (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -314,9 +314,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -363,9 +363,9 @@ STAGE PLANS:
                       keys:
                         0 c (type: int)
                         1 a (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -400,9 +400,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -449,9 +449,9 @@ STAGE PLANS:
                       keys:
                         0 c (type: int)
                         1 a (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -486,9 +486,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -535,9 +535,9 @@ STAGE PLANS:
                       keys:
                         0 c (type: int)
                         1 a (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -572,9 +572,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -621,9 +621,9 @@ STAGE PLANS:
                       keys:
                         0 c (type: int)
                         1 a (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -658,9 +658,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -707,9 +707,9 @@ STAGE PLANS:
                       keys:
                         0 a (type: int)
                         1 c (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -744,9 +744,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -793,9 +793,9 @@ STAGE PLANS:
                       keys:
                         0 a (type: int)
                         1 c (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -830,9 +830,9 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

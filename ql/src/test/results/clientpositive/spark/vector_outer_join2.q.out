@@ -198,34 +198,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 20 Data size: 5056 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 20 Data size: 5056 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 20 Data size: 5056 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cbigint (type: bigint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 20 Data size: 5056 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 _col1 (type: bigint)
                         1 _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -237,11 +237,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 20 Data size: 5056 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cint (type: int), cbigint (type: bigint)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 20 Data size: 5056 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -251,7 +251,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 22 Data size: 5561 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 22 Data size: 5760 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Outer Join0 to 1
@@ -261,7 +261,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 6117 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 6336 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           mode: hash
@@ -271,10 +271,11 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint), _col1 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
@@ -288,7 +289,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
