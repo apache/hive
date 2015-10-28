@@ -59,7 +59,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   @Override
   @SuppressWarnings("unchecked")
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     if (conf.getGenJoinKeys()) {
       int tagLen = conf.getTagLength();
       joinKeys = new List[tagLen];
@@ -68,7 +68,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
           inputObjInspectors,NOTSKIPBIGTABLE, tagLen);
     }
 
-    Collection<Future<?>> result = super.initializeOp(hconf);
+    super.initializeOp(hconf);
 
     numMapRowsRead = 0;
 
@@ -82,8 +82,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
         posBigTable, joinCacheSize,spillTableDesc, conf,
         !hasFilter(posBigTable), reporter);
     storage[posBigTable] = bigPosRC;
-
-    return result;
   }
 
   @Override

@@ -79,8 +79,10 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Wrapper around hive metastore thrift api
@@ -100,6 +102,13 @@ public interface IMetaStoreClient {
    * @param addedJars the hive.added.jars.path. It is qualified paths separated by commas.
    */
   void setHiveAddedJars(String addedJars);
+
+  /**
+   * Returns true if the current client is using an in process metastore (local metastore).
+   *
+   * @return
+   */
+  boolean isLocalMetaStore();
 
   /**
    *  Tries to reconnect this MetaStoreClient to the MetaStore.
@@ -1453,4 +1462,28 @@ public interface IMetaStoreClient {
       List<String> colNames, List<String> partName)  throws NoSuchObjectException, MetaException, TException;
 
   boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request) throws NoSuchObjectException, InvalidObjectException, MetaException, TException, InvalidInputException;
+
+  /**
+   * Flush any catalog objects held by the metastore implementation.  Note that this does not
+   * flush statistics objects.  This should be called at the beginning of each query.
+   */
+  void flushCache();
+
+  /**
+   * Gets file metadata, as cached by metastore, for respective file IDs.
+   * The metadata that is not cached in metastore may be missing.
+   */
+  Iterable<Entry<Long, ByteBuffer>> getFileMetadata(List<Long> fileIds) throws TException;
+
+  /**
+   * Cleares the file metadata cache for respective file IDs.
+   */
+  void clearFileMetadata(List<Long> fileIds) throws TException;
+
+  /**
+   * Adds file metadata for respective file IDs to metadata cache in metastore.
+   */
+  void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws TException;
+
+  boolean isSameConfObj(HiveConf c);
 }

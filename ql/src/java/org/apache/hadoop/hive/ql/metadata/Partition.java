@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -46,9 +45,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.transport.TMemoryBuffer;
 
 /**
  * A Hive Table Partition: is a fundamental storage unit within a Table.
@@ -95,7 +91,7 @@ public class Partition implements Serializable {
     org.apache.hadoop.hive.metastore.api.Partition tPart =
         new org.apache.hadoop.hive.metastore.api.Partition();
     if (!tbl.isView()) {
-      tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
+      tPart.setSd(tbl.getTTable().getSd().deepCopy());
     }
     initialize(tbl, tPart);
   }
@@ -140,30 +136,10 @@ public class Partition implements Serializable {
     tpart.setValues(pvals);
 
     if (!tbl.isView()) {
-      tpart.setSd(cloneSd(tbl));
+      tpart.setSd(tbl.getSd().deepCopy());
       tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
     return tpart;
-  }
-
-  /**
-   * We already have methods that clone stuff using XML or Kryo.
-   * And now for something completely different - let's clone SD using Thrift!
-   * Refactored into a method.
-   */
-  public static StorageDescriptor cloneSd(Table tbl) throws HiveException {
-    StorageDescriptor sd = new StorageDescriptor();
-    try {
-      // replace with THRIFT-138
-      TMemoryBuffer buffer = new TMemoryBuffer(1024);
-      TBinaryProtocol prot = new TBinaryProtocol(buffer);
-      tbl.getTTable().getSd().write(prot);
-      sd.read(prot);
-    } catch (TException e) {
-      LOG.error("Could not create a copy of StorageDescription");
-      throw new HiveException("Could not create a copy of StorageDescription",e);
-    }
-    return sd;
   }
 
   /**
@@ -563,6 +539,7 @@ public class Partition implements Serializable {
   }
 
   public List<String> getSkewedColNames() {
+    LOG.debug("sd is " + tPartition.getSd().getClass().getName());
     return tPartition.getSd().getSkewedInfo().getSkewedColNames();
   }
 

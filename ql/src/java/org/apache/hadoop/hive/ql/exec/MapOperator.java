@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
@@ -37,7 +38,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
-import org.apache.hadoop.hive.ql.exec.tez.MapRecordProcessor;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -89,6 +89,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   private final transient LongWritable recordCounter = new LongWritable();
   protected transient long numRows = 0;
   protected transient long cntr = 1;
+  private final Map<Integer, DummyStoreOperator> connectedOperators
+    = new TreeMap<Integer, DummyStoreOperator>();
   protected transient long logEveryNRows = 0;
 
   // input path --> {operator --> context}
@@ -418,8 +420,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   }
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    return super.initializeOp(hconf);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
   }
 
   public void initializeMapOperator(Configuration hconf) throws HiveException {
@@ -647,5 +649,17 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   public Deserializer getCurrentDeserializer() {
 
     return currentCtxs[0].deserializer;
+  }
+
+  public void clearConnectedOperators() {
+    connectedOperators.clear();
+  }
+
+  public void setConnectedOperators(int tag, DummyStoreOperator dummyOp) {
+    connectedOperators.put(tag, dummyOp);
+  }
+
+  public Map<Integer, DummyStoreOperator> getConnectedOperators() {
+    return connectedOperators;
   }
 }

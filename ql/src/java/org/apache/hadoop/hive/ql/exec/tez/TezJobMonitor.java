@@ -21,6 +21,21 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 import static org.fusesource.jansi.Ansi.ansi;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Heartbeater;
@@ -29,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.tez.common.counters.TaskCounter;
@@ -61,8 +77,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import jline.TerminalFactory;
-
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
  * print status to the console and retrieve final status of the job after
@@ -73,15 +87,15 @@ public class TezJobMonitor {
   private static final String CLASS_NAME = TezJobMonitor.class.getName();
 
   private static final int COLUMN_1_WIDTH = 16;
-  private static final int SEPARATOR_WIDTH = 80;
+  private static final int SEPARATOR_WIDTH = InPlaceUpdates.MIN_TERMINAL_WIDTH;
 
   // keep this within 80 chars width. If more columns needs to be added then update min terminal
   // width requirement and separator width accordingly
-  private static final String HEADER_FORMAT = "%16s%12s  %5s  %9s  %7s  %7s  %6s  %6s";
-  private static final String VERTEX_FORMAT = "%-16s%12s  %5s  %9s  %7s  %7s  %6s  %6s";
+  private static final String HEADER_FORMAT = "%16s%10s %13s  %5s  %9s  %7s  %7s  %6s  %6s  ";
+  private static final String VERTEX_FORMAT = "%-16s%10s %13s  %5s  %9s  %7s  %7s  %6s  %6s  ";
   private static final String FOOTER_FORMAT = "%-15s  %-30s %-4s  %-25s";
   private static final String HEADER = String.format(HEADER_FORMAT,
-      "VERTICES", "STATUS", "TOTAL", "COMPLETED", "RUNNING", "PENDING", "FAILED", "KILLED");
+      "VERTICES", "MODE", "STATUS", "TOTAL", "COMPLETED", "RUNNING", "PENDING", "FAILED", "KILLED");
 
   // method and dag summary format
   private static final String SUMMARY_HEADER_FORMAT = "%-16s %-12s %-12s %-12s %-19s %-19s %-15s %-15s %-15s";
@@ -100,7 +114,7 @@ public class TezJobMonitor {
   private String separator;
 
   private transient LogHelper console;
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private final int checkInterval = 200;
   private final int maxRetryInterval = 2500;
   private final int printInterval = 3000;
@@ -112,6 +126,7 @@ public class TezJobMonitor {
   private final NumberFormat secondsFormat;
   private final NumberFormat commaFormat;
   private static final List<DAGClient> shutdownList;
+  private Map<String, BaseWork> workMap;
 
   private StringBuffer diagnostics;
 
@@ -140,7 +155,8 @@ public class TezJobMonitor {
         "Shutdown hook was not properly initialized");
   }
 
-  public TezJobMonitor() {
+  public TezJobMonitor(Map<String, BaseWork> workMap) {
+    this.workMap = workMap;
     console = SessionState.getConsole();
     secondsFormat = new DecimalFormat("#0.00");
     commaFormat = NumberFormat.getNumberInstance(Locale.US);
@@ -211,6 +227,7 @@ public class TezJobMonitor {
    */
   public int monitorExecution(final DAGClient dagClient, HiveTxnManager txnMgr, HiveConf conf,
       DAG dag) throws InterruptedException {
+    long monitorStartTime = System.currentTimeMillis();
     DAGStatus status = null;
     completed = new HashSet<String>();
     diagnostics = new StringBuffer();
@@ -236,7 +253,7 @@ public class TezJobMonitor {
     while (true) {
 
       try {
-        status = dagClient.getDAGStatus(opts);
+        status = dagClient.getDAGStatus(opts, checkInterval);
         Map<String, Progress> progressMap = status.getVertexProgress();
         DAGStatus.State state = status.getState();
         heartbeater.heartbeat();
@@ -269,6 +286,9 @@ public class TezJobMonitor {
             }
             break;
           case SUCCEEDED:
+            if (!running) {
+              startTime = monitorStartTime;
+            }
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, false, dagClient);
               // log the progress report to log file as well
@@ -294,6 +314,9 @@ public class TezJobMonitor {
             done = true;
             break;
           case KILLED:
+            if (!running) {
+              startTime = monitorStartTime;
+            }
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, true, dagClient);
               // log the progress report to log file as well
@@ -306,6 +329,9 @@ public class TezJobMonitor {
             break;
           case FAILED:
           case ERROR:
+            if (!running) {
+              startTime = monitorStartTime;
+            }
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, true, dagClient);
               // log the progress report to log file as well
@@ -317,9 +343,6 @@ public class TezJobMonitor {
             rc = 2;
             break;
           }
-        }
-        if (!done) {
-          Thread.sleep(checkInterval);
         }
       } catch (Exception e) {
         console.printInfo("Exception: " + e.getMessage());
@@ -622,10 +645,12 @@ public class TezJobMonitor {
         }
       }
 
-      // Map 1 ..........  SUCCEEDED      7          7        0        0       0       0
+      // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
       String nameWithProgress = getNameWithProgress(s, complete, total);
+      String mode = getMode(s, workMap);
       String vertexStr = String.format(VERTEX_FORMAT,
           nameWithProgress,
+          mode,
           vertexState.toString(),
           total,
           complete,
@@ -649,6 +674,22 @@ public class TezJobMonitor {
     String footer = getFooter(keys.size(), completed.size(), progress, startTime);
     reprintLineWithColorAsBold(footer, Ansi.Color.RED);
     reprintLine(separator);
+  }
+
+  private String getMode(String name, Map<String, BaseWork> workMap) {
+    String mode = "container";
+    BaseWork work = workMap.get(name);
+    if (work != null) {
+      // uber > llap > container
+      if (work.getUberMode()) {
+        mode = "uber";
+      } else if (work.getLlapMode()) {
+        mode = "llap";
+      } else {
+        mode = "container";
+      }
+    }
+    return mode;
   }
 
   // Map 1 ..........

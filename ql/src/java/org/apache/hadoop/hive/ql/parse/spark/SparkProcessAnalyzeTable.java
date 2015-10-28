@@ -121,6 +121,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
 
         StatsWork statsWork = new StatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
         statsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
+        statsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
         statsWork.setSourceTask(context.currentTask);
         statsWork.setStatsReliable(parseContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
         Task<StatsWork> statsTask = TaskFactory.get(statsWork, parseContext.getConf());
@@ -176,6 +177,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
     PartialScanWork scanWork = new PartialScanWork(inputPaths);
     scanWork.setMapperCannotSpanPartns(true);
     scanWork.setAggKey(aggregationKey);
+    scanWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir(), parseContext.getConf());
 
     // stats work
     statsWork.setPartialScanAnalyzeCommand(true);

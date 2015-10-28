@@ -515,7 +515,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return newCopy;
   }
 
-  private Map<String, Table> getTempTablesForDatabase(String dbName) {
+  public static Map<String, Table> getTempTablesForDatabase(String dbName) {
     SessionState ss = SessionState.get();
     if (ss == null) {
       LOG.debug("No current SessionState, skipping temp tables");

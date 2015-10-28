@@ -453,7 +453,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
         // location or an SD, but these are needed to create a ql.metadata.Partition,
         // so we use the table's SD. The only place this is used is by the
         // authorization hooks, so we will not affect code flow in the metastore itself.
-        wrapperApiPart.setSd(t.getSd());
+        wrapperApiPart.setSd(t.getSd().deepCopy());
       }
       initialize(new TableWrapper(t),wrapperApiPart);
     }

@@ -22,23 +22,22 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.mapred.Reporter;
 
-public class CounterStatsPublisher implements StatsPublisher, StatsCollectionTaskIndependent {
+public class CounterStatsPublisher implements StatsPublisher {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsPublisher.class.getName());
 
   private Reporter reporter;
 
   @Override
-  public boolean init(Configuration hconf) {
+  public boolean init(StatsCollectionContext context) {
     return true;
   }
 
   @Override
-  public boolean connect(Configuration hconf) {
+  public boolean connect(StatsCollectionContext statsContext) {
     MapredContext context = MapredContext.get();
     if (context == null || context.getReporter() == null) {
       return false;
@@ -61,7 +60,7 @@ public class CounterStatsPublisher implements StatsPublisher, StatsCollectionTas
     return true;
   }
   @Override
-  public boolean closeConnection() {
+  public boolean closeConnection(StatsCollectionContext context) {
     return true;
   }
 }

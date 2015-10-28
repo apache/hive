@@ -56,15 +56,14 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
   private final transient LongWritable skewjoin_followup_jobs = new LongWritable(0);
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     if (handleSkewJoin) {
       skewJoinKeyContext = new SkewJoinHandler(this);
       skewJoinKeyContext.initiliaze(hconf);
       skewJoinKeyContext.setSkewJoinJobCounter(skewjoin_followup_jobs);
     }
     statsMap.put(SkewkeyTableCounter.SKEWJOINFOLLOWUPJOBS.toString(), skewjoin_followup_jobs);
-    return result;
   }
 
   @Override

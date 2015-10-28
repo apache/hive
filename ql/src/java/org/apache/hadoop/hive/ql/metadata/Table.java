@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.metadata;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -181,11 +182,11 @@ public class Table implements Serializable {
     return t;
   }
 
-  public void checkValidity() throws HiveException {
+  public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
     String name = tTable.getTableName();
     if (null == name || name.length() == 0
-        || !MetaStoreUtils.validateName(name)) {
+        || !MetaStoreUtils.validateName(name, conf)) {
       throw new HiveException("[" + name + "]: is not a valid table name");
     }
     if (0 == getCols().size()) {

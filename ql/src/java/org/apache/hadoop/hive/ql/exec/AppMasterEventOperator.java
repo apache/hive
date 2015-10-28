@@ -52,14 +52,13 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
   protected transient long MAX_SIZE;
 
   @Override
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     MAX_SIZE = HiveConf.getLongVar(hconf, ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE);
     serializer =
         (Serializer) ReflectionUtils.newInstance(conf.getTable().getDeserializerClass(), null);
     initDataBuffer(false);
-    return result;
   }
 
   protected void initDataBuffer(boolean skipPruning) throws HiveException {

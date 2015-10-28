@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+
 /**
  * This class supports string and binary data by value reference -- i.e. each field is
  * explicitly present, as opposed to provided by a dictionary reference.
@@ -295,10 +296,28 @@ public class BytesColumnVector extends ColumnVector {
     setRef(0, value, 0, value.length);
   }
 
+  // Fill the column vector with nulls
+  public void fillWithNulls() {
+    noNulls = false;
+    isRepeating = true;
+    vector[0] = null;
+    isNull[0] = true;
+  }
+
   @Override
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
-    BytesColumnVector in = (BytesColumnVector) inputVector;
-    setVal(outElementNum, in.vector[inputElementNum], in.start[inputElementNum], in.length[inputElementNum]);
+    if (inputVector.isRepeating) {
+      inputElementNum = 0;
+    }
+    if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
+      isNull[outElementNum] = false;
+      BytesColumnVector in = (BytesColumnVector) inputVector;
+      setVal(outElementNum, in.vector[inputElementNum],
+          in.start[inputElementNum], in.length[inputElementNum]);
+    } else {
+      isNull[outElementNum] = true;
+      noNulls = false;
+    }
   }
 
   @Override
@@ -317,6 +336,30 @@ public class BytesColumnVector extends ColumnVector {
       buffer.append('"');
     } else {
       buffer.append("null");
+    }
+  }
+
+  @Override
+  public void ensureSize(int size, boolean preserveData) {
+    if (size > vector.length) {
+      super.ensureSize(size, preserveData);
+      int[] oldStart = start;
+      start = new int[size];
+      int[] oldLength = length;
+      length = new int[size];
+      byte[][] oldVector = vector;
+      vector = new byte[size][];
+      if (preserveData) {
+        if (isRepeating) {
+          vector[0] = oldVector[0];
+          start[0] = oldStart[0];
+          length[0] = oldLength[0];
+        } else {
+          System.arraycopy(oldVector, 0, vector, 0, oldVector.length);
+          System.arraycopy(oldStart, 0, start, 0 , oldStart.length);
+          System.arraycopy(oldLength, 0, length, 0, oldLength.length);
+        }
+      }
     }
   }
 }

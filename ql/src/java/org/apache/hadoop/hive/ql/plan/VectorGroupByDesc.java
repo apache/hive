@@ -34,6 +34,8 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   private boolean isVectorOutput;
 
+  private boolean isReduceStreaming;
+
   public VectorGroupByDesc() {
     this.isReduceMergePartial = false;
     this.isVectorOutput = false;
@@ -53,5 +55,13 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   public void setVectorOutput(boolean isVectorOutput) {
     this.isVectorOutput = isVectorOutput;
+  }
+
+  public void setIsReduceStreaming(boolean isReduceStreaming) {
+    this.isReduceStreaming = isReduceStreaming;
+  }
+
+  public boolean isReduceStreaming() {
+    return isReduceStreaming;
   }
 }

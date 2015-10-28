@@ -62,8 +62,8 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-core</artifactId>
-      <version>${hadoop-20S.version}</version>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>

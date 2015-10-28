@@ -11,3 +11,25 @@ POSTHOOK: Input: default@src_hbase
 100	val_100
 103	val_103
 104	val_104
+PREHOOK: query: SELECT value FROM src_hbase LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_hbase
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value FROM src_hbase LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_hbase
+#### A masked pattern was here ####
+val_0
+val_10
+val_100
+val_103
+val_104
+PREHOOK: query: select count(*) from src_hbase
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_hbase
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from src_hbase
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_hbase
+#### A masked pattern was here ####
+309

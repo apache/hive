@@ -190,6 +190,7 @@ public class PlanModifierForASTConv {
       colAlias = resultSchema.get(i).getName();
       if (colAlias.startsWith("_")) {
         colAlias = colAlias.substring(1);
+        colAlias = getNewColAlias(newSelAliases, colAlias);
       }
       newSelAliases.add(colAlias);
     }
@@ -203,6 +204,16 @@ public class PlanModifierForASTConv {
       parentOforiginalProjRel.replaceInput(0, replacementProjectRel);
       return rootRel;
     }
+  }
+
+  private static String getNewColAlias(List<String> newSelAliases, String colAlias) {
+    int index = 1;
+    String newColAlias = colAlias;
+    while (newSelAliases.contains(newColAlias)) {
+      //This means that the derived colAlias collides with existing ones.
+      newColAlias = colAlias + "_" + (index++);
+    }
+    return newColAlias;
   }
 
   private static RelNode introduceDerivedTable(final RelNode rel) {

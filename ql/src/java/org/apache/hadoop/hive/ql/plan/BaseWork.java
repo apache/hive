@@ -68,6 +68,9 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   protected Map<Integer, String> vectorColumnTypeMap;
   protected Map<Integer, String> vectorScratchColumnTypeMap;
 
+  protected boolean llapMode = false;
+  protected boolean uberMode = false;
+
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
   }
@@ -190,6 +193,22 @@ public abstract class BaseWork extends AbstractOperatorDesc {
    */
   public void setMapRedLocalWork(final MapredLocalWork mapLocalWork) {
     this.mrLocalWork = mapLocalWork;
+  }
+
+  public void setUberMode(boolean uberMode) {
+    this.uberMode = uberMode;
+  }
+
+  public boolean getUberMode() {
+    return uberMode;
+  }
+
+  public void setLlapMode(boolean llapMode) {
+    this.llapMode = llapMode;
+  }
+
+  public boolean getLlapMode() {
+    return llapMode;
   }
 
   public abstract void configureJobConf(JobConf job);

@@ -28,7 +28,7 @@
 
   <Appenders>
     <Console name="console" target="SYSTEM_ERR">
-      <PatternLayout pattern="%d{yy/MM/dd HH:mm:ss} [%t]: %p %c{2}: %m%n"/>
+      <PatternLayout pattern="%d{yy/MM/dd HH:mm:ss} [%t(%x)]: %p %c{2}: %m%n"/>
     </Console>
 
     <!-- Regular File Appender -->
@@ -42,7 +42,7 @@
     <!-- Use %pid in the filePattern to append <process-id>@<host-name> to the filename if you want separate log files for different CLI session -->
     <RollingFile name="DRFA" fileName="${sys:hive.log.dir}/${sys:hive.log.file}"
      filePattern="${sys:hive.log.dir}/${sys:hive.log.file}.%d{yyyy-MM-dd}">
-      <PatternLayout pattern="%d{ISO8601} %-5p [%t]: %c{2} (%F:%M(%L)) - %m%n" />
+      <PatternLayout pattern="%d{ISO8601} %-5p [%t(%x)]: %c{2} (%F:%M(%L)) - %m%n" />
       <Policies>
         <!-- Rollover at mignight (interval = 1 means daily) -->
         <TimeBasedTriggeringPolicy interval="1" modulate="true"/>

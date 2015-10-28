@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.SparkBucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public class SparkHashTableSinkOperator
@@ -48,7 +49,7 @@ public class SparkHashTableSinkOperator
   private static final int MIN_REPLICATION = 10;
   private static final long serialVersionUID = 1L;
   private final String CLASS_NAME = this.getClass().getName();
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   protected static final Log LOG = LogFactory.getLog(SparkHashTableSinkOperator.class.getName());
 
   private final HashTableSinkOperator htsOperator;
@@ -58,15 +59,14 @@ public class SparkHashTableSinkOperator
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     ObjectInspector[] inputOIs = new ObjectInspector[conf.getTagLength()];
     byte tag = conf.getTag();
     inputOIs[tag] = inputObjInspectors[0];
     conf.setTagOrder(new Byte[]{ tag });
     htsOperator.setConf(conf);
     htsOperator.initialize(hconf, inputOIs);
-    return result;
   }
 
   @Override

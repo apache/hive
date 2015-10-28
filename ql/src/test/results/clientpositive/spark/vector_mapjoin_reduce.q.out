@@ -76,6 +76,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -88,7 +89,6 @@ STAGE PLANS:
                   keys:
                     0 _col1 (type: int)
                     1 _col0 (type: int)
-            Execution mode: vectorized
 
   Stage: Stage-1
     Spark
@@ -277,6 +277,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -306,7 +307,6 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

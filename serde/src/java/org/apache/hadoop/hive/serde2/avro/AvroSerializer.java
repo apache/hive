@@ -56,8 +56,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
 
 class AvroSerializer {
-  private static final Log LOG = LogFactory.getLog(AvroSerializer.class);
-
   /**
    * The Schema to use when serializing Map keys.
    * Since we're sharing this across Serializer instances, it must be immutable;

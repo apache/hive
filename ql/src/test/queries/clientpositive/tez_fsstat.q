@@ -15,5 +15,3 @@ set hive.stats.dbclass=fs;
 insert overwrite table tab_part partition (ds='2008-04-08')
 select key,value from t1;
 describe formatted tab_part partition(ds='2008-04-08');
-
-set hive.stats.dbclass=jdbc:derby;

@@ -159,6 +159,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     }
   }
 
+  @Override
   public void reduce(Object key, Iterator values, OutputCollector output,
       Reporter reporter) throws IOException {
     if (reducer.getDone()) {
@@ -288,7 +289,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       }
     } finally {
       MapredContext.close();
-      Utilities.clearWorkMap();
+      Utilities.clearWorkMap(jc);
     }
   }
 }

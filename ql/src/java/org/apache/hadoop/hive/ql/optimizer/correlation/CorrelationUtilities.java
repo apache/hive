@@ -354,43 +354,10 @@ public final class CorrelationUtilities {
       ch.replaceParent(childRS, sel);
     }
 
-    removeChildSelIfApplicable(getSingleChild(childRS), sel, context, procCtx);
     childRS.setChildOperators(null);
     childRS.setParentOperators(null);
     procCtx.addRemovedOperator(childRS);
     return sel;
-  }
-
-  //TODO: ideally this method should be removed in future, as in we need not to rely on removing
-  // this select operator which likely is introduced by SortedDynPartitionOptimizer.
-  // NonblockingdedupOptimizer should be able to merge this select Operator with its
-  // parent. But, that is not working at the moment. See: dynpart_sort_optimization2.q
-
-  private static void removeChildSelIfApplicable(Operator<?> child, SelectOperator sel,
-      ParseContext context, AbstractCorrelationProcCtx procCtx) throws SemanticException {
-
-    if (!(child instanceof SelectOperator)) {
-     return;
-   }
-   if (child.getColumnExprMap() != null) {
-     return;
-   }
-
-   SelectOperator selOp = (SelectOperator) child;
-
-   for (ExprNodeDesc desc : selOp.getConf().getColList()) {
-     if (!(desc instanceof ExprNodeColumnDesc)) {
-       return;
-     }
-     ExprNodeColumnDesc col = (ExprNodeColumnDesc) desc;
-     if(!col.getColumn().startsWith(ReduceField.VALUE.toString()+".") ||
-         col.getTabAlias() != null || col.getIsPartitionColOrVirtualCol()){
-       return;
-     }
-   }
-
-   removeOperator(child, getSingleChild(child), sel, context);
-   procCtx.addRemovedOperator(child);
   }
 
   protected static void removeReduceSinkForGroupBy(ReduceSinkOperator cRS, GroupByOperator cGBYr,

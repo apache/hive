@@ -131,4 +131,29 @@ public class TestObjectInspectorUtils extends TestCase {
     }
 
   }
+  public void testBucketIdGeneration() {
+    ArrayList<String> fieldNames = new ArrayList<String>();
+    fieldNames.add("firstInteger");
+    fieldNames.add("secondString");
+    fieldNames.add("thirdBoolean");
+    ArrayList<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>();
+    fieldObjectInspectors
+      .add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+    fieldObjectInspectors
+      .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+    fieldObjectInspectors
+      .add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
+
+    StandardStructObjectInspector soi1 = ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldObjectInspectors);
+    ArrayList<Object> struct = new ArrayList<Object>(3);
+    struct.add(1);
+    struct.add("two");
+    struct.add(true);
+
+    int hashCode = ObjectInspectorUtils.getBucketHashCode(struct.toArray(), fieldObjectInspectors.toArray(new ObjectInspector[fieldObjectInspectors.size()]));
+    assertEquals("", 3574518, hashCode);
+    int bucketId = ObjectInspectorUtils.getBucketNumber(struct.toArray(), fieldObjectInspectors.toArray(new ObjectInspector[fieldObjectInspectors.size()]), 16);
+    assertEquals("", 6, bucketId);
+    assertEquals("", bucketId, ObjectInspectorUtils.getBucketNumber(hashCode, 16));
+  }
 }

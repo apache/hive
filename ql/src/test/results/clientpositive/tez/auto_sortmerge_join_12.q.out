@@ -138,7 +138,7 @@ POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket3out
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_medium@ds=2008-04-08
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 3' is a cross product
+Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
@@ -211,9 +211,8 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
-        Map 3 <- Map 2 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE)
+        Reducer 3 <- Map 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -309,13 +308,40 @@ STAGE PLANS:
                       Position of Big Table: 1
                       Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
                       HybridGraceHashJoin: true
-                      Reduce Output Operator
-                        key expressions: _col6 (type: string), _col6 (type: string)
-                        sort order: ++
-                        Map-reduce partition columns: _col6 (type: string), _col6 (type: string)
-                        Statistics: Num rows: 1 Data size: 125 Basic stats: COMPLETE Column stats: NONE
-                        tag: 0
-                        auto parallelism: true
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        Estimated key counts: Map 4 => 58
+                        keys:
+                          0 _col6 (type: string), _col6 (type: string)
+                          1 key (type: string), key (type: string)
+                        input vertices:
+                          1 Map 4
+                        Position of Big Table: 0
+                        Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                        HybridGraceHashJoin: true
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          Estimated key counts: Map 5 => 1
+                          keys:
+                            0 
+                            1 
+                          input vertices:
+                            1 Map 5
+                          Position of Big Table: 0
+                          Statistics: Num rows: 69 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
+                          Group By Operator
+                            aggregations: count()
+                            mode: hash
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Reduce Output Operator
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                              tag: -1
+                              value expressions: _col0 (type: bigint)
+                              auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -369,7 +395,7 @@ STAGE PLANS:
                   name: default.bucket_medium
             Truncated Path -> Alias:
               /bucket_medium/ds=2008-04-08 [b]
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -379,41 +405,13 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      Estimated key counts: Map 2 => 1
-                      keys:
-                        0 _col6 (type: string), _col6 (type: string)
-                        1 key (type: string), key (type: string)
-                      input vertices:
-                        0 Map 2
-                      Position of Big Table: 1
-                      Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        Estimated key counts: Map 5 => 1
-                        keys:
-                          0 
-                          1 
-                        input vertices:
-                          1 Map 5
-                        Position of Big Table: 0
-                        Statistics: Num rows: 69 Data size: 7032 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            tag: -1
-                            value expressions: _col0 (type: bigint)
-                            auto parallelism: false
+                    Reduce Output Operator
+                      key expressions: key (type: string), key (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: key (type: string), key (type: string)
+                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -580,7 +578,7 @@ STAGE PLANS:
                   name: default.bucket_medium
             Truncated Path -> Alias:
               /bucket_medium/ds=2008-04-08 [d]
-        Reducer 4 
+        Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -603,6 +601,7 @@ STAGE PLANS:
                         columns.types bigint
                         escape.delim \
                         hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -616,7 +615,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 3' is a cross product
+Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_big

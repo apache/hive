@@ -27,7 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
@@ -68,8 +70,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
+  protected AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
+  protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
 
   private static AtomicInteger seqId;
 
@@ -106,6 +110,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     initOperatorId();
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    abortOp = new AtomicBoolean(false);
   }
 
   public Operator() {
@@ -360,34 +365,63 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // derived classes can set this to different object if needed
     outputObjInspector = inputObjInspectors[0];
 
-    Collection<Future<?>> asyncInitOperations = initializeOp(hconf);
+    boolean isInitOk = false;
+    try {
+      initializeOp(hconf);
+      // sanity checks
+      if (!rootInitializeCalled
+          || childOperatorsArray.length != childOperators.size()) {
+        throw new AssertionError("Internal error during operator initialization");
+      }
+      if (isLogInfoEnabled) {
+        LOG.info("Initialization Done " + id + " " + getName());
+      }
 
-    // sanity checks
-    if (!rootInitializeCalled
-	|| asyncInitOperations == null
-	|| childOperatorsArray.length != childOperators.size()) {
-      throw new AssertionError("Internal error during operator initialization");
+      initializeChildren(hconf);
+      isInitOk = true;
+    } finally {
+      // TODO: ugly hack because Java doesn't have dtors and Tez input hangs on shutdown.
+      if (!isInitOk) {
+        cancelAsyncInitOps();
+      }
     }
 
     if (isLogInfoEnabled) {
       LOG.info("Initialization Done " + id + " " + getName() + " done is reset.");
     }
 
-    initializeChildren(hconf);
-
     // let's wait on the async ops before continuing
     completeInitialization(asyncInitOperations);
+  }
+
+  private void cancelAsyncInitOps() {
+    for (Future<?> f : asyncInitOperations) {
+      f.cancel(true);
+    }
+    asyncInitOperations.clear();
   }
 
   private void completeInitialization(Collection<Future<?>> fs) throws HiveException {
     Object[] os = new Object[fs.size()];
     int i = 0;
+    Throwable asyncEx = null;
     for (Future<?> f : fs) {
-      try {
-        os[i++] = f.get();
-      } catch (Exception e) {
-        throw new HiveException(e);
+      if (abortOp.get() || asyncEx != null) {
+        // We were aborted, interrupted or one of the operations failed; terminate all.
+        f.cancel(true);
+      } else {
+        try {
+          os[i++] = f.get();
+        } catch (CancellationException ex) {
+          asyncEx = new InterruptedException("Future was canceled");
+        } catch (Throwable t) {
+          f.cancel(true);
+          asyncEx = t;
+        }
       }
+    }
+    if (asyncEx != null) {
+      throw new HiveException("Async initialization failed", asyncEx);
     }
     completeInitializationOp(os);
   }
@@ -415,9 +449,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   /**
    * Operator specific initialization.
    */
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     rootInitializeCalled = true;
-    return new ArrayList<Future<?>>();
   }
 
   /**
@@ -441,6 +474,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         childOperatorsArray[i].setReporter(reporter);
       }
     }
+  }
+
+  public void abort() {
+    abortOp.set(true);
   }
 
   /**
@@ -612,6 +649,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (isLogInfoEnabled) {
       LOG.info(id + " finished. closing... ");
     }
+
+    abort |= abortOp.get();
 
     // call the operator specific close routine
     closeOp(abort);
@@ -1326,8 +1365,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     @Override
-    protected Collection<Future<?>> initializeOp(Configuration conf) {
-      return childOperators;
+    protected void initializeOp(Configuration conf) {
     }
   }
 

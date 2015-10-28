@@ -309,6 +309,8 @@ public class Operation2Privilege {
     // for now require select WITH GRANT
     op2Priv.put(HiveOperationType.SHOW_CREATETABLE, PrivRequirement.newIOPrivRequirement
 (SEL_GRANT_AR, null));
+    op2Priv.put(HiveOperationType.SHOW_CREATEDATABASE, PrivRequirement.newIOPrivRequirement
+(SEL_GRANT_AR, null));
 
     // for now allow only create-view with 'select with grant'
     // the owner will also have select with grant privileges on new view

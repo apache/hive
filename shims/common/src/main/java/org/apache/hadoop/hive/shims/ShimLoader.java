@@ -17,19 +17,18 @@
  */
 package org.apache.hadoop.hive.shims;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.log4j.AppenderSkeleton;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ShimLoader.
  *
  */
 public abstract class ShimLoader {
-  public static String HADOOP20SVERSIONNAME = "0.20S";
   public static String HADOOP23VERSIONNAME = "0.23";
 
   private static HadoopShims hadoopShims;
@@ -45,7 +44,6 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    HADOOP_SHIM_CLASSES.put(HADOOP20SVERSIONNAME, "org.apache.hadoop.hive.shims.Hadoop20SShims");
     HADOOP_SHIM_CLASSES.put(HADOOP23VERSIONNAME, "org.apache.hadoop.hive.shims.Hadoop23Shims");
   }
 
@@ -57,7 +55,6 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    JETTY_SHIM_CLASSES.put(HADOOP20SVERSIONNAME, "org.apache.hadoop.hive.shims.Jetty20SShims");
     JETTY_SHIM_CLASSES.put(HADOOP23VERSIONNAME, "org.apache.hadoop.hive.shims.Jetty23Shims");
   }
 
@@ -68,21 +65,17 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    EVENT_COUNTER_SHIM_CLASSES.put(HADOOP20SVERSIONNAME, "org.apache.hadoop.log.metrics" +
-        ".EventCounter");
     EVENT_COUNTER_SHIM_CLASSES.put(HADOOP23VERSIONNAME, "org.apache.hadoop.log.metrics" +
         ".EventCounter");
   }
 
   /**
-   * The names of the classes for shimming {@link HadoopThriftAuthBridge}
+   * The names of the classes for shimming HadoopThriftAuthBridge
    */
   private static final HashMap<String, String> HADOOP_THRIFT_AUTH_BRIDGE_CLASSES =
       new HashMap<String, String>();
 
   static {
-    HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put(HADOOP20SVERSIONNAME,
-        "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge");
     HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put(HADOOP23VERSIONNAME,
         "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge23");
   }
@@ -166,8 +159,6 @@ public abstract class ShimLoader {
     }
 
     switch (Integer.parseInt(parts[0])) {
-    case 1:
-      return HADOOP20SVERSIONNAME;
     case 2:
       return HADOOP23VERSIONNAME;
     default:

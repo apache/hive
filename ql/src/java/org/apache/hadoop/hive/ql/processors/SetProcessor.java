@@ -29,11 +29,13 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -62,6 +64,9 @@ public class SetProcessor implements CommandProcessor {
     for (Object one : p.keySet()) {
       String oneProp = (String) one;
       String oneValue = p.getProperty(oneProp);
+      if (ss.getConf().isHiddenConfig(oneProp)) {
+        continue;
+      }
       sortedMap.put(oneProp, oneValue);
     }
 
@@ -88,7 +93,9 @@ public class SetProcessor implements CommandProcessor {
   private void dumpOption(String s) {
     SessionState ss = SessionState.get();
 
-    if (ss.getConf().get(s) != null) {
+    if (ss.getConf().isHiddenConfig(s)) {
+      ss.out.println(s + " is a hidden config");
+    } else if (ss.getConf().get(s) != null) {
       ss.out.println(s + "=" + ss.getConf().get(s));
     } else if (ss.getHiveVariables().containsKey(s)) {
       ss.out.println(s + "=" + ss.getHiveVariables().get(s));
@@ -121,17 +128,33 @@ public class SetProcessor implements CommandProcessor {
       return 1;
     } else if (varname.startsWith(SYSTEM_PREFIX)){
       String propName = varname.substring(SYSTEM_PREFIX.length());
-      System.getProperties().setProperty(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
+      System.getProperties()
+          .setProperty(propName, new VariableSubstitution(new HiveVariableSource() {
+            @Override
+            public Map<String, String> getHiveVariable() {
+              return SessionState.get().getHiveVariables();
+            }
+          }).substitute(ss.getConf(), varvalue));
     } else if (varname.startsWith(HIVECONF_PREFIX)){
       String propName = varname.substring(HIVECONF_PREFIX.length());
       setConf(varname, propName, varvalue, false);
     } else if (varname.startsWith(HIVEVAR_PREFIX)) {
       String propName = varname.substring(HIVEVAR_PREFIX.length());
-      ss.getHiveVariables().put(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
+      ss.getHiveVariables().put(propName, new VariableSubstitution(new HiveVariableSource() {
+        @Override
+        public Map<String, String> getHiveVariable() {
+          return SessionState.get().getHiveVariables();
+        }
+      }).substitute(ss.getConf(), varvalue));
     } else if (varname.startsWith(METACONF_PREFIX)) {
       String propName = varname.substring(METACONF_PREFIX.length());
       Hive hive = Hive.get(ss.getConf());
-      hive.setMetaConf(propName, new VariableSubstitution().substitute(ss.getConf(), varvalue));
+      hive.setMetaConf(propName, new VariableSubstitution(new HiveVariableSource() {
+        @Override
+        public Map<String, String> getHiveVariable() {
+          return SessionState.get().getHiveVariables();
+        }
+      }).substitute(ss.getConf(), varvalue));
     } else {
       setConf(varname, varname, varvalue, true);
       if (varname.equals(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED.toString())) {
@@ -145,7 +168,12 @@ public class SetProcessor implements CommandProcessor {
   private static void setConf(String varname, String key, String varvalue, boolean register)
         throws IllegalArgumentException {
     HiveConf conf = SessionState.get().getConf();
-    String value = new VariableSubstitution().substitute(conf, varvalue);
+    String value = new VariableSubstitution(new HiveVariableSource() {
+      @Override
+      public Map<String, String> getHiveVariable() {
+        return SessionState.get().getHiveVariables();
+      }
+    }).substitute(conf, varvalue);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
       HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
       if (confVars != null) {
@@ -218,7 +246,10 @@ public class SetProcessor implements CommandProcessor {
       }
     } else if (varname.indexOf(HIVECONF_PREFIX) == 0) {
       String var = varname.substring(HIVECONF_PREFIX.length());
-      if (ss.getConf().get(var) != null) {
+      if (ss.getConf().isHiddenConfig(var)) {
+        ss.out.println(HIVECONF_PREFIX + var + " is a hidden config");
+        return createProcessorSuccessResponse();
+      } if (ss.getConf().get(var) != null) {
         ss.out.println(HIVECONF_PREFIX + var + "=" + ss.getConf().get(var));
         return createProcessorSuccessResponse();
       } else {
@@ -266,7 +297,22 @@ public class SetProcessor implements CommandProcessor {
     }
 
     if (nwcmd.equals("-v")) {
-      dumpOptions(ss.getConf().getAllProperties());
+      Properties properties = null;
+      if (ss.getConf().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        Class<?> clazz;
+        try {
+          clazz = Class.forName("org.apache.tez.dag.api.TezConfiguration");
+
+          Configuration tezConf =
+              (Configuration) clazz.getConstructor(Configuration.class).newInstance(ss.getConf());
+          properties = HiveConf.getProperties(tezConf);
+        } catch (Exception e) {
+          return new CommandProcessorResponse(1, e.getMessage(), "42000", e);
+        }
+      } else {
+        properties = ss.getConf().getAllProperties();
+      }
+      dumpOptions(properties);
       return createProcessorSuccessResponse();
     }
 

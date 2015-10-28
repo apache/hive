@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -49,13 +50,13 @@ import org.apache.hive.service.cli.session.HiveSession;
 public class HiveCommandOperation extends ExecuteStatementOperation {
   private CommandProcessor commandProcessor;
   private TableSchema resultSchema = null;
+  private boolean closeSessionStreams = true; // Only close file based streams, not System.out and System.err.
 
   /**
    * For processors other than Hive queries (Driver), they output to session.out (a temp file)
    * first and the fetchOne/fetchN/fetchAll functions get the output from pipeIn.
    */
   private BufferedReader resultReader;
-
 
   protected HiveCommandOperation(HiveSession parentSession, String statement,
       CommandProcessor commandProcessor, Map<String, String> confOverlay) {
@@ -66,19 +67,25 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
   private void setupSessionIO(SessionState sessionState) {
     try {
-      LOG.info("Putting temp output to file " + sessionState.getTmpOutputFile().toString());
+      LOG.info("Putting temp output to file " + sessionState.getTmpOutputFile().toString()
+          + " and error output to file " + sessionState.getTmpErrOutputFile().toString());
       sessionState.in = null; // hive server's session input stream is not used
-      // open a per-session file in auto-flush mode for writing temp results
-      sessionState.out = new PrintStream(new FileOutputStream(sessionState.getTmpOutputFile()), true, "UTF-8");
-      // TODO: for hadoop jobs, progress is printed out to session.err,
-      // we should find a way to feed back job progress to client
-      sessionState.err = new PrintStream(System.err, true, "UTF-8");
+      // open a per-session file in auto-flush mode for writing temp results and tmp error output
+      sessionState.out =
+          new PrintStream(new FileOutputStream(sessionState.getTmpOutputFile()), true, CharEncoding.UTF_8);
+      sessionState.err =
+          new PrintStream(new FileOutputStream(sessionState.getTmpErrOutputFile()), true,CharEncoding.UTF_8);
     } catch (IOException e) {
       LOG.error("Error in creating temp output file ", e);
+
+      // Close file streams to avoid resource leaking
+      IOUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
+      closeSessionStreams = false;
+
       try {
         sessionState.in = null;
-        sessionState.out = new PrintStream(System.out, true, "UTF-8");
-        sessionState.err = new PrintStream(System.err, true, "UTF-8");
+        sessionState.out = new PrintStream(System.out, true, CharEncoding.UTF_8);
+        sessionState.err = new PrintStream(System.err, true, CharEncoding.UTF_8);
       } catch (UnsupportedEncodingException ee) {
         LOG.error("Error creating PrintStream", e);
         ee.printStackTrace();
@@ -90,8 +97,9 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
 
   private void tearDownSessionIO() {
-    IOUtils.cleanup(LOG, parentSession.getSessionState().out);
-    IOUtils.cleanup(LOG, parentSession.getSessionState().err);
+    if (closeSessionStreams) {
+      IOUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
+    }
   }
 
   @Override
@@ -200,8 +208,8 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
   private void cleanTmpFile() {
     resetResultReader();
     SessionState sessionState = getParentSession().getSessionState();
-    File tmp = sessionState.getTmpOutputFile();
-    tmp.delete();
+    sessionState.deleteTmpOutputFile();
+    sessionState.deleteTmpErrOutputFile();
   }
 
   private void resetResultReader() {

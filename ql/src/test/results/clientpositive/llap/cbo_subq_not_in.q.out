@@ -1,0 +1,365 @@
+PREHOOK: query: -- 16. SubQueries Not In
+-- non agg, non corr
+select * 
+from src_cbo 
+where src_cbo.key not in  
+  ( select key  from src_cbo s1 
+    where s1.key > '2'
+  ) order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: -- 16. SubQueries Not In
+-- non agg, non corr
+select * 
+from src_cbo 
+where src_cbo.key not in  
+  ( select key  from src_cbo s1 
+    where s1.key > '2'
+  ) order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+12	val_12
+12	val_12
+120	val_120
+120	val_120
+125	val_125
+125	val_125
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+134	val_134
+134	val_134
+136	val_136
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+145	val_145
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+15	val_15
+15	val_15
+150	val_150
+152	val_152
+152	val_152
+153	val_153
+155	val_155
+156	val_156
+157	val_157
+158	val_158
+160	val_160
+162	val_162
+163	val_163
+164	val_164
+164	val_164
+165	val_165
+165	val_165
+166	val_166
+167	val_167
+167	val_167
+167	val_167
+168	val_168
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+17	val_17
+170	val_170
+172	val_172
+172	val_172
+174	val_174
+174	val_174
+175	val_175
+175	val_175
+176	val_176
+176	val_176
+177	val_177
+178	val_178
+179	val_179
+179	val_179
+18	val_18
+18	val_18
+180	val_180
+181	val_181
+183	val_183
+186	val_186
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+19	val_19
+190	val_190
+191	val_191
+191	val_191
+192	val_192
+193	val_193
+193	val_193
+193	val_193
+194	val_194
+195	val_195
+195	val_195
+196	val_196
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+2	val_2
+PREHOOK: query: -- non agg, corr
+select p_mfgr, b.p_name, p_size 
+from part b 
+where b.p_name not in 
+  (select p_name 
+  from (select p_mfgr, p_name, p_size as r from part) a 
+  where r < 10 and b.p_mfgr = a.p_mfgr 
+  ) order by p_mfgr,p_size
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- non agg, corr
+select p_mfgr, b.p_name, p_size 
+from part b 
+where b.p_name not in 
+  (select p_name 
+  from (select p_mfgr, p_name, p_size as r from part) a 
+  where r < 10 and b.p_mfgr = a.p_mfgr 
+  ) order by p_mfgr,p_size
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	almond aquamarine burnished black steel	28
+Manufacturer#1	almond antique chartreuse lavender yellow	34
+Manufacturer#1	almond aquamarine pink moccasin thistle	42
+Manufacturer#2	almond antique violet chocolate turquoise	14
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
+Manufacturer#2	almond aquamarine rose maroon antique	25
+Manufacturer#2	almond antique violet turquoise frosted	40
+Manufacturer#3	almond antique forest lavender goldenrod	14
+Manufacturer#3	almond antique chartreuse khaki white	17
+Manufacturer#3	almond antique metallic orange dim	19
+Manufacturer#3	almond antique olive coral navajo	45
+Manufacturer#4	almond antique gainsboro frosted violet	10
+Manufacturer#4	almond azure aquamarine papaya violet	12
+Manufacturer#4	almond aquamarine floral ivory bisque	27
+Manufacturer#4	almond antique violet mint lemon	39
+Manufacturer#5	almond azure blanched chiffon midnight	23
+Manufacturer#5	almond antique blue firebrick mint	31
+Manufacturer#5	almond aquamarine dodger light gainsboro	46
+PREHOOK: query: -- agg, non corr
+select p_name, p_size 
+from 
+part where part.p_size not in 
+  (select avg(p_size) 
+  from (select p_size from part) a 
+  where p_size < 10
+  ) order by p_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- agg, non corr
+select p_name, p_size 
+from 
+part where part.p_size not in 
+  (select avg(p_size) 
+  from (select p_size from part) a 
+  where p_size < 10
+  ) order by p_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+almond antique blue firebrick mint	31
+almond antique burnished rose metallic	2
+almond antique burnished rose metallic	2
+almond antique chartreuse khaki white	17
+almond antique chartreuse lavender yellow	34
+almond antique forest lavender goldenrod	14
+almond antique gainsboro frosted violet	10
+almond antique medium spring khaki	6
+almond antique metallic orange dim	19
+almond antique misty red olive	1
+almond antique olive coral navajo	45
+almond antique salmon chartreuse burlywood	6
+almond antique sky peru orange	2
+almond antique violet chocolate turquoise	14
+almond antique violet mint lemon	39
+almond antique violet turquoise frosted	40
+almond aquamarine burnished black steel	28
+almond aquamarine dodger light gainsboro	46
+almond aquamarine floral ivory bisque	27
+almond aquamarine midnight light salmon	2
+almond aquamarine pink moccasin thistle	42
+almond aquamarine rose maroon antique	25
+almond aquamarine sandy cyan gainsboro	18
+almond aquamarine yellow dodger mint	7
+almond azure aquamarine papaya violet	12
+almond azure blanched chiffon midnight	23
+PREHOOK: query: -- agg, corr
+select p_mfgr, p_name, p_size 
+from part b where b.p_size not in 
+  (select min(p_size) 
+  from (select p_mfgr, p_size from part) a 
+  where p_size < 10 and b.p_mfgr = a.p_mfgr
+  ) order by  p_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- agg, corr
+select p_mfgr, p_name, p_size 
+from part b where b.p_size not in 
+  (select min(p_size) 
+  from (select p_mfgr, p_size from part) a 
+  where p_size < 10 and b.p_mfgr = a.p_mfgr
+  ) order by  p_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#5	almond antique blue firebrick mint	31
+Manufacturer#3	almond antique chartreuse khaki white	17
+Manufacturer#1	almond antique chartreuse lavender yellow	34
+Manufacturer#3	almond antique forest lavender goldenrod	14
+Manufacturer#4	almond antique gainsboro frosted violet	10
+Manufacturer#5	almond antique medium spring khaki	6
+Manufacturer#3	almond antique metallic orange dim	19
+Manufacturer#3	almond antique olive coral navajo	45
+Manufacturer#1	almond antique salmon chartreuse burlywood	6
+Manufacturer#2	almond antique violet chocolate turquoise	14
+Manufacturer#4	almond antique violet mint lemon	39
+Manufacturer#2	almond antique violet turquoise frosted	40
+Manufacturer#1	almond aquamarine burnished black steel	28
+Manufacturer#5	almond aquamarine dodger light gainsboro	46
+Manufacturer#4	almond aquamarine floral ivory bisque	27
+Manufacturer#1	almond aquamarine pink moccasin thistle	42
+Manufacturer#2	almond aquamarine rose maroon antique	25
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
+Manufacturer#4	almond azure aquamarine papaya violet	12
+Manufacturer#5	almond azure blanched chiffon midnight	23
+PREHOOK: query: -- non agg, non corr, Group By in Parent Query
+select li.l_partkey, count(*) 
+from lineitem li 
+where li.l_linenumber = 1 and 
+  li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR') 
+group by li.l_partkey order by li.l_partkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: -- non agg, non corr, Group By in Parent Query
+select li.l_partkey, count(*) 
+from lineitem li 
+where li.l_linenumber = 1 and 
+  li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR') 
+group by li.l_partkey order by li.l_partkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+450	1
+7068	1
+21636	1
+22630	1
+59694	1
+61931	1
+85951	1
+88035	1
+88362	1
+106170	1
+119477	1
+119767	1
+123076	1
+139636	1
+175839	1
+182052	1
+PREHOOK: query: -- add null check test from sq_notin.q once HIVE-7721 resolved.
+
+-- non agg, corr, having
+select b.p_mfgr, min(p_retailprice) 
+from part b 
+group by b.p_mfgr
+having b.p_mfgr not in 
+  (select p_mfgr 
+  from (select p_mfgr, min(p_retailprice) l, max(p_retailprice) r, avg(p_retailprice) a from part group by p_mfgr) a 
+  where min(p_retailprice) = l and r - l > 600
+  )
+  order by b.p_mfgr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- add null check test from sq_notin.q once HIVE-7721 resolved.
+
+-- non agg, corr, having
+select b.p_mfgr, min(p_retailprice) 
+from part b 
+group by b.p_mfgr
+having b.p_mfgr not in 
+  (select p_mfgr 
+  from (select p_mfgr, min(p_retailprice) l, max(p_retailprice) r, avg(p_retailprice) a from part group by p_mfgr) a 
+  where min(p_retailprice) = l and r - l > 600
+  )
+  order by b.p_mfgr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15
+Manufacturer#2	1690.68
+PREHOOK: query: -- agg, non corr, having
+select b.p_mfgr, min(p_retailprice) 
+from part b 
+group by b.p_mfgr
+having b.p_mfgr not in 
+  (select p_mfgr 
+  from part a
+  group by p_mfgr
+  having max(p_retailprice) - min(p_retailprice) > 600
+  )
+  order by b.p_mfgr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- agg, non corr, having
+select b.p_mfgr, min(p_retailprice) 
+from part b 
+group by b.p_mfgr
+having b.p_mfgr not in 
+  (select p_mfgr 
+  from part a
+  group by p_mfgr
+  having max(p_retailprice) - min(p_retailprice) > 600
+  )
+  order by b.p_mfgr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15
+Manufacturer#2	1690.68

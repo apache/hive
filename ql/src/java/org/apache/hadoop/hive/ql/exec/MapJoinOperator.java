@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -76,7 +77,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
   private static final String CLASS_NAME = MapJoinOperator.class.getName();
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   private transient String cacheKey;
   private transient ObjectCache cache;
@@ -124,23 +125,19 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     this.hconf = hconf;
     unwrapContainer = new UnwrapRowContainer[conf.getTagLength()];
 
-    Collection<Future<?>> result = super.initializeOp(hconf);
-    if (result == null) {
-      result = new HashSet<Future<?>>();
-    }
+    super.initializeOp(hconf);
 
     int tagLen = conf.getTagLength();
 
     // On Tez only: The hash map might already be cached in the container we run
     // the task in. On MR: The cache is a no-op.
-    cacheKey = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID)
-      + "__HASH_MAP_"+this.getOperatorId()+"_container";
-
-    cache = ObjectCacheFactory.getCache(hconf);
+    String queryId = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID);
+    cacheKey = "HASH_MAP_" + this.getOperatorId() + "_container";
+    cache = ObjectCacheFactory.getCache(hconf, queryId);
     loader = getHashTableLoader(hconf);
 
     hashMapRowGetters = null;
@@ -177,12 +174,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
                   return loadHashTable(mapContext, mrContext);
                 }
               });
-      result.add(future);
+      asyncInitOperations.add(future);
     } else if (!isInputFileChangeSensitive(mapContext)) {
       loadHashTable(mapContext, mrContext);
       hashTblInitedOnce = true;
     }
-    return result;
   }
 
   @SuppressWarnings("unchecked")
@@ -201,8 +197,16 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
       if (!loadCalled && spilled) {
         // we can't use the cached table because it has spilled.
+
         loadHashTable(getExecContext(), MapredContext.get());
       } else {
+        if (LOG.isInfoEnabled()) {
+          String s = "Using tables from cache: [";
+          for (MapJoinTableContainer c : pair.getLeft()) {
+            s += ((c == null) ? "null" : c.getClass().getSimpleName()) + ", ";
+          }
+          LOG.info(s + "]");
+        }
         // let's use the table from the cache.
         mapJoinTables = pair.getLeft();
         mapJoinTableSerdes = pair.getRight();
@@ -427,7 +431,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
     } catch (Exception e) {
-      String msg = "Unexpected exception: " + e.getMessage();
+      String msg = "Unexpected exception from "
+          + this.getClass().getSimpleName() + " : " + e.getMessage();
       LOG.error(msg, e);
       throw new HiveException(msg, e);
     }

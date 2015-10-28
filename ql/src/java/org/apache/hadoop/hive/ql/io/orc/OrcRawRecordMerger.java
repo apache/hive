@@ -660,6 +660,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
   @Override
   public void close() throws IOException {
+    if (primary != null) {
+      primary.recordReader.close();
+    }
     for(ReaderPair pair: readers.values()) {
       pair.recordReader.close();
     }

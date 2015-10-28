@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -53,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
@@ -261,7 +264,8 @@ public class PartitionPruner implements Transform {
    * @param expr original partition pruning expression.
    * @return partition pruning expression that only contains partition columns.
    */
-  static private ExprNodeDesc compactExpr(ExprNodeDesc expr) {
+  @VisibleForTesting
+  static ExprNodeDesc compactExpr(ExprNodeDesc expr) {
     // If this is a constant boolean expression, return the value.
     if (expr == null) {
       return null;
@@ -297,40 +301,49 @@ public class PartitionPruner implements Transform {
             allTrue = false;
           }
         }
-
+        
+        if (allTrue) {
+          return new ExprNodeConstantDesc(Boolean.TRUE);
+        }
         if (newChildren.size() == 0) {
           return null;
         }
         if (newChildren.size() == 1) {
           return newChildren.get(0);
         }
-        if (allTrue) {
-          return new ExprNodeConstantDesc(Boolean.TRUE);
-        }
+
         // Nothing to compact, update expr with compacted children.
         ((ExprNodeGenericFuncDesc) expr).setChildren(newChildren);
       } else if (isOr) {
         // Non-partition expressions are converted to nulls.
         List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
         boolean allFalse = true;
+        boolean isNull = false;
         for (ExprNodeDesc child : children) {
           ExprNodeDesc compactChild = compactExpr(child);
           if (compactChild != null) {
             if (isTrueExpr(compactChild)) {
               return new ExprNodeConstantDesc(Boolean.TRUE);
             }
-            if (!isFalseExpr(compactChild)) {
+            if (!isNull && !isFalseExpr(compactChild)) {
               newChildren.add(compactChild);
               allFalse = false;
             }
           } else {
-            return null;
+            isNull = true;
           }
         }
 
+        if (isNull) {
+          return null;
+        }
         if (allFalse) {
           return new ExprNodeConstantDesc(Boolean.FALSE);
         }
+        if (newChildren.size() == 1) {
+          return newChildren.get(0);
+        }
+
         // Nothing to compact, update expr with compacted children.
         ((ExprNodeGenericFuncDesc) expr).setChildren(newChildren);
       }
@@ -400,7 +413,7 @@ public class PartitionPruner implements Transform {
       // Now filter.
       List<Partition> partitions = new ArrayList<Partition>();
       boolean hasUnknownPartitions = false;
-      PerfLogger perfLogger = PerfLogger.getPerfLogger();
+      PerfLogger perfLogger = SessionState.getPerfLogger();
       if (!doEvalClientSide) {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
         try {
@@ -432,7 +445,7 @@ public class PartitionPruner implements Transform {
   }
 
   private static Set<Partition> getAllPartitions(Table tab) throws HiveException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     Set<Partition> result = Hive.get().getAllPartitionsOf(tab);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
@@ -450,7 +463,7 @@ public class PartitionPruner implements Transform {
    */
   static private boolean pruneBySequentialScan(Table tab, List<Partition> partitions,
       ExprNodeGenericFuncDesc prunerExpr, HiveConf conf) throws HiveException, MetaException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
     List<String> partNames = Hive.get().getPartitionNames(

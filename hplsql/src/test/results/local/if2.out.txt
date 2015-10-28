@@ -1,0 +1,4 @@
+Ln:1 IF
+Ln:1 IF TRUE executed
+Ln:2 PRINT
+correct

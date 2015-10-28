@@ -88,7 +88,7 @@ public class Function {
     if (trace && ctx.parent.parent instanceof HplsqlParser.Expr_stmtContext) {
       trace(ctx, "FUNC " + name);      
     }
-    FuncCommand func = map.get(name);    
+    FuncCommand func = map.get(name.toUpperCase());    
     if (func != null) {
       func.run(ctx);
     }    
@@ -691,6 +691,10 @@ public class Function {
    */
   void evalInt(Long i) {
     exec.stackPush(new Var(i)); 
+  }
+  
+  void evalInt(int i) {
+    evalInt(new Long(i));
   }
   
   /**

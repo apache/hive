@@ -110,8 +110,8 @@ public class DemuxOperator extends Operator<DemuxDesc>
   private int[][] newChildOperatorsTag;
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     // A DemuxOperator should have at least one child
     if (childOperatorsArray.length == 0) {
       throw new HiveException(
@@ -183,7 +183,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
     if (isLogInfoEnabled) {
       LOG.info("newChildOperatorsTag " + Arrays.toString(newChildOperatorsTag));
     }
-    return result;
+
   }
 
   private int[] toArray(List<Integer> list) {

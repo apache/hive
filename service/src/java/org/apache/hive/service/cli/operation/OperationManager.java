@@ -26,6 +26,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -208,6 +211,14 @@ public class OperationManager extends AbstractService {
     Operation operation = removeOperation(opHandle);
     if (operation == null) {
       throw new HiveSQLException("Operation does not exist!");
+    }
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      try {
+        metrics.decrementCounter(MetricsConstant.OPEN_OPERATIONS);
+      } catch (Exception e) {
+        LOG.warn("Error Reporting close operation to Metrics system", e);
+      }
     }
     operation.close();
   }

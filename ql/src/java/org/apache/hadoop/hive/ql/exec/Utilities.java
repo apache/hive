@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
 import java.beans.ExceptionListener;
@@ -42,6 +40,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -58,6 +57,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -75,6 +75,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Deflater;
@@ -82,7 +83,6 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import org.antlr.runtime.CommonToken;
-import org.apache.calcite.util.ChunkList;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
@@ -103,6 +103,7 @@ import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -120,6 +121,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -160,6 +162,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
 import org.apache.hadoop.hive.ql.plan.api.Graph;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -196,6 +199,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
+import com.google.common.base.Preconditions;
 
 /**
  * Utilities.
@@ -247,13 +251,7 @@ public final class Utilities {
     // prevent instantiation
   }
 
-  private static ThreadLocal<Map<Path, BaseWork>> gWorkMap =
-      new ThreadLocal<Map<Path, BaseWork>>() {
-    @Override
-    protected Map<Path, BaseWork> initialValue() {
-      return new HashMap<Path, BaseWork>();
-    }
-  };
+  private static GlobalWorkMapFactory gWorkMap = new GlobalWorkMapFactory();
 
   private static final String CLASS_NAME = Utilities.class.getName();
   private static final Log LOG = LogFactory.getLog(CLASS_NAME);
@@ -315,13 +313,12 @@ public final class Utilities {
   public static Path setMergeWork(JobConf conf, MergeJoinWork mergeJoinWork, Path mrScratchDir,
       boolean useCache) {
     for (BaseWork baseWork : mergeJoinWork.getBaseWorkList()) {
-      String prefix = baseWork.getName();
-      setBaseWork(conf, baseWork, mrScratchDir, prefix + MERGE_PLAN_NAME, useCache);
+      setBaseWork(conf, baseWork, mrScratchDir, baseWork.getName() + MERGE_PLAN_NAME, useCache);
       String prefixes = conf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
       if (prefixes == null) {
-        prefixes = prefix;
+        prefixes = baseWork.getName();
       } else {
-        prefixes = prefixes + "," + prefix;
+        prefixes = prefixes + "," + baseWork.getName();
       }
       conf.set(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES, prefixes);
     }
@@ -362,7 +359,7 @@ public final class Utilities {
    */
   public static void setBaseWork(Configuration conf, String name, BaseWork work) {
     Path path = getPlanPath(conf, name);
-    gWorkMap.get().put(path, work);
+    gWorkMap.get(conf).put(path, work);
   }
 
   /**
@@ -393,7 +390,7 @@ public final class Utilities {
       path = getPlanPath(conf, name);
       LOG.info("PLAN PATH = " + path);
       assert path != null;
-      BaseWork gWork = gWorkMap.get().get(path);
+      BaseWork gWork = gWorkMap.get(conf).get(path);
       if (gWork == null) {
         Path localPath;
         if (conf.getBoolean("mapreduce.task.uberized", false) && name.equals(REDUCE_PLAN_NAME)) {
@@ -450,7 +447,7 @@ public final class Utilities {
             throw new RuntimeException("Unknown work type: " + name);
           }
         }
-        gWorkMap.get().put(path, gWork);
+        gWorkMap.get(conf).put(path, gWork);
       } else if (LOG.isDebugEnabled()) {
         LOG.debug("Found plan in cache for name: " + name);
       }
@@ -744,7 +741,7 @@ public final class Utilities {
       }
 
       // Cache the plan in this process
-      gWorkMap.get().put(planPath, w);
+      gWorkMap.get(conf).put(planPath, w);
       return planPath;
     } catch (Exception e) {
       String msg = "Error caching " + name + ": " + e;
@@ -936,7 +933,7 @@ public final class Utilities {
   }
 
   private static void serializePlan(Object plan, OutputStream out, Configuration conf, boolean cloningPlan) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
     String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
     LOG.info("Serializing " + plan.getClass().getSimpleName() + " via " + serializationType);
@@ -962,7 +959,7 @@ public final class Utilities {
   }
 
   private static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf, boolean cloningPlan) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
     T plan;
     String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
@@ -997,7 +994,7 @@ public final class Utilities {
    */
   public static MapredWork clonePlan(MapredWork plan) {
     // TODO: need proper clone. Meanwhile, let's at least keep this horror in one place
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     Configuration conf = new HiveConf();
@@ -1014,7 +1011,7 @@ public final class Utilities {
    * @return The clone.
    */
   public static BaseWork cloneBaseWork(BaseWork plan) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     Configuration conf = new HiveConf();
@@ -2530,7 +2527,7 @@ public final class Utilities {
    */
   public static ContentSummary getInputSummary(final Context ctx, MapWork work, PathFilter filter)
       throws IOException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
     long[] summary = {0, 0, 0};
@@ -3749,20 +3746,26 @@ public final class Utilities {
     return false;
   }
 
+  public static boolean isVectorMode(Configuration conf, MapWork mapWork) {
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
+        && mapWork.getVectorMode();
+  }
+
   public static void clearWorkMapForConf(Configuration conf) {
     // Remove cached query plans for the current query only
     Path mapPath = getPlanPath(conf, MAP_PLAN_NAME);
     Path reducePath = getPlanPath(conf, REDUCE_PLAN_NAME);
     if (mapPath != null) {
-      gWorkMap.get().remove(mapPath);
+      gWorkMap.get(conf).remove(mapPath);
     }
     if (reducePath != null) {
-      gWorkMap.get().remove(reducePath);
+      gWorkMap.get(conf).remove(reducePath);
     }
+    // TODO: should this also clean merge work?
   }
 
-  public static void clearWorkMap() {
-    gWorkMap.get().clear();
+  public static void clearWorkMap(Configuration conf) {
+    gWorkMap.get(conf).clear();
   }
 
   /**
@@ -3906,15 +3909,79 @@ public final class Utilities {
   }
 
   /**
-   * Strips Hive password details from configuration
+   * Returns the full path to the Jar containing the class. It always return a JAR.
+   *
+   * @param klass
+   *          class.
+   *
+   * @return path to the Jar containing the class.
    */
-  public static void stripHivePasswordDetails(Configuration conf) {
-    // Strip out all Hive related password information from the JobConf
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREPWD) != null) {
-      HiveConf.setVar(conf, HiveConf.ConfVars.METASTOREPWD, "");
+  @SuppressWarnings("rawtypes")
+  public static String jarFinderGetJar(Class klass) {
+    Preconditions.checkNotNull(klass, "klass");
+    ClassLoader loader = klass.getClassLoader();
+    if (loader != null) {
+      String class_file = klass.getName().replaceAll("\\.", "/") + ".class";
+      try {
+        for (Enumeration itr = loader.getResources(class_file); itr.hasMoreElements();) {
+          URL url = (URL) itr.nextElement();
+          String path = url.getPath();
+          if (path.startsWith("file:")) {
+            path = path.substring("file:".length());
+          }
+          path = URLDecoder.decode(path, "UTF-8");
+          if ("jar".equals(url.getProtocol())) {
+            path = URLDecoder.decode(path, "UTF-8");
+            return path.replaceAll("!.*$", "");
+          }
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD) != null) {
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD, "");
+    return null;
+  }
+
+  public static int getDPColOffset(FileSinkDesc conf) {
+
+    if (conf.getWriteType() == AcidUtils.Operation.DELETE) {
+      // For deletes, there is only ROW__ID in non-partitioning, non-bucketing columns.
+      //See : UpdateDeleteSemanticAnalyzer::reparseAndSuperAnalyze() for details.
+      return 1;
+    } else if (conf.getWriteType() == AcidUtils.Operation.UPDATE) {
+      // For updates, ROW__ID is an extra column at index 0.
+      //See : UpdateDeleteSemanticAnalyzer::reparseAndSuperAnalyze() for details.
+      return getColumnNames(conf.getTableInfo().getProperties()).size() + 1;
+    } else {
+      return getColumnNames(conf.getTableInfo().getProperties()).size();
     }
+
+  }
+  public static List<String> getStatsTmpDirs(BaseWork work, Configuration conf) {
+
+    List<String> statsTmpDirs = new ArrayList<>();
+    if (!StatsSetupConst.StatDB.fs.name().equalsIgnoreCase(HiveConf.getVar(conf, ConfVars.HIVESTATSDBCLASS))) {
+      // no-op for non-fs stats collection
+      return statsTmpDirs;
+    }
+    // if its auto-stats gather for inserts or CTAS, stats dir will be in FileSink
+    Set<Operator<? extends OperatorDesc>> ops = work.getAllLeafOperators();
+    if (work instanceof MapWork) {
+      // if its an anlayze statement, stats dir will be in TableScan
+      ops.addAll(work.getAllRootOperators());
+    }
+    for (Operator<? extends OperatorDesc> op : ops) {
+      OperatorDesc desc = op.getConf();
+      String statsTmpDir = null;
+      if (desc instanceof FileSinkDesc) {
+         statsTmpDir = ((FileSinkDesc)desc).getStatsTmpDir();
+      } else if (desc instanceof TableScanDesc) {
+        statsTmpDir = ((TableScanDesc) desc).getTmpStatsDir();
+      }
+      if (statsTmpDir != null && !statsTmpDir.isEmpty()) {
+        statsTmpDirs.add(statsTmpDir);
+      }
+    }
+    return statsTmpDirs;
   }
 }

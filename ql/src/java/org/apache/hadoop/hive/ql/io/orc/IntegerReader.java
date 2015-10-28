@@ -19,12 +19,13 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 
 /**
  * Interface for reading integers.
  */
-interface IntegerReader {
+public interface IntegerReader {
 
   /**
    * Seek to the position provided by index.
@@ -61,4 +62,6 @@ interface IntegerReader {
    */
    void nextVector(LongColumnVector previous, long previousLen)
       throws IOException;
+
+  void setInStream(InStream data);
 }

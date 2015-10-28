@@ -263,7 +263,7 @@ public class TezWork extends AbstractOperatorDesc {
 
   /*
    * Dependency is a class used for explain
-   */ 
+   */
   public class Dependency implements Serializable, Comparable<Dependency> {
     public BaseWork w;
     public EdgeType type;
@@ -272,7 +272,7 @@ public class TezWork extends AbstractOperatorDesc {
     public String getName() {
       return w.getName();
     }
-    
+
     @Explain(displayName = "Type")
     public String getType() {
       return type.toString();
@@ -306,7 +306,7 @@ public class TezWork extends AbstractOperatorDesc {
     }
     return result;
   }
-  
+
   private static final String MR_JAR_PROPERTY = "tmpjars";
   /**
    * Calls configureJobConf on instances of work that are part of this TezWork.
@@ -349,7 +349,7 @@ public class TezWork extends AbstractOperatorDesc {
   /**
    * connect adds an edge between a and b. Both nodes have
    * to be added prior to calling connect.
-   * @param  
+   * @param
    */
   public void connect(BaseWork a, BaseWork b,
       TezEdgeProperty edgeProp) {
@@ -395,5 +395,14 @@ public class TezWork extends AbstractOperatorDesc {
 
   public VertexType getVertexType(BaseWork w) {
     return workVertexTypeMap.get(w);
+  }
+
+  public boolean getLlapMode() {
+    for (BaseWork work : getAllWork()) {
+      if (work.getLlapMode()) {
+        return true;
+      }
+    }
+    return false;
   }
 }

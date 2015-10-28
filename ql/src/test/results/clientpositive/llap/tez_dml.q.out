@@ -1,0 +1,1526 @@
+PREHOOK: query: -- CTAS
+-- SORT_QUERY_RESULTS
+
+EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: -- CTAS
+-- SORT_QUERY_RESULTS
+
+EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2, Stage-0
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: value (type: string)
+                    outputColumnNames: value
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(value)
+                      keys: value (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: llap
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: bigint)
+                  sort order: +
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: uber
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.tmp_src
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+      Create Table Operator:
+        Create Table
+          columns: value string, cnt bigint
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: default.tmp_src
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_src
+POSTHOOK: query: CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_src
+PREHOOK: query: SELECT * FROM tmp_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM tmp_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_src
+#### A masked pattern was here ####
+val_0	3
+val_10	1
+val_100	2
+val_103	2
+val_104	2
+val_105	1
+val_11	1
+val_111	1
+val_113	2
+val_114	1
+val_116	1
+val_118	2
+val_119	3
+val_12	2
+val_120	2
+val_125	2
+val_126	1
+val_128	3
+val_129	2
+val_131	1
+val_133	1
+val_134	2
+val_136	1
+val_137	2
+val_138	4
+val_143	1
+val_145	1
+val_146	2
+val_149	2
+val_15	2
+val_150	1
+val_152	2
+val_153	1
+val_155	1
+val_156	1
+val_157	1
+val_158	1
+val_160	1
+val_162	1
+val_163	1
+val_164	2
+val_165	2
+val_166	1
+val_167	3
+val_168	1
+val_169	4
+val_17	1
+val_170	1
+val_172	2
+val_174	2
+val_175	2
+val_176	2
+val_177	1
+val_178	1
+val_179	2
+val_18	2
+val_180	1
+val_181	1
+val_183	1
+val_186	1
+val_187	3
+val_189	1
+val_19	1
+val_190	1
+val_191	2
+val_192	1
+val_193	3
+val_194	1
+val_195	2
+val_196	1
+val_197	2
+val_199	3
+val_2	1
+val_20	1
+val_200	2
+val_201	1
+val_202	1
+val_203	2
+val_205	2
+val_207	2
+val_208	3
+val_209	2
+val_213	2
+val_214	1
+val_216	2
+val_217	2
+val_218	1
+val_219	2
+val_221	2
+val_222	1
+val_223	2
+val_224	2
+val_226	1
+val_228	1
+val_229	2
+val_230	5
+val_233	2
+val_235	1
+val_237	2
+val_238	2
+val_239	2
+val_24	2
+val_241	1
+val_242	2
+val_244	1
+val_247	1
+val_248	1
+val_249	1
+val_252	1
+val_255	2
+val_256	2
+val_257	1
+val_258	1
+val_26	2
+val_260	1
+val_262	1
+val_263	1
+val_265	2
+val_266	1
+val_27	1
+val_272	2
+val_273	3
+val_274	1
+val_275	1
+val_277	4
+val_278	2
+val_28	1
+val_280	2
+val_281	2
+val_282	2
+val_283	1
+val_284	1
+val_285	1
+val_286	1
+val_287	1
+val_288	2
+val_289	1
+val_291	1
+val_292	1
+val_296	1
+val_298	3
+val_30	1
+val_302	1
+val_305	1
+val_306	1
+val_307	2
+val_308	1
+val_309	2
+val_310	1
+val_311	3
+val_315	1
+val_316	3
+val_317	2
+val_318	3
+val_321	2
+val_322	2
+val_323	1
+val_325	2
+val_327	3
+val_33	1
+val_331	2
+val_332	1
+val_333	2
+val_335	1
+val_336	1
+val_338	1
+val_339	1
+val_34	1
+val_341	1
+val_342	2
+val_344	2
+val_345	1
+val_348	5
+val_35	3
+val_351	1
+val_353	2
+val_356	1
+val_360	1
+val_362	1
+val_364	1
+val_365	1
+val_366	1
+val_367	2
+val_368	1
+val_369	3
+val_37	2
+val_373	1
+val_374	1
+val_375	1
+val_377	1
+val_378	1
+val_379	1
+val_382	2
+val_384	3
+val_386	1
+val_389	1
+val_392	1
+val_393	1
+val_394	1
+val_395	2
+val_396	3
+val_397	2
+val_399	2
+val_4	1
+val_400	1
+val_401	5
+val_402	1
+val_403	3
+val_404	2
+val_406	4
+val_407	1
+val_409	3
+val_41	1
+val_411	1
+val_413	2
+val_414	2
+val_417	3
+val_418	1
+val_419	1
+val_42	2
+val_421	1
+val_424	2
+val_427	1
+val_429	2
+val_43	1
+val_430	3
+val_431	3
+val_432	1
+val_435	1
+val_436	1
+val_437	1
+val_438	3
+val_439	2
+val_44	1
+val_443	1
+val_444	1
+val_446	1
+val_448	1
+val_449	1
+val_452	1
+val_453	1
+val_454	3
+val_455	1
+val_457	1
+val_458	2
+val_459	2
+val_460	1
+val_462	2
+val_463	2
+val_466	3
+val_467	1
+val_468	4
+val_469	5
+val_47	1
+val_470	1
+val_472	1
+val_475	1
+val_477	1
+val_478	2
+val_479	1
+val_480	3
+val_481	1
+val_482	1
+val_483	1
+val_484	1
+val_485	1
+val_487	1
+val_489	4
+val_490	1
+val_491	1
+val_492	2
+val_493	1
+val_494	1
+val_495	1
+val_496	1
+val_497	1
+val_498	3
+val_5	3
+val_51	2
+val_53	1
+val_54	1
+val_57	1
+val_58	2
+val_64	1
+val_65	1
+val_66	1
+val_67	2
+val_69	1
+val_70	3
+val_72	2
+val_74	1
+val_76	2
+val_77	1
+val_78	1
+val_8	1
+val_80	1
+val_82	1
+val_83	2
+val_84	2
+val_85	1
+val_86	1
+val_87	1
+val_9	1
+val_90	3
+val_92	1
+val_95	2
+val_96	1
+val_97	2
+val_98	2
+PREHOOK: query: -- dyn partitions
+CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_src_part
+POSTHOOK: query: -- dyn partitions
+CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_src_part
+PREHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tmp_src
+                  Statistics: Num rows: 309 Data size: 2718 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: value (type: string), cnt (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 309 Data size: 2718 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 309 Data size: 2718 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.tmp_src_part
+            Execution mode: llap
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            d 
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.tmp_src_part
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_src
+PREHOOK: Output: default@tmp_src_part
+POSTHOOK: query: INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_src
+POSTHOOK: Output: default@tmp_src_part@d=1
+POSTHOOK: Output: default@tmp_src_part@d=2
+POSTHOOK: Output: default@tmp_src_part@d=3
+POSTHOOK: Output: default@tmp_src_part@d=4
+POSTHOOK: Output: default@tmp_src_part@d=5
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=1).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=2).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=3).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=4).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp_src_part PARTITION(d=5).c SIMPLE [(tmp_src)tmp_src.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM tmp_src_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_src_part
+PREHOOK: Input: default@tmp_src_part@d=1
+PREHOOK: Input: default@tmp_src_part@d=2
+PREHOOK: Input: default@tmp_src_part@d=3
+PREHOOK: Input: default@tmp_src_part@d=4
+PREHOOK: Input: default@tmp_src_part@d=5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM tmp_src_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_src_part
+POSTHOOK: Input: default@tmp_src_part@d=1
+POSTHOOK: Input: default@tmp_src_part@d=2
+POSTHOOK: Input: default@tmp_src_part@d=3
+POSTHOOK: Input: default@tmp_src_part@d=4
+POSTHOOK: Input: default@tmp_src_part@d=5
+#### A masked pattern was here ####
+val_0	3
+val_10	1
+val_100	2
+val_103	2
+val_104	2
+val_105	1
+val_11	1
+val_111	1
+val_113	2
+val_114	1
+val_116	1
+val_118	2
+val_119	3
+val_12	2
+val_120	2
+val_125	2
+val_126	1
+val_128	3
+val_129	2
+val_131	1
+val_133	1
+val_134	2
+val_136	1
+val_137	2
+val_138	4
+val_143	1
+val_145	1
+val_146	2
+val_149	2
+val_15	2
+val_150	1
+val_152	2
+val_153	1
+val_155	1
+val_156	1
+val_157	1
+val_158	1
+val_160	1
+val_162	1
+val_163	1
+val_164	2
+val_165	2
+val_166	1
+val_167	3
+val_168	1
+val_169	4
+val_17	1
+val_170	1
+val_172	2
+val_174	2
+val_175	2
+val_176	2
+val_177	1
+val_178	1
+val_179	2
+val_18	2
+val_180	1
+val_181	1
+val_183	1
+val_186	1
+val_187	3
+val_189	1
+val_19	1
+val_190	1
+val_191	2
+val_192	1
+val_193	3
+val_194	1
+val_195	2
+val_196	1
+val_197	2
+val_199	3
+val_2	1
+val_20	1
+val_200	2
+val_201	1
+val_202	1
+val_203	2
+val_205	2
+val_207	2
+val_208	3
+val_209	2
+val_213	2
+val_214	1
+val_216	2
+val_217	2
+val_218	1
+val_219	2
+val_221	2
+val_222	1
+val_223	2
+val_224	2
+val_226	1
+val_228	1
+val_229	2
+val_230	5
+val_233	2
+val_235	1
+val_237	2
+val_238	2
+val_239	2
+val_24	2
+val_241	1
+val_242	2
+val_244	1
+val_247	1
+val_248	1
+val_249	1
+val_252	1
+val_255	2
+val_256	2
+val_257	1
+val_258	1
+val_26	2
+val_260	1
+val_262	1
+val_263	1
+val_265	2
+val_266	1
+val_27	1
+val_272	2
+val_273	3
+val_274	1
+val_275	1
+val_277	4
+val_278	2
+val_28	1
+val_280	2
+val_281	2
+val_282	2
+val_283	1
+val_284	1
+val_285	1
+val_286	1
+val_287	1
+val_288	2
+val_289	1
+val_291	1
+val_292	1
+val_296	1
+val_298	3
+val_30	1
+val_302	1
+val_305	1
+val_306	1
+val_307	2
+val_308	1
+val_309	2
+val_310	1
+val_311	3
+val_315	1
+val_316	3
+val_317	2
+val_318	3
+val_321	2
+val_322	2
+val_323	1
+val_325	2
+val_327	3
+val_33	1
+val_331	2
+val_332	1
+val_333	2
+val_335	1
+val_336	1
+val_338	1
+val_339	1
+val_34	1
+val_341	1
+val_342	2
+val_344	2
+val_345	1
+val_348	5
+val_35	3
+val_351	1
+val_353	2
+val_356	1
+val_360	1
+val_362	1
+val_364	1
+val_365	1
+val_366	1
+val_367	2
+val_368	1
+val_369	3
+val_37	2
+val_373	1
+val_374	1
+val_375	1
+val_377	1
+val_378	1
+val_379	1
+val_382	2
+val_384	3
+val_386	1
+val_389	1
+val_392	1
+val_393	1
+val_394	1
+val_395	2
+val_396	3
+val_397	2
+val_399	2
+val_4	1
+val_400	1
+val_401	5
+val_402	1
+val_403	3
+val_404	2
+val_406	4
+val_407	1
+val_409	3
+val_41	1
+val_411	1
+val_413	2
+val_414	2
+val_417	3
+val_418	1
+val_419	1
+val_42	2
+val_421	1
+val_424	2
+val_427	1
+val_429	2
+val_43	1
+val_430	3
+val_431	3
+val_432	1
+val_435	1
+val_436	1
+val_437	1
+val_438	3
+val_439	2
+val_44	1
+val_443	1
+val_444	1
+val_446	1
+val_448	1
+val_449	1
+val_452	1
+val_453	1
+val_454	3
+val_455	1
+val_457	1
+val_458	2
+val_459	2
+val_460	1
+val_462	2
+val_463	2
+val_466	3
+val_467	1
+val_468	4
+val_469	5
+val_47	1
+val_470	1
+val_472	1
+val_475	1
+val_477	1
+val_478	2
+val_479	1
+val_480	3
+val_481	1
+val_482	1
+val_483	1
+val_484	1
+val_485	1
+val_487	1
+val_489	4
+val_490	1
+val_491	1
+val_492	2
+val_493	1
+val_494	1
+val_495	1
+val_496	1
+val_497	1
+val_498	3
+val_5	3
+val_51	2
+val_53	1
+val_54	1
+val_57	1
+val_58	2
+val_64	1
+val_65	1
+val_66	1
+val_67	2
+val_69	1
+val_70	3
+val_72	2
+val_74	1
+val_76	2
+val_77	1
+val_78	1
+val_8	1
+val_80	1
+val_82	1
+val_83	2
+val_84	2
+val_85	1
+val_86	1
+val_87	1
+val_9	1
+val_90	3
+val_92	1
+val_95	2
+val_96	1
+val_97	2
+val_98	2
+PREHOOK: query: -- multi insert
+CREATE TABLE even (c int, d string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@even
+POSTHOOK: query: -- multi insert
+CREATE TABLE even (c int, d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@even
+PREHOOK: query: CREATE TABLE odd (c int, d string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@odd
+POSTHOOK: query: CREATE TABLE odd (c int, d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@odd
+PREHOOK: query: EXPLAIN
+FROM src
+INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 
+INSERT INTO TABLE odd SELECT key, value WHERE key % 2 = 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 
+INSERT INTO TABLE odd SELECT key, value WHERE key % 2 = 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((key % 2) = 0) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: UDFToInteger(key) (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.even
+                  Filter Operator
+                    predicate: ((key % 2) = 1) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: UDFToInteger(key) (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.odd
+            Execution mode: llap
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.even
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.odd
+
+  Stage: Stage-5
+    Stats-Aggr Operator
+
+PREHOOK: query: FROM src
+INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 
+INSERT INTO TABLE odd SELECT key, value WHERE key % 2 = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@even
+PREHOOK: Output: default@odd
+POSTHOOK: query: FROM src
+INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 
+INSERT INTO TABLE odd SELECT key, value WHERE key % 2 = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@even
+POSTHOOK: Output: default@odd
+POSTHOOK: Lineage: even.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: even.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: odd.c EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: odd.d SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM even
+PREHOOK: type: QUERY
+PREHOOK: Input: default@even
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM even
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@even
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+104	val_104
+104	val_104
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+12	val_12
+12	val_12
+120	val_120
+120	val_120
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+134	val_134
+134	val_134
+136	val_136
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+146	val_146
+146	val_146
+150	val_150
+152	val_152
+152	val_152
+156	val_156
+158	val_158
+160	val_160
+162	val_162
+164	val_164
+164	val_164
+166	val_166
+168	val_168
+170	val_170
+172	val_172
+172	val_172
+174	val_174
+174	val_174
+176	val_176
+176	val_176
+178	val_178
+18	val_18
+18	val_18
+180	val_180
+186	val_186
+190	val_190
+192	val_192
+194	val_194
+196	val_196
+2	val_2
+20	val_20
+200	val_200
+200	val_200
+202	val_202
+208	val_208
+208	val_208
+208	val_208
+214	val_214
+216	val_216
+216	val_216
+218	val_218
+222	val_222
+224	val_224
+224	val_224
+226	val_226
+228	val_228
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+238	val_238
+238	val_238
+24	val_24
+24	val_24
+242	val_242
+242	val_242
+244	val_244
+248	val_248
+252	val_252
+256	val_256
+256	val_256
+258	val_258
+26	val_26
+26	val_26
+260	val_260
+262	val_262
+266	val_266
+272	val_272
+272	val_272
+274	val_274
+278	val_278
+278	val_278
+28	val_28
+280	val_280
+280	val_280
+282	val_282
+282	val_282
+284	val_284
+286	val_286
+288	val_288
+288	val_288
+292	val_292
+296	val_296
+298	val_298
+298	val_298
+298	val_298
+30	val_30
+302	val_302
+306	val_306
+308	val_308
+310	val_310
+316	val_316
+316	val_316
+316	val_316
+318	val_318
+318	val_318
+318	val_318
+322	val_322
+322	val_322
+332	val_332
+336	val_336
+338	val_338
+34	val_34
+342	val_342
+342	val_342
+344	val_344
+344	val_344
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+356	val_356
+360	val_360
+362	val_362
+364	val_364
+366	val_366
+368	val_368
+374	val_374
+378	val_378
+382	val_382
+382	val_382
+384	val_384
+384	val_384
+384	val_384
+386	val_386
+392	val_392
+394	val_394
+396	val_396
+396	val_396
+396	val_396
+4	val_4
+400	val_400
+402	val_402
+404	val_404
+404	val_404
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+414	val_414
+414	val_414
+418	val_418
+42	val_42
+42	val_42
+424	val_424
+424	val_424
+430	val_430
+430	val_430
+430	val_430
+432	val_432
+436	val_436
+438	val_438
+438	val_438
+438	val_438
+44	val_44
+444	val_444
+446	val_446
+448	val_448
+452	val_452
+454	val_454
+454	val_454
+454	val_454
+458	val_458
+458	val_458
+460	val_460
+462	val_462
+462	val_462
+466	val_466
+466	val_466
+466	val_466
+468	val_468
+468	val_468
+468	val_468
+468	val_468
+470	val_470
+472	val_472
+478	val_478
+478	val_478
+480	val_480
+480	val_480
+480	val_480
+482	val_482
+484	val_484
+490	val_490
+492	val_492
+492	val_492
+494	val_494
+496	val_496
+498	val_498
+498	val_498
+498	val_498
+54	val_54
+58	val_58
+58	val_58
+64	val_64
+66	val_66
+70	val_70
+70	val_70
+70	val_70
+72	val_72
+72	val_72
+74	val_74
+76	val_76
+76	val_76
+78	val_78
+8	val_8
+80	val_80
+82	val_82
+84	val_84
+84	val_84
+86	val_86
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+96	val_96
+98	val_98
+98	val_98
+PREHOOK: query: SELECT * FROM odd
+PREHOOK: type: QUERY
+PREHOOK: Input: default@odd
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM odd
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@odd
+#### A masked pattern was here ####
+103	val_103
+103	val_103
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+119	val_119
+119	val_119
+119	val_119
+125	val_125
+125	val_125
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+137	val_137
+137	val_137
+143	val_143
+145	val_145
+149	val_149
+149	val_149
+15	val_15
+15	val_15
+153	val_153
+155	val_155
+157	val_157
+163	val_163
+165	val_165
+165	val_165
+167	val_167
+167	val_167
+167	val_167
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+17	val_17
+175	val_175
+175	val_175
+177	val_177
+179	val_179
+179	val_179
+181	val_181
+183	val_183
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+19	val_19
+191	val_191
+191	val_191
+193	val_193
+193	val_193
+193	val_193
+195	val_195
+195	val_195
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+201	val_201
+203	val_203
+203	val_203
+205	val_205
+205	val_205
+207	val_207
+207	val_207
+209	val_209
+209	val_209
+213	val_213
+213	val_213
+217	val_217
+217	val_217
+219	val_219
+219	val_219
+221	val_221
+221	val_221
+223	val_223
+223	val_223
+229	val_229
+229	val_229
+233	val_233
+233	val_233
+235	val_235
+237	val_237
+237	val_237
+239	val_239
+239	val_239
+241	val_241
+247	val_247
+249	val_249
+255	val_255
+255	val_255
+257	val_257
+263	val_263
+265	val_265
+265	val_265
+27	val_27
+273	val_273
+273	val_273
+273	val_273
+275	val_275
+277	val_277
+277	val_277
+277	val_277
+277	val_277
+281	val_281
+281	val_281
+283	val_283
+285	val_285
+287	val_287
+289	val_289
+291	val_291
+305	val_305
+307	val_307
+307	val_307
+309	val_309
+309	val_309
+311	val_311
+311	val_311
+311	val_311
+315	val_315
+317	val_317
+317	val_317
+321	val_321
+321	val_321
+323	val_323
+325	val_325
+325	val_325
+327	val_327
+327	val_327
+327	val_327
+33	val_33
+331	val_331
+331	val_331
+333	val_333
+333	val_333
+335	val_335
+339	val_339
+341	val_341
+345	val_345
+35	val_35
+35	val_35
+35	val_35
+351	val_351
+353	val_353
+353	val_353
+365	val_365
+367	val_367
+367	val_367
+369	val_369
+369	val_369
+369	val_369
+37	val_37
+37	val_37
+373	val_373
+375	val_375
+377	val_377
+379	val_379
+389	val_389
+393	val_393
+395	val_395
+395	val_395
+397	val_397
+397	val_397
+399	val_399
+399	val_399
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+403	val_403
+403	val_403
+403	val_403
+407	val_407
+409	val_409
+409	val_409
+409	val_409
+41	val_41
+411	val_411
+413	val_413
+413	val_413
+417	val_417
+417	val_417
+417	val_417
+419	val_419
+421	val_421
+427	val_427
+429	val_429
+429	val_429
+43	val_43
+431	val_431
+431	val_431
+431	val_431
+435	val_435
+437	val_437
+439	val_439
+439	val_439
+443	val_443
+449	val_449
+453	val_453
+455	val_455
+457	val_457
+459	val_459
+459	val_459
+463	val_463
+463	val_463
+467	val_467
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+47	val_47
+475	val_475
+477	val_477
+479	val_479
+481	val_481
+483	val_483
+485	val_485
+487	val_487
+489	val_489
+489	val_489
+489	val_489
+489	val_489
+491	val_491
+493	val_493
+495	val_495
+497	val_497
+5	val_5
+5	val_5
+5	val_5
+51	val_51
+51	val_51
+53	val_53
+57	val_57
+65	val_65
+67	val_67
+67	val_67
+69	val_69
+77	val_77
+83	val_83
+83	val_83
+85	val_85
+87	val_87
+9	val_9
+95	val_95
+95	val_95
+97	val_97
+97	val_97
+PREHOOK: query: -- create empty table
+CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@tmp_src_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty
+POSTHOOK: query: -- create empty table
+CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@tmp_src_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty
+PREHOOK: query: SELECT * FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+#### A masked pattern was here ####
+PREHOOK: query: -- drop the tables
+DROP TABLE even
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@even
+PREHOOK: Output: default@even
+POSTHOOK: query: -- drop the tables
+DROP TABLE even
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@even
+POSTHOOK: Output: default@even
+PREHOOK: query: DROP TABLE odd
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@odd
+PREHOOK: Output: default@odd
+POSTHOOK: query: DROP TABLE odd
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@odd
+POSTHOOK: Output: default@odd
+PREHOOK: query: DROP TABLE tmp_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_src
+PREHOOK: Output: default@tmp_src
+POSTHOOK: query: DROP TABLE tmp_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_src
+POSTHOOK: Output: default@tmp_src
+PREHOOK: query: DROP TABLE tmp_src_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_src_part
+PREHOOK: Output: default@tmp_src_part
+POSTHOOK: query: DROP TABLE tmp_src_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_src_part
+POSTHOOK: Output: default@tmp_src_part

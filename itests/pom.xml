@@ -40,16 +40,11 @@
    <module>qtest</module>
    <module>qtest-accumulo</module>
    <module>hive-jmh</module>
+   <module>hive-unit-hadoop2</module>
+   <module>hive-minikdc</module>
   </modules>
 
   <profiles>
-    <profile>
-      <id>hadoop-2</id>
-      <modules>
-        <module>hive-unit-hadoop2</module>
-        <module>hive-minikdc</module>
-      </modules>
-    </profile>
     <profile>
       <id>spark-test</id>
       <activation>

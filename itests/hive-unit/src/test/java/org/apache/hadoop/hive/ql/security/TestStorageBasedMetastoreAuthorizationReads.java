@@ -28,13 +28,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Test cases focusing on drop table permission checks
+ * Test cases focusing on read table permission checks
  */
 public class TestStorageBasedMetastoreAuthorizationReads extends StorageBasedMetastoreTestBase {
 
   @Test
   public void testReadTableSuccess() throws Exception {
     readTableByOtherUser("-rwxrwxrwx", true);
+  }
+
+  @Test
+  public void testReadTableSuccessWithReadOnly() throws Exception {
+    readTableByOtherUser("-r--r--r--", true);
   }
 
   @Test

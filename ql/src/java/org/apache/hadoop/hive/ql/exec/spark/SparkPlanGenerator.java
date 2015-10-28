@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -35,6 +33,7 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -46,31 +45,40 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import com.google.common.base.Preconditions;
 
 @SuppressWarnings("rawtypes")
 public class SparkPlanGenerator {
   private static final String CLASS_NAME = SparkPlanGenerator.class.getName();
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final Log LOG = LogFactory.getLog(SparkPlanGenerator.class);
 
-  private JavaSparkContext sc;
+  private final JavaSparkContext sc;
   private final JobConf jobConf;
-  private Context context;
-  private Path scratchDir;
-  private SparkReporter sparkReporter;
+  private final Context context;
+  private final Path scratchDir;
+  private final SparkReporter sparkReporter;
   private Map<BaseWork, BaseWork> cloneToWork;
   private final Map<BaseWork, SparkTran> workToTranMap;
   private final Map<BaseWork, SparkTran> workToParentWorkTranMap;
@@ -114,7 +122,7 @@ public class SparkPlanGenerator {
     } finally {
       // clear all ThreadLocal cached MapWork/ReduceWork after plan generation
       // as this may executed in a pool thread.
-      Utilities.clearWorkMap();
+      Utilities.clearWorkMap(jobConf);
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
@@ -285,8 +293,7 @@ public class SparkPlanGenerator {
     // Make sure we'll use a different plan path from the original one
     HiveConf.setVar(cloned, HiveConf.ConfVars.PLAN, "");
     try {
-      cloned.setPartitionerClass((Class<? extends Partitioner>)
-          JavaUtils.loadClass(HiveConf.getVar(cloned, HiveConf.ConfVars.HIVEPARTITIONER)));
+      cloned.setPartitionerClass(JavaUtils.loadClass(HiveConf.getVar(cloned, HiveConf.ConfVars.HIVEPARTITIONER)));
     } catch (ClassNotFoundException e) {
       String msg = "Could not find partitioner class: " + e.getMessage()
         + " which is specified by: " + HiveConf.ConfVars.HIVEPARTITIONER.varname;
@@ -330,7 +337,9 @@ public class SparkPlanGenerator {
       StatsFactory factory = StatsFactory.newFactory(jobConf);
       if (factory != null) {
         statsPublisher = factory.getStatsPublisher();
-        if (!statsPublisher.init(jobConf)) { // creating stats table if not exists
+        StatsCollectionContext sc = new StatsCollectionContext(jobConf);
+        sc.setStatsTmpDirs(Utilities.getStatsTmpDirs(work, jobConf));
+        if (!statsPublisher.init(sc)) { // creating stats table if not exists
           if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
             throw new HiveException(
                 ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());

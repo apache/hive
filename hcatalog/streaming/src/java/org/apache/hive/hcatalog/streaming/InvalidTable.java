@@ -27,4 +27,12 @@ public class InvalidTable extends StreamingException {
   public InvalidTable(String db, String table) {
     super(makeMsg(db,table), null);
   }
+
+  public InvalidTable(String db, String table, String msg) {
+    super(msg);
+  }
+
+  public InvalidTable(String db, String table, Exception inner) {
+    super(inner.getMessage(), inner);
+  }
 }

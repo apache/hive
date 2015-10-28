@@ -292,6 +292,7 @@ public abstract class TaskCompiler {
     Interner<TableDesc> interner = Interners.newStrongInterner();
     for (Task<? extends Serializable> rootTask : rootTasks) {
       GenMapRedUtils.internTableDesc(rootTask, interner);
+      GenMapRedUtils.deriveFinalExplainAttributes(rootTask, pCtx.getConf());
     }
   }
 

@@ -220,14 +220,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypes_orc
-            Statistics: Num rows: 88 Data size: 1772 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 88 Data size: 1766 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 88 Data size: 1772 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 88 Data size: 1766 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 88 Data size: 1772 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 88 Data size: 1766 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

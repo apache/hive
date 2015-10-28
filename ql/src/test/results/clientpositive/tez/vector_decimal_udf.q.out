@@ -1672,6 +1672,7 @@ STAGE PLANS:
                     Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: decimal(38,23)), _col2 (type: decimal(24,14)), _col3 (type: decimal(30,10))
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,23)), VALUE._col1 (type: decimal(24,14)), VALUE._col2 (type: decimal(30,10))
@@ -1684,7 +1685,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -2567,6 +2567,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -2580,7 +2581,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -2634,6 +2634,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -2647,7 +2648,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -2701,6 +2701,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2714,7 +2715,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
+
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -49,6 +51,31 @@ public class NullUtil {
       for (int i = 0; i != n; i++) {
         if(v.isNull[i]) {
           v.vector[i] = LongColumnVector.NULL_VALUE;
+        }
+      }
+    }
+  }
+
+  /**
+   * Set the data value for all NULL entries to the designated NULL_VALUE.
+   */
+  public static void setNullDataEntriesBytes(
+      BytesColumnVector v, boolean selectedInUse, int[] sel, int n) {
+    if (v.noNulls) {
+      return;
+    } else if (v.isRepeating && v.isNull[0]) {
+      v.vector[0] = null;
+    } else if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if(v.isNull[i]) {
+          v.vector[i] = null;
+        }
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        if(v.isNull[i]) {
+          v.vector[i] = null;
         }
       }
     }

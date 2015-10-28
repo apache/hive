@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -53,6 +54,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.tez.client.TezClient;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -77,11 +79,14 @@ import org.json.JSONObject;
 public class TezTask extends Task<TezWork> {
 
   private static final String CLASS_NAME = TezTask.class.getName();
-  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   private TezCounters counters;
 
   private final DagUtils utils;
+
+  Map<BaseWork, Vertex> workToVertex = new HashMap<BaseWork, Vertex>();
+  Map<BaseWork, JobConf> workToConf = new HashMap<BaseWork, JobConf>();
 
   public TezTask() {
     this(DagUtils.getInstance());
@@ -115,7 +120,9 @@ public class TezTask extends Task<TezWork> {
       // Need to remove this static hack. But this is the way currently to get a session.
       SessionState ss = SessionState.get();
       session = ss.getTezSession();
-      session = TezSessionPoolManager.getInstance().getSession(session, conf, false);
+      session =
+          TezSessionPoolManager.getInstance().getSession(session, conf, false,
+              getWork().getLlapMode());
       ss.setTezSession(session);
 
       // jobConf will hold all the configuration for hadoop, tez, and hive
@@ -165,7 +172,7 @@ public class TezTask extends Task<TezWork> {
           additionalLr, inputOutputJars, inputOutputLocalResources);
 
       // finally monitor will print progress until the job is done
-      TezJobMonitor monitor = new TezJobMonitor();
+      TezJobMonitor monitor = new TezJobMonitor(work.getWorkMap());
       rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf, dag);
       if (rc != 0) {
         this.setException(new HiveException(monitor.getDiagnostics()));
@@ -180,7 +187,7 @@ public class TezTask extends Task<TezWork> {
         LOG.error("Failed to get counters: " + err, err);
         counters = null;
       }
-      TezSessionPoolManager.getInstance().returnSession(session);
+      TezSessionPoolManager.getInstance().returnSession(session, getWork().getLlapMode());
 
       if (LOG.isInfoEnabled() && counters != null
           && (conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
@@ -197,6 +204,15 @@ public class TezTask extends Task<TezWork> {
       // rc will be 1 at this point indicating failure.
     } finally {
       Utilities.clearWork(conf);
+
+      // Clear gWorkMap
+      for (BaseWork w : work.getAllWork()) {
+        JobConf workCfg = workToConf.get(w);
+        if (workCfg != null) {
+          Utilities.clearWorkMapForConf(workCfg);
+        }
+      }
+
       if (cleanContext) {
         try {
           ctx.clear();
@@ -239,7 +255,8 @@ public class TezTask extends Task<TezWork> {
     final boolean missingLocalResources = !session
         .hasResources(inputOutputJars);
 
-    if (!session.isOpen()) {
+    TezClient client = session.getSession();
+    if (client == null) {
       // can happen if the user sets the tez flag after the session was
       // established
       LOG.info("Tez session hasn't been created yet. Opening session");
@@ -251,7 +268,7 @@ public class TezTask extends Task<TezWork> {
       if (missingLocalResources) {
         LOG.info("Tez session missing resources," +
             " adding additional necessary resources");
-        session.getSession().addAppMasterLocalFiles(extraResources);
+        client.addAppMasterLocalFiles(extraResources);
       }
 
       session.refreshLocalResourcesFromConf(conf);
@@ -276,8 +293,6 @@ public class TezTask extends Task<TezWork> {
       throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
-    Map<BaseWork, Vertex> workToVertex = new HashMap<BaseWork, Vertex>();
-    Map<BaseWork, JobConf> workToConf = new HashMap<BaseWork, JobConf>();
 
     // getAllWork returns a topologically sorted list, which we use to make
     // sure that vertices are created before they are used in edges.
@@ -371,6 +386,8 @@ public class TezTask extends Task<TezWork> {
         }
       }
     }
+    // Clear the work map after build. TODO: remove caching instead?
+    Utilities.clearWorkMap(conf);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     return dag;
   }
@@ -406,17 +423,33 @@ public class TezTask extends Task<TezWork> {
     }
 
     try {
-      // ready to start execution on the cluster
-      sessionState.getSession().addAppMasterLocalFiles(resourceMap);
-      dagClient = sessionState.getSession().submitDAG(dag);
-    } catch (SessionNotRunning nr) {
-      console.printInfo("Tez session was closed. Reopening...");
+      try {
+        // ready to start execution on the cluster
+        sessionState.getSession().addAppMasterLocalFiles(resourceMap);
+        dagClient = sessionState.getSession().submitDAG(dag);
+      } catch (SessionNotRunning nr) {
+        console.printInfo("Tez session was closed. Reopening...");
 
-      // close the old one, but keep the tmp files around
-      TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars, true);
-      console.printInfo("Session re-established.");
+        // close the old one, but keep the tmp files around
+        TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars,
+            true);
+        console.printInfo("Session re-established.");
 
-      dagClient = sessionState.getSession().submitDAG(dag);
+        dagClient = sessionState.getSession().submitDAG(dag);
+      }
+    } catch (Exception e) {
+      // In case of any other exception, retry. If this also fails, report original error and exit.
+      try {
+        TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars,
+            true);
+        console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
+            + Arrays.toString(e.getStackTrace()) + " retrying...");
+        dagClient = sessionState.getSession().submitDAG(dag);
+      } catch (Exception retryException) {
+        // we failed to submit after retrying. Destroy session and bail.
+        TezSessionPoolManager.getInstance().destroySession(sessionState);
+        throw retryException;
+      }
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);

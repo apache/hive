@@ -25,8 +25,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 
@@ -192,8 +190,6 @@ public enum ErrorMsg {
   UNARCHIVE_ON_MULI_PARTS(10109, "ARCHIVE can only be run on a single partition"),
   ARCHIVE_ON_TABLE(10110, "ARCHIVE can only be run on partitions"),
   RESERVED_PART_VAL(10111, "Partition value contains a reserved substring"),
-  HOLD_DDLTIME_ON_NONEXIST_PARTITIONS(10112, "HOLD_DDLTIME hint cannot be applied to dynamic " +
-                                      "partitions or non-existent partitions"),
   OFFLINE_TABLE_OR_PARTITION(10113, "Query against an offline table or partition"),
   OUTERJOIN_USES_FILTERS(10114, "The query results could be wrong. " +
                          "Turn on hive.outerjoin.supports.filters"),
@@ -432,7 +428,7 @@ public enum ErrorMsg {
   UPDATE_CANNOT_UPDATE_BUCKET_VALUE(10302, "Updating values of bucketing columns is not supported.  Column {0}.", true),
   IMPORT_INTO_STRICT_REPL_TABLE(10303,"Non-repl import disallowed against table that is a destination of replication."),
   CTAS_LOCATION_NONEMPTY(10304, "CREATE-TABLE-AS-SELECT cannot create table with location to a non-empty directory."),
-
+  CTAS_CREATES_VOID_TYPE(10305, "CREATE-TABLE-AS-SELECT creates a VOID type, please use CAST to specify the type, near field: "),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

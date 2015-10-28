@@ -19,14 +19,11 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class DynamicPartitionCtx implements Serializable {
@@ -42,8 +39,6 @@ public class DynamicPartitionCtx implements Serializable {
   private String spPath;   // path name corresponding to SP columns
   private Path rootPath; // the root path DP columns paths start from
   private int numBuckets;  // number of buckets in each partition
-
-  private Map<String, String> inputToDPCols; // mapping from input column names to DP columns
 
   private List<String> spNames; // sp column names
   private List<String> dpNames; // dp column names
@@ -71,7 +66,6 @@ public class DynamicPartitionCtx implements Serializable {
     }
     this.numDPCols = dpNames.size();
     this.numSPCols = spNames.size();
-    this.inputToDPCols = new HashMap<String, String>();
     if (this.numSPCols > 0) {
       this.spPath = Warehouse.makeDynamicPartName(partSpec);
     } else {
@@ -86,23 +80,10 @@ public class DynamicPartitionCtx implements Serializable {
     this.spPath = dp.spPath;
     this.rootPath = dp.rootPath;
     this.numBuckets = dp.numBuckets;
-    this.inputToDPCols = dp.inputToDPCols;
     this.spNames = dp.spNames;
     this.dpNames = dp.dpNames;
     this.defaultPartName = dp.defaultPartName;
     this.maxPartsPerNode = dp.maxPartsPerNode;
-  }
-
-  public void mapInputToDP(List<ColumnInfo> fs) {
-
-      assert fs.size() == this.numDPCols: "input DP column size != numDPCols";
-
-      Iterator<ColumnInfo> itr1 = fs.iterator();
-      Iterator<String> itr2 = dpNames.iterator();
-
-      while (itr1.hasNext() && itr2.hasNext()) {
-        inputToDPCols.put(itr1.next().getInternalName(), itr2.next());
-      }
   }
 
   public int getMaxPartitionsPerNode() {
@@ -159,14 +140,6 @@ public class DynamicPartitionCtx implements Serializable {
 
   public void setSPColNames(List<String> sp) {
     this.spNames = sp;
-  }
-
-  public Map<String, String> getInputToDPCols() {
-    return this.inputToDPCols;
-  }
-
-  public void setInputToDPCols(Map<String, String> map) {
-    this.inputToDPCols = map;
   }
 
   public void setNumDPCols(int dp) {

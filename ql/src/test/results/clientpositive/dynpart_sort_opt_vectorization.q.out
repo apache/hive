@@ -894,7 +894,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	1400                
+	totalSize           	1392                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -936,7 +936,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	1102                
+	totalSize           	1096                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -978,7 +978,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	14                  
 	rawDataSize         	280                 
-	totalSize           	1216                
+	totalSize           	1210                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1020,7 +1020,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	1102                
+	totalSize           	1096                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1061,7 +1061,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	4548                
+	totalSize           	4524                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1102,7 +1102,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2212                
+	totalSize           	2400                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1143,7 +1143,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	4534                
+	totalSize           	4510                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1184,7 +1184,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2212                
+	totalSize           	2400                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1732,13 +1732,15 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from over1k_part2_orc
+PREHOOK: query: -- SORT_BEFORE_DIFF
+select * from over1k_part2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2_orc
 PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
 PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: query: select * from over1k_part2_orc
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+select * from over1k_part2_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2_orc
 POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
@@ -1877,13 +1879,15 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from over1k_part2_orc
+PREHOOK: query: -- SORT_BEFORE_DIFF
+select * from over1k_part2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2_orc
 PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
 PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: query: select * from over1k_part2_orc
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+select * from over1k_part2_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2_orc
 POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=27

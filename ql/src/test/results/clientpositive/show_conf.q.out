@@ -3,8 +3,8 @@ PREHOOK: type: SHOWCONF
 POSTHOOK: query: show conf "hive.auto.convert.sortmerge.join.to.mapjoin"
 POSTHOOK: type: SHOWCONF
 false	BOOLEAN	If hive.auto.convert.sortmerge.join is set to true, and a join was converted to a sort-merge join, this parameter decides whether each table should be tried as a big table, and effectively a map-join should be tried. That would create a conditional task with n+1 children for a n-way join (1 child for each table as the big table), and the backup task will be the sort-merge join. In some cases, a map-join would be faster than a sort-merge join, if there is no advantage of having the output bucketed and sorted. For example, if a very big sorted and bucketed table with few files (say 10 files) are being joined with a very small sorter and bucketed table with few files (10 files), the sort-merge join will only use 10 mappers, and a simple map-only join might be faster if the complete small table can fit in memory, and a map-join can be performed.
-PREHOOK: query: show conf "hive.stats.retries.wait"
+PREHOOK: query: show conf "hive.zookeeper.session.timeout"
 PREHOOK: type: SHOWCONF
-POSTHOOK: query: show conf "hive.stats.retries.wait"
+POSTHOOK: query: show conf "hive.zookeeper.session.timeout"
 POSTHOOK: type: SHOWCONF
-3000ms	STRING(TIME)	Expects a time value with unit (d/day, h/hour, m/min, s/sec, ms/msec, us/usec, ns/nsec), which is msec if not specified. The base waiting window before the next retry. The actual wait time is calculated by baseWindow * failures baseWindow * (failure + 1) * (random number between [0.0,1.0]).
+1200000ms	STRING(TIME)	Expects a time value with unit (d/day, h/hour, m/min, s/sec, ms/msec, us/usec, ns/nsec), which is msec if not specified. ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, if a heartbeat is not sent in the timeout.

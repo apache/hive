@@ -349,7 +349,7 @@ public final class WriteBuffers implements RandomAccessOutput {
     writeBuffers.clear();
     clearState();
   }
-
+ 
   private void clearState() {
     writePos.clear();
     defaultReadPos.clear();

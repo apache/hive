@@ -1,5 +1,6 @@
 set hive.stats.dbclass=fs;
 set hive.compute.query.using.stats=true;
+set hive.explain.user=false;
 create table over10k(
            t tinyint,
            si smallint,
@@ -50,4 +51,3 @@ select count(*) from stats_tbl_part;
 select count(*)/2 from stats_tbl_part;
 drop table stats_tbl_part;
 set hive.compute.query.using.stats=false;
-set hive.stats.dbclass=jdbc:derby;

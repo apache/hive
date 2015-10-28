@@ -72,8 +72,8 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	500                 
+	rawDataSize         	4812                
 	totalSize           	5293                
 #### A masked pattern was here ####
 	 	 
@@ -112,8 +112,8 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	500                 
+	rawDataSize         	4812                
 	totalSize           	5293                
 #### A masked pattern was here ####
 	 	 
@@ -181,8 +181,8 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	309                 
+	rawDataSize         	1173                
 	totalSize           	1342                
 #### A masked pattern was here ####
 	 	 
@@ -221,8 +221,8 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	309                 
+	rawDataSize         	1173                
 	totalSize           	1342                
 #### A masked pattern was here ####
 	 	 
@@ -290,8 +290,8 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	155                 
+	rawDataSize         	586                 
 	totalSize           	719                 
 #### A masked pattern was here ####
 	 	 
@@ -330,8 +330,8 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	154                 
+	rawDataSize         	591                 
 	totalSize           	722                 
 #### A masked pattern was here ####
 	 	 
@@ -602,8 +602,8 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	4                   
+	rawDataSize         	14                  
 	totalSize           	115                 
 #### A masked pattern was here ####
 	 	 
@@ -642,8 +642,8 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	305                 
+	rawDataSize         	1163                
 	totalSize           	1427                
 #### A masked pattern was here ####
 	 	 

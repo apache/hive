@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -957,7 +958,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-            fs.getFileStatus(new Path("/a/file")), null, true,
+            AcidUtils.createOriginalObj(null, fs.getFileStatus(new Path("/a/file"))), null, true,
             new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null));
     OrcSplit result = splitter.createSplit(0, 200, null);
     assertEquals(0, result.getStart());
@@ -998,7 +999,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-            fs.getFileStatus(new Path("/a/file")), null, true,
+            AcidUtils.createOriginalObj(null, fs.getFileStatus(new Path("/a/file"))), null, true,
             new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null));
     List<OrcSplit> results = splitter.call();
     OrcSplit result = results.get(0);
@@ -1021,8 +1022,8 @@ public class TestInputOutputFormat {
     conf.setInt(OrcInputFormat.MAX_SPLIT_SIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-      fs.getFileStatus(new Path("/a/file")), null, true, new ArrayList<AcidInputFormat.DeltaMetaData>(),
-        true, null, null));
+      AcidUtils.createOriginalObj(null, fs.getFileStatus(new Path("/a/file"))), null, true,
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null));
     results = splitter.call();
     for(int i=0; i < stripeSizes.length; ++i) {
       assertEquals("checking stripe " + i + " size",
@@ -1106,6 +1107,8 @@ public class TestInputOutputFormat {
   @SuppressWarnings("unchecked,deprecation")
   public void testInOutFormat() throws Exception {
     Properties properties = new Properties();
+    properties.setProperty("columns", "x,y");
+    properties.setProperty("columns.types", "int:int");
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
@@ -1122,8 +1125,6 @@ public class TestInputOutputFormat {
     writer.write(serde.serialize(new MyRow(3,2), inspector));
     writer.close(true);
     serde = new OrcSerde();
-    properties.setProperty("columns", "x,y");
-    properties.setProperty("columns.types", "int:int");
     SerDeUtils.initializeSerDe(serde, conf, properties, null);
     assertEquals(OrcSerde.OrcSerdeRow.class, serde.getSerializedClass());
     inspector = (StructObjectInspector) serde.getObjectInspector();
@@ -1295,13 +1296,13 @@ public class TestInputOutputFormat {
   @SuppressWarnings("deprecation")
   public void testEmptyFile() throws Exception {
     Properties properties = new Properties();
+    properties.setProperty("columns", "x,y");
+    properties.setProperty("columns.types", "int:int");
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
     org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
             properties, Reporter.NULL);
     writer.close(true);
-    properties.setProperty("columns", "x,y");
-    properties.setProperty("columns.types", "int:int");
     SerDe serde = new OrcSerde();
     SerDeUtils.initializeSerDe(serde, conf, properties, null);
     InputFormat<?,?> in = new OrcInputFormat();
@@ -1309,6 +1310,25 @@ public class TestInputOutputFormat {
     InputSplit[] splits = in.getSplits(conf, 1);
     assertTrue(0 == splits.length);
     assertEquals(null, serde.getSerDeStats());
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testSplitGenFailure() throws IOException {
+    Properties properties = new Properties();
+    HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
+    org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
+        outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
+            properties, Reporter.NULL);
+    writer.close(true);
+    InputFormat<?,?> in = new OrcInputFormat();
+    fs.setPermission(testFilePath, FsPermission.createImmutable((short) 0333));
+    FileInputFormat.setInputPaths(conf, testFilePath.toString());
+    try {
+      in.getSplits(conf, 1);
+    } catch (RuntimeException e) {
+      assertEquals(true, e.getMessage().contains("Permission denied"));
+      throw e;
+    }
   }
 
   static class StringRow implements Writable {
@@ -1333,6 +1353,8 @@ public class TestInputOutputFormat {
   @SuppressWarnings("unchecked,deprecation")
   public void testDefaultTypes() throws Exception {
     Properties properties = new Properties();
+    properties.setProperty("columns", "str,str2");
+    properties.setProperty("columns.types", "string:string");
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
@@ -1352,7 +1374,6 @@ public class TestInputOutputFormat {
     writer.write(serde.serialize(new StringRow("miles"), inspector));
     writer.close(true);
     serde = new OrcSerde();
-    properties.setProperty("columns", "str,str2");
     SerDeUtils.initializeSerDe(serde, conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<str:string,str2:string>", inspector.getTypeName());
@@ -1410,8 +1431,8 @@ public class TestInputOutputFormat {
                                          boolean isVectorized,
                                          int partitions
                                          ) throws IOException {
-    Utilities.clearWorkMap();
     JobConf conf = new JobConf();
+    Utilities.clearWorkMap(conf);
     conf.set("hive.exec.plan", workDir.toString());
     conf.set("mapred.job.tracker", "local");
     conf.set("hive.vectorized.execution.enabled", Boolean.toString(isVectorized));
@@ -1873,6 +1894,8 @@ public class TestInputOutputFormat {
   @SuppressWarnings("unchecked,deprecation")
   public void testSplitElimination() throws Exception {
     Properties properties = new Properties();
+    properties.setProperty("columns", "z,r");
+    properties.setProperty("columns.types", "int:struct<x:int,y:int>");
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
@@ -1901,8 +1924,6 @@ public class TestInputOutputFormat {
             .build();
     conf.set("sarg.pushdown", toKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z,r");
-    properties.setProperty("columns", "z,r");
-    properties.setProperty("columns.types", "int:struct<x:int,y:int>");
     SerDeUtils.initializeSerDe(serde, conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();

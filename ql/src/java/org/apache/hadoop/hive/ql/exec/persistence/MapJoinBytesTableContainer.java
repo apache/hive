@@ -371,7 +371,7 @@ public class MapJoinBytesTableContainer
 
   @Override
   public void clear() {
-    hashMap.clear();
+    // Don't clear the hash table - reuse is possible. GC will take care of it.
   }
 
   @Override
@@ -704,8 +704,6 @@ public class MapJoinBytesTableContainer
 
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
         BytesBytesMultiHashMap.Result hashMapResult) {
-
-      int keyHash = WriteBuffers.murmurHash(bytes, offset, length);
       aliasFilter = hashMap.getValueResult(bytes, offset, length, hashMapResult);
       dummyRow = null;
       if (hashMapResult.hasRows()) {

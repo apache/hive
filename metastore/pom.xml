@@ -51,6 +51,16 @@
       <version>${guava.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-client</artifactId>
+      <version>${hbase.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.jolbox</groupId>
       <artifactId>bonecp</artifactId>
       <version>${bonecp.version}</version>
@@ -112,6 +122,18 @@
       <version>${antlr.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libfb303</artifactId>
       <version>${libfb303.version}</version>
@@ -120,6 +142,27 @@
       <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
       <version>${libthrift.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>co.cask.tephra</groupId>
+      <artifactId>tephra-api</artifactId>
+      <version>${tephra.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>co.cask.tephra</groupId>
+      <artifactId>tephra-core</artifactId>
+      <version>${tephra.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-all</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>co.cask.tephra</groupId>
+      <artifactId>tephra-hbase-compat-1.0</artifactId>
+      <version>${tephra.version}</version>
     </dependency>
     <!-- test inter-project -->
     <dependency>
@@ -137,34 +180,6 @@
   </dependencies>
 
   <profiles>
-    <profile>
-      <id>hadoop-1</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-core</artifactId>
-          <version>${hadoop-20S.version}</version>
-         <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
-   <profile>
-      <id>hadoop-2</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-mapreduce-client-core</artifactId>
-          <version>${hadoop-23.version}</version>
-          <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
     <profile>
       <id>thriftif</id>
       <build>
@@ -194,6 +209,44 @@
               <regex>true</regex>
               <quiet>false</quiet>
             </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>protobuf</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-protobuf-sources</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <target>
+                    <property name="protobuf.src.dir"  location="${basedir}/src/protobuf"/>
+                    <property name="protobuf.build.dir"  location="${basedir}/src/gen/protobuf/gen-java"/>
+                    <echo>Building HBase Metastore Protobuf</echo>
+                    <mkdir dir="${protobuf.build.dir}"/>
+                    <exec executable="protoc" failonerror="true">
+                      <arg value="--java_out=${protobuf.build.dir}"/>
+                      <arg value="-I=${protobuf.src.dir}/org/apache/hadoop/hive/metastore/hbase"/>
+                      <arg value="${protobuf.src.dir}/org/apache/hadoop/hive/metastore/hbase/hbase_metastore_proto.proto"/>
+                    </exec>
+                    <exec executable="protoc" failonerror="true">
+                      <arg value="--java_out=${protobuf.build.dir}"/>
+                      <arg value="-I=${protobuf.src.dir}/org/apache/hadoop/hive/metastore"/>
+                      <arg value="${protobuf.src.dir}/org/apache/hadoop/hive/metastore/metastore.proto"/>
+                    </exec>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
@@ -252,6 +305,7 @@
               <sources>
                 <source>src/model</source>
                 <source>src/gen/thrift/gen-javabean</source>
+                <source>src/gen/protobuf/gen-java</source>
               </sources>
             </configuration>
           </execution>

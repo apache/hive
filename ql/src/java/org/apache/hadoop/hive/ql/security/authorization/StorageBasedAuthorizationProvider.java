@@ -234,9 +234,13 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // Partition itself can also be null, in cases where this gets called as a generic
     // catch-all call in cases like those with CTAS onto an unpartitioned table (see HIVE-1887)
     if ((part == null) || (part.getLocation() == null)) {
-      // this should be the case only if this is a create partition.
-      // The privilege needed on the table should be ALTER_DATA, and not CREATE
-      authorize(table, new Privilege[]{}, new Privilege[]{Privilege.ALTER_DATA});
+      if (requireCreatePrivilege(readRequiredPriv) || requireCreatePrivilege(writeRequiredPriv)) {
+        // this should be the case only if this is a create partition.
+        // The privilege needed on the table should be ALTER_DATA, and not CREATE
+        authorize(table, new Privilege[]{}, new Privilege[]{Privilege.ALTER_DATA});
+      } else {
+        authorize(table, readRequiredPriv, writeRequiredPriv);
+      }
     } else {
       authorize(part.getDataLocation(), readRequiredPriv, writeRequiredPriv);
     }

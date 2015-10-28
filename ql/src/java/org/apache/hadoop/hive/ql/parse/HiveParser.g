@@ -178,6 +178,7 @@ TOK_SHOWTABLES;
 TOK_SHOWCOLUMNS;
 TOK_SHOWFUNCTIONS;
 TOK_SHOWPARTITIONS;
+TOK_SHOW_CREATEDATABASE;
 TOK_SHOW_CREATETABLE;
 TOK_SHOW_TABLESTATUS;
 TOK_SHOW_TBLPROPERTIES;
@@ -256,7 +257,6 @@ TOK_HINTLIST;
 TOK_HINT;
 TOK_MAPJOIN;
 TOK_STREAMTABLE;
-TOK_HOLD_DDLTIME;
 TOK_HINTARGLIST;
 TOK_USERSCRIPTCOLNAMES;
 TOK_USERSCRIPTCOLSCHEMA;
@@ -375,6 +375,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 }
 
 
@@ -617,19 +619,22 @@ import org.apache.hadoop.hive.conf.HiveConf;
     return msg;
   }
   
+  public static final Log LOG = LogFactory.getLog("HiveParser");
   public void pushMsg(String msg, RecognizerSharedState state) {
     // ANTLR generated code does not wrap the @init code wit this backtracking check,
     //  even if the matching @after has it. If we have parser rules with that are doing
     // some lookahead with syntactic predicates this can cause the push() and pop() calls
     // to become unbalanced, so make sure both push/pop check the backtracking state.
     if (state.backtracking == 0) {
+      // LOG.debug("Push " + msg);
       msgs.push(msg);
     }
   }
 
   public void popMsg(RecognizerSharedState state) {
     if (state.backtracking == 0) {
-      msgs.pop();
+      Object o = msgs.pop();
+      // LOG.debug("Pop " + o);
     }
   }
 
@@ -1374,7 +1379,11 @@ showStatement
     -> ^(TOK_SHOWCOLUMNS tableName $db_name?)
     | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier|showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec?) 
-    | KW_SHOW KW_CREATE KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
+    | KW_SHOW KW_CREATE (
+        (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) db_name=identifier -> ^(TOK_SHOW_CREATEDATABASE $db_name)
+        |
+        KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
+      )
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=identifier)? KW_LIKE showStmtIdentifier partitionSpec?
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
     | KW_SHOW KW_TBLPROPERTIES tableName (LPAREN prptyName=StringLiteral RPAREN)? -> ^(TOK_SHOW_TBLPROPERTIES tableName $prptyName?)
@@ -2170,7 +2179,7 @@ regularBody[boolean topLevel]
    i=insertClause
    (
    s=selectStatement[topLevel]
-     {$s.tree.getChild(1) !=null}? {$s.tree.getChild(1).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
+     {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
      |
      valuesClause
       -> ^(TOK_QUERY

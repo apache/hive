@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -497,9 +498,6 @@ public final class GenMapRedUtils {
         partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
       } catch (SemanticException e) {
         throw e;
-      } catch (HiveException e) {
-        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw new SemanticException(e.getMessage(), e);
       }
     }
 
@@ -883,6 +881,45 @@ public final class GenMapRedUtils {
     }
   }
 
+  /**
+   * Called at the end of TaskCompiler::compile to derive final
+   * explain attributes based on previous compilation.
+   */
+  public static void deriveFinalExplainAttributes(
+      Task<? extends Serializable> task, Configuration conf) {
+    // TODO: deriveExplainAttributes should be called here, code is too fragile to move it around.
+    if (task instanceof ConditionalTask) {
+      for (Task<? extends Serializable> tsk : ((ConditionalTask) task).getListTasks()) {
+        deriveFinalExplainAttributes(tsk, conf);
+      }
+    } else if (task instanceof ExecDriver) {
+      MapredWork work = (MapredWork) task.getWork();
+      work.getMapWork().deriveLlap(conf);
+    } else if (task != null && (task.getWork() instanceof TezWork)) {
+      TezWork work = (TezWork)task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork)w).deriveLlap(conf);
+        }
+      }
+    } else if (task instanceof SparkTask) {
+      SparkWork work = (SparkWork) task.getWork();
+      for (BaseWork w : work.getAllWorkUnsorted()) {
+        if (w instanceof MapWork) {
+          ((MapWork) w).deriveLlap(conf);
+        }
+      }
+    }
+
+    if (task.getChildTasks() == null) {
+      return;
+    }
+
+    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      deriveFinalExplainAttributes(childTask, conf);
+    }
+  }
+
   public static void internTableDesc(Task<?> task, Interner<TableDesc> interner) {
 
     if (task instanceof ConditionalTask) {
@@ -990,7 +1027,7 @@ public final class GenMapRedUtils {
     fileSinkOp.setParentOperators(Utilities.makeList(parent));
 
     // Create a dummy TableScanOperator for the file generated through fileSinkOp
-    TableScanOperator tableScanOp = (TableScanOperator) createTemporaryTableScanOperator(
+    TableScanOperator tableScanOp = createTemporaryTableScanOperator(
             parent.getSchema());
 
     // Connect this TableScanOperator to child.
@@ -1235,19 +1272,16 @@ public final class GenMapRedUtils {
       // adding DP ColumnInfo to the RowSchema signature
       ArrayList<ColumnInfo> signature = inputRS.getSignature();
       String tblAlias = fsInputDesc.getTableInfo().getTableName();
-      LinkedHashMap<String, String> colMap = new LinkedHashMap<String, String>();
       for (String dpCol : dpCtx.getDPColNames()) {
         ColumnInfo colInfo = new ColumnInfo(dpCol,
             TypeInfoFactory.stringTypeInfo, // all partition column type should be string
             tblAlias, true); // partition column is virtual column
         signature.add(colInfo);
-        colMap.put(dpCol, dpCol); // input and output have the same column name
       }
       inputRS.setSignature(signature);
 
       // create another DynamicPartitionCtx, which has a different input-to-DP column mapping
       DynamicPartitionCtx dpCtx2 = new DynamicPartitionCtx(dpCtx);
-      dpCtx2.setInputToDPCols(colMap);
       fsOutputDesc.setDynPartCtx(dpCtx2);
 
       // update the FileSinkOperator to include partition columns
@@ -1422,7 +1456,7 @@ public final class GenMapRedUtils {
 
     statsWork.setSourceTask(currTask);
     statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-
+    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
     if (currTask.getWork() instanceof MapredWork) {
       MapredWork mrWork = (MapredWork) currTask.getWork();
       mrWork.getMapWork().setGatheringStats(true);
@@ -1466,8 +1500,7 @@ public final class GenMapRedUtils {
    * @return
    */
   public static boolean isInsertInto(ParseContext parseCtx, FileSinkOperator fsOp) {
-    return fsOp.getConf().getTableInfo().getTableName() != null &&
-        parseCtx.getQueryProperties().isInsertToTable();
+    return fsOp.getConf().getTableInfo().getTableName() != null;
   }
 
   /**
@@ -1896,7 +1929,7 @@ public final class GenMapRedUtils {
         "Partition Names, " + Arrays.toString(partNames) + " don't match partition Types, "
         + Arrays.toString(partTypes));
 
-    Map<String, String> typeMap = new HashMap();
+    Map<String, String> typeMap = new HashMap<>();
     for (int i = 0; i < partNames.length; i++) {
       String previousValue = typeMap.put(partNames[i], partTypes[i]);
       Preconditions.checkArgument(previousValue == null, "Partition columns configuration is inconsistent. "
@@ -1926,4 +1959,5 @@ public final class GenMapRedUtils {
   private GenMapRedUtils() {
     // prevent instantiation
   }
+
 }

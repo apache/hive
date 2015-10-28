@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.junit.Test;
+import static junit.framework.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
 
-import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
 public class TestRunLengthByteReader {
 
@@ -45,7 +45,7 @@ public class TestRunLengthByteReader {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    RunLengthByteReader in = new RunLengthByteReader(InStream.create("test",
+    RunLengthByteReader in = new RunLengthByteReader(InStream.create(null, "test",
         new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(), null, 100));
     for(int i=0; i < 2048; ++i) {
       int x = in.next() & 0xff;
@@ -87,7 +87,7 @@ public class TestRunLengthByteReader {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    RunLengthByteReader in = new RunLengthByteReader(InStream.create("test",
+    RunLengthByteReader in = new RunLengthByteReader(InStream.create(null, "test",
         new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(), codec, 500));
     for(int i=0; i < 2048; ++i) {
       int x = in.next() & 0xff;
@@ -124,7 +124,7 @@ public class TestRunLengthByteReader {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    RunLengthByteReader in = new RunLengthByteReader(InStream.create("test",
+    RunLengthByteReader in = new RunLengthByteReader(InStream.create(null, "test",
         new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(), null, 100));
     for(int i=0; i < 2048; i += 10) {
       int x = in.next() & 0xff;

@@ -116,8 +116,8 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
   @Override
   @SuppressWarnings("unchecked")
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
     console = new LogHelper(LOG, isSilent);
     memoryExhaustionHandler = new MapJoinMemoryExhaustionHandler(console, conf.getHashtableMemoryUsage());
@@ -192,7 +192,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     } catch (SerDeException e) {
       throw new HiveException(e);
     }
-    return result;
+
   }
 
   public MapJoinTableContainer[] getMapJoinTables() {

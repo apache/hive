@@ -7,15 +7,15 @@ import static org.fusesource.jansi.internal.CLibrary.isatty;
 
 import java.io.PrintStream;
 
-import jline.TerminalFactory;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.fusesource.jansi.Ansi;
 
+import jline.TerminalFactory;
+
 public class InPlaceUpdates {
 
-  private static final int MIN_TERMINAL_WIDTH = 80;
+  public static final int MIN_TERMINAL_WIDTH = 94;
 
   static boolean isUnixTerminal() {
 

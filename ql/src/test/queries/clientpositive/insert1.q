@@ -1,3 +1,5 @@
+set hive.explain.user=false;
+
 -- SORT_QUERY_RESULTS
 
 create table insert1(key int, value string) stored as textfile;

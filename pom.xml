@@ -47,6 +47,7 @@
     <module>ql</module>
     <module>serde</module>
     <module>service</module>
+    <module>llap-client</module>
     <module>shims</module>
     <module>spark-client</module>
     <module>storage-api</module>
@@ -109,7 +110,7 @@
     <datanucleus-rdbms.version>3.2.9</datanucleus-rdbms.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.4</commons-codec.version>
-    <commons-compress.version>1.4.1</commons-compress.version>
+    <commons-compress.version>1.9</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-httpclient.version>3.0.1</commons-httpclient.version>
     <commons-io.version>2.4</commons-io.version>
@@ -121,12 +122,10 @@
     <derby.version>10.10.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>14.0.1</guava.version>
-    <groovy.version>2.1.6</groovy.version>
-    <hadoop-20S.version>1.2.1</hadoop-20S.version>
-    <hadoop-23.version>2.6.0</hadoop-23.version>
+    <groovy.version>2.4.4</groovy.version>
+    <hadoop.version>2.6.0</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
-    <hbase.hadoop1.version>0.98.9-hadoop1</hbase.hadoop1.version>
-    <hbase.hadoop2.version>0.98.9-hadoop2</hbase.hadoop2.version>
+    <hbase.version>1.1.1</hbase.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.4</httpcomponents.client.version>
     <httpcomponents.core.version>4.4</httpcomponents.core.version>
@@ -146,9 +145,9 @@
     <json.version>20090211</json.version>
     <junit.version>4.11</junit.version>
     <kryo.version>2.22</kryo.version>
-    <libfb303.version>0.9.2</libfb303.version>
-    <libthrift.version>0.9.2</libthrift.version>
-    <log4j2.version>2.3</log4j2.version>
+    <libfb303.version>0.9.3</libfb303.version>
+    <libthrift.version>0.9.3</libthrift.version>
+    <log4j2.version>2.4</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -159,7 +158,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <tez.version>0.5.2</tez.version>
+    <tez.version>0.8.1-alpha</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>1.5.0</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
@@ -174,6 +173,7 @@
     <felix.version>2.4.0</felix.version>
     <curator.version>2.6.0</curator.version>
     <jsr305.version>3.0.0</jsr305.version>
+    <tephra.version>0.6.0</tephra.version>
     <gson.version>2.2.4</gson.version>
   </properties>
 
@@ -224,7 +224,6 @@
     </repository>
   </repositories>
 
-  <!-- Hadoop dependency management is done at the bottom under profiles -->
   <dependencyManagement>
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifectId -->
@@ -587,6 +586,87 @@
         <artifactId>xercesImpl</artifactId>
         <version>${xerces.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-client</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-hdfs</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-mapreduce-client-core</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-minikdc</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-common</artifactId>
+        <version>${hbase.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-hadoop-compat</artifactId>
+        <version>${hbase.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-hadoop2-compat</artifactId>
+        <version>${hbase.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-server</artifactId>
+        <version>${hbase.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-minicluster</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-core_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -944,7 +1024,7 @@
                   <target>
                     <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
                       classpathref="maven.plugin.classpath" />
-                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode --gen cpp --gen php --gen py --gen rb"/>
+                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
                     <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
                     <delete dir="${thrift.gen.dir}"/>
                     <mkdir dir="${thrift.gen.dir}"/>
@@ -1030,141 +1110,24 @@
         </plugins>
       </build>
     </profile>
-    <!-- hadoop profiles in the root pom are only used for dependency management -->
+
     <profile>
-      <id>hadoop-1</id>
-      <dependencyManagement>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>${hadoop-20S.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>${hadoop-20S.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-test</artifactId>
-            <version>${hadoop-20S.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-tools</artifactId>
-            <version>${hadoop-20S.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-common</artifactId>
-            <version>${hbase.hadoop1.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-hadoop-compat</artifactId>
-            <version>${hbase.hadoop1.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-hadoop1-compat</artifactId>
-            <version>${hbase.hadoop1.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-server</artifactId>
-            <version>${hbase.hadoop1.version}</version>
-          </dependency>
-        </dependencies>
-      </dependencyManagement>
-    </profile>
-    <profile>
-      <id>hadoop-2</id>
-      <dependencyManagement>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>${hadoop-23.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>${hadoop-23.version}</version>
-            <exclusions>
-              <exclusion>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-              </exclusion>
-            </exclusions>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-hdfs</artifactId>
-            <version>${hadoop-23.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-            <version>${hadoop-23.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-core</artifactId>
-            <version>${hadoop-23.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-minikdc</artifactId>
-            <version>${hadoop-23.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-common</artifactId>
-            <version>${hbase.hadoop2.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-hadoop-compat</artifactId>
-            <version>${hbase.hadoop2.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-hadoop2-compat</artifactId>
-            <version>${hbase.hadoop2.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-server</artifactId>
-            <version>${hbase.hadoop2.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-minicluster</artifactId>
-            <version>${hadoop-23.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_${scala.binary.version}</artifactId>
-            <version>${spark.version}</version>
-            <exclusions>
-              <exclusion>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-core</artifactId>
-              </exclusion>
-            </exclusions>
-          </dependency>
-        </dependencies>
-      </dependencyManagement>
+    <id>findbugs</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${project.parent.basedir}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
     </profile>
     <profile>
       <!-- Windows-specific settings to allow unit tests to work -->

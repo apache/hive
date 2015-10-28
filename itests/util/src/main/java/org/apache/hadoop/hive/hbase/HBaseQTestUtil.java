@@ -69,8 +69,8 @@ public class HBaseQTestUtil extends QTestUtil {
   }
 
   @Override
-  public void createSources() throws Exception {
-    super.createSources();
+  public void createSources(String tname) throws Exception {
+    super.createSources(tname);
 
     conf.setBoolean("hive.test.init.phase", true);
 
@@ -96,8 +96,8 @@ public class HBaseQTestUtil extends QTestUtil {
   }
 
   @Override
-  public void cleanUp() throws Exception {
-    super.cleanUp();
+  public void cleanUp(String tname) throws Exception {
+    super.cleanUp(tname);
 
     // drop in case leftover from unsuccessful run
     db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, HBASE_SRC_NAME);

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
@@ -283,7 +284,7 @@ public class SimpleFetchOptimizer implements Transform {
 
   private boolean isConvertible(FetchData fetch, Operator<?> operator, Set<Operator<?>> traversed) {
     if (operator instanceof ReduceSinkOperator || operator instanceof CommonJoinOperator
-        || operator instanceof ScriptOperator) {
+        || operator instanceof ScriptOperator || operator instanceof UDTFOperator) {
       return false;
     }
 
@@ -411,11 +412,10 @@ public class SimpleFetchOptimizer implements Transform {
       if (splitSample != null && splitSample.getTotalLength() != null) {
         return splitSample.getTotalLength();
       }
-      long length = calculateLength(pctx, remaining);
       if (splitSample != null) {
-        return splitSample.getTargetSize(length);
+        return splitSample.getTargetSize(calculateLength(pctx, splitSample.estimateSourceSize(remaining)));
       }
-      return length;
+      return calculateLength(pctx, remaining);
     }
 
     private long calculateLength(ParseContext pctx, long remaining) throws Exception {
@@ -440,6 +440,9 @@ public class SimpleFetchOptimizer implements Transform {
       for (Partition partition : partsList.getNotDeniedPartns()) {
         Path path = partition.getDataLocation();
         total += getFileLength(jobConf, path, partition.getInputFormatClass());
+        if (total > remaining) {
+          break;
+        }
       }
       return total;
     }

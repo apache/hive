@@ -25,14 +25,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 
-public class CounterStatsAggregator implements StatsAggregator, StatsCollectionTaskIndependent {
+public class CounterStatsAggregator implements StatsAggregator {
 
   private static final Log LOG = LogFactory.getLog(CounterStatsAggregator.class.getName());
 
@@ -40,10 +39,11 @@ public class CounterStatsAggregator implements StatsAggregator, StatsCollectionT
   private JobClient jc;
 
   @Override
-  public boolean connect(Configuration hconf, Task sourceTask) {
+  public boolean connect(StatsCollectionContext scc) {
+    Task<?> sourceTask = scc.getTask();
     if (sourceTask instanceof MapRedTask) {
       try {
-        jc = new JobClient(toJobConf(hconf));
+        jc = new JobClient(toJobConf(scc.getHiveConf()));
         RunningJob job = jc.getJob(((MapRedTask)sourceTask).getJobID());
         if (job != null) {
           counters = job.getCounters();
@@ -71,17 +71,12 @@ public class CounterStatsAggregator implements StatsAggregator, StatsCollectionT
   }
 
   @Override
-  public boolean closeConnection() {
+  public boolean closeConnection(StatsCollectionContext scc) {
     try {
       jc.close();
     } catch (IOException e) {
       LOG.error("Error closing job client for stats aggregator.", e);
     }
-    return true;
-  }
-
-  @Override
-  public boolean cleanUp(String keyPrefix) {
     return true;
   }
 }

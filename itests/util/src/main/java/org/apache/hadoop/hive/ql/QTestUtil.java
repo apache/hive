@@ -38,7 +38,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.lang.RuntimeException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -54,17 +53,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
-import junit.framework.TestSuite;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HBaseTestingUtility;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -81,9 +81,11 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -100,12 +102,17 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.google.common.collect.ImmutableList;
+
+import junit.framework.Assert;
+import junit.framework.TestSuite;
 
 /**
  * QTestUtil.
@@ -135,6 +142,7 @@ public class QTestUtil {
   private final Set<String> qSortQuerySet;
   private final Set<String> qHashQuerySet;
   private final Set<String> qSortNHashQuerySet;
+  private final Set<String> qNoSessionReuseQuerySet;
   private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
   public static final HashSet<String> srcTables = new HashSet<String>();
@@ -149,18 +157,22 @@ public class QTestUtil {
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private HadoopShims.HdfsEncryptionShim hes = null;
+  private final boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
+  private TezSessionState tezSessionState = null;
   private SparkSession sparkSession = null;
   private boolean isSessionStateStarted = false;
   private static final String javaVersion = getJavaVersion();
 
   private final String initScript;
   private final String cleanupScript;
+  private boolean useHBaseMetastore = false;
 
   public interface SuiteAddTestFunctor {
     public void addTestToSuite(TestSuite suite, Object setup, String tName);
   }
+  private HBaseTestingUtility utility;
 
   static {
     for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
@@ -276,9 +288,11 @@ public class QTestUtil {
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     }
 
-    // Plug verifying metastore in for testing.
-    conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-      "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+    if (!useHBaseMetastore) {
+      // Plug verifying metastore in for testing DirectSQL.
+      conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
+        "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+    }
 
     if (mr != null) {
       assert dfs != null;
@@ -307,6 +321,7 @@ public class QTestUtil {
     spark,
     encrypted,
     miniSparkOnYarn,
+    llap,
     none;
 
     public static MiniClusterType valueForString(String type) {
@@ -320,6 +335,8 @@ public class QTestUtil {
         return encrypted;
       } else if (type.equals("miniSparkOnYarn")) {
         return miniSparkOnYarn;
+      } else if (type.equals("llap")) {
+        return llap;
       } else {
         return none;
       }
@@ -341,16 +358,46 @@ public class QTestUtil {
     return "jceks://file" + new Path(keyDir, "test.jks").toUri();
   }
 
+  private void startMiniHBaseCluster() throws Exception {
+    Configuration hbaseConf = HBaseConfiguration.create();
+    hbaseConf.setInt("hbase.master.info.port", -1);
+    utility = new HBaseTestingUtility(hbaseConf);
+    utility.startMiniCluster();
+    conf = new HiveConf(utility.getConfiguration(), Driver.class);
+    HBaseAdmin admin = utility.getHBaseAdmin();
+    // Need to use reflection here to make compilation pass since HBaseIntegrationTests
+    // is not compiled in hadoop-1. All HBaseMetastore tests run under hadoop-2, so this
+    // guarantee HBaseIntegrationTests exist when we hitting this code path
+    java.lang.reflect.Method initHBaseMetastoreMethod = Class.forName(
+        "org.apache.hadoop.hive.metastore.hbase.HBaseStoreTestUtil")
+        .getMethod("initHBaseMetastore", HBaseAdmin.class, HiveConf.class);
+    initHBaseMetastoreMethod.invoke(null, admin, conf);
+  }
+
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
       String confDir, String hadoopVer, String initScript, String cleanupScript)
     throws Exception {
+    this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript, false);
+  }
+
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
+      String confDir, String hadoopVer, String initScript, String cleanupScript, boolean useHBaseMetastore)
+    throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
+    this.useHBaseMetastore = useHBaseMetastore;
+
+    Logger hadoopLog = Logger.getLogger("org.apache.hadoop");
+    hadoopLog.setLevel(Level.INFO);
     if (confDir != null && !confDir.isEmpty()) {
       HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
-    conf = new HiveConf(Driver.class);
+    if (useHBaseMetastore) {
+      startMiniHBaseCluster();
+    } else {
+      conf = new HiveConf(Driver.class);
+    }
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
@@ -358,8 +405,9 @@ public class QTestUtil {
     qSortQuerySet = new HashSet<String>();
     qHashQuerySet = new HashSet<String>();
     qSortNHashQuerySet = new HashSet<String>();
+    qNoSessionReuseQuerySet = new HashSet<String>();
     qJavaVersionSpecificOutput = new HashSet<String>();
-    this.clusterType = clusterType;
+    QTestUtil.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
     int numberOfDataNodes = 4;
@@ -387,7 +435,19 @@ public class QTestUtil {
 
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
-        mr = shims.getMiniTezCluster(conf, 4, uriString, 1);
+        if (confDir != null && !confDir.isEmpty()) {
+          conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
+              + "/tez-site.xml"));
+        }
+        mr = shims.getMiniTezCluster(conf, 4, uriString, false);
+      } else if (clusterType == MiniClusterType.llap) {
+        if (confDir != null && !confDir.isEmpty()) {
+          conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
+              + "/tez-site.xml"));
+          conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
+              + "/llap-daemon-site.xml"));
+        }
+        mr = shims.getMiniTezCluster(conf, 2, uriString, true);
       } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
         mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
       } else {
@@ -425,7 +485,7 @@ public class QTestUtil {
       cleanUp();
     }
 
-    if (clusterType == MiniClusterType.tez) {
+    if (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap) {
       SessionState.get().getTezSession().close(false);
     }
     setup.tearDown();
@@ -437,6 +497,9 @@ public class QTestUtil {
       } finally {
         sparkSession = null;
       }
+    }
+    if (useHBaseMetastore) {
+      utility.shutdownMiniCluster();
     }
     if (mr != null) {
       mr.shutdown();
@@ -498,12 +561,16 @@ public class QTestUtil {
     } else if (matches(SORT_AND_HASH_QUERY_RESULTS, query)) {
       qSortNHashQuerySet.add(qf.getName());
     }
+    if (matches(NO_SESSION_REUSE, query)) {
+      qNoSessionReuseQuerySet.add(qf.getName());
+    }
   }
 
   private static final Pattern SORT_BEFORE_DIFF = Pattern.compile("-- SORT_BEFORE_DIFF");
   private static final Pattern SORT_QUERY_RESULTS = Pattern.compile("-- SORT_QUERY_RESULTS");
   private static final Pattern HASH_QUERY_RESULTS = Pattern.compile("-- HASH_QUERY_RESULTS");
   private static final Pattern SORT_AND_HASH_QUERY_RESULTS = Pattern.compile("-- SORT_AND_HASH_QUERY_RESULTS");
+  private static final Pattern NO_SESSION_REUSE = Pattern.compile("-- NO_SESSION_REUSE");
 
   private boolean matches(Pattern pattern, String query) {
     Matcher matcher = pattern.matcher(query);
@@ -670,7 +737,13 @@ public class QTestUtil {
       SessionState.get().setCurrentDatabase(dbName);
       for (String tblName : db.getAllTables()) {
         if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
-          Table tblObj = db.getTable(tblName);
+          Table tblObj = null;
+          try {
+            tblObj = db.getTable(tblName);
+          } catch (InvalidTableException e) {
+            LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
+            continue;
+          }
           // dropping index table can not be dropped directly. Dropping the base
           // table will automatically drop all its index table
           if(tblObj.isIndexTable()) {
@@ -739,8 +812,13 @@ public class QTestUtil {
   }
 
   public void cleanUp() throws Exception {
+    cleanUp(null);
+  }
+
+  public void cleanUp(String tname) throws Exception {
+    boolean canReuseSession = (tname == null) || !qNoSessionReuseQuerySet.contains(tname);
     if(!isSessionStateStarted) {
-      startSessionState();
+      startSessionState(canReuseSession);
     }
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
@@ -803,8 +881,13 @@ public class QTestUtil {
   }
 
   public void createSources() throws Exception {
+    createSources(null);
+  }
+
+  public void createSources(String tname) throws Exception {
+    boolean canReuseSession = (tname == null) || !qNoSessionReuseQuerySet.contains(tname);
     if(!isSessionStateStarted) {
-      startSessionState();
+      startSessionState(canReuseSession);
     }
 
     if(cliDriver == null) {
@@ -844,8 +927,8 @@ public class QTestUtil {
   }
 
   public void init(String tname) throws Exception {
-    cleanUp();
-    createSources();
+    cleanUp(tname);
+    createSources(tname);
     cliDriver.processCmd("set hive.cli.print.header=true;");
   }
 
@@ -855,13 +938,13 @@ public class QTestUtil {
 
   public String cliInit(String tname, boolean recreate) throws Exception {
     if (recreate) {
-      cleanUp();
-      createSources();
+      cleanUp(tname);
+      createSources(tname);
     }
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
     "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
-    Utilities.clearWorkMap();
+    Utilities.clearWorkMap(conf);
     CliSessionState ss = createSessionState();
     assert ss != null;
     ss.in = System.in;
@@ -891,7 +974,17 @@ public class QTestUtil {
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
 
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark
+    boolean canReuseSession = !qNoSessionReuseQuerySet.contains(tname);
+    if (oldSs != null && canReuseSession
+        && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap)) {
+      // Copy the tezSessionState from the old CliSessionState.
+      tezSessionState = oldSs.getTezSession();
+      ss.setTezSession(tezSessionState);
+      oldSs.setTezSession(null);
+      oldSs.close();
+    }
+
+    if (oldSs != null && (clusterType == MiniClusterType.spark
         || clusterType == MiniClusterType.miniSparkOnYarn)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
@@ -940,7 +1033,7 @@ public class QTestUtil {
     };
   }
 
-  private CliSessionState startSessionState()
+  private CliSessionState startSessionState(boolean canReuseSession)
       throws IOException {
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
@@ -955,7 +1048,16 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark
+    if (oldSs != null && canReuseSession
+        && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap)) {
+      // Copy the tezSessionState from the old CliSessionState.
+      tezSessionState = oldSs.getTezSession();
+      ss.setTezSession(tezSessionState);
+      oldSs.setTezSession(null);
+      oldSs.close();
+    }
+
+    if (oldSs != null && (clusterType == MiniClusterType.spark
         || clusterType == MiniClusterType.miniSparkOnYarn)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
@@ -1571,7 +1673,7 @@ public class QTestUtil {
       // close it first.
       SessionState ss = SessionState.get();
       if (ss != null && ss.out != null && ss.out != System.out) {
-	ss.out.close();
+  ss.out.close();
       }
 
       String inSorted = inFileName + SORT_SUFFIX;
@@ -1816,7 +1918,8 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20", defaultInitScript, defaultCleanupScript);
+      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
+          defaultInitScript, defaultCleanupScript);
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

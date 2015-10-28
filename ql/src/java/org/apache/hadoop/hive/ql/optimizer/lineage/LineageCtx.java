@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -171,6 +171,12 @@ public class LineageCtx implements NodeProcessorCtx {
         conds = new LinkedHashSet<Predicate>();
         condMap.put(op, conds);
       }
+      for (Predicate p: conds) {
+        if (StringUtils.equals(cond.getExpr(), p.getExpr())) {
+          p.getBaseCols().addAll(cond.getBaseCols());
+          return;
+        }
+      }
       conds.add(cond);
     }
 
@@ -210,6 +216,7 @@ public class LineageCtx implements NodeProcessorCtx {
     public void clear() {
       finalSelectOps.clear();
       depMap.clear();
+      condMap.clear();
     }
   }
 

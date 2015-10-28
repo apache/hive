@@ -29,12 +29,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DFSClient;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.common.DiskRangeList;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListCreateHelper;
-import org.apache.hadoop.hive.common.DiskRangeList.DiskRangeListMutateHelper;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
+import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -48,7 +46,70 @@ import com.google.common.collect.ComparisonChain;
  */
 public class RecordReaderUtils {
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
-  static boolean[] findPresentStreamsByColumn(
+
+  private static class DefaultDataReader implements DataReader {
+    private FSDataInputStream file;
+    private ByteBufferAllocatorPool pool;
+    private ZeroCopyReaderShim zcr;
+    private FileSystem fs;
+    private Path path;
+    private boolean useZeroCopy;
+    private CompressionCodec codec;
+
+    public DefaultDataReader(
+        FileSystem fs, Path path, boolean useZeroCopy, CompressionCodec codec) {
+      this.fs = fs;
+      this.path = path;
+      this.useZeroCopy = useZeroCopy;
+      this.codec = codec;
+    }
+
+    @Override
+    public void open() throws IOException {
+      this.file = fs.open(path);
+      if (useZeroCopy) {
+        pool = new ByteBufferAllocatorPool();
+        zcr = RecordReaderUtils.createZeroCopyShim(file, codec, pool);
+      } else {
+        pool = null;
+        zcr = null;
+      }
+    }
+
+    @Override
+    public DiskRangeList readFileData(
+        DiskRangeList range, long baseOffset, boolean doForceDirect) throws IOException {
+      return RecordReaderUtils.readDiskRanges(file, zcr, baseOffset, range, doForceDirect);
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (file != null) {
+        file.close();
+      }
+      if (pool != null) {
+        pool.clear();
+      }
+    }
+
+    @Override
+    public boolean isTrackingDiskRanges() {
+      return zcr != null;
+    }
+
+    @Override
+    public void releaseBuffer(ByteBuffer buffer) {
+      zcr.releaseBuffer(buffer);
+    }
+
+  }
+
+  static DataReader createDefaultDataReader(
+      FileSystem fs, Path path, boolean useZeroCopy, CompressionCodec codec) {
+    return new DefaultDataReader(fs, path, useZeroCopy, codec);
+  }
+
+  public static boolean[] findPresentStreamsByColumn(
       List<OrcProto.Stream> streamList, List<OrcProto.Type> types) {
     boolean[] hasNull = new boolean[types.size()];
     for(OrcProto.Stream stream: streamList) {
@@ -74,15 +135,15 @@ public class RecordReaderUtils {
     return rightB >= leftA;
   }
 
-  static void addEntireStreamToRanges(
-      long offset, long length, DiskRangeListCreateHelper list, boolean doMergeBuffers) {
+  public static void addEntireStreamToRanges(
+      long offset, long length, CreateHelper list, boolean doMergeBuffers) {
     list.addOrMerge(offset, offset + length, doMergeBuffers, false);
   }
 
-  static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
+  public static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
       boolean[] includedRowGroups, boolean isCompressed, OrcProto.RowIndex index,
       OrcProto.ColumnEncoding encoding, OrcProto.Type type, int compressionSize, boolean hasNull,
-      long offset, long length, DiskRangeListCreateHelper list, boolean doMergeBuffers) {
+      long offset, long length, CreateHelper list, boolean doMergeBuffers) {
     for (int group = 0; group < includedRowGroups.length; ++group) {
       if (!includedRowGroups[group]) continue;
       int posn = getIndexPosition(
@@ -99,7 +160,7 @@ public class RecordReaderUtils {
     }
   }
 
-  static long estimateRgEndOffset(boolean isCompressed, boolean isLast,
+  public static long estimateRgEndOffset(boolean isCompressed, boolean isLast,
       long nextGroupOffset, long streamLength, int bufferSize) {
     // figure out the worst case last location
     // if adjacent groups have the same compressed block offset then stretch the slop
@@ -189,7 +250,7 @@ public class RecordReaderUtils {
    * Is this stream part of a dictionary?
    * @return is this part of a dictionary?
    */
-  static boolean isDictionary(OrcProto.Stream.Kind kind,
+  public static boolean isDictionary(OrcProto.Stream.Kind kind,
                               OrcProto.ColumnEncoding encoding) {
     assert kind != OrcProto.Stream.Kind.DICTIONARY_COUNT;
     OrcProto.ColumnEncoding.Kind encodingKind = encoding.getKind();
@@ -204,16 +265,19 @@ public class RecordReaderUtils {
    * @param ranges ranges to stringify
    * @return the resulting string
    */
-  static String stringifyDiskRanges(DiskRangeList range) {
+  public static String stringifyDiskRanges(DiskRangeList range) {
     StringBuilder buffer = new StringBuilder();
     buffer.append("[");
     boolean isFirst = true;
     while (range != null) {
       if (!isFirst) {
-        buffer.append(", ");
+        buffer.append(", {");
+      } else {
+        buffer.append("{");
       }
       isFirst = false;
       buffer.append(range.toString());
+      buffer.append("}");
       range = range.next;
     }
     buffer.append("]");
@@ -237,7 +301,7 @@ public class RecordReaderUtils {
     if (range == null) return null;
     DiskRangeList prev = range.prev;
     if (prev == null) {
-      prev = new DiskRangeListMutateHelper(range);
+      prev = new MutateHelper(range);
     }
     while (range != null) {
       if (range.hasData()) {
@@ -246,8 +310,8 @@ public class RecordReaderUtils {
       }
       int len = (int) (range.getEnd() - range.getOffset());
       long off = range.getOffset();
-      file.seek(base + off);
       if (zcr != null) {
+        file.seek(base + off);
         boolean hasReplaced = false;
         while (len > 0) {
           ByteBuffer partial = zcr.readBuffer(len, false);
@@ -264,12 +328,13 @@ public class RecordReaderUtils {
           off += read;
         }
       } else if (doForceDirect) {
+        file.seek(base + off);
         ByteBuffer directBuf = ByteBuffer.allocateDirect(len);
         readDirect(file, len, directBuf);
         range = range.replaceSelfWith(new BufferChunk(directBuf, range.getOffset()));
       } else {
         byte[] buffer = new byte[len];
-        file.readFully(buffer, 0, buffer.length);
+        file.readFully((base + off), buffer, 0, buffer.length);
         range = range.replaceSelfWith(new BufferChunk(ByteBuffer.wrap(buffer), range.getOffset()));
       }
       range = range.next;

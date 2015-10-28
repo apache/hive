@@ -7,8 +7,6 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.vectorized.execution.enabled=true;
 set hive.enforce.bucketing=false;
 set hive.enforce.sorting=false;
-set hive.exec.submitviachild=true;
-set hive.exec.submit.local.task.via.child=true;
 
 create table over1k(
            t tinyint,
@@ -123,6 +121,7 @@ insert overwrite table over1k_part2_orc partition(ds="foo",t) select si,i,b,f,t 
 desc formatted over1k_part2_orc partition(ds="foo",t=27);
 desc formatted over1k_part2_orc partition(ds="foo",t="__HIVE_DEFAULT_PARTITION__");
 
+-- SORT_BEFORE_DIFF
 select * from over1k_part2_orc;
 select count(*) from over1k_part2_orc;
 
@@ -132,6 +131,7 @@ insert overwrite table over1k_part2_orc partition(ds="foo",t) select si,i,b,f,t 
 desc formatted over1k_part2_orc partition(ds="foo",t=27);
 desc formatted over1k_part2_orc partition(ds="foo",t="__HIVE_DEFAULT_PARTITION__");
 
+-- SORT_BEFORE_DIFF
 select * from over1k_part2_orc;
 select count(*) from over1k_part2_orc;
 

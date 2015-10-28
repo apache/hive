@@ -36,20 +36,23 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.llap.io.api.LlapIo;
+import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
@@ -79,7 +82,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats 
+  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats
     = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   private JobConf job;
@@ -196,6 +199,52 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     this.job = job;
   }
 
+  public static InputFormat<WritableComparable, Writable> wrapForLlap(
+      InputFormat<WritableComparable, Writable> inputFormat, Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED)) {
+      return inputFormat; // LLAP not enabled, no-op.
+    }
+    boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface,
+        isVector = Utilities.isVectorMode(conf);
+    if (!isSupported || !isVector) {
+      LOG.info("Not using llap for " + inputFormat + ": " + isSupported + ", " + isVector);
+      return inputFormat;
+    }
+    LOG.info("Wrapping " + inputFormat);
+    @SuppressWarnings("unchecked")
+    LlapIo<VectorizedRowBatch> llapIo = LlapIoProxy.getIo();
+    if (llapIo == null) {
+      LOG.info("Not using LLAP because IO is not initialized");
+      return inputFormat;
+    }
+    return castInputFormat(llapIo.getInputFormat(inputFormat));
+  }
+
+  public static boolean isLlapEnabled(Configuration conf) {
+    // Don't check IO - it needn't be initialized on client.
+    return HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED);
+  }
+
+  public static boolean canWrapAnyForLlap(Configuration conf, MapWork mapWork) {
+    return Utilities.isVectorMode(conf, mapWork);
+  }
+
+  public static boolean canWrapForLlap(Class<? extends InputFormat> inputFormatClass) {
+    return LlapWrappableInputFormatInterface.class.isAssignableFrom(inputFormatClass);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T, U, V, W> InputFormat<T, U> castInputFormat(InputFormat<V, W> from) {
+    // This is ugly in two ways...
+    // 1) We assume that LlapWrappableInputFormatInterface has NullWritable as first parameter.
+    //    Since we are using Java and not, say, a programming language, there's no way to check.
+    // 2) We ignore the fact that 2nd arg is completely incompatible (VRB -> Writable), because
+    //    vectorization currently works by magic, getting VRB from IF with non-VRB value param.
+    // So we just cast blindly and hope for the best (which is obviously what happens).
+    return (InputFormat<T, U>)from;
+  }
+
+
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
     InputFormat<WritableComparable, Writable> instance = inputFormats.get(inputFormatClass);
@@ -213,12 +262,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return instance;
+    return wrapForLlap(instance, job);
   }
 
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
-
     HiveInputSplit hsplit = (HiveInputSplit) split;
 
     InputSplit inputSplit = hsplit.getInputSplit();
@@ -351,7 +399,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
     Path[] dirs = getInputPaths(job);

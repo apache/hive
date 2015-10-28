@@ -54,12 +54,11 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
   protected static final Log LOG = LogFactory.getLog(SparkPartitionPruningSinkOperator.class);
 
   @SuppressWarnings("deprecation")
-  public Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     serializer = (Serializer) ReflectionUtils.newInstance(
         conf.getTable().getDeserializerClass(), null);
     buffer = new DataOutputBuffer();
-    return result;
   }
 
   @Override

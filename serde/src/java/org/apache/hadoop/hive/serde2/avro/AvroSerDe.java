@@ -84,7 +84,7 @@ public class AvroSerDe extends AbstractSerDe {
   public void initialize(Configuration configuration, Properties properties) throws SerDeException {
     // Reset member variables so we don't get in a half-constructed state
     if (schema != null) {
-      LOG.info("Resetting already initialized AvroSerDe");
+      LOG.debug("Resetting already initialized AvroSerDe");
     }
 
     schema = null;
@@ -110,10 +110,12 @@ public class AvroSerDe extends AbstractSerDe {
       properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
     }
 
-    LOG.info("Avro schema is " + schema);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Avro schema is " + schema);
+    }
 
     if (configuration == null) {
-      LOG.info("Configuration null, not inserting schema");
+      LOG.debug("Configuration null, not inserting schema");
     } else {
       configuration.set(
           AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(), schema.toString(false));
@@ -136,7 +138,10 @@ public class AvroSerDe extends AbstractSerDe {
       //Comments are separated by "\0" in columnCommentProperty, see method getSchema
       //in MetaStoreUtils where this string columns.comments is generated
       columnComments = Arrays.asList(columnCommentProperty.split("\0"));
-      LOG.info("columnComments is " + columnCommentProperty);
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("columnComments is " + columnCommentProperty);
+      }
     }
     if (columnNames.size() != columnTypes.size()) {
       throw new IllegalArgumentException("AvroSerde initialization failed. Number of column " +

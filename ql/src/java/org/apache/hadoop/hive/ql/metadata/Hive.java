@@ -103,6 +103,7 @@ import org.apache.thrift.TException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,7 +112,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -241,13 +241,30 @@ public class Hive {
    *
    */
   public static Hive get(HiveConf c) throws HiveException {
+    return getInternal(c, false);
+  }
+
+  /**
+   * Same as {@link #get(HiveConf)}, except that it checks only the object identity of existing
+   * MS client, assuming the relevant settings would be unchanged within the same conf object.
+   */
+  public static Hive getWithFastCheck(HiveConf c) throws HiveException {
+    return getInternal(c, true);
+  }
+
+  private static Hive getInternal(HiveConf c, boolean isFastCheck) throws HiveException {
     Hive db = hiveDB.get();
     if (db == null || !db.isCurrentUserOwner() ||
-        (db.metaStoreClient != null && !db.metaStoreClient.isCompatibleWith(c))) {
+        (db.metaStoreClient != null && !isCompatible(db, c, isFastCheck))) {
       return get(c, true);
     }
     db.conf = c;
     return db;
+  }
+
+  private static boolean isCompatible(Hive db, HiveConf c, boolean isFastCheck) {
+    return isFastCheck
+        ? db.metaStoreClient.isSameConfObj(c) : db.metaStoreClient.isCompatibleWith(c);
   }
 
   /**
@@ -535,7 +552,7 @@ public class Hive {
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
-      newTbl.checkValidity();
+      newTbl.checkValidity(conf);
       getMSC().alter_table(names[0], names[1], newTbl.getTTable(), cascade);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
@@ -738,7 +755,7 @@ public class Hive {
         tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
             tbl.getDeserializer()));
       }
-      tbl.checkValidity();
+      tbl.checkValidity(conf);
       if (tbl.getParameters() != null) {
         tbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
@@ -1360,11 +1377,11 @@ public class Hive {
   }
 
   public void loadPartition(Path loadPath, String tableName,
-      Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
+      Map<String, String> partSpec, boolean replace,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
       boolean isSrcLocal, boolean isAcid) throws HiveException {
     Table tbl = getTable(tableName);
-    loadPartition(loadPath, tbl, partSpec, replace, holdDDLTime, inheritTableSpecs,
+    loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
         isSkewedStoreAsSubdir, isSrcLocal, isAcid);
   }
 
@@ -1383,7 +1400,6 @@ public class Hive {
    * @param replace
    *          if true - replace files in the partition, otherwise add files to
    *          the partition
-   * @param holdDDLTime if true, force [re]create the partition
    * @param inheritTableSpecs if true, on [re]creating the partition, take the
    *          location/inputformat/outputformat/serde details from table spec
    * @param isSrcLocal
@@ -1391,7 +1407,7 @@ public class Hive {
    * @param isAcid true if this is an ACID operation
    */
   public Partition loadPartition(Path loadPath, Table tbl,
-      Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
+      Map<String, String> partSpec, boolean replace,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
       boolean isSrcLocal, boolean isAcid) throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
@@ -1446,25 +1462,30 @@ public class Hive {
         Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid, newFiles);
       }
 
-      boolean forceCreate = (!holdDDLTime) ? true : false;
-      newTPart = getPartition(tbl, partSpec, forceCreate, newPartPath.toString(),
+      newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(),
           inheritTableSpecs, newFiles);
+
       // recreate the partition if it existed before
-      if (!holdDDLTime) {
-        if (isSkewedStoreAsSubdir) {
-          org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
-          SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
-          /* Construct list bucketing location mappings from sub-directory name. */
-          Map<List<String>, String> skewedColValueLocationMaps = constructListBucketingLocationMap(
-              newPartPath, skewedInfo);
-          /* Add list bucketing location mappings. */
-          skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
-          newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
-          alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
-          newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs,
-              newFiles);
-          return new Partition(tbl, newCreatedTpart);
+      if (isSkewedStoreAsSubdir) {
+        org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
+        SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
+        /* Construct list bucketing location mappings from sub-directory name. */
+        Map<List<String>, String> skewedColValueLocationMaps = constructListBucketingLocationMap(
+            newPartPath, skewedInfo);
+        /* Add list bucketing location mappings. */
+        skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
+        newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
+        if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+          newTPart.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
         }
+        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
+        newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs,
+            newFiles);
+        return new Partition(tbl, newCreatedTpart);
+      }
+      if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        newTPart.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()));
       }
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -1571,7 +1592,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param partSpec
    * @param replace
    * @param numDP number of dynamic partitions
-   * @param holdDDLTime
    * @param listBucketingEnabled
    * @param isAcid true if this is an ACID operation
    * @param txnId txnId, can be 0 unless isAcid == true
@@ -1580,7 +1600,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
-      int numDP, boolean holdDDLTime, boolean listBucketingEnabled, boolean isAcid, long txnId)
+      int numDP, boolean listBucketingEnabled, boolean isAcid, long txnId)
       throws HiveException {
 
     Set<Path> validPartitions = new HashSet<Path>();
@@ -1643,7 +1663,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
         Warehouse.makeSpecFromName(fullPartSpec, partPath);
         Partition newPartition = loadPartition(partPath, tbl, fullPartSpec, replace,
-            holdDDLTime, true, listBucketingEnabled, false, isAcid);
+            true, listBucketingEnabled, false, isAcid);
         partitionsMap.put(fullPartSpec, newPartition);
         if (inPlaceEligible) {
           InPlaceUpdates.rePositionCursor(ps);
@@ -1678,7 +1698,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          name of table to be loaded.
    * @param replace
    *          if true - replace files in the table, otherwise add files to table
-   * @param holdDDLTime
    * @param isSrcLocal
    *          If the source directory is LOCAL
    * @param isSkewedStoreAsSubdir
@@ -1686,7 +1705,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isAcid true if this is an ACID based write
    */
   public void loadTable(Path loadPath, String tableName, boolean replace,
-      boolean holdDDLTime, boolean isSrcLocal, boolean isSkewedStoreAsSubdir, boolean isAcid)
+      boolean isSrcLocal, boolean isSkewedStoreAsSubdir, boolean isAcid)
       throws HiveException {
     List<Path> newFiles = new ArrayList<Path>();
     Table tbl = getTable(tableName);
@@ -1702,6 +1721,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } catch (IOException e) {
         throw new HiveException("addFiles: filesystem error in check phase", e);
       }
+    }
+    if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      tbl.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+    }  else {
       tbl.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, "true");
     }
 
@@ -1719,13 +1742,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
 
-    if (!holdDDLTime) {
-      try {
-        alterTable(tableName, tbl);
-      } catch (InvalidOperationException e) {
-        throw new HiveException(e);
-      }
+    try {
+      alterTable(tableName, tbl);
+    } catch (InvalidOperationException e) {
+      throw new HiveException(e);
     }
+
     fireInsertEvent(tbl, null, newFiles);
   }
 
@@ -2686,16 +2708,31 @@ private void constructOneLBLocationMap(FileStatus fSta,
             if (srcs.length == 0) {
               success = true; // Nothing to move.
             }
-            for (FileStatus status : srcs) {
-              success = FileUtils.copy(srcf.getFileSystem(conf), status.getPath(), destf.getFileSystem(conf), destf,
-                  true,     // delete source
-                  replace,  // overwrite destination
-                  conf);
 
-              if (!success) {
+            /* Move files one by one because source is a subdirectory of destination */
+            for (FileStatus status : srcs) {
+              Path destFile;
+
+              /* Append the source filename to the destination directory */
+              if (destFs.isDirectory(destf)) {
+                destFile = new Path(destf, status.getPath().getName());
+              } else {
+                destFile = destf;
+              }
+
+              // Destination should be replaced, so we delete it first
+              if (destFs.exists(destFile)) {
+                if (!destFs.delete(destFile, true)) {
+                  throw new HiveException(String.format("File to replace could not be deleted: %s", destFile));
+                }
+              }
+
+              if (!(destFs.rename(status.getPath(), destFile))) {
                 throw new HiveException("Unable to move source " + status.getPath() + " to destination " + destf);
               }
             }
+
+            success = true;
           } else {
             success = destFs.rename(srcf, destf);
           }
@@ -2901,8 +2938,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
-      boolean inheritPerms = HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
 
       // check if srcf contains nested sub-directories
       FileStatus[] srcs;
@@ -2917,8 +2952,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         LOG.info("No sources specified to move: " + srcf);
         return;
       }
-      List<List<Path[]>> result = checkPaths(conf, destFs, srcs, srcFs, destf,
-          true);
+      List<List<Path[]>> result = checkPaths(conf, destFs, srcs, srcFs, destf, true);
 
       if (oldPath != null) {
         try {
@@ -2930,9 +2964,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             if (FileUtils.isSubDir(oldPath, destf, fs2)) {
               FileUtils.trashFilesUnderDir(fs2, oldPath, conf);
             }
-            if (inheritPerms) {
-              inheritFromTable(tablePath, destf, conf, destFs);
-            }
           }
         } catch (Exception e) {
           //swallow the exception
@@ -2940,95 +2971,29 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
 
-      // rename src directory to destf
-      if (srcs.length == 1 && srcs[0].isDir()) {
-        // rename can fail if the parent doesn't exist
-        Path destfp = destf.getParent();
-        if (!destFs.exists(destfp)) {
-          boolean success = destFs.mkdirs(destfp);
-          if (!success) {
-            LOG.warn("Error creating directory " + destf.toString());
-          }
-          if (inheritPerms && success) {
-            inheritFromTable(tablePath, destfp, conf, destFs);
-          }
-        }
+      // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
+      // destf with inherited permissions
+      boolean destfExist = FileUtils.mkdir(destFs, destf, true, conf);
+      if(!destfExist) {
+        throw new IOException("Directory " + destf.toString()
+            + " does not exist and could not be created.");
+      }
 
-        // Copy/move each file under the source directory to avoid to delete the destination
-        // directory if it is the root of an HDFS encryption zone.
-        for (List<Path[]> sdpairs : result) {
-          for (Path[] sdpair : sdpairs) {
-            Path destParent = sdpair[1].getParent();
-            FileSystem destParentFs = destParent.getFileSystem(conf);
-            if (!destParentFs.isDirectory(destParent)) {
-              boolean success = destFs.mkdirs(destParent);
-              if (!success) {
-                LOG.warn("Error creating directory " + destParent);
-              }
-              if (inheritPerms && success) {
-                inheritFromTable(tablePath, destParent, conf, destFs);
-              }
-            }
-            if (!moveFile(conf, sdpair[0], sdpair[1], true, isSrcLocal)) {
-              throw new IOException("Unable to move file/directory from " + sdpair[0] +
-                  " to " + sdpair[1]);
-            }
-          }
-        }
-      } else { // srcf is a file or pattern containing wildcards
-        if (!destFs.exists(destf)) {
-          boolean success = destFs.mkdirs(destf);
-          if (!success) {
-            LOG.warn("Error creating directory " + destf.toString());
-          }
-          if (inheritPerms && success) {
-            inheritFromTable(tablePath, destf, conf, destFs);
-          }
-        }
-        // srcs must be a list of files -- ensured by LoadSemanticAnalyzer
-        for (List<Path[]> sdpairs : result) {
-          for (Path[] sdpair : sdpairs) {
-            if (!moveFile(conf, sdpair[0], sdpair[1], true,
-                isSrcLocal)) {
-              throw new IOException("Error moving: " + sdpair[0] + " into: " + sdpair[1]);
-            }
+      // Two cases:
+      // 1. srcs has only a src directory, if rename src directory to destf, we also need to
+      // Copy/move each file under the source directory to avoid to delete the destination
+      // directory if it is the root of an HDFS encryption zone.
+      // 2. srcs must be a list of files -- ensured by LoadSemanticAnalyzer
+      // in both cases, we move the file under destf
+      for (List<Path[]> sdpairs : result) {
+        for (Path[] sdpair : sdpairs) {
+          if (!moveFile(conf, sdpair[0], sdpair[1], true, isSrcLocal)) {
+            throw new IOException("Error moving: " + sdpair[0] + " into: " + sdpair[1]);
           }
         }
       }
     } catch (IOException e) {
       throw new HiveException(e.getMessage(), e);
-    }
-  }
-
-  /**
-   * This method sets all paths from tablePath to destf (including destf) to have same permission as tablePath.
-   * @param tablePath path of table
-   * @param destf path of table-subdir.
-   * @param conf
-   * @param fs
-   */
-  private static void inheritFromTable(Path tablePath, Path destf, HiveConf conf, FileSystem fs) {
-    if (!FileUtils.isSubDir(destf, tablePath, fs)) {
-      //partition may not be under the parent.
-      return;
-    }
-    HadoopShims shims = ShimLoader.getHadoopShims();
-    //Calculate all the paths from the table dir, to destf
-    //At end of this loop, currPath is table dir, and pathsToSet contain list of all those paths.
-    Path currPath = destf;
-    List<Path> pathsToSet = new LinkedList<Path>();
-    while (!currPath.equals(tablePath)) {
-      pathsToSet.add(currPath);
-      currPath = currPath.getParent();
-    }
-
-    try {
-      HadoopShims.HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, fs, currPath);
-      for (Path pathToSet : pathsToSet) {
-        shims.setFullFileStatus(conf, fullFileStatus, fs, pathToSet);
-      }
-    } catch (Exception e) {
-      LOG.warn("Error setting permissions or group of " + destf, e);
     }
   }
 
@@ -3082,8 +3047,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
         }
       };
-    return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
-        SessionHiveMetaStoreClient.class.getName());
+
+    if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
+      return new SessionHiveMetaStoreClient(conf, hookLoader);
+    } else {
+      return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
+          SessionHiveMetaStoreClient.class.getName());
+    }
   }
 
   /**
@@ -3200,7 +3170,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
-      return null;
+      return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
     }
   }
 
@@ -3389,4 +3359,28 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return true;
   }
 
+  public Iterable<Map.Entry<Long, ByteBuffer>> getFileMetadata(
+      List<Long> fileIds, Configuration conf) throws HiveException {
+    try {
+      return getMSC().getFileMetadata(fileIds);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void clearFileMetadata(List<Long> fileIds) throws HiveException {
+    try {
+      getMSC().clearFileMetadata(fileIds);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws HiveException {
+    try {
+      getMSC().putFileMetadata(fileIds, metadata);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
+  }
 };

@@ -145,5 +145,14 @@ public class HiveHBaseTableOutputFormat extends
       }
       m_table.put(put);
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+      try {
+        m_table.close();
+      } finally {
+        super.finalize();
+      }
+    }
   }
 }

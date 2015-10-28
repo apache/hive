@@ -506,6 +506,24 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Query executeQuery(ParserRuleContext ctx, String sql, String connProfile) {
     return executeQuery(ctx, new Query(sql), connProfile);
   }
+  
+  /**
+   * Prepare a SQL query (SELECT)
+   */
+  public Query prepareQuery(ParserRuleContext ctx, Query query, String connProfile) {
+    if (!exec.offline) {
+      exec.rowCount = 0;
+      exec.conn.prepareQuery(query, connProfile);
+      return query;
+    }
+    setSqlNoData();
+    info(ctx, "Not executed - offline mode set");
+    return query;
+  }
+
+  public Query prepareQuery(ParserRuleContext ctx, String sql, String connProfile) {
+    return prepareQuery(ctx, new Query(sql), connProfile);
+  }
 
   /**
    * Execute a SQL statement 
@@ -950,6 +968,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   @Override 
+  public Integer visitFrom_subselect_clause(HplsqlParser.From_subselect_clauseContext ctx) { 
+    return exec.select.fromSubselect(ctx); 
+  }
+  
+  @Override 
   public Integer visitFrom_join_clause(HplsqlParser.From_join_clauseContext ctx) { 
     return exec.select.fromJoin(ctx); 
   }
@@ -1159,6 +1182,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitClose_stmt(HplsqlParser.Close_stmtContext ctx) { 
     return exec.stmt.close(ctx); 
+  }
+  
+  /**
+   * CMP statement
+   */
+  @Override 
+  public Integer visitCmp_stmt(HplsqlParser.Cmp_stmtContext ctx) { 
+    return new Cmp(exec).run(ctx); 
   }
   
   /**
@@ -1926,8 +1957,13 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitDate_literal(HplsqlParser.Date_literalContext ctx) { 
-    String str = evalPop(ctx.string()).toString();
-    stackPush(new Var(Var.Type.DATE, Utils.toDate(str))); 
+    if (!exec.buildSql) {
+      String str = evalPop(ctx.string()).toString();
+      stackPush(new Var(Var.Type.DATE, Utils.toDate(str)));
+    }
+    else {
+      stackPush(getFormattedText(ctx));
+    }
     return 0; 
   }
 
@@ -1936,16 +1972,21 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitTimestamp_literal(HplsqlParser.Timestamp_literalContext ctx) { 
-    String str = evalPop(ctx.string()).toString();
-    int len = str.length();
-    int precision = 0;
-    if (len > 19 && len <= 29) {
-      precision = len - 20;
-      if (precision > 3) {
-        precision = 3;
+    if (!exec.buildSql) {
+      String str = evalPop(ctx.string()).toString();
+      int len = str.length();
+      int precision = 0;
+      if (len > 19 && len <= 29) {
+        precision = len - 20;
+        if (precision > 3) {
+          precision = 3;
+        }
       }
+      stackPush(new Var(Utils.toTimestamp(str), precision));
     }
-    stackPush(new Var(Utils.toTimestamp(str), precision)); 
+    else {
+      stackPush(getFormattedText(ctx));
+    }
     return 0; 
   }
   
@@ -1979,6 +2020,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * @throws Exception 
    */
   Connection getConnection(String conn) throws Exception {
+    if (conn == null || conn.equalsIgnoreCase("default")) {
+      conn = exec.conf.defaultConnection;
+    }
     return exec.conn.getConnection(conn);
   }
   
@@ -1993,7 +2037,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Define the database type by profile name
    */
   Conn.Type getConnectionType(String conn) {
-    return exec.conn.getType(conn);
+    return exec.conn.getTypeByProfile(conn);
   }
   
   /**

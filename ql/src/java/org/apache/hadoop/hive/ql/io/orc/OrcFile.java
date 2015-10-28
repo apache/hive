@@ -19,12 +19,15 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Contains factory methods to read or write ORC files.
@@ -102,7 +105,10 @@ public final class OrcFile {
    */
   public enum WriterVersion {
     ORIGINAL(0),
-      HIVE_8732(1); // corrupted stripe/file maximum column statistics
+      HIVE_8732(1), // corrupted stripe/file maximum column statistics
+      HIVE_4243(2), // use real column names from Hive tables
+// Don't use any magic numbers here except for the below:
+      FUTURE(Integer.MAX_VALUE); // a version from a future writer
 
     private final int id;
 
@@ -112,6 +118,29 @@ public final class OrcFile {
 
     WriterVersion(int id) {
       this.id = id;
+    }
+
+    private static final WriterVersion[] values;
+    static {
+      // Assumes few non-negative values close to zero.
+      int max = Integer.MIN_VALUE;
+      for (WriterVersion v : WriterVersion.values()) {
+        if (v.id < 0) throw new AssertionError();
+        if (v.id > max && FUTURE.id != v.id) {
+          max = v.id;
+        }
+      }
+      values = new WriterVersion[max + 1];
+      for (WriterVersion v : WriterVersion.values()) {
+        if (v.id < values.length) {
+          values[v.id] = v;
+        }
+      }
+    }
+
+    public static WriterVersion from(int val) {
+      if (val == FUTURE.id) return FUTURE; // Special handling for the magic value.
+      return values[val];
     }
   }
 
@@ -143,13 +172,14 @@ public final class OrcFile {
   public static class ReaderOptions {
     private final Configuration conf;
     private FileSystem filesystem;
-    private ReaderImpl.FileMetaInfo fileMetaInfo;
+    private FileMetaInfo fileMetaInfo; // TODO: this comes from some place.
     private long maxLength = Long.MAX_VALUE;
+    private FileMetadata fullFileMetadata; // Propagate from LLAP cache.
 
     public ReaderOptions(Configuration conf) {
       this.conf = conf;
     }
-    ReaderOptions fileMetaInfo(ReaderImpl.FileMetaInfo info) {
+    ReaderOptions fileMetaInfo(FileMetaInfo info) {
       fileMetaInfo = info;
       return this;
     }
@@ -164,6 +194,11 @@ public final class OrcFile {
       return this;
     }
 
+    public ReaderOptions fileMetadata(FileMetadata metadata) {
+      this.fullFileMetadata = metadata;
+      return this;
+    }
+
     Configuration getConfiguration() {
       return conf;
     }
@@ -172,12 +207,16 @@ public final class OrcFile {
       return filesystem;
     }
 
-    ReaderImpl.FileMetaInfo getFileMetaInfo() {
+    FileMetaInfo getFileMetaInfo() {
       return fileMetaInfo;
     }
 
     long getMaxLength() {
       return maxLength;
+    }
+
+    FileMetadata getFileMetadata() {
+      return fullFileMetadata;
     }
   }
 
@@ -205,7 +244,9 @@ public final class OrcFile {
   public static class WriterOptions {
     private final Configuration configuration;
     private FileSystem fileSystemValue = null;
-    private ObjectInspector inspectorValue = null;
+    private boolean explicitSchema = false;
+    private TypeDescription schema = null;
+    private ObjectInspector inspector = null;
     private long stripeSizeValue;
     private long blockSizeValue;
     private int rowIndexStrideValue;
@@ -355,11 +396,26 @@ public final class OrcFile {
     }
 
     /**
-     * A required option that sets the object inspector for the rows. Used
-     * to determine the schema for the file.
+     * A required option that sets the object inspector for the rows. If
+     * setSchema is not called, it also defines the schema.
      */
     public WriterOptions inspector(ObjectInspector value) {
-      inspectorValue = value;
+      this.inspector = value;
+      if (!explicitSchema) {
+        schema = OrcOutputFormat.convertTypeInfo(
+            TypeInfoUtils.getTypeInfoFromObjectInspector(value));
+      }
+      return this;
+    }
+
+    /**
+     * Set the schema for the file. This is a required parameter.
+     * @param schema the schema for the file.
+     * @return this
+     */
+    public WriterOptions setSchema(TypeDescription schema) {
+      this.explicitSchema = true;
+      this.schema = schema;
       return this;
     }
 
@@ -426,7 +482,8 @@ public final class OrcFile {
     FileSystem fs = opts.fileSystemValue == null ?
       path.getFileSystem(opts.configuration) : opts.fileSystemValue;
 
-    return new WriterImpl(fs, path, opts.configuration, opts.inspectorValue,
+    return new WriterImpl(fs, path, opts.configuration, opts.inspector,
+                          opts.schema,
                           opts.stripeSizeValue, opts.compressValue,
                           opts.bufferSizeValue, opts.rowIndexStrideValue,
                           opts.memoryManagerValue, opts.blockPaddingValue,

@@ -265,7 +265,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     if (index == 0) {
       // the query contains the sum aggregation GenericUDAF
       String selReplacementCommand = "select sum(`" + rewriteQueryCtx.getAggregateFunction() + "`)"
-          + " from " + rewriteQueryCtx.getIndexName() + " group by "
+          + " from `" + rewriteQueryCtx.getIndexName() + "` group by "
           + rewriteQueryCtx.getIndexKey() + " ";
       // retrieve the operator tree for the query, and the required GroupByOperator from it
       Operator<?> newOperatorTree = RewriteParseContextGenerator.generateOperatorTree(

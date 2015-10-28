@@ -1,0 +1,2 @@
+Ln:1 COPY
+Ln:1 SELECT executed: 2 columns

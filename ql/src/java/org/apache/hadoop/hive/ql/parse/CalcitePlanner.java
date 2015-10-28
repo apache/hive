@@ -117,9 +117,10 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfigContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveHepPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveVolcanoPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
@@ -134,6 +135,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
@@ -149,6 +151,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
@@ -644,8 +647,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-        introduceProjectIfNeeded(optimizedOptiqPlan), resultSchema, this.getQB()
-            .getTableDesc() != null);
+        optimizedOptiqPlan, resultSchema, this.getQB().getTableDesc() != null);
 
     LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
     Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps,
@@ -688,30 +690,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         columnNames), new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
     output.setColumnExprMap(colExprMap);
     return output;
-  }
-
-  private RelNode introduceProjectIfNeeded(RelNode optimizedOptiqPlan)
-      throws CalciteSemanticException {
-    RelNode parent = null;
-    RelNode input = optimizedOptiqPlan;
-    RelNode newRoot = optimizedOptiqPlan;
-
-    while (!(input instanceof Project) && (input instanceof Sort)) {
-      parent = input;
-      input = input.getInput(0);
-    }
-
-    if (!(input instanceof Project)) {
-      HiveProject hpRel = HiveProject.create(input,
-          HiveCalciteUtil.getProjsFromBelowAsInputRef(input), input.getRowType().getFieldNames());
-      if (input == optimizedOptiqPlan) {
-        newRoot = hpRel;
-      } else {
-        parent.replaceInput(0, hpRel);
-      }
-    }
-
-    return newRoot;
   }
 
   /***
@@ -839,7 +817,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final Double maxMemory = (double) HiveConf.getLongVar(
               conf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
       HiveAlgorithmsConf algorithmsConf = new HiveAlgorithmsConf(maxSplitSize, maxMemory);
-      HiveConfigContext confContext = new HiveConfigContext(algorithmsConf);
+      HiveVolcanoPlannerContext confContext = new HiveVolcanoPlannerContext(algorithmsConf);
       RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
       final RelOptQuery query = new RelOptQuery(planner);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
@@ -885,6 +863,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPgmBldr.addRuleInstance(UnionMergeRule.INSTANCE);
       hepPgmBldr.addRuleInstance(new ProjectMergeRule(false, HiveProject.DEFAULT_PROJECT_FACTORY));
       hepPgmBldr.addRuleInstance(HiveAggregateProjectMergeRule.INSTANCE);
+      if (conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE)) {
+        hepPgmBldr.addRuleInstance(HiveAggregateJoinTransposeRule.INSTANCE);
+      }
 
       hepPgm = hepPgmBldr.build();
       HepPlanner hepPlanner = new HepPlanner(hepPgm);
@@ -1056,7 +1037,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           programBuilder.addRuleInstance(r);
       }
 
-      HepPlanner planner = new HepPlanner(programBuilder.build());
+      HiveRulesRegistry registry = new HiveRulesRegistry();
+      HiveHepPlannerContext context = new HiveHepPlannerContext(registry);
+      HepPlanner planner = new HepPlanner(programBuilder.build(), context);
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(mdProvider);
       planner.registerMetadataProviders(list);
@@ -1119,8 +1102,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   + " on second table"));
         }
         ColumnInfo unionColInfo = new ColumnInfo(lInfo);
-        unionColInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
-            rInfo.getType()));
+        unionColInfo.setType(commonTypeInfo);
         unionoutRR.put(unionalias, field, unionColInfo);
       }
 

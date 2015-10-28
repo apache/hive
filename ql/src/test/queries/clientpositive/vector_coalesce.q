@@ -50,3 +50,25 @@ FROM alltypesorc
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10;
+
+EXPLAIN SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10;
+
+SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10;
+
+EXPLAIN SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10;
+
+SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10;

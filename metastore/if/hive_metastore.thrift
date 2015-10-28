@@ -714,6 +714,59 @@ struct FireEventResponse {
     // NOP for now, this is just a place holder for future responses
 }
     
+struct MetadataPpdResult {
+  1: optional binary metadata,
+  2: optional binary includeBitset
+}
+
+// Return type for get_file_metadata_by_expr
+struct GetFileMetadataByExprResult {
+  1: required map<i64, MetadataPpdResult> metadata,
+  2: required bool isSupported
+}
+
+enum FileMetadataExprType {
+  ORC_SARG = 1
+}
+
+
+// Request type for get_file_metadata_by_expr
+struct GetFileMetadataByExprRequest {
+  1: required list<i64> fileIds,
+  2: required binary expr,
+  3: optional bool doGetFooters,
+  4: optional FileMetadataExprType type
+}
+
+// Return type for get_file_metadata
+struct GetFileMetadataResult {
+  1: required map<i64, binary> metadata,
+  2: required bool isSupported
+}
+
+// Request type for get_file_metadata
+struct GetFileMetadataRequest {
+  1: required list<i64> fileIds
+}
+
+// Return type for put_file_metadata
+struct PutFileMetadataResult {
+}
+
+// Request type for put_file_metadata
+struct PutFileMetadataRequest {
+  1: required list<i64> fileIds,
+  2: required list<binary> metadata
+}
+
+// Return type for clear_file_metadata
+struct ClearFileMetadataResult {
+}
+
+// Request type for clear_file_metadata
+struct ClearFileMetadataRequest {
+  1: required list<i64> fileIds
+}
 
 struct GetAllFunctionsResponse {
   1: optional list<Function> functions
@@ -1194,6 +1247,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
+  void flushCache()
+
+  GetFileMetadataByExprResult get_file_metadata_by_expr(1:GetFileMetadataByExprRequest req)
+  GetFileMetadataResult get_file_metadata(1:GetFileMetadataRequest req)
+  PutFileMetadataResult put_file_metadata(1:PutFileMetadataRequest req)
+  ClearFileMetadataResult clear_file_metadata(1:ClearFileMetadataRequest req)
+
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

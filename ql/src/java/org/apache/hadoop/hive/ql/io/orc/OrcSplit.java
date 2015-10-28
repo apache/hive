@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.ColumnarSplit;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.io.Text;
@@ -40,10 +41,10 @@ import org.apache.hadoop.mapred.FileSplit;
  * OrcFileSplit. Holds file meta info
  *
  */
-public class OrcSplit extends FileSplit {
+public class OrcSplit extends FileSplit implements ColumnarSplit {
   private static final Log LOG = LogFactory.getLog(OrcSplit.class);
 
-  private ReaderImpl.FileMetaInfo fileMetaInfo;
+  private FileMetaInfo fileMetaInfo;
   private boolean hasFooter;
   private boolean isOriginal;
   private boolean hasBase;
@@ -65,7 +66,7 @@ public class OrcSplit extends FileSplit {
   }
 
   public OrcSplit(Path path, Long fileId, long offset, long length, String[] hosts,
-      ReaderImpl.FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
+      FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
       List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize) {
     super(path, offset, length, hosts);
     // We could avoid serializing file ID and just replace the path with inode-based path.
@@ -76,7 +77,7 @@ public class OrcSplit extends FileSplit {
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.deltas.addAll(deltas);
-    this.projColsUncompressedSize = projectedDataSize;
+    this.projColsUncompressedSize = projectedDataSize <= 0 ? length : projectedDataSize;
   }
 
   @Override
@@ -145,7 +146,7 @@ public class OrcSplit extends FileSplit {
       OrcFile.WriterVersion writerVersion =
           ReaderImpl.getWriterVersion(WritableUtils.readVInt(in));
 
-      fileMetaInfo = new ReaderImpl.FileMetaInfo(compressionType, bufferSize,
+      fileMetaInfo = new FileMetaInfo(compressionType, bufferSize,
           metadataSize, footerBuff, writerVersion);
     }
     if (hasFileId) {
@@ -153,7 +154,7 @@ public class OrcSplit extends FileSplit {
     }
   }
 
-  ReaderImpl.FileMetaInfo getFileMetaInfo(){
+  FileMetaInfo getFileMetaInfo(){
     return fileMetaInfo;
   }
 
@@ -179,5 +180,10 @@ public class OrcSplit extends FileSplit {
 
   public Long getFileId() {
     return fileId;
+  }
+
+  @Override
+  public long getColumnarProjectionSize() {
+    return projColsUncompressedSize;
   }
 }

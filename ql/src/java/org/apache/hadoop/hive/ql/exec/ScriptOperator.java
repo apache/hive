@@ -265,8 +265,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     firstRow = true;
 
     statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
@@ -290,7 +290,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     } catch (Exception e) {
       throw new HiveException(ErrorMsg.SCRIPT_INIT_ERROR.getErrorCodedMsg(), e);
     }
-    return result;
   }
 
   boolean isBrokenPipeException(IOException e) {

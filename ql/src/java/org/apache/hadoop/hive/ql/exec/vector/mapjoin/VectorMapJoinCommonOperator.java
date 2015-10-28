@@ -530,7 +530,6 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    */
   @Override
   protected HashTableLoader getHashTableLoader(Configuration hconf) {
-
     VectorMapJoinDesc vectorDesc = conf.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
     HashTableLoader hashTableLoader;
@@ -552,9 +551,8 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
   }
 
   @Override
-  protected Collection<Future<?>> initializeOp(Configuration hconf) throws HiveException {
-
-    Collection<Future<?>> result = super.initializeOp(hconf);
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
 
     if (LOG.isDebugEnabled()) {
       // Determine the name of our map or reduce task for debug tracing.
@@ -614,8 +612,6 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
         i++;
       }
     }
-
-    return result;
   }
 
   @Override
@@ -626,7 +622,6 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
 
     VectorMapJoinDesc vectorDesc = conf.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
-    HashTableLoader hashTableLoader;
     switch (vectorDesc.hashTableImplementationType()) {
     case OPTIMIZED:
       {

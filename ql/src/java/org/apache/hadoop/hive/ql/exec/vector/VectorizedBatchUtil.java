@@ -45,6 +45,8 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -52,6 +54,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -112,6 +115,80 @@ public class VectorizedBatchUtil {
   }
 
   /**
+   * Convert an ObjectInspector into a ColumnVector of the appropriate
+   * type.
+   */
+  public static ColumnVector createColumnVector(ObjectInspector inspector
+                                                ) throws HiveException {
+    switch(inspector.getCategory()) {
+      case PRIMITIVE:
+        PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
+        switch(poi.getPrimitiveCategory()) {
+          case BOOLEAN:
+          case BYTE:
+          case SHORT:
+          case INT:
+          case LONG:
+          case TIMESTAMP:
+          case DATE:
+          case INTERVAL_YEAR_MONTH:
+          case INTERVAL_DAY_TIME:
+            return new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+          case FLOAT:
+          case DOUBLE:
+            return new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+          case BINARY:
+          case STRING:
+          case CHAR:
+          case VARCHAR:
+            return new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+          case DECIMAL:
+            DecimalTypeInfo tInfo = (DecimalTypeInfo) poi.getTypeInfo();
+            return new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+                tInfo.precision(), tInfo.scale());
+          default:
+            throw new HiveException("Vectorizaton is not supported for datatype:"
+                + poi.getPrimitiveCategory());
+        }
+      case STRUCT: {
+        StructObjectInspector soi = (StructObjectInspector) inspector;
+        List<? extends StructField> fieldList = soi.getAllStructFieldRefs();
+        ColumnVector[] children = new ColumnVector[fieldList.size()];
+        for(int i=0; i < children.length; ++i) {
+          children[i] =
+              createColumnVector(fieldList.get(i).getFieldObjectInspector());
+        }
+        return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            children);
+      }
+      case UNION: {
+        UnionObjectInspector uoi = (UnionObjectInspector) inspector;
+        List<ObjectInspector> fieldList = uoi.getObjectInspectors();
+        ColumnVector[] children = new ColumnVector[fieldList.size()];
+        for(int i=0; i < children.length; ++i) {
+          children[i] = createColumnVector(fieldList.get(i));
+        }
+        return new UnionColumnVector(VectorizedRowBatch.DEFAULT_SIZE, children);
+      }
+      case LIST: {
+        ListObjectInspector loi = (ListObjectInspector) inspector;
+        return new ListColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            createColumnVector(loi.getListElementObjectInspector()));
+      }
+      case MAP: {
+        MapObjectInspector moi = (MapObjectInspector) inspector;
+        return new MapColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            createColumnVector(moi.getMapKeyObjectInspector()),
+            createColumnVector(moi.getMapValueObjectInspector()));
+      }
+      default:
+        throw new HiveException("Vectorization is not supported for datatype:"
+            + inspector.getCategory());
+    }
+
+  }
+
+  /**
    * Walk through the object inspector and add column vectors
    *
    * @param oi
@@ -129,47 +206,7 @@ public class VectorizedBatchUtil {
     final List<? extends StructField> fields = oi.getAllStructFieldRefs();
     for(StructField field : fields) {
       ObjectInspector fieldObjectInspector = field.getFieldObjectInspector();
-      switch(fieldObjectInspector.getCategory()) {
-      case PRIMITIVE:
-        PrimitiveObjectInspector poi = (PrimitiveObjectInspector) fieldObjectInspector;
-        switch(poi.getPrimitiveCategory()) {
-        case BOOLEAN:
-        case BYTE:
-        case SHORT:
-        case INT:
-        case LONG:
-        case TIMESTAMP:
-        case DATE:
-        case INTERVAL_YEAR_MONTH:
-        case INTERVAL_DAY_TIME:
-          cvList.add(new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
-          break;
-        case FLOAT:
-        case DOUBLE:
-          cvList.add(new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
-          break;
-        case BINARY:
-        case STRING:
-        case CHAR:
-        case VARCHAR:
-          cvList.add(new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE));
-          break;
-        case DECIMAL:
-          DecimalTypeInfo tInfo = (DecimalTypeInfo) poi.getTypeInfo();
-          cvList.add(new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-              tInfo.precision(), tInfo.scale()));
-          break;
-        default:
-          throw new HiveException("Vectorizaton is not supported for datatype:"
-              + poi.getPrimitiveCategory());
-        }
-        break;
-      case STRUCT:
-        throw new HiveException("Struct not supported");
-      default:
-        throw new HiveException("Flattening is not supported for datatype:"
-            + fieldObjectInspector.getCategory());
-      }
+      cvList.add(createColumnVector(fieldObjectInspector));
     }
   }
 
@@ -611,6 +648,48 @@ public class VectorizedBatchUtil {
     return result;
   }
 
+  static ColumnVector cloneColumnVector(ColumnVector source
+                                        ) throws HiveException{
+    if (source instanceof LongColumnVector) {
+      return new LongColumnVector(((LongColumnVector) source).vector.length);
+    } else if (source instanceof DoubleColumnVector) {
+      return new DoubleColumnVector(((DoubleColumnVector) source).vector.length);
+    } else if (source instanceof BytesColumnVector) {
+      return new BytesColumnVector(((BytesColumnVector) source).vector.length);
+    } else if (source instanceof DecimalColumnVector) {
+      DecimalColumnVector decColVector = (DecimalColumnVector) source;
+      return new DecimalColumnVector(decColVector.vector.length,
+          decColVector.precision,
+          decColVector.scale);
+    } else if (source instanceof ListColumnVector) {
+      ListColumnVector src = (ListColumnVector) source;
+      ColumnVector child = cloneColumnVector(src.child);
+      return new ListColumnVector(src.offsets.length, child);
+    } else if (source instanceof MapColumnVector) {
+      MapColumnVector src = (MapColumnVector) source;
+      ColumnVector keys = cloneColumnVector(src.keys);
+      ColumnVector values = cloneColumnVector(src.values);
+      return new MapColumnVector(src.offsets.length, keys, values);
+    } else if (source instanceof StructColumnVector) {
+      StructColumnVector src = (StructColumnVector) source;
+      ColumnVector[] copy = new ColumnVector[src.fields.length];
+      for(int i=0; i < copy.length; ++i) {
+        copy[i] = cloneColumnVector(src.fields[i]);
+      }
+      return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE, copy);
+    } else if (source instanceof UnionColumnVector) {
+      UnionColumnVector src = (UnionColumnVector) source;
+      ColumnVector[] copy = new ColumnVector[src.fields.length];
+      for(int i=0; i < copy.length; ++i) {
+        copy[i] = cloneColumnVector(src.fields[i]);
+      }
+      return new UnionColumnVector(src.tags.length, copy);
+    } else
+      throw new HiveException("Column vector class " +
+          source.getClass().getName() +
+          " is not supported!");
+  }
+
   /**
    * Make a new (scratch) batch, which is exactly "like" the batch provided, except that it's empty
    * @param batch the batch to imitate
@@ -620,27 +699,13 @@ public class VectorizedBatchUtil {
   public static VectorizedRowBatch makeLike(VectorizedRowBatch batch) throws HiveException {
     VectorizedRowBatch newBatch = new VectorizedRowBatch(batch.numCols);
     for (int i = 0; i < batch.numCols; i++) {
-      ColumnVector colVector = batch.cols[i];
-      if (colVector != null) {
-        ColumnVector newColVector;
-        if (colVector instanceof LongColumnVector) {
-          newColVector = new LongColumnVector();
-        } else if (colVector instanceof DoubleColumnVector) {
-          newColVector = new DoubleColumnVector();
-        } else if (colVector instanceof BytesColumnVector) {
-          newColVector = new BytesColumnVector();
-        } else if (colVector instanceof DecimalColumnVector) {
-          DecimalColumnVector decColVector = (DecimalColumnVector) colVector;
-          newColVector = new DecimalColumnVector(decColVector.precision, decColVector.scale);
-        } else {
-          throw new HiveException("Column vector class " + colVector.getClass().getName() +
-          " is not supported!");
-        }
-        newBatch.cols[i] = newColVector;
+      if (batch.cols[i] != null) {
+        newBatch.cols[i] = cloneColumnVector(batch.cols[i]);
         newBatch.cols[i].init();
       }
     }
-    newBatch.projectedColumns = Arrays.copyOf(batch.projectedColumns, batch.projectedColumns.length);
+    newBatch.projectedColumns = Arrays.copyOf(batch.projectedColumns,
+        batch.projectedColumns.length);
     newBatch.projectionSize = batch.projectionSize;
     newBatch.reset();
     return newBatch;

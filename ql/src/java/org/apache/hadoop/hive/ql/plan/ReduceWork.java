@@ -31,13 +31,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.ReflectionUtil;
 
@@ -150,8 +147,21 @@ public class ReduceWork extends BaseWork {
   }
 
   @Explain(displayName = "Execution mode")
-  public String getVectorModeOn() {
-    return vectorMode ? "vectorized" : null;
+  public String getExecutionMode() {
+    if (vectorMode) {
+      if (llapMode) {
+	if (uberMode) {
+	  return "vectorized, uber";
+	} else {
+	  return "vectorized, llap";
+	}
+      } else {
+	return "vectorized";
+      }
+    } else if (llapMode) {
+      return uberMode? "uber" : "llap";
+    }
+    return null;
   }
 
   @Explain(displayName = "Reduce Operator Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
