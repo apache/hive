@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -34,7 +34,7 @@ import org.apache.tez.common.counters.TezCounters;
  * Post execution hook to print hive tez counters to console error stream.
  */
 public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
-  private static final Log LOG = LogFactory.getLog(PostExecTezSummaryPrinter.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(PostExecTezSummaryPrinter.class.getName());
 
   @Override
   public void run(HookContext hookContext) throws Exception {

@@ -39,7 +39,8 @@ import org.apache.hadoop.hive.accumulo.predicate.compare.PrimitiveComparison;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
@@ -53,7 +54,7 @@ import com.google.common.collect.Lists;
  */
 public class PrimitiveComparisonFilter extends WholeRowIterator {
   @SuppressWarnings("unused")
-  private static final Logger log = Logger.getLogger(PrimitiveComparisonFilter.class);
+  private static final Logger log = LoggerFactory.getLogger(PrimitiveComparisonFilter.class);
 
   public static final String FILTER_PREFIX = "accumulo.filter.compare.iterator.";
   public static final String P_COMPARE_CLASS = "accumulo.filter.iterator.p.compare.class";

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
 /**
@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
  * It is recommended to use it as a ThreadLocal variable.
  */
 public class Deadline {
-  private static final Log LOG = LogFactory.getLog(Deadline.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(Deadline.class.getName());
 
   /**
    * its value is init from conf, and could be reset from client.

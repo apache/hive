@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -223,7 +223,7 @@ import static org.apache.hadoop.util.StringUtils.stringifyException;
  **/
 public class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog("hive.ql.exec.DDLTask");
+  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.exec.DDLTask");
 
   private static final int separator = Utilities.tabCode;
   private static final int terminator = Utilities.newLineCode;

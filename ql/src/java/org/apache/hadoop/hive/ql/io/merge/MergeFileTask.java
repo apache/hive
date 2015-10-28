@@ -189,7 +189,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
         }
       } catch (Exception e) {
 	// jobClose needs to execute successfully otherwise fail task
-	LOG.warn(e);
+	LOG.warn("Job close failed ",e);
         if (success) {
           success = false;
           returnVal = 3;

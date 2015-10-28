@@ -685,7 +685,7 @@ public class HiveStringUtils {
    * @param LOG the target log object
    */
   public static void startupShutdownMessage(Class<?> clazz, String[] args,
-                                     final org.apache.commons.logging.Log LOG) {
+                                     final org.slf4j.Logger LOG) {
     final String hostname = getHostname();
     final String classname = clazz.getSimpleName();
     LOG.info(

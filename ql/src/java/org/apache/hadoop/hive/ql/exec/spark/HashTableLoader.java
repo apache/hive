@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -54,7 +54,7 @@ import org.apache.hadoop.mapred.JobConf;
  */
 public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTableLoader {
 
-  private static final Log LOG = LogFactory.getLog(HashTableLoader.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(HashTableLoader.class.getName());
 
   private ExecMapperContext context;
   private Configuration hconf;

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec.spark.session;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -36,7 +36,7 @@ import org.apache.spark.util.Utils;
 import com.google.common.base.Preconditions;
 
 public class SparkSessionImpl implements SparkSession {
-  private static final Log LOG = LogFactory.getLog(SparkSession.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkSession.class);
 
   private HiveConf conf;
   private boolean isOpen;

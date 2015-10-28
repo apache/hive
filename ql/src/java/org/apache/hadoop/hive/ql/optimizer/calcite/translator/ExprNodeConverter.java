@@ -41,8 +41,8 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -79,12 +79,11 @@ import com.google.common.collect.ImmutableSet;
 public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   private final String             tabAlias;
-  private final String             columnAlias;
   private final RelDataType        inputRowType;
   private final ImmutableSet<Integer>       inputVCols;
-  private List<WindowFunctionSpec> windowFunctionSpecs = new ArrayList<>();
+  private final List<WindowFunctionSpec> windowFunctionSpecs = new ArrayList<>();
   private final RelDataTypeFactory dTFactory;
-  protected final Log LOG = LogFactory.getLog(this.getClass().getName());
+  protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   private static long uniqueCounter = 0;
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
@@ -96,7 +95,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
           RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory) {
     super(true);
     this.tabAlias = tabAlias;
-    this.columnAlias = columnAlias;
     this.inputRowType = inputRowType;
     this.inputVCols = ImmutableSet.copyOf(inputVCols);
     this.dTFactory = dTFactory;
@@ -146,7 +144,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       try {
         gfDesc = ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
       } catch (UDFArgumentException e) {
-        LOG.error(e);
+        LOG.error("Failed to instantiate udf: ", e);
         throw new RuntimeException(e);
       }
     }

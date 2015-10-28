@@ -19,8 +19,8 @@
 package org.apache.hive.hcatalog.streaming;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,7 +49,7 @@ import java.util.List;
 
 
 abstract class AbstractRecordWriter implements RecordWriter {
-  static final private Log LOG = LogFactory.getLog(AbstractRecordWriter.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(AbstractRecordWriter.class.getName());
 
   final HiveConf conf;
   final HiveEndPoint endPoint;

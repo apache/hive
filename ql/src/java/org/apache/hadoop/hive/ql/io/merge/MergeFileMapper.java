@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.merge;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -40,7 +40,7 @@ import java.io.IOException;
  * name is used for serialization and deserialization of MergeFileWork.
  */
 public class MergeFileMapper extends MapReduceBase implements Mapper {
-  public static final Log LOG = LogFactory.getLog("MergeFileMapper");
+  public static final Logger LOG = LoggerFactory.getLogger("MergeFileMapper");
   private static final String PLAN_KEY = "__MAP_PLAN__";
 
   private JobConf jc;

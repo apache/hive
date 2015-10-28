@@ -23,11 +23,10 @@ import java.util.concurrent.Executors;
 
 import javax.management.ObjectName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.LogLevels;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
@@ -56,22 +55,20 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
-  public static final Log LOG = LogFactory.getLog(LlapIoImpl.class);
-  public static final LogLevels LOGL = new LogLevels(LOG);
+  public static final Logger LOG = LoggerFactory.getLogger(LlapIoImpl.class);
 
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
-  private LlapDaemonCacheMetrics cacheMetrics;
-  private LlapDaemonQueueMetrics queueMetrics;
+  private final LlapDaemonCacheMetrics cacheMetrics;
+  private final LlapDaemonQueueMetrics queueMetrics;
   private ObjectName buddyAllocatorMXBean;
   private EvictionAwareAllocator allocator;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
     // High-level cache not supported yet.
-    if (LOGL.isInfoEnabled()) {
-      LOG.info("Initializing LLAP IO" + (useLowLevelCache ? " with low level cache" : ""));
-    }
+    LOG.info("Initializing LLAP IO {}", useLowLevelCache ? " with low level cache" : "");
+
 
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
     String sessionId = conf.get("llap.daemon.metrics.sessionid");
@@ -114,10 +111,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf, cacheMetrics,
         queueMetrics);
-    if (LOGL.isInfoEnabled()) {
-      LOG.info("LLAP IO initialized");
-    }
-
+    LOG.info("LLAP IO initialized");
     registerMXBeans();
   }
 

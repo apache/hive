@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -46,7 +46,7 @@ import com.google.common.base.Preconditions;
 public class SparkMergeFileRecordHandler extends SparkRecordHandler {
 
   private static final String PLAN_KEY = "__MAP_PLAN__";
-  private static final Log LOG = LogFactory.getLog(SparkMergeFileRecordHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkMergeFileRecordHandler.class);
   private Operator<? extends OperatorDesc> op;
   private AbstractFileMergeOperator<? extends FileMergeDesc> mergeOp;
   private Object[] row;

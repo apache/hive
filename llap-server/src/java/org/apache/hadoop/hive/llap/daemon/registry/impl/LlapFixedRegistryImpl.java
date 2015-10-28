@@ -31,11 +31,12 @@ import org.apache.hadoop.hive.llap.daemon.registry.ServiceRegistry;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LlapFixedRegistryImpl implements ServiceRegistry {
 
-  private static final Logger LOG = Logger.getLogger(LlapFixedRegistryImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapFixedRegistryImpl.class);
 
   @InterfaceAudience.Private
   // This is primarily for testing to avoid the host lookup

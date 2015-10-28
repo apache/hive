@@ -26,8 +26,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Deadline;
@@ -73,7 +73,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HBaseImport {
 
-  static final private Log LOG = LogFactory.getLog(HBaseImport.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(HBaseImport.class.getName());
 
   public static int main(String[] args) {
     try {

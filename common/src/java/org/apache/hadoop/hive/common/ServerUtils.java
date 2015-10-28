@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.common;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
  */
 public class ServerUtils {
 
-  public static final Log LOG = LogFactory.getLog(ServerUtils.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ServerUtils.class);
 
   public static void cleanUpScratchDir(HiveConf hiveConf) {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_START_CLEANUP_SCRATCHDIR)) {

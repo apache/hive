@@ -26,8 +26,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -43,7 +43,7 @@ import org.apache.hadoop.security.UserGroupInformation;
  */
 public class TezSessionPoolManager {
 
-  private static final Log LOG = LogFactory.getLog(TezSessionPoolManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TezSessionPoolManager.class);
 
   private BlockingQueue<TezSessionState> defaultQueuePool;
   private Semaphore llapQueue;

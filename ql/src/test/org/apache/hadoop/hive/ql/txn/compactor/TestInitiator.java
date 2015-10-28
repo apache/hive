@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.junit.Assert;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestInitiator extends CompactorTest {
   static final private String CLASS_NAME = TestInitiator.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   public TestInitiator() throws Exception {
     super();

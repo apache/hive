@@ -27,8 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -89,7 +89,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 public final class ObjectInspectorUtils {
 
-  protected final static Log LOG = LogFactory.getLog(ObjectInspectorUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ObjectInspectorUtils.class.getName());
 
   /**
    * This enum controls how we copy primitive objects.

@@ -18,8 +18,8 @@
  */
 package org.apache.hive.hcatalog.templeton;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.security.Groups;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.Set;
  * call is allowed to impersonate doAs user and is making a call from authorized host.
  */
 final class ProxyUserSupport {
-  private static final Log LOG = LogFactory.getLog(ProxyUserSupport.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ProxyUserSupport.class);
   private static final String CONF_PROXYUSER_PREFIX = "webhcat.proxyuser.";
   private static final String CONF_GROUPS_SUFFIX = ".groups";
   private static final String CONF_HOSTS_SUFFIX = ".hosts";

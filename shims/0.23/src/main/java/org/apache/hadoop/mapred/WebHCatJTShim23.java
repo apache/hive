@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.mapred;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.TypeConverter;
@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Set;
 
 public class WebHCatJTShim23 implements WebHCatJTShim {
-  private static final Log LOG = LogFactory.getLog(WebHCatJTShim23.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WebHCatJTShim23.class);
   private JobClient jc;
   private final Configuration conf;
 

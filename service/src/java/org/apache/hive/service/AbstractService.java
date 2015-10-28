@@ -21,8 +21,8 @@ package org.apache.hive.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
  */
 public abstract class AbstractService implements Service {
 
-  private static final Log LOG = LogFactory.getLog(AbstractService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractService.class);
 
   /**
    * Service state: initially {@link STATE#NOTINITED}.

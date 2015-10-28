@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.metastore.hbase;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -143,7 +143,7 @@ public class HBaseReadWrite {
   @VisibleForTesting final static String TEST_CONN = "test_connection";
   private static HBaseConnection testConn;
 
-  static final private Log LOG = LogFactory.getLog(HBaseReadWrite.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(HBaseReadWrite.class.getName());
 
   private static ThreadLocal<HBaseReadWrite> self = new ThreadLocal<HBaseReadWrite>() {
     @Override

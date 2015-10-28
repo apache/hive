@@ -27,8 +27,8 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
@@ -85,7 +85,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implements VectorizationContextRegion {
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinCommonOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinCommonOperator.class.getName());
 
   // Whether this operator is an outer join.
   protected boolean isOuterJoin;

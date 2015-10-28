@@ -19,8 +19,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -41,7 +41,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AggregateStatsCache {
 
-  private static final Log LOG = LogFactory.getLog(AggregateStatsCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(AggregateStatsCache.class.getName());
   private static AggregateStatsCache self = null;
 
   // Backing store for this cache
@@ -49,7 +49,7 @@ public class AggregateStatsCache {
   // Cache size
   private final int maxCacheNodes;
   // Current nodes in the cache
-  private AtomicInteger currentNodes = new AtomicInteger(0);
+  private final AtomicInteger currentNodes = new AtomicInteger(0);
   // Run the cleaner thread when the cache is maxFull% full
   private final float maxFull;
   // Run the cleaner thread until cache is cleanUntil% occupied
@@ -68,8 +68,8 @@ public class AggregateStatsCache {
   private final float maxVariance;
   // Used to determine if cleaner thread is already running
   private boolean isCleaning = false;
-  private AtomicLong cacheHits = new AtomicLong(0);
-  private AtomicLong cacheMisses = new AtomicLong(0);
+  private final AtomicLong cacheHits = new AtomicLong(0);
+  private final AtomicLong cacheMisses = new AtomicLong(0);
   // To track cleaner metrics
   int numRemovedTTL = 0, numRemovedLRU = 0;
 
@@ -196,7 +196,7 @@ public class AggregateStatsCache {
         cacheMisses.incrementAndGet();
       }
     } catch (InterruptedException e) {
-      LOG.debug(e);
+      LOG.debug("Interrupted Exception ignored ",e);
     } finally {
       if (isLocked) {
         candidateList.readLock.unlock();
@@ -227,7 +227,7 @@ public class AggregateStatsCache {
     // Note: we're not creating a copy of the list for saving memory
     for (AggrColStats candidate : candidates) {
       // Variance check
-      if ((float) Math.abs((candidate.getNumPartsCached() - numPartsRequested) / numPartsRequested)
+      if (Math.abs((candidate.getNumPartsCached() - numPartsRequested) / numPartsRequested)
           > maxVariance) {
         continue;
       }
@@ -309,7 +309,7 @@ public class AggregateStatsCache {
         currentNodes.getAndIncrement();
       }
     } catch (InterruptedException e) {
-      LOG.debug(e);
+      LOG.debug("Interrupted Exception ignored ", e);
     } finally {
       if (isLocked) {
         nodeList.writeLock.unlock();
@@ -342,9 +342,9 @@ public class AggregateStatsCache {
           Iterator<Map.Entry<Key, AggrColStatsList>> mapIterator = cacheStore.entrySet().iterator();
           while (mapIterator.hasNext()) {
             Map.Entry<Key, AggrColStatsList> pair =
-                (Map.Entry<Key, AggrColStatsList>) mapIterator.next();
+                mapIterator.next();
             AggrColStats node;
-            AggrColStatsList candidateList = (AggrColStatsList) pair.getValue();
+            AggrColStatsList candidateList = pair.getValue();
             List<AggrColStats> nodes = candidateList.nodes;
             if (nodes.size() == 0) {
               mapIterator.remove();
@@ -365,7 +365,7 @@ public class AggregateStatsCache {
                 }
               }
             } catch (InterruptedException e) {
-              LOG.debug(e);
+              LOG.debug("Interrupted Exception ignored ",e);
             } finally {
               if (isLocked) {
                 candidateList.writeLock.unlock();
@@ -453,7 +453,7 @@ public class AggregateStatsCache {
         numRemovedLRU++;
       }
     } catch (InterruptedException e) {
-      LOG.debug(e);
+      LOG.debug("Interrupted Exception ignored ",e);
     } finally {
       if (isLocked) {
         candidateList.writeLock.unlock();
@@ -508,11 +508,11 @@ public class AggregateStatsCache {
   static class AggrColStatsList {
     // TODO: figure out a better data structure for node list(?)
     private List<AggrColStats> nodes = new ArrayList<AggrColStats>();
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
     // Read lock for get operation
-    private Lock readLock = lock.readLock();
+    private final Lock readLock = lock.readLock();
     // Write lock for add, evict and clean operation
-    private Lock writeLock = lock.writeLock();
+    private final Lock writeLock = lock.writeLock();
     // Using volatile instead of locking updates to this variable,
     // since we can rely on approx lastAccessTime but don't want a performance hit
     private volatile long lastAccessTime = 0;

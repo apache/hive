@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
  */
 public class VectorMapJoinOptimizedCreateHashTable {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinOptimizedCreateHashTable.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinOptimizedCreateHashTable.class.getName());
 
   public static VectorMapJoinOptimizedHashTable createHashTable(MapJoinDesc desc,
           MapJoinTableContainer mapJoinTableContainer) {

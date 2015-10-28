@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class BucketMapJoinOptimizer implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(GroupByOptimizer.class
+  private static final Logger LOG = LoggerFactory.getLogger(GroupByOptimizer.class
       .getName());
 
   public BucketMapJoinOptimizer() {

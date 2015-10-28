@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -83,7 +83,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * Factory for generating the different node processors used by ColumnPruner.
  */
 public final class ColumnPrunerProcFactory {
-  protected static final Log LOG = LogFactory.getLog(ColumnPrunerProcFactory.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(ColumnPrunerProcFactory.class.getName());
   private ColumnPrunerProcFactory() {
     // prevent instantiation
   }

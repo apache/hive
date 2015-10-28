@@ -14,7 +14,8 @@
 
 package org.apache.hadoop.hive.llap.daemon;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HistoryLogger {
 
@@ -36,7 +37,7 @@ public class HistoryLogger {
   private static final String EVENT_TYPE_FRAGMENT_START = "FRAGMENT_START";
   private static final String EVENT_TYPE_FRAGMENT_END = "FRAGMENT_END";
 
-  private static final Logger HISTORY_LOGGER = Logger.getLogger(HistoryLogger.class);
+  private static final Logger HISTORY_LOGGER = LoggerFactory.getLogger(HistoryLogger.class);
 
   public static void logFragmentStart(String applicationIdStr, String containerIdStr,
                                       String hostname,

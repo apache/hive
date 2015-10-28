@@ -19,9 +19,8 @@
 package org.apache.hadoop.hive.conf;
 
 import com.google.common.base.Joiner;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.conf.Validator.PatternSet;
@@ -35,8 +34,11 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +65,7 @@ public class HiveConf extends Configuration {
   protected String hiveJar;
   protected Properties origProp;
   protected String auxJars;
-  private static final Log l4j = LogFactory.getLog(HiveConf.class);
+  private static final Logger l4j = LoggerFactory.getLogger(HiveConf.class);
   private static boolean loadMetastoreConfig = false;
   private static boolean loadHiveServer2Config = false;
   private static URL hiveDefaultURL = null;

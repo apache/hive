@@ -23,8 +23,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -96,7 +96,7 @@ class HBaseUtils {
   final static char KEY_SEPARATOR = '\u0001';
   final static String KEY_SEPARATOR_STR = new String(new char[] {KEY_SEPARATOR});
 
-  static final private Log LOG = LogFactory.getLog(HBaseUtils.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(HBaseUtils.class.getName());
 
   /**
    * Build a key for an object in hbase

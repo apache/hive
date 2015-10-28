@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -51,8 +51,8 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
 
   private static final long serialVersionUID = 1L;
 
-  private static final Log LOG = LogFactory
-      .getLog(ExprNodeGenericFuncDesc.class.getName());
+  private static final Logger LOG = LoggerFactory
+      .getLogger(ExprNodeGenericFuncDesc.class.getName());
 
   /**
    * In case genericUDF is Serializable, we will serialize the object.

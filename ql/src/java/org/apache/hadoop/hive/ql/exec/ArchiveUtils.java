@@ -28,8 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
  */
 @SuppressWarnings("nls")
 public final class ArchiveUtils {
-  private static final Log LOG = LogFactory.getLog(ArchiveUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ArchiveUtils.class.getName());
 
   public static String ARCHIVING_LEVEL = "archiving_level";
 

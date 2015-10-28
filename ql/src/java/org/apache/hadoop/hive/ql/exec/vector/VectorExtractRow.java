@@ -24,8 +24,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -61,7 +61,7 @@ import org.apache.hive.common.util.DateUtils;
  */
 public abstract class VectorExtractRow {
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorExtractRow.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VectorExtractRow.class);
 
   private boolean tolerateNullColumns;
 

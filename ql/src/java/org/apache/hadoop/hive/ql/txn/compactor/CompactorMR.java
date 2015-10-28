@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
@@ -75,7 +75,7 @@ import java.util.regex.Matcher;
 public class CompactorMR {
 
   static final private String CLASS_NAME = CompactorMR.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String INPUT_FORMAT_CLASS_NAME = "hive.compactor.input.format.class.name";
   static final private String OUTPUT_FORMAT_CLASS_NAME = "hive.compactor.output.format.class.name";

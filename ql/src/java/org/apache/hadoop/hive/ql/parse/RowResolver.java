@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 
@@ -54,7 +54,7 @@ public class RowResolver implements Serializable{
   // TODO: Refactor this and do in a more object oriented manner
   private boolean isExprResolver;
 
-  private static final Log LOG = LogFactory.getLog(RowResolver.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RowResolver.class.getName());
 
   public RowResolver() {
     rowSchema = new RowSchema();

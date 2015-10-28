@@ -27,8 +27,8 @@ import java.util.Stack;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterators;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
@@ -70,7 +70,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class IdentityProjectRemover implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(IdentityProjectRemover.class);
+  private static final Logger LOG = LoggerFactory.getLogger(IdentityProjectRemover.class);
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     // 0. We check the conditions to apply this transformation,

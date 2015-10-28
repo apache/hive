@@ -146,7 +146,7 @@ public class LogRetriever {
       e.printStackTrace();
     }
 
-    // Log jobs
+    // Logger jobs
     PrintWriter listWriter = null;
     try {
       listWriter = new PrintWriter(new OutputStreamWriter(
@@ -174,7 +174,7 @@ public class LogRetriever {
     Path jobDir = new Path(logDir, jobID);
     fs.mkdirs(jobDir);
 
-    // Log jobconf
+    // Logger jobconf
     try {
       logJobConf(jobID, jobURLString, jobDir.toString());
     } catch (IOException e) {
@@ -207,7 +207,7 @@ public class LogRetriever {
       e.printStackTrace();
     }
 
-    // Log attempts
+    // Logger attempts
     for (AttemptInfo attempt : attempts) {
       try {
         logAttempt(jobID, attempt, jobDir.toString());

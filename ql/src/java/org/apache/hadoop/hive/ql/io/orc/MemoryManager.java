@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
@@ -43,7 +43,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 class MemoryManager {
 
-  private static final Log LOG = LogFactory.getLog(MemoryManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MemoryManager.class);
 
   /**
    * How often should we check the memory sizes? Measured in rows added

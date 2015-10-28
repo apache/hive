@@ -33,8 +33,8 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
@@ -83,12 +83,12 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   private final Map<String, FetchOperator> fetchOperators = new HashMap<String, FetchOperator>();
   protected HadoopJobExecHelper jobExecHelper;
   private JobConf job;
-  public static transient final Log l4j = LogFactory.getLog(MapredLocalTask.class);
+  public static transient final Logger l4j = LoggerFactory.getLogger(MapredLocalTask.class);
   static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
   static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
   static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive", "hive.query.id"};
   public static MemoryMXBean memoryMXBean;
-  private static final Log LOG = LogFactory.getLog(MapredLocalTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MapredLocalTask.class);
 
   // not sure we need this exec context; but all the operators in the work
   // will pass this context throught

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -63,7 +63,7 @@ import java.util.TreeMap;
  */
 public class EximUtil {
 
-  private static Log LOG = LogFactory.getLog(EximUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
 
   private EximUtil() {
   }

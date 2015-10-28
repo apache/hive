@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer.spark;
 
 import com.google.common.base.Preconditions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
@@ -62,7 +62,7 @@ import java.util.Stack;
 
 public class SparkReduceSinkMapJoinProc implements NodeProcessor {
 
-  public static final Log LOG = LogFactory.getLog(SparkReduceSinkMapJoinProc.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(SparkReduceSinkMapJoinProc.class.getName());
 
   public static class SparkMapJoinFollowedByGroupByProcessor implements NodeProcessor {
     private boolean hasGroupBy = false;

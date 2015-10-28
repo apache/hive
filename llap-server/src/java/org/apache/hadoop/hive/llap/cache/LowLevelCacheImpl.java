@@ -41,13 +41,13 @@ import com.google.common.annotations.VisibleForTesting;
 public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final EvictionAwareAllocator allocator;
-  private AtomicInteger newEvictions = new AtomicInteger(0);
+  private final AtomicInteger newEvictions = new AtomicInteger(0);
   private Thread cleanupThread = null;
   private final ConcurrentHashMap<Long, FileCache> cache =
       new ConcurrentHashMap<Long, FileCache>();
   private final LowLevelCachePolicy cachePolicy;
   private final long cleanupInterval;
-  private LlapDaemonCacheMetrics metrics;
+  private final LlapDaemonCacheMetrics metrics;
   private final boolean doAssumeGranularBlocks;
 
   public LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
@@ -58,9 +58,8 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   @VisibleForTesting
   LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
       EvictionAwareAllocator allocator, boolean doAssumeGranularBlocks, long cleanupInterval) {
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Low level cache; cleanup interval " + cleanupInterval + "sec");
-    }
+      LlapIoImpl.LOG.info("Low level cache; cleanup interval {}", cleanupInterval, "sec");
+
     this.cachePolicy = cachePolicy;
     this.allocator = allocator;
     this.cleanupInterval = cleanupInterval;
@@ -380,9 +379,9 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
     //       In fact, CSLM has slow single-threaded operation, and one file is probably often read
     //       by just one (or few) threads, so a much more simple DS with locking might be better.
     //       Let's use CSLM for now, since it's available.
-    private ConcurrentSkipListMap<Long, LlapDataBuffer> cache
+    private final ConcurrentSkipListMap<Long, LlapDataBuffer> cache
       = new ConcurrentSkipListMap<Long, LlapDataBuffer>();
-    private AtomicInteger refCount = new AtomicInteger(0);
+    private final AtomicInteger refCount = new AtomicInteger(0);
 
     boolean incRef() {
       while (true) {

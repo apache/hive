@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -29,6 +27,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
@@ -54,7 +54,7 @@ import au.com.bytecode.opencsv.CSVWriter;
     OpenCSVSerde.SEPARATORCHAR, OpenCSVSerde.QUOTECHAR, OpenCSVSerde.ESCAPECHAR})
 public final class OpenCSVSerde extends AbstractSerDe {
 
-  public static final Log LOG = LogFactory.getLog(OpenCSVSerde.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(OpenCSVSerde.class.getName());
   private ObjectInspector inspector;
   private String[] outputFields;
   private int numCols;

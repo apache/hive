@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.collect.Sets;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -139,7 +139,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 @SuppressWarnings({"deprecation", "rawtypes"})
 public class Hive {
 
-  static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Hive");
+  static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Hive");
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
@@ -2647,13 +2647,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       destFs = destf.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to get dest fs", e);
       throw new HiveException(e.getMessage(), e);
     }
     try {
       srcFs = srcf.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to get dest fs", e);
       throw new HiveException(e.getMessage(), e);
     }
 

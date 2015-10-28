@@ -22,8 +22,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
@@ -35,7 +35,7 @@ import org.apache.hadoop.io.WritableUtils;
 public class HiveIntervalDayTimeWritable
     implements WritableComparable<HiveIntervalDayTimeWritable> {
 
-  static final private Log LOG = LogFactory.getLog(HiveIntervalDayTimeWritable.class);
+  static final private Logger LOG = LoggerFactory.getLogger(HiveIntervalDayTimeWritable.class);
 
   protected HiveIntervalDayTime intervalValue = new HiveIntervalDayTime();
 

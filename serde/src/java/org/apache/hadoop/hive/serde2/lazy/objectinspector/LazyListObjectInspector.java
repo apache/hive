@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyArray;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
@@ -37,7 +37,7 @@ import org.apache.hadoop.io.Text;
  */
 public class LazyListObjectInspector implements ListObjectInspector {
 
-  public static final Log LOG = LogFactory.getLog(LazyListObjectInspector.class
+  public static final Logger LOG = LoggerFactory.getLogger(LazyListObjectInspector.class
       .getName());
 
   private ObjectInspector listElementObjectInspector;

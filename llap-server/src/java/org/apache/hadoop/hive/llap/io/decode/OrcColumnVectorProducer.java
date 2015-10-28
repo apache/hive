@@ -43,16 +43,15 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private final Cache<OrcCacheKey> cache;
   private final LowLevelCache lowLevelCache;
   private final Configuration conf;
-  private boolean _skipCorrupt; // TODO: get rid of this
-  private LlapDaemonCacheMetrics cacheMetrics;
-  private LlapDaemonQueueMetrics queueMetrics;
+  private final boolean _skipCorrupt; // TODO: get rid of this
+  private final LlapDaemonCacheMetrics cacheMetrics;
+  private final LlapDaemonQueueMetrics queueMetrics;
 
   public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
       LowLevelCacheImpl lowLevelCache, Cache<OrcCacheKey> cache, Configuration conf,
       LlapDaemonCacheMetrics metrics, LlapDaemonQueueMetrics queueMetrics) {
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Initializing ORC column vector producer");
-    }
+
 
     this.metadataCache = metadataCache;
     this.lowLevelCache = lowLevelCache;

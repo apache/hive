@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.tez.LlapObjectCache;
 public class ObjectCacheFactory {
   private static final ConcurrentHashMap<String, ObjectCache> llapQueryCaches =
       new ConcurrentHashMap<>();
-  private static final Log LOG = LogFactory.getLog(ObjectCacheFactory.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ObjectCacheFactory.class);
 
   private ObjectCacheFactory() {
     // avoid instantiation

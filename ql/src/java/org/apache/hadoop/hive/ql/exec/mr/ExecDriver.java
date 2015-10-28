@@ -29,11 +29,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileStatus;
@@ -84,15 +83,12 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Counters;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
@@ -115,7 +111,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public static MemoryMXBean memoryMXBean;
   protected HadoopJobExecHelper jobExecHelper;
 
-  protected static transient final Log LOG = LogFactory.getLog(ExecDriver.class);
+  protected static transient final Logger LOG = LoggerFactory.getLogger(ExecDriver.class);
 
   private RunningJob rj;
 
@@ -473,7 +469,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           jobID = rj.getID().toString();
         }
       } catch (Exception e) {
-	LOG.warn(e);
+	LOG.warn("Failed while cleaning up ", e);
       } finally {
 	HadoopJobExecHelper.runningJobs.remove(rj);
       }
@@ -695,7 +691,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     if (noLog) {
       // If started from main(), and noLog is on, we should not output
       // any logs. To turn the log on, please set -Dtest.silent=false
-      Logger logger = org.apache.logging.log4j.LogManager.getRootLogger();
+      org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getRootLogger();
       NullAppender appender = NullAppender.createNullAppender();
       appender.addToLogger(logger.getName(), Level.ERROR);
       appender.start();
@@ -703,7 +699,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       setupChildLog4j(conf);
     }
 
-    Log LOG = LogFactory.getLog(ExecDriver.class.getName());
+    Logger LOG = LoggerFactory.getLogger(ExecDriver.class.getName());
     LogHelper console = new LogHelper(LOG, isSilent);
 
     if (planFileName == null) {

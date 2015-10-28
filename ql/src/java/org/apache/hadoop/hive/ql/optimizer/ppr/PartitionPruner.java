@@ -29,8 +29,8 @@ import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -74,7 +74,7 @@ public class PartitionPruner implements Transform {
 
   // The log
   public static final String CLASS_NAME = PartitionPruner.class.getName();
-  public static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  public static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   /*
    * (non-Javadoc)

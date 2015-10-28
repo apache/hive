@@ -21,8 +21,8 @@
   import java.util.Arrays;
   import java.util.List;
 
-  import org.apache.commons.logging.Log;
-  import org.apache.commons.logging.LogFactory;
+  import org.slf4j.Logger;
+  import org.slf4j.LoggerFactory;
   import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
   import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
   import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryUnionObjectInspector;
@@ -39,7 +39,7 @@
   public class LazyBinaryUnion extends
           LazyBinaryNonPrimitive<LazyBinaryUnionObjectInspector> implements SerDeStatsStruct {
 
-    private static Log LOG = LogFactory.getLog(LazyBinaryUnion.class.getName());
+    private static Logger LOG = LoggerFactory.getLogger(LazyBinaryUnion.class.getName());
 
     /**
      * Whether the data is already parsed or not.

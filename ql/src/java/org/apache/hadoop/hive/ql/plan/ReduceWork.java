@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -60,7 +60,7 @@ public class ReduceWork extends BaseWork {
     super(name);
   }
 
-  private static transient final Log LOG = LogFactory.getLog(ReduceWork.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(ReduceWork.class);
 
   // schema of the map-reduce 'key' object - this is homogeneous
   private TableDesc keyDesc;

@@ -31,8 +31,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FileStatus;
@@ -60,7 +60,7 @@ import org.apache.hadoop.util.Progressable;
  */
 public abstract class HadoopShimsSecure implements HadoopShims {
 
-  static final Log LOG = LogFactory.getLog(HadoopShimsSecure.class);
+  static final Logger LOG = LoggerFactory.getLogger(HadoopShimsSecure.class);
 
   public static class InputSplitShim extends CombineFileSplit {
     long shrinkedLength;

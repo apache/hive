@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.InputByteBuffer;
@@ -60,7 +60,7 @@ import org.apache.hadoop.io.Text;
  * called.
  */
 public class BinarySortableDeserializeRead implements DeserializeRead {
-  public static final Log LOG = LogFactory.getLog(BinarySortableDeserializeRead.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(BinarySortableDeserializeRead.class.getName());
 
   private PrimitiveTypeInfo[] primitiveTypeInfos;
 

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -38,7 +38,7 @@ import org.apache.hadoop.io.IntWritable;
  */
 public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFLead.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFLead.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo parameters)

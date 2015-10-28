@@ -18,8 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -73,7 +73,7 @@ import java.util.TreeMap;
  *
  */
 public class TestHBaseStore {
-  private static final Log LOG = LogFactory.getLog(TestHBaseStore.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestHBaseStore.class.getName());
   static Map<String, String> emptyParameters = new HashMap<String, String>();
   // Table with NUM_PART_KEYS partitioning keys and NUM_PARTITIONS values per key
   static final int NUM_PART_KEYS = 1;

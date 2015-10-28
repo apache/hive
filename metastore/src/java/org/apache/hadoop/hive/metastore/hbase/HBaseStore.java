@@ -22,8 +22,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheLoader;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -92,7 +92,7 @@ import java.util.Set;
  * Implementation of RawStore that stores data in HBase
  */
 public class HBaseStore implements RawStore {
-  static final private Log LOG = LogFactory.getLog(HBaseStore.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(HBaseStore.class.getName());
 
   // Do not access this directly, call getHBase to make sure it is initialized.
   private HBaseReadWrite hbase = null;

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -91,7 +91,7 @@ public class AcidUtils {
   private AcidUtils() {
     // NOT USED
   }
-  private static final Log LOG = LogFactory.getLog(AcidUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AcidUtils.class);
 
   private static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");

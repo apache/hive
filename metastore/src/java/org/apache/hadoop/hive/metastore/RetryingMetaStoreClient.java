@@ -27,8 +27,8 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -48,7 +48,7 @@ import org.apache.thrift.transport.TTransportException;
 @Public
 public class RetryingMetaStoreClient implements InvocationHandler {
 
-  private static final Log LOG = LogFactory.getLog(RetryingMetaStoreClient.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RetryingMetaStoreClient.class.getName());
 
   private final IMetaStoreClient base;
   private final int retryLimit;

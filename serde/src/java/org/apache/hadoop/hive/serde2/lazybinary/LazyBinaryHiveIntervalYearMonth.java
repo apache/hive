@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveInter
  */
 public class LazyBinaryHiveIntervalYearMonth extends
     LazyBinaryPrimitive<WritableHiveIntervalYearMonthObjectInspector, HiveIntervalYearMonthWritable>{
-  static final Log LOG = LogFactory.getLog(LazyBinaryHiveIntervalYearMonth.class);
+  static final Logger LOG = LoggerFactory.getLogger(LazyBinaryHiveIntervalYearMonth.class);
 
   /**
    * Reusable member for decoding integer.

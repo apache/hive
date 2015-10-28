@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -76,7 +76,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ConvertJoinMapJoin implements NodeProcessor {
 
-  private static final Log LOG = LogFactory.getLog(ConvertJoinMapJoin.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   private static final Set<Class<? extends Operator<?>>> COSTLY_OPERATORS =

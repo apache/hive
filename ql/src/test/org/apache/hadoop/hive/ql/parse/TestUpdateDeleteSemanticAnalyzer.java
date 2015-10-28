@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,7 +45,7 @@ import org.junit.Test;
 
 public class TestUpdateDeleteSemanticAnalyzer {
 
-  static final private Log LOG = LogFactory.getLog(TestUpdateDeleteSemanticAnalyzer.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(TestUpdateDeleteSemanticAnalyzer.class.getName());
 
   private HiveConf conf;
   private Hive db;

@@ -68,11 +68,6 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>${commons-logging.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>${httpcomponents.client.version}</version>
@@ -150,12 +145,6 @@
                 </filter>
                 <filter>
                   <artifact>org.apache.hive.shims:hive-shims-0.23</artifact>
-                  <includes>
-                    <include>**</include>
-                  </includes>
-                </filter>
-                <filter>
-                  <artifact>commons-logging:commons-logging</artifact>
                   <includes>
                     <include>**</include>
                   </includes>

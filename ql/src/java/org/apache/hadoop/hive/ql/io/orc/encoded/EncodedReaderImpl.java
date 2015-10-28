@@ -22,8 +22,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.DataCache;
@@ -83,7 +83,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
  *    not use it; thus, at the end we go thru all the MBs, and release those not released by (5).
  */
 class EncodedReaderImpl implements EncodedReader {
-  public static final Log LOG = LogFactory.getLog(EncodedReaderImpl.class);
+  public static final Logger LOG = LoggerFactory.getLogger(EncodedReaderImpl.class);
   private static final Object POOLS_CREATION_LOCK = new Object();
   private static Pools POOLS;
   private static class Pools {

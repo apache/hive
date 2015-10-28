@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -70,7 +70,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
  * Cloned from GenTezUtils.
  */
 public class GenSparkUtils {
-  private static final Log LOG = LogFactory.getLog(GenSparkUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(GenSparkUtils.class.getName());
 
   // sequence number is used to name vertices (e.g.: Map 1, Reduce 14, ...)
   private int sequenceNumber = 0;

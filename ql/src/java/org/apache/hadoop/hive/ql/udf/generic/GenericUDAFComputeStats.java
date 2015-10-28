@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -43,6 +43,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GenericUDAFComputeStats
@@ -52,7 +54,7 @@ import org.apache.hadoop.util.StringUtils;
       value = "_FUNC_(x) - Returns the statistical summary of a set of primitive type values.")
 public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFComputeStats.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFComputeStats.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
@@ -215,16 +217,10 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       BooleanStatsAgg myagg = (BooleanStatsAgg) agg;
 
       LOG.debug(functionName);
-
-      LOG.debug("Count of True Values:");
-      LOG.debug(myagg.countTrues);
-
-      LOG.debug("Count of False Values:");
-      LOG.debug(myagg.countFalses);
-
-      LOG.debug("Count of Null Values:");
-      LOG.debug(myagg.countNulls);
-    }
+      LOG.debug("Count of True Values: {}", myagg.countTrues);
+      LOG.debug("Count of False Values: {}", myagg.countFalses);
+      LOG.debug("Count of Null Values: {}", myagg.countNulls);
+   }
 
     boolean warned = false;
 

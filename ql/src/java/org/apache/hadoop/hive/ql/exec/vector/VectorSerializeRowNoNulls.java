@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * have no nulls.
  */
 public class VectorSerializeRowNoNulls {
-  private static final Log LOG = LogFactory.getLog(VectorSerializeRowNoNulls.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorSerializeRowNoNulls.class.getName());
 
   private SerializeWrite serializeWrite;
 

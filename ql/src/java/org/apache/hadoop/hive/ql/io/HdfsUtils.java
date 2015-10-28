@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class HdfsUtils {
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
-  private static final Log LOG = LogFactory.getLog(HdfsUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HdfsUtils.class);
 
   public static long getFileId(FileSystem fileSystem, Path path) throws IOException {
     String pathStr = path.toUri().getPath();

@@ -23,8 +23,8 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -56,7 +56,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 
 public class ConvertAstToSearchArg {
-  private static final Log LOG = LogFactory.getLog(ConvertAstToSearchArg.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ConvertAstToSearchArg.class);
   private final SearchArgument.Builder builder =
       SearchArgumentFactory.newBuilder();
 

@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -82,7 +82,7 @@ import com.google.common.collect.Maps;
 
 public class StatsRulesProcFactory {
 
-  private static final Log LOG = LogFactory.getLog(StatsRulesProcFactory.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(StatsRulesProcFactory.class.getName());
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
 
   /**
@@ -117,7 +117,7 @@ public class StatsRulesProcFactory {
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
       } catch (HiveException e) {
-        LOG.debug(e);
+        LOG.debug("Failed to retrieve stats ",e);
         throw new SemanticException(e);
       }
       return null;
@@ -1192,7 +1192,7 @@ public class StatsRulesProcFactory {
           wcStats.setNumRows(newNumRows);
           wcStats.setDataSize(newDataSize);
           jop.setStatistics(wcStats);
- 
+
           if (isDebugEnabled) {
             LOG.debug("[1] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
           }

@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hdfs.web.AuthFilter;
@@ -55,7 +55,7 @@ import javax.servlet.http.HttpServletRequest;
 @InterfaceStability.Unstable
 public class Main {
   public static final String SERVLET_PATH = "templeton";
-  private static final Log LOG = LogFactory.getLog(Main.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
   public static final int DEFAULT_PORT = 8080;
   private Server server;
@@ -120,7 +120,7 @@ public class Main {
       LOG.info("Templeton listening on port " + port);
     } catch (Exception e) {
       System.err.println("templeton: Server failed to start: " + e.getMessage());
-      LOG.fatal("Server failed to start: " + e);
+      LOG.error("Server failed to start: " , e);
       System.exit(1);
     }
   }
@@ -148,7 +148,7 @@ public class Main {
     if (!pwd.exists()) {
       String msg = "Server failed to start: templeton: Current working directory '.' does not exist!";
       System.err.println(msg);
-      LOG.fatal(msg);
+      LOG.error(msg);
       System.exit(1);
     }
   }

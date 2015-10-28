@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
@@ -81,7 +81,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class PredicatePushDown implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(PredicatePushDown.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PredicatePushDown.class);
   private ParseContext pGraphContext;
 
   @Override

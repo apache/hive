@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.listbucketingpruner;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  *
  */
 public class LBPartitionProcFactory extends PrunerOperatorFactory {
-  static final Log LOG = LogFactory.getLog(ListBucketingPruner.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(ListBucketingPruner.class.getName());
 
   /**
    * Retrieve partitions for the filter. This is called only when

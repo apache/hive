@@ -22,8 +22,8 @@ import com.jolbox.bonecp.BoneCPDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 
 import org.apache.commons.pool.ObjectPool;
@@ -82,7 +82,7 @@ public class TxnHandler {
 
   static final private int ALLOWED_REPEATED_DEADLOCKS = 10;
   static final private int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 100;
-  static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
   static private DataSource connPool;
   static private boolean doRetryOnConnPool = false;

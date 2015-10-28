@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -61,7 +61,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
   private static final long serialVersionUID = 1L;
 
-  private static final Log LOG = LogFactory.getLog(SMBMapJoinOperator.class
+  private static final Logger LOG = LoggerFactory.getLogger(SMBMapJoinOperator.class
       .getName());
 
   private MapredLocalWork localWork = null;
@@ -165,7 +165,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   public void initializeMapredLocalWork(MapJoinDesc mjConf, Configuration hconf,
-      MapredLocalWork localWork, Log l4j) throws HiveException {
+      MapredLocalWork localWork, Logger l4j) throws HiveException {
     if (localWork == null || localWorkInited) {
       return;
     }

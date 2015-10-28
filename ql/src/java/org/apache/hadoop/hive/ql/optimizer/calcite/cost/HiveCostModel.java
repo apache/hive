@@ -23,8 +23,8 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelDistribution;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class HiveCostModel {
 
-  private static final Log LOG = LogFactory.getLog(HiveCostModel.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveCostModel.class);
 
   private final Set<JoinAlgorithm> joinAlgorithms;
 

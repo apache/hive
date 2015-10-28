@@ -33,8 +33,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -55,7 +55,7 @@ import org.mockito.Mockito;
  * Test HiveAuthorizer api invocation
  */
 public class TestHiveAuthorizerCheckInvocation {
-  private final Log LOG = LogFactory.getLog(this.getClass().getName());;
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());;
   protected static HiveConf conf;
   protected static Driver driver;
   private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()

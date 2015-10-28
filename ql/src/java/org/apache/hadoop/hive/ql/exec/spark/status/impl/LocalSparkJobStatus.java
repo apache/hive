@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
@@ -45,7 +45,7 @@ import com.google.common.collect.Maps;
 public class LocalSparkJobStatus implements SparkJobStatus {
 
   private final JavaSparkContext sparkContext;
-  private static final Log LOG = LogFactory.getLog(LocalSparkJobStatus.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(LocalSparkJobStatus.class.getName());
   private int jobId;
   // After SPARK-2321, we only use JobMetricsListener to get job metrics
   // TODO: remove it when the new API provides equivalent functionality

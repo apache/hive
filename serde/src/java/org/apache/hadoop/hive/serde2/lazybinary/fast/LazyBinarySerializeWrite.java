@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.Timestamp;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -46,7 +46,7 @@ import org.apache.hive.common.util.DateUtils;
  * This is an alternative way to serialize than what is provided by LazyBinarySerDe.
   */
 public class LazyBinarySerializeWrite implements SerializeWrite {
-  public static final Log LOG = LogFactory.getLog(LazyBinarySerializeWrite.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(LazyBinarySerializeWrite.class.getName());
 
   private Output output;
 

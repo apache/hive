@@ -17,16 +17,16 @@
  */
 package org.apache.hadoop.hive.conf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class VariableSubstitution extends SystemVariables {
-  private static final Log l4j = LogFactory.getLog(VariableSubstitution.class);
+  private static final Logger l4j = LoggerFactory.getLogger(VariableSubstitution.class);
 
-  private HiveVariableSource hiveVariableSource;
+  private final HiveVariableSource hiveVariableSource;
 
   public VariableSubstitution(HiveVariableSource hiveVariableSource) {
     this.hiveVariableSource = hiveVariableSource;

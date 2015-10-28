@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -58,7 +58,7 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
  * for improvement through bucketing.
  */
 public class TableAccessAnalyzer {
-  private static final Log LOG = LogFactory.getLog(TableAccessAnalyzer.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TableAccessAnalyzer.class.getName());
   private final ParseContext pGraphContext;
 
   public TableAccessAnalyzer() {

@@ -48,7 +48,8 @@ import org.apache.hadoop.registry.client.types.ProtocolTypes;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.zookeeper.CreateMode;
 
@@ -56,7 +57,7 @@ import com.google.common.base.Preconditions;
 
 public class LlapYarnRegistryImpl implements ServiceRegistry {
 
-  private static final Logger LOG = Logger.getLogger(LlapYarnRegistryImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapYarnRegistryImpl.class);
 
   private final RegistryOperationsService client;
   private final Configuration conf;

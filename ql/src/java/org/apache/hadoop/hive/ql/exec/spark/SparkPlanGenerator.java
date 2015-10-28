@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
@@ -70,7 +70,7 @@ import com.google.common.base.Preconditions;
 public class SparkPlanGenerator {
   private static final String CLASS_NAME = SparkPlanGenerator.class.getName();
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
-  private static final Log LOG = LogFactory.getLog(SparkPlanGenerator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkPlanGenerator.class);
 
   private final JavaSparkContext sc;
   private final JobConf jobConf;

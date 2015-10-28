@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
-import org.mortbay.log.Log;
 
 /*
  * This hook is used for verifying the column access information
@@ -40,8 +39,9 @@ import org.mortbay.log.Log;
  */
 public class CheckColumnAccessHook implements ExecuteWithHookContext {
 
+  @Override
   public void run(HookContext hookContext) {
-    Log.info("Running CheckColumnAccessHook");
+
     HiveConf conf = hookContext.getConf();
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS) == false) {
       return;

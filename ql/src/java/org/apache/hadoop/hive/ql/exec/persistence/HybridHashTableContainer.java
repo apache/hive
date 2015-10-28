@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -72,7 +72,7 @@ import com.esotericsoftware.kryo.Kryo;
  */
 public class HybridHashTableContainer
       implements MapJoinTableContainer, MapJoinTableContainerDirectAccess {
-  private static final Log LOG = LogFactory.getLog(HybridHashTableContainer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HybridHashTableContainer.class);
 
   private final HashPartition[] hashPartitions; // an array of partitions holding the triplets
   private int totalInMemRowCount = 0;           // total number of small table rows in memory

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
  */
 public class IOContextMap {
   public static final String DEFAULT_CONTEXT = "";
-  private static final Log LOG = LogFactory.getLog(IOContextMap.class);
+  private static final Logger LOG = LoggerFactory.getLogger(IOContextMap.class);
 
   /** Used for Tez and MR */
   private static final ConcurrentHashMap<String, IOContext> globalMap =

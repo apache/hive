@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -168,7 +168,7 @@ public class AppConfig extends Configuration {
   public static final String HIVE_EXTRA_FILES = "templeton.hive.extra.files";
 
 
-  private static final Log LOG = LogFactory.getLog(AppConfig.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AppConfig.class);
 
   public AppConfig() {
     init();

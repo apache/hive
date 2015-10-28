@@ -24,8 +24,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  */
 public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
-  private static final Log LOG = LogFactory.getLog(ObjectCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ObjectCache.class.getName());
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
 
   @Override

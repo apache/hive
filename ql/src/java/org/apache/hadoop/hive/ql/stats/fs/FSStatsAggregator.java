@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import com.esotericsoftware.kryo.io.Input;
 
 public class FSStatsAggregator implements StatsAggregator {
-  private final Log LOG = LogFactory.getLog(this.getClass().getName());
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   private List<Map<String,Map<String,String>>> statsList;
   private Map<String, Map<String,String>> statsMap;
   private FileSystem fs;
@@ -69,7 +69,7 @@ public class FSStatsAggregator implements StatsAggregator {
       }
       return true;
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to read stats from filesystem ", e);
       return false;
     }
   }
@@ -107,7 +107,7 @@ public class FSStatsAggregator implements StatsAggregator {
       fs.delete(statsDir,true);
       return true;
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to delete stats dir", e);
       return true;
     }
   }

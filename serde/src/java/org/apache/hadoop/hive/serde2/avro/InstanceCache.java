@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Cache for objects whose creation only depends on some other set of objects and therefore can be
@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  * @param <Instance> Instance that will be created from SeedObject.
  */
 public abstract class InstanceCache<SeedObject, Instance> {
-  private static final Log LOG = LogFactory.getLog(InstanceCache.class);
+  private static final Logger LOG = LoggerFactory.getLogger(InstanceCache.class);
   Map<SeedObject, Instance> cache = new HashMap<SeedObject, Instance>();
   
   public InstanceCache() {}

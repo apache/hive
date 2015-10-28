@@ -16,8 +16,8 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 public class HiveRelOptUtil extends RelOptUtil {
 
-  private static final Log LOG = LogFactory.getLog(HiveRelOptUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveRelOptUtil.class);
 
 
   /**

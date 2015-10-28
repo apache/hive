@@ -24,8 +24,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.AbstractDeserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -45,7 +45,7 @@ import org.apache.hadoop.io.Writable;
  */
 public class S3LogDeserializer extends AbstractDeserializer {
 
-  public static final Log LOG = LogFactory.getLog(S3LogDeserializer.class
+  public static final Logger LOG = LoggerFactory.getLogger(S3LogDeserializer.class
       .getName());
 
   static {

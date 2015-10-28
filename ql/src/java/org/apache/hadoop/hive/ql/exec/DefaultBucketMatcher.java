@@ -23,14 +23,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.fs.Path;
 
 public class DefaultBucketMatcher implements BucketMatcher {
 
-  protected Log LOG = LogFactory.getLog(this.getClass().getName());
+  protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
 
   //MAPPING: bucket_file_name_in_big_table->{alias_table->corresonding_bucket_file_names}
   private Map<String, Map<String, List<String>>> aliasBucketMapping;

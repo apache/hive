@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.FileNotFoundException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -32,8 +32,8 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class HiveMetaStoreFsImpl implements MetaStoreFS {
 
-  public static final Log LOG = LogFactory
-      .getLog("hive.metastore.hivemetastoressimpl");
+  public static final Logger LOG = LoggerFactory
+      .getLogger("hive.metastore.hivemetastoressimpl");
 
   @Override
   public boolean deleteDir(FileSystem fs, Path f, boolean recursive,

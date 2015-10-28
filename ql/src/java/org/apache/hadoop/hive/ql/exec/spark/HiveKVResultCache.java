@@ -22,8 +22,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -44,7 +44,7 @@ import com.google.common.base.Preconditions;
  */
 @SuppressWarnings("unchecked")
 class HiveKVResultCache {
-  private static final Log LOG = LogFactory.getLog(HiveKVResultCache.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveKVResultCache.class);
 
   @VisibleForTesting
   static final int IN_MEMORY_NUM_ROWS = 1024;

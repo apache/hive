@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -48,7 +48,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
   private final HiveAuthenticationProvider authenticator;
   private final SQLStdHiveAccessControllerWrapper privController;
   private final HiveAuthzSessionContext ctx;
-  public static final Log LOG = LogFactory.getLog(SQLStdHiveAuthorizationValidator.class);
+  public static final Logger LOG = LoggerFactory.getLogger(SQLStdHiveAuthorizationValidator.class);
 
   public SQLStdHiveAuthorizationValidator(HiveMetastoreClientFactory metastoreClientFactory,
       HiveConf conf, HiveAuthenticationProvider authenticator,

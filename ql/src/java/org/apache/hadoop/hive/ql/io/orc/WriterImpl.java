@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -102,7 +102,7 @@ import com.google.protobuf.CodedOutputStream;
  */
 public class WriterImpl implements Writer, MemoryManager.Callback {
 
-  private static final Log LOG = LogFactory.getLog(WriterImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WriterImpl.class);
   static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
   private static final int HDFS_BUFFER_SIZE = 256 * 1024;

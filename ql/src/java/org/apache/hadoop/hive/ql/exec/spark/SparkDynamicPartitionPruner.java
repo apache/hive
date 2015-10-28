@@ -32,8 +32,8 @@ import java.util.Set;
 
 import com.clearspring.analytics.util.Preconditions;
 import javolution.testing.AssertionException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -62,7 +62,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  * The spark version of DynamicPartitionPruner.
  */
 public class SparkDynamicPartitionPruner {
-  private static final Log LOG = LogFactory.getLog(SparkDynamicPartitionPruner.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkDynamicPartitionPruner.class);
   private final Map<String, List<SourceInfo>> sourceInfoMap = new LinkedHashMap<String, List<SourceInfo>>();
   private final BytesWritable writable = new BytesWritable();
 

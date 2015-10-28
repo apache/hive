@@ -58,8 +58,8 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalDirAllocator;
 import org.apache.hadoop.fs.Path;
@@ -115,7 +115,7 @@ import org.jboss.netty.util.CharsetUtil;
 
 public class ShuffleHandler implements AttemptRegistrationListener {
 
-  private static final Log LOG = LogFactory.getLog(ShuffleHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ShuffleHandler.class);
 
   public static final String SHUFFLE_HANDLER_LOCAL_DIRS = "llap.shuffle.handler.local-dirs";
 

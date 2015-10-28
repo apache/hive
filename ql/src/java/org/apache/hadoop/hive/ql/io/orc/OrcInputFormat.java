@@ -38,8 +38,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
@@ -123,7 +123,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     ETL
   }
 
-  private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcInputFormat.class);
   private static boolean isDebugEnabled = LOG.isDebugEnabled();
   static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
   static final String MIN_SPLIT_SIZE =
@@ -466,7 +466,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final boolean cacheStripeDetails;
     private final AtomicInteger cacheHitCounter = new AtomicInteger(0);
     private final AtomicInteger numFilesCounter = new AtomicInteger(0);
-    private ValidTxnList transactionList;
+    private final ValidTxnList transactionList;
     private SplitStrategyKind splitStrategyKind;
     private final SearchArgument sarg;
 
@@ -851,7 +851,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final boolean hasBase;
     private OrcFile.WriterVersion writerVersion;
     private long projColsUncompressedSize;
-    private List<OrcSplit> deltaSplits;
+    private final List<OrcSplit> deltaSplits;
 
     public SplitGenerator(SplitInfo splitInfo) throws IOException {
       this.context = splitInfo.context;
@@ -1140,7 +1140,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles);
 
         if (isDebugEnabled) {
-          LOG.debug(splitStrategy);
+          LOG.debug("Split strategy: ", splitStrategy);
         }
 
         // Hack note - different split strategies return differently typed lists, yay Java.
@@ -1218,10 +1218,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final Long fileId;
     private final List<StripeInformation> stripeInfos;
     private FileMetaInfo fileMetaInfo;
-    private List<StripeStatistics> stripeStats;
-    private List<OrcProto.ColumnStatistics> fileStats;
-    private List<OrcProto.Type> types;
-    private OrcFile.WriterVersion writerVersion;
+    private final List<StripeStatistics> stripeStats;
+    private final List<OrcProto.ColumnStatistics> fileStats;
+    private final List<OrcProto.Type> types;
+    private final OrcFile.WriterVersion writerVersion;
 
 
     FileInfo(long modificationTime, long size, List<StripeInformation> stripeInfos,
@@ -1296,6 +1296,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final RecordIdentifier id;
     private final RowReader<OrcStruct> inner;
 
+    @Override
     public RecordIdentifier getRecordIdentifier() {
       return id;
     }
@@ -1606,7 +1607,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   /** Local footer cache using Guava. Stores convoluted Java objects. */
   private static class LocalCache implements FooterCache {
-    private Cache<Path, FileInfo> cache;
+    private final Cache<Path, FileInfo> cache;
 
     public LocalCache(int numThreads, int cacheStripeDetailsSize) {
       cache = CacheBuilder.newBuilder()

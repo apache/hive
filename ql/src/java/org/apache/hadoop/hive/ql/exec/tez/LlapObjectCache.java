@@ -27,8 +27,8 @@ import java.util.concurrent.Future;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import com.google.common.cache.Cache;
@@ -40,7 +40,7 @@ import com.google.common.cache.CacheBuilder;
  */
 public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
-  private static final Log LOG = LogFactory.getLog(LlapObjectCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(LlapObjectCache.class.getName());
 
   private static ExecutorService staticPool = Executors.newCachedThreadPool();
 

@@ -44,9 +44,8 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     this.usedMemory = new AtomicLong(0);
     this.metrics = metrics;
     metrics.incrCacheCapacityTotal(maxSize);
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Cache memory manager initialized with max size " + maxSize);
-    }
+    LlapIoImpl.LOG.info("Cache memory manager initialized with max size {}", maxSize);
+
   }
 
   @Override

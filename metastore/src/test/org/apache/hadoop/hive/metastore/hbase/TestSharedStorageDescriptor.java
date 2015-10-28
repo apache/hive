@@ -18,8 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -37,7 +37,7 @@ import java.util.List;
  *
  */
 public class TestSharedStorageDescriptor {
-  private static final Log LOG = LogFactory.getLog(TestHBaseStore.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestHBaseStore.class.getName());
 
 
   @Test

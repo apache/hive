@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,7 +37,7 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
 
 public class MapRecordSource implements RecordSource {
 
-  public static final Log LOG = LogFactory.getLog(MapRecordSource.class);
+  public static final Logger LOG = LoggerFactory.getLogger(MapRecordSource.class);
   private ExecMapperContext execContext = null;
   private MapOperator mapOp = null;
   private KeyValueReader reader = null;
@@ -90,7 +90,7 @@ public class MapRecordSource implements RecordSource {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        LOG.fatal(StringUtils.stringifyException(e));
+        LOG.error(StringUtils.stringifyException(e));
         closeReader();
         throw new RuntimeException(e);
       }

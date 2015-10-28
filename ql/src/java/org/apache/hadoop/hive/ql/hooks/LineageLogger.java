@@ -31,8 +31,8 @@ import java.util.Set;
 import org.apache.commons.collections.SetUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -61,7 +61,7 @@ import com.google.gson.stream.JsonWriter;
  */
 public class LineageLogger implements ExecuteWithHookContext {
 
-  private static final Log LOG = LogFactory.getLog(LineageLogger.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LineageLogger.class);
 
   private static final HashSet<String> OPERATION_NAMES = new HashSet<String>();
 
@@ -178,10 +178,10 @@ public class LineageLogger implements ExecuteWithHookContext {
         writer.endObject();
         writer.close();
 
-        // Log the lineage info
+        // Logger the lineage info
         String lineage = out.toString();
         if (testMode) {
-          // Log to console
+          // Logger to console
           log(lineage);
         } else {
           // In non-test mode, emit to a log file,
@@ -199,7 +199,7 @@ public class LineageLogger implements ExecuteWithHookContext {
   }
 
   /**
-   * Log an error to console if available.
+   * Logger an error to console if available.
    */
   private void log(String error) {
     LogHelper console = SessionState.getConsole();
