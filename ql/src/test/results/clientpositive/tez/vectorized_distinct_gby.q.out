@@ -14,8 +14,8 @@ POSTHOOK: query: insert into table dtest select c,b from (select array(300,300,3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dtest
-POSTHOOK: Lineage: dtest.a SIMPLE []
-POSTHOOK: Lineage: dtest.b EXPRESSION []
+POSTHOOK: Lineage: dtest.a SCRIPT []
+POSTHOOK: Lineage: dtest.b SIMPLE []
 PREHOOK: query: explain select sum(distinct a), count(distinct a) from dtest
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select sum(distinct a), count(distinct a) from dtest
