@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -34,7 +34,7 @@ import java.util.*;
  */
 public class CompactionTxnHandler extends TxnHandler {
   static final private String CLASS_NAME = CompactionTxnHandler.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   // Always access COMPACTION_QUEUE before COMPLETED_TXN_COMPONENTS
   // See TxnHandler for notes on how to deal with deadlocks.  Follow those notes.

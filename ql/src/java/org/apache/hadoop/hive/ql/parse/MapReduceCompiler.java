@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -74,7 +74,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class MapReduceCompiler extends TaskCompiler {
 
-  protected final Log LOG = LogFactory.getLog(MapReduceCompiler.class);
+  protected final Logger LOG = LoggerFactory.getLogger(MapReduceCompiler.class);
 
   public MapReduceCompiler() {
   }

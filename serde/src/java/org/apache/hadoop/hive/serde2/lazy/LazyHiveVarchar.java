@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.nio.charset.CharacterCodingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -33,7 +33,7 @@ import org.apache.hadoop.io.Text;
 public class LazyHiveVarchar extends
     LazyPrimitive<LazyHiveVarcharObjectInspector, HiveVarcharWritable> {
 
-  private static final Log LOG = LogFactory.getLog(LazyHiveVarchar.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LazyHiveVarchar.class);
 
   protected int maxLength = -1;
 

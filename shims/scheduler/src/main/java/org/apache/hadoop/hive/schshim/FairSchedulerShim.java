@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.shims.SchedulerShim;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -31,7 +31,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.AllocationFi
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.QueuePlacementPolicy;
 
 public class FairSchedulerShim implements SchedulerShim {
-  private static final Log LOG = LogFactory.getLog(FairSchedulerShim.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FairSchedulerShim.class);
   private static final String MR2_JOB_QUEUE_PROPERTY = "mapreduce.job.queuename";
 
   @Override

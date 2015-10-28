@@ -24,13 +24,13 @@ import java.util.ServiceLoader;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 
 public class StorageFormatFactory {
-  private static final Log LOG = LogFactory.getLog(StorageFormatFactory.class);
+  private static final Logger LOG = LoggerFactory.getLogger(StorageFormatFactory.class);
 
   private final Map<String, StorageFormatDescriptor> storageFormats;
 

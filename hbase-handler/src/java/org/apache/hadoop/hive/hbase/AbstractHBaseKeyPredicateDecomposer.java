@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.hbase;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  * */
 public abstract class AbstractHBaseKeyPredicateDecomposer {
 
-  public static final Log LOG = LogFactory.getLog(AbstractHBaseKeyPredicateDecomposer.class);
+  public static final Logger LOG = LoggerFactory.getLogger(AbstractHBaseKeyPredicateDecomposer.class);
 
   public DecomposedPredicate decomposePredicate(String keyColName, ExprNodeDesc predicate) {
     IndexPredicateAnalyzer analyzer = IndexPredicateAnalyzer.createAnalyzer(true);

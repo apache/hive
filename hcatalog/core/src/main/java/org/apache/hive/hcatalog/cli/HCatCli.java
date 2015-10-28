@@ -38,8 +38,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.Parser;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -55,7 +55,7 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
 
 public class HCatCli {
-  private static Log LOG = null;
+  private static Logger LOG = null;
 
 
   @SuppressWarnings("static-access")
@@ -66,7 +66,7 @@ public class HCatCli {
     } catch (LogInitializationException e) {
 
     }
-    LOG = LogFactory.getLog(HCatCli.class);
+    LOG = LoggerFactory.getLogger(HCatCli.class);
 
     CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
     ss.in = System.in;

@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.conf;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SystemVariables {
 
-  private static final Log l4j = LogFactory.getLog(SystemVariables.class);
+  private static final Logger l4j = LoggerFactory.getLogger(SystemVariables.class);
   protected static Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
 
   public static final String ENV_PREFIX = "env:";

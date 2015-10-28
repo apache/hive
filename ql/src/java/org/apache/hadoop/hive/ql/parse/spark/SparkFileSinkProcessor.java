@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.parse.spark;
 
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * Cloned from tez's FileSinkProcessor.
  */
 public class SparkFileSinkProcessor implements NodeProcessor {
-  private static final Log LOGGER = LogFactory.getLog(SparkFileSinkProcessor.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkFileSinkProcessor.class.getName());
 
   /*
    * (non-Javadoc)

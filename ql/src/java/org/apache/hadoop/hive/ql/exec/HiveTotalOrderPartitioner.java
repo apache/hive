@@ -20,8 +20,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -32,7 +32,7 @@ import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 
 public class HiveTotalOrderPartitioner implements Partitioner<HiveKey, Object>, Configurable {
 
-  private static final Log LOG = LogFactory.getLog(HiveTotalOrderPartitioner.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveTotalOrderPartitioner.class);
 
   private Partitioner<BytesWritable, Object> partitioner;
 

@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -109,7 +109,7 @@ public class SortedDynPartitionOptimizer implements Transform {
 
   class SortedDynamicPartitionProc implements NodeProcessor {
 
-    private final Log LOG = LogFactory.getLog(SortedDynPartitionOptimizer.class);
+    private final Logger LOG = LoggerFactory.getLogger(SortedDynPartitionOptimizer.class);
     protected ParseContext parseCtx;
 
     public SortedDynamicPartitionProc(ParseContext pCtx) {

@@ -23,8 +23,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Text;
@@ -71,7 +71,7 @@ import org.apache.thrift.transport.TTransport;
 public class TBinarySortableProtocol extends TProtocol implements
     ConfigurableTProtocol, WriteNullsProtocol, WriteTextProtocol {
 
-  static final Log LOG = LogFactory.getLog(TBinarySortableProtocol.class
+  static final Logger LOG = LoggerFactory.getLogger(TBinarySortableProtocol.class
       .getName());
 
   static byte ORDERED_TYPE = (byte) -1;

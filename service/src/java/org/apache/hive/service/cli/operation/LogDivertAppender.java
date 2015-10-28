@@ -39,6 +39,7 @@ import org.apache.logging.log4j.core.appender.OutputStreamManager;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 
@@ -47,7 +48,7 @@ import com.google.common.base.Joiner;
  */
 public class LogDivertAppender
     extends AbstractOutputStreamAppender<LogDivertAppender.StringOutputStreamManager> {
-  private static final Logger LOG = LogManager.getLogger(LogDivertAppender.class.getName());
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(LogDivertAppender.class.getName());
   private static LoggerContext context = (LoggerContext) LogManager.getContext(false);
   private static Configuration configuration = context.getConfiguration();
   public static final Layout<? extends Serializable> verboseLayout = PatternLayout.createLayout(
@@ -56,7 +57,7 @@ public class LogDivertAppender
       "%-5p : %m%n", configuration, null, null, true, false, null, null);
 
   private final OperationManager operationManager;
-  private StringOutputStreamManager manager;
+  private final StringOutputStreamManager manager;
   private boolean isVerbose;
   private final Layout<? extends Serializable> layout;
 
@@ -105,7 +106,7 @@ public class LogDivertAppender
   private static class NameFilter extends AbstractFilter {
     private Pattern namePattern;
     private OperationLog.LoggingLevel loggingMode;
-    private OperationManager operationManager;
+    private final OperationManager operationManager;
 
     /* Patterns that are excluded in verbose logging level.
      * Filter out messages coming from log processing classes, or we'll run an infinite loop.

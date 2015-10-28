@@ -28,16 +28,16 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.TStatus;
 import org.apache.hive.service.cli.thrift.TStatusCode;
 import org.apache.http.client.CookieStore;
 import org.apache.http.cookie.Cookie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class Utils {
-  static final Log LOG = LogFactory.getLog(Utils.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(Utils.class.getName());
   /**
     * The required prefix for the connection URL.
     */
@@ -138,7 +138,7 @@ class Utils {
     private String[] authorityList;
     private String zooKeeperEnsemble = null;
     private String currentHostZnodePath;
-    private List<String> rejectedHostZnodePaths = new ArrayList<String>();
+    private final List<String> rejectedHostZnodePaths = new ArrayList<String>();
 
     public JdbcConnectionParams() {
     }

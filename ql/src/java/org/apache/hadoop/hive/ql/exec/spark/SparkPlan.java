@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -39,7 +39,7 @@ import com.google.common.base.Preconditions;
 @SuppressWarnings("rawtypes")
 public class SparkPlan {
   private static final String CLASS_NAME = SparkPlan.class.getName();
-  private static final Log LOG = LogFactory.getLog(SparkPlan.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkPlan.class);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   private final Set<SparkTran> rootTrans = new HashSet<SparkTran>();
@@ -131,7 +131,7 @@ public class SparkPlan {
     }
     sparkPlan
       .append(" \n\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spark Plan !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
-    LOG.info(sparkPlan);
+    LOG.info(sparkPlan.toString());
   }
 
   private void collectLeafTrans(SparkTran leaf, List<SparkTran> reduceTrans) {

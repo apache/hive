@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -55,7 +55,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     void initializeHook(TezProcessor source);
   }
 
-  private static final Log LOG = LogFactory.getLog(TezProcessor.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TezProcessor.class);
   protected boolean isMap = false;
 
   protected RecordProcessor rproc = null;
@@ -195,6 +195,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     }
   }
 
+  @Override
   public void abort() {
     aborted.set(true);
     RecordProcessor rProcLocal;

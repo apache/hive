@@ -40,15 +40,15 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -72,7 +72,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.common.Metrics {
   public static final String API_PREFIX = "api_";
-  public static final Log LOGGER = LogFactory.getLog(CodahaleMetrics.class);
+  public static final Logger LOGGER = LoggerFactory.getLogger(CodahaleMetrics.class);
 
   public final MetricRegistry metricRegistry = new MetricRegistry();
   private final Lock timersLock = new ReentrantLock();
@@ -195,6 +195,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
 
+  @Override
   public void close() throws Exception {
     if (reporters != null) {
       for (Closeable reporter : reporters) {
@@ -208,6 +209,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     counters.invalidateAll();
   }
 
+  @Override
   public void startScope(String name) throws IOException {
     name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
@@ -217,6 +219,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
+  @Override
   public void endScope(String name) throws IOException {
     name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
@@ -224,10 +227,12 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
+  @Override
   public Long incrementCounter(String name) throws IOException {
     return incrementCounter(name, 1L);
   }
 
+  @Override
   public Long incrementCounter(String name, long increment) throws IOException {
     String key = name;
     try {
@@ -241,10 +246,12 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
+  @Override
   public Long decrementCounter(String name) throws IOException {
     return decrementCounter(name, 1L);
   }
 
+  @Override
   public Long decrementCounter(String name, long decrement) throws IOException {
     String key = name;
     try {
@@ -258,6 +265,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
+  @Override
   public void addGauge(String name, final MetricsVariable variable) {
     Gauge gauge = new Gauge() {
       @Override
@@ -392,6 +400,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       }, 0, time);
     }
 
+    @Override
     public void close() {
       if (timer != null) {
         this.timer.cancel();

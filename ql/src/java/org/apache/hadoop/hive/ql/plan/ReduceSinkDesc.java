@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -119,7 +119,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   // used by spark mode to decide whether global order is needed
   private transient boolean hasOrderBy = false;
 
-  private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
+  private static transient Logger LOG = LoggerFactory.getLogger(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
   }
 

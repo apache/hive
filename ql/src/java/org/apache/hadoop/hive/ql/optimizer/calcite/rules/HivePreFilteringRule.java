@@ -18,10 +18,8 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.calcite.plan.RelOptPredicateList;
@@ -40,8 +38,8 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
 import com.google.common.collect.ImmutableList;
@@ -52,8 +50,8 @@ import com.google.common.collect.Sets;
 
 public class HivePreFilteringRule extends RelOptRule {
 
-  protected static final Log LOG = LogFactory
-          .getLog(HivePreFilteringRule.class.getName());
+  protected static final Logger LOG = LoggerFactory
+          .getLogger(HivePreFilteringRule.class.getName());
 
 
   public static final HivePreFilteringRule INSTANCE =

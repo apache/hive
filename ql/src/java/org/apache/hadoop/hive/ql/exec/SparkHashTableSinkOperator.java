@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileExistsException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -50,7 +50,7 @@ public class SparkHashTableSinkOperator
   private static final long serialVersionUID = 1L;
   private final String CLASS_NAME = this.getClass().getName();
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
-  protected static final Log LOG = LogFactory.getLog(SparkHashTableSinkOperator.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(SparkHashTableSinkOperator.class.getName());
 
   private final HashTableSinkOperator htsOperator;
 

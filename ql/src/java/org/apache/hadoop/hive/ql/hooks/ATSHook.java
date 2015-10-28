@@ -22,8 +22,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -46,7 +46,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class ATSHook implements ExecuteWithHookContext {
 
-  private static final Log LOG = LogFactory.getLog(ATSHook.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ATSHook.class.getName());
   private static final Object LOCK = new Object();
   private static ExecutorService executor;
   private static TimelineClient timelineClient;

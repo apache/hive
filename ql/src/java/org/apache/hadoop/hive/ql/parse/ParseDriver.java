@@ -29,8 +29,8 @@ import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.antlr.runtime.tree.TreeAdaptor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.Context;
 
 /**
@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.Context;
  */
 public class ParseDriver {
 
-  private static final Log LOG = LogFactory.getLog("hive.ql.parse.ParseDriver");
+  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.parse.ParseDriver");
 
   /**
    * ANTLRNoCaseStringStream.

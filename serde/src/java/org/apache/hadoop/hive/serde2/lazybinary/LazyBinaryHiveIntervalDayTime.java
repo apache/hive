@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveInter
  */
 public class LazyBinaryHiveIntervalDayTime extends
     LazyBinaryPrimitive<WritableHiveIntervalDayTimeObjectInspector, HiveIntervalDayTimeWritable>{
-  static final Log LOG = LogFactory.getLog(LazyBinaryHiveIntervalDayTime.class);
+  static final Logger LOG = LoggerFactory.getLogger(LazyBinaryHiveIntervalDayTime.class);
 
   /**
    * Reusable member for decoding integer.

@@ -18,13 +18,13 @@
 
 package org.apache.hive.common;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveCompat {
 
-  private static Log LOG = LogFactory.getLog(HiveCompat.class);
+  private static Logger LOG = LoggerFactory.getLogger(HiveCompat.class);
 
   /**
    * Enum to represent a level of backward compatibility support.

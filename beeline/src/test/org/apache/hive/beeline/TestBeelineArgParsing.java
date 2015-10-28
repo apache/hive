@@ -27,8 +27,8 @@ import java.util.List;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,7 +42,7 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 public class TestBeelineArgParsing {
-  private static final Log LOG = LogFactory.getLog(TestBeelineArgParsing.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestBeelineArgParsing.class.getName());
 
   private static final String dummyDriverClazzName = "DummyDriver";
 

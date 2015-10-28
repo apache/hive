@@ -27,11 +27,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hadoop.hive.common.Pool;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestFixedSizedObjectPool {
 
@@ -50,6 +50,7 @@ public class TestFixedSizedObjectPool {
       this.count = count;
     }
 
+    @Override
     public void run() {
       syncThreadStart(cdlIn, cdlOut);
       for (int i = 0; i < count; ++i) {
@@ -66,6 +67,7 @@ public class TestFixedSizedObjectPool {
       super(pool, cdlIn, cdlOut, count);
     }
 
+    @Override
     protected void doOneOp() {
       Object o = new Object();
       if (pool.tryOffer(o)) {
@@ -80,6 +82,7 @@ public class TestFixedSizedObjectPool {
       super(pool, cdlIn, cdlOut, count);
     }
 
+    @Override
     protected void doOneOp() {
       Object o = pool.take();
       if (o != OneObjHelper.THE_OBJECT) {
@@ -132,7 +135,7 @@ public class TestFixedSizedObjectPool {
     assertNotSame(newObj, newObj2);
   }
 
-  public static final Log LOG = LogFactory.getLog(TestFixedSizedObjectPool.class);
+  public static final Logger LOG = LoggerFactory.getLogger(TestFixedSizedObjectPool.class);
 
   @Test
   public void testMTT1() {

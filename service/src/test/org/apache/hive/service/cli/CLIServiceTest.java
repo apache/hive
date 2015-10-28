@@ -33,8 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.server.HiveServer2;
@@ -47,7 +47,7 @@ import org.junit.Test;
  *
  */
 public abstract class CLIServiceTest {
-  private static final Log LOG = LogFactory.getLog(CLIServiceTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CLIServiceTest.class);
 
   protected static CLIServiceClient client;
 

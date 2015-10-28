@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -56,7 +56,7 @@ import com.google.common.collect.Multimap;
  */
 public class SplitGrouper {
 
-  private static final Log LOG = LogFactory.getLog(SplitGrouper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SplitGrouper.class);
 
   // TODO This needs to be looked at. Map of Map to Map... Made concurrent for now since split generation
   // can happen in parallel.

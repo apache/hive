@@ -18,8 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
@@ -74,7 +74,7 @@ import java.util.TreeSet;
  */
 public class TestHBaseStoreIntegration extends HBaseIntegrationTests {
 
-  private static final Log LOG = LogFactory.getLog(TestHBaseStoreIntegration.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestHBaseStoreIntegration.class.getName());
 
   @Rule public ExpectedException thrown = ExpectedException.none();
 

@@ -26,8 +26,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -66,7 +66,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   private ObjectCache cache;
 
-  public static final Log l4j = LogFactory.getLog(ReduceRecordProcessor.class);
+  public static final Logger l4j = LoggerFactory.getLogger(ReduceRecordProcessor.class);
 
   private ReduceWork reduceWork;
 

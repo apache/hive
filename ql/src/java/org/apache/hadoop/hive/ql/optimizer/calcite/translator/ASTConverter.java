@@ -52,8 +52,8 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -68,7 +68,7 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import com.google.common.collect.Iterables;
 
 public class ASTConverter {
-  private static final Log LOG = LogFactory.getLog(ASTConverter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ASTConverter.class);
 
   private final RelNode          root;
   private final HiveAST          hiveAST;

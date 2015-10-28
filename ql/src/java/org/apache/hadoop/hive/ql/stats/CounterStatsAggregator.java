@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
@@ -33,7 +33,7 @@ import org.apache.hadoop.mapred.RunningJob;
 
 public class CounterStatsAggregator implements StatsAggregator {
 
-  private static final Log LOG = LogFactory.getLog(CounterStatsAggregator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CounterStatsAggregator.class.getName());
 
   private Counters counters;
   private JobClient jc;

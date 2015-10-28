@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -55,7 +55,7 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
  *
  */
 public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
-  static final Log LOG = LogFactory.getLog(MetadataOnlyOptimizer.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(MetadataOnlyOptimizer.class.getName());
 
   static class WalkerCtx implements NodeProcessorCtx {
     /* operators for which there is chance the optimization can be applied */

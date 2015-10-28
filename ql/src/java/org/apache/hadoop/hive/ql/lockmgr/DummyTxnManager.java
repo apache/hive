@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -43,8 +43,8 @@ import java.util.*;
  * transactions.  This provides default Hive behavior.
  */
 class DummyTxnManager extends HiveTxnManagerImpl {
-  static final private Log LOG =
-      LogFactory.getLog(DummyTxnManager.class.getName());
+  static final private Logger LOG =
+      LoggerFactory.getLogger(DummyTxnManager.class.getName());
 
   private HiveLockManager lockMgr;
 

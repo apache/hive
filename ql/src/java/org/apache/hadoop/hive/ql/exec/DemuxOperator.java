@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DemuxDesc;
@@ -51,7 +51,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
   implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  protected static final Log LOG = LogFactory.getLog(DemuxOperator.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(DemuxOperator.class.getName());
 
   // Counters for debugging, we cannot use existing counters (cntr and nextCntr)
   // in Operator since we want to individually track the number of rows from

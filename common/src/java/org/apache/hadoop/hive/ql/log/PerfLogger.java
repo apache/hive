@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.log;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,7 +80,7 @@ public class PerfLogger {
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
   protected final Map<String, Long> endTimes = new HashMap<String, Long>();
 
-  static final private Log LOG = LogFactory.getLog(PerfLogger.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 
 
@@ -154,7 +154,7 @@ public class PerfLogger {
       sb.append(" ").append(additionalInfo);
     }
     sb.append(">");
-    LOG.info(sb);
+    LOG.info(sb.toString());
 
     return duration;
   }

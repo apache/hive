@@ -20,15 +20,15 @@ import java.util.Random;
 
 import javolution.util.FastBitSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.Text;
 
 public class NumDistinctValueEstimator {
 
-  static final Log LOG = LogFactory.getLog(NumDistinctValueEstimator.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(NumDistinctValueEstimator.class.getName());
 
   /* We want a,b,x to come from a finite field of size 0 to k, where k is a prime number.
    * 2^p - 1 is prime for p = 31. Hence bitvectorSize has to be 31. Pick k to be 2^p -1.
@@ -150,10 +150,8 @@ public class NumDistinctValueEstimator {
     String t = new String();
 
     LOG.debug("NumDistinctValueEstimator");
-    LOG.debug("Number of Vectors:");
-    LOG.debug(numBitVectors);
-    LOG.debug("Vector Size: ");
-    LOG.debug(BIT_VECTOR_SIZE);
+    LOG.debug("Number of Vectors: {}", numBitVectors);
+    LOG.debug("Vector Size: {}", BIT_VECTOR_SIZE);
 
     for (int i=0; i < numBitVectors; i++) {
       t = t + bitVector[i].toString();
@@ -353,7 +351,7 @@ public class NumDistinctValueEstimator {
     }
 
     avgLeastSigZero =
-        (double)(sumLeastSigZero/(numBitVectors * 1.0)) - (Math.log(PHI)/Math.log(2.0));
+        sumLeastSigZero/(numBitVectors * 1.0) - (Math.log(PHI)/Math.log(2.0));
     numDistinctValues = Math.pow(2.0, avgLeastSigZero);
     return ((long)(numDistinctValues));
   }

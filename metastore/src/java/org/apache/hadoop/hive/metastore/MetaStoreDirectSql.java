@@ -38,8 +38,8 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -95,7 +95,7 @@ class MetaStoreDirectSql {
 
   private static final int NO_BATCHING = -1, DETECT_BATCHING = 0;
 
-  private static final Log LOG = LogFactory.getLog(MetaStoreDirectSql.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MetaStoreDirectSql.class);
   private final PersistenceManager pm;
   /**
    * We want to avoid db-specific code in this class and stick with ANSI SQL. However:

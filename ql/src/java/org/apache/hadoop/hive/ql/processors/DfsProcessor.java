@@ -22,8 +22,8 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  */
 public class DfsProcessor implements CommandProcessor {
 
-  public static final Log LOG = LogFactory.getLog(DfsProcessor.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(DfsProcessor.class.getName());
   public static final LogHelper console = new LogHelper(LOG);
   public static final String DFS_RESULT_HEADER = "DFS Output";
 

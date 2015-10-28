@@ -27,8 +27,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -63,7 +63,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 public class ExecReducer extends MapReduceBase implements Reducer {
 
-  private static final Log LOG = LogFactory.getLog("ExecReducer");
+  private static final Logger LOG = LoggerFactory.getLogger("ExecReducer");
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
   private static final boolean isTraceEnabled = LOG.isTraceEnabled();
   private static final String PLAN_KEY = "__REDUCE_PLAN__";
@@ -253,7 +253,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        LOG.fatal(StringUtils.stringifyException(e));
+        LOG.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }

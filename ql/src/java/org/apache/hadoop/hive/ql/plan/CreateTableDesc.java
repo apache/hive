@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Create Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  private static Log LOG = LogFactory.getLog(CreateTableDesc.class);
+  private static Logger LOG = LoggerFactory.getLogger(CreateTableDesc.class);
   String databaseName;
   String tableName;
   boolean isExternal;
@@ -486,7 +486,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
         try {
           pti = TypeInfoFactory.getPrimitiveTypeInfo(fs.getType());
         } catch (Exception err) {
-          LOG.error(err);
+          LOG.error("Failed to get type info", err);
         }
         if(null == pti){
           throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "

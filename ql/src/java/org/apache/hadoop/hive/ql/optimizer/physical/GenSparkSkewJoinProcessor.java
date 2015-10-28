@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import com.google.common.base.Preconditions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -74,7 +74,7 @@ import java.util.Map;
  *
  */
 public class GenSparkSkewJoinProcessor {
-  private static final Log LOG = LogFactory.getLog(GenSparkSkewJoinProcessor.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(GenSparkSkewJoinProcessor.class.getName());
 
   private GenSparkSkewJoinProcessor() {
     // prevent instantiation

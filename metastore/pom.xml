@@ -75,11 +75,6 @@
       <artifactId>commons-lang</artifactId>
       <version>${commons-lang.version}</version>
     </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>${commons-logging.version}</version>
-    </dependency>
     <!-- XXX we probably shouldn't be shipping this but the tests depend on it -->
     <dependency>
       <groupId>org.apache.derby</groupId>
@@ -153,7 +148,15 @@
       <artifactId>tephra-core</artifactId>
       <version>${tephra.version}</version>
       <exclusions>
+          <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
         <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+        </exclusion>
+       <exclusion>
           <groupId>org.ow2.asm</groupId>
           <artifactId>asm-all</artifactId>
         </exclusion>

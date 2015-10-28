@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -50,7 +50,7 @@ import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
  */
 @InterfaceAudience.Private
 public class CompleteDelegator extends TempletonDelegator {
-  private static final Log LOG = LogFactory.getLog(CompleteDelegator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CompleteDelegator.class);
 
   public CompleteDelegator(AppConfig appConf) {
     super(appConf);

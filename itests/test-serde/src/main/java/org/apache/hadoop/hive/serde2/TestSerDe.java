@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.MetadataListStructObjectInspector;
@@ -50,7 +50,7 @@ import com.google.common.collect.Lists;
     TestSerDe.COLUMNS, TestSerDe.COLUMNS_COMMENTS, TestSerDe.DEFAULT_SERIALIZATION_FORMAT})
 public class TestSerDe extends AbstractSerDe {
 
-  public static final Log LOG = LogFactory.getLog(TestSerDe.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(TestSerDe.class.getName());
 
   public static final String COLUMNS = "columns";
   public static final String COLUMNS_COMMENTS = "columns.comments";

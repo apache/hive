@@ -27,10 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.thrift.TCLIService;
@@ -47,13 +44,15 @@ import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.hive.service.cli.thrift.TFetchResultsReq;
 import org.apache.hive.service.cli.thrift.TFetchResultsResp;
 import org.apache.hive.service.cli.thrift.TFetchOrientation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HiveStatement.
  *
  */
 public class HiveStatement implements java.sql.Statement {
-  public static final Log LOG = LogFactory.getLog(HiveStatement.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(HiveStatement.class.getName());
   private final HiveConnection connection;
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle = null;

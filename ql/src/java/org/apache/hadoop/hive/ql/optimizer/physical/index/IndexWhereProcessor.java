@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 */
 public class IndexWhereProcessor implements NodeProcessor {
 
-  private static final Log LOG = LogFactory.getLog(IndexWhereProcessor.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(IndexWhereProcessor.class.getName());
   private final Map<TableScanOperator, List<Index>> tsToIndices;
 
   public IndexWhereProcessor(Map<TableScanOperator, List<Index>> tsToIndices) {

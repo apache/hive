@@ -46,8 +46,8 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
@@ -123,7 +123,7 @@ public class Server {
   private @QueryParam(DO_AS_PARAM) String doAs;
   private @Context HttpServletRequest request;
 
-  private static final Log LOG = LogFactory.getLog(Server.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
   /**
    * Check the status of this server.  Always OK.

@@ -29,8 +29,8 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.FsInput;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -52,7 +52,7 @@ import org.apache.hadoop.mapred.Reporter;
  */
 public class AvroGenericRecordReader implements
         RecordReader<NullWritable, AvroGenericRecordWritable>, JobConfigurable {
-  private static final Log LOG = LogFactory.getLog(AvroGenericRecordReader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AvroGenericRecordReader.class);
 
   final private org.apache.avro.file.FileReader<GenericRecord> reader;
   final private long start;

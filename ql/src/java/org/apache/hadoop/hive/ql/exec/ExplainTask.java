@@ -39,8 +39,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
@@ -78,11 +78,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public static final String EXPL_COLUMN_NAME = "Explain";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
   private boolean isLogical = false;
-  protected final Log LOG;
+  protected final Logger LOG;
 
   public ExplainTask() {
     super();
-    LOG = LogFactory.getLog(this.getClass().getName());
+    LOG = LoggerFactory.getLogger(this.getClass().getName());
   }
 
   /*

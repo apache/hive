@@ -22,16 +22,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 
 public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritable> {
-
-  static final private Log LOG = LogFactory.getLog(HiveDecimalWritable.class);
 
   private byte[] internalStorage = new byte[0];
   private int scale;

@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -81,7 +81,7 @@ import org.junit.Test;
  */
 public class TestRCFile {
 
-  private static final Log LOG = LogFactory.getLog(TestRCFile.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestRCFile.class);
 
   private Configuration conf;
   private ColumnarSerDe serDe;

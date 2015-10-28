@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * simple lines of text.
  */
 class TextMetaDataFormatter implements MetaDataFormatter {
-  private static final Log LOG = LogFactory.getLog(TextMetaDataFormatter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TextMetaDataFormatter.class);
 
   private static final int separator = Utilities.tabCode;
   private static final int terminator = Utilities.newLineCode;

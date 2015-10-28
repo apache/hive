@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -94,7 +94,7 @@ public class StatsOptimizer implements Transform {
   //       a time; this could be improved - get all necessary columns in advance, then use local.
   // TODO: [HIVE-6292] aggregations could be done directly in metastore. Hive over MySQL!
 
-  private static final Log Log = LogFactory.getLog(StatsOptimizer.class);
+  private static final Logger Logger = LoggerFactory.getLogger(StatsOptimizer.class);
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -333,23 +333,23 @@ public class StatsOptimizer implements Transform {
               StatType type = getType(desc.getTypeString());
               if(!tbl.isPartitioned()) {
                 if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
-                  Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+                  Logger.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
                   return null;
                 }
                 rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
                 if (rowCnt < 1) {
-                  Log.debug("Table doesn't have upto date stats " + tbl.getTableName());
+                  Logger.debug("Table doesn't have upto date stats " + tbl.getTableName());
                   return null;
                 }
                 List<ColumnStatisticsObj> stats = hive.getMSC().getTableColumnStatistics(
                     tbl.getDbName(),tbl.getTableName(), Lists.newArrayList(colName));
                 if (stats.isEmpty()) {
-                  Log.debug("No stats for " + tbl.getTableName() + " column " + colName);
+                  Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
                   return null;
                 }
                 Long nullCnt = getNullcountFor(type, stats.get(0).getStatsData());
                 if (null == nullCnt) {
-                  Log.debug("Unsupported type: " + desc.getTypeString() + " encountered in " +
+                  Logger.debug("Unsupported type: " + desc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
                   return null;
                 } else {
@@ -360,13 +360,13 @@ public class StatsOptimizer implements Transform {
                     tsOp.getConf().getAlias(), tsOp).getPartitions();
                 for (Partition part : parts) {
                   if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
-                    Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+                    Logger.debug("Stats for part : " + part.getSpec() + " are not upto date.");
                     return null;
                   }
                   Long partRowCnt = Long.parseLong(part.getParameters()
                       .get(StatsSetupConst.ROW_COUNT));
                   if (partRowCnt < 1) {
-                    Log.debug("Partition doesn't have upto date stats " + part.getSpec());
+                    Logger.debug("Partition doesn't have upto date stats " + part.getSpec());
                     return null;
                   }
                   rowCnt += partRowCnt;
@@ -381,7 +381,7 @@ public class StatsOptimizer implements Transform {
                   if (statData == null) return null;
                   Long nullCnt = getNullcountFor(type, statData);
                   if (nullCnt == null) {
-                    Log.debug("Unsupported type: " + desc.getTypeString() + " encountered in " +
+                    Logger.debug("Unsupported type: " + desc.getTypeString() + " encountered in " +
                         "metadata optimizer for column : " + colName);
                     return null;
                   } else {
@@ -397,13 +397,13 @@ public class StatsOptimizer implements Transform {
             StatType type = getType(colDesc.getTypeString());
             if(!tbl.isPartitioned()) {
               if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
-                Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+                Logger.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
                 return null;
               }
               List<ColumnStatisticsObj> stats = hive.getMSC().getTableColumnStatistics(
                   tbl.getDbName(),tbl.getTableName(), Lists.newArrayList(colName));
               if (stats.isEmpty()) {
-                Log.debug("No stats for " + tbl.getTableName() + " column " + colName);
+                Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
                 return null;
               }
               ColumnStatisticsData statData = stats.get(0).getStatsData();
@@ -431,7 +431,7 @@ public class StatsOptimizer implements Transform {
                 }
                 default:
                   // unsupported type
-                  Log.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
+                  Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
                   return null;
               }
@@ -493,7 +493,7 @@ public class StatsOptimizer implements Transform {
                   break;
                 }
                 default:
-                  Log.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
+                  Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
                   return null;
               }
@@ -504,7 +504,7 @@ public class StatsOptimizer implements Transform {
             StatType type = getType(colDesc.getTypeString());
             if (!tbl.isPartitioned()) {
               if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
-                Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+                Logger.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
                 return null;
               }
               ColumnStatisticsData statData = hive.getMSC().getTableColumnStatistics(
@@ -533,7 +533,7 @@ public class StatsOptimizer implements Transform {
                   break;
                 }
                 default: // unsupported type
-                  Log.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
+                  Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
                   return null;
               }
@@ -594,14 +594,14 @@ public class StatsOptimizer implements Transform {
                   break;
                 }
                 default: // unsupported type
-                  Log.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
+                  Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
                   return null;
 
               }
             }
           } else { // Unsupported aggregation.
-            Log.debug("Unsupported aggregation for metadata optimizer: "
+            Logger.debug("Unsupported aggregation for metadata optimizer: "
                 + aggr.getGenericUDAFName());
             return null;
           }
@@ -645,17 +645,17 @@ public class StatsOptimizer implements Transform {
       } catch (Exception e) {
         // this is best effort optimization, bail out in error conditions and
         // try generate and execute slower plan
-        Log.debug("Failed to optimize using metadata optimizer", e);
+        Logger.debug("Failed to optimize using metadata optimizer", e);
         return null;
       }
     }
 
     private ColumnStatisticsData validateSingleColStat(List<ColumnStatisticsObj> statObj) {
       if (statObj.size() > 1) {
-        Log.error("More than one stat for a single column!");
+        Logger.error("More than one stat for a single column!");
         return null;
       } else if (statObj.isEmpty()) {
-        Log.debug("No stats for some partition and column");
+        Logger.debug("No stats for some partition and column");
         return null;
       }
       return statObj.get(0).getStatsData();
@@ -666,7 +666,7 @@ public class StatsOptimizer implements Transform {
       List<String> partNames = new ArrayList<String>(parts.size());
       for (Partition part : parts) {
         if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
-          Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+          Logger.debug("Stats for part : " + part.getSpec() + " are not upto date.");
           return null;
         }
         partNames.add(part.getName());
@@ -674,7 +674,7 @@ public class StatsOptimizer implements Transform {
       Map<String, List<ColumnStatisticsObj>> result = hive.getMSC().getPartitionColumnStatistics(
           tbl.getDbName(), tbl.getTableName(), partNames, Lists.newArrayList(colName));
       if (result.size() != parts.size()) {
-        Log.debug("Received " + result.size() + " stats for " + parts.size() + " partitions");
+        Logger.debug("Received " + result.size() + " stats for " + parts.size() + " partitions");
         return null;
       }
       return result.values();
@@ -691,7 +691,7 @@ public class StatsOptimizer implements Transform {
           }
           long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
           if (partRowCnt < 1) {
-            Log.debug("Partition doesn't have upto date stats " + part.getSpec());
+            Logger.debug("Partition doesn't have upto date stats " + part.getSpec());
             return null;
           }
           rowCnt += partRowCnt;
@@ -704,7 +704,7 @@ public class StatsOptimizer implements Transform {
         if (rowCnt < 1) {
           // if rowCnt < 1 than its either empty table or table on which stats are not
           //  computed We assume the worse and don't attempt to optimize.
-          Log.debug("Table doesn't have upto date stats " + tbl.getTableName());
+          Logger.debug("Table doesn't have upto date stats " + tbl.getTableName());
           rowCnt = null;
         }
       }

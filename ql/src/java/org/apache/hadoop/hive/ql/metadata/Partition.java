@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -56,8 +56,8 @@ import org.apache.hadoop.mapred.OutputFormat;
 public class Partition implements Serializable {
 
   @SuppressWarnings("nls")
-  static final private Log LOG = LogFactory
-      .getLog("hive.ql.metadata.Partition");
+  private static final Logger LOG = LoggerFactory
+      .getLogger("hive.ql.metadata.Partition");
 
   private Table table;
   private org.apache.hadoop.hive.metastore.api.Partition tPartition;

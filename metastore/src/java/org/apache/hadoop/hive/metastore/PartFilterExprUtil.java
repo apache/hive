@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
  * Utility functions for working with partition filter expressions
  */
 public class PartFilterExprUtil {
-  private static final Log LOG = LogFactory.getLog(PartFilterExprUtil.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(PartFilterExprUtil.class.getName());
 
 
   public static ExpressionTree makeExpressionTree(PartitionExpressionProxy expressionProxy,

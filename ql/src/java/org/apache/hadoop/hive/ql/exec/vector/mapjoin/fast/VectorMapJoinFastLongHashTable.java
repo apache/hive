@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
@@ -43,7 +43,7 @@ public abstract class VectorMapJoinFastLongHashTable
              extends VectorMapJoinFastHashTable
              implements VectorMapJoinLongHashTable {
 
-  public static final Log LOG = LogFactory.getLog(VectorMapJoinFastLongHashTable.class);
+  public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashTable.class);
 
   private HashTableKeyType hashTableKeyType;
 

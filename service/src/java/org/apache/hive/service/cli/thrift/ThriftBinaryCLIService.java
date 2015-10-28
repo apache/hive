@@ -100,7 +100,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
       LOG.info(msg);
       server.serve();
     } catch (Throwable t) {
-      LOG.fatal(
+      LOG.error(
           "Error starting HiveServer2: could not start "
               + ThriftBinaryCLIService.class.getSimpleName(), t);
       System.exit(-1);

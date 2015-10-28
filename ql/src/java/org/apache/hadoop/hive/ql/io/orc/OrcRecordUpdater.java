@@ -25,8 +25,8 @@ import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -51,7 +51,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class OrcRecordUpdater implements RecordUpdater {
 
-  private static final Log LOG = LogFactory.getLog(OrcRecordUpdater.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcRecordUpdater.class);
 
   public static final String ACID_KEY_INDEX_NAME = "hive.acid.key.index";
   public static final String ACID_FORMAT = "_orc_acid_version";

@@ -25,8 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -58,7 +58,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public final class IndexUtils {
 
-  private static final Log LOG = LogFactory.getLog(IndexWhereProcessor.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(IndexWhereProcessor.class.getName());
 
   private IndexUtils(){
   }

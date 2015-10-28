@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.io.IOContext;
@@ -28,8 +27,6 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.mapred.JobConf;
 
 public class ExecMapperContext {
-
-  public static final Log l4j = ExecMapper.l4j;
 
   // lastInputPath should be changed by the root of the operator tree ExecMapper.map()
   // but kept unchanged throughout the operator tree for one row

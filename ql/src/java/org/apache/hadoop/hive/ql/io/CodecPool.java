@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.Compressor;
 import org.apache.hadoop.io.compress.Decompressor;
@@ -33,7 +33,7 @@ import org.apache.hadoop.io.compress.Decompressor;
  * native) compression/decompression codecs.
  */
 public final class CodecPool {
-  private static final Log LOG = LogFactory.getLog(CodecPool.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CodecPool.class);
 
   /**
    * A global compressor pool used to save the expensive

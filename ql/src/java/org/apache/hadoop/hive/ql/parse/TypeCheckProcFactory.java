@@ -32,8 +32,8 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -93,7 +93,7 @@ import com.google.common.collect.Lists;
  */
 public class TypeCheckProcFactory {
 
-  protected static final Log LOG = LogFactory.getLog(TypeCheckProcFactory.class
+  protected static final Logger LOG = LoggerFactory.getLogger(TypeCheckProcFactory.class
       .getName());
 
   protected TypeCheckProcFactory() {

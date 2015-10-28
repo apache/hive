@@ -44,8 +44,8 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -87,7 +87,7 @@ import javax.annotation.Nullable;
 
 public class MetaStoreUtils {
 
-  protected static final Log LOG = LogFactory.getLog("hive.log");
+  protected static final Logger LOG = LoggerFactory.getLogger("hive.log");
 
   public static final String DEFAULT_DATABASE_NAME = "default";
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";

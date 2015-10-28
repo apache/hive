@@ -19,8 +19,8 @@
 package org.apache.hive.service;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +34,7 @@ public class CookieSigner {
   private static final String SIGNATURE = "&s=";
   private static final String SHA_STRING = "SHA";
   private byte[] secretBytes;
-  private static final Log LOG = LogFactory.getLog(CookieSigner.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CookieSigner.class);
 
   /**
    * Constructor

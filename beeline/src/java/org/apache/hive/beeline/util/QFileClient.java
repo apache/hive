@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.beeline.BeeLine;
@@ -68,8 +68,8 @@ public class QFileClient {
 
   private boolean hasErrors = false;
 
-  private static Log LOG = LogFactory
-      .getLog(QFileClient.class.getName());
+  private static final Logger LOG = LoggerFactory
+      .getLogger(QFileClient.class.getName());
 
 
   public QFileClient(HiveConf hiveConf, String hiveRootDirectory, String qFileDirectory, String outputDirectory,

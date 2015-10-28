@@ -29,8 +29,8 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.calcite.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -73,7 +73,7 @@ import com.google.common.collect.ListMultimap;
  */
 public class PointLookupOptimizer implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(PointLookupOptimizer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PointLookupOptimizer.class);
   private static final String IN_UDF =
           GenericUDFIn.class.getAnnotation(Description.class).name();
   private static final String STRUCT_UDF =

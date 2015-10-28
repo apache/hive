@@ -56,8 +56,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -102,8 +102,6 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -126,7 +124,7 @@ public class QTestUtil {
   private static final String SECURITY_KEY_PROVIDER_URI_NAME = "dfs.encryption.key.provider.uri";
   private static final String CRLF = System.getProperty("line.separator");
 
-  private static final Log LOG = LogFactory.getLog("QTestUtil");
+  private static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
   private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
   private final static String defaultInitScript = "q_test_init.sql";
   private final static String defaultCleanupScript = "q_test_cleanup.sql";
@@ -387,8 +385,6 @@ public class QTestUtil {
     this.logDir = logDir;
     this.useHBaseMetastore = useHBaseMetastore;
 
-    Logger hadoopLog = Logger.getLogger("org.apache.hadoop");
-    hadoopLog.setLevel(Level.INFO);
     if (confDir != null && !confDir.isEmpty()) {
       HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());

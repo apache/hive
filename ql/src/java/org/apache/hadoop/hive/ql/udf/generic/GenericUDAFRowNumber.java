@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
@@ -45,7 +45,7 @@ import org.apache.hadoop.io.IntWritable;
 )
 public class GenericUDAFRowNumber extends AbstractGenericUDAFResolver {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFRowNumber.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFRowNumber.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {

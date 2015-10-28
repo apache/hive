@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
@@ -52,7 +52,7 @@ import com.google.common.collect.Sets;
 public class Optimizer {
   private ParseContext pctx;
   private List<Transform> transformations;
-  private static final Log LOG = LogFactory.getLog(Optimizer.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(Optimizer.class.getName());
 
   /**
    * Create the list of transformations.

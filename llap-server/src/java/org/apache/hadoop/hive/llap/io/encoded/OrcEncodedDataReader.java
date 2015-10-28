@@ -8,12 +8,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.DataCache;
@@ -64,6 +63,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.tez.common.CallableWithNdc;
 
 /**
  * This produces EncodedColumnBatch via ORC EncodedDataImpl.
@@ -73,7 +73,7 @@ import org.apache.hive.common.util.FixedSizedObjectPool;
  */
 public class OrcEncodedDataReader extends CallableWithNdc<Void>
     implements ConsumerFeedback<OrcEncodedColumnBatch>, Consumer<OrcEncodedColumnBatch> {
-  private static final Log LOG = LogFactory.getLog(OrcEncodedDataReader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcEncodedDataReader.class);
   public static final FixedSizedObjectPool<ColumnStreamData> CSD_POOL =
       new FixedSizedObjectPool<>(8192, new PoolObjectHelper<ColumnStreamData>() {
         @Override
@@ -198,9 +198,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   protected Void performDataRead() throws IOException {
     long startTime = counters.startTimeCounter();
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Processing data for " + split.getPath());
-    }
+    LlapIoImpl.LOG.info("Processing data for {}", split.getPath());
+
     if (processStop()) {
       recordReaderTime(startTime);
       return null;
@@ -745,7 +744,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     long offset = split.getStart(), maxOffset = offset + split.getLength();
     stripeIxFrom = -1;
     int stripeIxTo = -1;
-    if (LlapIoImpl.LOGL.isDebugEnabled()) {
+    if (LlapIoImpl.LOG.isDebugEnabled()) {
       String tmp = "FileSplit {" + split.getStart() + ", " + split.getLength() + "}; stripes ";
       for (StripeInformation stripe : stripes) {
         tmp += "{" + stripe.getOffset() + ", " + stripe.getLength() + "}, ";
@@ -893,7 +892,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private class DataWrapperForOrc implements DataReader, DataCache {
-    private DataReader orcDataReader;
+    private final DataReader orcDataReader;
 
     public DataWrapperForOrc() {
       boolean useZeroCopy = (conf != null) && OrcConf.USE_ZEROCOPY.getBoolean(conf);

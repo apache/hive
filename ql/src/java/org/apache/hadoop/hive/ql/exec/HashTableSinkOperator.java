@@ -22,12 +22,10 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -59,7 +57,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
-  protected static final Log LOG = LogFactory.getLog(HashTableSinkOperator.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(HashTableSinkOperator.class.getName());
 
   /**
    * The expressions for join inputs's join keys.

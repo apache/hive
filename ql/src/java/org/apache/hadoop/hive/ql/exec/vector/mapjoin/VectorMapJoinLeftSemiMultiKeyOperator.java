@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemiGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinInnerBigOnlyLongOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinInnerBigOnlyLongOperator.class.getName());
   private static final String CLASS_NAME = VectorMapJoinLeftSemiMultiKeyOperator.class.getName();
 
   // (none)

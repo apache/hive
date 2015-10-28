@@ -60,8 +60,6 @@ import javax.security.sasl.SaslException;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -97,13 +95,15 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HiveConnection.
  *
  */
 public class HiveConnection implements java.sql.Connection {
-  public static final Log LOG = LogFactory.getLog(HiveConnection.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class.getName());
   private static final String HIVE_VAR_PREFIX = "hivevar:";
   private static final String HIVE_CONF_PREFIX = "hiveconf:";
 

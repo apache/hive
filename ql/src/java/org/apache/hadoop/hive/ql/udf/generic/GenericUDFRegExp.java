@@ -23,8 +23,8 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
@@ -48,7 +48,7 @@ import org.apache.hadoop.io.BooleanWritable;
     + "  > SELECT 'fb' _FUNC_ '.*' FROM src LIMIT 1;\n" + "  true")
 @VectorizedExpressions({FilterStringColRegExpStringScalar.class})
 public class GenericUDFRegExp extends GenericUDF {
-  static final Log LOG = LogFactory.getLog(GenericUDFRegExp.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDFRegExp.class.getName());
   private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];
   private transient Converter[] converters = new Converter[2];
   private final BooleanWritable output = new BooleanWritable();

@@ -25,7 +25,8 @@ import org.apache.hadoop.hive.accumulo.AccumuloHiveConstants;
 import org.apache.hadoop.hive.accumulo.serde.TooManyAccumuloColumnsException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -33,7 +34,7 @@ import com.google.common.base.Preconditions;
  *
  */
 public class ColumnMapper {
-  private static final Logger log = Logger.getLogger(ColumnMapper.class);
+  private static final Logger log = LoggerFactory.getLogger(ColumnMapper.class);
 
   private List<ColumnMapping> columnMappings;
   private int rowIdOffset;

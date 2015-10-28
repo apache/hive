@@ -20,8 +20,8 @@ package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -40,7 +40,7 @@ import org.apache.hive.hcatalog.templeton.tool.JobState;
  * Currently there is no permission restriction, any user can query any job
  */
 public class StatusDelegator extends TempletonDelegator {
-  private static final Log LOG = LogFactory.getLog(StatusDelegator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(StatusDelegator.class);
 
   public StatusDelegator(AppConfig appConf) {
     super(appConf);

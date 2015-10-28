@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -38,7 +38,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
  * value is the OrcStruct object */
 public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
 
-  private static final Log LOG = LogFactory.getLog(OrcNewInputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcNewInputFormat.class);
 
   @Override
   public RecordReader<NullWritable, OrcStruct> createRecordReader(

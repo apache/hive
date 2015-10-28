@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -92,7 +92,7 @@ public class MapJoinProcessor implements Transform {
   // (column type + column name). The column name is not really used anywhere, but it
   // needs to be passed. Use the string defined below for that.
   private static final String MAPJOINKEY_FIELDPREFIX = "mapjoinkey";
-  private static final Log LOG = LogFactory.getLog(MapJoinProcessor.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(MapJoinProcessor.class.getName());
 
   public MapJoinProcessor() {
   }

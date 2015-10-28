@@ -30,8 +30,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
@@ -71,7 +71,7 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
  * Just pump the records through the query plan.
  */
 public class MapRecordProcessor extends RecordProcessor {
-  public static final Log l4j = LogFactory.getLog(MapRecordProcessor.class);
+  public static final Logger l4j = LoggerFactory.getLogger(MapRecordProcessor.class);
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
 
   private MapOperator mapOp;

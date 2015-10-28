@@ -31,10 +31,10 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
 import org.apache.hadoop.hive.common.cli.IHiveFileProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -77,9 +77,6 @@ import org.apache.hive.service.server.ThreadWithGarbageCleanup;
  *
  */
 public class HiveSessionImpl implements HiveSession {
-  private static final String FETCH_WORK_SERDE_CLASS =
-      "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
-  private static final Log LOG = LogFactory.getLog(HiveSessionImpl.class);
 
   // Shared between threads (including SessionState!)
   private final SessionHandle sessionHandle;
@@ -94,6 +91,11 @@ public class HiveSessionImpl implements HiveSession {
   //       2) Some parts of session state, like mrStats and vars, need proper synchronization.
   private SessionState sessionState;
   private String ipAddress;
+
+  private static final String FETCH_WORK_SERDE_CLASS =
+      "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
+  private static final Logger LOG = LoggerFactory.getLogger(HiveSessionImpl.class);
+
   private SessionManager sessionManager;
   private OperationManager operationManager;
   // Synchronized by locking on itself.

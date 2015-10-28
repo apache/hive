@@ -35,8 +35,8 @@ import javax.ws.rs.core.NewCookie;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
@@ -68,7 +68,7 @@ import org.ietf.jgss.Oid;
 public class ThriftHttpServlet extends TServlet {
 
   private static final long serialVersionUID = 1L;
-  public static final Log LOG = LogFactory.getLog(ThriftHttpServlet.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(ThriftHttpServlet.class.getName());
   private final String authType;
   private final UserGroupInformation serviceUGI;
   private final UserGroupInformation httpUGI;

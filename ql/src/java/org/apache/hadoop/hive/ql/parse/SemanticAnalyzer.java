@@ -2230,7 +2230,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(0).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(0).add(joinCond);
           }
         } else {
@@ -2319,7 +2319,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(1).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(1).add(joinCond);
           }
         } else {
@@ -2339,7 +2339,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
           joinTree.getFilters().get(0).add(joinCond);
         } else {
-          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
           joinTree.getFiltersForPushing().get(0).add(joinCond);
         }
       } else {
@@ -2351,7 +2351,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
           joinTree.getFilters().get(1).add(joinCond);
         } else {
-          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
           joinTree.getFiltersForPushing().get(1).add(joinCond);
         }
       } else {
@@ -2501,7 +2501,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(0).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(0).add(joinCond);
           }
         } else {
@@ -2513,7 +2513,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(1).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(1).add(joinCond);
           }
         } else {
@@ -8452,7 +8452,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // for outer joins, it should not exceed 16 aliases (short type)
           if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
             if (node.getRightAliases().length + target.getRightAliases().length + 1 > 16) {
-              LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_16);
+              LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_16.getErrorCodedMsg());
               continueScanning = continueJoinMerge();
               continue;
             }
@@ -10543,7 +10543,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           Table tbl = usedp.getTable();
 
           LOG.debug("validated " + usedp.getName());
-          LOG.debug(usedp.getTable());
+          LOG.debug(usedp.getTable().getTableName());
           conflictingArchive = ArchiveUtils
               .conflictingArchiveNameOrNull(db, tbl, usedp.getSpec());
         } catch (HiveException e) {

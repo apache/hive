@@ -22,8 +22,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eclipse.jetty.http.HttpStatus;
 
 import com.sun.jersey.api.NotFoundException;
@@ -35,7 +35,7 @@ import com.sun.jersey.api.NotFoundException;
 @Provider
 public class CatchallExceptionMapper
   implements ExceptionMapper<Exception> {
-  private static final Log LOG = LogFactory.getLog(CatchallExceptionMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CatchallExceptionMapper.class);
 
   public Response toResponse(Exception e) {
     LOG.error(e.getMessage(), e);

@@ -28,8 +28,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -90,7 +90,7 @@ import org.apache.hadoop.mapred.JobConf;
  */
 public final class OpProcFactory {
 
-  protected static final Log LOG = LogFactory.getLog(OpProcFactory.class
+  protected static final Logger LOG = LoggerFactory.getLogger(OpProcFactory.class
     .getName());
 
   private static ExprWalkerInfo getChildWalkerInfo(Operator<?> current, OpWalkerInfo owi) {

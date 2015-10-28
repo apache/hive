@@ -34,8 +34,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -122,10 +122,10 @@ import com.google.common.collect.Interner;
  * map-reduce tasks.
  */
 public final class GenMapRedUtils {
-  private static Log LOG;
+  private static Logger LOG;
 
   static {
-    LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
+    LOG = LoggerFactory.getLogger("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
   }
 
   public static boolean needsTagging(ReduceWork rWork) {

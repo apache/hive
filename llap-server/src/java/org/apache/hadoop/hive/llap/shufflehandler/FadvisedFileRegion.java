@@ -22,8 +22,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.ReadaheadPool;
 import org.apache.hadoop.io.ReadaheadPool.ReadaheadRequest;
 import org.apache.hadoop.io.nativeio.NativeIO;
@@ -31,7 +31,7 @@ import org.jboss.netty.channel.DefaultFileRegion;
 
 public class FadvisedFileRegion extends DefaultFileRegion {
 
-  private static final Log LOG = LogFactory.getLog(FadvisedFileRegion.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FadvisedFileRegion.class);
 
   private final boolean manageOsCache;
   private final int readaheadLength;

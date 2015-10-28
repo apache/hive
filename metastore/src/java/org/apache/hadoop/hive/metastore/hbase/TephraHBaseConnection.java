@@ -28,8 +28,8 @@ import co.cask.tephra.distributed.TransactionServiceClient;
 import co.cask.tephra.hbase10.TransactionAwareHTable;
 import co.cask.tephra.hbase10.coprocessor.TransactionProcessor;
 import co.cask.tephra.inmemory.InMemoryTxSystemClient;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,7 +44,7 @@ import java.util.Map;
  * A class that uses Tephra for transaction management.
  */
 public class TephraHBaseConnection extends VanillaHBaseConnection {
-  static final private Log LOG = LogFactory.getLog(TephraHBaseConnection.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(TephraHBaseConnection.class.getName());
 
   private Map<String, TransactionAware> txnTables;
   private TransactionContext txn;

@@ -29,8 +29,8 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -75,7 +75,7 @@ import org.apache.hive.common.util.ReflectionUtil;
 public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(MapJoinOperator.class.getName());
   private static final String CLASS_NAME = MapJoinOperator.class.getName();
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
 

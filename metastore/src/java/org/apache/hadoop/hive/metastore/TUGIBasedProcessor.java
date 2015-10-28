@@ -25,8 +25,8 @@ import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_args;
@@ -57,7 +57,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
   private final I iface;
   private final Map<String,  org.apache.thrift.ProcessFunction<Iface, ? extends  TBase>>
     functions;
-  static final Log LOG = LogFactory.getLog(TUGIBasedProcessor.class);
+  static final Logger LOG = LoggerFactory.getLogger(TUGIBasedProcessor.class);
 
   public TUGIBasedProcessor(I iface) throws SecurityException, NoSuchFieldException,
     IllegalArgumentException, IllegalAccessException, NoSuchMethodException,

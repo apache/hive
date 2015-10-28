@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -61,7 +61,7 @@ import java.util.regex.PatternSyntaxException;
 // Extracted from FunctionRegistry
 public class Registry {
 
-  private static final Log LOG = LogFactory.getLog(FunctionRegistry.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FunctionRegistry.class);
 
   // prefix for window functions, to discern LEAD/LAG UDFs from window functions with the same name
   private static final String WINDOW_FUNC_PREFIX = "@_";

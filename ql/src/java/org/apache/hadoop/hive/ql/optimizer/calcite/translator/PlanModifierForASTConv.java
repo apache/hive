@@ -38,8 +38,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -53,7 +53,7 @@ import com.google.common.collect.ImmutableList;
 
 public class PlanModifierForASTConv {
 
-  private static final Log LOG = LogFactory.getLog(PlanModifierForASTConv.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PlanModifierForASTConv.class);
 
 
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema)

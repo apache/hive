@@ -24,9 +24,6 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
@@ -38,7 +35,6 @@ import org.apache.hadoop.io.Text;
 @Description(name = "lookup",
 value = "_FUNC_(col) - UDF for key/value lookup from a file")
 public class UDFFileLookup extends UDF {
-  static Log LOG = LogFactory.getLog(UDFFileLookup.class);
 
   IntWritable result = new IntWritable();
 

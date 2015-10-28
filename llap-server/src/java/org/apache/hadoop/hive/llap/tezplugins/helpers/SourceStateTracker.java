@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -40,7 +40,7 @@ import org.apache.tez.runtime.api.impl.InputSpec;
 
 public class SourceStateTracker {
 
-  private static final Log LOG = LogFactory.getLog(SourceStateTracker.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SourceStateTracker.class);
 
   private final TaskCommunicatorContext taskCommunicatorContext;
   private final LlapTaskCommunicator taskCommunicator;

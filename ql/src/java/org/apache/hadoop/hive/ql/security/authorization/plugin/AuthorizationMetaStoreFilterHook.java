@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 @Private
 public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHookImpl {
 
-  public static final Log LOG = LogFactory.getLog(AuthorizationMetaStoreFilterHook.class);
+  public static final Logger LOG = LoggerFactory.getLogger(AuthorizationMetaStoreFilterHook.class);
 
   public AuthorizationMetaStoreFilterHook(HiveConf conf) {
     super(conf);
@@ -78,13 +78,13 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     try {
       return ss.getAuthorizerV2().filterListCmdObjects(listObjs, authzContextBuilder.build());
     } catch (HiveAuthzPluginException e) {
-      LOG.error(e);
+      LOG.error("Authorization error", e);
       throw new MetaException(e.getMessage());
     } catch (HiveAccessControlException e) {
       // authorization error is not really expected in a filter call
       // the impl should have just filtered out everything. A checkPrivileges call
       // would have already been made to authorize this action
-      LOG.error(e);
+      LOG.error("AccessControlException", e);
       throw new MetaException(e.getMessage());
     }
   }

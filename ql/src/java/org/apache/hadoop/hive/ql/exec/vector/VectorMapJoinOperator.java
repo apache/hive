@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -48,7 +48,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
 
   private static final long serialVersionUID = 1L;
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       VectorMapJoinOperator.class.getName());
 
   protected VectorExpression[] keyExpressions;

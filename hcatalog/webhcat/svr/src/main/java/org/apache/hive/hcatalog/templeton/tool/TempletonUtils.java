@@ -42,8 +42,8 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -59,7 +59,7 @@ import org.apache.hive.hcatalog.templeton.BadParam;
  * General utility methods.
  */
 public class TempletonUtils {
-  private static final Log LOG = LogFactory.getLog(TempletonUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TempletonUtils.class);
 
   /**
    * Is the object non-empty?

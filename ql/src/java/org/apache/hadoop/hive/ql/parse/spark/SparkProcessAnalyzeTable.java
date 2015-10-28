@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -57,7 +57,7 @@ import com.google.common.base.Preconditions;
  * Cloned from Tez ProcessAnalyzeTable.
  */
 public class SparkProcessAnalyzeTable implements NodeProcessor {
-  private static final Log LOGGER = LogFactory.getLog(SparkProcessAnalyzeTable.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkProcessAnalyzeTable.class.getName());
 
   // shared plan utils for spark
   private GenSparkUtils utils = null;

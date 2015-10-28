@@ -31,8 +31,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.junit.Test;
 
 public class TestLowLevelCacheImpl {
-  private static final Log LOG = LogFactory.getLog(TestLowLevelCacheImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestLowLevelCacheImpl.class);
 
   private static final DiskRangeListFactory testFactory = new DiskRangeListFactory() {
     public DiskRangeList createCacheChunk(MemoryBuffer buffer, long offset, long end) {

@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.hwi;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.JettyShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
  * started and a web application to work with hive is started.
  */
 public class HWIServer {
-  protected static final Log l4j = LogFactory.getLog(HWIServer.class.getName());
+  protected static final Logger l4j = LoggerFactory.getLogger(HWIServer.class.getName());
 
   private JettyShims.Server webServer;
   private final String[] args;
@@ -78,7 +78,7 @@ public class HWIServer {
     String hivehome = System.getenv().get("HIVE_HOME");
     File hwiWARFile = new File(hivehome, hwiWAR);
     if (!hwiWARFile.exists()) {
-      l4j.fatal("HWI WAR file not found at " + hwiWARFile.toString());
+      l4j.error("HWI WAR file not found at " + hwiWARFile.toString());
       System.exit(1);
     }
 

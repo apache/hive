@@ -30,8 +30,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.util.StringUtils;
 
 public class LlapOptionsProcessor {
@@ -95,7 +95,7 @@ public class LlapOptionsProcessor {
     }
   }
 
-  protected static final Log l4j = LogFactory.getLog(LlapOptionsProcessor.class.getName());
+  protected static final Logger l4j = LoggerFactory.getLogger(LlapOptionsProcessor.class.getName());
   private final Options options = new Options();
   Map<String, String> hiveVariables = new HashMap<String, String>();
   private org.apache.commons.cli.CommandLine commandLine;

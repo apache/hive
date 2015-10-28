@@ -18,8 +18,8 @@
 
 package org.apache.hive.service.cli.thrift;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * implementation and retries calls to it on failure.
  */
 public class RetryingThriftCLIServiceClient implements InvocationHandler {
-  public static final Log LOG = LogFactory.getLog(RetryingThriftCLIServiceClient.class);
+  public static final Logger LOG = LoggerFactory.getLogger(RetryingThriftCLIServiceClient.class);
   private ThriftCLIServiceClient base;
   private final int retryLimit;
   private final int retryDelaySeconds;

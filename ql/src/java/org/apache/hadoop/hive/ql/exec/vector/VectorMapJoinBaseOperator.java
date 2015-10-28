@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableContainer;
@@ -45,7 +45,7 @@ import org.apache.hadoop.io.DataOutputBuffer;
  */
 public class VectorMapJoinBaseOperator extends MapJoinOperator implements VectorizationContextRegion {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinBaseOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinBaseOperator.class.getName());
 
   private static final long serialVersionUID = 1L;
 

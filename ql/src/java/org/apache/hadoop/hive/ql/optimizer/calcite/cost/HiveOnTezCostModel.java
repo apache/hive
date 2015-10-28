@@ -29,8 +29,8 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
@@ -51,7 +51,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
   private static HiveAlgorithmsUtil algoUtils;
 
-  private static transient final Log LOG = LogFactory.getLog(HiveOnTezCostModel.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(HiveOnTezCostModel.class);
 
   synchronized public static HiveOnTezCostModel getCostModel(HiveConf conf) {
     if (INSTANCE == null) {

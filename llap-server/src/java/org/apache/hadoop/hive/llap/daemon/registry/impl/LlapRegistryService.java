@@ -20,11 +20,12 @@ import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.daemon.registry.ServiceRegistry;
 import org.apache.hadoop.service.AbstractService;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LlapRegistryService extends AbstractService {
 
-  private static final Logger LOG = Logger.getLogger(LlapRegistryService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapRegistryService.class);
 
   private ServiceRegistry registry = null;
   private final boolean isDaemon;

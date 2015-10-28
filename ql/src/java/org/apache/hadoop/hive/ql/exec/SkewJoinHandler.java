@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -73,7 +73,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class SkewJoinHandler {
 
-  protected static final Log LOG = LogFactory.getLog(SkewJoinHandler.class
+  protected static final Logger LOG = LoggerFactory.getLogger(SkewJoinHandler.class
       .getName());
 
   public int currBigKeyTag = -1;
@@ -282,7 +282,7 @@ public class SkewJoinHandler {
     try {
       fs.delete(operatorOutputPath, true);
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to delete path ", e);
     }
   }
 

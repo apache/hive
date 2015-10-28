@@ -42,8 +42,6 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -69,13 +67,15 @@ import org.apache.tez.serviceplugins.api.ContainerLauncherDescriptor;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
 import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Holds session state related to Tez
  */
 public class TezSessionState {
 
-  private static final Log LOG = LogFactory.getLog(TezSessionState.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TezSessionState.class.getName());
   private static final String TEZ_DIR = "_tez_session_dir";
   public static final String LLAP_SERVICE = "LLAP";
   private static final String LLAP_SCHEDULER = "org.apache.tez.dag.app.rm.LlapTaskSchedulerService";
@@ -188,7 +188,7 @@ public class TezSessionState {
     this.conf = conf;
     this.queueName = conf.get("tez.queue.name");
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
-    
+
     final boolean llapMode = "llap".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
 
     UserGroupInformation ugi = Utils.getUGI();
@@ -401,7 +401,7 @@ public class TezSessionState {
   /**
    * Close a tez session. Will cleanup any tez/am related resources. After closing a session no
    * further DAGs can be executed against it.
-   * 
+   *
    * @param keepTmpDir
    *          whether or not to remove the scratch dir at the same time.
    * @throws Exception

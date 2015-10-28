@@ -27,8 +27,8 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -69,7 +69,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
   private Warehouse wh;
   private boolean isRunFromMetaStore = false;
 
-  private static Log LOG = LogFactory.getLog(StorageBasedAuthorizationProvider.class);
+  private static Logger LOG = LoggerFactory.getLogger(StorageBasedAuthorizationProvider.class);
 
   /**
    * Make sure that the warehouse variable is set up properly.
