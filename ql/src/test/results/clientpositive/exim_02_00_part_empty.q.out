@@ -44,9 +44,11 @@ POSTHOOK: Input: database:importer
 PREHOOK: query: import from 'ql/test/data/exports/exim_employee'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
+PREHOOK: Output: database:importer
 POSTHOOK: query: import from 'ql/test/data/exports/exim_employee'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_employee
 PREHOOK: query: describe extended exim_employee
 PREHOOK: type: DESCTABLE
