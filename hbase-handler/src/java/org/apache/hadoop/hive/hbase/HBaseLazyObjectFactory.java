@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -52,5 +55,30 @@ public class HBaseLazyObjectFactory {
     return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
         serdeParams.getColumnNames(), columnObjectInspectors, null, serdeParams.getSeparators()[0],
         serdeParams, ObjectInspectorOptions.JAVA);
+  }
+
+  public static ObjectInspector createLazyHBaseStructInspector(HBaseSerDeParameters hSerdeParams,
+      Properties tbl)
+      throws SerDeException {
+    List<TypeInfo> columnTypes = hSerdeParams.getColumnTypes();
+    ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(
+        columnTypes.size());
+    for (int i = 0; i < columnTypes.size(); i++) {
+      if (i == hSerdeParams.getKeyIndex()) {
+        columnObjectInspectors.add(hSerdeParams.getKeyFactory()
+            .createKeyObjectInspector(columnTypes.get(i)));
+      } else {
+        columnObjectInspectors.add(hSerdeParams.getValueFactories().get(i)
+            .createValueObjectInspector(columnTypes.get(i)));
+      }
+    }
+    List<String> structFieldComments = tbl.getProperty("columns.comments") == null ?
+        new ArrayList<String>(Collections.nCopies(columnTypes.size(), ""))
+        : Arrays.asList(tbl.getProperty("columns.comments").split("\0", columnTypes.size()));
+
+    return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
+        hSerdeParams.getColumnNames(), columnObjectInspectors, structFieldComments,
+        hSerdeParams.getSerdeParams().getSeparators()[0],
+        hSerdeParams.getSerdeParams(), ObjectInspectorOptions.JAVA);
   }
 }
