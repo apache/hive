@@ -2,14 +2,14 @@ PREHOOK: query: DROP TABLE hbase_table_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table_1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table_1(key int, value string) 
+PREHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value') 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_1
-POSTHOOK: query: CREATE TABLE hbase_table_1(key int, value string) 
+POSTHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value') 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
@@ -22,8 +22,8 @@ PREHOOK: Input: default@hbase_table_1
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
+key                 	int                 	It is a column key  
+value               	string              	It is the column string value
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from hbase_table_1
@@ -834,9 +834,9 @@ PREHOOK: Input: default@hbase_table_3_like
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_3_like
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_3_like
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
-count               	int                 	from deserializer   
+key                 	int                 	                    
+value               	string              	                    
+count               	int                 	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: INSERT OVERWRITE TABLE hbase_table_3_like SELECT * FROM hbase_table_3
@@ -878,8 +878,8 @@ PREHOOK: Input: default@hbase_table_1_like
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1_like
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1_like
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
+key                 	int                 	It is a column key  
+value               	string              	It is the column string value
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: INSERT OVERWRITE TABLE hbase_table_1_like SELECT * FROM hbase_table_1
@@ -899,6 +899,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1_like
 #### A masked pattern was here ####
 155
+PREHOOK: query: SHOW CREATE TABLE hbase_table_1_like
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@hbase_table_1_like
+POSTHOOK: query: SHOW CREATE TABLE hbase_table_1_like
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@hbase_table_1_like
+CREATE EXTERNAL TABLE `hbase_table_1_like`(
+  `key` int COMMENT 'It is a column key', 
+  `value` string COMMENT 'It is the column string value')
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.hbase.HBaseSerDe' 
+STORED BY 
+  'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
+WITH SERDEPROPERTIES ( 
+  'hbase.columns.mapping'='cf:string', 
+  'serialization.format'='1')
+TBLPROPERTIES (
+  'hbase.table.name'='hbase_table_0', 
+#### A masked pattern was here ####
 PREHOOK: query: DROP TABLE hbase_table_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_1
