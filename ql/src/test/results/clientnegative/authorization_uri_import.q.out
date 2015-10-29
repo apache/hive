@@ -9,3 +9,32 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import_auth_uri
 #### A masked pattern was here ####
+PREHOOK: query: export table import_auth_uri to 'ql/test/data/exports/import_auth_uri'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@import_auth_uri
+#### A masked pattern was here ####
+POSTHOOK: query: export table import_auth_uri to 'ql/test/data/exports/import_auth_uri'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@import_auth_uri
+#### A masked pattern was here ####
+PREHOOK: query: drop table import_auth_uri
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import_auth_uri
+PREHOOK: Output: default@import_auth_uri
+POSTHOOK: query: drop table import_auth_uri
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import_auth_uri
+POSTHOOK: Output: default@import_auth_uri
+PREHOOK: query: create database importer
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:importer
+POSTHOOK: query: create database importer
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:importer
+PREHOOK: query: use importer
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:importer
+POSTHOOK: query: use importer
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:importer
+#### A masked pattern was here ####

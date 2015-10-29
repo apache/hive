@@ -271,8 +271,16 @@ public class Operation2Privilege {
     // select with grant for exporting contents
     op2Priv.put(HiveOperationType.EXPORT, PrivRequirement.newIOPrivRequirement
 (SEL_GRANT_AR, OWNER_INS_SEL_DEL_NOGRANT_AR));
-    op2Priv.put(HiveOperationType.IMPORT, PrivRequirement.newIOPrivRequirement
-(OWNER_INS_SEL_DEL_NOGRANT_AR, INS_NOGRANT_AR));
+    // For import statement, require uri rwx+owner privileges on input uri, and
+    // necessary privileges on the output table and database
+    // NOTE : privileges are only checked if the object of that type is marked as part of ReadEntity or WriteEntity
+    // So, if a table is present, Import will mark a table as a WriteEntity, and we'll authorize for that, and if not present,
+    // Import will mark the parent db as a WriteEntity, thus ensuring that we check for table creation privileges.
+    op2Priv.put(HiveOperationType.IMPORT, PrivRequirement.newPrivRequirementList(
+        new PrivRequirement(OWNER_INS_SEL_DEL_NOGRANT_AR, IOType.INPUT),
+        new PrivRequirement(arr(SQLPrivTypeGrant.INSERT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT),
+            IOType.OUTPUT, null, HivePrivilegeObjectType.TABLE_OR_VIEW),
+        new PrivRequirement(OWNER_PRIV_AR, IOType.OUTPUT, null, HivePrivilegeObjectType.DATABASE)));
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement
