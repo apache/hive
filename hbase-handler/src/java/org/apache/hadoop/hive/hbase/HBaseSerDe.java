@@ -125,10 +125,7 @@ public class HBaseSerDe extends AbstractSerDe {
     serdeParams = new HBaseSerDeParameters(conf, tbl, getClass().getName());
 
     cachedObjectInspector =
-        HBaseLazyObjectFactory
-            .createLazyHBaseStructInspector(serdeParams.getSerdeParams(),
-                serdeParams.getKeyIndex(), serdeParams.getKeyFactory(),
-                serdeParams.getValueFactories());
+        HBaseLazyObjectFactory.createLazyHBaseStructInspector(serdeParams, tbl);
 
     cachedHBaseRow = new LazyHBaseRow(
         (LazySimpleStructObjectInspector) cachedObjectInspector, serdeParams);

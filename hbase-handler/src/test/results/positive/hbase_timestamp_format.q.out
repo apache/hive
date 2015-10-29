@@ -18,9 +18,9 @@ PREHOOK: Input: default@hbase_str
 POSTHOOK: query: describe hbase_str
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_str
-rowkey              	string              	from deserializer   
-mytime              	string              	from deserializer   
-mystr               	string              	from deserializer   
+rowkey              	string              	                    
+mytime              	string              	                    
+mystr               	string              	                    
 PREHOOK: query: insert overwrite table hbase_str select key, '2001-02-03-04.05.06.123456', value from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -62,9 +62,9 @@ PREHOOK: Input: default@hbase_ts
 POSTHOOK: query: describe hbase_ts
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_ts
-rowkey              	string              	from deserializer   
-mytime              	timestamp           	from deserializer   
-mystr               	string              	from deserializer   
+rowkey              	string              	                    
+mytime              	timestamp           	                    
+mystr               	string              	                    
 PREHOOK: query: select * from hbase_ts
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_ts

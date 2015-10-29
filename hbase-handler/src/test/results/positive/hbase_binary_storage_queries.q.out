@@ -40,14 +40,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t_hbase
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	from deserializer   
-tinyint_col         	tinyint             	from deserializer   
-smallint_col        	smallint            	from deserializer   
-int_col             	int                 	from deserializer   
-bigint_col          	bigint              	from deserializer   
-float_col           	float               	from deserializer   
-double_col          	double              	from deserializer   
-boolean_col         	boolean             	from deserializer   
+key                 	string              	                    
+tinyint_col         	tinyint             	                    
+smallint_col        	smallint            	                    
+int_col             	int                 	                    
+bigint_col          	bigint              	                    
+float_col           	float               	                    
+double_col          	double              	                    
+boolean_col         	boolean             	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -215,14 +215,14 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t_hbase_1
 # col_name            	data_type           	comment             
 	 	 
-key                 	string              	from deserializer   
-tinyint_col         	tinyint             	from deserializer   
-smallint_col        	smallint            	from deserializer   
-int_col             	int                 	from deserializer   
-bigint_col          	bigint              	from deserializer   
-float_col           	float               	from deserializer   
-double_col          	double              	from deserializer   
-boolean_col         	boolean             	from deserializer   
+key                 	string              	                    
+tinyint_col         	tinyint             	                    
+smallint_col        	smallint            	                    
+int_col             	int                 	                    
+bigint_col          	bigint              	                    
+float_col           	float               	                    
+double_col          	double              	                    
+boolean_col         	boolean             	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
