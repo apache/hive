@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -32,7 +30,7 @@ import java.io.PrintStream;
  * This is in a separate class because install tests shouldn't set up the metastore first.
  */
 public class TestHBaseSchemaTool2 extends HBaseIntegrationTests {
-  private static final Log LOG = LogFactory.getLog(TestHBaseSchemaTool.class.getName());
+
   private String lsep = System.getProperty("line.separator");
 
   @BeforeClass

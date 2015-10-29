@@ -26,8 +26,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.PrintStream;
@@ -39,8 +37,6 @@ import java.util.List;
  * A tool to dump contents from the HBase store in a human readable form
  */
 public class HBaseSchemaTool {
-
-  static final private Log LOG = LogFactory.getLog(HBaseReadWrite.class.getName());
 
   public static void main(String[] args) {
     Options options = new Options();
