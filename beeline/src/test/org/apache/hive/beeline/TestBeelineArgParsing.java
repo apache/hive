@@ -20,7 +20,6 @@ package org.apache.hive.beeline;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -59,7 +58,7 @@ public class TestBeelineArgParsing {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] {"-u", "url", "-n", "name",
       "-p", "password", "-d", "driver", "-a", "authType"};
-    Assert.assertEquals(0, bl.initArgs(args));
+    org.junit.Assert.assertEquals(0, bl.initArgs(args));
     Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
     Assert.assertTrue(bl.getOpts().getAuthType().equals("authType"));
   }
