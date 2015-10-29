@@ -713,6 +713,7 @@ public class CliDriver {
     }
 
     ConsoleReader reader =  getConsoleReader();
+    reader.setExpandEvents(false);
     reader.setBellEnabled(false);
     // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
     for (Completer completer : getCommandCompleter()) {
