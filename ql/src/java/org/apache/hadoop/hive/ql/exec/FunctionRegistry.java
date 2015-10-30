@@ -1571,6 +1571,15 @@ public final class FunctionRegistry {
     unregisterTemporaryUDF(functionName);
   }
 
+  /**
+   * Unregisters all the functions under the database dbName
+   * @param dbName specified database name
+   * @throws HiveException
+   */
+  public static void unregisterPermanentFunctions(String dbName) throws HiveException {
+    system.unregisterFunctions(dbName);
+  }
+
   private FunctionRegistry() {
     // prevent instantiation
   }

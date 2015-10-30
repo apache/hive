@@ -3731,7 +3731,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int dropDatabase(Hive db, DropDatabaseDesc dropDb)
       throws HiveException {
     try {
-      db.dropDatabase(dropDb.getDatabaseName(), true, dropDb.getIfExists(), dropDb.isCasdade());
+      String dbName = dropDb.getDatabaseName();
+      db.dropDatabase(dbName, true, dropDb.getIfExists(), dropDb.isCasdade());
+      // Unregister the functions as well
+      if (dropDb.isCasdade()) {
+        FunctionRegistry.unregisterPermanentFunctions(dbName);
+      }
     }
     catch (NoSuchObjectException ex) {
       throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, dropDb.getDatabaseName());
