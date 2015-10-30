@@ -83,6 +83,7 @@ public class HiveConf extends Configuration {
 
   private Pattern modWhiteListPattern = null;
   private volatile boolean isSparkConfigUpdated = false;
+  private static final int LOG_PREFIX_LENGTH = 64;
 
   public boolean getSparkConfigUpdated() {
     return isSparkConfigUpdated;
@@ -2392,7 +2393,10 @@ public class HiveConf extends Configuration {
     HIVE_TEZ_ENABLE_MEMORY_MANAGER("hive.tez.enable.memory.manager", true,
         "Enable memory manager for tez"),
     HIVE_HASH_TABLE_INFLATION_FACTOR("hive.hash.table.inflation.factor", (float) 2.0,
-        "Expected inflation factor between disk/in memory representation of hash tables");
+        "Expected inflation factor between disk/in memory representation of hash tables"),
+    HIVE_LOG_TRACE_ID("hive.log.trace.id", "",
+        "Log tracing id that can be used by upstream clients for tracking respective logs. " +
+        "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id.");
 
 
     public final String varname;
@@ -2836,6 +2840,20 @@ public class HiveConf extends Configuration {
 
   public static String getVar(Configuration conf, ConfVars var, String defaultVal) {
     return conf.get(var.varname, defaultVal);
+  }
+
+  public String getLogIdVar(String defaultValue) {
+    String retval = getVar(ConfVars.HIVE_LOG_TRACE_ID);
+    if (retval.equals("")) {
+      l4j.info("Using the default value passed in for log id: " + defaultValue);
+      retval = defaultValue;
+    }
+    if (retval.length() > LOG_PREFIX_LENGTH) {
+      l4j.warn("The original log id prefix is " + retval + " has been truncated to "
+          + retval.substring(0, LOG_PREFIX_LENGTH - 1));
+      retval = retval.substring(0, LOG_PREFIX_LENGTH - 1);
+    }
+    return retval;
   }
 
   public static void setVar(Configuration conf, ConfVars var, String val) {

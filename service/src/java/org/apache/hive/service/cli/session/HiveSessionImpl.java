@@ -310,6 +310,11 @@ public class HiveSessionImpl implements HiveSession {
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
     }
+    // set the thread name with the logging prefix.
+    String logPrefix = getHiveConf().getLogIdVar(sessionState.getSessionId());
+    LOG.info(
+        "Prefixing the thread name (" + Thread.currentThread().getName() + ") with " + logPrefix);
+    Thread.currentThread().setName(logPrefix + Thread.currentThread().getName());
     Hive.set(sessionHive);
   }
 
@@ -321,6 +326,22 @@ public class HiveSessionImpl implements HiveSession {
    * @see org.apache.hive.service.server.ThreadWithGarbageCleanup#finalize()
    */
   protected synchronized void release(boolean userAccess) {
+    if (sessionState != null) {
+      // can be null in-case of junit tests. skip reset.
+      // reset thread name at release time.
+      String[] names = Thread.currentThread().getName()
+          .split(getHiveConf().getLogIdVar(sessionState.getSessionId()));
+      String threadName = null;
+      if (names.length > 1) {
+        threadName = names[names.length - 1];
+      } else if (names.length == 1) {
+        threadName = names[0];
+      } else {
+        threadName = "";
+      }
+      Thread.currentThread().setName(threadName);
+    }
+
     SessionState.detachSession();
     if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
       ThreadWithGarbageCleanup currentThread =

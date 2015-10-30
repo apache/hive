@@ -54,6 +54,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.tez.client.CallerContext;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
@@ -163,6 +164,14 @@ public class TezTask extends Task<TezWork> {
 
       // next we translate the TezWork to a Tez DAG
       DAG dag = build(jobConf, work, scratchDir, appJarLr, additionalLr, ctx);
+      if (driverContext.getCtx() == null) {
+        boolean a = false;
+      }
+      CallerContext callerContext = CallerContext.create("HIVE",
+          conf.getLogIdVar(SessionState.get().getSessionId()) + " "
+              + conf.getVar(HiveConf.ConfVars.HIVEQUERYID),
+          "HIVE_QUERY_ID", queryPlan.getQueryStr());
+      dag.setCallerContext(callerContext);
 
       // Add the extra resources to the dag
       addExtraResourcesToDag(session, dag, inputOutputJars, inputOutputLocalResources);
