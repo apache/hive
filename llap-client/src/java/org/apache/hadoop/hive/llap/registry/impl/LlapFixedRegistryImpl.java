@@ -11,7 +11,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.hadoop.hive.llap.daemon.registry.impl;
+package org.apache.hadoop.hive.llap.registry.impl;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -25,9 +25,9 @@ import java.util.Set;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
-import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstance;
-import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstanceSet;
-import org.apache.hadoop.hive.llap.daemon.registry.ServiceRegistry;
+import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.Resource;
