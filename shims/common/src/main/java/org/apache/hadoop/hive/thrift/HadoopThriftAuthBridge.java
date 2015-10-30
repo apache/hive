@@ -426,8 +426,8 @@ public class HadoopThriftAuthBridge {
     }
 
 
-    public void startDelegationTokenSecretManager(Configuration conf, Object rawStore, ServerMode smode)
-        throws IOException{
+    public void startDelegationTokenSecretManager(Configuration conf, Object hms, ServerMode smode)
+        throws IOException {
       long secretKeyInterval =
           conf.getLong(DELEGATION_KEY_UPDATE_INTERVAL_KEY,
               DELEGATION_KEY_UPDATE_INTERVAL_DEFAULT);
@@ -441,7 +441,7 @@ public class HadoopThriftAuthBridge {
           DELEGATION_TOKEN_GC_INTERVAL_DEFAULT);
 
       DelegationTokenStore dts = getTokenStore(conf);
-      dts.init(rawStore, smode);
+      dts.init(hms, smode);
       secretManager = new TokenStoreDelegationTokenSecretManager(secretKeyInterval,
           tokenMaxLifetime,
           tokenRenewInterval,
