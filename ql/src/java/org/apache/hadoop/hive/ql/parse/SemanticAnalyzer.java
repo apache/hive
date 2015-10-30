@@ -10289,6 +10289,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         FieldSchema fieldSchema = derivedSchema.get(i);
         // Modify a copy, not the original
         fieldSchema = new FieldSchema(fieldSchema);
+        // TODO: there's a potential problem here if some table uses external schema like Avro,
+        //       with a very large type name. It seems like the view does not derive the SerDe from
+        //       the table, so it won't be able to just get the type from the deserializer like the
+        //       table does; we won't be able to properly store the type in the RDBMS metastore.
+        //       Not sure if these large cols could be in resultSchema. Ignore this for now 0_o
         derivedSchema.set(i, fieldSchema);
         sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
         sb.append(" AS ");

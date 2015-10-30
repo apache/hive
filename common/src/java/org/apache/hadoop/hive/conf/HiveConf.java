@@ -914,11 +914,15 @@ public class HiveConf extends Configuration {
         "The default SerDe Hive will use for storage formats that do not specify a SerDe."),
 
     SERDESUSINGMETASTOREFORSCHEMA("hive.serdes.using.metastore.for.schema",
-        "org.apache.hadoop.hive.ql.io.orc.OrcSerde,org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
-        "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe,org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
-        "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe,org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
-        "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe,org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
-        "SerDes retriving schema from metastore. This an internal parameter. Check with the hive dev. team"),
+        "org.apache.hadoop.hive.ql.io.orc.OrcSerde," +
+        "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
+        "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe," +
+        "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
+        "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
+        "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
+        "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
+        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
+        "SerDes retrieving schema from metastore. This is an internal parameter."),
 
     HIVEHISTORYFILELOC("hive.querylog.location",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",

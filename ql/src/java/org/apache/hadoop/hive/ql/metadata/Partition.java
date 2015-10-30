@@ -467,10 +467,23 @@ public class Partition implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
+    return getColsInternal(false);
+  }
+
+  public List<FieldSchema> getColsForMetastore() {
+    return getColsInternal(true);
+  }
+
+  private List<FieldSchema> getColsInternal(boolean forMs) {
 
     try {
-      if (Table.hasMetastoreBasedSchema(SessionState.getSessionConf(), tPartition.getSd())) {
+      String serializationLib = tPartition.getSd().getSerdeInfo().getSerializationLib();
+      // Do the lightweight check for general case.
+      if (Table.hasMetastoreBasedSchema(SessionState.getSessionConf(), serializationLib)) {
         return tPartition.getSd().getCols();
+      } else if (forMs && !Table.shouldStoreFieldsInMetastore(
+          SessionState.getSessionConf(), serializationLib, table.getParameters())) {
+        return Hive.getFieldsFromDeserializerForMsStorage(table, getDeserializer());
       }
       return MetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
     } catch (Exception e) {
