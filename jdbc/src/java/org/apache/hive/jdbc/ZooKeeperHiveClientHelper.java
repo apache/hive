@@ -105,8 +105,7 @@ class ZooKeeperHiveClientHelper {
               + " published by the server.");
         }
         // Set host
-        if ((matcher.group(1).equals("hive.server2.thrift.bind.host"))
-            && (connParams.getHost() == null)) {
+        if (matcher.group(1).equals("hive.server2.thrift.bind.host")) {
           connParams.setHost(matcher.group(2));
         }
         // Set transportMode
@@ -115,7 +114,7 @@ class ZooKeeperHiveClientHelper {
           connParams.getSessionVars().put(JdbcConnectionParams.TRANSPORT_MODE, matcher.group(2));
         }
         // Set port
-        if ((matcher.group(1).equals("hive.server2.thrift.port")) && !(connParams.getPort() > 0)) {
+        if (matcher.group(1).equals("hive.server2.thrift.port")) {
           connParams.setPort(Integer.parseInt(matcher.group(2)));
         }
         if ((matcher.group(1).equals("hive.server2.thrift.http.port"))
