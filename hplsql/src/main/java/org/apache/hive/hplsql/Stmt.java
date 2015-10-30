@@ -876,7 +876,7 @@ public class Stmt {
   public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
     String name = evalPop(ctx.expr()).toString();
     if (exec.function.isProc(name)) {
-      if (exec.function.execProc(ctx.expr_func_params(), name)) {
+      if (exec.function.execProc(name, ctx.expr_func_params())) {
         return true;
       }
     }

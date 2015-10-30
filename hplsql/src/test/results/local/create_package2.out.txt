@@ -1,0 +1,16 @@
+Ln:1 CREATE PACKAGE
+Ln:2 DECLARE session_count int = 0
+Ln:7 CREATE PACKAGE BODY
+Ln:20 EXEC PACKAGE PROCEDURE USERS.add
+Ln:20 SET PARAM name = John
+Ln:16 SET session_count = 1
+Ln:21 EXEC PACKAGE PROCEDURE USERS.add
+Ln:21 SET PARAM name = Sarah
+Ln:16 SET session_count = 2
+Ln:22 EXEC PACKAGE PROCEDURE USERS.add
+Ln:22 SET PARAM name = Paul
+Ln:16 SET session_count = 3
+Ln:23 PRINT
+EXEC PACKAGE FUNCTION USERS.get_count
+Ln:11 RETURN
+Number of users: 3

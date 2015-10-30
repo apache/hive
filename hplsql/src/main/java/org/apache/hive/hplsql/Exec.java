@@ -62,6 +62,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
 
   // Scopes of execution (code blocks) with own local variables, parameters and exception handlers
   Stack<Scope> scopes = new Stack<Scope>();
+  Scope globalScope;
   Scope currentScope;
   
   Stack<Var> stack = new Stack<Var>();
@@ -77,6 +78,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   HashMap<String, String> objectMap = new HashMap<String, String>(); 
   HashMap<String, String> objectConnMap = new HashMap<String, String>();
   HashMap<String, ArrayList<Var>> returnCursors = new HashMap<String, ArrayList<Var>>();
+  HashMap<String, Package> packages = new HashMap<String, Package>();
+  
+  Package currentPackageDecl = null;
   
   public ArrayList<String> stmtConnList = new ArrayList<String>();
       
@@ -175,7 +179,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Add a local variable to the current scope
    */
   public void addVariable(Var var) {
-    if (exec.currentScope != null) {
+    if (currentPackageDecl != null) {
+      currentPackageDecl.addVariable(var);
+    }
+    else if (exec.currentScope != null) {
       exec.currentScope.addVariable(var);
     }
   }
@@ -254,7 +261,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (!exec.stack.isEmpty()) {
       return exec.stack.pop();
     }
-    return null;
+    return Var.Empty;
   }    
   
   /**
@@ -288,38 +295,66 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Find an existing variable by name 
    */
   public Var findVariable(String name) {
+    Var var = null;
     String name1 = name;
+    String name1a = null;
+    String name2 = null;
     Scope cur = exec.currentScope;
+    Package pack = null;
+    Package packCallContext = exec.getPackageCallContext();
     ArrayList<String> qualified = exec.meta.splitIdentifier(name);
     if (qualified != null) {
-      name1 = qualified.get(0); 
-    }
-    String name2 = null;
-    if (name.startsWith(":")) {
-      name2 = name.substring(1);
+      name1 = qualified.get(0);
+      name2 = qualified.get(1);
+      pack = findPackage(name1);
+      if (pack != null) {        
+        var = pack.findVariable(name2);
+        if (var != null) {
+          return var;
+        }
+      }
+    }    
+    if (name1.startsWith(":")) {
+      name1a = name1.substring(1);
     }    
     while (cur != null) {
-      for (Var v : cur.vars) {
-        if (name1.equalsIgnoreCase(v.getName()) ||
-            (name2 != null && name2.equalsIgnoreCase(v.getName()))) {
-          if (qualified != null) {
-            if (v.type == Var.Type.ROW && v.value != null) {
-              Row row = (Row)v.value;
-              return row.getValue(qualified.get(1));
-            }
+      var = findVariable(cur.vars, name1);
+      if (var == null && name1a != null) {
+        var = findVariable(cur.vars, name1a);
+      }
+      if (var == null && packCallContext != null) {
+        var = packCallContext.findVariable(name1);
+      }
+      if (var != null) {
+        if (qualified != null) {
+          if (var.type == Var.Type.ROW && var.value != null) {
+            Row row = (Row)var.value;
+            var = row.getValue(name2);
           }
-          else {
-            return v;
-          }
-        }  
-      }      
-      cur = cur.parent;
+        }
+        return var;
+      }
+      if (cur.type == Scope.Type.ROUTINE) {
+        cur = exec.globalScope;
+      }
+      else {
+        cur = cur.parent;
+      }
     }    
     return null;
   }
   
   public Var findVariable(Var name) {
     return findVariable(name.getName());
+  }
+  
+  Var findVariable(ArrayList<Var> vars, String name) {
+    for (Var var : vars) {
+      if (name.equalsIgnoreCase(var.getName())) {
+        return var;
+      }
+    }
+    return null;
   }
   
   /**
@@ -334,11 +369,32 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   /**
+   * Find the package by name
+   */
+  Package findPackage(String name) {
+    return packages.get(name.toUpperCase());
+  }
+  
+  /**
    * Enter a new scope
    */
+  public void enterScope(Scope scope) {
+    exec.scopes.push(scope);
+  }
+  
   public void enterScope(Scope.Type type) {
-    exec.currentScope = new Scope(exec.currentScope, type);
-    exec.scopes.push(exec.currentScope);
+    enterScope(type, null);
+  }
+  
+  public void enterScope(Scope.Type type, Package pack) {
+    exec.currentScope = new Scope(exec.currentScope, type, pack);
+    enterScope(exec.currentScope);
+  }
+  
+  void enterGlobalScope() {
+    globalScope = new Scope(Scope.Type.GLOBAL);
+    currentScope = globalScope;
+    enterScope(globalScope);
   }
 
   /**
@@ -663,9 +719,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   /**
-   * Compile and run PL/HQL script 
+   * Compile and run HPL/SQL script 
    */
   public Integer run(String[] args) throws Exception {
+    enterGlobalScope(); 
     if (init(args) != 0) {
       return 1;
     }
@@ -673,13 +730,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (result != null) {
       System.out.println(result.toString());
     }
+    leaveScope();
     cleanup();
-    printExceptions();
+    printExceptions();    
     return getProgramReturnCode();
   }
   
   /**
-   * Run already compiled PL/HQL script (also used from Hive UDF)
+   * Run already compiled HPL/SQL script (also used from Hive UDF)
    */
   public Var run() {
     if (tree == null) {
@@ -694,7 +752,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     else {
       visit(tree);
     }
-    return stackPop();
+    if (!exec.stack.isEmpty()) {
+      return exec.stackPop();
+    }
+    return null;
   }
   
   /**
@@ -723,7 +784,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     new FunctionString(this).register(function);
     new FunctionOra(this).register(function);
     
-    enterScope(Scope.Type.FILE);
     addVariable(new Var(SQLCODE, Var.Type.BIGINT, 0L));
     addVariable(new Var(SQLSTATE, Var.Type.STRING, "00000"));
     addVariable(new Var(HOSTCODE, Var.Type.BIGINT, 0L)); 
@@ -828,13 +888,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   /**
-   * Start executing PL/HQL script
+   * Start executing HPL/SQL script
    */
   @Override 
   public Integer visitProgram(HplsqlParser.ProgramContext ctx) {
-    enterScope(Scope.Type.FILE);
     Integer rc = visitChildren(ctx);
-    leaveScope();
     return rc;
   }
   
@@ -922,9 +980,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
         return 0;
       }
     }
-    Var prevResult = stackPop();
-    if (prevResult != null) {
-      System.out.println(prevResult.toString());
+    Var prev = stackPop();
+    if (prev != null && prev.value != null) {
+      System.out.println(prev.toString());
     }
     return visitChildren(ctx); 
   }
@@ -1091,7 +1149,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
 	    String name = ctx.ident(i).getText();
 	    if (row == null) {
 	      Var var = new Var(name, type, len, scale, default_);	     
-	      addVariable(var);		
+	      exec.addVariable(var);		
+	      if (ctx.T_CONSTANT() != null) {
+	        var.setConstant(true);
+	      }
 	      if (trace) {
 	        if (default_ != null) {
 	          trace(ctx, "DECLARE " + name + " " + type + " = " + var.toSqlString());
@@ -1102,7 +1163,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
 	      }
 	    }
 	    else {
-	      addVariable(new Var(name, row));
+	      exec.addVariable(new Var(name, row));
 	      if (trace) {
           trace(ctx, "DECLARE " + name + " " + ctx.dtype().getText());
         }
@@ -1287,7 +1348,39 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     addLocalUdf(ctx);
     return 0; 
   }
-  
+
+  /**
+   * CREATE PACKAGE specification statement
+   */
+  @Override 
+  public Integer visitCreate_package_stmt(HplsqlParser.Create_package_stmtContext ctx) { 
+    String name = ctx.ident(0).getText().toUpperCase();
+    currentPackageDecl = new Package(name, exec);    
+    packages.put(name, currentPackageDecl);
+    trace(ctx, "CREATE PACKAGE");
+    currentPackageDecl.createSpecification(ctx);
+    currentPackageDecl = null;
+    return 0; 
+  }
+
+  /**
+   * CREATE PACKAGE body statement
+   */
+  @Override 
+  public Integer visitCreate_package_body_stmt(HplsqlParser.Create_package_body_stmtContext ctx) { 
+    String name = ctx.ident(0).getText().toUpperCase();
+    currentPackageDecl = packages.get(name);
+    if (currentPackageDecl == null) {
+      currentPackageDecl = new Package(name, exec);
+      currentPackageDecl.setAllMembersPublic(true);
+      packages.put(name, currentPackageDecl);
+    }
+    trace(ctx, "CREATE PACKAGE BODY");
+    currentPackageDecl.createBody(ctx);
+    currentPackageDecl = null;
+    return 0; 
+  }
+
   /**
    * CREATE PROCEDURE statement
    */
@@ -1447,7 +1540,21 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       exec.function.execSql(name, ctx.expr_func_params());
     }
     else {
-      exec.function.exec(name, ctx.expr_func_params());
+      Package packCallContext = exec.getPackageCallContext();
+      ArrayList<String> qualified = exec.meta.splitIdentifier(name);
+      boolean executed = false;
+      if (qualified != null) {
+        Package pack = findPackage(qualified.get(0));
+        if (pack != null) {        
+          executed = pack.execFunc(qualified.get(1), ctx.expr_func_params());
+        }
+      }
+      if (!executed && packCallContext != null) {
+        executed = packCallContext.execFunc(name, ctx.expr_func_params());
+      }
+      if (!executed) {        
+        exec.function.exec(name, ctx.expr_func_params());
+      }
     }
     return 0;
   }
@@ -1555,15 +1662,25 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitCall_stmt(HplsqlParser.Call_stmtContext ctx) {
-    try {
-      exec.inCallStmt = true;
-      if (exec.function.execProc(ctx.expr_func_params(), ctx.ident().getText())) {
-        return 0;
+    String name = ctx.ident().getText();
+    Package packCallContext = exec.getPackageCallContext();
+    ArrayList<String> qualified = exec.meta.splitIdentifier(name);
+    exec.inCallStmt = true;    
+    boolean executed = false;
+    if (qualified != null) {
+      Package pack = findPackage(qualified.get(0));
+      if (pack != null) {        
+        executed = pack.execProc(qualified.get(1), ctx.expr_func_params(), true /*trace error if not exists*/);
       }
-    } finally {
-      exec.inCallStmt = false;
     }
-    return -1;
+    if (!executed && packCallContext != null) {
+      executed = packCallContext.execProc(name, ctx.expr_func_params(), false /*trace error if not exists*/);
+    }
+    if (!executed) {        
+      exec.function.execProc(name, ctx.expr_func_params());
+    }
+    exec.inCallStmt = false;
+    return 0;
   }
     
   /**
@@ -1890,7 +2007,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       }
     }
     else {
-      if (!exec.buildSql && !exec.inCallStmt && exec.function.isProc(ident) && exec.function.execProc(null, ident)) {
+      if (!exec.buildSql && !exec.inCallStmt && exec.function.isProc(ident) && exec.function.execProc(ident, null)) {
         return 0;
       }
       else {
@@ -1942,6 +2059,19 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     stackPush(new Var(new BigDecimal(ctx.getText())));     
     return 0; 
   }
+  
+  /**
+   * Boolean literal
+   */
+  @Override 
+  public Integer visitBool_literal(HplsqlParser.Bool_literalContext ctx) {
+    boolean val = true;
+    if (ctx.T_FALSE() != null) {
+      val = false;
+    }
+    stackPush(new Var(new Boolean(val)));     
+    return 0; 
+  }
 
   /**
    * NULL constant
@@ -1988,6 +2118,20 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       stackPush(getFormattedText(ctx));
     }
     return 0; 
+  }
+  
+  /**
+   * Get the package context within which the current routine is executed
+   */
+  Package getPackageCallContext() {
+    Scope cur = exec.currentScope;
+    while (cur != null) {
+      if (cur.type == Scope.Type.ROUTINE) {
+        return cur.pack;
+      }
+      cur = cur.parent;
+    }    
+    return null;
   }
   
   /**

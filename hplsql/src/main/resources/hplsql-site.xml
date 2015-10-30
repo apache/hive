@@ -1,7 +1,7 @@
 <configuration>
 <property>
   <name>hplsql.conn.default</name>
-  <value>hiveconn</value>
+  <value>hive2conn</value>
   <description>The default connection profile</description>
 </property>
 <property>

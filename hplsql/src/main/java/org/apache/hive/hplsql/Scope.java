@@ -25,25 +25,30 @@ import java.util.ArrayList;
  */
 public class Scope {
   
-  // Types  
-  public enum Type { FILE, BEGIN_END, LOOP, HANDLER, ROUTINE };
+  public enum Type { GLOBAL, BEGIN_END, LOOP, HANDLER, PACKAGE, ROUTINE };
   
-  // Local variables
   ArrayList<Var> vars = new ArrayList<Var>();
-  // Condition handlers
   ArrayList<Handler> handlers = new ArrayList<Handler>();
-  
   Scope parent;
   Type type;
+  Package pack;
   
   Scope(Type type) {
     this.parent = null;
     this.type = type;
+    this.pack = null;
   }
 
   Scope(Scope parent, Type type) {
     this.parent = parent;
     this.type = type;
+    this.pack = null;
+  }
+  
+  Scope(Scope parent, Type type, Package pack) {
+    this.parent = parent;
+    this.type = type;
+    this.pack = pack;
   }
   
   /**
