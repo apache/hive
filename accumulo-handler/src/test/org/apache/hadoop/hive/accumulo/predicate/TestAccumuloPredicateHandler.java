@@ -77,7 +77,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,8 +86,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 public class TestAccumuloPredicateHandler {
-  @SuppressWarnings("unused")
-  private static final Logger log = Logger.getLogger(TestAccumuloPredicateHandler.class);
 
   private AccumuloPredicateHandler handler = AccumuloPredicateHandler.getInstance();
   private JobConf conf;

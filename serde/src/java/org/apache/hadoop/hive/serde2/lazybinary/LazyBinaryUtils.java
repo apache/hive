@@ -414,7 +414,7 @@ public final class LazyBinaryUtils {
     int len = LazyBinaryUtils.writeVLongToByteArray(vLongBytes, l);
     byteStream.write(vLongBytes, 0, len);
   }
-  
+
   public static void writeDouble(RandomAccessOutput byteStream, double d) {
     long v = Double.doubleToLongBits(d);
     byteStream.write((byte) (v >> 56));

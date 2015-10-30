@@ -20,8 +20,8 @@ package org.apache.hive.hcatalog.streaming;
 
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -59,7 +59,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   private final ObjectInspector[] bucketObjInspectors;
   private final StructField[] bucketStructFields;
 
-  static final private Log LOG = LogFactory.getLog(DelimitedInputWriter.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(DelimitedInputWriter.class.getName());
 
   /** Constructor. Uses default separator of the LazySimpleSerde
    * @param colNamesForFields Column name assignment for input fields. nulls or empty

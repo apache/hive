@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 public class HiveOpConverterPostProc implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(HiveOpConverterPostProc.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveOpConverterPostProc.class);
 
   private ParseContext                                  pctx;
   private Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo;

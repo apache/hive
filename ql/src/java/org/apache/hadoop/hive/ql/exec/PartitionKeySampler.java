@@ -27,8 +27,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -47,7 +47,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 
 public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
 
-  private static final Log LOG = LogFactory.getLog(PartitionKeySampler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PartitionKeySampler.class);
 
   public static final Comparator<byte[]> C = new Comparator<byte[]>() {
     public final int compare(byte[] o1, byte[] o2) {

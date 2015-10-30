@@ -11,7 +11,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.hadoop.hive.llap.daemon.registry.impl;
+package org.apache.hadoop.hive.llap.registry.impl;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -33,9 +33,9 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
-import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstance;
-import org.apache.hadoop.hive.llap.daemon.registry.ServiceInstanceSet;
-import org.apache.hadoop.hive.llap.daemon.registry.ServiceRegistry;
+import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.registry.client.api.RegistryOperationsFactory;
 import org.apache.hadoop.registry.client.binding.RegistryPathUtils;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
@@ -48,15 +48,15 @@ import org.apache.hadoop.registry.client.types.ProtocolTypes;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.apache.log4j.Logger;
-import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.zookeeper.CreateMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
 public class LlapYarnRegistryImpl implements ServiceRegistry {
 
-  private static final Logger LOG = Logger.getLogger(LlapYarnRegistryImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapYarnRegistryImpl.class);
 
   private final RegistryOperationsService client;
   private final Configuration conf;
@@ -134,9 +134,9 @@ public class LlapYarnRegistryImpl implements ServiceRegistry {
       serviceURL = new URL(scheme, hostname, servicePort, "");
       return RegistryTypeUtils.webEndpoint("services", serviceURL.toURI());
     } catch (MalformedURLException e) {
-      throw new TezUncheckedException(e);
+      throw new RuntimeException(e);
     } catch (URISyntaxException e) {
-      throw new TezUncheckedException("llap service URI for " + hostname + " is invalid", e);
+      throw new RuntimeException("llap service URI for " + hostname + " is invalid", e);
     }
   }
 

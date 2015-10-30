@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -40,12 +38,9 @@ import org.apache.hadoop.util.ReflectionUtils;
 @InterfaceStability.Evolving
 public class RawStoreProxy implements InvocationHandler {
 
-  static final private Log LOG = LogFactory.getLog(RawStoreProxy.class.getName());
-
   private final RawStore base;
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
     new MetaStoreInit.MetaStoreInitData();
-  private final int id;
   private final HiveConf hiveConf;
   private final Configuration conf; // thread local conf from HMS
 
@@ -53,7 +48,6 @@ public class RawStoreProxy implements InvocationHandler {
       Class<? extends RawStore> rawStoreClass, int id) throws MetaException {
     this.conf = conf;
     this.hiveConf = hiveConf;
-    this.id = id;
 
     // This has to be called before initializing the instance of RawStore
     init();

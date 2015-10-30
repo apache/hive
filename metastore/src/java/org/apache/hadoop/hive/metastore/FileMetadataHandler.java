@@ -15,30 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.common;
 
-import java.util.Stack;
-import java.util.concurrent.Callable;
+package org.apache.hadoop.hive.metastore;
 
-import org.apache.log4j.NDC;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.List;
 
-// TODO: cloned from TEZ-2003; replace when that's in a release.
-public abstract class CallableWithNdc<T> implements Callable<T> {
-  private final Stack ndcStack;
+public interface FileMetadataHandler {
 
-  public CallableWithNdc() {
-    ndcStack = NDC.cloneStack();
-  }
+  void getFileMetadataByExpr(List<Long> fileIds, byte[] expr,
+      ByteBuffer[] metadatas, ByteBuffer[] results, boolean[] eliminated) throws IOException;
 
-  @Override
-  public final T call() throws Exception {
-    NDC.inherit(ndcStack);
-    try {
-      return callInternal();
-    } finally {
-      NDC.clear();
-    }
-  }
-
-  protected abstract T callInternal() throws Exception;
 }

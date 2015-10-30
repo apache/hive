@@ -28,8 +28,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -64,7 +64,7 @@ public class HiveHFileOutputFormat extends
 
   public static final String HFILE_FAMILY_PATH = "hfile.family.path";
 
-  static final Log LOG = LogFactory.getLog(HiveHFileOutputFormat.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(HiveHFileOutputFormat.class.getName());
 
   private
   org.apache.hadoop.mapreduce.RecordWriter<ImmutableBytesWritable, KeyValue>

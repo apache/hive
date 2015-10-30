@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -47,7 +47,7 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
 @SuppressWarnings("deprecation")
 public class KeyValueInputMerger extends KeyValueReader {
 
-  public static final Log l4j = LogFactory.getLog(KeyValueInputMerger.class);
+  public static final Logger l4j = LoggerFactory.getLogger(KeyValueInputMerger.class);
   private PriorityQueue<KeyValueReader> pQueue = null;
   private KeyValueReader nextKVReader = null;
   private ObjectInspector[] inputObjInspectors = null;

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
  */
 public class RemoveDynamicPruningBySize implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(RemoveDynamicPruningBySize.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(RemoveDynamicPruningBySize.class.getName());
 
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procContext,

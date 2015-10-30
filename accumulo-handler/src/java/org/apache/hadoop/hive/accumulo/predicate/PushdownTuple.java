@@ -33,7 +33,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * For use in IteratorSetting construction.
@@ -41,7 +42,7 @@ import org.apache.log4j.Logger;
  * encapsulates a constant byte [], PrimitiveCompare instance, and CompareOp instance.
  */
 public class PushdownTuple {
-  private static final Logger log = Logger.getLogger(PushdownTuple.class);
+  private static final Logger log = LoggerFactory.getLogger(PushdownTuple.class);
 
   private byte[] constVal;
   private PrimitiveComparison pCompare;

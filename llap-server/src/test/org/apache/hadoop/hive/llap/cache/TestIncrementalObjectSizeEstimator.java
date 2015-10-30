@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
@@ -61,7 +61,7 @@ import org.mockito.Mockito;
 import com.google.protobuf.CodedOutputStream;
 
 public class TestIncrementalObjectSizeEstimator {
-  private static final Log LOG = LogFactory.getLog(TestIncrementalObjectSizeEstimator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestIncrementalObjectSizeEstimator.class);
 
   private static class DummyMetadataReader implements MetadataReader  {
     public boolean doStreamStep = false;

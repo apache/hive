@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.metastore.hbase;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -57,8 +57,14 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator.Operator;
 import org.apache.hive.common.util.BloomFilter;
+import org.apache.thrift.TBase;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TSimpleJSONProtocol;
+import org.apache.thrift.transport.TMemoryBuffer;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -71,6 +77,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 
 
@@ -79,30 +86,29 @@ import java.util.Set;
  */
 public class HBaseReadWrite {
 
-  @VisibleForTesting final static String AGGR_STATS_TABLE = "HBMS_AGGR_STATS";
-  @VisibleForTesting final static String DB_TABLE = "HBMS_DBS";
-  @VisibleForTesting final static String FUNC_TABLE = "HBMS_FUNCS";
-  @VisibleForTesting final static String GLOBAL_PRIVS_TABLE = "HBMS_GLOBAL_PRIVS";
-  @VisibleForTesting final static String PART_TABLE = "HBMS_PARTITIONS";
-  @VisibleForTesting final static String ROLE_TABLE = "HBMS_ROLES";
-  @VisibleForTesting final static String SD_TABLE = "HBMS_SDS";
-  @VisibleForTesting final static String SECURITY_TABLE = "HBMS_SECURITY";
-  @VisibleForTesting final static String SEQUENCES_TABLE = "HBMS_SEQUENCES";
-  @VisibleForTesting final static String TABLE_TABLE = "HBMS_TBLS";
-  @VisibleForTesting final static String USER_TO_ROLE_TABLE = "HBMS_USER_TO_ROLE";
-  @VisibleForTesting final static String FILE_METADATA_TABLE = "HBMS_FILE_METADATA";
-  @VisibleForTesting final static byte[] CATALOG_CF = "c".getBytes(HBaseUtils.ENCODING);
-  @VisibleForTesting final static byte[] STATS_CF = "s".getBytes(HBaseUtils.ENCODING);
-  @VisibleForTesting final static String NO_CACHE_CONF = "no.use.cache";
+  final static String AGGR_STATS_TABLE = "HBMS_AGGR_STATS";
+  final static String DB_TABLE = "HBMS_DBS";
+  final static String FUNC_TABLE = "HBMS_FUNCS";
+  final static String GLOBAL_PRIVS_TABLE = "HBMS_GLOBAL_PRIVS";
+  final static String PART_TABLE = "HBMS_PARTITIONS";
+  final static String ROLE_TABLE = "HBMS_ROLES";
+  final static String SD_TABLE = "HBMS_SDS";
+  final static String SECURITY_TABLE = "HBMS_SECURITY";
+  final static String SEQUENCES_TABLE = "HBMS_SEQUENCES";
+  final static String TABLE_TABLE = "HBMS_TBLS";
+  final static String USER_TO_ROLE_TABLE = "HBMS_USER_TO_ROLE";
+  final static String FILE_METADATA_TABLE = "HBMS_FILE_METADATA";
+  final static byte[] CATALOG_CF = "c".getBytes(HBaseUtils.ENCODING);
+  final static byte[] STATS_CF = "s".getBytes(HBaseUtils.ENCODING);
+  final static String NO_CACHE_CONF = "no.use.cache";
   /**
    * List of tables in HBase
    */
-  public final static String[] tableNames = { AGGR_STATS_TABLE, DB_TABLE, FUNC_TABLE, GLOBAL_PRIVS_TABLE,
-                                       PART_TABLE, USER_TO_ROLE_TABLE, ROLE_TABLE, SD_TABLE,
-                                       SECURITY_TABLE, SEQUENCES_TABLE, TABLE_TABLE,
-                                       FILE_METADATA_TABLE };
-  public final static Map<String, List<byte[]>> columnFamilies =
-      new HashMap<String, List<byte[]>> (tableNames.length);
+  public final static String[] tableNames = { AGGR_STATS_TABLE, DB_TABLE, FUNC_TABLE,
+                                              GLOBAL_PRIVS_TABLE, PART_TABLE, USER_TO_ROLE_TABLE,
+                                              ROLE_TABLE, SD_TABLE, SECURITY_TABLE, SEQUENCES_TABLE,
+                                              TABLE_TABLE, FILE_METADATA_TABLE };
+  public final static Map<String, List<byte[]>> columnFamilies = new HashMap<> (tableNames.length);
 
   static {
     columnFamilies.put(AGGR_STATS_TABLE, Arrays.asList(CATALOG_CF));
@@ -120,18 +126,14 @@ public class HBaseReadWrite {
     columnFamilies.put(FILE_METADATA_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
   }
 
-  /**
-   * Stores the bloom filter for the aggregated stats, to determine what partitions are in this
-   * aggregate.
-   */
-  final static byte[] MASTER_KEY_SEQUENCE = "mk".getBytes(HBaseUtils.ENCODING);
   final static byte[] AGGR_STATS_BLOOM_COL = "b".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] AGGR_STATS_STATS_COL = "s".getBytes(HBaseUtils.ENCODING);
+  final static byte[] MASTER_KEY_SEQUENCE = "mk".getBytes(HBaseUtils.ENCODING);
   private final static byte[] CATALOG_COL = "c".getBytes(HBaseUtils.ENCODING);
   private final static byte[] ROLES_COL = "roles".getBytes(HBaseUtils.ENCODING);
   private final static byte[] REF_COUNT_COL = "ref".getBytes(HBaseUtils.ENCODING);
   private final static byte[] DELEGATION_TOKEN_COL = "dt".getBytes(HBaseUtils.ENCODING);
   private final static byte[] MASTER_KEY_COL = "mk".getBytes(HBaseUtils.ENCODING);
-  private final static byte[] AGGR_STATS_STATS_COL = "s".getBytes(HBaseUtils.ENCODING);
   private final static byte[] GLOBAL_PRIVS_KEY = "gp".getBytes(HBaseUtils.ENCODING);
   private final static byte[] SEQUENCES_KEY = "seq".getBytes(HBaseUtils.ENCODING);
   private final static int TABLES_TO_CACHE = 10;
@@ -143,7 +145,7 @@ public class HBaseReadWrite {
   @VisibleForTesting final static String TEST_CONN = "test_connection";
   private static HBaseConnection testConn;
 
-  static final private Log LOG = LogFactory.getLog(HBaseReadWrite.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(HBaseReadWrite.class.getName());
 
   private static ThreadLocal<HBaseReadWrite> self = new ThreadLocal<HBaseReadWrite>() {
     @Override
@@ -203,6 +205,10 @@ public class HBaseReadWrite {
       throw new RuntimeException("Must set conf object before getting an instance");
     }
     return self.get();
+  }
+
+  public Configuration getConf() {
+    return conf;
   }
 
   private HBaseReadWrite(Configuration configuration) {
@@ -386,6 +392,35 @@ public class HBaseReadWrite {
     delete(DB_TABLE, key, null, null);
   }
 
+  /**
+   * Print out the database. Intended for use by {@link org.apache.hadoop.hive.metastore.hbase.HBaseSchemaTool}
+   * @param name name of database to print
+   * @return string printout of database
+   */
+  String printDatabase(String name) throws IOException, TException {
+    Database db = getDb(name);
+    if (db == null) return noSuch(name, "database");
+    else return dumpThriftObject(db);
+  }
+
+  /**
+   * Print out databases.
+   * @param regex regular to use to search for databases
+   * @return databases as a string, one each
+   * @throws IOException
+   * @throws TException
+   */
+  List<String> printDatabases(String regex) throws IOException, TException {
+    List<Database> dbs = scanDatabases(regex);
+    if (dbs.size() == 0) {
+      return noMatch(regex, "database");
+    } else {
+      List<String> lines = new ArrayList<>();
+      for (Database db : dbs) lines.add(dumpThriftObject(db));
+      return lines;
+    }
+  }
+
   /**********************************************************************************************
    * Function related methods
    *********************************************************************************************/
@@ -453,6 +488,41 @@ public class HBaseReadWrite {
     delete(FUNC_TABLE, key, null, null);
   }
 
+  /**
+   * Print out a function
+   * @param key key to get the function, must include dbname.
+   * @return string of the function
+   * @throws IOException
+   * @throws TException
+   */
+  String printFunction(String key) throws IOException, TException {
+    byte[] k = HBaseUtils.buildKey(key);
+    byte[] serialized = read(FUNC_TABLE, k, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return noSuch(key, "function");
+    Function func = HBaseUtils.deserializeFunction(k, serialized);
+    return dumpThriftObject(func);
+  }
+
+  /**
+   * Print out functions
+   * @param regex regular expression to use in matching functions
+   * @return list of strings, one function each
+   * @throws IOException
+   * @throws TException
+   */
+  List<String> printFunctions(String regex) throws IOException, TException {
+    Filter  filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    Iterator<Result> iter = scan(FUNC_TABLE, null, null, CATALOG_CF, CATALOG_COL, filter);
+    List<String> lines = new ArrayList<>();
+    while (iter.hasNext()) {
+      Result result = iter.next();
+      lines.add(dumpThriftObject(HBaseUtils.deserializeFunction(result.getRow(),
+          result.getValue(CATALOG_CF, CATALOG_COL))));
+    }
+    if (lines.size() == 0) lines = noMatch(regex, "function");
+    return lines;
+  }
+
   /**********************************************************************************************
    * Global privilege related methods
    *********************************************************************************************/
@@ -477,6 +547,18 @@ public class HBaseReadWrite {
     byte[] key = GLOBAL_PRIVS_KEY;
     byte[] serialized = HBaseUtils.serializePrincipalPrivilegeSet(privs);
     store(GLOBAL_PRIVS_TABLE, key, CATALOG_CF, CATALOG_COL, serialized);
+  }
+
+  /**
+   * Print out the global privileges.
+   * @return string containing the global privileges
+   * @throws IOException
+   * @throws TException
+   */
+  String printGlobalPrivs() throws IOException, TException {
+    PrincipalPrivilegeSet pps = getGlobalPrivs();
+    if (pps == null) return "No global privileges";
+    else return dumpThriftObject(pps);
   }
 
   /**********************************************************************************************
@@ -645,7 +727,8 @@ public class HBaseReadWrite {
     }
     byte[] keyPrefix = HBaseUtils.buildPartitionKey(dbName, tableName, new ArrayList<String>(),
         new ArrayList<String>(), false);
-    List<Partition> parts = scanPartitionsWithFilter(dbName, tableName, keyPrefix, HBaseUtils.getEndPrefix(keyPrefix), -1, null);
+    List<Partition> parts = scanPartitionsWithFilter(dbName, tableName, keyPrefix,
+        HBaseUtils.getEndPrefix(keyPrefix), -1, null);
     partCache.put(dbName, tableName, parts, true);
     return maxPartitions < parts.size() ? parts.subList(0, maxPartitions) : parts;
   }
@@ -670,6 +753,206 @@ public class HBaseReadWrite {
    */
   List<Partition> scanPartitions(String dbName, String tableName, List<String> partVals,
                                  int maxPartitions) throws IOException, NoSuchObjectException {
+
+    PartitionScanInfo psi = scanPartitionsInternal(dbName, tableName, partVals, maxPartitions);
+    List<Partition> parts = scanPartitionsWithFilter(dbName, tableName, psi.keyPrefix,
+        psi.endKeyPrefix, maxPartitions, psi.filter);
+    partCache.put(dbName, tableName, parts, false);
+    return parts;
+  }
+
+  List<Partition> scanPartitions(String dbName, String tableName, byte[] keyStart, byte[] keyEnd,
+                                 Filter  filter, int  maxPartitions)
+      throws IOException, NoSuchObjectException {
+    byte[] startRow = keyStart;
+    byte[] endRow;
+    if (keyEnd == null || keyEnd.length == 0) {
+      // stop when current db+table entries are over
+      endRow = HBaseUtils.getEndPrefix(startRow);
+    } else {
+      endRow = keyEnd;
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Scanning partitions with start row <" + new String(startRow) + "> and end row <"
+          + new String(endRow) + ">");
+    }
+    return scanPartitionsWithFilter(dbName, tableName, startRow, endRow, maxPartitions, filter);
+  }
+
+  /**
+   * Delete a partition
+   * @param dbName database name that table is in
+   * @param tableName table partition is in
+   * @param partVals partition values that define this partition, in the same order as the
+   *                 partition columns they are values for
+   * @throws IOException
+   */
+  void deletePartition(String dbName, String tableName, List<String> partTypes,
+      List<String> partVals) throws IOException {
+    deletePartition(dbName, tableName, partTypes, partVals, true);
+  }
+
+  /**
+   * Print out a partition.
+   * @param partKey The key for the partition.  This must include dbname.tablename._partkeys_
+   *                where _partkeys_ is a dot separated list of partition values in the proper
+   *                order.
+   * @return string containing the partition
+   * @throws IOException
+   * @throws TException
+   */
+  String printPartition(String partKey) throws IOException, TException {
+    // First figure out the table and fetch it
+    String[] partKeyParts = partKey.split(HBaseUtils.KEY_SEPARATOR_STR);
+    if (partKeyParts.length < 3) return noSuch(partKey, "partition");
+    Table table = getTable(partKeyParts[0], partKeyParts[1]);
+    if (table == null) return noSuch(partKey, "partition");
+
+    byte[] key = HBaseUtils.buildPartitionKey(partKeyParts[0], partKeyParts[1],
+        HBaseUtils.getPartitionKeyTypes(table.getPartitionKeys()),
+        Arrays.asList(Arrays.copyOfRange(partKeyParts, 2, partKeyParts.length)));
+    @SuppressWarnings("deprecation")
+    HTableInterface htab = conn.getHBaseTable(PART_TABLE);
+    Get g = new Get(key);
+    g.addColumn(CATALOG_CF, CATALOG_COL);
+    g.addFamily(STATS_CF);
+    Result result = htab.get(g);
+    if (result.isEmpty()) return noSuch(partKey, "partition");
+    return printOnePartition(result);
+  }
+
+  /**
+   * Print partitions
+   * @param partKey a partial partition key.  This must match the beginings of the partition key.
+   *                It can be just dbname.tablename, or dbname.table.pval... where pval are the
+   *                partition values in order.  They must be in the correct order and they must
+   *                be literal values (no regular expressions)
+   * @return partitions as strings
+   * @throws IOException
+   * @throws TException
+   */
+  List<String> printPartitions(String partKey) throws IOException, TException {
+    // First figure out the table and fetch it
+    // Split on dot here rather than the standard separator because this will be passed in as a
+    // regex, even though we aren't fully supporting regex's.
+    String[] partKeyParts = partKey.split("\\.");
+    if (partKeyParts.length < 2) return noMatch(partKey, "partition");
+    List<String> partVals = partKeyParts.length == 2 ? Arrays.asList("*") :
+        Arrays.asList(Arrays.copyOfRange(partKeyParts, 2, partKeyParts.length));
+    PartitionScanInfo psi;
+    try {
+      psi =
+          scanPartitionsInternal(partKeyParts[0], partKeyParts[1], partVals, -1);
+    } catch (NoSuchObjectException e) {
+      return noMatch(partKey, "partition");
+    }
+
+    @SuppressWarnings("deprecation")
+    HTableInterface htab = conn.getHBaseTable(PART_TABLE);
+    Scan scan = new Scan();
+    scan.addColumn(CATALOG_CF, CATALOG_COL);
+    scan.addFamily(STATS_CF);
+    scan.setStartRow(psi.keyPrefix);
+    scan.setStopRow(psi.endKeyPrefix);
+    scan.setFilter(psi.filter);
+    Iterator<Result> iter = htab.getScanner(scan).iterator();
+    if (!iter.hasNext()) return noMatch(partKey, "partition");
+    List<String> lines = new ArrayList<>();
+    while (iter.hasNext()) {
+      lines.add(printOnePartition(iter.next()));
+    }
+    return lines;
+  }
+
+  private String printOnePartition(Result result) throws IOException, TException {
+    byte[] key = result.getRow();
+    HBaseUtils.StorageDescriptorParts sdParts =
+        HBaseUtils.deserializePartition(key, result.getValue(CATALOG_CF, CATALOG_COL), this);
+    StringBuilder builder = new StringBuilder();
+    builder.append(dumpThriftObject(sdParts.containingPartition))
+        .append(" sdHash: ")
+        .append(Base64.encodeBase64URLSafeString(sdParts.sdHash))
+        .append(" stats:");
+    NavigableMap<byte[], byte[]> statsCols = result.getFamilyMap(STATS_CF);
+    for (Map.Entry<byte[], byte[]> statsCol : statsCols.entrySet()) {
+      builder.append(" column ")
+          .append(new String(statsCol.getKey(), HBaseUtils.ENCODING))
+          .append(": ");
+      ColumnStatistics pcs = buildColStats(key, false);
+      ColumnStatisticsObj cso = HBaseUtils.deserializeStatsForOneColumn(pcs, statsCol.getValue());
+      builder.append(dumpThriftObject(cso));
+    }
+    return builder.toString();
+  }
+
+  private void deletePartition(String dbName, String tableName, List<String> partTypes,
+        List<String> partVals, boolean decrementRefCnt) throws IOException {
+    // Find the partition so I can get the storage descriptor and drop it
+    partCache.remove(dbName, tableName, partVals);
+    if (decrementRefCnt) {
+      Partition p = getPartition(dbName, tableName, partVals, false);
+      decrementStorageDescriptorRefCount(p.getSd());
+    }
+    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partTypes, partVals);
+    delete(PART_TABLE, key, null, null);
+  }
+
+  private Partition getPartition(String dbName, String tableName, List<String> partVals,
+                                 boolean populateCache) throws IOException {
+    Partition cached = partCache.get(dbName, tableName, partVals);
+    if (cached != null) return cached;
+    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName,
+        HBaseUtils.getPartitionKeyTypes(getTable(dbName, tableName).getPartitionKeys()), partVals);
+    byte[] serialized = read(PART_TABLE, key, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return null;
+    HBaseUtils.StorageDescriptorParts sdParts =
+        HBaseUtils.deserializePartition(dbName, tableName, partVals, serialized);
+    StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+    HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+    if (populateCache) partCache.put(dbName, tableName, sdParts.containingPartition);
+    return sdParts.containingPartition;
+  }
+
+
+  private static class PartitionScanInfo {
+    final String dbName;
+    final String tableName;
+    final byte[] keyPrefix;
+    final byte[] endKeyPrefix;
+    final int maxPartitions;
+    final Filter filter;
+
+    PartitionScanInfo(String d, String t, byte[] k, byte[] e, int m, Filter f) {
+      dbName = d;
+      tableName = t;
+      keyPrefix = k;
+      endKeyPrefix = e;
+      maxPartitions = m;
+      filter = f;
+    }
+
+    @Override
+    public String toString() {
+      return new StringBuilder("dbName:")
+          .append(dbName)
+          .append(" tableName:")
+          .append(tableName)
+          .append(" keyPrefix:")
+          .append(Base64.encodeBase64URLSafeString(keyPrefix))
+          .append(" endKeyPrefix:")
+          .append(Base64.encodeBase64URLSafeString(endKeyPrefix))
+          .append(" maxPartitions:")
+          .append(maxPartitions)
+          .append(" filter:")
+          .append(filter.toString())
+          .toString();
+    }
+  }
+
+  private PartitionScanInfo scanPartitionsInternal(String dbName, String tableName,
+                                                   List<String> partVals, int maxPartitions)
+      throws IOException, NoSuchObjectException {
     // First, build as much of the key as we can so that we make the scan as tight as possible.
     List<String> keyElements = new ArrayList<>();
     keyElements.add(dbName);
@@ -700,7 +983,7 @@ public class HBaseReadWrite {
     }
     keyPrefix = HBaseUtils.buildPartitionKey(dbName, tableName,
         HBaseUtils.getPartitionKeyTypes(table.getPartitionKeys().subList(0, keyElements.size()-2)),
-          keyElements.subList(2, keyElements.size()));
+        keyElements.subList(2, keyElements.size()));
 
     // Now, build a filter out of the remaining keys
     List<PartitionKeyComparator.Range> ranges = new ArrayList<PartitionKeyComparator.Range>();
@@ -739,76 +1022,13 @@ public class HBaseReadWrite {
           filter + ">");
     }
 
-    List<Partition> parts = scanPartitionsWithFilter(dbName, tableName, keyPrefix,
-        HBaseUtils.getEndPrefix(keyPrefix), maxPartitions, filter);
-    partCache.put(dbName, tableName, parts, false);
-    return parts;
-  }
-
-  List<Partition> scanPartitions(String dbName, String tableName, byte[] keyStart, byte[] keyEnd,
-      Filter filter, int maxPartitions) throws IOException, NoSuchObjectException {
-    byte[] startRow = keyStart;
-    byte[] endRow;
-    if (keyEnd == null || keyEnd.length == 0) {
-      // stop when current db+table entries are over
-      endRow = HBaseUtils.getEndPrefix(startRow);
-    } else {
-      endRow = keyEnd;
-    }
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Scanning partitions with start row <" + new String(startRow) + "> and end row <"
-          + new String(endRow) + ">");
-    }
-    return scanPartitionsWithFilter(dbName, tableName, startRow, endRow, maxPartitions, filter);
-  }
-
-
-
-  /**
-   * Delete a partition
-   * @param dbName database name that table is in
-   * @param tableName table partition is in
-   * @param partVals partition values that define this partition, in the same order as the
-   *                 partition columns they are values for
-   * @throws IOException
-   */
-  void deletePartition(String dbName, String tableName, List<String> partTypes,
-      List<String> partVals) throws IOException {
-    deletePartition(dbName, tableName, partTypes, partVals, true);
-  }
-
-  private void deletePartition(String dbName, String tableName, List<String> partTypes,
-      List<String> partVals, boolean decrementRefCnt) throws IOException {
-    // Find the partition so I can get the storage descriptor and drop it
-    partCache.remove(dbName, tableName, partVals);
-    if (decrementRefCnt) {
-      Partition p = getPartition(dbName, tableName, partVals, false);
-      decrementStorageDescriptorRefCount(p.getSd());
-    }
-    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName, partTypes, partVals);
-    delete(PART_TABLE, key, null, null);
-  }
-
-  private Partition getPartition(String dbName, String tableName, List<String> partVals,
-                                 boolean populateCache) throws IOException {
-    Partition cached = partCache.get(dbName, tableName, partVals);
-    if (cached != null) return cached;
-    byte[] key = HBaseUtils.buildPartitionKey(dbName, tableName,
-        HBaseUtils.getPartitionKeyTypes(getTable(dbName, tableName).getPartitionKeys()), partVals);
-    byte[] serialized = read(PART_TABLE, key, CATALOG_CF, CATALOG_COL);
-    if (serialized == null) return null;
-    HBaseUtils.StorageDescriptorParts sdParts =
-        HBaseUtils.deserializePartition(dbName, tableName, partVals, serialized);
-    StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
-    HBaseUtils.assembleStorageDescriptor(sd, sdParts);
-    if (populateCache) partCache.put(dbName, tableName, sdParts.containingPartition);
-    return sdParts.containingPartition;
+    return new PartitionScanInfo(dbName, tableName, keyPrefix, HBaseUtils.getEndPrefix(keyPrefix),
+        maxPartitions, filter);
   }
 
   private List<Partition> scanPartitionsWithFilter(String dbName, String tableName,
-      byte[] startRow, byte [] endRow, int maxResults, Filter filter)
-      throws IOException {
+                                                   byte[] startRow, byte [] endRow, int maxResults,
+                                                   Filter filter) throws IOException {
     Iterator<Result> iter =
         scan(PART_TABLE, startRow, endRow, CATALOG_CF, CATALOG_COL, filter);
     List<FieldSchema> tablePartitions = getTable(dbName, tableName).getPartitionKeys();
@@ -817,7 +1037,7 @@ public class HBaseReadWrite {
     for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
       Result result = iter.next();
       HBaseUtils.StorageDescriptorParts sdParts = HBaseUtils.deserializePartition(dbName, tableName,
-          tablePartitions, result.getRow(), result.getValue(CATALOG_CF, CATALOG_COL), staticConf);
+          tablePartitions, result.getRow(), result.getValue(CATALOG_CF, CATALOG_COL), conf);
       StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
       HBaseUtils.assembleStorageDescriptor(sd, sdParts);
       parts.add(sdParts.containingPartition);
@@ -1158,14 +1378,7 @@ public class HBaseReadWrite {
    * @throws IOException
    */
   List<Role> scanRoles() throws IOException {
-    Iterator<Result> iter = scan(ROLE_TABLE, CATALOG_CF, CATALOG_COL);
-    List<Role> roles = new ArrayList<>();
-    while (iter.hasNext()) {
-      Result result = iter.next();
-      roles.add(HBaseUtils.deserializeRole(result.getRow(),
-          result.getValue(CATALOG_CF, CATALOG_COL)));
-    }
-    return roles;
+    return scanRoles(null);
   }
 
   /**
@@ -1187,6 +1400,70 @@ public class HBaseReadWrite {
     byte[] key = HBaseUtils.buildKey(roleName);
     delete(ROLE_TABLE, key, null, null);
     roleCache.remove(roleName);
+  }
+
+  String printRolesForUser(String userName) throws IOException {
+    List<String> roles = getUserRoles(userName);
+    if (roles == null || roles.size() == 0) return noSuch(userName, "user");
+    return org.apache.commons.lang.StringUtils.join(roles, ',');
+  }
+
+  List<String> printRolesForUsers(String regex) throws IOException {
+    Filter  filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    Iterator<Result> iter = scan(USER_TO_ROLE_TABLE, null, null, CATALOG_CF, CATALOG_COL, filter);
+    List<String> lines = new ArrayList<>();
+    while (iter.hasNext()) {
+      Result result = iter.next();
+      lines.add(new String(result.getRow(), HBaseUtils.ENCODING) + ": " +
+          org.apache.commons.lang.StringUtils.join(
+            HBaseUtils.deserializeRoleList(result.getValue(CATALOG_CF, CATALOG_COL)), ','));
+    }
+    if (lines.size() == 0) lines = noMatch(regex, "user");
+    return lines;
+  }
+
+  /**
+   * Print out a role
+   * @param name name of role to print
+   * @return string printout of role
+   */
+  String printRole(String name) throws IOException, TException {
+    Role role = getRole(name);
+    if (role == null) return noSuch(name, "role");
+    else return dumpThriftObject(role);
+  }
+
+  /**
+   * Print out roles.
+   * @param regex regular to use to search for roles
+   * @return string printout of roles
+   * @throws IOException
+   * @throws TException
+   */
+  List<String> printRoles(String regex) throws IOException, TException {
+    List<Role> roles = scanRoles(regex);
+    if (roles.size() == 0) {
+      return noMatch(regex, "role");
+    } else {
+      List<String> lines = new ArrayList<>();
+      for (Role role : roles) lines.add(dumpThriftObject(role));
+      return lines;
+    }
+  }
+
+  private List<Role> scanRoles(String regex) throws IOException {
+    Filter filter = null;
+    if (regex != null) {
+      filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    }
+    Iterator<Result> iter = scan(ROLE_TABLE, null, null, CATALOG_CF, CATALOG_COL, filter);
+    List<Role> roles = new ArrayList<>();
+    while (iter.hasNext()) {
+      Result result = iter.next();
+      roles.add(HBaseUtils.deserializeRole(result.getRow(),
+          result.getValue(CATALOG_CF, CATALOG_COL)));
+    }
+    return roles;
   }
 
   private void buildRoleCache() throws IOException {
@@ -1350,6 +1627,71 @@ public class HBaseReadWrite {
     deleteTable(dbName, tableName, true);
   }
 
+  /**
+   * Print out a table.
+   * @param name The name for the table.  This must include dbname.tablename
+   * @return string containing the table
+   * @throws IOException
+   * @throws TException
+   */
+  String printTable(String name) throws IOException, TException {
+    byte[] key = HBaseUtils.buildKey(name);
+    @SuppressWarnings("deprecation")
+    HTableInterface htab = conn.getHBaseTable(TABLE_TABLE);
+    Get g = new Get(key);
+    g.addColumn(CATALOG_CF, CATALOG_COL);
+    g.addFamily(STATS_CF);
+    Result result = htab.get(g);
+    if (result.isEmpty()) return noSuch(name, "table");
+    return printOneTable(result);
+  }
+
+  /**
+   * Print tables
+   * @param regex to use to find the tables.  Remember that dbname is in each
+   *              table name.
+   * @return tables as strings
+   * @throws IOException
+   * @throws TException
+   */
+  List<String> printTables(String regex) throws IOException, TException {
+    Filter  filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    @SuppressWarnings("deprecation")
+    HTableInterface htab = conn.getHBaseTable(TABLE_TABLE);
+    Scan scan = new Scan();
+    scan.addColumn(CATALOG_CF, CATALOG_COL);
+    scan.addFamily(STATS_CF);
+    scan.setFilter(filter);
+    Iterator<Result> iter = htab.getScanner(scan).iterator();
+    if (!iter.hasNext()) return noMatch(regex, "table");
+    List<String> lines = new ArrayList<>();
+    while (iter.hasNext()) {
+      lines.add(printOneTable(iter.next()));
+    }
+    return lines;
+  }
+
+  private String printOneTable(Result result) throws IOException, TException {
+    byte[] key = result.getRow();
+    HBaseUtils.StorageDescriptorParts sdParts =
+        HBaseUtils.deserializeTable(key, result.getValue(CATALOG_CF, CATALOG_COL));
+    StringBuilder builder = new StringBuilder();
+    builder.append(dumpThriftObject(sdParts.containingTable))
+        .append(" sdHash: ")
+        .append(Base64.encodeBase64URLSafeString(sdParts.sdHash))
+        .append(" stats:");
+    NavigableMap<byte[], byte[]> statsCols = result.getFamilyMap(STATS_CF);
+    for (Map.Entry<byte[], byte[]> statsCol : statsCols.entrySet()) {
+      builder.append(" column ")
+          .append(new String(statsCol.getKey(), HBaseUtils.ENCODING))
+          .append(": ");
+      ColumnStatistics pcs = buildColStats(key, true);
+      ColumnStatisticsObj cso = HBaseUtils.deserializeStatsForOneColumn(pcs, statsCol.getValue());
+      builder.append(dumpThriftObject(cso));
+    }
+    return builder.toString();
+  }
+
   private void deleteTable(String dbName, String tableName, boolean decrementRefCnt)
       throws IOException {
     tableCache.remove(new ObjectPair<>(dbName, tableName));
@@ -1464,6 +1806,37 @@ public class HBaseReadWrite {
     }
     conn.flush(htab);
     return key;
+  }
+
+  /**
+   * Print out a storage descriptor.
+   * @param hash hash that is the key of the storage descriptor
+   * @return string version of the storage descriptor
+   */
+  String printStorageDescriptor(byte[] hash) throws IOException, TException {
+    byte[] serialized = read(SD_TABLE, hash, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return noSuch(Base64.encodeBase64URLSafeString(hash), "storage descriptor");
+    return dumpThriftObject(HBaseUtils.deserializeStorageDescriptor(serialized));
+  }
+
+  /**
+   * Print all of the storage descriptors.  This doesn't take a regular expression since the key
+   * is an md5 hash and it's hard to see how a regex on this would be useful.
+   * @return list of all storage descriptors as strings
+   * @throws IOException
+   * @throws TException
+   */
+  List<String> printStorageDescriptors() throws IOException, TException {
+    Iterator<Result> results = scan(SD_TABLE, CATALOG_CF, CATALOG_COL);
+    if (!results.hasNext()) return Arrays.asList("No storage descriptors");
+    List<String> lines = new ArrayList<>();
+    while (results.hasNext()) {
+      Result result = results.next();
+      lines.add(Base64.encodeBase64URLSafeString(result.getRow()) + ": " +
+        dumpThriftObject(HBaseUtils.deserializeStorageDescriptor(result.getValue(CATALOG_CF,
+            CATALOG_COL))));
+    }
+    return lines;
   }
 
   private static class ByteArrayWrapper {
@@ -1604,25 +1977,9 @@ public class HBaseReadWrite {
           if (colStats == null) {
             // We initialize this late so that we don't create extras in the case of
             // partitions with no stats
-            colStats = new ColumnStatistics();
+            colStats = buildColStats(results[i].getRow(), false);
             statsList.add(colStats);
-            ColumnStatisticsDesc csd = new ColumnStatisticsDesc();
-
-            // We need to figure out which partition these call stats are from.  To do that we
-            // recontruct the key.  We have to pull the dbName and tableName out of the key to
-            // find the partition values.
-            byte[] key = results[i].getRow();
-            List<String> reconstructedPartVals =
-                HBaseUtils.deserializePartitionKey(getTable(dbName, tblName).getPartitionKeys(), key,
-                    staticConf);
-            String partName = valToPartMap.get(reconstructedPartVals);
-            assert partName != null;
-            csd.setIsTblLevel(false);
-            csd.setDbName(dbName);
-            csd.setTableName(tblName);
-            csd.setPartName(partName);
-            colStats.setStatsDesc(csd);
-          }
+        }
           ColumnStatisticsObj cso =
               HBaseUtils.deserializeStatsForOneColumn(colStats, serializedColStats);
           cso.setColName(colNames.get(j));
@@ -1729,6 +2086,36 @@ public class HBaseReadWrite {
     return partVals == null ? TABLE_TABLE : PART_TABLE;
   }
 
+  private ColumnStatistics buildColStats(byte[] key, boolean fromTable) throws IOException {
+    // We initialize this late so that we don't create extras in the case of
+    // partitions with no stats
+    ColumnStatistics colStats = new ColumnStatistics();
+    ColumnStatisticsDesc csd = new ColumnStatisticsDesc();
+
+    // If this is a table key, parse it as one
+    List<String> reconstructedKey;
+    if (fromTable) {
+      reconstructedKey = Arrays.asList(HBaseUtils.deserializeKey(key));
+      csd.setIsTblLevel(true);
+    } else {
+      reconstructedKey = HBaseUtils.deserializePartitionKey(key, this);
+      csd.setIsTblLevel(false);
+    }
+    csd.setDbName(reconstructedKey.get(0));
+    csd.setTableName(reconstructedKey.get(1));
+    if (!fromTable) {
+      // Build the part name, for which we need the table
+      Table table = getTable(reconstructedKey.get(0), reconstructedKey.get(1));
+      if (table == null) {
+        throw new RuntimeException("Unable to find table " + reconstructedKey.get(0) + "." +
+            reconstructedKey.get(1) + " even though I have a partition for it!");
+      }
+      csd.setPartName(HBaseStore.buildExternalPartName(table, reconstructedKey.subList(2,
+          reconstructedKey.size())));
+    }
+    colStats.setStatsDesc(csd);
+    return colStats;
+  }
   /**********************************************************************************************
    * File metadata related methods
    *********************************************************************************************/
@@ -1747,7 +2134,7 @@ public class HBaseReadWrite {
    * @param fileIds file ID list.
    * @return Serialized file metadata.
    */
-  void getFileMetadata(List<Long> fileIds, ByteBuffer[] result) throws IOException {
+  public void getFileMetadata(List<Long> fileIds, ByteBuffer[] result) throws IOException {
     byte[][] keys = new byte[fileIds.size()][];
     for (int i = 0; i < fileIds.size(); ++i) {
       keys[i] = HBaseUtils.makeLongKey(fileIds.get(i));
@@ -1881,6 +2268,35 @@ public class HBaseReadWrite {
     delete(SECURITY_TABLE, key, CATALOG_CF, MASTER_KEY_COL);
   }
 
+  /**
+   * One method to print all rows in the security table.  It's not expected to be large.
+   * @return each row as one string
+   * @throws IOException
+   */
+  List<String> printSecurity() throws IOException {
+    HTableInterface htab = conn.getHBaseTable(SECURITY_TABLE);
+    Scan scan = new Scan();
+    scan.addColumn(CATALOG_CF, MASTER_KEY_COL);
+    scan.addColumn(CATALOG_CF, DELEGATION_TOKEN_COL);
+    Iterator<Result> iter = htab.getScanner(scan).iterator();
+    if (!iter.hasNext()) return Arrays.asList("No security related entries");
+    List<String> lines = new ArrayList<>();
+    while (iter.hasNext()) {
+      Result result = iter.next();
+      byte[] val =  result.getValue(CATALOG_CF, MASTER_KEY_COL);
+      if (val != null) {
+        int seqNo = Integer.valueOf(new String(result.getRow(), HBaseUtils.ENCODING));
+        lines.add("Master key " + seqNo + ": " + HBaseUtils.deserializeMasterKey(val));
+      } else {
+        val = result.getValue(CATALOG_CF, DELEGATION_TOKEN_COL);
+        if (val == null) throw new RuntimeException("Huh?  No master key, no delegation token!");
+        lines.add("Delegation token " + new String(result.getRow(), HBaseUtils.ENCODING) + ": " +
+          HBaseUtils.deserializeDelegationToken(val));
+      }
+    }
+    return lines;
+  }
+
   /**********************************************************************************************
    * Sequence methods
    *********************************************************************************************/
@@ -1894,6 +2310,25 @@ public class HBaseReadWrite {
     byte[] incrSerialized = new Long(val + 1).toString().getBytes(HBaseUtils.ENCODING);
     store(SEQUENCES_TABLE, SEQUENCES_KEY, CATALOG_CF, sequence, incrSerialized);
     return val;
+  }
+
+  /**
+   * One method to print all entries in the sequence table.  It's not expected to be large.
+   * @return each sequence as one string
+   * @throws IOException
+   */
+  List<String> printSequences() throws IOException {
+    HTableInterface htab = conn.getHBaseTable(SEQUENCES_TABLE);
+    Get g = new Get(SEQUENCES_KEY);
+    g.addFamily(CATALOG_CF);
+    Result result = htab.get(g);
+    if (result.isEmpty()) return Arrays.asList("No sequences");
+    List<String> lines = new ArrayList<>();
+    for (Map.Entry<byte[], byte[]> entry : result.getFamilyMap(CATALOG_CF).entrySet()) {
+      lines.add(new String(entry.getKey(), HBaseUtils.ENCODING) + ": " +
+        new String(entry.getValue(), HBaseUtils.ENCODING));
+    }
+    return lines;
   }
 
   /**********************************************************************************************
@@ -2055,12 +2490,27 @@ public class HBaseReadWrite {
     return scanner.iterator();
   }
 
+  /**********************************************************************************************
+   * Printing methods
+   *********************************************************************************************/
+  private String noSuch(String name, String type) {
+    return "No such " + type + ": " + name.replaceAll(HBaseUtils.KEY_SEPARATOR_STR, ".");
+  }
 
+  private List<String> noMatch(String regex, String type) {
+    return Arrays.asList("No matching " + type + ": " + regex);
+  }
+
+  private String dumpThriftObject(TBase obj) throws TException, UnsupportedEncodingException {
+    TMemoryBuffer buf = new TMemoryBuffer(1000);
+    TProtocol protocol = new TSimpleJSONProtocol(buf);
+    obj.write(protocol);
+    return buf.toString("UTF-8");
+  }
 
   /**********************************************************************************************
    * Testing methods and classes
    *********************************************************************************************/
-
   @VisibleForTesting
   int countStorageDescriptor() throws IOException {
     ResultScanner scanner = conn.getHBaseTable(SD_TABLE).getScanner(new Scan());

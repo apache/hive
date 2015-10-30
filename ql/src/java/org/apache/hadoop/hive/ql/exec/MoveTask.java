@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -79,7 +79,7 @@ import java.util.Map;
 public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static transient final Log LOG = LogFactory.getLog(MoveTask.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(MoveTask.class);
 
   public MoveTask() {
     super();

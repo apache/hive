@@ -36,11 +36,6 @@
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- inter-project -->
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>${commons-logging.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-1.2-api</artifactId>
       <version>${log4j2.version}</version>
@@ -51,20 +46,21 @@
       <version>${log4j2.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-jcl</artifactId>
-      <version>${log4j2.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-core</artifactId>
-      <version>${hadoop-20S.version}</version>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
       <optional>true</optional>
+         <exclusions>
+           <exclusion>
+            <groupId>commmons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+         </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>

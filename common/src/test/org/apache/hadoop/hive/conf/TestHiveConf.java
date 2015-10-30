@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.conf;
 
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.HiveTestUtils;
@@ -116,5 +117,29 @@ public class TestHiveConf {
     Assert.assertEquals(TimeUnit.MICROSECONDS, HiveConf.unitFor("useconds", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("ns", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("nsecs", null));
+  }
+
+  @Test
+  public void testHiddenConfig() throws Exception {
+    HiveConf conf = new HiveConf();
+    // check password configs are hidden
+    Assert.assertTrue(conf.isHiddenConfig(HiveConf.ConfVars.METASTOREPWD.varname));
+    Assert.assertTrue(conf.isHiddenConfig(
+        HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
+    // check change hidden list should fail
+    try {
+      final String name = HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname;
+      conf.verifyAndSet(name, "");
+      Assert.fail("Setting config property " + name + " should fail");
+    } catch (IllegalArgumentException e) {
+      // the verifyAndSet in this case is expected to fail with the IllegalArgumentException
+    }
+    // check stripHiddenConfigurations
+    Configuration conf2 = new Configuration(conf);
+    conf2.set(HiveConf.ConfVars.METASTOREPWD.varname, "password");
+    conf2.set(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname, "password");
+    conf.stripHiddenConfigurations(conf2);
+    Assert.assertEquals("", conf2.get(HiveConf.ConfVars.METASTOREPWD.varname));
+    Assert.assertEquals("", conf2.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
   }
 }

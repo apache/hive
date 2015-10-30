@@ -13,8 +13,8 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf.Operator;
@@ -35,7 +35,7 @@ import static org.apache.parquet.filter2.predicate.FilterApi.floatColumn;
 import static org.apache.parquet.filter2.predicate.FilterApi.intColumn;
 
 public class LeafFilterFactory {
-  private static final Log LOG = LogFactory.getLog(LeafFilterFactory.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LeafFilterFactory.class);
 
   class IntFilterPredicateLeafBuilder extends FilterPredicateLeafBuilder {
     /**

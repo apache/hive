@@ -54,8 +54,8 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
@@ -80,7 +80,7 @@ import com.google.common.collect.Sets;
 
 public class HiveCalciteUtil {
 
-  private static final Log LOG = LogFactory.getLog(HiveCalciteUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveCalciteUtil.class);
 
 
   /**

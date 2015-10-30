@@ -17,8 +17,8 @@
  */
 package org.apache.hive.hcatalog.listener;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class DbNotificationListener extends MetaStoreEventListener {
 
-  private static final Log LOG = LogFactory.getLog(DbNotificationListener.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
   private static CleanerThread cleaner = null;
 
   // This is the same object as super.conf, but it's convenient to keep a copy of it as a

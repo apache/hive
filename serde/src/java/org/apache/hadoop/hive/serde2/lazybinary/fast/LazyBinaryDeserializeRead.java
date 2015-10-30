@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.serde2.lazybinary.fast;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -57,7 +57,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
  * called.
  */
 public class LazyBinaryDeserializeRead implements DeserializeRead {
-  public static final Log LOG = LogFactory.getLog(LazyBinaryDeserializeRead.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(LazyBinaryDeserializeRead.class.getName());
 
   private PrimitiveTypeInfo[] primitiveTypeInfos;
 

@@ -18,8 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -40,7 +40,7 @@ import java.util.Map;
  * A pass through to a simple HBase connection.  This has no transactions.
  */
 public class VanillaHBaseConnection implements HBaseConnection {
-  static final private Log LOG = LogFactory.getLog(VanillaHBaseConnection.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(VanillaHBaseConnection.class.getName());
 
   protected HConnection conn;
   protected Map<String, HTableInterface> tables;

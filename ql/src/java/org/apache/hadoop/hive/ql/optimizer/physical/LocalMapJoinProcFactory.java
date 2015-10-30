@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
  * OOM in group by operator.
  */
 public final class LocalMapJoinProcFactory {
-  private static final Log LOG = LogFactory.getLog(LocalMapJoinProcFactory.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LocalMapJoinProcFactory.class);
 
   public static NodeProcessor getJoinProc() {
     return new LocalMapJoinProcessor();

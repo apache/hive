@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -86,7 +86,7 @@ import java.util.Properties;
  */
 public class TestFileSinkOperator {
   private static String PARTCOL_NAME = "partval";
-  static final private Log LOG = LogFactory.getLog(TestFileSinkOperator.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(TestFileSinkOperator.class.getName());
 
   private static File tmpdir;
   private static TableDesc nonAcidTableDescriptor;

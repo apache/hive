@@ -16,8 +16,8 @@ package org.apache.hadoop.hive.ql.io.parquet.write;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -39,7 +39,7 @@ import org.apache.parquet.hadoop.util.ContextUtil;
 public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, ParquetHiveRecord>,
   org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter {
 
-  public static final Log LOG = LogFactory.getLog(ParquetRecordWriterWrapper.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ParquetRecordWriterWrapper.class);
 
   private final org.apache.hadoop.mapreduce.RecordWriter<NullWritable, ParquetHiveRecord> realWriter;
   private final TaskAttemptContext taskContext;

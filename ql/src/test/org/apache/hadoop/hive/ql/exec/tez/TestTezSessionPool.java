@@ -29,13 +29,13 @@ import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class TestTezSessionPool {
 
-  private static final Log LOG = LogFactory.getLog(TestTezSessionPoolManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestTezSessionPoolManager.class);
   HiveConf conf;
   Random random;
   private TezSessionPoolManager poolManager;

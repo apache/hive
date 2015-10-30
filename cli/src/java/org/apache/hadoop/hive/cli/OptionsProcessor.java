@@ -29,15 +29,15 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * OptionsProcessor.
  *
  */
 public class OptionsProcessor {
-  protected static final Log l4j = LogFactory.getLog(OptionsProcessor.class.getName());
+  protected static final Logger l4j = LoggerFactory.getLogger(OptionsProcessor.class.getName());
   private final Options options = new Options();
   private org.apache.commons.cli.CommandLine commandLine;
   Map<String, String> hiveVariables = new HashMap<String, String>();

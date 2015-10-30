@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
 import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
+import org.slf4j.LoggerFactory;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.After;
 import org.junit.Assert;
@@ -49,12 +49,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestDbTxnManager {
 
-  private HiveConf conf = new HiveConf();
+  private final HiveConf conf = new HiveConf();
   private HiveTxnManager txnMgr;
   private AcidHouseKeeperService houseKeeperService = null;
-  private Context ctx;
+  private final Context ctx;
   private int nextInput;
-  private int nextOutput;
   HashSet<ReadEntity> readEntities;
   HashSet<WriteEntity> writeEntities;
 
@@ -62,7 +61,6 @@ public class TestDbTxnManager {
     TxnDbUtil.setConfValues(conf);
     SessionState.start(conf);
     ctx = new Context(conf);
-    LogManager.getRootLogger().setLevel(Level.DEBUG);
     tearDown();
   }
 
@@ -363,7 +361,6 @@ public class TestDbTxnManager {
     txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     Assert.assertTrue(txnMgr instanceof DbTxnManager);
     nextInput = 1;
-    nextOutput = 1;
     readEntities = new HashSet<ReadEntity>();
     writeEntities = new HashSet<WriteEntity>();
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
@@ -379,8 +376,8 @@ public class TestDbTxnManager {
   }
 
   private static class MockQueryPlan extends QueryPlan {
-    private HashSet<ReadEntity> inputs;
-    private HashSet<WriteEntity> outputs;
+    private final HashSet<ReadEntity> inputs;
+    private final HashSet<WriteEntity> outputs;
 
     MockQueryPlan(TestDbTxnManager test) {
       HashSet<ReadEntity> r = test.readEntities;

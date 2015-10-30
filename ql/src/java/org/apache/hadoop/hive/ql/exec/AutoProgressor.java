@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
@@ -32,7 +32,7 @@ import org.apache.hadoop.mapred.Reporter;
  * indefinitely.
  */
 public class AutoProgressor {
-  protected Log LOG = LogFactory.getLog(this.getClass().getName());
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
 
   // Timer that reports every 5 minutes to the jobtracker. This ensures that
   // even if the operator returning rows for greater than that

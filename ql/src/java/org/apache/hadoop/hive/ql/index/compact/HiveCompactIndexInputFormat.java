@@ -18,14 +18,14 @@
 
 package org.apache.hadoop.hive.ql.index.compact;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;
 
 public class HiveCompactIndexInputFormat extends HiveIndexedInputFormat {
 
-  public static final Log l4j =
-    LogFactory.getLog(HiveCompactIndexInputFormat.class.getSimpleName());
+  public static final Logger l4j =
+    LoggerFactory.getLogger(HiveCompactIndexInputFormat.class.getSimpleName());
 
   public HiveCompactIndexInputFormat() {
     super("hive.index.compact.file");

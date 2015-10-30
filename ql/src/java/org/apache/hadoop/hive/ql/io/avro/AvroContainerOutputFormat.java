@@ -30,8 +30,8 @@ import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -52,7 +52,7 @@ import org.apache.hadoop.util.Progressable;
 public class AvroContainerOutputFormat
         implements HiveOutputFormat<WritableComparable, AvroGenericRecordWritable> {
 
-  public static final Log LOG = LogFactory.getLog(AvroContainerOutputFormat.class);
+  public static final Logger LOG = LoggerFactory.getLogger(AvroContainerOutputFormat.class);
 
   @Override
   public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(JobConf jobConf,

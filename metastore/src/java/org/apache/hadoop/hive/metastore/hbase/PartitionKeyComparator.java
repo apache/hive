@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.filter.ByteArrayComparable;
 import org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PartitionKeyComparator.Operator.Type;
@@ -43,7 +43,7 @@ import org.apache.hadoop.io.BytesWritable;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public class PartitionKeyComparator extends ByteArrayComparable {
-  private static final Log LOG = LogFactory.getLog(PartitionKeyComparator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PartitionKeyComparator.class);
   static class Mark {
     Mark(String value, boolean inclusive) {
       this.value = value;

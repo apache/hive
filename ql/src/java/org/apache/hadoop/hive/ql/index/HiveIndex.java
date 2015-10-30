@@ -17,15 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.index;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Holds index related constants
  */
 public class HiveIndex {
 
-  public static final Log l4j = LogFactory.getLog("HiveIndex");
+  public static final Logger l4j = LoggerFactory.getLogger("HiveIndex");
 
   public static String INDEX_TABLE_CREATETIME = "hive.index.basetbl.dfs.lastModifiedTime";
 

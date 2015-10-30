@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -34,7 +34,7 @@ import org.apache.hadoop.mapred.JobConf;
 
 public class CompositeHBaseKeyFactory<T extends HBaseCompositeKey> extends DefaultHBaseKeyFactory {
 
-  public static final Log LOG = LogFactory.getLog(CompositeHBaseKeyFactory.class);
+  public static final Logger LOG = LoggerFactory.getLogger(CompositeHBaseKeyFactory.class);
 
   private final Class<T> keyClass;
   private final Constructor constructor;

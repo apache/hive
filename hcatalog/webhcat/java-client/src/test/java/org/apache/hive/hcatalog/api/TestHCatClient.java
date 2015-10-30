@@ -90,7 +90,6 @@ public class TestHCatClient {
   private static HiveConf replicationTargetHCatConf;
   private static SecurityManager securityManager;
   private static boolean useExternalMS = false;
-  private static boolean useExternalMSForReplication = false;
 
   public static class RunMS implements Runnable {
 
@@ -1056,14 +1055,14 @@ public class TestHCatClient {
       HCatTable targetTable = targetMetaStore.deserializeTable(tableStringRep);
 
       assertEquals("Table after deserialization should have been identical to sourceTable.",
-          sourceTable.diff(targetTable), HCatTable.NO_DIFF);
+          HCatTable.NO_DIFF, sourceTable.diff(targetTable));
 
       // Create table on Target.
       targetMetaStore.createTable(HCatCreateTableDesc.create(targetTable).build());
       // Verify that the created table is identical to sourceTable.
       targetTable = targetMetaStore.getTable(dbName, tableName);
       assertEquals("Table after deserialization should have been identical to sourceTable.",
-          sourceTable.diff(targetTable), HCatTable.NO_DIFF);
+          HCatTable.NO_DIFF, sourceTable.diff(targetTable));
 
       // Modify sourceTable.
       List<HCatFieldSchema> newColumnSchema = new ArrayList<HCatFieldSchema>(columnSchema);
@@ -1098,7 +1097,7 @@ public class TestHCatClient {
       targetTable = targetMetaStore.getTable(dbName, tableName);
 
       assertEquals("After propagating schema changes, source and target tables should have been equivalent.",
-          targetTable.diff(sourceTable), HCatTable.NO_DIFF);
+          HCatTable.NO_DIFF, targetTable.diff(sourceTable));
 
     }
     catch (Exception unexpected) {
@@ -1157,14 +1156,14 @@ public class TestHCatClient {
 
       sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_1).build());
       assertEquals("Unexpected number of partitions. ",
-                   sourceMetaStore.getPartitions(dbName, tableName).size(), 1);
+                   1, sourceMetaStore.getPartitions(dbName, tableName).size());
       // Verify that partition_1 was added correctly, and properties were inherited from the HCatTable.
       HCatPartition addedPartition_1 = sourceMetaStore.getPartition(dbName, tableName, partitionSpec_1);
-      assertEquals("Column schema doesn't match.", addedPartition_1.getColumns(), sourceTable.getCols());
-      assertEquals("InputFormat doesn't match.", addedPartition_1.getInputFormat(), sourceTable.getInputFileFormat());
-      assertEquals("OutputFormat doesn't match.", addedPartition_1.getOutputFormat(), sourceTable.getOutputFileFormat());
-      assertEquals("SerDe doesn't match.", addedPartition_1.getSerDe(), sourceTable.getSerdeLib());
-      assertEquals("SerDe params don't match.", addedPartition_1.getSerdeParams(), sourceTable.getSerdeParams());
+      assertEquals("Column schema doesn't match.", sourceTable.getCols(), addedPartition_1.getColumns());
+      assertEquals("InputFormat doesn't match.", sourceTable.getInputFileFormat(), addedPartition_1.getInputFormat());
+      assertEquals("OutputFormat doesn't match.", sourceTable.getOutputFileFormat(), addedPartition_1.getOutputFormat());
+      assertEquals("SerDe doesn't match.", sourceTable.getSerdeLib(), addedPartition_1.getSerDe());
+      assertEquals("SerDe params don't match.", sourceTable.getSerdeParams(), addedPartition_1.getSerdeParams());
 
       // Replicate table definition.
 
@@ -1177,8 +1176,7 @@ public class TestHCatClient {
       targetMetaStore.createTable(HCatCreateTableDesc.create(targetTable).build());
       targetTable = targetMetaStore.getTable(dbName, tableName);
 
-      assertEquals("Created table doesn't match the source.",
-                  targetTable.diff(sourceTable), HCatTable.NO_DIFF);
+      assertEquals("Created table doesn't match the source.", HCatTable.NO_DIFF, targetTable.diff(sourceTable));
 
       // Modify Table schema at the source.
       List<HCatFieldSchema> newColumnSchema = new ArrayList<HCatFieldSchema>(columnSchema);
@@ -1215,7 +1213,7 @@ public class TestHCatClient {
 
       List<HCatPartition> targetPartitions = targetMetaStore.getPartitions(dbName, tableName);
 
-      assertEquals("Expected the same number of partitions. ", targetPartitions.size(), sourcePartitions.size());
+      assertEquals("Expected the same number of partitions. ", sourcePartitions.size(), targetPartitions.size());
 
       for (int i=0; i<targetPartitions.size(); ++i) {
         HCatPartition sourcePartition = sourcePartitions.get(i),
@@ -1286,14 +1284,14 @@ public class TestHCatClient {
 
       sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_1).build());
       assertEquals("Unexpected number of partitions. ",
-          sourceMetaStore.getPartitions(dbName, tableName).size(), 1);
+          1, sourceMetaStore.getPartitions(dbName, tableName).size());
       // Verify that partition_1 was added correctly, and properties were inherited from the HCatTable.
       HCatPartition addedPartition_1 = sourceMetaStore.getPartition(dbName, tableName, partitionSpec_1);
-      assertEquals("Column schema doesn't match.", addedPartition_1.getColumns(), sourceTable.getCols());
-      assertEquals("InputFormat doesn't match.", addedPartition_1.getInputFormat(), sourceTable.getInputFileFormat());
-      assertEquals("OutputFormat doesn't match.", addedPartition_1.getOutputFormat(), sourceTable.getOutputFileFormat());
-      assertEquals("SerDe doesn't match.", addedPartition_1.getSerDe(), sourceTable.getSerdeLib());
-      assertEquals("SerDe params don't match.", addedPartition_1.getSerdeParams(), sourceTable.getSerdeParams());
+      assertEquals("Column schema doesn't match.", sourceTable.getCols(), addedPartition_1.getColumns());
+      assertEquals("InputFormat doesn't match.", sourceTable.getInputFileFormat(), addedPartition_1.getInputFormat());
+      assertEquals("OutputFormat doesn't match.", sourceTable.getOutputFileFormat(), addedPartition_1.getOutputFormat());
+      assertEquals("SerDe doesn't match.", sourceTable.getSerdeLib(), addedPartition_1.getSerDe());
+      assertEquals("SerDe params don't match.", sourceTable.getSerdeParams(), addedPartition_1.getSerdeParams());
 
       // Replicate table definition.
 
@@ -1306,8 +1304,7 @@ public class TestHCatClient {
       targetMetaStore.createTable(HCatCreateTableDesc.create(targetTable).build());
       targetTable = targetMetaStore.getTable(dbName, tableName);
 
-      assertEquals("Created table doesn't match the source.",
-          targetTable.diff(sourceTable), HCatTable.NO_DIFF);
+      assertEquals("Created table doesn't match the source.", HCatTable.NO_DIFF, targetTable.diff(sourceTable));
 
       // Modify Table schema at the source.
       List<HCatFieldSchema> newColumnSchema = new ArrayList<HCatFieldSchema>(columnSchema);

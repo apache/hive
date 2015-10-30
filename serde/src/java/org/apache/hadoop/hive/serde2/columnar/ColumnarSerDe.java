@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -77,8 +77,8 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
             .getAllStructFieldTypeInfos() + "]";
   }
 
-  public static final Log LOG = LogFactory
-      .getLog(ColumnarSerDe.class.getName());
+  public static final Logger LOG = LoggerFactory
+      .getLogger(ColumnarSerDe.class);
 
   public ColumnarSerDe() throws SerDeException {
   }

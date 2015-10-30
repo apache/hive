@@ -35,8 +35,8 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -124,7 +124,7 @@ import org.apache.hadoop.mapred.JobConf;
 public class Driver implements CommandProcessor {
 
   static final private String CLASS_NAME = Driver.class.getName();
-  static final private Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
 
   private int maxRows = 100;
@@ -298,9 +298,7 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver() {
-    conf = (SessionState.get() != null) ? SessionState.get().getConf() : null;
-    isParallelEnabled = (conf != null)
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
+    this((SessionState.get() != null) ? SessionState.get().getConf() : null);
   }
 
   /**
@@ -615,8 +613,12 @@ public class Driver implements CommandProcessor {
           continue;
         }
         if (write.getType() == Entity.Type.DATABASE) {
-          authorizer.authorize(write.getDatabase(),
-              null, op.getOutputRequiredPrivileges());
+          if (!op.equals(HiveOperation.IMPORT)){
+            // We skip DB check for import here because we already handle it above
+            // as a CTAS check.
+            authorizer.authorize(write.getDatabase(),
+                null, op.getOutputRequiredPrivileges());
+          }
           continue;
         }
 
@@ -1085,6 +1087,10 @@ public class Driver implements CommandProcessor {
    * while keeping the result around.
    */
   private void releaseResources() {
+    if (SessionState.get() != null) {
+      SessionState.get().getLineageState().clear();
+    }
+
     if (plan != null) {
       fetchTask = plan.getFetchTask();
       if (fetchTask != null) {
@@ -1713,7 +1719,6 @@ public class Driver implements CommandProcessor {
 
     if (SessionState.get() != null) {
       try {
-        SessionState.get().getLineageState().clear();
         SessionState.get().getHiveHistory().logPlanProgress(plan);
       } catch (Exception e) {
         // ignore

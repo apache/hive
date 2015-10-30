@@ -35,8 +35,8 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
@@ -59,7 +59,7 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
 
   private final ProjectFactory projectFactory;
 
-  private static transient final Log LOG = LogFactory.getLog(HiveJoinToMultiJoinRule.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(HiveJoinToMultiJoinRule.class);
 
   //~ Constructors -----------------------------------------------------------
 

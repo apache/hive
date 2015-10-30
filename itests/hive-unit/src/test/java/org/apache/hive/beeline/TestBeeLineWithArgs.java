@@ -752,4 +752,12 @@ public class TestBeeLineWithArgs {
     final String EXPECTED_PATTERN = "Stage-1 map =";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
+
+  @Test
+  public void testConnectionUrlWithSemiColon() throws Throwable{
+    List<String> argList = getBaseArgs(miniHS2.getJdbcURL("default", "sess_var_list?var1=value1"));
+    final String SCRIPT_TEXT = "set var1";
+    final String EXPECTED_PATTERN = "var1=value1";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
 }

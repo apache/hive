@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,8 +47,8 @@ import org.apache.hadoop.mapred.LineRecordReader.LineReader;
  */
 public class HiveIndexResult {
 
-  public static final Log l4j =
-    LogFactory.getLog(HiveIndexResult.class.getSimpleName());
+  public static final Logger l4j =
+    LoggerFactory.getLogger(HiveIndexResult.class.getSimpleName());
 
   // IndexBucket
   static class IBucket {

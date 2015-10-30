@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.tez.dag.api.EdgeManagerPlugin;
 import org.apache.tez.dag.api.EdgeManagerPluginContext;
 import org.apache.tez.runtime.api.events.DataMovementEvent;
@@ -33,7 +33,7 @@ import org.apache.tez.runtime.api.events.InputReadErrorEvent;
 
 public class CustomPartitionEdge extends EdgeManagerPlugin {
 
-  private static final Log LOG = LogFactory.getLog(CustomPartitionEdge.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CustomPartitionEdge.class.getName());
 
   CustomEdgeConfiguration conf = null;
   final EdgeManagerPluginContext context;

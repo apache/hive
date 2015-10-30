@@ -24,8 +24,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.Parser;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.util.StringUtils;
 
@@ -37,7 +37,7 @@ import java.util.Random;
  */
 public class StreamingIntegrationTester {
 
-  static final private Log LOG = LogFactory.getLog(StreamingIntegrationTester.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(StreamingIntegrationTester.class.getName());
 
   public static void main(String[] args) {
 

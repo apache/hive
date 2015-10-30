@@ -22,8 +22,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.BlockingService;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.llap.daemon.LlapDaemonProtocolBlockingPB;
 public class LlapDaemonProtocolServerImpl extends AbstractService
     implements LlapDaemonProtocolBlockingPB {
 
-  private static final Log LOG = LogFactory.getLog(LlapDaemonProtocolServerImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapDaemonProtocolServerImpl.class);
 
   private final int numHandlers;
   private final ContainerRunner containerRunner;

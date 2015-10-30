@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -63,7 +63,7 @@ import com.google.common.collect.Interner;
 @SuppressWarnings({"serial", "deprecation"})
 public class MapWork extends BaseWork {
 
-  private static final Log LOG = LogFactory.getLog(MapWork.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MapWork.class);
 
   // use LinkedHashMap to make sure the iteration order is
   // deterministic, to ease testing

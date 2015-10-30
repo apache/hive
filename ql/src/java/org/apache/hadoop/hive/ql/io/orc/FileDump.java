@@ -136,9 +136,16 @@ public final class FileDump {
   private static void printData(List<String> files, Configuration conf) throws IOException,
       JSONException {
     for (String file : files) {
-      printJsonData(conf, file);
-      if (files.size() > 1) {
-        System.out.println(Strings.repeat("=", 80) + "\n");
+      try {
+        printJsonData(conf, file);
+        if (files.size() > 1) {
+          System.out.println(Strings.repeat("=", 80) + "\n");
+        }
+      } catch (Exception e) {
+        System.err.println("Unable to dump data for file: " + file);
+        e.printStackTrace();
+        System.err.println(Strings.repeat("=", 80) + "\n");
+        continue;
       }
     }
   }
@@ -146,103 +153,115 @@ public final class FileDump {
   private static void printMetaData(List<String> files, Configuration conf,
       List<Integer> rowIndexCols, boolean printTimeZone) throws IOException {
     for (String filename : files) {
-      System.out.println("Structure for " + filename);
-      Path path = new Path(filename);
-      Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
-      System.out.println("File Version: " + reader.getFileVersion().getName() +
-          " with " + reader.getWriterVersion());
-      RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
-      System.out.println("Rows: " + reader.getNumberOfRows());
-      System.out.println("Compression: " + reader.getCompression());
-      if (reader.getCompression() != CompressionKind.NONE) {
-        System.out.println("Compression size: " + reader.getCompressionSize());
-      }
-      System.out.println("Type: " + reader.getObjectInspector().getTypeName());
-      System.out.println("\nStripe Statistics:");
-      List<StripeStatistics> stripeStats = reader.getStripeStatistics();
-      for (int n = 0; n < stripeStats.size(); n++) {
-        System.out.println("  Stripe " + (n + 1) + ":");
-        StripeStatistics ss = stripeStats.get(n);
-        for (int i = 0; i < ss.getColumnStatistics().length; ++i) {
-          System.out.println("    Column " + i + ": " +
-              ss.getColumnStatistics()[i].toString());
+      try {
+        Path path = new Path(filename);
+        Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
+        System.out.println("Structure for " + filename);
+        System.out.println("File Version: " + reader.getFileVersion().getName() +
+            " with " + reader.getWriterVersion());
+        RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
+        System.out.println("Rows: " + reader.getNumberOfRows());
+        System.out.println("Compression: " + reader.getCompression());
+        if (reader.getCompression() != CompressionKind.NONE) {
+          System.out.println("Compression size: " + reader.getCompressionSize());
         }
-      }
-      ColumnStatistics[] stats = reader.getStatistics();
-      int colCount = stats.length;
-      System.out.println("\nFile Statistics:");
-      for (int i = 0; i < stats.length; ++i) {
-        System.out.println("  Column " + i + ": " + stats[i].toString());
-      }
-      System.out.println("\nStripes:");
-      int stripeIx = -1;
-      for (StripeInformation stripe : reader.getStripes()) {
-        ++stripeIx;
-        long stripeStart = stripe.getOffset();
-        OrcProto.StripeFooter footer = rows.readStripeFooter(stripe);
-        if (printTimeZone) {
-          String tz = footer.getWriterTimezone();
-          if (tz == null || tz.isEmpty()) {
-            tz = UNKNOWN;
+        System.out.println("Type: " + reader.getObjectInspector().getTypeName());
+        System.out.println("\nStripe Statistics:");
+        List<StripeStatistics> stripeStats = reader.getStripeStatistics();
+        for (int n = 0; n < stripeStats.size(); n++) {
+          System.out.println("  Stripe " + (n + 1) + ":");
+          StripeStatistics ss = stripeStats.get(n);
+          for (int i = 0; i < ss.getColumnStatistics().length; ++i) {
+            System.out.println("    Column " + i + ": " +
+                ss.getColumnStatistics()[i].toString());
           }
-          System.out.println("  Stripe: " + stripe.toString() + " timezone: " + tz);
-        } else {
-          System.out.println("  Stripe: " + stripe.toString());
         }
-        long sectionStart = stripeStart;
-        for (OrcProto.Stream section : footer.getStreamsList()) {
-          String kind = section.hasKind() ? section.getKind().name() : UNKNOWN;
-          System.out.println("    Stream: column " + section.getColumn() +
-              " section " + kind + " start: " + sectionStart +
-              " length " + section.getLength());
-          sectionStart += section.getLength();
+        ColumnStatistics[] stats = reader.getStatistics();
+        int colCount = stats.length;
+        System.out.println("\nFile Statistics:");
+        for (int i = 0; i < stats.length; ++i) {
+          System.out.println("  Column " + i + ": " + stats[i].toString());
         }
-        for (int i = 0; i < footer.getColumnsCount(); ++i) {
-          OrcProto.ColumnEncoding encoding = footer.getColumns(i);
-          StringBuilder buf = new StringBuilder();
-          buf.append("    Encoding column ");
-          buf.append(i);
-          buf.append(": ");
-          buf.append(encoding.getKind());
-          if (encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
-              encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
-            buf.append("[");
-            buf.append(encoding.getDictionarySize());
-            buf.append("]");
+        System.out.println("\nStripes:");
+        int stripeIx = -1;
+        for (StripeInformation stripe : reader.getStripes()) {
+          ++stripeIx;
+          long stripeStart = stripe.getOffset();
+          OrcProto.StripeFooter footer = rows.readStripeFooter(stripe);
+          if (printTimeZone) {
+            String tz = footer.getWriterTimezone();
+            if (tz == null || tz.isEmpty()) {
+              tz = UNKNOWN;
+            }
+            System.out.println("  Stripe: " + stripe.toString() + " timezone: " + tz);
+          } else {
+            System.out.println("  Stripe: " + stripe.toString());
           }
-          System.out.println(buf);
-        }
-        if (rowIndexCols != null && !rowIndexCols.isEmpty()) {
-          // include the columns that are specified, only if the columns are included, bloom filter
-          // will be read
-          boolean[] sargColumns = new boolean[colCount];
-          for (int colIdx : rowIndexCols) {
-            sargColumns[colIdx] = true;
+          long sectionStart = stripeStart;
+          for (OrcProto.Stream section : footer.getStreamsList()) {
+            String kind = section.hasKind() ? section.getKind().name() : UNKNOWN;
+            System.out.println("    Stream: column " + section.getColumn() +
+                " section " + kind + " start: " + sectionStart +
+                " length " + section.getLength());
+            sectionStart += section.getLength();
           }
-          RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, null, null, sargColumns);
-          for (int col : rowIndexCols) {
+          for (int i = 0; i < footer.getColumnsCount(); ++i) {
+            OrcProto.ColumnEncoding encoding = footer.getColumns(i);
             StringBuilder buf = new StringBuilder();
-            String rowIdxString = getFormattedRowIndices(col, indices.getRowGroupIndex());
-            buf.append(rowIdxString);
-            String bloomFilString = getFormattedBloomFilters(col, indices.getBloomFilterIndex());
-            buf.append(bloomFilString);
+            buf.append("    Encoding column ");
+            buf.append(i);
+            buf.append(": ");
+            buf.append(encoding.getKind());
+            if (encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
+                encoding.getKind() == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
+              buf.append("[");
+              buf.append(encoding.getDictionarySize());
+              buf.append("]");
+            }
             System.out.println(buf);
           }
+          if (rowIndexCols != null && !rowIndexCols.isEmpty()) {
+            // include the columns that are specified, only if the columns are included, bloom filter
+            // will be read
+            boolean[] sargColumns = new boolean[colCount];
+            for (int colIdx : rowIndexCols) {
+              sargColumns[colIdx] = true;
+            }
+            RecordReaderImpl.Index indices = rows
+                .readRowIndex(stripeIx, null, null, null, sargColumns);
+            for (int col : rowIndexCols) {
+              StringBuilder buf = new StringBuilder();
+              String rowIdxString = getFormattedRowIndices(col, indices.getRowGroupIndex());
+              buf.append(rowIdxString);
+              String bloomFilString = getFormattedBloomFilters(col, indices.getBloomFilterIndex());
+              buf.append(bloomFilString);
+              System.out.println(buf);
+            }
+          }
         }
-      }
 
-      FileSystem fs = path.getFileSystem(conf);
-      long fileLen = fs.getContentSummary(path).getLength();
-      long paddedBytes = getTotalPaddingSize(reader);
-      // empty ORC file is ~45 bytes. Assumption here is file length always >0
-      double percentPadding = ((double) paddedBytes / (double) fileLen) * 100;
-      DecimalFormat format = new DecimalFormat("##.##");
-      System.out.println("\nFile length: " + fileLen + " bytes");
-      System.out.println("Padding length: " + paddedBytes + " bytes");
-      System.out.println("Padding ratio: " + format.format(percentPadding) + "%");
-      rows.close();
-      if (files.size() > 1) {
-        System.out.println(Strings.repeat("=", 80) + "\n");
+        FileSystem fs = path.getFileSystem(conf);
+        long fileLen = fs.getContentSummary(path).getLength();
+        long paddedBytes = getTotalPaddingSize(reader);
+        // empty ORC file is ~45 bytes. Assumption here is file length always >0
+        double percentPadding = ((double) paddedBytes / (double) fileLen) * 100;
+        DecimalFormat format = new DecimalFormat("##.##");
+        System.out.println("\nFile length: " + fileLen + " bytes");
+        System.out.println("Padding length: " + paddedBytes + " bytes");
+        System.out.println("Padding ratio: " + format.format(percentPadding) + "%");
+        OrcRecordUpdater.AcidStats acidStats = OrcRecordUpdater.parseAcidStats(reader);
+        if (acidStats != null) {
+          System.out.println("ACID stats:" + acidStats);
+        }
+        rows.close();
+        if (files.size() > 1) {
+          System.out.println(Strings.repeat("=", 80) + "\n");
+        }
+      } catch (Exception e) {
+        System.err.println("Unable to dump metadata for file: " + filename);
+        e.printStackTrace();
+        System.err.println(Strings.repeat("=", 80) + "\n");
+        continue;
       }
     }
   }

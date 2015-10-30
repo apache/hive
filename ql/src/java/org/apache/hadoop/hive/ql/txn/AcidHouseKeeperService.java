@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
@@ -36,9 +36,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Runs inside Hive Metastore Service.
  */
 public class AcidHouseKeeperService implements HouseKeeperService {
-  private static final Log LOG = LogFactory.getLog(AcidHouseKeeperService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
   private ScheduledExecutorService pool = null;
-  private AtomicInteger isAliveCounter = new AtomicInteger(Integer.MIN_VALUE);
+  private final AtomicInteger isAliveCounter = new AtomicInteger(Integer.MIN_VALUE);
   @Override
   public void start(HiveConf hiveConf) throws Exception {
     HiveTxnManager mgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);
@@ -90,7 +90,7 @@ public class AcidHouseKeeperService implements HouseKeeperService {
         LOG.info("timeout reaper ran for " + (System.currentTimeMillis() - startTime)/1000 + "seconds.  isAliveCounter=" + count);
       }
       catch(Throwable t) {
-        LOG.fatal("Serious error in " + Thread.currentThread().getName() + ": " + t.getMessage(), t);
+        LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
       }
     }
   }

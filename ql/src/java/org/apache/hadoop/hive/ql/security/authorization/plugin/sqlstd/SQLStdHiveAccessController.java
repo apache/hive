@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -85,7 +85,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   private final String HAS_ADMIN_PRIV_MSG = "grantor need to have ADMIN OPTION on role being"
       + " granted and have it as a current role for this action.";
   private final HiveAuthzSessionContext sessionCtx;
-  public static final Log LOG = LogFactory.getLog(SQLStdHiveAccessController.class);
+  public static final Logger LOG = LoggerFactory.getLogger(SQLStdHiveAccessController.class);
 
   public SQLStdHiveAccessController(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
       HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {

@@ -15,6 +15,7 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import javax.net.SocketFactory;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedExceptionAction;
@@ -36,8 +37,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.CallableWithNdc;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.configuration.LlapConfiguration;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
@@ -51,6 +52,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.slf4j.Logger;
@@ -90,7 +92,7 @@ public class AMReporter extends AbstractService {
   private final RetryPolicy retryPolicy;
   private final long retryTimeout;
   private final SocketFactory socketFactory;
-  private final DelayQueue<AMNodeInfo> pendingHeartbeatQueeu = new DelayQueue();
+  private final DelayQueue<AMNodeInfo> pendingHeartbeatQueeu = new DelayQueue<>();
   private final AtomicReference<InetSocketAddress> localAddress;
   private final long heartbeatInterval;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);

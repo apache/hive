@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import com.esotericsoftware.minlog.Log;
 import com.google.common.collect.ImmutableList;
 
 public final class HiveJoinAddNotNullRule extends RelOptRule {
@@ -92,7 +91,6 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     try {
       joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(join);
     } catch (CalciteSemanticException e) {
-      Log.trace("Failed to add is not null filter on join ", e);
       return;
     }
 
@@ -183,7 +181,7 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     }
     return newConditions;
   }
-  
+
   private static Map<String,RexNode> splitCondition(RexNode condition) {
     Map<String,RexNode> newConditions = new HashMap<String,RexNode>();
     if (condition.getKind() == SqlKind.AND) {
@@ -196,7 +194,7 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     }
     return newConditions;
   }
-  
+
   private static RelNode createHiveFilterConjunctiveCondition(FilterFactory filterFactory,
           RexBuilder rexBuilder, RelNode input, Collection<RexNode> conditions) {
     final RexNode newCondition = RexUtil.composeConjunction(rexBuilder, conditions, false);

@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
@@ -64,8 +64,8 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private static final long serialVersionUID = 1L;
-  private static transient final Log LOG = LogFactory
-      .getLog(ColumnStatsUpdateTask.class);
+  private static transient final Logger LOG = LoggerFactory
+      .getLogger(ColumnStatsUpdateTask.class);
 
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
@@ -313,7 +313,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
         return persistPartitionStats();
       }
     } catch (Exception e) {
-      LOG.info(e);
+      LOG.info("Failed to persist stats in metastore", e);
     }
     return 1;
   }

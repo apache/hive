@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
@@ -87,8 +87,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
 
-  protected static transient final Log LOG = LogFactory
-      .getLog(CrossProductCheck.class);
+  protected static transient final Logger LOG = LoggerFactory
+      .getLogger(CrossProductCheck.class);
 
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {

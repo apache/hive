@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.serde2.columnar;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
@@ -38,7 +38,7 @@ import org.apache.hadoop.io.Text;
  */
 public class ColumnarStruct extends ColumnarStructBase {
 
-  private static final Log LOG = LogFactory.getLog(ColumnarStruct.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ColumnarStruct.class);
 
   Text nullSequence;
   int lengthNullSequence;

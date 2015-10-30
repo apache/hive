@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -43,7 +43,7 @@ import org.apache.hive.common.util.HiveStringUtils;
  *
  */
 public class LazySerDeParameters implements LazyObjectInspectorParameters {
-  public static final Log LOG = LogFactory.getLog(LazySerDeParameters.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(LazySerDeParameters.class.getName());
   public static final byte[] DefaultSeparators = {(byte) 1, (byte) 2, (byte) 3};
   public static final String SERIALIZATION_EXTEND_NESTING_LEVELS
   	= "hive.serialization.extend.nesting.levels";

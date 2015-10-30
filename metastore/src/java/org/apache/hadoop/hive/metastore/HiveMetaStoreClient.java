@@ -47,8 +47,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -187,7 +187,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private int retries = 5;
   private long retryDelaySeconds = 0;
 
-  static final protected Log LOG = LogFactory.getLog("hive.metastore");
+  static final protected Logger LOG = LoggerFactory.getLogger("hive.metastore");
 
   public HiveMetaStoreClient(HiveConf conf)
     throws MetaException {

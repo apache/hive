@@ -18,8 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TestObjectStore;
@@ -58,7 +58,7 @@ import java.util.Set;
  */
 public class TestHBaseImport extends HBaseIntegrationTests {
 
-  private static final Log LOG = LogFactory.getLog(TestHBaseImport.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestHBaseImport.class.getName());
 
   private static final String[] tableNames = new String[] {"allnonparttable", "allparttable"};
   private static final String[] partVals = new String[] {"na", "emea", "latam", "apac"};

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer.index;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public final class RewriteParseContextGenerator {
 
-  private static final Log LOG = LogFactory.getLog(RewriteParseContextGenerator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RewriteParseContextGenerator.class.getName());
 
   /**
    * Parse the input {@link String} command and generate an operator tree.

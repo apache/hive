@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.debug.Utils;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -46,7 +46,7 @@ import com.google.common.annotations.VisibleForTesting;
  * and there's very little in common left save for quadratic probing (and that with some changes).
  */
 public final class BytesBytesMultiHashMap {
-  public static final Log LOG = LogFactory.getLog(BytesBytesMultiHashMap.class);
+  public static final Logger LOG = LoggerFactory.getLogger(BytesBytesMultiHashMap.class);
 
   /*
    * This hashtable stores "references" in an array of longs;  index in the array is hash of

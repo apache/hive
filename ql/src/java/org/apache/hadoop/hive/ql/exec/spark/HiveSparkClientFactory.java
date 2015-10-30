@@ -27,8 +27,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.compress.utils.CharsetNames;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -43,7 +43,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
 public class HiveSparkClientFactory {
-  protected static final transient Log LOG = LogFactory.getLog(HiveSparkClientFactory.class);
+  protected static final transient Logger LOG = LoggerFactory.getLogger(HiveSparkClientFactory.class);
 
   private static final String SPARK_DEFAULT_CONF_FILE = "spark-defaults.conf";
   private static final String SPARK_DEFAULT_MASTER = "yarn-cluster";

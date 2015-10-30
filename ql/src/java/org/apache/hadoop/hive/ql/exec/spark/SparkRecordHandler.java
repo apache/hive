@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -37,7 +37,7 @@ import java.util.Iterator;
 public abstract class SparkRecordHandler {
   protected static final String CLASS_NAME = SparkRecordHandler.class.getName();
   protected final PerfLogger perfLogger = SessionState.getPerfLogger();
-  private static final Log LOG = LogFactory.getLog(SparkRecordHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkRecordHandler.class);
 
   // used to log memory usage periodically
   protected final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -81,7 +81,7 @@ public abstract class SparkRecordHandler {
   public abstract <E> void processRow(Object key, Iterator<E> values) throws IOException;
 
   /**
-   * Log processed row number and used memory info.
+   * Logger processed row number and used memory info.
    */
   protected void logMemoryInfo() {
     rowNumber++;
@@ -97,7 +97,7 @@ public abstract class SparkRecordHandler {
   public abstract boolean getDone();
 
   /**
-   * Log information to be logged at the end.
+   * Logger information to be logged at the end.
    */
   protected void logCloseInfo() {
     long usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();

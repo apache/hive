@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
@@ -121,7 +120,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     LOG.info("Using " + inpFormat);
 
     try {
-      job.setInputFormat((Class<? extends InputFormat>) JavaUtils.loadClass(inpFormat));
+      job.setInputFormat(JavaUtils.loadClass(inpFormat));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -218,7 +217,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
         ColumnTruncateMapper.jobClose(outputPath, success, job, console,
           work.getDynPartCtx(), null);
       } catch (Exception e) {
-	LOG.warn(e);
+	LOG.warn("Failed while cleaning up ", e);
       } finally {
 	HadoopJobExecHelper.runningJobs.remove(rj);
       }

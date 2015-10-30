@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -70,7 +70,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 public class SparkReduceRecordHandler extends SparkRecordHandler {
 
-  private static final Log LOG = LogFactory.getLog(SparkReduceRecordHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkReduceRecordHandler.class);
 
   // Input value serde needs to be an array to support different SerDe
   // for different tags
@@ -274,7 +274,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         throw (OutOfMemoryError) e;
       } else {
         String msg = "Fatal error: " + e;
-        LOG.fatal(msg, e);
+        LOG.error(msg, e);
         throw new RuntimeException(e);
       }
     }

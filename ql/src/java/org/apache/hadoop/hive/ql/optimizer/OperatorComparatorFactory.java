@@ -23,8 +23,8 @@ import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.CollectOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
@@ -75,7 +75,7 @@ import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 
 public class OperatorComparatorFactory {
   private static final Map<Class<?>, OperatorComparator> comparatorMapping = Maps.newHashMap();
-  private static final Log LOG = LogFactory.getLog(OperatorComparatorFactory.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OperatorComparatorFactory.class);
 
   static {
     comparatorMapping.put(TableScanOperator.class, new TableScanOperatorComparator());

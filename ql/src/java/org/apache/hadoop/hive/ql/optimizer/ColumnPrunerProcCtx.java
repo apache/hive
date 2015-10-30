@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -114,6 +115,12 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
             ColumnInfo colInfo = oldRS.getSignature().get(pos);
             prunList.add(colInfo.getInternalName());
           }
+        }
+      } else if (child instanceof FileSinkOperator) {
+        prunList = new ArrayList<>();
+        RowSchema oldRS = curOp.getSchema();
+        for (ColumnInfo colInfo : oldRS.getSignature()) {
+          prunList.add(colInfo.getInternalName());
         }
       } else {
         prunList = prunedColLists.get(child);

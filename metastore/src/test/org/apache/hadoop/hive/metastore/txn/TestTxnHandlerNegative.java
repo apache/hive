@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.junit.Test;
 
 public class TestTxnHandlerNegative {
-  static final private Log LOG = LogFactory.getLog(TestTxnHandlerNegative.class);
+  static final private Logger LOG = LoggerFactory.getLogger(TestTxnHandlerNegative.class);
 
   /**
    * this intentionally sets a bad URL for connection to test error handling logic

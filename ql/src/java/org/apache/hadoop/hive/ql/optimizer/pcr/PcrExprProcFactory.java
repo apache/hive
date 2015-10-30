@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -61,7 +61,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  */
 public final class PcrExprProcFactory {
 
-  public static final Log LOG = LogFactory.getLog(PcrExprProcFactory.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(PcrExprProcFactory.class.getName());
 
   static Object evalExprWithPart(ExprNodeDesc expr, Partition p, List<VirtualColumn> vcs)
       throws SemanticException {

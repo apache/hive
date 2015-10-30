@@ -33,8 +33,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.google.common.collect.LinkedListMultimap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -105,7 +105,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     }
   }
 
-  private static final Log LOG = LogFactory.getLog(CustomPartitionVertex.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CustomPartitionVertex.class.getName());
 
   VertexManagerPluginContext context;
 

@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 
 // Optimized for sequential key lookup.
 
 public class VectorMapJoinFastKeyStore {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinFastKeyStore.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastKeyStore.class.getName());
 
   private WriteBuffers writeBuffers;
 

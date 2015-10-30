@@ -23,8 +23,8 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class TestMetastoreVersion extends TestCase {
-  private static final Log LOG = LogFactory.getLog(TestMetastoreVersion.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreVersion.class);
   protected HiveConf hiveConf;
   private Driver driver;
   private String metaStoreRoot;

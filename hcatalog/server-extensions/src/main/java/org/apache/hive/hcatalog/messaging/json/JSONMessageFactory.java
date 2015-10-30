@@ -22,8 +22,8 @@ package org.apache.hive.hcatalog.messaging.json;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -52,7 +52,7 @@ import java.util.Map;
  */
 public class JSONMessageFactory extends MessageFactory {
 
-  private static final Log LOG = LogFactory.getLog(JSONMessageFactory.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(JSONMessageFactory.class.getName());
 
 
   private static JSONMessageDeserializer deserializer = new JSONMessageDeserializer();

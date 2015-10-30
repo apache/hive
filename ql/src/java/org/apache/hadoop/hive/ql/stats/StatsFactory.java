@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.io.Serializable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,7 +38,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_STATS_KEY_PREFI
  */
 public final class StatsFactory {
 
-  static final private Log LOG = LogFactory.getLog(StatsFactory.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(StatsFactory.class.getName());
 
   private Class <? extends Serializable> publisherImplementation;
   private Class <? extends Serializable> aggregatorImplementation;

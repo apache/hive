@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -36,7 +36,7 @@ import org.junit.Assume;
 import org.junit.Test;
 
 public class TestLowLevelLrfuCachePolicy {
-  private static final Log LOG = LogFactory.getLog(TestLowLevelLrfuCachePolicy.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestLowLevelLrfuCachePolicy.class);
 
   @Test
   public void testRegression_HIVE_12178() throws Exception {

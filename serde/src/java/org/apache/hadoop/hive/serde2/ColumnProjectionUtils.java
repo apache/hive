@@ -21,21 +21,20 @@ package org.apache.hadoop.hive.serde2;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 /**
  * ColumnProjectionUtils.
  *
  */
 public final class ColumnProjectionUtils {
-  public static final Log LOG = LogFactory.getLog(ColumnProjectionUtils.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ColumnProjectionUtils.class);
 
   public static final String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
   public static final String READ_ALL_COLUMNS = "hive.io.file.read.all.columns";

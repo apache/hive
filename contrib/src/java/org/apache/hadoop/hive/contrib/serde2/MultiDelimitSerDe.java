@@ -25,14 +25,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
@@ -67,7 +64,7 @@ import org.apache.hadoop.io.Writable;
     LazySerDeParameters.SERIALIZATION_EXTEND_NESTING_LEVELS,
     LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS})
 public class MultiDelimitSerDe extends AbstractSerDe {
-  private static final Log LOG = LogFactory.getLog(MultiDelimitSerDe.class.getName());
+
   private static final byte[] DEFAULT_SEPARATORS = {(byte) 1, (byte) 2, (byte) 3};
   // Due to HIVE-6404, define our own constant
   private static final String COLLECTION_DELIM = "collection.delim";

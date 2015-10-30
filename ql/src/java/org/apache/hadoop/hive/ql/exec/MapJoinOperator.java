@@ -29,8 +29,8 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -75,7 +75,7 @@ import org.apache.hive.common.util.ReflectionUtil;
 public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(MapJoinOperator.class.getName());
   private static final String CLASS_NAME = MapJoinOperator.class.getName();
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
@@ -383,6 +383,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             joinResult = adaptor.setFromOther(firstSetKey);
           }
           MapJoinRowContainer rowContainer = adaptor.getCurrentRows();
+          if (joinResult != JoinUtil.JoinResult.MATCH) {
+            assert (rowContainer == null || !rowContainer.hasRows()) :
+                "Expecting an empty result set for no match";
+          }
           if (rowContainer != null && unwrapContainer[pos] != null) {
             Object[] currentKey = firstSetKey.getCurrentKey();
             rowContainer = unwrapContainer[pos].setInternal(rowContainer, currentKey);
@@ -392,10 +396,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             if (!noOuterJoin) {
               // For Hybrid Grace Hash Join, during the 1st round processing,
               // we only keep the LEFT side if the row is not spilled
-              if (!conf.isHybridHashJoin() || hybridMapJoinLeftover
-                  || (!hybridMapJoinLeftover && joinResult != JoinUtil.JoinResult.SPILL)) {
+              if (!conf.isHybridHashJoin() || hybridMapJoinLeftover ||
+                  (joinResult != JoinUtil.JoinResult.SPILL && !bigTableRowSpilled)) {
                 joinNeeded = true;
                 storage[pos] = dummyObjVectors[pos];
+              } else {
+                joinNeeded = false;
               }
             } else {
               storage[pos] = emptyList;

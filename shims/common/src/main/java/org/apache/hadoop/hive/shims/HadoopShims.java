@@ -25,19 +25,14 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.security.auth.login.LoginException;
-
 import com.google.common.annotations.VisibleForTesting;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -48,7 +43,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -80,10 +74,10 @@ import org.apache.hadoop.util.Progressable;
 public interface HadoopShims {
 
   /**
-   * Constructs and Returns TaskAttempt Log Url
+   * Constructs and Returns TaskAttempt Logger Url
    * or null if the TaskLogServlet is not available
    *
-   *  @return TaskAttempt Log Url
+   *  @return TaskAttempt Logger Url
    */
   String getTaskAttemptLogUrl(JobConf conf,
       String taskTrackerHttpAddress,
@@ -418,11 +412,11 @@ public interface HadoopShims {
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
 
   public Map<String, String> getHadoopConfNames();
-  
+
   /**
    * Create a shim for DFS storage policy.
    */
-  
+
   public enum StoragePolicyValue {
     MEMORY, /* 1-replica memory */
     SSD, /* 3-replica ssd */
@@ -435,11 +429,11 @@ public interface HadoopShims {
       return StoragePolicyValue.valueOf(name.toUpperCase().trim());
     }
   };
-  
+
   public interface StoragePolicyShim {
     void setStoragePolicy(Path path, StoragePolicyValue policy) throws IOException;
   }
-  
+
   /**
    *  obtain a storage policy shim associated with the filesystem.
    *  Returns null when the filesystem has no storage policies.

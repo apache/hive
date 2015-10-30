@@ -20,14 +20,14 @@ package org.apache.hadoop.hive.metastore.events;
 
 import java.util.TimerTask;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.RawStore;
 
 public class EventCleanerTask extends TimerTask{
 
-  public static final Log LOG = LogFactory.getLog(EventCleanerTask.class);
+  public static final Logger LOG = LoggerFactory.getLogger(EventCleanerTask.class);
   private final HMSHandler handler;
 
   public EventCleanerTask(HMSHandler handler) {
@@ -46,7 +46,7 @@ public class EventCleanerTask extends TimerTask{
         LOG.info("Number of events deleted from event Table: "+deleteCnt);
       }
     } catch (Exception e) {
-      LOG.error(e);
+      LOG.error("Exception while trying to delete events ", e);
     }
   }
 }

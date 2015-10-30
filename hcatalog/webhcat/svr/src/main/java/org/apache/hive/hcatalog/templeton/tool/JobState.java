@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hive.hcatalog.templeton.JsonBuilder;
@@ -35,7 +35,7 @@ import org.apache.hive.hcatalog.templeton.JsonBuilder;
  */
 public class JobState {
 
-  private static final Log LOG = LogFactory.getLog(JobState.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JobState.class);
 
   private String id;
 

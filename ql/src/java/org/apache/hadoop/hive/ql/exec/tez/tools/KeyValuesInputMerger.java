@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
@@ -113,7 +113,7 @@ public class KeyValuesInputMerger extends KeyValuesReader {
     }
   }
 
-  public static final Log l4j = LogFactory.getLog(KeyValuesInputMerger.class);
+  public static final Logger l4j = LoggerFactory.getLogger(KeyValuesInputMerger.class);
   private PriorityQueue<KeyValuesReader> pQueue = null;
   private final List<KeyValuesReader> nextKVReaders = new ArrayList<KeyValuesReader>();
   KeyValuesIterable kvsIterable = null;

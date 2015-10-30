@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  * Used with remove spark client.
  */
 public class RemoteSparkJobStatus implements SparkJobStatus {
-  private static final Log LOG = LogFactory.getLog(RemoteSparkJobStatus.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RemoteSparkJobStatus.class.getName());
   private final SparkClient sparkClient;
   private final JobHandle<Serializable> jobHandle;
   private final transient long sparkClientTimeoutInSeconds;

@@ -22,8 +22,8 @@ import java.util.ArrayList;
 
 import javaewah.EWAHCompressedBitmap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.index.bitmap.BitmapObjectInput;
@@ -50,7 +50,7 @@ import org.apache.hadoop.util.StringUtils;
 @Description(name = "ewah_bitmap", value = "_FUNC_(expr) - Returns an EWAH-compressed bitmap representation of a column.")
 public class GenericUDAFEWAHBitmap extends AbstractGenericUDAFResolver {
 
-  static final Log LOG = LogFactory.getLog(GenericUDAFEWAHBitmap.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFEWAHBitmap.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)

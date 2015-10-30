@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
@@ -56,7 +56,7 @@ import org.apache.hadoop.mapred.RecordReader;
   */
 public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader<K, V> {
 
-  private static final Log LOG = LogFactory.getLog(HiveContextAwareRecordReader.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(HiveContextAwareRecordReader.class.getName());
 
   private boolean initDone = false;
   private long rangeStart;

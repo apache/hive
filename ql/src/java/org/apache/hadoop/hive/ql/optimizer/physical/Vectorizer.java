@@ -31,8 +31,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.*;
@@ -151,7 +151,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 public class Vectorizer implements PhysicalPlanResolver {
 
-  protected static transient final Log LOG = LogFactory.getLog(Vectorizer.class);
+  protected static transient final Logger LOG = LoggerFactory.getLogger(Vectorizer.class);
 
   Pattern supportedDataTypesPattern;
   List<Task<? extends Serializable>> vectorizableTasks =

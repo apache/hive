@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.Serializable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -41,7 +41,7 @@ extended = "Values will be truncated if the input value is too long to fit"
 + "  > SELECT CAST(1234 AS char(10)) FROM src LIMIT 1;\n"
 + "  '1234'")
 public class GenericUDFToChar extends GenericUDF implements SettableUDF, Serializable {
-  private static final Log LOG = LogFactory.getLog(GenericUDFToChar.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(GenericUDFToChar.class.getName());
 
   private transient PrimitiveObjectInspector argumentOI;
   private transient HiveCharConverter converter;

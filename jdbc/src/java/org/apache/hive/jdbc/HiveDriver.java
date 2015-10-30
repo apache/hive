@@ -92,6 +92,7 @@ public class HiveDriver implements Driver {
    * TODO: - write a better regex. - decide on uri format
    */
 
+  @Override
   public boolean acceptsURL(String url) throws SQLException {
     return Pattern.matches(Utils.URL_PREFIX + ".*", url);
   }
@@ -101,6 +102,7 @@ public class HiveDriver implements Driver {
    * "If the Driver implementation understands the URL, it will return a Connection object;
    * otherwise it returns null"
    */
+  @Override
   public Connection connect(String url, Properties info) throws SQLException {
     return acceptsURL(url) ? new HiveConnection(url, info) : null;
   }
@@ -156,6 +158,7 @@ public class HiveDriver implements Driver {
   /**
    * Returns the major version of this driver.
    */
+  @Override
   public int getMajorVersion() {
     return HiveDriver.getMajorDriverVersion();
   }
@@ -163,6 +166,7 @@ public class HiveDriver implements Driver {
   /**
    * Returns the minor version of this driver.
    */
+  @Override
   public int getMinorVersion() {
     return HiveDriver.getMinorDriverVersion();
   }
@@ -172,6 +176,7 @@ public class HiveDriver implements Driver {
     throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
+  @Override
   public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
     if (info == null) {
       info = new Properties();
@@ -208,6 +213,7 @@ public class HiveDriver implements Driver {
   /**
    * Returns whether the driver is JDBC compliant.
    */
+  @Override
   public boolean jdbcCompliant() {
     return JDBC_COMPLIANT;
   }

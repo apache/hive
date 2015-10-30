@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The <code>ShutdownHookManager</code> enables running shutdownHook
@@ -49,7 +49,7 @@ public class ShutdownHookManager {
 
   private static final DeleteOnExitHook DELETE_ON_EXIT_HOOK = new DeleteOnExitHook();
 
-  private static final Log LOG = LogFactory.getLog(ShutdownHookManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ShutdownHookManager.class);
 
   static {
     MGR.addShutdownHookInternal(DELETE_ON_EXIT_HOOK, -1);

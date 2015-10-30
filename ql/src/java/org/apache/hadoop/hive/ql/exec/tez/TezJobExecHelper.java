@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.lang.reflect.Method;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TezJobExecHelper is a utility to safely call Tez functionality from
@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TezJobExecHelper {
 
-  private static final Log LOG = LogFactory.getLog(TezJobExecHelper.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TezJobExecHelper.class.getName());
 
   public static void killRunningJobs() {
     try {

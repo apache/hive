@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized.VectorMapJoinOptimizedHashTable.SerializedBytes;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
  */
 public class VectorMapJoinOptimizedLongCommon {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinOptimizedLongCommon.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinOptimizedLongCommon.class.getName());
 
   private boolean isOuterJoin;
 

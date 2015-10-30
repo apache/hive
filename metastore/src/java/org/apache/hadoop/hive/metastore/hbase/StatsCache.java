@@ -23,8 +23,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.protobuf.ByteString;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -52,7 +52,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 class StatsCache {
 
-  private static final Log LOG = LogFactory.getLog(StatsCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(StatsCache.class.getName());
   private static StatsCache self = null;
 
   private LoadingCache<StatsCacheKey, AggrStats> cache;

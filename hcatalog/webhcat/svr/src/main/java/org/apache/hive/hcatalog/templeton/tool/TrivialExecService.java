@@ -18,8 +18,8 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.StringTokenizer;
  * not available on every node in the cluster (outside webhcat jar)
  */
 final class TrivialExecService {
-  private static final Log LOG = LogFactory.getLog(TrivialExecService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TrivialExecService.class);
   private static volatile TrivialExecService theSingleton;
   /**
    * Retrieve the singleton.

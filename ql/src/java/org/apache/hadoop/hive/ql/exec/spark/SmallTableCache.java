@@ -19,15 +19,15 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 
 public class SmallTableCache {
-  private static final Log LOG = LogFactory.getLog(SmallTableCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(SmallTableCache.class.getName());
 
   private static final ConcurrentHashMap<Path, MapJoinTableContainer>
     tableContainerMap = new ConcurrentHashMap<Path, MapJoinTableContainer>();

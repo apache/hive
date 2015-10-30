@@ -21,8 +21,8 @@ package org.apache.hive.service.server;
 
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 
@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.metastore.RawStore;
  * when killed by its corresponding ExecutorService.
  */
 public class ThreadWithGarbageCleanup extends Thread {
-  private static final Log LOG = LogFactory.getLog(ThreadWithGarbageCleanup.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ThreadWithGarbageCleanup.class);
 
   Map<Long, RawStore> threadRawStoreMap =
       ThreadFactoryWithGarbageCleanup.getThreadRawStoreMap();

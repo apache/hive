@@ -39,8 +39,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -136,7 +136,7 @@ import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
 public class DagUtils {
 
   public static final String TEZ_TMP_DIR_KEY = "_hive_tez_tmp_dir";
-  private static final Log LOG = LogFactory.getLog(DagUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
   private static DagUtils instance;
   // The merge file being currently processed.
@@ -1041,7 +1041,7 @@ public class DagUtils {
     // Removing job credential entry/ cannot be set on the tasks
     conf.unset("mapreduce.job.credentials.binary");
 
-    Utilities.stripHivePasswordDetails(conf);
+    hiveConf.stripHiddenConfigurations(conf);
     return conf;
   }
 

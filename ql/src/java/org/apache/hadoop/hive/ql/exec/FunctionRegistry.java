@@ -32,8 +32,8 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -144,7 +144,7 @@ import org.apache.hive.common.util.AnnotationUtils;
  */
 public final class FunctionRegistry {
 
-  private static final Log LOG = LogFactory.getLog(FunctionRegistry.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FunctionRegistry.class);
 
   /*
    * PTF variables
@@ -784,6 +784,12 @@ public final class FunctionRegistry {
       return PrimitiveCategory.STRING;
     }
 
+    if (pgA == PrimitiveGrouping.DATE_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
+      return PrimitiveCategory.STRING;
+    }
+    if (pgB == PrimitiveGrouping.DATE_GROUP && pgA == PrimitiveGrouping.STRING_GROUP) {
+      return PrimitiveCategory.STRING;
+    }
     Integer ai = numericTypes.get(pcA);
     Integer bi = numericTypes.get(pcB);
     if (ai == null || bi == null) {

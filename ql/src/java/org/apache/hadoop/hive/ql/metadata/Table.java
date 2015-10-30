@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -76,7 +76,7 @@ public class Table implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Table");
+  static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Table");
 
   private org.apache.hadoop.hive.metastore.api.Table tTable;
 

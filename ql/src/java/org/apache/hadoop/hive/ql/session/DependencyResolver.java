@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.io.File;
 import java.io.IOException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.slf4j.LoggerFactory;
+
 import groovy.grape.Grape;
-import groovy.grape.GrapeIvy;
 import groovy.lang.GroovyClassLoader;
 
 
@@ -41,7 +41,7 @@ public class DependencyResolver {
   private static final String HIVE_HOME = "HIVE_HOME";
   private static final String HIVE_CONF_DIR = "HIVE_CONF_DIR";
   private String ivysettingsPath;
-  private static LogHelper _console = new LogHelper(LogFactory.getLog("DependencyResolver"));
+  private static LogHelper _console = new LogHelper(LoggerFactory.getLogger("DependencyResolver"));
 
   public DependencyResolver() {
 

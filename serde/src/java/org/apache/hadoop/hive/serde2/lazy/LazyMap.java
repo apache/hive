@@ -23,8 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -38,7 +38,7 @@ import org.apache.hadoop.io.Text;
  */
 public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
 
-  public static final Log LOG = LogFactory.getLog(LazyMap.class);
+  public static final Logger LOG = LoggerFactory.getLogger(LazyMap.class);
   /**
    * Whether the data is already parsed or not.
    */

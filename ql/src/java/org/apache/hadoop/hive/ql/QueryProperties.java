@@ -39,7 +39,6 @@ public class QueryProperties {
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
-  boolean insertToTable;
   int outerQueryLimit;
 
   boolean hasJoin = false;
@@ -113,14 +112,6 @@ public class QueryProperties {
 
   public void setCTAS(boolean ctas) {
     this.ctas = ctas;
-  }
-
-  public boolean isInsertToTable() {
-    return insertToTable;
-  }
-
-  public void setInsertToTable(boolean insertToTable) {
-    this.insertToTable = insertToTable;
   }
 
   public int getOuterQueryLimit() {
@@ -276,7 +267,6 @@ public class QueryProperties {
     noScanAnalyzeCommand = false;
     analyzeRewrite = false;
     ctas = false;
-    insertToTable = false;
     outerQueryLimit = -1;
 
     hasJoin = false;

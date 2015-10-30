@@ -19,8 +19,8 @@
 package org.apache.hive.hcatalog.api.repl;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertNull;
  */
 public class CommandTestUtils {
 
-  private static Log LOG = LogFactory.getLog(CommandTestUtils.class.getName());
+  private static Logger LOG = LoggerFactory.getLogger(CommandTestUtils.class.getName());
 
   public static void compareCommands(Command expected, Command actual, boolean ignoreSortOrder) {
     // The reason we use compare-command, rather than simply getting the serialized output and comparing

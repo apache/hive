@@ -30,8 +30,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -60,8 +58,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * this transformation does bucket map join optimization.
  */
 abstract public class AbstractBucketJoinProc implements NodeProcessor {
-  private static final Log LOG =
-      LogFactory.getLog(AbstractBucketJoinProc.class.getName());
 
   protected ParseContext pGraphContext;
 

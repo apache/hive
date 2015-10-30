@@ -29,14 +29,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Example AccumuloRowIdFactory which accepts a delimiter that is used to separate the components of
  * some struct to place in the rowId.
  */
 public class DelimitedAccumuloRowIdFactory extends DefaultAccumuloRowIdFactory {
-  private static final Logger log = Logger.getLogger(DelimitedAccumuloRowIdFactory.class);
+  private static final Logger log = LoggerFactory.getLogger(DelimitedAccumuloRowIdFactory.class);
   public static final String ACCUMULO_COMPOSITE_DELIMITER = "accumulo.composite.delimiter";
 
   private byte separator;

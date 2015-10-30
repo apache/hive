@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -74,7 +74,7 @@ import org.apache.hive.common.util.ReflectionUtil;
 public class RowContainer<ROW extends List<Object>>
   implements AbstractRowContainer<ROW>, AbstractRowContainer.RowIterator<ROW> {
 
-  protected static Log LOG = LogFactory.getLog(RowContainer.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(RowContainer.class);
 
   // max # of rows can be put into one block
   private static final int BLOCKSIZE = 25000;

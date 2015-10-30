@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public final class RewriteCanApplyCtx implements NodeProcessorCtx {
 
-  private static final Log LOG = LogFactory.getLog(RewriteCanApplyCtx.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RewriteCanApplyCtx.class.getName());
 
   private RewriteCanApplyCtx(ParseContext parseContext) {
     this.parseContext = parseContext;
