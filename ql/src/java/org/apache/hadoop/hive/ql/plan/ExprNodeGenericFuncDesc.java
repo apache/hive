@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMacro;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -281,6 +282,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       if (!bridge.getUdfClassName().equals(bridge2.getUdfClassName())
           || !bridge.getUdfName().equals(bridge2.getUdfName())
           || bridge.isOperator() != bridge2.isOperator()) {
+        return false;
+      }
+    }
+
+    if (genericUDF instanceof GenericUDFMacro) {
+      if (funcText != null && !funcText.equals(dest.funcText)) {
         return false;
       }
     }
