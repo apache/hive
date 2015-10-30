@@ -17,14 +17,14 @@ set -ex
 # Use JAVA7_HOME if exists
 export JAVA_HOME=${JAVA7_HOME:-$JAVA_HOME}
 
-# If USE_JDK_VERSION exists, then try to get the value from JAVAX_HOME
-if [ -n "$USE_JDK_VERSION" ]; then
+# If JDK_VERSION exists, then try to get the value from JAVAX_HOME
+if [ -n "$JDK_VERSION" ]; then
   # Get JAVAX_HOME value, where X is the JDK version
-  java_home=`eval echo \\$JAVA${USE_JDK_VERSION}_HOME`
+  java_home=`eval echo \\$JAVA${JDK_VERSION}_HOME`
   if [ -n "$java_home" ]; then
     export JAVA_HOME="$java_home"
   else
-    echo "ERROR: USE_JDK_VERSION=$USE_JDK_VERSION, but JAVA${USE_JDK_VERSION}_HOME is not found."
+    echo "ERROR: USE_JDK_VERSION=$JDK_VERSION, but JAVA${JDK_VERSION}_HOME is not found."
     exit 1
   fi
 fi
@@ -33,37 +33,53 @@ export PATH=${JAVA_HOME}/bin:${PATH}
 
 # WORKSPACE is an environment variable created by Jenkins, and it is the directory where the build is executed.
 # If not set, then default to $HOME
-MVN_REPO_LOCAL=${WORKSPACE:-$HOME}/.m2
+MVN_REPO_LOCAL=${WORKSPACE:-$HOME}/.m2/repository
 
 # Add any test to be excluded in alphabetical order to keep readability, starting with files, and
 # then directories.
 declare -a EXCLUDE_TESTS=(
-	".*org/apache/hadoop/hive/metastore/.*"
-	".*org/apache/hadoop/hive/ql/Test.*"
-	".*org/apache/hadoop/hive/ql/exec/.*"
-	".*org/apache/hadoop/hive/ql/metadata/.*"
-	".*org/apache/hadoop/hive/ql/io/orc/.*"
-	".*org/apache/hadoop/hive/ql/parse/.*"
-	".*org/apache/hadoop/hive/ql/session/.*"
-	".*org/apache/hadoop/hive/ql/security/.*"
-	".*org/apache/hadoop/hive/ql/txn/.*"
-	".*org/apache/hadoop/hive/ql/udf/.*"
-	".*org/apache/hadoop/hive/ql/vector/.*"
-	".*org/apache/hive/hcatalog/.*"
-	".*org/apache/hive/service/.*"
-	".*org/apache/hive/jdbc/.*"
+  ".*org/apache/hadoop/hive/metastore/.*"
+  ".*org/apache/hadoop/hive/ql/Test.*"
+  ".*org/apache/hadoop/hive/ql/exec/.*"
+  ".*org/apache/hadoop/hive/ql/metadata/.*"
+  ".*org/apache/hadoop/hive/ql/io/orc/.*"
+  ".*org/apache/hadoop/hive/ql/parse/.*"
+  ".*org/apache/hadoop/hive/ql/session/.*"
+  ".*org/apache/hadoop/hive/ql/security/.*"
+  ".*org/apache/hadoop/hive/ql/txn/.*"
+  ".*org/apache/hadoop/hive/ql/udf/.*"
+  ".*org/apache/hadoop/hive/ql/vector/.*"
+  ".*org/apache/hive/hcatalog/.*"
+  ".*org/apache/hive/service/.*"
+  ".*org/apache/hive/jdbc/.*"
 )
 
 function get_excluded_tests() {
-	local IFS="|"
-	echo -n "${EXCLUDE_TESTS[*]}"
+  local IFS="|"
+  echo -n "${EXCLUDE_TESTS[*]}"
 }
 
 function get_regex_excluded_tests() {
-	echo -n "%regex[`get_excluded_tests`]"
+  echo -n "%regex[`get_excluded_tests`]"
+}
+
+# For pre-commit, we just look for qtests edited in the last commit
+function get_qtests_to_execute() {
+  git diff --name-only HEAD~1 | grep ".q$\|.q.out$" | paste -s -d"," -
 }
 
 regex_tests=`get_regex_excluded_tests`
 mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest.excludes.additional="$regex_tests"
 cd itests/
 mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -DskipTests
+
+# Execute .q tests that were modified in the patch
+tests_modified=`get_qtests_to_execute`
+if [ -n "$tests_modified" ]; then
+  for t in `python ../cloudera/qtest-driver-info.py --pom ../itests/qtest/pom.xml --properties ../itests/src/test/resources/testconfiguration.properties --paths $tests_modified`; do
+    driver=`echo $t | cut -d: -f1`
+    files=`echo $t | cut -d: -f2`
+
+    mvn test -Phadoop-2 -Dtest=$driver -Dqfile=$files
+  done
+fi
