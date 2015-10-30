@@ -419,6 +419,18 @@ public class Registry {
     }
   }
 
+  /**
+   * Unregisters all the functions belonging to the specified database
+   * @param dbName database name
+   * @throws HiveException
+   */
+  public synchronized void unregisterFunctions(String dbName) throws HiveException {
+    Set<String> funcNames = getFunctionNames(dbName.toLowerCase() + "\\..*");
+    for (String funcName : funcNames) {
+      unregisterFunction(funcName);
+    }
+  }
+
   public GenericUDAFResolver getGenericUDAFResolver(String functionName) throws SemanticException {
     FunctionInfo info = getFunctionInfo(functionName);
     if (info != null) {
