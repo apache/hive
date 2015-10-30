@@ -138,6 +138,39 @@ public class StatsUtils {
         fetchColStats, fetchPartStats);
   }
 
+  private static long getDataSize(HiveConf conf, Table table) {
+    long ds = getRawDataSize(table);
+    if (ds <= 0) {
+      ds = getTotalSize(table);
+
+      // if data size is still 0 then get file size
+      if (ds <= 0) {
+        ds = getFileSizeForTable(conf, table);
+      }
+      float deserFactor =
+          HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
+      ds = (long) (ds * deserFactor);
+    }
+
+    return ds;
+  }
+
+  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns, Table table, long ds) {
+    long nr = getNumRows(table);
+ // number of rows -1 means that statistics from metastore is not reliable
+    // and 0 means statistics gathering is disabled
+    if (nr <= 0) {
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      if (avgRowSize > 0) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Estimated average row size: " + avgRowSize);
+        }
+        nr = ds / avgRowSize;
+      }
+    }
+    return nr == 0 ? 1 : nr;
+  }
+
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns,
       List<String> referencedColumns, boolean fetchColStats, boolean fetchPartStats)
@@ -149,41 +182,17 @@ public class StatsUtils {
         HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
 
     if (!table.isPartitioned()) {
-      long nr = getNumRows(table);
-      long ds = getRawDataSize(table);
-      if (ds <= 0) {
-        ds = getTotalSize(table);
 
-        // if data size is still 0 then get file size
-        if (ds <= 0) {
-          ds = getFileSizeForTable(conf, table);
-        }
-
-        ds = (long) (ds * deserFactor);
-      }
-
-      // number of rows -1 means that statistics from metastore is not reliable
-      // and 0 means statistics gathering is disabled
-      if (nr <= 0) {
-        int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
-        if (avgRowSize > 0) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Estimated average row size: " + avgRowSize);
-          }
-          nr = ds / avgRowSize;
-        }
-      }
-      if (nr == 0) {
-        nr = 1;
-      }
+      long ds = getDataSize(conf, table);
+      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       stats.setNumRows(nr);
-      stats.setDataSize(ds);
-
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns);
+        long betterDS = getDataSizeFromColumnStats(nr, colStats);
+        ds = betterDS < 1 ? ds : betterDS;
       }
-
+       stats.setDataSize(ds);
       // infer if any column can be primary key based on column statistics
       inferAndSetPrimaryKey(stats.getNumRows(), colStats);
 
@@ -276,11 +285,13 @@ public class StatsUtils {
             LOG.debug("Column stats requested for : " + neededColumns.size() + " columns. Able to" +
                 " retrieve for " + colStats.size() + " columns");
           }
+
           List<ColStatistics> columnStats = convertColStats(colStats, table.getTableName());
 
           addParitionColumnStats(conf, neededColumns, referencedColumns, schema, table, partList,
               columnStats);
-
+          long betterDS = getDataSizeFromColumnStats(nr, columnStats);
+          stats.setDataSize(betterDS < 1 ? ds : betterDS);
           // infer if any column can be primary key based on column statistics
           inferAndSetPrimaryKey(stats.getNumRows(), columnStats);
 

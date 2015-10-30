@@ -164,7 +164,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: deptid is not null (type: boolean)
               Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
@@ -180,7 +180,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col2 (type: int)
           TableScan
             alias: d
-            Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: deptid is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
@@ -235,7 +235,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: emp
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and lastname is not null) (type: boolean)
               Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
@@ -251,7 +251,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: int)
           TableScan
             alias: dept
-            Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and deptname is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
@@ -301,7 +301,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and lastname is not null) (type: boolean)
               Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
@@ -317,7 +317,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: int)
           TableScan
             alias: d
-            Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and deptname is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
@@ -371,7 +371,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: emp
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and lastname is not null) (type: boolean)
               Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
@@ -387,7 +387,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: int)
           TableScan
             alias: dept
-            Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and deptname is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
@@ -441,7 +441,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: deptid is not null (type: boolean)
               Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
@@ -457,7 +457,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col2 (type: int)
           TableScan
             alias: d
-            Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: deptid is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
@@ -473,7 +473,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: e
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: deptid is not null (type: boolean)
               Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
@@ -528,7 +528,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: deptid is not null (type: boolean)
               Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
@@ -544,7 +544,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col2 (type: int)
           TableScan
             alias: d
-            Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: deptid is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
@@ -560,7 +560,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: l
-            Statistics: Num rows: 8 Data size: 109 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: locid is not null (type: boolean)
               Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
@@ -617,7 +617,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e
-            Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and lastname is not null) (type: boolean)
               Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
@@ -633,7 +633,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: int)
           TableScan
             alias: d
-            Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and deptname is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
@@ -648,7 +648,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: l
-            Statistics: Num rows: 8 Data size: 109 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid is not null and state is not null) (type: boolean)
               Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
