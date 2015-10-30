@@ -112,16 +112,14 @@ public class HiveAuthFactory {
         // start delegation token manager
         try {
           // rawStore is only necessary for DBTokenStore
-          Object rawStore = null;
+          HMSHandler baseHandler = null;
           String tokenStoreClass = conf.getVar(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS);
 
           if (tokenStoreClass.equals(DBTokenStore.class.getName())) {
-            HMSHandler baseHandler = new HiveMetaStore.HMSHandler(
-                "new db based metaserver", conf, true);
-            rawStore = baseHandler.getMS();
+            baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf, true);
           }
 
-          saslServer.startDelegationTokenSecretManager(conf, rawStore, ServerMode.HIVESERVER2);
+          saslServer.startDelegationTokenSecretManager(conf, baseHandler, ServerMode.HIVESERVER2);
         }
         catch (MetaException|IOException e) {
           throw new TTransportException("Failed to start token manager", e);
