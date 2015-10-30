@@ -1,0 +1,4 @@
+Ln:1 MAP OBJECT ua AS user_age AT mysqlconn
+Ln:2 INSERT VALUES
+Ln:2 INSERT INTO user_age (id,age) VALUES
+(22, 33)

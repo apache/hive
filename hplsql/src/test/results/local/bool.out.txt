@@ -1,0 +1,12 @@
+Ln:1 DECLARE b1 bool = true
+Ln:2 DECLARE b2 boolean = false
+Ln:4 SET b1 = false
+Ln:5 SET b2 = true
+Ln:7 IF
+Ln:7 IF TRUE executed
+Ln:8 PRINT
+ok
+Ln:13 PRINT
+false
+Ln:14 PRINT
+true

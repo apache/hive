@@ -1,0 +1,26 @@
+Ln:1 INCLUDE src/test/queries/local/var_scope_include.sql
+INLCUDE CONTENT src/test/queries/local/var_scope_include.sql (non-empty)
+Ln:3 DECLARE i int = 3
+Ln:5 CREATE PROCEDURE p1
+Ln:13 CREATE PROCEDURE p2
+EXEC PROCEDURE p2
+Ln:15 DECLARE j int = 5
+Ln:16 PRINT
+i: 3
+Ln:17 PRINT
+j: 5
+Ln:18 PRINT
+k: 7
+EXEC PROCEDURE p1
+Ln:7 PRINT
+i: 3
+Ln:8 PRINT
+j: 
+Ln:9 PRINT
+k: 7
+Ln:23 PRINT
+i: 3
+Ln:24 PRINT
+j: 
+Ln:25 PRINT
+k: 7

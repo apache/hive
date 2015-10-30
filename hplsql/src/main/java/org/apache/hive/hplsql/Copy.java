@@ -193,6 +193,7 @@ public class Copy {
     byte[] nullstr = "NULL".getBytes();
     int cols = rm.getColumnCount();
     int rows = 0;
+    long bytes = 0;
     if (trace || info) {
       String mes = "Query executed: " + cols + " columns, output file: " + filename;
       if (trace) {
@@ -235,19 +236,23 @@ public class Copy {
         for (int i = 1; i <= cols; i++) {
           if (i > 1) {
             out.write(del);
+            bytes += del.length;
           }
           col = rs.getString(i);
           if (col != null) {
             if (sqlInsert) {
               col = Utils.quoteString(col);
             }
-            out.write(col.getBytes());
+            byte[] b = col.getBytes();
+            out.write(b);
+            bytes += b.length;
           }
           else if (sqlInsert) {
             out.write(nullstr);
           }
         }
         out.write(rowdel);
+        bytes += rowdel.length;
         rows++;
       }
       exec.setRowCount(rows);
@@ -259,7 +264,7 @@ public class Copy {
     }
     long elapsed = timer.stop();
     if (info) {
-      info(ctx, "COPY completed: " + rows + " row(s), " + timer.format() + ", " + rows/elapsed/1000 + " rows/sec");
+      info(ctx, "COPY completed: " + rows + " row(s), " + Utils.formatSizeInBytes(bytes) + ", " + timer.format() + ", " + rows/elapsed/1000 + " rows/sec");
     }
   }
   
