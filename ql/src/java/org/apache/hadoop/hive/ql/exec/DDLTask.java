@@ -164,6 +164,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
@@ -3023,7 +3024,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           cols.addAll(tbl.getPartCols());
         }
       } else {
-        cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+        cols = Hive.getFieldsFromDeserializer(colPath, deserializer); // TODO#: here - desc
         if (descTbl.isFormatted()) {
           // when column name is specified in describe table DDL, colPath will
           // will be table_name.column_name
@@ -3256,7 +3257,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
       tbl.setTableName(Utilities.getTableName(alterTbl.getNewName()));
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
-      List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
+      List<FieldSchema> oldCols = (part == null
+          ? tbl.getColsForMetastore() : part.getColsForMetastore());
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       List<FieldSchema> newCols = alterTbl.getNewCols();
       String serializationLib = sd.getSerdeInfo().getSerializationLib();
@@ -3284,7 +3286,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         sd.setCols(oldCols);
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAMECOLUMN) {
-      List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
+      List<FieldSchema> oldCols = (part == null
+          ? tbl.getColsForMetastore() : part.getColsForMetastore());
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       List<FieldSchema> newCols = new ArrayList<FieldSchema>();
       Iterator<FieldSchema> iterOldCols = oldCols.iterator();
@@ -3378,16 +3381,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       String serdeName = alterTbl.getSerdeName();
+      String oldSerdeName = sd.getSerdeInfo().getSerializationLib();
       sd.getSerdeInfo().setSerializationLib(serdeName);
       if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
         sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
       }
       if (part != null) {
+        // TODO: wtf? This doesn't do anything.
         part.getTPartition().getSd().setCols(part.getTPartition().getSd().getCols());
       } else {
-        if (!Table.hasMetastoreBasedSchema(conf, serdeName)) {
-          tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl.
-              getDeserializer()));
+        if (Table.shouldStoreFieldsInMetastore(conf, serdeName, tbl.getParameters())
+            && !Table.hasMetastoreBasedSchema(conf, oldSerdeName)) {
+          // If new SerDe needs to store fields in metastore, but the old serde doesn't, save
+          // the fields so that new SerDe could operate. Note that this may fail if some fields
+          // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
+          try {
+            Deserializer oldSerde = MetaStoreUtils.getDeserializer(
+                conf, tbl.getTTable(), false, oldSerdeName);
+            tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), oldSerde));
+          } catch (MetaException ex) {
+            throw new HiveException(ex);
+          }
         }
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {

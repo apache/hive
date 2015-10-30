@@ -781,6 +781,16 @@ public class Hive {
     }
   }
 
+  public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
+      Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
+    List<FieldSchema> schema = MetaStoreUtils.getFieldsFromDeserializer(
+        tbl.getTableName(), tbl.getDeserializer());
+    for (FieldSchema field : schema) {
+      field.setType(MetaStoreUtils.TYPE_FROM_DESERIALIZER);
+    }
+    return schema;
+  }
+
   /**
    *
    * @param tableName
@@ -905,8 +915,11 @@ public class Hive {
       List<Order> sortCols = new ArrayList<Order>();
       int k = 0;
       Table metaBaseTbl = new Table(baseTbl);
-      for (int i = 0; i < metaBaseTbl.getCols().size(); i++) {
-        FieldSchema col = metaBaseTbl.getCols().get(i);
+      // Even though we are storing these in metastore, get regular columns. Indexes on lengthy
+      // types from e.g. Avro schema will just fail to create the index table (by design).
+      List<FieldSchema> cols = metaBaseTbl.getCols();
+      for (int i = 0; i < cols.size(); i++) {
+        FieldSchema col = cols.get(i);
         if (indexedCols.contains(col.getName())) {
           indexTblCols.add(col);
           sortCols.add(new Order(col.getName(), 1));

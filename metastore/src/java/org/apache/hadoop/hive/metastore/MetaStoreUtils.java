@@ -395,6 +395,12 @@ public class MetaStoreUtils {
     if (lib == null) {
       return null;
     }
+    return getDeserializer(conf, table, skipConfError, lib);
+  }
+
+  public static Deserializer getDeserializer(Configuration conf,
+      org.apache.hadoop.hive.metastore.api.Table table, boolean skipConfError,
+      String lib) throws MetaException {
     try {
       Deserializer deserializer = ReflectionUtil.newInstance(conf.getClassByName(lib).
               asSubclass(Deserializer.class), conf);
@@ -570,8 +576,9 @@ public class MetaStoreUtils {
       if (!validateColumnName(fieldSchema.getName())) {
         return "name: " + fieldSchema.getName();
       }
-      if (!validateColumnType(fieldSchema.getType())) {
-        return "type: " + fieldSchema.getType();
+      String typeError = validateColumnType(fieldSchema.getType());
+      if (typeError != null) {
+        return typeError;
       }
     }
     return null;
@@ -646,6 +653,9 @@ public class MetaStoreUtils {
     return false;
   }
 
+  public static final int MAX_MS_TYPENAME_LENGTH = 2000; // 4000/2, for an unlikely unicode case
+
+  public static final String TYPE_FROM_DESERIALIZER = "<derived from deserializer>";
   /**
    * validate column type
    *
@@ -653,7 +663,11 @@ public class MetaStoreUtils {
    * @param name
    * @return
    */
-  static public boolean validateColumnType(String type) {
+  static public String validateColumnType(String type) {
+    if (type.equals(TYPE_FROM_DESERIALIZER)) return null;
+    if (type.length() > MAX_MS_TYPENAME_LENGTH) {
+      return "type name is too long: " + type;
+    }
     int last = 0;
     boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
     for (int i = 1; i <= type.length(); i++) {
@@ -662,12 +676,12 @@ public class MetaStoreUtils {
         String token = type.substring(last, i);
         last = i;
         if (!hiveThriftTypeMap.contains(token)) {
-          return false;
+          return "type: " + type;
         }
         break;
       }
     }
-    return true;
+    return null;
   }
 
   private static boolean isValidTypeChar(char c) {
