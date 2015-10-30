@@ -384,7 +384,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d
-          Statistics: Num rows: 20 Data size: 4186 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 20 Data size: 4260 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: double), cnt (type: decimal(10,0)), zip (type: int)
@@ -697,7 +697,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d
-          Statistics: Num rows: 20 Data size: 4186 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 20 Data size: 4220 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: double), cnt (type: decimal(10,0)), zip (type: int)
@@ -1375,7 +1375,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_2d
-          Statistics: Num rows: 20 Data size: 4028 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 20 Data size: 4160 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int), cnt (type: decimal(10,0)), zip (type: int)

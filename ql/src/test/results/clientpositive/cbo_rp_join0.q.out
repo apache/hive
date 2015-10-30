@@ -20,7 +20,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t1
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -36,7 +36,7 @@ STAGE PLANS:
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t2:cbo_t2
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -52,7 +52,7 @@ STAGE PLANS:
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t3:cbo_t3
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
@@ -669,7 +669,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t1
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -685,7 +685,7 @@ STAGE PLANS:
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t2:cbo_t2
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -701,7 +701,7 @@ STAGE PLANS:
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t3:cbo_t3
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
@@ -713,7 +713,7 @@ STAGE PLANS:
                 Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: cbo_t4:cbo_t1
-            Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
