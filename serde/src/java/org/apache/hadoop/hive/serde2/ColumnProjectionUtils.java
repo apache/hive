@@ -148,14 +148,14 @@ public final class ColumnProjectionUtils {
     List<Integer> result = new ArrayList<Integer>(list.length);
     for (String element : list) {
       // it may contain duplicates, remove duplicates
-      // TODO: WTF? This would break many assumptions elsewhere if it did.
-      //       Column names' and column ids' lists are supposed to be correlated.
       Integer toAdd = Integer.parseInt(element);
       if (!result.contains(toAdd)) {
         result.add(toAdd);
-      } else if (LOG.isInfoEnabled()) {
-        LOG.info("Duplicate ID " + toAdd + " in column ID list");
       }
+      // NOTE: some code uses this list to correlate with column names, and yet these lists may
+      //       contain duplicates, which this call will remove and the other won't. As far as I can
+      //       tell, no code will actually use these two methods together; all is good if the code
+      //       gets the ID list without relying on this method. Or maybe it just works by magic.
     }
     return result;
   }

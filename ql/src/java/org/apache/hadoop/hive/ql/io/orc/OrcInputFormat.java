@@ -282,7 +282,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     assert idStrs == null || knownNames.length == idStrs.length;
     HashMap<String, Integer> nameIdMap = new HashMap<>();
     for (int i = 0; i < knownNames.length; ++i) {
-      nameIdMap.put(knownNames[i], idStrs != null ? Integer.parseInt(idStrs[i]) : i);
+      Integer newId = (idStrs != null) ? Integer.parseInt(idStrs[i]) : i;
+      Integer oldId = nameIdMap.put(knownNames[i], newId);
+      if (oldId != null && oldId.intValue() != newId.intValue()) {
+        throw new RuntimeException("Multiple IDs for " + knownNames[i] + " in column strings: ["
+            + idStr + "], [" + nameStr + "]");
+      }
     }
     List<PredicateLeaf> leaves = sarg.getLeaves();
     for (int i = 0; i < leaves.size(); ++i) {
