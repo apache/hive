@@ -31,11 +31,11 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import jline.console.completer.StringsCompleter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class SQLCompleter extends StringsCompleter {
-  private static final Log LOG = LogFactory.getLog(SQLCompleter.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(SQLCompleter.class.getName());
 
 
   public SQLCompleter(Set<String> completions){

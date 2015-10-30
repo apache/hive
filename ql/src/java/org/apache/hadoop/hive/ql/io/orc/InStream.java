@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 
@@ -34,7 +34,7 @@ import com.google.protobuf.CodedInputStream;
 
 public abstract class InStream extends InputStream {
 
-  private static final Log LOG = LogFactory.getLog(InStream.class);
+  private static final Logger LOG = LoggerFactory.getLogger(InStream.class);
   private static final int PROTOBUF_MESSAGE_MAX_LIMIT = 1024 << 20; // 1GB
 
   protected final Long fileId;

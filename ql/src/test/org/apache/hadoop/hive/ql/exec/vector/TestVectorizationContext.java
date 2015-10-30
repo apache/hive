@@ -1012,7 +1012,7 @@ public class TestVectorizationContext {
     Assert.assertEquals(BRoundWithNumDigitsDoubleToDouble.class, ve.getClass());
     Assert.assertEquals(4, ((BRoundWithNumDigitsDoubleToDouble) ve).getDecimalPlaces().get());
 
-    // Log with int base
+    // Logger with int base
     gudfBridge = new GenericUDFBridge("log", false, UDFLog.class.getName());
     mathFuncExpr.setGenericUDF(gudfBridge);
     children2.clear();
@@ -1023,7 +1023,7 @@ public class TestVectorizationContext {
     Assert.assertEquals(FuncLogWithBaseDoubleToDouble.class, ve.getClass());
     Assert.assertTrue(4 == ((FuncLogWithBaseDoubleToDouble) ve).getBase());
 
-    // Log with default base
+    // Logger with default base
     children2.clear();
     children2.add(colDesc2);
     mathFuncExpr.setChildren(children2);

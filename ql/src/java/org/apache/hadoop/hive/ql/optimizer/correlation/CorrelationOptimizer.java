@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -84,7 +84,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class CorrelationOptimizer implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(CorrelationOptimizer.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CorrelationOptimizer.class.getName());
 
   private boolean abort; // if correlation optimizer will not try to optimize this query
 

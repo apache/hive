@@ -1735,8 +1735,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qb.getMetaData().setDestForAlias(name, ts.partHandle);
           }
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-            // Set that variable to automatically collect stats during the MapReduce job
-            qb.getParseInfo().setIsInsertToTable(true);
             // Add the table spec for the destination table.
             qb.getParseInfo().addTableSpec(ts.tableName.toLowerCase(), ts);
           }
@@ -1773,8 +1771,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               }
               if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
                 TableSpec ts = new TableSpec(db, conf, this.ast);
-                // Set that variable to automatically collect stats during the MapReduce job
-                qb.getParseInfo().setIsInsertToTable(true);
                 // Add the table spec for the destination table.
                 qb.getParseInfo().addTableSpec(ts.tableName.toLowerCase(), ts);
               }
@@ -2234,7 +2230,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(0).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(0).add(joinCond);
           }
         } else {
@@ -2323,7 +2319,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(1).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(1).add(joinCond);
           }
         } else {
@@ -2343,7 +2339,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
           joinTree.getFilters().get(0).add(joinCond);
         } else {
-          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
           joinTree.getFiltersForPushing().get(0).add(joinCond);
         }
       } else {
@@ -2355,7 +2351,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
           joinTree.getFilters().get(1).add(joinCond);
         } else {
-          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
           joinTree.getFiltersForPushing().get(1).add(joinCond);
         }
       } else {
@@ -2505,7 +2501,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(0).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(0).add(joinCond);
           }
         } else {
@@ -2517,7 +2513,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
             joinTree.getFilters().get(1).add(joinCond);
           } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS.getErrorCodedMsg());
             joinTree.getFiltersForPushing().get(1).add(joinCond);
           }
         } else {
@@ -6328,7 +6324,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // verify that our destination is empty before proceeding
       if (dest_tab.isImmutable() &&
           qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),dest_tab.getTableName())){
-        qb.getParseInfo().isInsertToTable();
         try {
           FileSystem fs = partPath.getFileSystem(conf);
           if (! MetaStoreUtils.isDirEmpty(fs,partPath)){
@@ -8457,7 +8452,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // for outer joins, it should not exceed 16 aliases (short type)
           if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
             if (node.getRightAliases().length + target.getRightAliases().length + 1 > 16) {
-              LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_16);
+              LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_16.getErrorCodedMsg());
               continueScanning = continueJoinMerge();
               continue;
             }
@@ -10548,7 +10543,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           Table tbl = usedp.getTable();
 
           LOG.debug("validated " + usedp.getName());
-          LOG.debug(usedp.getTable());
+          LOG.debug(usedp.getTable().getTableName());
           conflictingArchive = ArchiveUtils
               .conflictingArchiveNameOrNull(db, tbl, usedp.getSpec());
         } catch (HiveException e) {
@@ -12208,7 +12203,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
       queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
       queryProperties.setCTAS(qb.getTableDesc() != null);
-      queryProperties.setInsertToTable(qb.getParseInfo().isInsertToTable());
       queryProperties.setHasOuterOrderBy(!qb.getParseInfo().getIsSubQ() &&
               !qb.getParseInfo().getDestToOrderBy().isEmpty());
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());

@@ -23,8 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -51,7 +51,7 @@ import org.codehaus.jackson.type.JavaType;
 
 public class GenericUDTFJSONTuple extends GenericUDTF {
 
-  private static Log LOG = LogFactory.getLog(GenericUDTFJSONTuple.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFJSONTuple.class.getName());
 
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
   static {

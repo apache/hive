@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OrcUtils {
-  private static final Log LOG = LogFactory.getLog(OrcUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcUtils.class);
 
   /**
    * Returns selected columns as a boolean array with true value set for specified column names.

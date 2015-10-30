@@ -27,14 +27,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class TezJsonParser implements JsonParser {
   public final Map<String, Stage> stages = new LinkedHashMap<>();
-  protected final Log LOG;
+  protected final Logger LOG;
   // the object that has been printed.
   public final Set<Object> printSet = new LinkedHashSet<>();
   // the vertex that should be inlined. <Operator, list of Vertex that is
@@ -43,7 +43,7 @@ public final class TezJsonParser implements JsonParser {
 
   public TezJsonParser() {
     super();
-    LOG = LogFactory.getLog(this.getClass().getName());
+    LOG = LoggerFactory.getLogger(this.getClass().getName());
   }
 
   public void extractStagesAndPlans(JSONObject inputObject) throws Exception {

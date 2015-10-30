@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 public class VectorCopyRow {
 
-  protected static transient final Log LOG = LogFactory.getLog(VectorCopyRow.class);
+  protected static transient final Logger LOG = LoggerFactory.getLogger(VectorCopyRow.class);
 
   private abstract class CopyRow {
     protected int inColumnIndex;

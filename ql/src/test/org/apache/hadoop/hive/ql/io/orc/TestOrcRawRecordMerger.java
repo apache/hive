@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -61,7 +61,7 @@ import static org.junit.Assert.assertNull;
 
 public class TestOrcRawRecordMerger {
 
-  private static final Log LOG = LogFactory.getLog(TestOrcRawRecordMerger.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestOrcRawRecordMerger.class);
 //todo: why is statementId -1?
   @Test
   public void testOrdering() throws Exception {

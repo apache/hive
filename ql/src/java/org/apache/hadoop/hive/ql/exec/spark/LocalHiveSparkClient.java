@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -57,8 +57,8 @@ public class LocalHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
-  protected static final transient Log LOG = LogFactory
-      .getLog(LocalHiveSparkClient.class);
+  protected static final transient Logger LOG = LoggerFactory
+      .getLogger(LocalHiveSparkClient.class);
 
   private static final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
@@ -71,13 +71,13 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     return client;
   }
 
-  private JavaSparkContext sc;
+  private final JavaSparkContext sc;
 
-  private List<String> localJars = new ArrayList<String>();
+  private final List<String> localJars = new ArrayList<String>();
 
-  private List<String> localFiles = new ArrayList<String>();
+  private final List<String> localFiles = new ArrayList<String>();
 
-  private JobMetricsListener jobMetricsListener;
+  private final JobMetricsListener jobMetricsListener;
 
   private LocalHiveSparkClient(SparkConf sparkConf) {
     sc = new JavaSparkContext(sparkConf);

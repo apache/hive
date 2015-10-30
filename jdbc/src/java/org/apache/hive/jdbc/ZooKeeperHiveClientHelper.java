@@ -24,22 +24,23 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.zookeeper.Watcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ZooKeeperHiveClientHelper {
-  static final Log LOG = LogFactory.getLog(ZooKeeperHiveClientHelper.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(ZooKeeperHiveClientHelper.class.getName());
   // Pattern for key1=value1;key2=value2
   private static final Pattern kvPattern = Pattern.compile("([^=;]*)=([^;]*)[;]?");
   /**
    * A no-op watcher class
    */
   static class DummyWatcher implements Watcher {
+    @Override
     public void process(org.apache.zookeeper.WatchedEvent event) {
     }
   }

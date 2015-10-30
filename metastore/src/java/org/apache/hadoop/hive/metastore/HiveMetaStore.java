@@ -28,8 +28,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -146,7 +146,7 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
  * TODO:pc remove application logic to a separate interface.
  */
 public class HiveMetaStore extends ThriftHiveMetastore {
-  public static final Log LOG = LogFactory.getLog(HiveMetaStore.class);
+  public static final Logger LOG = LoggerFactory.getLogger(HiveMetaStore.class);
 
   // boolean that tells if the HiveMetaStore (remote) server is being used.
   // Can be used to determine if the calls to metastore api (HMSHandler) are being made with
@@ -197,7 +197,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   public static class HMSHandler extends FacebookBase implements IHMSHandler {
-    public static final Log LOG = HiveMetaStore.LOG;
+    public static final Logger LOG = HiveMetaStore.LOG;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
@@ -242,7 +242,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         "ugi=%s\t" + // ugi
             "ip=%s\t" + // remote IP
             "cmd=%s\t"; // command
-    public static final Log auditLog = LogFactory.getLog(
+    public static final Logger auditLog = LoggerFactory.getLogger(
         HiveMetaStore.class.getName() + ".audit");
     private static final ThreadLocal<Formatter> auditFormatter =
         new ThreadLocal<Formatter>() {
@@ -509,7 +509,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           rs.setConf(conf);
           return rs;
         } catch (Exception e) {
-          LOG.fatal("Unable to instantiate raw store directly in fastpath mode");
+          LOG.error("Unable to instantiate raw store directly in fastpath mode", e);
           throw new RuntimeException(e);
         }
       }
@@ -5147,7 +5147,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } catch (Exception original) {
         ex = original;
-        LOG.error(original);
+        LOG.error("Exception caught in mark partition event ", original);
         if (original instanceof NoSuchObjectException) {
           throw (NoSuchObjectException) original;
         } else if (original instanceof UnknownTableException) {
@@ -5180,7 +5180,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = getMS().isPartitionMarkedForEvent(db_name, tbl_name, partName, evtType);
       } catch (Exception original) {
-        LOG.error(original);
+        LOG.error("Exception caught for isPartitionMarkedForEvent ",original);
         ex = original;
         if (original instanceof NoSuchObjectException) {
           throw (NoSuchObjectException) original;
@@ -5617,13 +5617,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return result;
       }
       result.setIsSupported(true);
+
       List<Long> fileIds = req.getFileIds();
-      byte[] expr = req.getExpr();
-      boolean needMetadata = req.isDoGetFooters();
-      ByteBuffer[] metadatas = new ByteBuffer[fileIds.size()];
-      ByteBuffer[] stripeBitsets = new ByteBuffer[fileIds.size()];
+      boolean needMetadata = !req.isSetDoGetFooters() || req.isDoGetFooters();
+      FileMetadataExprType type = req.isSetType() ? req.getType() : FileMetadataExprType.ORC_SARG;
+
+      ByteBuffer[] metadatas = needMetadata ? new ByteBuffer[fileIds.size()] : null;
+      ByteBuffer[] ppdResults = new ByteBuffer[fileIds.size()];
       boolean[] eliminated = new boolean[fileIds.size()];
-      getMS().getFileMetadataByExpr(fileIds, expr, metadatas, stripeBitsets, eliminated);
+
+      getMS().getFileMetadataByExpr(fileIds, type, req.getExpr(), metadatas, ppdResults, eliminated);
       for (int i = 0; i < metadatas.length; ++i) {
         long fileId = fileIds.get(i);
         ByteBuffer metadata = metadatas[i];
@@ -5631,7 +5634,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         metadata = (eliminated[i] || !needMetadata) ? null
             : handleReadOnlyBufferForThrift(metadata);
         MetadataPpdResult mpr = new MetadataPpdResult();
-        ByteBuffer bitset = eliminated[i] ? null : handleReadOnlyBufferForThrift(stripeBitsets[i]);
+        ByteBuffer bitset = eliminated[i] ? null : handleReadOnlyBufferForThrift(ppdResults[i]);
         mpr.setMetadata(metadata);
         mpr.setIncludeBitset(bitset);
         result.putToMetadata(fileId, mpr);
@@ -6194,8 +6197,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       houseKeeper.start(conf);
     }
     catch (Exception ex) {
-      LOG.fatal("Failed to start " + houseKeeper.getClass() +
-        ".  The system will not handle " + houseKeeper.getServiceDescription()  +
+      LOG.error("Failed to start {}" , houseKeeper.getClass() +
+        ".  The system will not handle {} " , houseKeeper.getServiceDescription(),
         ".  Root Cause: ", ex);
     }
   }

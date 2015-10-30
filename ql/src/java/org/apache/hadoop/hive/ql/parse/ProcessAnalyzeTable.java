@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -51,7 +51,7 @@ import org.apache.hadoop.mapred.InputFormat;
  */
 public class ProcessAnalyzeTable implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(ProcessAnalyzeTable.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ProcessAnalyzeTable.class.getName());
 
   // shared plan utils for tez
   private GenTezUtils utils = null;

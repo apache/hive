@@ -24,8 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
@@ -46,8 +46,8 @@ import org.apache.hadoop.hive.serde.serdeConstants;
  *
  */
 public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
-  private static final Log LOG = LogFactory
-      .getLog(ColumnStatsSemanticAnalyzer.class);
+  private static final Logger LOG = LoggerFactory
+      .getLogger(ColumnStatsSemanticAnalyzer.class);
 
   private ASTNode originalTree;
   private ASTNode rewrittenTree;

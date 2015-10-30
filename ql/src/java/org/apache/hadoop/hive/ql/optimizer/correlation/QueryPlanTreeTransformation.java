@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
  * detected by Correlation Optimizer.
  */
 public class QueryPlanTreeTransformation {
-  private static final Log LOG = LogFactory.getLog(QueryPlanTreeTransformation.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(QueryPlanTreeTransformation.class.getName());
 
   private static void setNewTag(IntraQueryCorrelation correlation,
       List<Operator<? extends OperatorDesc>> childrenOfDemux,

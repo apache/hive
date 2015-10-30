@@ -37,10 +37,10 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class contains methods used for the purposes of compression, this class
@@ -48,7 +48,7 @@ import org.apache.tools.zip.ZipOutputStream;
  */
 public class CompressionUtils {
 
-  static final Log LOG = LogFactory.getLog(CompressionUtils.class);
+  static final Logger LOG = LoggerFactory.getLogger(CompressionUtils.class);
 
   /**
    * Archive all the files in the inputFiles into outputFile
@@ -108,15 +108,15 @@ public class CompressionUtils {
 
   /**
    * Untar an input file into an output file.
-   * 
+   *
    * The output file is created in the output folder, having the same name as the input file, minus
    * the '.tar' extension.
-   * 
+   *
    * @param inputFile the input .tar file
    * @param outputDir the output directory file.
    * @throws IOException
    * @throws FileNotFoundException
-   * 
+   *
    * @return The {@link List} of {@link File}s with the untared content.
    * @throws ArchiveException
    */
@@ -124,18 +124,18 @@ public class CompressionUtils {
       throws FileNotFoundException, IOException, ArchiveException {
     return unTar(inputFileName, outputDirName, false);
   }
-  
+
   /**
    * Untar an input file into an output file.
-   * 
+   *
    * The output file is created in the output folder, having the same name as the input file, minus
    * the '.tar' extension.
-   * 
+   *
    * @param inputFile the input .tar file
    * @param outputDir the output directory file.
    * @throws IOException
    * @throws FileNotFoundException
-   * 
+   *
    * @return The {@link List} of {@link File}s with the untared content.
    * @throws ArchiveException
    */
@@ -173,7 +173,7 @@ public class CompressionUtils {
             throw new IllegalStateException(String.format("Couldn't create directory %s.",
                 outputFile.getAbsolutePath()));
           }
-        } 
+        }
       } else {
         final OutputStream outputFileStream;
         if (flatten) {

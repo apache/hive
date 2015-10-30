@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hive.hcatalog.templeton.tool.JobSubmissionConstants;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
@@ -39,7 +39,7 @@ import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
  * This is the backend of the pig web service.
  */
 public class PigDelegator extends LauncherDelegator {
-  private static final Log LOG = LogFactory.getLog(PigDelegator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PigDelegator.class);
   public PigDelegator(AppConfig appConf) {
     super(appConf);
   }

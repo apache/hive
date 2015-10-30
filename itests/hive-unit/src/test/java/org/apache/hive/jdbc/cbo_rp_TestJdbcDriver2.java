@@ -49,8 +49,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -77,7 +77,7 @@ import org.junit.Test;
  *
  */
 public class cbo_rp_TestJdbcDriver2 {
-  private static final Log LOG = LogFactory.getLog(cbo_rp_TestJdbcDriver2.class);
+  private static final Logger LOG = LoggerFactory.getLogger(cbo_rp_TestJdbcDriver2.class);
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String tableName = "testHiveJdbcDriver_Table";
   private static final String tableComment = "Simple table";

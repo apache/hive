@@ -44,13 +44,13 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 public class HiveRelMdRowCount extends RelMdRowCount {
 
-  protected static final Log LOG  = LogFactory.getLog(HiveRelMdRowCount.class.getName());
+  protected static final Logger LOG  = LoggerFactory.getLogger(HiveRelMdRowCount.class.getName());
 
 
   public static final RelMetadataProvider SOURCE = ReflectiveRelMetadataProvider
@@ -66,24 +66,21 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       double selectivity = (pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor);
       selectivity = Math.min(1.0, selectivity);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Identified Primary - Foreign Key relation:");
-        LOG.debug(RelOptUtil.toString(join));
-        LOG.debug(pkfk);
+        LOG.debug("Identified Primary - Foreign Key relation: {} {}",RelOptUtil.toString(join), pkfk);
       }
       return pkfk.fkInfo.rowCount * selectivity;
     }
     return join.getRows();
   }
 
+  @Override
   public Double getRowCount(SemiJoin rel) {
     PKFKRelationInfo pkfk = analyzeJoinForPKFK(rel);
     if (pkfk != null) {
       double selectivity = (pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor);
       selectivity = Math.min(1.0, selectivity);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Identified Primary - Foreign Key relation:");
-        LOG.debug(RelOptUtil.toString(rel));
-        LOG.debug(pkfk);
+        LOG.debug("Identified Primary - Foreign Key relation: {} {}", RelOptUtil.toString(rel), pkfk);
       }
       return pkfk.fkInfo.rowCount * selectivity;
     }
@@ -109,6 +106,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       this.isPKSideSimple = isPKSideSimple;
     }
 
+    @Override
     public String toString() {
       return String.format(
           "Primary - Foreign Key join:\n\tfkSide = %d\n\tFKInfo:%s\n" +
@@ -129,6 +127,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       this.distinctCount = distinctCount;
     }
 
+    @Override
     public String toString() {
       return String.format("FKInfo(rowCount=%.2f,ndv=%.2f)", rowCount, distinctCount);
     }
@@ -141,6 +140,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       this.selectivity = selectivity;
     }
 
+    @Override
     public String toString() {
       return String.format("PKInfo(rowCount=%.2f,ndv=%.2f,selectivity=%.2f)", rowCount, distinctCount,selectivity);
     }
@@ -230,7 +230,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
 
     int pkSide = leftIsKey ? 0 : rightIsKey ? 1 : -1;
 
-    boolean isPKSideSimpleTree = pkSide != -1 ? 
+    boolean isPKSideSimpleTree = pkSide != -1 ?
         IsSimpleTreeOnJoinKey.check(
             pkSide == 0 ? left : right,
             pkSide == 0 ? leftColIdx : rightColIdx) : false;

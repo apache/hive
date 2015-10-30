@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 public class ConditionalResolverCommonJoin implements ConditionalResolver, Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog(ConditionalResolverCommonJoin.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ConditionalResolverCommonJoin.class);
 
   /**
    * ConditionalResolverSkewJoinCtx.

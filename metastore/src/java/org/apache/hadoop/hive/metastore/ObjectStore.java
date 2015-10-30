@@ -57,8 +57,8 @@ import javax.jdo.identity.IntIdentity;
 import com.google.common.annotations.VisibleForTesting;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -178,7 +179,7 @@ public class ObjectStore implements RawStore, Configurable {
   * Verify the schema only once per JVM since the db connection info is static
   */
   private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
-  private static final Log LOG = LogFactory.getLog(ObjectStore.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(ObjectStore.class.getName());
 
   private static enum TXN_STATUS {
     NO_STATE, OPEN, COMMITED, ROLLBACK
@@ -498,14 +499,14 @@ public class ObjectStore implements RawStore, Configurable {
       RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
           + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
           "calls to openTransaction/commitTransaction");
-      LOG.error(e);
+      LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
     if (!currentTransaction.isActive()) {
       RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
           + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
           "calls to openTransaction/commitTransaction");
-      LOG.error(e);
+      LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
     openTrasactionCalls--;
@@ -7666,7 +7667,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void getFileMetadataByExpr(List<Long> fileIds, byte[] expr,
+  public void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
       ByteBuffer[] metadatas, ByteBuffer[] stripeBitsets, boolean[] eliminated) {
     throw new UnsupportedOperationException();
   }
@@ -7694,7 +7695,7 @@ public class ObjectStore implements RawStore, Configurable {
         classLoaderResolverMap.set(nc, new HashMap<String, ClassLoaderResolver>());
         LOG.debug("Removed cached classloaders from DataNucleus NucleusContext");
       } catch (Exception e) {
-        LOG.warn(e);
+        LOG.warn("Failed to remove cached classloaders from DataNucleus NucleusContext ", e);
       }
     }
   }

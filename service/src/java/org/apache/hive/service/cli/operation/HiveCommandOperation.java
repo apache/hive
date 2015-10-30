@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
@@ -48,7 +48,7 @@ import org.apache.hive.service.cli.session.HiveSession;
  * Executes a HiveCommand
  */
 public class HiveCommandOperation extends ExecuteStatementOperation {
-  private CommandProcessor commandProcessor;
+  private final CommandProcessor commandProcessor;
   private TableSchema resultSchema = null;
   private boolean closeSessionStreams = true; // Only close file based streams, not System.out and System.err.
 
@@ -79,7 +79,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       LOG.error("Error in creating temp output file ", e);
 
       // Close file streams to avoid resource leaking
-      IOUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
+      ServiceUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
       closeSessionStreams = false;
 
       try {
@@ -98,7 +98,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
   private void tearDownSessionIO() {
     if (closeSessionStreams) {
-      IOUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
+      ServiceUtils.cleanup(LOG, parentSession.getSessionState().out, parentSession.getSessionState().err);
     }
   }
 
@@ -214,7 +214,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
   private void resetResultReader() {
     if (resultReader != null) {
-      IOUtils.cleanup(LOG, resultReader);
+      ServiceUtils.cleanup(LOG, resultReader);
       resultReader = null;
     }
   }

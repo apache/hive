@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,7 +47,7 @@ import com.google.common.base.Preconditions;
 
 public class LlapServiceDriver {
 
-  protected static final Log LOG = LogFactory.getLog(LlapServiceDriver.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
   private final Configuration conf;
 
   public LlapServiceDriver() {

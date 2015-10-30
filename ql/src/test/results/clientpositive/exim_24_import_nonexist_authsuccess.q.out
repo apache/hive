@@ -50,9 +50,11 @@ POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: import from 'ql/test/data/exports/exim_department'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
+PREHOOK: Output: database:importer
 POSTHOOK: query: import from 'ql/test/data/exports/exim_department'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_department
 PREHOOK: query: select * from exim_department
 PREHOOK: type: QUERY

@@ -39,8 +39,8 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -79,8 +79,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   Map<String, PrunedPartitionList>                partitionCache;
   AtomicInteger                                   noColsMissingStats;
 
-  protected static final Log                      LOG             = LogFactory
-                                                                      .getLog(RelOptHiveTable.class
+  protected static final Logger                      LOG             = LoggerFactory
+                                                                      .getLogger(RelOptHiveTable.class
                                                                           .getName());
 
   public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName,

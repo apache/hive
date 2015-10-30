@@ -23,8 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
 /**
@@ -37,8 +37,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 public class DummyPartition extends Partition {
 
   @SuppressWarnings("nls")
-  static final private Log LOG = LogFactory
-      .getLog("hive.ql.metadata.DummyPartition");
+  private static final Logger LOG = LoggerFactory
+      .getLogger("hive.ql.metadata.DummyPartition");
 
   private String name;
   private LinkedHashMap<String, String> partSpec;

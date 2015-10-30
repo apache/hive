@@ -27,7 +27,8 @@ import org.apache.hadoop.hive.accumulo.Utils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link AccumuloRowIdFactory} designed for injection of the {@link AccumuloCompositeRowId} to be
@@ -39,7 +40,7 @@ import org.apache.log4j.Logger;
 public class CompositeAccumuloRowIdFactory<T extends AccumuloCompositeRowId> extends
     DefaultAccumuloRowIdFactory {
 
-  public static final Logger log = Logger.getLogger(CompositeAccumuloRowIdFactory.class);
+  public static final Logger log = LoggerFactory.getLogger(CompositeAccumuloRowIdFactory.class);
 
   private final Class<T> keyClass;
   private final Constructor<T> constructor;

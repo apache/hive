@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -62,7 +62,7 @@ public class PartialScanMapper extends MapReduceBase implements
   private boolean exception = false;
   private Reporter rp = null;
 
-  public final static Log LOG = LogFactory.getLog("PartialScanMapper");
+  private static final Logger LOG = LoggerFactory.getLogger("PartialScanMapper");
 
   public PartialScanMapper() {
   }

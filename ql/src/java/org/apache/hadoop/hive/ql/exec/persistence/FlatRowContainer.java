@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -45,7 +45,7 @@ public class FlatRowContainer extends AbstractCollection<Object>
   private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
   private static final int UNKNOWN = Integer.MAX_VALUE;
 
-  private static Log LOG = LogFactory.getLog(FlatRowContainer.class);
+  private static Logger LOG = LoggerFactory.getLogger(FlatRowContainer.class);
 
   /**
    * In lazy mode, 0s element contains context for deserialization and all the other

@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.serde2.NullStructSerDe;
  */
 public class NullScanTaskDispatcher implements Dispatcher {
 
-  static final Log LOG = LogFactory.getLog(NullScanTaskDispatcher.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(NullScanTaskDispatcher.class.getName());
 
   private final PhysicalContext physicalContext;
   private final Map<Rule, NodeProcessor> rules;

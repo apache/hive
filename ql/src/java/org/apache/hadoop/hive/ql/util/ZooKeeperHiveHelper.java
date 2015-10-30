@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.zookeeper.Watcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZooKeeperHiveHelper {
-  public static final Log LOG = LogFactory.getLog(ZooKeeperHiveHelper.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(ZooKeeperHiveHelper.class.getName());
   public static final String ZOOKEEPER_PATH_SEPARATOR = "/";
 
   /**

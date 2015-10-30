@@ -37,8 +37,8 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.util.Shell;
 
 class StreamOutputWriter extends Thread
@@ -78,7 +78,7 @@ class StreamOutputWriter extends Thread
  * ExecService.run and ExecService.runUnlimited for details.
  */
 public class ExecServiceImpl implements ExecService {
-  private static final Log LOG = LogFactory.getLog(ExecServiceImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ExecServiceImpl.class);
   private static AppConfig appConf = Main.getAppConfigInstance();
 
   private static volatile ExecServiceImpl theSingleton;

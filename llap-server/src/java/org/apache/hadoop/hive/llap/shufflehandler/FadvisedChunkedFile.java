@@ -18,8 +18,8 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.ReadaheadPool;
 import org.apache.hadoop.io.ReadaheadPool.ReadaheadRequest;
 import org.apache.hadoop.io.nativeio.NativeIO;
@@ -27,7 +27,7 @@ import org.jboss.netty.handler.stream.ChunkedFile;
 
 public class FadvisedChunkedFile extends ChunkedFile {
 
-  private static final Log LOG = LogFactory.getLog(FadvisedChunkedFile.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FadvisedChunkedFile.class);
 
   private final boolean manageOsCache;
   private final int readaheadLength;

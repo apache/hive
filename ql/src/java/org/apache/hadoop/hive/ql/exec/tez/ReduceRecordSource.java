@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -69,7 +69,7 @@ import org.apache.tez.runtime.library.api.KeyValuesReader;
 @SuppressWarnings("deprecation")
 public class ReduceRecordSource implements RecordSource {
 
-  public static final Log l4j = LogFactory.getLog(ReduceRecordSource.class);
+  public static final Logger l4j = LoggerFactory.getLogger(ReduceRecordSource.class);
 
   private static final String CLASS_NAME = ReduceRecordSource.class.getName();
 
@@ -288,7 +288,7 @@ public class ReduceRecordSource implements RecordSource {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        l4j.fatal(StringUtils.stringifyException(e));
+        l4j.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }
@@ -394,7 +394,7 @@ public class ReduceRecordSource implements RecordSource {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        l4j.fatal(StringUtils.stringifyException(e));
+        l4j.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }

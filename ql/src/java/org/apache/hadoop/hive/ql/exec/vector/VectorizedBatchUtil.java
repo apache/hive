@@ -26,8 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -69,7 +69,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateUtils;
 
 public class VectorizedBatchUtil {
-  private static final Log LOG = LogFactory.getLog(VectorizedBatchUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VectorizedBatchUtil.class);
 
   /**
    * Sets the IsNull value for ColumnVector at specified index

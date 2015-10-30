@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
 public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAllocatorMXBean {
   private final Arena[] arenas;
-  private AtomicInteger allocatedArenas = new AtomicInteger(0);
+  private final AtomicInteger allocatedArenas = new AtomicInteger(0);
 
   private final MemoryManager memoryManager;
 
@@ -48,11 +48,10 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
     arenaSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_SIZE);
     long maxSizeVal = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte")
-          + " buffers; allocation sizes " + minAllocation + " - " + maxAllocation
-          + ", arena size " + arenaSize + ". total size " + maxSizeVal);
-    }
+    LlapIoImpl.LOG.info("Buddy allocator with {}", (isDirect ? "direct" : "byte")
+        , " buffers; allocation sizes {} ", minAllocation, " - {}", maxAllocation
+        , ", arena size {}", arenaSize, ". total size {}", maxSizeVal);
+
 
     if (minAllocation < 8) {
       throw new AssertionError("Min allocation must be at least 8: " + minAllocation);

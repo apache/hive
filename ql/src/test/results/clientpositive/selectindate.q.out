@@ -1,0 +1,70 @@
+PREHOOK: query: drop table if exists datetest
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists datetest
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table datetest(dValue date, iValue int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@datetest
+POSTHOOK: query: create table datetest(dValue date, iValue int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@datetest
+PREHOOK: query: insert into datetest values('2000-03-22', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@datetest
+POSTHOOK: query: insert into datetest values('2000-03-22', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@datetest
+POSTHOOK: Lineage: datetest.dvalue EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: datetest.ivalue EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into datetest values('2001-03-22', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@datetest
+POSTHOOK: query: insert into datetest values('2001-03-22', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@datetest
+POSTHOOK: Lineage: datetest.dvalue EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: datetest.ivalue EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into datetest values('2002-03-22', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@datetest
+POSTHOOK: query: insert into datetest values('2002-03-22', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@datetest
+POSTHOOK: Lineage: datetest.dvalue EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: datetest.ivalue EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into datetest values('2003-03-22', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@datetest
+POSTHOOK: query: insert into datetest values('2003-03-22', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@datetest
+POSTHOOK: Lineage: datetest.dvalue EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: datetest.ivalue EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: SELECT * FROM datetest WHERE dValue IN ('2000-03-22','2001-03-22')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@datetest
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM datetest WHERE dValue IN ('2000-03-22','2001-03-22')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@datetest
+#### A masked pattern was here ####
+2000-03-22	1
+2001-03-22	2
+PREHOOK: query: drop table datetest
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@datetest
+PREHOOK: Output: default@datetest
+POSTHOOK: query: drop table datetest
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@datetest
+POSTHOOK: Output: default@datetest

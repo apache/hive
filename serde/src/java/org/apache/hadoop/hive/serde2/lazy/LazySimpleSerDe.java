@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -81,9 +79,6 @@ import org.apache.hive.common.util.HiveStringUtils;
     LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS
     })
 public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
-
-  public static final Log LOG = LogFactory.getLog(LazySimpleSerDe.class
-      .getName());
 
   private LazySerDeParameters serdeParams = null;
 

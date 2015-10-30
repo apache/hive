@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSerde;
@@ -46,7 +46,7 @@ import org.apache.hadoop.io.Writable;
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES, OrcSerde.COMPRESSION})
 public class OrcSerde implements SerDe, VectorizedSerde {
 
-  private static final Log LOG = LogFactory.getLog(OrcSerde.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcSerde.class);
 
   private final OrcSerdeRow row = new OrcSerdeRow();
   private ObjectInspector inspector = null;

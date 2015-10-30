@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,8 +62,6 @@ import org.junit.Test;
 import com.google.common.base.Joiner;
 
 public class TestAccumuloSerDe {
-  @SuppressWarnings("unused")
-  private static final Logger log = Logger.getLogger(TestAccumuloSerDe.class);
 
   protected AccumuloSerDe serde;
 

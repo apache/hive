@@ -24,8 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -69,7 +69,7 @@ import com.google.common.collect.Multimap;
  */
 public class HiveSplitGenerator extends InputInitializer {
 
-  private static final Log LOG = LogFactory.getLog(HiveSplitGenerator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveSplitGenerator.class);
 
   private final DynamicPartitionPruner pruner;
   private final Configuration conf;

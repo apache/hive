@@ -24,8 +24,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -74,7 +74,7 @@ import org.apache.hadoop.util.StringUtils;
 public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private FetchOperator ftOp;
-  private static transient final Log LOG = LogFactory.getLog(ColumnStatsTask.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(ColumnStatsTask.class);
 
   public ColumnStatsTask() {
     super();

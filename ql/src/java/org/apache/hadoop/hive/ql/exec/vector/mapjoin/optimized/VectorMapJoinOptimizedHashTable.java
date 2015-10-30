@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.persistence.BytesBytesMultiHashMap;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
@@ -41,7 +41,7 @@ import org.apache.hadoop.io.Writable;
  */
 public abstract class VectorMapJoinOptimizedHashTable implements VectorMapJoinHashTable {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinOptimizedMultiKeyHashMap.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinOptimizedMultiKeyHashMap.class.getName());
 
   protected final MapJoinTableContainer originalTableContainer;
   protected final MapJoinTableContainerDirectAccess containerDirectAccess;

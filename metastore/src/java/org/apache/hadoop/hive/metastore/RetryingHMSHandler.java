@@ -26,8 +26,8 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -41,7 +41,7 @@ import org.datanucleus.exceptions.NucleusException;
 @InterfaceStability.Evolving
 public class RetryingHMSHandler implements InvocationHandler {
 
-  private static final Log LOG = LogFactory.getLog(RetryingHMSHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RetryingHMSHandler.class);
   private static final String CLASS_NAME = RetryingHMSHandler.class.getName();
 
   private static class Result {

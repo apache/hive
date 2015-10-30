@@ -18,8 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -41,7 +41,7 @@ import java.util.List;
  * copies.
  */
 public class SharedStorageDescriptor extends StorageDescriptor {
-  static final private Log LOG = LogFactory.getLog(SharedStorageDescriptor.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(SharedStorageDescriptor.class.getName());
   private boolean colsCopied = false;
   private boolean serdeCopied = false;
   private boolean bucketsCopied = false;

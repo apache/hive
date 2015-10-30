@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.hwi;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * After getting a contextInitialized event this component starts an instance of
@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class HWIContextListener implements javax.servlet.ServletContextListener {
 
-  protected static final Log l4j = LogFactory.getLog(HWIContextListener.class
+  protected static final Logger l4j = LoggerFactory.getLogger(HWIContextListener.class
       .getName());
 
   /**

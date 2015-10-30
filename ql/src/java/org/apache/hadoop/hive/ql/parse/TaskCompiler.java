@@ -26,8 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -69,7 +69,7 @@ import com.google.common.collect.Interners;
  */
 public abstract class TaskCompiler {
 
-  protected final Log LOG = LogFactory.getLog(TaskCompiler.class);
+  protected final Logger LOG = LoggerFactory.getLogger(TaskCompiler.class);
 
   protected Hive db;
   protected LogHelper console;

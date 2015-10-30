@@ -30,8 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
@@ -61,7 +61,7 @@ import org.apache.hive.service.cli.thrift.TTypeQualifiers;
  */
 public class HiveQueryResultSet extends HiveBaseResultSet {
 
-  public static final Log LOG = LogFactory.getLog(HiveQueryResultSet.class);
+  public static final Logger LOG = LoggerFactory.getLogger(HiveQueryResultSet.class);
 
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle;

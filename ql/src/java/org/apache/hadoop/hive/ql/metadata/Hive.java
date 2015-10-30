@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.collect.Sets;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -139,7 +139,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 @SuppressWarnings({"deprecation", "rawtypes"})
 public class Hive {
 
-  static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Hive");
+  static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Hive");
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
@@ -1464,6 +1464,7 @@ public class Hive {
 
       newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(),
           inheritTableSpecs, newFiles);
+
       // recreate the partition if it existed before
       if (isSkewedStoreAsSubdir) {
         org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
@@ -1474,12 +1475,18 @@ public class Hive {
         /* Add list bucketing location mappings. */
         skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
         newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
+        if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+          newTPart.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+        }
         alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
         newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs,
             newFiles);
         return new Partition(tbl, newCreatedTpart);
       }
-
+      if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        newTPart.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()));
+      }
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -1714,6 +1721,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } catch (IOException e) {
         throw new HiveException("addFiles: filesystem error in check phase", e);
       }
+    }
+    if(!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      tbl.getParameters().put(StatsSetupConst.COLUMN_STATS_ACCURATE, "false");
+    }  else {
       tbl.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, "true");
     }
 
@@ -2636,13 +2647,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       destFs = destf.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to get dest fs", e);
       throw new HiveException(e.getMessage(), e);
     }
     try {
       srcFs = srcf.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Failed to get dest fs", e);
       throw new HiveException(e.getMessage(), e);
     }
 

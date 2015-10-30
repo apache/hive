@@ -42,8 +42,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -99,7 +99,7 @@ import com.google.common.base.Preconditions;
  * configuration information
  */
 public class SessionState {
-  private static final Log LOG = LogFactory.getLog(SessionState.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
   private static final String TMP_PREFIX = "_tmp_space.db";
   private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
@@ -265,9 +265,9 @@ public class SessionState {
    */
   private Timestamp queryCurrentTimestamp;
 
-  private ResourceMaps resourceMaps;
+  private final ResourceMaps resourceMaps;
 
-  private DependencyResolver dependencyResolver;
+  private final DependencyResolver dependencyResolver;
   /**
    * Get the lineage state stored in this session.
    *
@@ -934,14 +934,14 @@ public class SessionState {
    */
   public static class LogHelper {
 
-    protected Log LOG;
+    protected Logger LOG;
     protected boolean isSilent;
 
-    public LogHelper(Log LOG) {
+    public LogHelper(Logger LOG) {
       this(LOG, false);
     }
 
-    public LogHelper(Log LOG, boolean isSilent) {
+    public LogHelper(Logger LOG, boolean isSilent) {
       this.LOG = LOG;
       this.isSilent = isSilent;
     }
@@ -1013,7 +1013,7 @@ public class SessionState {
    */
   public static LogHelper getConsole() {
     if (_console == null) {
-      Log LOG = LogFactory.getLog("SessionState");
+      Logger LOG = LoggerFactory.getLogger("SessionState");
       _console = new LogHelper(LOG);
     }
     return _console;
@@ -1543,7 +1543,7 @@ public class SessionState {
         }
       }
     } catch (Exception e) {
-      LOG.info(e);
+      LOG.info("Failed to remove classloaders from DataNucleus ", e);
     }
   }
 

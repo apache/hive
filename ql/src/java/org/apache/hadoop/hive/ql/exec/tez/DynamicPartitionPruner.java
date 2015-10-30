@@ -38,8 +38,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -73,7 +73,7 @@ import org.apache.tez.runtime.api.events.InputInitializerEvent;
  */
 public class DynamicPartitionPruner {
 
-  private static final Log LOG = LogFactory.getLog(DynamicPartitionPruner.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DynamicPartitionPruner.class);
 
   private final InputInitializerContext context;
   private final MapWork work;

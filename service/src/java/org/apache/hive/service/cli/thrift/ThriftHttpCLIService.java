@@ -21,7 +21,6 @@ package org.apache.hive.service.cli.thrift;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -143,7 +142,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       LOG.info(msg);
       httpServer.join();
     } catch (Throwable t) {
-      LOG.fatal(
+      LOG.error(
           "Error starting HiveServer2: could not start "
               + ThriftHttpCLIService.class.getSimpleName(), t);
       System.exit(-1);

@@ -24,8 +24,8 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 import junit.framework.Assert;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -52,7 +52,7 @@ import java.util.Map;
  */
 public class TestHCatClientNotification {
 
-  private static final Log LOG = LogFactory.getLog(TestHCatClientNotification.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestHCatClientNotification.class.getName());
   private static HCatClient hCatClient;
   private int startTime;
   private long firstEventId;

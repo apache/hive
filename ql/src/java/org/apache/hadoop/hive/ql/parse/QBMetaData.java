@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -51,7 +51,7 @@ public class QBMetaData {
   private final HashMap<String, DynamicPartitionCtx> aliasToDPCtx;
 
   @SuppressWarnings("unused")
-  private static final Log LOG = LogFactory.getLog(QBMetaData.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(QBMetaData.class.getName());
 
   public QBMetaData() {
     // Must be deterministic order map - see HIVE-8707

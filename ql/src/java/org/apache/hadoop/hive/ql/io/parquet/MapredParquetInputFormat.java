@@ -14,8 +14,8 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
@@ -36,7 +36,7 @@ import org.apache.parquet.hadoop.ParquetInputFormat;
  */
 public class MapredParquetInputFormat extends FileInputFormat<NullWritable, ArrayWritable> {
 
-  private static final Log LOG = LogFactory.getLog(MapredParquetInputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MapredParquetInputFormat.class);
 
   private final ParquetInputFormat<ArrayWritable> realInput;
 

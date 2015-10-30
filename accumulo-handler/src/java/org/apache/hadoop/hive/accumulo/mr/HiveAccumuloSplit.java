@@ -28,7 +28,8 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wraps RangeInputSplit into a FileSplit so Hadoop won't complain when it tries to make its own
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
  * error
  */
 public class HiveAccumuloSplit extends FileSplit implements InputSplit {
-  private static final Logger log = Logger.getLogger(HiveAccumuloSplit.class);
+  private static final Logger log = LoggerFactory.getLogger(HiveAccumuloSplit.class);
 
   private RangeInputSplit split;
 

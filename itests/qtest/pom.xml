@@ -36,6 +36,7 @@
     <run_disabled>false</run_disabled>
     <clustermode></clustermode>
     <execute.beeline.tests>false</execute.beeline.tests>
+    <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
   </properties>
 
   <dependencies>
@@ -106,7 +107,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-registry</artifactId>
-      <version>${hadoop-23.version}</version>
+      <version>${hadoop.version}</version>
       <optional>true</optional>
     </dependency>
 
@@ -115,6 +116,171 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-servlet</artifactId>
+      <version>${jersey.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-archives</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+      <version>${hadoop.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-hs</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-llap-server</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-llap-server</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-server-tests</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-client</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-common</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-common</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-hadoop-compat</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-hadoop-compat</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-hadoop2-compat</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-hadoop2-compat</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-server</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-server</artifactId>
+      <version>${hbase.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-tests</artifactId>
+      <version>${tez.version}</version>
+      <type>test-jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+      <version>${tez.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-library</artifactId>
+      <version>${tez.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-mapreduce</artifactId>
+      <version>${tez.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-dag</artifactId>
+      <version>${tez.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -126,261 +292,9 @@
         <test.warehouse.scheme></test.warehouse.scheme>
       </properties>
     </profile>
-    <profile>
-      <id>hadoop-1</id>
-      <properties>
-        <active.hadoop.version>${hadoop-20S.version}</active.hadoop.version>
-        <test.dfs.mkdir>-mkdir</test.dfs.mkdir>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-core</artifactId>
-          <version>${hadoop-20S.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-test</artifactId>
-          <version>${hadoop-20S.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-tools</artifactId>
-          <version>${hadoop-20S.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-common</artifactId>
-          <version>${hbase.hadoop1.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-common</artifactId>
-          <version>${hbase.hadoop1.version}</version>
-          <scope>test</scope>
-          <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop-compat</artifactId>
-          <version>${hbase.hadoop1.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop-compat</artifactId>
-          <version>${hbase.hadoop1.version}</version>
-          <scope>test</scope>
-          <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop1-compat</artifactId>
-          <version>${hbase.hadoop1.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop1-compat</artifactId>
-          <version>${hbase.hadoop1.version}</version>
-          <scope>test</scope>
-          <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-server</artifactId>
-          <version>${hbase.hadoop1.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>hadoop-2</id>
-      <properties>
-        <active.hadoop.version>${hadoop-23.version}</active.hadoop.version>
-        <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-servlet</artifactId>
-          <version>${jersey.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-archives</artifactId>
-          <version>${hadoop-23.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop-23.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs</artifactId>
-          <version>${hadoop-23.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs</artifactId>
-          <version>${hadoop-23.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-          <version>${hadoop-23.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-mapreduce-client-hs</artifactId>
-          <version>${hadoop-23.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-mapreduce-client-core</artifactId>
-          <version>${hadoop-23.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-llap-server</artifactId>
-          <version>${project.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-llap-server</artifactId>
-          <version>${project.version}</version>
-          <type>test-jar</type>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-          <version>${commons-logging.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-server-tests</artifactId>
-          <version>${hadoop-23.version}</version>
-          <scope>test</scope>
-          <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-client</artifactId>
-          <version>${hadoop-23.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-common</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-common</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <scope>test</scope>
-          <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop-compat</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop-compat</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <scope>test</scope>
-          <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop2-compat</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-hadoop2-compat</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <scope>test</scope>
-          <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-server</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-server</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-        <dependency> 
-          <groupId>org.apache.tez</groupId> 
-          <artifactId>tez-tests</artifactId>
-          <version>${tez.version}</version>
-          <type>test-jar</type>
-        </dependency>
-        <dependency> 
-          <groupId>org.apache.tez</groupId>
-          <artifactId>tez-api</artifactId>
-          <version>${tez.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency> 
-          <groupId>org.apache.tez</groupId>
-          <artifactId>tez-runtime-library</artifactId>
-          <version>${tez.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency> 
-          <groupId>org.apache.tez</groupId>
-          <artifactId>tez-mapreduce</artifactId>
-          <version>${tez.version}</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency> 
-          <groupId>org.apache.tez</groupId>
-          <artifactId>tez-dag</artifactId>
-          <version>${tez.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
   </profiles>
 
-  <build>
+ <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -439,7 +353,7 @@
                   runDisabled="${run_disabled}"
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/compiler/errors/" className="TestParseNegative"
                   logFile="${project.build.directory}/testparseneggen.log"
-                  hadoopVersion="${active.hadoop.version}"
+                  hadoopVersion="${hadoop.version}"
                   logDirectory="${project.build.directory}/qfile-results/negative/"
                   initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
@@ -457,7 +371,7 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/" className="TestCliDriver"
                   logFile="${project.build.directory}/testclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-                  hadoopVersion="${active.hadoop.version}"
+                  hadoopVersion="${hadoop.version}"
                   initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
@@ -474,7 +388,7 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientnegative/" className="TestNegativeCliDriver"
                   logFile="${project.build.directory}/testnegativeclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientnegative/"
-                  hadoopVersion="${active.hadoop.version}"
+                  hadoopVersion="${hadoop.version}"
                   initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
@@ -490,7 +404,7 @@
                   className="TestCompareCliDriver"
                   logFile="${project.build.directory}/testcompareclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientcompare/"
-                  hadoopVersion="${active.hadoop.version}"
+                  hadoopVersion="${hadoop.version}"
                   initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
@@ -507,72 +421,65 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/" className="TestMinimrCliDriver"
                   logFile="${project.build.directory}/testminimrclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-                  hadoopVersion="${active.hadoop.version}"
+                  hadoopVersion="${hadoop.version}"
                   initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
-                <if>
-                  <equals arg1="${active.hadoop.version}" arg2="${hadoop-23.version}"/>
-                  <then>
-                    <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
-                              outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
-                              templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
-                              queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
-                              queryFile="${qfile}"
-                              includeQueryFile="${minitez.query.files},${minitez.query.files.shared}"
-                              queryFileRegex="${qfile_regex}"
-                              clusterMode="tez"
-                              runDisabled="${run_disabled}"
-                              hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/tez"
-                              resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/tez"
-                              className="TestMiniTezCliDriver"
-                              logFile="${project.build.directory}/testminitezclidrivergen.log"
-                              logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-                              hadoopVersion="${active.hadoop.version}"
-                              initScript="${initScript}"
-                              cleanupScript="q_test_cleanup.sql"
-                              useHBaseMetastore="true"/>
+                <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+                  outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
+                  templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
+                  queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
+                  queryFile="${qfile}"
+                  includeQueryFile="${minitez.query.files},${minitez.query.files.shared}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="tez"
+                  runDisabled="${run_disabled}"
+                  hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/tez"
+                  resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/tez"
+                  className="TestMiniTezCliDriver"
+                  logFile="${project.build.directory}/testminitezclidrivergen.log"
+                  logDirectory="${project.build.directory}/qfile-results/clientpositive/"
+                  hadoopVersion="${hadoop.version}"
+                  initScript="${initScript}"
+                  cleanupScript="q_test_cleanup.sql"
+                  useHBaseMetastore="true"/>
 
-                    <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
-                              outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
-                              templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
-                              queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
-                              queryFile="${qfile}"
-                              includeQueryFile="${minillap.query.files}"
-                              queryFileRegex="${qfile_regex}"
-                              clusterMode="llap"
-                              runDisabled="${run_disabled}"
-                              hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/llap"
-                              resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/llap"
-                              className="TestMiniLlapCliDriver"
-                              logFile="${project.build.directory}/testminitezclidrivergen.log"
-                              logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-                              hadoopVersion="${active.hadoop.version}"
-                              initScript="q_test_init.sql"
-                              cleanupScript="q_test_cleanup.sql"/>
+                <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+                  outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
+                  templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
+                  queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
+                  queryFile="${qfile}"
+                  includeQueryFile="${minillap.query.files}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="llap"
+                  runDisabled="${run_disabled}"
+                  hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/llap"
+                  resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/llap"
+                  className="TestMiniLlapCliDriver"
+                  logFile="${project.build.directory}/testminitezclidrivergen.log"
+                  logDirectory="${project.build.directory}/qfile-results/clientpositive/"
+                  hadoopVersion="${hadoop.version}"
+                  initScript="q_test_init.sql"
+                  cleanupScript="q_test_cleanup.sql"/>
 
-                    <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
-                              outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
-                              templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
-                              queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
-                              queryFile="${qfile}"
-                              includeQueryFile="${encrypted.query.files}"
-                              queryFileRegex="${qfile_regex}"
-                              clusterMode="encrypted"
-                              runDisabled="${run_disabled}"
-                              hiveConfDir="${basedir}/${hive.path.to.root}/data/conf"
-                              resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/encrypted"
-                              className="TestEncryptedHDFSCliDriver"
-                              logFile="${project.build.directory}/testencryptedhdfsclidrivergen.log"
-                              logDirectory="${project.build.directory}/qfile-results/clientpositive/"
-                              hadoopVersion="${active.hadoop.version}"
-                              initScript="q_test_init_for_encryption.sql"
-                              cleanupScript="q_test_cleanup_for_encryption.sql"/>
+                <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+                  outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
+                  templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestCliDriver.vm"
+                  queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
+                  queryFile="${qfile}"
+                  includeQueryFile="${encrypted.query.files}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="encrypted"
+                  runDisabled="${run_disabled}"
+                  hiveConfDir="${basedir}/${hive.path.to.root}/data/conf"
+                  resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/encrypted"
+                  className="TestEncryptedHDFSCliDriver"
+                  logFile="${project.build.directory}/testencryptedhdfsclidrivergen.log"
+                  logDirectory="${project.build.directory}/qfile-results/clientpositive/"
+                  hadoopVersion="${hadoop.version}"
+                  initScript="q_test_init_for_encryption.sql"
+                  cleanupScript="q_test_cleanup_for_encryption.sql"/>
 
-                  </then>
-                  <else>
-                  </else>
-                </if>
 
                 <!-- Negative Minimr -->
                 <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
@@ -587,7 +494,7 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientnegative/" className="TestNegativeMinimrCliDriver"
                   logFile="${project.build.directory}/testnegativeminimrclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientnegative/"
-                  hadoopVersion="${hadoopVersion}"
+                  hadoopVersion="${hadoop.version}"
                   initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
@@ -649,7 +556,7 @@
                         resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/" className="TestBeeLineDriver"
                         logFile="${project.build.directory}/testbeelinedrivergen.log"
                         logDirectory="${project.build.directory}/qfile-results/beelinepositive/"
-                        hadoopVersion="${hadoopVersion}"/>
+                        hadoopVersion="${hadoop.version}"/>
                     </then>
                 </if>
 
@@ -666,7 +573,7 @@
                   resultsDirectory="${basedir}/${hive.path.to.root}/contrib/src/test/results/clientpositive/" className="TestContribCliDriver"
                   logFile="${project.build.directory}/testcontribclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/contribclientpositive"
-                  hadoopVersion="${hadoopVersion}"
+                  hadoopVersion="${hadoop.version}"
                   initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 

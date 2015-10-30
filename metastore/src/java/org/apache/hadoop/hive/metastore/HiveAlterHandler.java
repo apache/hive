@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.metastore;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -55,7 +55,7 @@ import java.util.List;
 public class HiveAlterHandler implements AlterHandler {
 
   protected Configuration hiveConf;
-  private static final Log LOG = LogFactory.getLog(HiveAlterHandler.class
+  private static final Logger LOG = LoggerFactory.getLogger(HiveAlterHandler.class
       .getName());
 
   @Override
@@ -242,12 +242,12 @@ public class HiveAlterHandler implements AlterHandler {
       // commit the changes
       success = msdb.commitTransaction();
     } catch (InvalidObjectException e) {
-      LOG.debug(e);
+      LOG.debug("Failed to get object from Metastore ", e);
       throw new InvalidOperationException(
           "Unable to change partition or table."
               + " Check metastore logs for detailed stack." + e.getMessage());
     } catch (NoSuchObjectException e) {
-      LOG.debug(e);
+      LOG.debug("Object not found in metastore ", e);
       throw new InvalidOperationException(
           "Unable to change partition or table. Database " + dbname + " does not exist"
               + " Check metastore logs for detailed stack." + e.getMessage());
@@ -402,7 +402,7 @@ public class HiveAlterHandler implements AlterHandler {
             Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues()));
           destPath = constructRenamedPath(destPath, new Path(new_part.getSd().getLocation()));
         } catch (NoSuchObjectException e) {
-          LOG.debug(e);
+          LOG.debug("Didn't find object in metastore ", e);
           throw new InvalidOperationException(
             "Unable to change partition or table. Database " + dbname + " does not exist"
               + " Check metastore logs for detailed stack." + e.getMessage());

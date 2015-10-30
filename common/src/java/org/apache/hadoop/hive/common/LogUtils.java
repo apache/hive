@@ -21,11 +21,11 @@ package org.apache.hadoop.hive.common;
 import java.io.File;
 import java.net.URL;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utilities common to logging operations.
@@ -34,7 +34,7 @@ public class LogUtils {
 
   private static final String HIVE_L4J = "hive-log4j2.xml";
   private static final String HIVE_EXEC_L4J = "hive-exec-log4j2.xml";
-  private static final Log l4j = LogFactory.getLog(LogUtils.class);
+  private static final Logger l4j = LoggerFactory.getLogger(LogUtils.class);
 
   @SuppressWarnings("serial")
   public static class LogInitializationException extends Exception {

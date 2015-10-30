@@ -19,16 +19,16 @@ package org.apache.hive.common.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.Pool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
 /** Simple object pool of limited size. Implemented as a lock-free ring buffer;
  * may fail to produce items if there are too many concurrent users. */
 public class FixedSizedObjectPool<T> implements Pool<T> {
-  public static final Log LOG = LogFactory.getLog(FixedSizedObjectPool.class);
+  public static final Logger LOG = LoggerFactory.getLogger(FixedSizedObjectPool.class);
 
   /**
    * Ring buffer has two "markers" - where objects are present ('objects' list), and where they are

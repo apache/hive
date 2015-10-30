@@ -26,8 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -252,54 +250,6 @@ public class TestFileDump {
     assertEquals("{\"b\":false,\"bt\":20,\"s\":200,\"i\":2000,\"l\":20000,\"f\":8,\"d\":40,\"de\":\"2.2222\",\"t\":\"2014-11-25 18:02:44\",\"dt\":\"2014-09-28\",\"str\":\"abcd\",\"c\":\"world                                                                                                                                                                                                                                                          \",\"vc\":\"world\",\"m\":[{\"_key\":\"k3\",\"_value\":\"v3\"}],\"a\":[200,300],\"st\":{\"i\":20,\"s\":\"bar\"}}", lines[1]);
   }
   
-  @Test(expected = IOException.class)
-  public void testDataDumpThrowsIOException() throws Exception {
-    PrintStream origOut = System.out;
-    try {
-      ObjectInspector inspector;
-      synchronized (TestOrcFile.class) {
-        inspector = ObjectInspectorFactory.getReflectionObjectInspector
-            (AllTypesRecord.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-      }
-      Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-          100000, CompressionKind.NONE, 10000, 1000);
-      Map<String, String> m = new HashMap<String, String>(2);
-      m.put("k1", "v1");
-      writer.addRow(new AllTypesRecord(
-          true,
-          (byte) 10,
-          (short) 100,
-          1000,
-          10000L,
-          4.0f,
-          20.0,
-          HiveDecimal.create("4.2222"),
-          new Timestamp(1416967764000L),
-          new Date(1416967764000L),
-          "string",
-          new HiveChar("hello", 5),
-          new HiveVarchar("hello", 10),
-          m,
-          Arrays.asList(100, 200),
-          new AllTypesRecord.Struct(10, "foo")));
-      
-      writer.close();
-      
-      OutputStream myOut = new OutputStream() {
-        @Override
-        public void write(int b) throws IOException {
-          throw new IOException();
-        }
-      };
-      
-      // replace stdout and run command
-      System.setOut(new PrintStream(myOut));
-      FileDump.main(new String[]{testFilePath.toString(), "-d"});
-    } finally {
-      System.setOut(origOut);
-    }
-  }
-
   // Test that if the fraction of rows that have distinct strings is greater than the configured
   // threshold dictionary encoding is turned off.  If dictionary encoding is turned off the length
   // of the dictionary stream for the column will be 0 in the ORC file dump.

@@ -32,8 +32,8 @@ import java.util.StringTokenizer;
 import javax.security.auth.Subject;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.http.protocol.BasicHttpContext;
@@ -51,7 +51,7 @@ public final class HttpAuthUtils {
   public static final String AUTHORIZATION = "Authorization";
   public static final String BASIC = "Basic";
   public static final String NEGOTIATE = "Negotiate";
-  private static final Log LOG = LogFactory.getLog(HttpAuthUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HttpAuthUtils.class);
   private static final String COOKIE_ATTR_SEPARATOR = "&";
   private static final String COOKIE_CLIENT_USER_NAME = "cu";
   private static final String COOKIE_CLIENT_RAND_NUMBER = "rn";

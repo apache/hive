@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -80,7 +80,7 @@ import org.apache.hadoop.io.Writable;
  */
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES})
 public class LazyBinarySerDe extends AbstractSerDe {
-  public static final Log LOG = LogFactory.getLog(LazyBinarySerDe.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(LazyBinarySerDe.class.getName());
 
   public LazyBinarySerDe() throws SerDeException {
   }

@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.http.HtmlQuoting;
@@ -43,7 +43,7 @@ import org.apache.hadoop.mapred.JobConf;
  */
 public class TaskLogProcessor {
 
-  private final Log LOG = LogFactory.getLog(TaskLogProcessor.class);
+  private final Logger LOG = LoggerFactory.getLogger(TaskLogProcessor.class);
   private final Map<ErrorHeuristic, HeuristicStats> heuristics =
     new HashMap<ErrorHeuristic, HeuristicStats>();
   private final List<String> taskLogUrls = new ArrayList<String>();

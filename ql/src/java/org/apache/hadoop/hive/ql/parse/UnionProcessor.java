@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
  */
 public class UnionProcessor implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(UnionProcessor.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(UnionProcessor.class.getName());
 
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)

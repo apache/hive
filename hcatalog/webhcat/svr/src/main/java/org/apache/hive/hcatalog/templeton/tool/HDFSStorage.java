@@ -27,8 +27,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -50,7 +50,7 @@ public class HDFSStorage implements TempletonStorage {
   public static final String JOB_TRACKINGPATH = "/created";
   public static final String OVERHEAD_PATH = "/overhead";
 
-  private static final Log LOG = LogFactory.getLog(HDFSStorage.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HDFSStorage.class);
 
   public void startCleanup(Configuration config) {
     try {

@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -59,7 +59,7 @@ import com.google.common.base.Preconditions;
  * Cloned from GenTezWork.
  */
 public class GenSparkWork implements NodeProcessor {
-  static final private Log LOG = LogFactory.getLog(GenSparkWork.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(GenSparkWork.class.getName());
 
   // instance of shared utils
   private GenSparkUtils utils = null;

@@ -22,8 +22,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.math.LongMath;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -98,7 +98,7 @@ import java.util.Set;
 
 public class StatsUtils {
 
-  private static final Log LOG = LogFactory.getLog(StatsUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(StatsUtils.class.getName());
 
 
   /**

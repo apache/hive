@@ -28,8 +28,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -77,7 +77,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 public class SkewJoinOptimizer implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(SkewJoinOptimizer.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(SkewJoinOptimizer.class.getName());
 
   public static class SkewJoinProc implements NodeProcessor {
     private ParseContext parseContext;

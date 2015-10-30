@@ -49,11 +49,11 @@ import jline.console.completer.ArgumentCompleter.ArgumentDelimiter;
 import jline.console.completer.ArgumentCompleter.AbstractArgumentDelimiter;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
@@ -78,6 +78,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -103,10 +105,8 @@ public class CliDriver {
   public CliDriver() {
     SessionState ss = SessionState.get();
     conf = (ss != null) ? ss.getConf() : new Configuration();
-    Log LOG = LogFactory.getLog("CliDriver");
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("CliDriver inited with classpath " + System.getProperty("java.class.path"));
-    }
+    Logger LOG = LoggerFactory.getLogger("CliDriver");
+    LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
     console = new LogHelper(LOG);
   }
 
@@ -342,7 +342,6 @@ public class CliDriver {
       // Hook up the custom Ctrl+C handler while processing this line
       interruptSignal = new Signal("INT");
       oldSignal = Signal.handle(interruptSignal, new SignalHandler() {
-        private final Thread cliThread = Thread.currentThread();
         private boolean interruptRequested;
 
         @Override

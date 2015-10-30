@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
@@ -32,7 +32,7 @@ public abstract class VectorMapJoinFastBytesHashMap
         extends VectorMapJoinFastBytesHashTable
         implements VectorMapJoinBytesHashMap {
 
-  private static final Log LOG = LogFactory.getLog(VectorMapJoinFastBytesHashMap.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastBytesHashMap.class);
 
   private VectorMapJoinFastValueStore valueStore;
 

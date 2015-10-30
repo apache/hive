@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -52,7 +52,7 @@ import java.util.TreeMap;
  */
 public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
-  private static final Log LOG = LogFactory.getLog(OrcRawRecordMerger.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcRawRecordMerger.class);
 
   private final Configuration conf;
   private final boolean collapse;

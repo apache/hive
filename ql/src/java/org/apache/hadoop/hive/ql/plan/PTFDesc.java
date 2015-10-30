@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class PTFDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   @SuppressWarnings("unused")
-  private static final Log LOG = LogFactory.getLog(PTFDesc.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(PTFDesc.class.getName());
 
   PartitionedTableFunctionDef funcDef;
   LeadLagInfo llInfo;

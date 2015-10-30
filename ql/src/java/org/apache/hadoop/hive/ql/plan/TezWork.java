@@ -32,8 +32,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -65,7 +65,7 @@ public class TezWork extends AbstractOperatorDesc {
     }
   }
 
-  private static transient final Log LOG = LogFactory.getLog(TezWork.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(TezWork.class);
 
   private static int counter;
   private final String name;

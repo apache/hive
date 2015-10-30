@@ -21,8 +21,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.text.NumberFormat;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  * for HashTableSinkOperator.
  */
 public class MapJoinMemoryExhaustionHandler {
-  private static final Log LOG = LogFactory.getLog(MapJoinMemoryExhaustionHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MapJoinMemoryExhaustionHandler.class);
 
   public final MemoryMXBean memoryMXBean;
 

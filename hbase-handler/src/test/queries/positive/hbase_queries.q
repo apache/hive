@@ -1,5 +1,5 @@
 DROP TABLE hbase_table_1;
-CREATE TABLE hbase_table_1(key int, value string) 
+CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
@@ -161,6 +161,8 @@ DESCRIBE EXTENDED hbase_table_1_like;
 
 INSERT OVERWRITE TABLE hbase_table_1_like SELECT * FROM hbase_table_1;
 SELECT COUNT(*) FROM hbase_table_1_like;
+
+SHOW CREATE TABLE hbase_table_1_like;
 
 DROP TABLE hbase_table_1;
 DROP TABLE hbase_table_1_like;

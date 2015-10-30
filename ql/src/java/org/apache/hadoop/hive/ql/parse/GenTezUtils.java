@@ -26,8 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -67,7 +67,7 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPA
  * Methods are made non-static on as needed basis.
  */
 public class GenTezUtils {
-  static final private Log LOG = LogFactory.getLog(GenTezUtils.class);
+  static final private Logger LOG = LoggerFactory.getLogger(GenTezUtils.class);
 
   public GenTezUtils() {
   }

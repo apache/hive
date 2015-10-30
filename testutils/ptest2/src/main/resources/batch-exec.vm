@@ -62,6 +62,8 @@ then
     testModule=./
   fi
   pushd $testModule
+  #clean to force regeneration of class files (maven sometimes skips generation)
+  mvn clean -Dmaven.repo.local=$localDir/$instanceName/maven $mavenArgs
   timeout 2h mvn -B test -Dmaven.repo.local=$localDir/$instanceName/maven \
     $mavenArgs $mavenTestArgs $testArguments 1>$logDir/maven-test.txt 2>&1 </dev/null &
 #[[

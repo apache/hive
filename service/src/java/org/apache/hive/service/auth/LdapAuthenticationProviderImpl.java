@@ -17,8 +17,8 @@
  */
 package org.apache.hive.service.auth;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.ServiceUtils;
 
@@ -39,7 +39,7 @@ import javax.security.sasl.AuthenticationException;
 
 public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvider {
 
-  private static final Log LOG        = LogFactory.getLog(LdapAuthenticationProviderImpl.class);
+  private static final Logger LOG        = LoggerFactory.getLogger(LdapAuthenticationProviderImpl.class);
   private static final String DN_ATTR = "distinguishedName";
 
   private final String ldapURL;

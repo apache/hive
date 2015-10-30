@@ -20,8 +20,8 @@ package org.apache.hive.service.cli.session;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -42,7 +42,7 @@ import org.apache.hive.service.cli.thrift.TProtocolVersion;
  */
 public class HiveSessionImplwithUGI extends HiveSessionImpl {
   public static final String HS2TOKEN = "HiveServer2ImpersonationToken";
-  static final Log LOG = LogFactory.getLog(HiveSessionImplwithUGI.class);
+  static final Logger LOG = LoggerFactory.getLogger(HiveSessionImplwithUGI.class);
 
   private UserGroupInformation sessionUgi = null;
   private String hmsDelegationTokenStr = null;

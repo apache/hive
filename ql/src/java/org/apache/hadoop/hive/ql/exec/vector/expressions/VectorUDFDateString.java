@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.io.Text;
 
@@ -32,7 +32,7 @@ public class VectorUDFDateString extends StringUnaryUDF {
 
   private transient static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       VectorUDFDateString.class.getName());
 
   public VectorUDFDateString(int colNum, int outputColumn) {

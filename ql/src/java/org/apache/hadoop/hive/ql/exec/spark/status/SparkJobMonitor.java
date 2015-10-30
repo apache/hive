@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -36,13 +36,13 @@ import java.util.concurrent.TimeUnit;
 abstract class SparkJobMonitor {
 
   protected static final String CLASS_NAME = SparkJobMonitor.class.getName();
-  protected static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  protected static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   protected static SessionState.LogHelper console = new SessionState.LogHelper(LOG);
   protected final PerfLogger perfLogger = SessionState.getPerfLogger();
   protected final int checkInterval = 1000;
   protected final long monitorTimeoutInteval;
 
-  private Set<String> completed = new HashSet<String>();
+  private final Set<String> completed = new HashSet<String>();
   private final int printInterval = 3000;
   private long lastPrintTime;
 

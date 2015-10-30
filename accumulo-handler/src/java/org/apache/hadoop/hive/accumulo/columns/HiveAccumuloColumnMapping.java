@@ -17,7 +17,8 @@
 package org.apache.hadoop.hive.accumulo.columns;
 
 import org.apache.hadoop.hive.accumulo.AccumuloHiveConstants;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 
@@ -26,7 +27,7 @@ import com.google.common.base.Charsets;
  */
 public class HiveAccumuloColumnMapping extends ColumnMapping {
   @SuppressWarnings("unused")
-  private static final Logger log = Logger.getLogger(HiveAccumuloColumnMapping.class);
+  private static final Logger log = LoggerFactory.getLogger(HiveAccumuloColumnMapping.class);
 
   protected String columnFamily, columnQualifier;
   protected byte[] columnFamilyBytes, columnQualifierBytes;

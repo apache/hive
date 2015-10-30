@@ -34,8 +34,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
@@ -45,6 +43,8 @@ import org.apache.curator.framework.api.CuratorEventType;
 import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -78,9 +78,8 @@ import com.google.common.base.Joiner;
  *
  */
 public class HiveServer2 extends CompositeService {
-  private static final Log LOG = LogFactory.getLog(HiveServer2.class);
   private static CountDownLatch deleteSignal;
-
+  private static final Logger LOG = LoggerFactory.getLogger(HiveServer2.class);
   private CLIService cliService;
   private ThriftCLIService thriftCLIService;
   private PersistentEphemeralNode znode;
@@ -208,7 +207,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Created the root name space: " + rootNamespace + " on ZooKeeper for HiveServer2");
     } catch (KeeperException e) {
       if (e.code() != KeeperException.Code.NODEEXISTS) {
-        LOG.fatal("Unable to create HiveServer2 namespace: " + rootNamespace + " on ZooKeeper", e);
+        LOG.error("Unable to create HiveServer2 namespace: " + rootNamespace + " on ZooKeeper", e);
         throw e;
       }
     }
@@ -241,7 +240,7 @@ public class HiveServer2 extends CompositeService {
       }
       LOG.info("Created a znode on ZooKeeper for HiveServer2 uri: " + instanceURI);
     } catch (Exception e) {
-      LOG.fatal("Unable to create a znode for this server instance", e);
+      LOG.error("Unable to create a znode for this server instance", e);
       if (znode != null) {
         znode.close();
       }
@@ -550,7 +549,7 @@ public class HiveServer2 extends CompositeService {
       LOG.debug(initLog4jMessage);
       HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
 
-      // Log debug message from "oproc" after log4j initialize properly
+      // Logger debug message from "oproc" after log4j initialize properly
       LOG.debug(oproc.getDebugMessage().toString());
 
       // Call the executor which will execute the appropriate command based on the parsed options
@@ -683,7 +682,7 @@ public class HiveServer2 extends CompositeService {
       try {
         startHiveServer2();
       } catch (Throwable t) {
-        LOG.fatal("Error starting HiveServer2", t);
+        LOG.error("Error starting HiveServer2", t);
         System.exit(-1);
       }
     }
@@ -705,7 +704,7 @@ public class HiveServer2 extends CompositeService {
       try {
         deleteServerInstancesFromZooKeeper(versionNumber);
       } catch (Exception e) {
-        LOG.fatal("Error deregistering HiveServer2 instances for version: " + versionNumber
+        LOG.error("Error deregistering HiveServer2 instances for version: " + versionNumber
             + " from ZooKeeper", e);
         System.out.println("Error deregistering HiveServer2 instances for version: " + versionNumber
             + " from ZooKeeper." + e);

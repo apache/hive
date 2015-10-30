@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class collects column information for mapping vector columns, including the hive type name.
@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  * Call getMapping to collects the results into convenient arrays.
  */
 public class VectorColumnOrderedMap {
-  protected static transient final Log LOG = LogFactory.getLog(VectorColumnOrderedMap.class);
+  protected static transient final Logger LOG = LoggerFactory.getLogger(VectorColumnOrderedMap.class);
 
   protected String name;
 

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -55,7 +55,7 @@ import org.apache.hadoop.io.Text;
              + "The output is an array of structs with the top-k n-grams. It might be convenient "
              + "to explode() the output of this UDAF.")
 public class GenericUDAFnGrams implements GenericUDAFResolver {
-  static final Log LOG = LogFactory.getLog(GenericUDAFnGrams.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(GenericUDAFnGrams.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {

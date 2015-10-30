@@ -64,6 +64,9 @@ public class SetProcessor implements CommandProcessor {
     for (Object one : p.keySet()) {
       String oneProp = (String) one;
       String oneValue = p.getProperty(oneProp);
+      if (ss.getConf().isHiddenConfig(oneProp)) {
+        continue;
+      }
       sortedMap.put(oneProp, oneValue);
     }
 
@@ -90,7 +93,9 @@ public class SetProcessor implements CommandProcessor {
   private void dumpOption(String s) {
     SessionState ss = SessionState.get();
 
-    if (ss.getConf().get(s) != null) {
+    if (ss.getConf().isHiddenConfig(s)) {
+      ss.out.println(s + " is a hidden config");
+    } else if (ss.getConf().get(s) != null) {
       ss.out.println(s + "=" + ss.getConf().get(s));
     } else if (ss.getHiveVariables().containsKey(s)) {
       ss.out.println(s + "=" + ss.getHiveVariables().get(s));
@@ -241,7 +246,10 @@ public class SetProcessor implements CommandProcessor {
       }
     } else if (varname.indexOf(HIVECONF_PREFIX) == 0) {
       String var = varname.substring(HIVECONF_PREFIX.length());
-      if (ss.getConf().get(var) != null) {
+      if (ss.getConf().isHiddenConfig(var)) {
+        ss.out.println(HIVECONF_PREFIX + var + " is a hidden config");
+        return createProcessorSuccessResponse();
+      } if (ss.getConf().get(var) != null) {
         ss.out.println(HIVECONF_PREFIX + var + "=" + ss.getConf().get(var));
         return createProcessorSuccessResponse();
       } else {

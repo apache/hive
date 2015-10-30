@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -71,7 +71,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
  */
 public class GroupByOptimizer implements Transform {
 
-  private static final Log LOG = LogFactory.getLog(GroupByOptimizer.class
+  private static final Logger LOG = LoggerFactory.getLogger(GroupByOptimizer.class
       .getName());
 
   public GroupByOptimizer() {

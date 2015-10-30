@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -51,6 +49,8 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GenTezWork separates the operator tree into tez tasks.
@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.ql.plan.UnionWork;
  */
 public class GenTezWork implements NodeProcessor {
 
-  static final private Log LOG = LogFactory.getLog(GenTezWork.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(GenTezWork.class.getName());
 
   private final GenTezUtils utils;
 
@@ -337,7 +337,7 @@ public class GenTezWork implements NodeProcessor {
         unionWork = context.rootUnionWorkMap.get(root);
         if (unionWork == null) {
           // if unionWork is null, it means it is the first time. we need to
-          // create a union work object and add this work to it. Subsequent 
+          // create a union work object and add this work to it. Subsequent
           // work should reference the union and not the actual work.
           unionWork = GenTezUtils.createUnionWork(context, root, operator, tezWork);
           // finally connect the union work with work
@@ -495,7 +495,7 @@ public class GenTezWork implements NodeProcessor {
     int pos = stack.indexOf(currentMergeJoinOperator);
     return (Operator<? extends OperatorDesc>) stack.get(pos - 1);
   }
-  
+
   private void connectUnionWorkWithWork(UnionWork unionWork, BaseWork work, TezWork tezWork,
       GenTezProcContext context) {
     LOG.debug("Connecting union work (" + unionWork + ") with work (" + work + ")");

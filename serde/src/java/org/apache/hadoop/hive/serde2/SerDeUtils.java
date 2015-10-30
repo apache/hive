@@ -19,16 +19,11 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -56,6 +51,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SerDeUtils.
@@ -75,7 +72,7 @@ public final class SerDeUtils {
   // lower case null is used within json objects
   private static final String JSON_NULL = "null";
 
-  public static final Log LOG = LogFactory.getLog(SerDeUtils.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(SerDeUtils.class.getName());
 
   /**
    * Escape a String in JSON format.

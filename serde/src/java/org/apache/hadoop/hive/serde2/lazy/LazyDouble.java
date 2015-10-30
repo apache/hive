@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.nio.charset.CharacterCodingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -32,7 +32,7 @@ import org.apache.hadoop.io.Text;
 public class LazyDouble extends
     LazyPrimitive<LazyDoubleObjectInspector, DoubleWritable> {
 
-  private static final Log LOG = LogFactory.getLog(LazyDouble.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LazyDouble.class);
   public LazyDouble(LazyDoubleObjectInspector oi) {
     super(oi);
     data = new DoubleWritable();

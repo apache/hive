@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -186,7 +186,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
     super.jobCloseOp(hconf, success);
   }
 
-  private void moveUpFiles(Path specPath, Configuration hconf, Log log)
+  private void moveUpFiles(Path specPath, Configuration hconf, Logger log)
       throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
 
@@ -211,7 +211,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
    * @throws HiveException
    */
   private void  mvFileToFinalPath(Path specPath, Configuration hconf,
-      boolean success, Log log) throws IOException, HiveException {
+      boolean success, Logger log) throws IOException, HiveException {
 
     FileSystem fs = specPath.getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);

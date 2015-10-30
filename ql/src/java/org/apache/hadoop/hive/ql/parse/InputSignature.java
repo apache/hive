@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -36,7 +36,7 @@ public class InputSignature {
   private final ArrayList<TypeInfo> typeArray;
 
   @SuppressWarnings("unused")
-  private static final Log LOG = LogFactory.getLog(InputSignature.class
+  private static final Logger LOG = LoggerFactory.getLogger(InputSignature.class
       .getName());
 
   public InputSignature(String name) {

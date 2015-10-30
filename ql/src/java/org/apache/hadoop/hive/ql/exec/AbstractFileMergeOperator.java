@@ -19,13 +19,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -34,6 +30,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fast file merge operator for ORC and RCfile. This is an abstract class which
@@ -44,8 +42,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     extends Operator<T> implements Serializable {
 
   public static final String BACKUP_PREFIX = "_backup.";
-  public static final Log LOG = LogFactory
-      .getLog(AbstractFileMergeOperator.class);
+  public static final Logger LOG = LoggerFactory.getLogger(AbstractFileMergeOperator.class);
 
   protected JobConf jc;
   protected FileSystem fs;

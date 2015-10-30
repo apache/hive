@@ -19,8 +19,8 @@ package org.apache.hive.beeline.cli;
 
 import junit.framework.Assert;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 public class TestHiveCli {
-  private static final Log LOG = LogFactory.getLog(TestHiveCli.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestHiveCli.class.getName());
   private static final int ERRNO_OK = 0;
   private static final int ERRNO_ARGS = 1;
   private static final int ERRNO_OTHER = 2;

@@ -37,8 +37,8 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -70,7 +70,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 public class SqlFunctionConverter {
-  private static final Log LOG = LogFactory.getLog(SqlFunctionConverter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SqlFunctionConverter.class);
 
   static final Map<String, SqlOperator>    hiveToCalcite;
   static final Map<SqlOperator, HiveToken> calciteToHiveToken;

@@ -33,8 +33,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLock;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -50,7 +48,7 @@ import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestDummyTxnManager {
-  private HiveConf conf = new HiveConf();
+  private final HiveConf conf = new HiveConf();
   private HiveTxnManager txnMgr;
   private Context ctx;
   private int nextInput = 1;
@@ -67,7 +65,6 @@ public class TestDummyTxnManager {
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, DummyTxnManager.class.getName());
     SessionState.start(conf);
     ctx = new Context(conf);
-    LogManager.getRootLogger().setLevel(Level.DEBUG);
 
     txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     Assert.assertTrue(txnMgr instanceof DummyTxnManager);
@@ -116,8 +113,8 @@ public class TestDummyTxnManager {
     Assert.assertEquals(expectedLocks.get(1).getHiveLockMode(), resultLocks.get(1).getHiveLockMode());
     Assert.assertEquals(expectedLocks.get(0).getHiveLockObject().getName(), resultLocks.get(0).getHiveLockObject().getName());
 
-    verify(mockLockManager).lock((List<HiveLockObj>)lockObjsCaptor.capture(), eq(false));
-    List<HiveLockObj> lockObjs = (List<HiveLockObj>)lockObjsCaptor.getValue();
+    verify(mockLockManager).lock(lockObjsCaptor.capture(), eq(false));
+    List<HiveLockObj> lockObjs = lockObjsCaptor.getValue();
     Assert.assertEquals(2, lockObjs.size());
     Assert.assertEquals("default", lockObjs.get(0).getName());
     Assert.assertEquals(HiveLockMode.SHARED, lockObjs.get(0).mode);
@@ -157,6 +154,7 @@ public class TestDummyTxnManager {
     Assert.assertEquals("Locks should be deduped", 2, lockObjs.size());
 
     Comparator<HiveLockObj> cmp = new Comparator<HiveLockObj>() {
+      @Override
       public int compare(HiveLockObj lock1, HiveLockObj lock2) {
         return lock1.getName().compareTo(lock2.getName());
       }

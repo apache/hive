@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.avro.Schema;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -45,7 +45,7 @@ import org.apache.hadoop.io.Writable;
     AvroSerdeUtils.SCHEMA_LITERAL, AvroSerdeUtils.SCHEMA_URL,
     AvroSerdeUtils.SCHEMA_NAMESPACE, AvroSerdeUtils.SCHEMA_NAME, AvroSerdeUtils.SCHEMA_DOC})
 public class AvroSerDe extends AbstractSerDe {
-  private static final Log LOG = LogFactory.getLog(AvroSerDe.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AvroSerDe.class);
 
   public static final String TABLE_NAME = "name";
   public static final String TABLE_COMMENT = "comment";

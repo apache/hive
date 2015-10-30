@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -93,7 +93,7 @@ public class RewriteGBUsingIndex implements Transform {
   private ParseContext parseContext;
   private Hive hiveDb;
   private HiveConf hiveConf;
-  private static final Log LOG = LogFactory.getLog(RewriteGBUsingIndex.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(RewriteGBUsingIndex.class.getName());
 
   /*
    * Stores the list of top TableScanOperator names for which the rewrite
