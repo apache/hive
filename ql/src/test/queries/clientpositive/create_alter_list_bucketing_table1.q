@@ -1,5 +1,3 @@
-set hive.mapred.supports.subdirectories=true;
-
 -- Test stored as directories
 -- it covers a few cases
 

@@ -1,4 +1,3 @@
-set hive.mapred.supports.subdirectories=true;
 set hive.optimize.skewjoin.compiletime = true;
 set hive.auto.convert.join=true;
 

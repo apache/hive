@@ -1,4 +1,3 @@
-set hive.mapred.supports.subdirectories=true;
 set mapred.input.dir.recursive=true;
 
 -- Tests truncating a column on which a table is list bucketed

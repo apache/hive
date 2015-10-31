@@ -1314,11 +1314,6 @@ public class HiveConf extends Configuration {
         "we are increasing the number of files possibly by a big margin. So, we merge aggressively."),
     HIVEOPTCORRELATION("hive.optimize.correlation", false, "exploit intra-query correlations."),
 
-    HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES("hive.mapred.supports.subdirectories", false,
-        "Whether the version of Hadoop which is running supports sub-directories for tables/partitions. \n" +
-        "Many Hive optimizations can be applied if the Hadoop version supports sub-directories for\n" +
-        "tables/partitions. It was added by MAPREDUCE-1501"),
-
     HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME("hive.optimize.skewjoin.compiletime", false,
         "Whether to create a separate plan for skewed keys for the tables in the join.\n" +
         "This is based on the skewed keys stored in the metadata. At compile time, the plan is broken\n" +
@@ -3085,7 +3080,6 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_EXECUTION_ENGINE.varname,
     ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname,
     ConfVars.HIVE_FILE_MAX_FOOTER.varname,
-    ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES.varname,
     ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
     ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
     ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,

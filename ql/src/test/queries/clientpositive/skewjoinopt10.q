@@ -1,4 +1,3 @@
-set hive.mapred.supports.subdirectories=true;
 set hive.optimize.skewjoin.compiletime = true;
 
 CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE;

@@ -100,11 +100,6 @@ public class UnionProcessor implements Transform {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE)
       && !conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
 
-      if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES)) {
-        throw new
-        SemanticException(ErrorMsg.HIVE_UNION_REMOVE_OPTIMIZATION_NEEDS_SUBDIRECTORIES.getMsg());
-      }
-
       opRules.put(new RuleRegExp("R5", UnionOperator.getOperatorName() + "%" +
                                  ".*" + FileSinkOperator.getOperatorName() + "%"),
         UnionProcFactory.getUnionNoProcessFile());
