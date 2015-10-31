@@ -6643,7 +6643,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("Modifying config values for ACID write");
     conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, true);
     conf.setIntVar(ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER, 1);
-    conf.setBoolVar(ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
     conf.setBoolVar(ConfVars.HIVEOPTSORTDYNAMICPARTITION, false);
 

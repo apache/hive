@@ -1,6 +1,4 @@
 
-set hive.mapred.supports.subdirectories=true;
-
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- JAVA_VERSION_SPECIFIC_OUTPUT
 

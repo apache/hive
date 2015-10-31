@@ -1625,20 +1625,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP+1, fs);
       // Check for empty partitions
       for (FileStatus s : leafStatus) {
-        // Check if the hadoop version supports sub-directories for tables/partitions
-        if (s.isDir() &&
-          !conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES)) {
-          // No leaves in this directory
-          LOG.info("NOT moving empty directory: " + s.getPath());
-        } else {
-          try {
-            validatePartitionNameCharacters(
-                Warehouse.getPartValuesFromPartName(s.getPath().getParent().toString()));
-          } catch (MetaException e) {
-            throw new HiveException(e);
-          }
-          validPartitions.add(s.getPath().getParent());
+        try {
+          validatePartitionNameCharacters(
+            Warehouse.getPartValuesFromPartName(s.getPath().getParent().toString()));
+        } catch (MetaException e) {
+          throw new HiveException(e);
         }
+        validPartitions.add(s.getPath().getParent());
       }
 
       int partsToLoad = validPartitions.size();
@@ -2551,12 +2544,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             continue;
           }
 
-          if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES) &&
-            !HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR).equals(itemSource.getName()) &&
-            item.isDir()) {
-            throw new HiveException("checkPaths: " + src.getPath()
-                + " has nested directory " + itemSource);
-          }
           // Strip off the file type, if any so we don't make:
           // 000000_0.gz -> 000000_0.gz_copy_1
           String name = itemSource.getName();

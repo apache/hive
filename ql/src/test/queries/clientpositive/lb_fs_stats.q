@@ -1,4 +1,3 @@
-set hive.mapred.supports.subdirectories=true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.merge.mapfiles=false;	
 set hive.merge.mapredfiles=false; 

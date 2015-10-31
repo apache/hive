@@ -1,6 +1,5 @@
 set hive.stats.autogather=false;
 set hive.optimize.union.remove=true;
-set hive.mapred.supports.subdirectories=true;
 set hive.auto.convert.join=true;
 
 set hive.merge.sparkfiles=true;

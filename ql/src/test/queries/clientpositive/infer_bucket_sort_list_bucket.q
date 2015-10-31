@@ -1,5 +1,4 @@
-set hive.mapred.supports.subdirectories=true;
-set hive.merge.mapfiles=false;	
+set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 
 set mapred.input.dir.recursive=true;
 

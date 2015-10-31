@@ -254,12 +254,6 @@ public enum ErrorMsg {
   ALTER_TBL_STOREDASDIR_NOT_SKEWED(10196, "This operation is only valid on skewed table."),
   ALTER_TBL_SKEWED_LOC_NO_LOC(10197, "Alter table skewed location doesn't have locations."),
   ALTER_TBL_SKEWED_LOC_NO_MAP(10198, "Alter table skewed location doesn't have location map."),
-  SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING(
-      10199,
-      "hive.mapred.supports.subdirectories must be true"
-          + " if any one of following is true: "
-          + " hive.optimize.listbucketing , mapred.input.dir.recursive"
-          + " and hive.optimize.union.remove."),
   SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
   SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
   SKEWED_TABLE_DUPLICATE_COLUMN_NAMES(10202,
