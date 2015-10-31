@@ -583,13 +583,9 @@ public final class GenMapRedUtils {
     // this is being read because it is a dependency of a view).
     boolean isDirectRead = (parentViewInfo == null);
 
-    for (Partition part : parts) {
-      if (part.getTable().isPartitioned()) {
-        PlanUtils.addInput(inputs, new ReadEntity(part, parentViewInfo, isDirectRead));
-      } else {
-        PlanUtils.addInput(inputs, new ReadEntity(part.getTable(), parentViewInfo, isDirectRead));
-      }
+    PlanUtils.addPartitionInputs(parts, inputs, parentViewInfo, isDirectRead);
 
+    for (Partition part: parts) {
       // Later the properties have to come from the partition as opposed
       // to from the table in order to support versioning.
       Path[] paths = null;
@@ -693,6 +689,7 @@ public final class GenMapRedUtils {
         }
       }
     }
+
     if (emptyInput) {
       parseCtx.getGlobalLimitCtx().disableOpt();
     }
