@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -947,6 +949,42 @@ public final class PlanUtils {
       sb.append(")");
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+  
+  public static void addPartitionInputs(Collection<Partition> parts, Collection<ReadEntity> inputs,
+      ReadEntity parentViewInfo, boolean isDirectRead) {
+    // Store the inputs in a HashMap since we can't get a ReadEntity from inputs since it is
+    // implemented as a set.ReadEntity is used as the key so that the HashMap has the same behavior
+    // of equals and hashCode
+    Map<ReadEntity, ReadEntity> readEntityMap =
+        new LinkedHashMap<ReadEntity, ReadEntity>(inputs.size());
+    for (ReadEntity input : inputs) {
+      readEntityMap.put(input, input);
+    }
+
+    for (Partition part : parts) {
+      ReadEntity newInput = null;
+      if (part.getTable().isPartitioned()) {
+        newInput = new ReadEntity(part, parentViewInfo, isDirectRead);
+      } else {
+        newInput = new ReadEntity(part.getTable(), parentViewInfo, isDirectRead);
+      }
+
+      if (readEntityMap.containsKey(newInput)) {
+        ReadEntity input = readEntityMap.get(newInput);
+        if ((newInput.getParents() != null) && (!newInput.getParents().isEmpty())) {
+          input.getParents().addAll(newInput.getParents());
+          input.setDirect(input.isDirect() || newInput.isDirect());
+        }
+      } else {
+        readEntityMap.put(newInput, newInput);
+      }
+    }
+
+    // Add the new ReadEntity that were added to readEntityMap in PlanUtils.addInput
+    if (inputs.size() != readEntityMap.size()) {
+      inputs.addAll(readEntityMap.keySet());
     }
   }
 

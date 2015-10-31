@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1642,7 +1643,7 @@ public class Driver implements CommandProcessor {
       // remove incomplete outputs.
       // Some incomplete outputs may be added at the beginning, for eg: for dynamic partitions.
       // remove them
-      HashSet<WriteEntity> remOutputs = new HashSet<WriteEntity>();
+      HashSet<WriteEntity> remOutputs = new LinkedHashSet<WriteEntity>();
       for (WriteEntity output : plan.getOutputs()) {
         if (!output.isComplete()) {
           remOutputs.add(output);

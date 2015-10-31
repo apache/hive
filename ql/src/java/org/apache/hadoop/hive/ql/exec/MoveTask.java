@@ -69,6 +69,7 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -426,7 +427,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               // For DP, WriteEntity creation is deferred at this stage so we need to update
               // queryPlan here.
               if (queryPlan.getOutputs() == null) {
-                queryPlan.setOutputs(new HashSet<WriteEntity>());
+                queryPlan.setOutputs(new LinkedHashSet<WriteEntity>());
               }
               queryPlan.getOutputs().add(enty);
 
