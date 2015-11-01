@@ -1374,4 +1374,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       removeParent(parent);
     }
   }
+
+  public boolean getIsReduceSink() {
+    return false;
+  }
+
+  public String getReduceOutputName() {
+    return null;
+  }
 }

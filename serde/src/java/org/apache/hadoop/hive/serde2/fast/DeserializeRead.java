@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 /*
@@ -55,9 +55,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 public interface DeserializeRead {
 
   /*
-   * The primitive type information for all fields.
+   * The type information for all fields.
    */
-  PrimitiveTypeInfo[] primitiveTypeInfos();
+  TypeInfo[] typeInfos();
 
   /*
    * Set the range of bytes to be deserialized.

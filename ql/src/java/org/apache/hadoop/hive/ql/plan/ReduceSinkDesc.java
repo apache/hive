@@ -120,6 +120,10 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private transient boolean hasOrderBy = false;
 
   private static transient Logger LOG = LoggerFactory.getLogger(ReduceSinkDesc.class);
+
+  // Extra parameters only for vectorization.
+  private VectorReduceSinkDesc vectorDesc;
+
   public ReduceSinkDesc() {
   }
 
@@ -146,6 +150,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.setNumBuckets(-1);
     this.setBucketCols(null);
     this.writeType = writeType;
+    this.vectorDesc = null;
   }
 
   @Override
@@ -175,7 +180,19 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.reduceTraits = reduceTraits.clone();
     desc.setDeduplicated(isDeduplicated);
     desc.setHasOrderBy(hasOrderBy);
+    if (vectorDesc != null) {
+      throw new RuntimeException("Clone with vectorization desc not supported");
+    }
+    desc.vectorDesc = null;
     return desc;
+  }
+
+  public void setVectorDesc(VectorReduceSinkDesc vectorDesc) {
+    this.vectorDesc = vectorDesc;
+  }
+
+  public VectorReduceSinkDesc getVectorDesc() {
+    return vectorDesc;
   }
 
   public java.util.ArrayList<java.lang.String> getOutputKeyColumnNames() {

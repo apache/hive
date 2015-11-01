@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /**
  * Table container that serializes keys and values using LazyBinarySerDe into
@@ -245,7 +246,7 @@ public class MapJoinBytesTableContainer
       }
       sanityCheckKeyForTag();
       BinaryComparable b = (BinaryComparable)key;
-      return WriteBuffers.murmurHash(b.getBytes(), 0, b.getLength() - (hasTag ? 1 : 0));
+      return HashCodeUtil.murmurHash(b.getBytes(), 0, b.getLength() - (hasTag ? 1 : 0));
     }
 
     /**
@@ -340,7 +341,7 @@ public class MapJoinBytesTableContainer
     public int getHashFromKey() throws SerDeException {
       byte[] keyBytes = key.getBytes();
       int keyLength = key.getLength();
-      return WriteBuffers.murmurHash(keyBytes, 0, keyLength);
+      return HashCodeUtil.murmurHash(keyBytes, 0, keyLength);
     }
   }
 

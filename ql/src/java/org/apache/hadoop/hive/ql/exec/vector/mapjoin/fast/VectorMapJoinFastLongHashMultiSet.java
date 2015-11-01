@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /*
  * An single long value multi-set optimized for vector map join.
@@ -67,7 +68,7 @@ public class VectorMapJoinFastLongHashMultiSet
 
     optimizedHashMultiSetResult.forget();
 
-    long hashCode = VectorMapJoinFastLongHashUtil.hashKey(key);
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     long count = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
     if (count == -1) {

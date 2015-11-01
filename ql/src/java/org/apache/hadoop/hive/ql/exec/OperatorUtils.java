@@ -119,12 +119,11 @@ public class OperatorUtils {
       return;
     }
     for (Operator<? extends OperatorDesc> op : childOperators) {
-      if(op.getName().equals(ReduceSinkOperator.getOperatorName())) {
-        ReduceSinkOperator rs = ((ReduceSinkOperator)op);
-        if (outMap.containsKey(rs.getConf().getOutputName())) {
-          LOG.info("Setting output collector: " + rs + " --> "
-            + rs.getConf().getOutputName());
-          rs.setOutputCollector(outMap.get(rs.getConf().getOutputName()));
+      if (op.getIsReduceSink()) {
+        String outputName = op.getReduceOutputName();
+        if (outMap.containsKey(outputName)) {
+          LOG.info("Setting output collector: " + op + " --> " + outputName);
+          op.setOutputCollector(outMap.get(outputName));
         }
       } else {
         setChildrenCollector(op.getChildOperators(), outMap);

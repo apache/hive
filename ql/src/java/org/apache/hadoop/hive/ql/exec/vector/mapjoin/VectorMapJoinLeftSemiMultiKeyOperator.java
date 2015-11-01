@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashSet;
 
 // Multi-Key specific imports.
-import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRowNoNulls;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 
@@ -64,7 +64,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
 
   // Object that can take a set of columns in row in a vectorized row batch and serialized it.
   // Known to not have any nulls.
-  private transient VectorSerializeRowNoNulls keyVectorSerializeWriteNoNulls;
+  private transient VectorSerializeRow keyVectorSerializeWrite;
 
   // The BinarySortable serialization of the current key.
   private transient Output currentKeyOutput;
@@ -104,9 +104,9 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
          * Initialize Multi-Key members for this specialized class.
          */
 
-        keyVectorSerializeWriteNoNulls = new VectorSerializeRowNoNulls(
+        keyVectorSerializeWrite = new VectorSerializeRow(
                                         new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
-        keyVectorSerializeWriteNoNulls.init(bigTableKeyTypeNames, bigTableKeyColumnMap);
+        keyVectorSerializeWrite.init(bigTableKeyTypeNames, bigTableKeyColumnMap);
 
         currentKeyOutput = new Output();
         saveKeyOutput = new Output();
@@ -193,8 +193,12 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
          * Multi-Key specific repeated lookup.
          */
 
-        keyVectorSerializeWriteNoNulls.setOutput(currentKeyOutput);
-        keyVectorSerializeWriteNoNulls.serializeWriteNoNulls(batch, 0);
+        keyVectorSerializeWrite.setOutput(currentKeyOutput);
+        keyVectorSerializeWrite.serializeWrite(batch, 0);
+        if (keyVectorSerializeWrite.getHasAnyNulls()) {
+          // Not expecting NULLs in MapJoin -- they should have been filtered out.
+          throw new HiveException("Null key not expected in MapJoin");
+        }
         byte[] keyBytes = currentKeyOutput.getData();
         int keyLength = currentKeyOutput.getLength();
         // LOG.debug(CLASS_NAME + " processOp all " + displayBytes(keyBytes, 0, keyLength));
@@ -247,8 +251,12 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
            */
 
           // Generate binary sortable key for current row in vectorized row batch.
-          keyVectorSerializeWriteNoNulls.setOutput(currentKeyOutput);
-          keyVectorSerializeWriteNoNulls.serializeWriteNoNulls(batch, batchIndex);
+          keyVectorSerializeWrite.setOutput(currentKeyOutput);
+          keyVectorSerializeWrite.serializeWrite(batch, batchIndex);
+          if (keyVectorSerializeWrite.getHasAnyNulls()) {
+            // Not expecting NULLs in MapJoin -- they should have been filtered out.
+            throw new HiveException("Null key not expected in MapJoin");
+          }
 
           // LOG.debug(CLASS_NAME + " currentKey " +
           //      VectorizedBatchUtil.displayBytes(currentKeyOutput.getData(), 0, currentKeyOutput.getLength()));

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 /*
@@ -56,10 +57,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
  * other type specific buffers.  So, those references are only valid until the next time set is
  * called.
  */
-public class LazyBinaryDeserializeRead implements DeserializeRead {
+public final class LazyBinaryDeserializeRead implements DeserializeRead {
   public static final Logger LOG = LoggerFactory.getLogger(LazyBinaryDeserializeRead.class.getName());
 
-  private PrimitiveTypeInfo[] primitiveTypeInfos;
+  private TypeInfo[] typeInfos;
 
   private byte[] bytes;
   private int start;
@@ -81,9 +82,9 @@ public class LazyBinaryDeserializeRead implements DeserializeRead {
   private boolean readBeyondBufferRangeWarned;
   private boolean bufferRangeHasExtraDataWarned;
 
-  public LazyBinaryDeserializeRead(PrimitiveTypeInfo[] primitiveTypeInfos) {
-    this.primitiveTypeInfos = primitiveTypeInfos;
-    fieldCount = primitiveTypeInfos.length;
+  public LazyBinaryDeserializeRead(TypeInfo[] typeInfos) {
+    this.typeInfos = typeInfos;
+    fieldCount = typeInfos.length;
     tempVInt = new VInt();
     tempVLong = new VLong();
     readBeyondConfiguredFieldsWarned = false;
@@ -96,10 +97,10 @@ public class LazyBinaryDeserializeRead implements DeserializeRead {
   }
 
   /*
-   * The primitive type information for all fields.
+   * The type information for all fields.
    */
-  public PrimitiveTypeInfo[] primitiveTypeInfos() {
-    return primitiveTypeInfos;
+  public TypeInfo[] typeInfos() {
+    return typeInfos;
   }
 
   /*
@@ -154,7 +155,7 @@ public class LazyBinaryDeserializeRead implements DeserializeRead {
 
       // We have a field and are positioned to it.
 
-      if (primitiveTypeInfos[fieldIndex].getPrimitiveCategory() != PrimitiveCategory.DECIMAL) {
+      if (((PrimitiveTypeInfo) typeInfos[fieldIndex]).getPrimitiveCategory() != PrimitiveCategory.DECIMAL) {
         return false;
       }
 
@@ -509,7 +510,7 @@ public class LazyBinaryDeserializeRead implements DeserializeRead {
     LazyBinaryReadHiveCharResults lazyBinaryReadHiveCharResults = (LazyBinaryReadHiveCharResults) readHiveCharResults;
 
     if (!lazyBinaryReadHiveCharResults.isInit()) {
-      lazyBinaryReadHiveCharResults.init((CharTypeInfo) primitiveTypeInfos[fieldIndex]);
+      lazyBinaryReadHiveCharResults.init((CharTypeInfo) typeInfos[fieldIndex]);
     }
 
     if (lazyBinaryReadHiveCharResults.readStringResults == null) {
@@ -560,7 +561,7 @@ public class LazyBinaryDeserializeRead implements DeserializeRead {
     LazyBinaryReadHiveVarcharResults lazyBinaryReadHiveVarcharResults = (LazyBinaryReadHiveVarcharResults) readHiveVarcharResults;
 
     if (!lazyBinaryReadHiveVarcharResults.isInit()) {
-      lazyBinaryReadHiveVarcharResults.init((VarcharTypeInfo) primitiveTypeInfos[fieldIndex]);
+      lazyBinaryReadHiveVarcharResults.init((VarcharTypeInfo) typeInfos[fieldIndex]);
     }
 
     if (lazyBinaryReadHiveVarcharResults.readStringResults == null) {
@@ -917,7 +918,7 @@ public class LazyBinaryDeserializeRead implements DeserializeRead {
     LazyBinarySerDe.setFromBytes(bytes, saveStart, length,
         tempHiveDecimalWritable);
 
-    saveDecimalTypeInfo = (DecimalTypeInfo) primitiveTypeInfos[fieldIndex];
+    saveDecimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
 
     int precision = saveDecimalTypeInfo.getPrecision();
     int scale = saveDecimalTypeInfo.getScale();

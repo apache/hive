@@ -168,7 +168,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
 
   // This helper object deserializes LazyBinary format small table values into columns of a row
   // in a vectorized row batch.
-  protected transient VectorDeserializeRow smallTableVectorDeserializeRow;
+  protected transient VectorDeserializeRow<LazyBinaryDeserializeRead> smallTableVectorDeserializeRow;
 
   // This a 2nd batch with the same "column schema" as the big table batch that can be used to
   // build join output results in.  If we can create some join output results in the big table
@@ -573,10 +573,11 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
      * Create our vectorized copy row and deserialize row helper objects.
      */
     if (smallTableMapping.getCount() > 0) {
-      smallTableVectorDeserializeRow = new VectorDeserializeRow(
-                      new LazyBinaryDeserializeRead(
-                          VectorizedBatchUtil.primitiveTypeInfosFromTypeNames(
-                              smallTableMapping.getTypeNames())));
+      smallTableVectorDeserializeRow =
+          new VectorDeserializeRow<LazyBinaryDeserializeRead>(
+              new LazyBinaryDeserializeRead(
+                  VectorizedBatchUtil.primitiveTypeInfosFromTypeNames(
+                      smallTableMapping.getTypeNames())));
       smallTableVectorDeserializeRow.init(smallTableMapping.getOutputColumns());
     }
 

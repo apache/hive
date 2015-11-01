@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashTable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -70,7 +71,7 @@ public abstract class VectorMapJoinFastBytesHashTable
       expandAndRehash();
     }
 
-    long hashCode = VectorMapJoinFastBytesHashUtil.hashKey(keyBytes, keyStart, keyLength);
+    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
     int intHashCode = (int) hashCode;
     int slot = (intHashCode & logicalHashBucketMask);
     long probeSlot = slot;
