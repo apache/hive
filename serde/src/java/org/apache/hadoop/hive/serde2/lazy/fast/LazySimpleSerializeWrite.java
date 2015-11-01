@@ -63,7 +63,7 @@ import org.apache.hive.common.util.DateUtils;
 *
  * This is an alternative way to serialize than what is provided by LazyBinarySerDe.
   */
-public class LazySimpleSerializeWrite implements SerializeWrite {
+public final class LazySimpleSerializeWrite implements SerializeWrite {
   public static final Logger LOG = LoggerFactory.getLogger(LazySimpleSerializeWrite.class.getName());
 
   private LazySerDeParameters lazyParams;

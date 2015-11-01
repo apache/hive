@@ -94,9 +94,9 @@ public class ReduceRecordSource implements RecordSource {
 
   private boolean vectorized = false;
 
-  private VectorDeserializeRow keyBinarySortableDeserializeToRow;
+  private VectorDeserializeRow<BinarySortableDeserializeRead> keyBinarySortableDeserializeToRow;
 
-  private VectorDeserializeRow valueLazyBinaryDeserializeToRow;
+  private VectorDeserializeRow<LazyBinaryDeserializeRead> valueLazyBinaryDeserializeToRow;
 
   private VectorizedRowBatch batch;
 
@@ -184,7 +184,7 @@ public class ReduceRecordSource implements RecordSource {
         BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
 
         keyBinarySortableDeserializeToRow =
-                  new VectorDeserializeRow(
+                  new VectorDeserializeRow<BinarySortableDeserializeRead>(
                         new BinarySortableDeserializeRead(
                                   VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
                                       keyStructInspector),
@@ -194,7 +194,7 @@ public class ReduceRecordSource implements RecordSource {
         final int valuesSize = valueStructInspectors.getAllStructFieldRefs().size();
         if (valuesSize > 0) {
           valueLazyBinaryDeserializeToRow =
-                  new VectorDeserializeRow(
+                  new VectorDeserializeRow<LazyBinaryDeserializeRead>(
                         new LazyBinaryDeserializeRead(
                                   VectorizedBatchUtil.primitiveTypeInfosFromStructObjectInspector(
                                        valueStructInspectors)));
@@ -412,6 +412,10 @@ public class ReduceRecordSource implements RecordSource {
     // a data buffer.
     byte[] keyBytes = keyWritable.getBytes();
     int keyLength = keyWritable.getLength();
+
+    // l4j.info("ReduceRecordSource processVectorGroup keyBytes " + keyLength + " " +
+    //     VectorizedBatchUtil.displayBytes(keyBytes, 0, keyLength));
+
     keyBinarySortableDeserializeToRow.setBytes(keyBytes, 0, keyLength);
     keyBinarySortableDeserializeToRow.deserializeByValue(batch, 0);
     for(int i = 0; i < firstValueColumnOffset; i++) {
@@ -426,6 +430,10 @@ public class ReduceRecordSource implements RecordSource {
           BytesWritable valueWritable = (BytesWritable) value;
           byte[] valueBytes = valueWritable.getBytes();
           int valueLength = valueWritable.getLength();
+
+          // l4j.info("ReduceRecordSource processVectorGroup valueBytes " + valueLength + " " +
+          //     VectorizedBatchUtil.displayBytes(valueBytes, 0, valueLength));
+
           valueLazyBinaryDeserializeToRow.setBytes(valueBytes, 0, valueLength);
           valueLazyBinaryDeserializeToRow.deserializeByValue(batch, rowIdx);
         }

@@ -16,17 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
+package org.apache.hadoop.hive.ql.exec.vector.keyseries;
 
-public class VectorMapJoinFastIntHashUtil {
+/**
+ * An abstract adding serialization to key series.
+ *
+ * A key with no or some nulls has serialized bytes, offset, and length.
+ */
+public interface VectorKeySeriesSerialized extends VectorKeySeries {
 
-  public static int hashKey(int key) {
-    key = ~key + (key << 15); // key = (key << 15) - key - 1;
-    key = key ^ (key >>> 12);
-    key = key + (key << 2);
-    key = key ^ (key >>> 4);
-    key = key * 2057; // key = (key + (key << 3)) + (key << 11);
-    key = key ^ (key >>> 16);
-    return key;
-  }
+  /**
+   * @return the serialized bytes (including optional key tag), start offset of the key in the
+   *         bytes, and key byte length.
+   */
+  byte[] getSerializedBytes();
+  int getSerializedStart();
+  int getSerializedLength();
 }

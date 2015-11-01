@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeseriali
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -111,7 +112,7 @@ public abstract class VectorMapJoinFastLongHashTable
       expandAndRehash();
     }
 
-    long hashCode = VectorMapJoinFastLongHashUtil.hashKey(key);
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int intHashCode = (int) hashCode;
     int slot = (intHashCode & logicalHashBucketMask);
     long probeSlot = slot;
@@ -179,7 +180,7 @@ public abstract class VectorMapJoinFastLongHashTable
         long tableKey = slotPairs[pairIndex + 1];
 
         // Copy to new slot table.
-        long hashCode = VectorMapJoinFastLongHashUtil.hashKey(tableKey);
+        long hashCode = HashCodeUtil.calculateLongHashCode(tableKey);
         int intHashCode = (int) hashCode;
         int newSlot = intHashCode & newLogicalHashBucketMask;
         long newProbeSlot = newSlot;

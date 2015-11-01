@@ -32,6 +32,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.common.util.HashCodeUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -828,7 +829,7 @@ public class HybridHashTableContainer
      *        the evaluation for this big table row will be postponed.
      */
     public JoinUtil.JoinResult setFromOutput(Output output) throws HiveException {
-      int keyHash = WriteBuffers.murmurHash(output.getData(), 0, output.getLength());
+      int keyHash = HashCodeUtil.murmurHash(output.getData(), 0, output.getLength());
 
       if (!bloom1.testLong(keyHash)) {
         /*
@@ -981,7 +982,7 @@ public class HybridHashTableContainer
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
         BytesBytesMultiHashMap.Result hashMapResult) {
 
-      int keyHash = WriteBuffers.murmurHash(bytes, offset, length);
+      int keyHash = HashCodeUtil.murmurHash(bytes, offset, length);
       partitionId = keyHash & (hashPartitions.length - 1);
 
       // If the target hash table is on disk, spill this row to disk as well to be processed later

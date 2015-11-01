@@ -43,6 +43,10 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
     return count;
   }
 
+  public void setWritePosition(int writePosition) {
+    count = writePosition;
+  }
+
   /**
    * {@inheritDoc}
    */

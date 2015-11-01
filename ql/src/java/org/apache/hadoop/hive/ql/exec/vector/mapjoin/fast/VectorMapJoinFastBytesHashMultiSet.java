@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMultiSet;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSetResult;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /*
  * An single byte array value hash multi-set optimized for vector map join.
@@ -67,7 +68,7 @@ public abstract class VectorMapJoinFastBytesHashMultiSet
 
     optimizedHashMultiSetResult.forget();
 
-    long hashCode = VectorMapJoinFastBytesHashUtil.hashKey(keyBytes, keyStart, keyLength);
+    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
     long count = findReadSlot(keyBytes, keyStart, keyLength, hashCode);
     JoinUtil.JoinResult joinResult;
     if (count == -1) {

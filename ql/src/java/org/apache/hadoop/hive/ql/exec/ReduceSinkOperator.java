@@ -614,6 +614,16 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   @Override
+  public boolean getIsReduceSink() {
+    return true;
+  }
+
+  @Override
+  public String getReduceOutputName() {
+    return conf.getOutputName();
+  }
+
+  @Override
   public void setOutputCollector(OutputCollector _out) {
     this.out = _out;
   }

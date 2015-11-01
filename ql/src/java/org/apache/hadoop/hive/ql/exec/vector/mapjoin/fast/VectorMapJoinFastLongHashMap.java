@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHash
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /*
  * An single long value map optimized for vector map join.
@@ -67,7 +68,7 @@ public class VectorMapJoinFastLongHashMap
 
     optimizedHashMapResult.forget();
 
-    long hashCode = VectorMapJoinFastLongHashUtil.hashKey(key);
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     // LOG.debug("VectorMapJoinFastLongHashMap lookup " + key + " hashCode " + hashCode);
     long valueRef = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;

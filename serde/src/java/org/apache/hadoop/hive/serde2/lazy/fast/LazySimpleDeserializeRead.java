@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
@@ -47,6 +46,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.TimestampParser;
@@ -66,10 +66,10 @@ import org.apache.hive.common.util.TimestampParser;
  * other type specific buffers.  So, those references are only valid until the next time set is
  * called.
  */
-public class LazySimpleDeserializeRead implements DeserializeRead {
+public final class LazySimpleDeserializeRead implements DeserializeRead {
   public static final Logger LOG = LoggerFactory.getLogger(LazySimpleDeserializeRead.class.getName());
 
-  private PrimitiveTypeInfo[] primitiveTypeInfos;
+  private TypeInfo[] typeInfos;
 
 
   private byte separator;
@@ -111,10 +111,11 @@ public class LazySimpleDeserializeRead implements DeserializeRead {
   private boolean readBeyondBufferRangeWarned;
   private boolean bufferRangeHasExtraDataWarned;
 
-  public LazySimpleDeserializeRead(PrimitiveTypeInfo[] primitiveTypeInfos,
+  public LazySimpleDeserializeRead(TypeInfo[] typeInfos,
       byte separator, LazySerDeParameters lazyParams) {
 
-    this.primitiveTypeInfos = primitiveTypeInfos;
+    this.typeInfos = typeInfos;
+
     this.separator = separator;
 
     isEscaped = lazyParams.isEscaped();
@@ -122,7 +123,7 @@ public class LazySimpleDeserializeRead implements DeserializeRead {
     nullSequenceBytes = lazyParams.getNullSequence().getBytes();
     isExtendedBooleanLiteral = lazyParams.isExtendedBooleanLiteral();
 
-    fieldCount = primitiveTypeInfos.length;
+    fieldCount = typeInfos.length;
     tempText = new Text();
     readBeyondConfiguredFieldsWarned = false;
     readBeyondBufferRangeWarned = false;
@@ -134,11 +135,11 @@ public class LazySimpleDeserializeRead implements DeserializeRead {
   }
 
   /*
-   * The primitive type information for all fields.
+   * The type information for all fields.
    */
   @Override
-  public PrimitiveTypeInfo[] primitiveTypeInfos() {
-    return primitiveTypeInfos;
+  public TypeInfo[] typeInfos() {
+    return typeInfos;
   }
 
   /*
@@ -230,7 +231,7 @@ public class LazySimpleDeserializeRead implements DeserializeRead {
       }
     }
 
-    switch (primitiveTypeInfos[fieldIndex].getPrimitiveCategory()) {
+    switch (((PrimitiveTypeInfo) typeInfos[fieldIndex]).getPrimitiveCategory()) {
     case BOOLEAN:
       {
         int i = fieldStart;
@@ -478,7 +479,7 @@ public class LazySimpleDeserializeRead implements DeserializeRead {
         }
 
         saveDecimal = HiveDecimal.create(byteData);
-        saveDecimalTypeInfo = (DecimalTypeInfo) primitiveTypeInfos[fieldIndex];
+        saveDecimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
         int precision = saveDecimalTypeInfo.getPrecision();
         int scale = saveDecimalTypeInfo.getScale();
         saveDecimal = HiveDecimal.enforcePrecisionScale(saveDecimal, precision,
@@ -495,7 +496,7 @@ public class LazySimpleDeserializeRead implements DeserializeRead {
       break;
 
     default:
-      throw new Error("Unexpected primitive category " + primitiveTypeInfos[fieldIndex].getPrimitiveCategory());
+      throw new Error("Unexpected primitive category " + ((PrimitiveTypeInfo) typeInfos[fieldIndex]).getPrimitiveCategory());
     }
 
     return false;
@@ -663,7 +664,7 @@ public class LazySimpleDeserializeRead implements DeserializeRead {
     LazySimpleReadHiveCharResults LazySimpleReadHiveCharResults = (LazySimpleReadHiveCharResults) readHiveCharResults;
 
     if (!LazySimpleReadHiveCharResults.isInit()) {
-      LazySimpleReadHiveCharResults.init((CharTypeInfo) primitiveTypeInfos[fieldIndex]);
+      LazySimpleReadHiveCharResults.init((CharTypeInfo) typeInfos[fieldIndex]);
     }
 
     if (LazySimpleReadHiveCharResults.readStringResults == null) {
@@ -715,7 +716,7 @@ public class LazySimpleDeserializeRead implements DeserializeRead {
     LazySimpleReadHiveVarcharResults lazySimpleReadHiveVarvarcharResults = (LazySimpleReadHiveVarcharResults) readHiveVarcharResults;
 
     if (!lazySimpleReadHiveVarvarcharResults.isInit()) {
-      lazySimpleReadHiveVarvarcharResults.init((VarcharTypeInfo) primitiveTypeInfos[fieldIndex]);
+      lazySimpleReadHiveVarvarcharResults.init((VarcharTypeInfo) typeInfos[fieldIndex]);
     }
 
     if (lazySimpleReadHiveVarvarcharResults.readStringResults == null) {

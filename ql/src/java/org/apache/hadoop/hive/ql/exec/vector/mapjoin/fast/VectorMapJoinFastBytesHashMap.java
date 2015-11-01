@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.common.util.HashCodeUtil;
 
 /*
  * An single byte array value hash map optimized for vector map join.
@@ -71,7 +72,7 @@ public abstract class VectorMapJoinFastBytesHashMap
 
     optimizedHashMapResult.forget();
 
-    long hashCode = VectorMapJoinFastBytesHashUtil.hashKey(keyBytes, keyStart, keyLength);
+    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
     long valueRefWord = findReadSlot(keyBytes, keyStart, keyLength, hashCode);
     JoinUtil.JoinResult joinResult;
     if (valueRefWord == -1) {
