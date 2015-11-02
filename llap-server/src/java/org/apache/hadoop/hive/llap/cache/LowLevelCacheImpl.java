@@ -58,8 +58,9 @@ public class LowLevelCacheImpl implements LowLevelCache, LlapOomDebugDump {
   @VisibleForTesting
   LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
       EvictionAwareAllocator allocator, boolean doAssumeGranularBlocks, long cleanupInterval) {
-      LlapIoImpl.LOG.info("Low level cache; cleanup interval {}", cleanupInterval, "sec");
-
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Low level cache; cleanup interval " + cleanupInterval + "sec");
+    }
     this.cachePolicy = cachePolicy;
     this.allocator = allocator;
     this.cleanupInterval = cleanupInterval;

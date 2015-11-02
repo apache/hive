@@ -107,7 +107,9 @@ public class CliDriver {
     SessionState ss = SessionState.get();
     conf = (ss != null) ? ss.getConf() : new Configuration();
     Logger LOG = LoggerFactory.getLogger("CliDriver");
-    LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
+    }
     console = new LogHelper(LOG);
     originalThreadName = Thread.currentThread().getName();
   }

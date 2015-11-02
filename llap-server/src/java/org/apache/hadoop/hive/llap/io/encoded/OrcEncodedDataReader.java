@@ -198,8 +198,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   protected Void performDataRead() throws IOException {
     long startTime = counters.startTimeCounter();
-    LlapIoImpl.LOG.info("Processing data for {}", split.getPath());
-
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Processing data for " + split.getPath());
+    }
     if (processStop()) {
       recordReaderTime(startTime);
       return null;
@@ -744,7 +745,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     long offset = split.getStart(), maxOffset = offset + split.getLength();
     stripeIxFrom = -1;
     int stripeIxTo = -1;
-    if (LlapIoImpl.LOG.isDebugEnabled()) {
+    if (LlapIoImpl.LOGL.isDebugEnabled()) {
       String tmp = "FileSplit {" + split.getStart() + ", " + split.getLength() + "}; stripes ";
       for (StripeInformation stripe : stripes) {
         tmp += "{" + stripe.getOffset() + ", " + stripe.getLength() + "}, ";

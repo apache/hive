@@ -48,10 +48,11 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
     arenaSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_SIZE);
     long maxSizeVal = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
-    LlapIoImpl.LOG.info("Buddy allocator with {}", (isDirect ? "direct" : "byte")
-        , " buffers; allocation sizes {} ", minAllocation, " - {}", maxAllocation
-        , ", arena size {}", arenaSize, ". total size {}", maxSizeVal);
-
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte")
+          + " buffers; allocation sizes " + minAllocation + " - " + maxAllocation
+          + ", arena size " + arenaSize + ". total size " + maxSizeVal);
+    }
 
     if (minAllocation < 8) {
       throw new AssertionError("Min allocation must be at least 8: " + minAllocation);
