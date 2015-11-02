@@ -10858,7 +10858,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Verify that the table does not already exist
       try {
         Table dumpTable = db.newTable(dbDotTab);
-        if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false)) {
+        if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.getExplain()) {
           throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTab));
         }
       } catch (HiveException e) {
