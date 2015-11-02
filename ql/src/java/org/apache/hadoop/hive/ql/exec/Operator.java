@@ -896,7 +896,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (isLogInfoEnabled && !statsMap.isEmpty()) {
       StringBuilder sb = new StringBuilder();
       for (Map.Entry<String, LongWritable> e : statsMap.entrySet()) {
-        sb.append(e.getKey()).append(":").append(statsMap.get(e).toString()).append(", ");
+        sb.append(e.getKey()).append(":").append(e.getValue()).append(", ");
       }
       LOG.info(sb.toString());
     }
