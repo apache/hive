@@ -18,39 +18,6 @@
 
 package org.apache.hive.jdbc;
 
-import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
-import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -68,7 +35,43 @@ import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMa
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
+import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -95,6 +98,8 @@ public class TestJdbcDriver2 {
   private Connection con;
   private static boolean standAloneServer = false;
   private static final float floatCompareDelta = 0.0001f;
+
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   public TestJdbcDriver2() {
     conf = new HiveConf(TestJdbcDriver2.class);
@@ -2413,5 +2418,33 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         assertFalse(resultSet.next());
       }
     }
+  }
+
+  @Test
+  public void testAutoCommit() throws Exception {
+    con.clearWarnings();
+    con.setAutoCommit(true);
+    assertNull(con.getWarnings());
+    con.setAutoCommit(false);
+    SQLWarning warning = con.getWarnings();
+    assertNotNull(warning);
+    assertEquals("Hive does not support autoCommit=false", warning.getMessage());
+    assertNull(warning.getNextWarning());
+    con.clearWarnings();
+  }
+
+  @Test
+  public void setAutoCommitOnClosedConnection() throws Exception {
+    Connection mycon = getConnection("");
+    try {
+      mycon.setAutoCommit(true);
+      mycon.close();
+      thrown.expect(SQLException.class);
+      thrown.expectMessage("Connection is closed");
+      mycon.setAutoCommit(true);
+    } finally {
+      mycon.close();
+    }
+
   }
 }
