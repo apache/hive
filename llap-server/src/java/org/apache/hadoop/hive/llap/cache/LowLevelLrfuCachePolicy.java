@@ -78,9 +78,10 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       int lrfuThreshold = (int)((Math.log(1 - Math.pow(0.5, lambda)) / Math.log(0.5)) / lambda);
       maxHeapSize = Math.min(lrfuThreshold, maxBuffers);
     }
-    LlapIoImpl.LOG.info("LRFU cache policy with min buffer size {}", minBufferSize
-        , " and lambda {}", lambda, " (heap size {} ", maxHeapSize + ")");
-
+    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+      LlapIoImpl.LOG.info("LRFU cache policy with min buffer size " + minBufferSize
+          + " and lambda " + lambda + " (heap size " + maxHeapSize + ")");
+    }
 
     heap = new LlapCacheableBuffer[maxHeapSize];
     listHead = listTail = null;

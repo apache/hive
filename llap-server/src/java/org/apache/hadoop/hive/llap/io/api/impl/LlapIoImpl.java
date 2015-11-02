@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import org.apache.hadoop.hive.llap.LogLevels;
+
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
@@ -56,19 +58,21 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Logger LOG = LoggerFactory.getLogger(LlapIoImpl.class);
+  public static final LogLevels LOGL = new LogLevels(LOG);
 
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
-  private final LlapDaemonCacheMetrics cacheMetrics;
-  private final LlapDaemonQueueMetrics queueMetrics;
+  private LlapDaemonCacheMetrics cacheMetrics;
+  private LlapDaemonQueueMetrics queueMetrics;
   private ObjectName buddyAllocatorMXBean;
   private EvictionAwareAllocator allocator;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
     // High-level cache not supported yet.
-    LOG.info("Initializing LLAP IO {}", useLowLevelCache ? " with low level cache" : "");
-
+    if (LOGL.isInfoEnabled()) {
+      LOG.info("Initializing LLAP IO" + (useLowLevelCache ? " with low level cache" : ""));
+    }
 
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
     String sessionId = conf.get("llap.daemon.metrics.sessionid");
@@ -111,7 +115,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(metadataCache, orcCache, cache, conf, cacheMetrics,
         queueMetrics);
-    LOG.info("LLAP IO initialized");
+    if (LOGL.isInfoEnabled()) {
+      LOG.info("LLAP IO initialized");
+    }
+
     registerMXBeans();
   }
 
