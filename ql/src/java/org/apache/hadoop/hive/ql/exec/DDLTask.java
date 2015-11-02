@@ -4203,9 +4203,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Map<String, String> partitionSpecs = exchangePartition.getPartitionSpecs();
     Table destTable = exchangePartition.getDestinationTable();
     Table sourceTable = exchangePartition.getSourceTable();
-    db.exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
+    List<Partition> partitions =
+        db.exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
         sourceTable.getTableName(),destTable.getDbName(),
         destTable.getTableName());
+
+    for(Partition partition : partitions) {
+      // Reuse the partition specs from dest partition since they should be the same
+      work.getOutputs().add(new WriteEntity(new Partition(sourceTable, partition.getSpec(), null),
+          WriteEntity.WriteType.DELETE));
+
+      work.getOutputs().add(new WriteEntity(new Partition(destTable, partition.getSpec(), null),
+          WriteEntity.WriteType.INSERT));
+    }
+
     return 0;
   }
 
