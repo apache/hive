@@ -169,6 +169,7 @@ public class LineageLogger implements ExecuteWithHookContext {
         }
         writer.name("engine").value(
           HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE));
+        writer.name("database").value(ss.getCurrentDatabase());
         writer.name("hash").value(getQueryHash(queryStr));
         writer.name("queryText").value(queryStr);
 
