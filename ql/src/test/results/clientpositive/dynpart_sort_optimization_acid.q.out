@@ -153,7 +153,7 @@ STAGE PLANS:
           TableScan
             alias: acid
             Filter Operator
-              predicate: (key = 'foo') (type: boolean)
+              predicate: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
               Select Operator
                 expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), ds (type: string)
                 outputColumnNames: _col0, _col3
@@ -390,7 +390,7 @@ STAGE PLANS:
           TableScan
             alias: acid
             Filter Operator
-              predicate: (key = 'foo') (type: boolean)
+              predicate: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
               Select Operator
                 expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), ds (type: string)
                 outputColumnNames: _col0, _col3

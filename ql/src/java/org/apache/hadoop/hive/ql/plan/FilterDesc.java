@@ -79,7 +79,6 @@ public class FilterDesc extends AbstractOperatorDesc {
 
   private static final long serialVersionUID = 1L;
   private org.apache.hadoop.hive.ql.plan.ExprNodeDesc predicate;
-  private transient ExprNodeDesc origPredicate;
   private boolean isSamplingPred;
   private transient SampleDesc sampleDescr;
   //Is this a filter that should perform a comparison for sorted searches
@@ -149,14 +148,6 @@ public class FilterDesc extends AbstractOperatorDesc {
 
   public void setSortedFilter(boolean isSortedFilter) {
     this.isSortedFilter = isSortedFilter;
-  }
-
-  public void setOrigPredicate(ExprNodeDesc origPredicate) {
-    this.origPredicate = origPredicate;
-  }
-
-  public ExprNodeDesc getOrigPredicate() {
-    return origPredicate;
   }
 
   /**

@@ -2206,7 +2206,10 @@ public class HiveConf extends Configuration {
         "Exceeding this will trigger a flush irrelevant of memory pressure condition."),
     HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1,
         "Percent of entries in the group by aggregation hash flushed when the memory threshold is exceeded."),
-
+    HIVE_VECTORIZATION_REDUCESINK_NEW_ENABLED("hive.vectorized.execution.reducesink.new.enabled", true,
+        "This flag should be set to true to enable the new vectorization\n" +
+        "of queries using ReduceSink.\ni" +
+        "The default value is true."),
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
         + "partition operations including but not limited to insert, such as alter, describe etc."),

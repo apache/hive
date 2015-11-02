@@ -18,14 +18,10 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import org.apache.calcite.util.Pair;
@@ -50,18 +46,15 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc.ExprNodeDescEqualityWrapper;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ListMultimap;
 
 /**
@@ -78,48 +71,14 @@ public class PointLookupOptimizer implements Transform {
           GenericUDFIn.class.getAnnotation(Description.class).name();
   private static final String STRUCT_UDF =
           GenericUDFStruct.class.getAnnotation(Description.class).name();
-  private static final String AND_UDF =
-      GenericUDFOPAnd.class.getAnnotation(Description.class).name();
-
   // these are closure-bound for all the walkers in context
   public final int minOrExpr;
-  public final boolean extract;
-  public final boolean testMode;
 
   /*
    * Pass in configs and pre-create a parse context
    */
-  public PointLookupOptimizer(final int min, final boolean extract, final boolean testMode) {
+  public PointLookupOptimizer(final int min) {
     this.minOrExpr = min;
-    this.extract = extract;
-    this.testMode = testMode;
-  }
-
-  // Hash Set iteration isn't ordered, but force string sorted order
-  // to get a consistent test run.
-  private Collection<ExprNodeDescEqualityWrapper> sortForTests(
-      Set<ExprNodeDescEqualityWrapper> valuesExpr) {
-    if (!testMode) {
-      // normal case - sorting is wasted for an IN()
-      return valuesExpr;
-    }
-    final Collection<ExprNodeDescEqualityWrapper> sortedValues;
-
-    sortedValues = ImmutableSortedSet.copyOf(
-        new Comparator<ExprNodeDescEqualityWrapper>() {
-          @Override
-          public int compare(ExprNodeDescEqualityWrapper w1,
-              ExprNodeDescEqualityWrapper w2) {
-            // fail if you find nulls (this is a test-code section)
-            if (w1.equals(w2)) {
-              return 0;
-            }
-            return w1.getExprNodeDesc().getExprString()
-                .compareTo(w2.getExprNodeDesc().getExprString());
-          }
-        }, valuesExpr);
-
-    return sortedValues;
   }
 
   @Override
@@ -151,9 +110,6 @@ public class PointLookupOptimizer implements Transform {
         // Replace filter in current FIL with new FIL
         if (LOG.isDebugEnabled()) {
           LOG.debug("Generated new predicate with IN clause: " + newPredicate);
-        }
-        if (!extract) {
-          filterOp.getConf().setOrigPredicate(predicate);
         }
         filterOp.getConf().setPredicate(newPredicate);
       }
@@ -325,50 +281,6 @@ public class PointLookupOptimizer implements Transform {
       }
       newPredicate = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
               FunctionRegistry.getFunctionInfo(IN_UDF).getGenericUDF(), newChildren);
-
-      if (extract && columns.size() > 1) {
-        final List<ExprNodeDesc> subExpr = new ArrayList<ExprNodeDesc>(columns.size()+1);
-
-        // extract pre-conditions for the tuple expressions
-        // (a,b) IN ((1,2),(2,3)) ->
-        //          ((a) IN (1,2) and b in (2,3)) and (a,b) IN ((1,2),(2,3))
-
-        for (String keyString : columnConstantsMap.keySet()) {
-          final Set<ExprNodeDescEqualityWrapper> valuesExpr = 
-              new HashSet<ExprNodeDescEqualityWrapper>(children.size());
-          final List<Pair<ExprNodeColumnDesc, ExprNodeConstantDesc>> partial = 
-              columnConstantsMap.get(keyString);
-          for (int i = 0; i < children.size(); i++) {
-            Pair<ExprNodeColumnDesc, ExprNodeConstantDesc> columnConstant = partial
-                .get(i);
-            valuesExpr
-                .add(new ExprNodeDescEqualityWrapper(columnConstant.right));
-          }
-          ExprNodeColumnDesc lookupCol = partial.get(0).left;
-          // generate a partial IN clause, if the column is a partition column
-          if (lookupCol.getIsPartitionColOrVirtualCol()
-              || valuesExpr.size() < children.size()) {
-            // optimize only nDV reductions
-            final List<ExprNodeDesc> inExpr = new ArrayList<ExprNodeDesc>();
-            inExpr.add(lookupCol);
-            for (ExprNodeDescEqualityWrapper value : sortForTests(valuesExpr)) {
-              inExpr.add(value.getExprNodeDesc());
-            }
-            subExpr.add(new ExprNodeGenericFuncDesc(
-                TypeInfoFactory.booleanTypeInfo, FunctionRegistry
-                    .getFunctionInfo(IN_UDF).getGenericUDF(), inExpr));
-          }
-        }
-        // loop complete, inspect the sub expressions generated
-        if (subExpr.size() > 0) {
-          // add the newPredicate to the end & produce an AND clause
-          subExpr.add(newPredicate);
-          newPredicate = new ExprNodeGenericFuncDesc(
-              TypeInfoFactory.booleanTypeInfo, FunctionRegistry
-                  .getFunctionInfo(AND_UDF).getGenericUDF(), subExpr);
-        }
-        // else, newPredicate is unmodified
-      }
 
       return newPredicate;
     }
