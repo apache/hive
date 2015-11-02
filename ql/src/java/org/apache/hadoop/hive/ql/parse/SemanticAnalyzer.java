@@ -10961,7 +10961,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               + dbName + "." + tblName);
         }
         Map<String, Table> tables = SessionHiveMetaStoreClient.getTempTablesForDatabase(dbName);
-        if (tables != null && tables.containsKey(tblName)) {
+        if (tables != null && tables.containsKey(tblName) && !ctx.getExplain())  {
           throw new SemanticException("Temporary table " + dbName + "." + tblName
               + " already exists");
         }
@@ -10970,7 +10970,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // dumpTable is only used to check the conflict for non-temporary tables
         try {
           Table dumpTable = db.newTable(dbDotTab);
-          if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false)) {
+          if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.getExplain()) {
             throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTab));
           }
         } catch (HiveException e) {
