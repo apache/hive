@@ -2012,7 +2012,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().dropPartitions(
           dbName, tblName, partExprs, dropOptions);
-      return convertFromMetastore(tbl, tParts, null);
+      return convertFromMetastore(tbl, tParts);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
@@ -2256,22 +2256,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().listPartitionsByFilter(
         tbl.getDbName(), tbl.getTableName(), filter, (short)-1);
-    return convertFromMetastore(tbl, tParts, null);
+    return convertFromMetastore(tbl, tParts);
   }
 
   private static List<Partition> convertFromMetastore(Table tbl,
-      List<org.apache.hadoop.hive.metastore.api.Partition> src,
-      List<Partition> dest) throws HiveException {
-    if (src == null) {
-      return dest;
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions) throws HiveException {
+    if (partitions == null) {
+      return new ArrayList<Partition>();
     }
-    if (dest == null) {
-      dest = new ArrayList<Partition>(src.size());
+
+    List<Partition> results = new ArrayList<Partition>(partitions.size());
+    for (org.apache.hadoop.hive.metastore.api.Partition tPart : partitions) {
+      results.add(new Partition(tbl, tPart));
     }
-    for (org.apache.hadoop.hive.metastore.api.Partition tPart : src) {
-      dest.add(new Partition(tbl, tPart));
-    }
-    return dest;
+    return results;
   }
 
   /**
@@ -2291,7 +2289,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
     boolean hasUnknownParts = getMSC().listPartitionsByExpr(tbl.getDbName(),
         tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
-    convertFromMetastore(tbl, msParts, result);
+    result.addAll(convertFromMetastore(tbl, msParts));
     return hasUnknownParts;
   }
 
@@ -3017,12 +3015,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return ShimLoader.getMajorVersion().startsWith("0.20");
   }
 
-  public void exchangeTablePartitions(Map<String, String> partitionSpecs,
+  public List<Partition> exchangeTablePartitions(Map<String, String> partitionSpecs,
       String sourceDb, String sourceTable, String destDb,
       String destinationTableName) throws HiveException {
     try {
-      getMSC().exchange_partition(partitionSpecs, sourceDb, sourceTable, destDb,
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions =
+        getMSC().exchange_partitions(partitionSpecs, sourceDb, sourceTable, destDb,
         destinationTableName);
+
+      return convertFromMetastore(getTable(destDb, destinationTableName), partitions);
     } catch (Exception ex) {
       LOG.error(StringUtils.stringifyException(ex));
       throw new HiveException(ex);
