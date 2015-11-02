@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hive.common.util.HiveTestUtils;
+import org.apache.orc.CompressionKind;
 import org.junit.Before;
 import org.junit.Test;
 

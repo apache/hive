@@ -26,26 +26,20 @@ import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
-import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.orc.impl.MetadataReader;
+import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
+import org.apache.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
 
 public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final OrcBatchKey stripeKey;
-  private final List<ColumnEncoding> encodings;
-  private final List<Stream> streams;
+  private final List<OrcProto.ColumnEncoding> encodings;
+  private final List<OrcProto.Stream> streams;
   private final long rowCount;
-  private RecordReaderImpl.Index rowIndex;
+  private OrcIndex rowIndex;
 
   private final int estimatedMemUsage;
 
@@ -62,7 +56,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   public OrcStripeMetadata(OrcBatchKey stripeKey, MetadataReader mr, StripeInformation stripe,
       boolean[] includes, boolean[] sargColumns) throws IOException {
     this.stripeKey = stripeKey;
-    StripeFooter footer = mr.readStripeFooter(stripe);
+    OrcProto.StripeFooter footer = mr.readStripeFooter(stripe);
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
     rowCount = stripe.getNumberOfRows();
@@ -81,15 +75,15 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   @VisibleForTesting
   public static OrcStripeMetadata createDummy(long id) {
     OrcStripeMetadata dummy = new OrcStripeMetadata(id);
-    dummy.encodings.add(ColumnEncoding.getDefaultInstance());
-    dummy.streams.add(Stream.getDefaultInstance());
-    RowIndex ri = RowIndex.newBuilder().addEntry(
-        RowIndexEntry.newBuilder().addPositions(1).setStatistics(
+    dummy.encodings.add(OrcProto.ColumnEncoding.getDefaultInstance());
+    dummy.streams.add(OrcProto.Stream.getDefaultInstance());
+    OrcProto.RowIndex ri = OrcProto.RowIndex.newBuilder().addEntry(
+        OrcProto.RowIndexEntry.newBuilder().addPositions(1).setStatistics(
             OrcFileMetadata.createStatsDummy())).build();
-    BloomFilterIndex bfi = BloomFilterIndex.newBuilder().addBloomFilter(
-        BloomFilter.newBuilder().addBitset(0)).build();
-    dummy.rowIndex = new RecordReaderImpl.Index(
-        new RowIndex[] { ri }, new BloomFilterIndex[] { bfi });
+    OrcProto.BloomFilterIndex bfi = OrcProto.BloomFilterIndex.newBuilder().addBloomFilter(
+        OrcProto.BloomFilter.newBuilder().addBitset(0)).build();
+    dummy.rowIndex = new OrcIndex(
+        new OrcProto.RowIndex[] { ri }, new OrcProto.BloomFilterIndex[] { bfi });
     return dummy;
   }
 
@@ -112,19 +106,19 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     return stripeKey.stripeIx;
   }
 
-  public RowIndex[] getRowIndexes() {
+  public OrcProto.RowIndex[] getRowIndexes() {
     return rowIndex.getRowGroupIndex();
   }
 
-  public BloomFilterIndex[] getBloomFilterIndexes() {
+  public OrcProto.BloomFilterIndex[] getBloomFilterIndexes() {
     return rowIndex.getBloomFilterIndex();
   }
 
-  public List<ColumnEncoding> getEncodings() {
+  public List<OrcProto.ColumnEncoding> getEncodings() {
     return encodings;
   }
 
-  public List<Stream> getStreams() {
+  public List<OrcProto.Stream> getStreams() {
     return streams;
   }
 

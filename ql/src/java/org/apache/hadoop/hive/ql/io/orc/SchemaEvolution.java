@@ -24,8 +24,10 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory.TreeReaderSchema;
+import org.apache.orc.OrcProto;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.TypeDescription;
 
 /**
  * Take the file types and the (optional) configuration column names/types and see if there
@@ -96,7 +98,7 @@ public class SchemaEvolution {
       }
     }
 
-    List<Type> fullSchemaTypes;
+    List<OrcProto.Type> fullSchemaTypes;
 
     if (isAcid) {
       fullSchemaTypes = new ArrayList<OrcProto.Type>();
@@ -140,9 +142,9 @@ public class SchemaEvolution {
    * @param typeDescr
    * @return ORC types for the ACID event based on the row's type description
    */
-  public static List<Type> createEventSchema(TypeDescription typeDescr) {
+  public static List<OrcProto.Type> createEventSchema(TypeDescription typeDescr) {
 
-    List<Type> result = new ArrayList<Type>();
+    List<OrcProto.Type> result = new ArrayList<OrcProto.Type>();
 
     OrcProto.Type.Builder type = OrcProto.Type.newBuilder();
     type.setKind(OrcProto.Type.Kind.STRUCT);

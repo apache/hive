@@ -108,6 +108,8 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
+import org.apache.orc.OrcProto;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

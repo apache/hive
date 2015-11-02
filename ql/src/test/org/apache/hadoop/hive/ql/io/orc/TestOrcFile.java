@@ -38,12 +38,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.google.common.primitives.Longs;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.Version;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -77,6 +77,21 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveTestUtils;
+import org.apache.orc.BinaryColumnStatistics;
+import org.apache.orc.BooleanColumnStatistics;
+import org.apache.orc.ColumnStatistics;
+import org.apache.orc.DecimalColumnStatistics;
+import org.apache.orc.DoubleColumnStatistics;
+import org.apache.orc.IntegerColumnStatistics;
+import org.apache.orc.impl.MemoryManager;
+import org.apache.orc.OrcProto;
+
+import org.apache.orc.OrcUtils;
+import org.apache.orc.StringColumnStatistics;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
+import org.apache.orc.TypeDescription;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1794,7 +1809,7 @@ public class TestOrcFile {
     }
 
     @Override
-    void addWriter(Path path, long requestedAllocation,
+    public void addWriter(Path path, long requestedAllocation,
                    MemoryManager.Callback callback) {
       this.path = path;
       this.lastAllocation = requestedAllocation;
@@ -1802,23 +1817,23 @@ public class TestOrcFile {
     }
 
     @Override
-    synchronized void removeWriter(Path path) {
+    public synchronized void removeWriter(Path path) {
       this.path = null;
       this.lastAllocation = 0;
     }
 
     @Override
-    long getTotalMemoryPool() {
+    public long getTotalMemoryPool() {
       return totalSpace;
     }
 
     @Override
-    double getAllocationScale() {
+    public double getAllocationScale() {
       return rate;
     }
 
     @Override
-    void addedRow(int count) throws IOException {
+    public void addedRow(int count) throws IOException {
       rows += count;
       if (rows % 100 == 0) {
         callback.checkMemory(rate);
@@ -1843,7 +1858,7 @@ public class TestOrcFile {
                                          .bufferSize(100)
                                          .rowIndexStride(0)
                                          .memory(memory)
-                                         .version(Version.V_0_11));
+                                         .version(OrcFile.Version.V_0_11));
     assertEquals(testFilePath, memory.path);
     for(int i=0; i < 2500; ++i) {
       writer.addRow(new InnerStruct(i*300, Integer.toHexString(10*i)));
@@ -1879,7 +1894,7 @@ public class TestOrcFile {
                                          .bufferSize(100)
                                          .rowIndexStride(0)
                                          .memory(memory)
-                                         .version(Version.V_0_12));
+                                         .version(OrcFile.Version.V_0_12));
     assertEquals(testFilePath, memory.path);
     for(int i=0; i < 2500; ++i) {
       writer.addRow(new InnerStruct(i*300, Integer.toHexString(10*i)));
@@ -1985,5 +2000,37 @@ public class TestOrcFile {
     }
     assertTrue(!rows.hasNext());
     assertEquals(3500, rows.getRowNumber());
+  }
+
+  @Test
+  public void testBitPack64Large() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    int size = 1080832;
+    long[] inp = new long[size];
+    Random rand = new Random(1234);
+    for (int i = 0; i < size; i++) {
+      inp[i] = rand.nextLong();
+    }
+    List<Long> input = Lists.newArrayList(Longs.asList(inp));
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.ZLIB));
+    for (Long l : input) {
+      writer.addRow(l);
+    }
+    writer.close();
+
+    Reader reader = OrcFile.createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
+    RecordReader rows = reader.rows();
+    int idx = 0;
+    while (rows.hasNext()) {
+      Object row = rows.next(null);
+      Assert.assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    }
   }
 }

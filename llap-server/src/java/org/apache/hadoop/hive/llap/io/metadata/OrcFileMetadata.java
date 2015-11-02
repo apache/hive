@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.llap.io.metadata;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,19 +26,13 @@ import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
-import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
-import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
-import org.apache.hadoop.hive.ql.io.orc.FileMetadata;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.FileMetadata;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.ReaderImpl.StripeInformationImpl;
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -50,9 +43,9 @@ import com.google.common.annotations.VisibleForTesting;
 public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMetadata {
   private final List<StripeInformation> stripes;
   private final List<Integer> versionList;
-  private final List<StripeStatistics> stripeStats;
-  private final List<Type> types;
-  private final List<ColumnStatistics> fileStats;
+  private final List<OrcProto.StripeStatistics> stripeStats;
+  private final List<OrcProto.Type> types;
+  private final List<OrcProto.ColumnStatistics> fileStats;
   private final long fileId;
   private final CompressionKind compressionKind;
   private final int rowIndexStride;
@@ -80,17 +73,17 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
     OrcFileMetadata ofm = new OrcFileMetadata(fileId);
     ofm.stripes.add(new StripeInformationImpl(
         OrcProto.StripeInformation.getDefaultInstance()));
-    ofm.fileStats.add(ColumnStatistics.getDefaultInstance());
-    ofm.stripeStats.add(StripeStatistics.newBuilder().addColStats(createStatsDummy()).build());
-    ofm.types.add(Type.newBuilder().addFieldNames("a").addSubtypes(0).build());
+    ofm.fileStats.add(OrcProto.ColumnStatistics.getDefaultInstance());
+    ofm.stripeStats.add(OrcProto.StripeStatistics.newBuilder().addColStats(createStatsDummy()).build());
+    ofm.types.add(OrcProto.Type.newBuilder().addFieldNames("a").addSubtypes(0).build());
     ofm.versionList.add(0);
     return ofm;
   }
 
-  static ColumnStatistics.Builder createStatsDummy() {
-    return ColumnStatistics.newBuilder().setBucketStatistics(
-            BucketStatistics.newBuilder().addCount(0)).setStringStatistics(
-            StringStatistics.newBuilder().setMaximum("zzz"));
+  static OrcProto.ColumnStatistics.Builder createStatsDummy() {
+    return OrcProto.ColumnStatistics.newBuilder().setBucketStatistics(
+            OrcProto.BucketStatistics.newBuilder().addCount(0)).setStringStatistics(
+            OrcProto.StringStatistics.newBuilder().setMaximum("zzz"));
   }
 
   // Ctor for memory estimation and tests
@@ -111,7 +104,7 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   public OrcFileMetadata(long fileId, Reader reader) {
     this.fileId = fileId;
     this.stripeStats = reader.getOrcProtoStripeStatistics();
-    this.compressionKind = reader.getCompression();
+    this.compressionKind = reader.getCompressionKind();
     this.compressionBufferSize = reader.getCompressionSize();
     this.stripes = reader.getStripes();
     this.isOriginalFormat = OrcInputFormat.isOriginal(reader);
@@ -210,7 +203,7 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   }
 
   @Override
-  public List<StripeStatistics> getStripeStats() {
+  public List<OrcProto.StripeStatistics> getStripeStats() {
     return stripeStats;
   }
 
@@ -225,7 +218,7 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   }
 
   @Override
-  public List<ColumnStatistics> getFileStats() {
+  public List<OrcProto.ColumnStatistics> getFileStats() {
     return fileStats;
   }
 }
