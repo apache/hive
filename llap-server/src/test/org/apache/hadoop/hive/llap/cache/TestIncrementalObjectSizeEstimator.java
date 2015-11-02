@@ -32,29 +32,12 @@ import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
-import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Kind;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Index;
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.orc.impl.MetadataReader;
+import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.orc.OrcProto;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -68,66 +51,68 @@ public class TestIncrementalObjectSizeEstimator {
     public boolean isEmpty;
 
     @Override
-    public Index readRowIndex(StripeInformation stripe, StripeFooter footer,
-        boolean[] included, RowIndex[] indexes, boolean[] sargColumns,
-        BloomFilterIndex[] bloomFilterIndices) throws IOException {
+    public OrcIndex readRowIndex(StripeInformation stripe,
+                              OrcProto.StripeFooter footer,
+        boolean[] included, OrcProto.RowIndex[] indexes, boolean[] sargColumns,
+        OrcProto.BloomFilterIndex[] bloomFilterIndices) throws IOException {
       if (isEmpty) {
-        return new RecordReaderImpl.Index(new RowIndex[] { }, new BloomFilterIndex[] { });
+        return new OrcIndex(new OrcProto.RowIndex[] { },
+            new OrcProto.BloomFilterIndex[] { });
       }
-      ColumnStatistics cs = ColumnStatistics.newBuilder()
-          .setBucketStatistics(BucketStatistics.newBuilder().addCount(0))
-          .setStringStatistics(StringStatistics.newBuilder().setMaximum("zzz").setMinimum("aaa"))
-          .setBinaryStatistics(BinaryStatistics.newBuilder().setSum(5))
-          .setDateStatistics(DateStatistics.newBuilder().setMinimum(4545).setMaximum(6656))
-          .setDecimalStatistics(DecimalStatistics.newBuilder().setMaximum("zzz").setMinimum("aaa"))
-          .setDoubleStatistics(DoubleStatistics.newBuilder().setMinimum(0.5).setMaximum(1.5))
-          .setIntStatistics(IntegerStatistics.newBuilder().setMaximum(10).setMinimum(5))
-          .setTimestampStatistics(TimestampStatistics.newBuilder().setMaximum(10)).build();
-      RowIndex ri = RowIndex.newBuilder()
-          .addEntry(RowIndexEntry.newBuilder().addPositions(1))
-          .addEntry(RowIndexEntry.newBuilder().addPositions(0).addPositions(2).setStatistics(cs))
+      OrcProto.ColumnStatistics cs = OrcProto.ColumnStatistics.newBuilder()
+          .setBucketStatistics(OrcProto.BucketStatistics.newBuilder().addCount(0))
+          .setStringStatistics(OrcProto.StringStatistics.newBuilder().setMaximum("zzz").setMinimum("aaa"))
+          .setBinaryStatistics(OrcProto.BinaryStatistics.newBuilder().setSum(5))
+          .setDateStatistics(OrcProto.DateStatistics.newBuilder().setMinimum(4545).setMaximum(6656))
+          .setDecimalStatistics(OrcProto.DecimalStatistics.newBuilder().setMaximum("zzz").setMinimum("aaa"))
+          .setDoubleStatistics(OrcProto.DoubleStatistics.newBuilder().setMinimum(0.5).setMaximum(1.5))
+          .setIntStatistics(OrcProto.IntegerStatistics.newBuilder().setMaximum(10).setMinimum(5))
+          .setTimestampStatistics(OrcProto.TimestampStatistics.newBuilder().setMaximum(10)).build();
+      OrcProto.RowIndex ri = OrcProto.RowIndex.newBuilder()
+          .addEntry(OrcProto.RowIndexEntry.newBuilder().addPositions(1))
+          .addEntry(OrcProto.RowIndexEntry.newBuilder().addPositions(0).addPositions(2).setStatistics(cs))
           .build();
-      RowIndex ri2 = RowIndex.newBuilder()
-          .addEntry(RowIndexEntry.newBuilder().addPositions(3))
+      OrcProto.RowIndex ri2 = OrcProto.RowIndex.newBuilder()
+          .addEntry(OrcProto.RowIndexEntry.newBuilder().addPositions(3))
           .build();
-      BloomFilterIndex bfi = BloomFilterIndex.newBuilder().addBloomFilter(
-          BloomFilter.newBuilder().addBitset(0).addBitset(1)).build();
+      OrcProto.BloomFilterIndex bfi = OrcProto.BloomFilterIndex.newBuilder().addBloomFilter(
+          OrcProto.BloomFilter.newBuilder().addBitset(0).addBitset(1)).build();
       if (doStreamStep) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CodedOutputStream cos = CodedOutputStream.newInstance(baos);
         ri.writeTo(cos);
         cos.flush();
-        ri = RowIndex.newBuilder().mergeFrom(baos.toByteArray()).build();
+        ri = OrcProto.RowIndex.newBuilder().mergeFrom(baos.toByteArray()).build();
         baos = new ByteArrayOutputStream();
         cos = CodedOutputStream.newInstance(baos);
         ri2.writeTo(cos);
         cos.flush();
-        ri2 = RowIndex.newBuilder().mergeFrom(baos.toByteArray()).build();
+        ri2 = OrcProto.RowIndex.newBuilder().mergeFrom(baos.toByteArray()).build();
         baos = new ByteArrayOutputStream();
         cos = CodedOutputStream.newInstance(baos);
         bfi.writeTo(cos);
         cos.flush();
-        bfi = BloomFilterIndex.newBuilder().mergeFrom(baos.toByteArray()).build();
+        bfi = OrcProto.BloomFilterIndex.newBuilder().mergeFrom(baos.toByteArray()).build();
       }
-      return new RecordReaderImpl.Index(
-          new RowIndex[] { ri, ri2 }, new BloomFilterIndex[] { bfi });
+      return new OrcIndex(
+          new OrcProto.RowIndex[] { ri, ri2 }, new OrcProto.BloomFilterIndex[] { bfi });
     }
 
     @Override
-    public StripeFooter readStripeFooter(StripeInformation stripe) throws IOException {
-      StripeFooter.Builder fb = StripeFooter.newBuilder();
+    public OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException {
+      OrcProto.StripeFooter.Builder fb = OrcProto.StripeFooter.newBuilder();
       if (!isEmpty) {
-        fb.addStreams(Stream.newBuilder().setColumn(0).setLength(20).setKind(Stream.Kind.LENGTH))
-          .addStreams(Stream.newBuilder().setColumn(0).setLength(40).setKind(Stream.Kind.DATA))
-          .addColumns(ColumnEncoding.newBuilder().setDictionarySize(10).setKind(Kind.DIRECT_V2));
+        fb.addStreams(OrcProto.Stream.newBuilder().setColumn(0).setLength(20).setKind(OrcProto.Stream.Kind.LENGTH))
+          .addStreams(OrcProto.Stream.newBuilder().setColumn(0).setLength(40).setKind(OrcProto.Stream.Kind.DATA))
+          .addColumns(OrcProto.ColumnEncoding.newBuilder().setDictionarySize(10).setKind(OrcProto.ColumnEncoding.Kind.DIRECT_V2));
       }
-      StripeFooter footer = fb.build();
+      OrcProto.StripeFooter footer = fb.build();
       if (doStreamStep) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CodedOutputStream cos = CodedOutputStream.newInstance(baos);
         footer.writeTo(cos);
         cos.flush();
-        footer = StripeFooter.newBuilder().mergeFrom(baos.toByteArray()).build();
+        footer = OrcProto.StripeFooter.newBuilder().mergeFrom(baos.toByteArray()).build();
       }
       return footer;
     }

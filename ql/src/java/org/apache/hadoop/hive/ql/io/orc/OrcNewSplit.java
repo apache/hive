@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.orc.FileMetaInfo;
 
 /**
  * OrcFileSplit. Holds file meta info

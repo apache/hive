@@ -22,7 +22,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -33,6 +32,30 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
+import org.apache.orc.BinaryColumnStatistics;
+import org.apache.orc.impl.BitFieldWriter;
+import org.apache.orc.impl.ColumnStatisticsImpl;
+import org.apache.orc.CompressionCodec;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.impl.DynamicIntArray;
+import org.apache.orc.impl.IntegerWriter;
+import org.apache.orc.impl.MemoryManager;
+import org.apache.orc.OrcConf;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.impl.OutStream;
+import org.apache.orc.impl.PositionRecorder;
+import org.apache.orc.impl.PositionedOutputStream;
+import org.apache.orc.impl.RunLengthByteWriter;
+import org.apache.orc.impl.RunLengthIntegerWriter;
+import org.apache.orc.impl.RunLengthIntegerWriterV2;
+import org.apache.orc.impl.SerializationUtils;
+import org.apache.orc.impl.SnappyCodec;
+import org.apache.orc.impl.StreamName;
+import org.apache.orc.StringColumnStatistics;
+import org.apache.orc.impl.StringRedBlackTree;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.ZlibCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -52,13 +75,7 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
-import org.apache.hadoop.hive.ql.io.orc.CompressionCodec.Modifier;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.CompressionStrategy;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.EncodingStrategy;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
+import org.apache.orc.CompressionCodec.Modifier;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -85,9 +102,9 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 import com.google.protobuf.ByteString;
@@ -182,8 +199,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       boolean addBlockPadding,
       OrcFile.Version version,
       OrcFile.WriterCallback callback,
-      EncodingStrategy encodingStrategy,
-      CompressionStrategy compressionStrategy,
+      OrcFile.EncodingStrategy encodingStrategy,
+      OrcFile.CompressionStrategy compressionStrategy,
       double paddingTolerance,
       long blockSizeValue,
       String bloomFilterColumnNames,
@@ -468,7 +485,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         case BLOOM_FILTER:
         case DATA:
         case DICTIONARY_DATA:
-          if (getCompressionStrategy() == CompressionStrategy.SPEED) {
+          if (getCompressionStrategy() == OrcFile.CompressionStrategy.SPEED) {
             modifiers = EnumSet.of(Modifier.FAST, Modifier.TEXT);
           } else {
             modifiers = EnumSet.of(Modifier.DEFAULT, Modifier.TEXT);
@@ -532,7 +549,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
      * Get the encoding strategy to use.
      * @return encoding strategy
      */
-    public EncodingStrategy getEncodingStrategy() {
+    public OrcFile.EncodingStrategy getEncodingStrategy() {
       return encodingStrategy;
     }
 
@@ -540,7 +557,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
      * Get the compression strategy to use.
      * @return compression strategy
      */
-    public CompressionStrategy getCompressionStrategy() {
+    public OrcFile.CompressionStrategy getCompressionStrategy() {
       return compressionStrategy;
     }
 
@@ -610,7 +627,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     private final OrcProto.BloomFilter.Builder bloomFilterEntry;
     private boolean foundNulls;
     private OutStream isPresentOutStream;
-    private final List<StripeStatistics.Builder> stripeStatsBuilders;
+    private final List<OrcProto.StripeStatistics.Builder> stripeStatsBuilders;
     private final StreamFactory streamFactory;
 
     /**
@@ -687,7 +704,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                                       StreamFactory writer) {
       if (isDirectV2) {
         boolean alignedBitpacking = false;
-        if (writer.getEncodingStrategy().equals(EncodingStrategy.SPEED)) {
+        if (writer.getEncodingStrategy().equals(OrcFile.EncodingStrategy.SPEED)) {
           alignedBitpacking = true;
         }
         return new RunLengthIntegerWriterV2(output, signed, alignedBitpacking);
@@ -788,7 +805,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
     private void removeIsPresentPositions() {
       for(int i=0; i < rowIndex.getEntryCount(); ++i) {
-        RowIndexEntry.Builder entry = rowIndex.getEntryBuilder(i);
+        OrcProto.RowIndexEntry.Builder entry = rowIndex.getEntryBuilder(i);
         List<Long> positions = entry.getPositionsList();
         // bit streams use 3 positions if uncompressed, 4 if compressed
         positions = positions.subList(isCompressed ? 4 : 3, positions.size());
@@ -2772,7 +2789,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         type.setMaximumLength(schema.getMaxLength());
         break;
       case VARCHAR:
-        type.setKind(Type.Kind.VARCHAR);
+        type.setKind(OrcProto.Type.Kind.VARCHAR);
         type.setMaximumLength(schema.getMaxLength());
         break;
       case BINARY:
@@ -3284,9 +3301,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   @Override
-  public void appendUserMetadata(List<UserMetadataItem> userMetadata) {
+  public void appendUserMetadata(List<OrcProto.UserMetadataItem> userMetadata) {
     if (userMetadata != null) {
-      for (UserMetadataItem item : userMetadata) {
+      for (OrcProto.UserMetadataItem item : userMetadata) {
         this.userMetadata.put(item.getName(), item.getValue());
       }
     }

@@ -41,8 +41,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -50,6 +48,13 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.orc.ColumnStatistics;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.ColumnStatisticsImpl;
+import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.OrcProto;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONWriter;
 
@@ -381,7 +386,7 @@ public final class FileDump {
         for (int colIdx : rowIndexCols) {
           sargColumns[colIdx] = true;
         }
-        RecordReaderImpl.Index indices = rows
+        OrcIndex indices = rows
             .readRowIndex(stripeIx, null, null, null, sargColumns);
         for (int col : rowIndexCols) {
           StringBuilder buf = new StringBuilder();
@@ -649,9 +654,10 @@ public final class FileDump {
     return sb.toString();
   }
 
-  private static String getFormattedRowIndices(int col, RowIndex[] rowGroupIndex) {
+  private static String getFormattedRowIndices(int col,
+                                               OrcProto.RowIndex[] rowGroupIndex) {
     StringBuilder buf = new StringBuilder();
-    RowIndex index;
+    OrcProto.RowIndex index;
     buf.append("    Row group indices for column ").append(col).append(":");
     if (rowGroupIndex == null || (col >= rowGroupIndex.length) ||
         ((index = rowGroupIndex[col]) == null)) {
@@ -661,7 +667,7 @@ public final class FileDump {
 
     for (int entryIx = 0; entryIx < index.getEntryCount(); ++entryIx) {
       buf.append("\n      Entry ").append(entryIx).append(": ");
-      RowIndexEntry entry = index.getEntry(entryIx);
+      OrcProto.RowIndexEntry entry = index.getEntry(entryIx);
       if (entry == null) {
         buf.append("unknown\n");
         continue;
@@ -686,7 +692,7 @@ public final class FileDump {
 
   public static long getTotalPaddingSize(Reader reader) throws IOException {
     long paddedBytes = 0;
-    List<org.apache.hadoop.hive.ql.io.orc.StripeInformation> stripes = reader.getStripes();
+    List<StripeInformation> stripes = reader.getStripes();
     for (int i = 1; i < stripes.size(); i++) {
       long prevStripeOffset = stripes.get(i - 1).getOffset();
       long prevStripeLen = stripes.get(i - 1).getLength();
