@@ -453,6 +453,22 @@ public interface IMetaStoreClient {
       InvalidObjectException, TException;
 
   /**
+   * With the one partitionSpecs to exchange, multiple partitions could be exchanged.
+   * e.g., year=2015/month/day, exchanging partition year=2015 results to all the partitions
+   * belonging to it exchanged. This function returns the list of affected partitions.
+   * @param partitionSpecs
+   * @param sourceDb
+   * @param sourceTable
+   * @param destdb
+   * @param destTableName
+   * @return the list of the new partitions
+   */
+  List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
+      String sourceDb, String sourceTable, String destdb,
+      String destTableName) throws MetaException, NoSuchObjectException,
+      InvalidObjectException, TException;
+
+  /**
    * @param dbName
    * @param tblName
    * @param name - partition name i.e. 'ds=2010-02-03/ts=2010-02-03 18%3A16%3A01'
