@@ -29,6 +29,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.orc.Writer;
 
 /** An OutputFormat that writes ORC files. */
 public class OrcNewOutputFormat extends

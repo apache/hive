@@ -57,6 +57,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hive.common.util.HiveTestUtils;
+import org.apache.orc.CompressionKind;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

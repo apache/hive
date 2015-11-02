@@ -46,6 +46,8 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.Writer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

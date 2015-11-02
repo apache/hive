@@ -31,6 +31,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.Writer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

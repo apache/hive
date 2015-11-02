@@ -22,9 +22,8 @@ import java.io.IOException;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DataCache;
-import org.apache.hadoop.hive.ql.io.orc.DataReader;
+import org.apache.orc.DataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
-import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReaderImpl;
 
 
 class ReaderImpl extends org.apache.hadoop.hive.ql.io.orc.ReaderImpl implements Reader {

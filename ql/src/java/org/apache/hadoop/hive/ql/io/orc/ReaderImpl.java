@@ -26,6 +26,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.orc.BufferChunk;
+import org.apache.orc.ColumnStatistics;
+import org.apache.orc.ColumnStatisticsImpl;
+import org.apache.orc.CompressionCodec;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.DataReader;
+import org.apache.orc.FileMetaInfo;
+import org.apache.orc.FileMetadata;
+import org.apache.orc.InStream;
+import org.apache.orc.MetadataReader;
+import org.apache.orc.MetadataReaderImpl;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -33,15 +46,12 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DiskRange;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterVersion;
 import org.apache.hadoop.hive.ql.io.FileFormatException;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.OrcProto;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -318,7 +328,7 @@ public class ReaderImpl implements Reader {
       this.metadataSize = fileMetadata.getMetadataSize();
       this.stripeStats = fileMetadata.getStripeStats();
       this.versionList = fileMetadata.getVersionList();
-      this.writerVersion = WriterVersion.from(fileMetadata.getWriterVersionNum());
+      this.writerVersion = OrcFile.WriterVersion.from(fileMetadata.getWriterVersionNum());
       this.types = fileMetadata.getTypes();
       this.rowIndexStride = fileMetadata.getRowIndexStride();
       this.contentLength = fileMetadata.getContentLength();
@@ -693,7 +703,7 @@ public class ReaderImpl implements Reader {
       List<OrcProto.ColumnStatistics> stats) {
     OrcProto.ColumnStatistics colStat = stats.get(colIdx);
     long numVals = colStat.getNumberOfValues();
-    Type type = types.get(colIdx);
+    OrcProto.Type type = types.get(colIdx);
 
     switch (type.getKind()) {
     case BINARY:
@@ -742,7 +752,7 @@ public class ReaderImpl implements Reader {
 
   private List<Integer> getColumnIndicesFromNames(List<String> colNames) {
     // top level struct
-    Type type = types.get(0);
+    OrcProto.Type type = types.get(0);
     List<Integer> colIndices = Lists.newArrayList();
     List<String> fieldNames = type.getFieldNamesList();
     int fieldIdx = 0;
@@ -789,7 +799,7 @@ public class ReaderImpl implements Reader {
 
   private int getLastIdx() {
     Set<Integer> indices = Sets.newHashSet();
-    for (Type type : types) {
+    for (OrcProto.Type type : types) {
       indices.addAll(type.getSubtypesList());
     }
     return Collections.max(indices);
@@ -814,7 +824,7 @@ public class ReaderImpl implements Reader {
     return result;
   }
 
-  public List<UserMetadataItem> getOrcProtoUserMetadata() {
+  public List<OrcProto.UserMetadataItem> getOrcProtoUserMetadata() {
     return userMetadata;
   }
 

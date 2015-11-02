@@ -23,9 +23,8 @@ import java.nio.ByteBuffer;
 import org.apache.hadoop.hive.common.DiskRangeInfo;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-import org.apache.hadoop.hive.ql.io.orc.SettableUncompressedStream;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
+import org.apache.orc.SettableUncompressedStream;
+import org.apache.orc.BufferChunk;
 
 /**
  * Stream utility.
@@ -63,7 +62,7 @@ public class StreamUtils {
     // TODO: we should get rid of this
     for (MemoryBuffer memoryBuffer : streamBuffer.getCacheBuffers()) {
       ByteBuffer buffer = memoryBuffer.getByteBufferDup();
-      diskRangeInfo.addDiskRange(new RecordReaderImpl.BufferChunk(buffer, offset));
+      diskRangeInfo.addDiskRange(new BufferChunk(buffer, offset));
       offset += buffer.remaining();
     }
     return diskRangeInfo;

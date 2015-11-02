@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hive.common.util.HiveTestUtils;
+import org.apache.orc.Writer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

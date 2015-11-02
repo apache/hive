@@ -22,12 +22,11 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
-import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind;
-import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
-import org.apache.hadoop.hive.ql.io.orc.SettableUncompressedStream;
+import org.apache.orc.CompressionCodec;
+import org.apache.orc.PositionProvider;
+import org.apache.orc.SettableUncompressedStream;
 import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory;
+import org.apache.orc.OrcProto;
 
 public class EncodedTreeReaderFactory extends TreeReaderFactory {
   /**
@@ -87,13 +86,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_secondsStream != null) {
-        _secondsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _secondsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (_nanosStream != null) {
-        _nanosStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.SECONDARY_VALUE]));
+        _nanosStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.SECONDARY_VALUE]));
       }
     }
 
@@ -238,24 +237,24 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
@@ -375,10 +374,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
@@ -477,10 +476,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
@@ -585,10 +584,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
@@ -687,10 +686,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
@@ -782,10 +781,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
@@ -888,13 +887,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_valueStream != null) {
-        _valueStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _valueStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (_scaleStream != null) {
-        _scaleStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.SECONDARY_VALUE]));
+        _scaleStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.SECONDARY_VALUE]));
       }
     }
 
@@ -1013,10 +1012,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
@@ -1146,24 +1145,24 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
@@ -1319,24 +1318,24 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (!_isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
       }
 
       // set these streams only if the stripe is different
       if (!sameStripe && _isDictionaryEncoding) {
         if (_lengthStream != null) {
-          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+          _lengthStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
         }
         if (_dictionaryStream != null) {
-          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DICTIONARY_DATA_VALUE]));
+          _dictionaryStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DICTIONARY_DATA_VALUE]));
         }
       }
     }
@@ -1461,10 +1460,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
@@ -1566,13 +1565,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (_lengthsStream != null) {
-        _lengthsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.LENGTH_VALUE]));
+        _lengthsStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.LENGTH_VALUE]));
       }
     }
 
@@ -1677,10 +1676,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     public void setBuffers(ColumnStreamData[] streamsData, boolean sameStripe)
         throws IOException {
       if (_presentStream != null) {
-        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.PRESENT_VALUE]));
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (_dataStream != null) {
-        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[Kind.DATA_VALUE]));
+        _dataStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
     }
 
@@ -1756,11 +1755,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       OrcProto.ColumnEncoding columnEncoding = encodings.get(columnIndex);
 
       // stream buffers are arranged in enum order of stream kind
-      ColumnStreamData present = streamBuffers[Kind.PRESENT_VALUE],
-        data = streamBuffers[Kind.DATA_VALUE],
-        dictionary = streamBuffers[Kind.DICTIONARY_DATA_VALUE],
-        lengths = streamBuffers[Kind.LENGTH_VALUE],
-        secondary = streamBuffers[Kind.SECONDARY_VALUE];
+      ColumnStreamData present = streamBuffers[OrcProto.Stream.Kind.PRESENT_VALUE],
+        data = streamBuffers[OrcProto.Stream.Kind.DATA_VALUE],
+        dictionary = streamBuffers[OrcProto.Stream.Kind.DICTIONARY_DATA_VALUE],
+        lengths = streamBuffers[OrcProto.Stream.Kind.LENGTH_VALUE],
+        secondary = streamBuffers[OrcProto.Stream.Kind.SECONDARY_VALUE];
 
       switch (columnType.getKind()) {
         case BINARY:

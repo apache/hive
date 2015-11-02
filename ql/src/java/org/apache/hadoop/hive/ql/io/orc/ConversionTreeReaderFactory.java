@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.util.List;
+import org.apache.orc.OrcProto;
 
 /**
  * Factory for creating ORC tree readers. These tree readers can handle type promotions and type

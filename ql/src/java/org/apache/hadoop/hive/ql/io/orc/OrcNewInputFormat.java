@@ -33,6 +33,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.orc.OrcProto;
 
 /** An InputFormat for ORC files. Keys are meaningless,
  * value is the OrcStruct object */

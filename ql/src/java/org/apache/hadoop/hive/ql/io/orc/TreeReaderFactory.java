@@ -55,6 +55,17 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.BitFieldReader;
+import org.apache.orc.DynamicByteArray;
+import org.apache.orc.InStream;
+import org.apache.orc.IntegerReader;
+import org.apache.orc.OrcProto;
+import org.apache.orc.PositionProvider;
+import org.apache.orc.RunLengthByteReader;
+import org.apache.orc.RunLengthIntegerReader;
+import org.apache.orc.RunLengthIntegerReaderV2;
+import org.apache.orc.SerializationUtils;
+import org.apache.orc.StreamName;
 
 /**
  * Factory for creating ORC tree readers.
