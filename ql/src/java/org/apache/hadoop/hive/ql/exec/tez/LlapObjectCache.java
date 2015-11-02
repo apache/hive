@@ -44,7 +44,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   private static ExecutorService staticPool = Executors.newCachedThreadPool();
 
-  private static final boolean isLogInfoEnabled = LOG.isInfoEnabled();
+  private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
 
   private final Cache<String, Object> registry = CacheBuilder.newBuilder().softValues().build();
 
@@ -69,8 +69,8 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
     try {
       value = (T) registry.getIfPresent(key);
       if (value != null) {
-        if (isLogInfoEnabled) {
-          LOG.info("Found " + key + " in cache");
+        if (isLogDebugEnabled) {
+          LOG.debug("Found " + key + " in cache");
         }
         return value;
       }
@@ -91,8 +91,8 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
       try {
         value = (T) registry.getIfPresent(key);
         if (value != null) {
-          if (isLogInfoEnabled) {
-            LOG.info("Found " + key + " in cache");
+          if (isLogDebugEnabled) {
+            LOG.debug("Found " + key + " in cache");
           }
           return value;
         }
@@ -108,8 +108,8 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
       lock.lock();
       try {
-        if (isLogInfoEnabled) {
-          LOG.info("Caching new object for key: " + key);
+        if (isLogDebugEnabled) {
+          LOG.debug("Caching new object for key: " + key);
         }
 
         registry.put(key, value);
@@ -135,7 +135,9 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   @Override
   public void remove(String key) {
-    LOG.info("Removing key: " + key);
+    if (isLogDebugEnabled) {
+      LOG.debug("Removing key: " + key);
+    }
     registry.invalidate(key);
   }
 }

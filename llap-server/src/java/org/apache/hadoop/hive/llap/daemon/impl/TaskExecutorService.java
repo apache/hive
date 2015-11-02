@@ -331,8 +331,8 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       if (evictedTask != taskWrapper) {
         knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
         taskWrapper.setIsInWaitQueue(true);
-        if (isInfoEnabled) {
-          LOG.info("{} added to wait queue. Current wait queue size={}", task.getRequestId(),
+        if (isDebugEnabled) {
+          LOG.debug("{} added to wait queue. Current wait queue size={}", task.getRequestId(),
               waitQueue.size());
         }
       } else {
@@ -413,8 +413,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         // is actually available for execution and will not potentially result in a RejectedExecution
         Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
 
-        if (isInfoEnabled) {
-          LOG.info("{} scheduled for execution. canFinish={}", taskWrapper.getRequestId(), canFinish);
+        if (isDebugEnabled) {
+          LOG.debug("{} scheduled for execution. canFinish={}",
+              taskWrapper.getRequestId(), canFinish);
         }
 
         // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
@@ -465,7 +466,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     synchronized (lock) {
       if (taskWrapper.isInWaitQueue()) {
         // Re-order the wait queue
-        LOG.info("DEBUG: Re-ordering the wait queue since {} finishable state moved to {}",
+        LOG.debug("Re-ordering the wait queue since {} finishable state moved to {}",
             taskWrapper.getRequestId(), newFinishableState);
         if (waitQueue.remove(taskWrapper)) {
           // Put element back only if it existed.
@@ -477,12 +478,12 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       }
 
       if (newFinishableState == true && taskWrapper.isInPreemptionQueue()) {
-        LOG.info("DEBUG: Removing {} from preemption queue because it's state changed to {}",
+        LOG.debug("Removing {} from preemption queue because it's state changed to {}",
             taskWrapper.getRequestId(), newFinishableState);
         preemptionQueue.remove(taskWrapper.getTaskRunnerCallable());
       } else if (newFinishableState == false && !taskWrapper.isInPreemptionQueue() &&
           !taskWrapper.isInWaitQueue()) {
-        LOG.info("DEBUG: Adding {} to preemption queue since finishable state changed to {}",
+        LOG.debug("Adding {} to preemption queue since finishable state changed to {}",
             taskWrapper.getRequestId(), newFinishableState);
         preemptionQueue.offer(taskWrapper);
       }
@@ -554,9 +555,11 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       }
 
       numSlotsAvailable.incrementAndGet();
-      LOG.info("Task {} complete. WaitQueueSize={}, numSlotsAvailable={}, preemptionQueueSize={}",
+      if (isDebugEnabled) {
+        LOG.debug("Task {} complete. WaitQueueSize={}, numSlotsAvailable={}, preemptionQueueSize={}",
           taskWrapper.getRequestId(), waitQueue.size(), numSlotsAvailable.get(),
           preemptionQueue.size());
+      }
       synchronized (lock) {
         if (!waitQueue.isEmpty()) {
           lock.notify();
@@ -707,7 +710,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     public void finishableStateUpdated(boolean finishableState) {
       // This method should not by synchronized. Can lead to deadlocks since it calls a sync method.
       // Meanwhile the scheduler could try updating states via a synchronized method.
-      LOG.info("DEBUG: Received finishable state update for {}, state={}",
+      LOG.info("Received finishable state update for {}, state={}",
           taskRunnerCallable.getRequestId(), finishableState);
       taskExecutorService.finishableStateUpdated(this, finishableState);
     }

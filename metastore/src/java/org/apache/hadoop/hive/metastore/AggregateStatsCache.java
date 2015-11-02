@@ -171,7 +171,7 @@ public class AggregateStatsCache {
     AggrColStatsList candidateList = cacheStore.get(key);
     // No key, or no nodes in candidate list
     if ((candidateList == null) || (candidateList.nodes.size() == 0)) {
-      LOG.info("No aggregate stats cached for " + key.toString());
+      LOG.debug("No aggregate stats cached for " + key.toString());
       return null;
     }
     // Find the value object

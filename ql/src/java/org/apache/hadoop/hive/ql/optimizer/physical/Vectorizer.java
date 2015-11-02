@@ -744,7 +744,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
         vContext = taskVectorizationContext;
       } else {
-        LOG.info("MapWorkVectorizationNodeProcessor process going to walk the operator stack to get vectorization context for " + op.getName());
+        LOG.debug("MapWorkVectorizationNodeProcessor process going to walk the operator stack to get vectorization context for " + op.getName());
         vContext = walkStackToFindVectorizationContext(stack, op);
         if (vContext == null) {
           // No operator has "pushed" a new context -- so use the task vectorization context.
@@ -753,7 +753,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
 
       assert vContext != null;
-      LOG.info("MapWorkVectorizationNodeProcessor process operator " + op.getName() + " using vectorization context" + vContext.toString());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("MapWorkVectorizationNodeProcessor process operator " + op.getName()
+            + " using vectorization context" + vContext.toString());
+      }
 
       // When Vectorized GROUPBY outputs rows instead of vectorized row batchs, we don't
       // vectorize the operators below it.
@@ -1986,8 +1989,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
     }
 
-    LOG.info("vectorizeOperator " + (vectorOp == null ? "NULL" : vectorOp.getClass().getName()));
-    LOG.info("vectorizeOperator " + (vectorOp == null || vectorOp.getConf() == null ? "NULL" : vectorOp.getConf().getClass().getName()));
+    LOG.debug("vectorizeOperator " + (vectorOp == null ? "NULL" : vectorOp.getClass().getName()));
+    LOG.debug("vectorizeOperator " + (vectorOp == null || vectorOp.getConf() == null ? "NULL" : vectorOp.getConf().getClass().getName()));
 
     if (vectorOp != op) {
       fixupParentChildOperators(op, vectorOp);

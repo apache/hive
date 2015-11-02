@@ -210,7 +210,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       LOG.info("Not using llap for " + inputFormat + ": " + isSupported + ", " + isVector);
       return inputFormat;
     }
-    LOG.info("Wrapping " + inputFormat);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Wrapping " + inputFormat);
+    }
     @SuppressWarnings("unchecked")
     LlapIo<VectorizedRowBatch> llapIo = LlapIoProxy.getIo();
     if (llapIo == null) {

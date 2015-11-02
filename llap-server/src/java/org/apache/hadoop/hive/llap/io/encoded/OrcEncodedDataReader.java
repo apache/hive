@@ -168,8 +168,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   @Override
   public void stop() {
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Encoded reader is being stopped");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Encoded reader is being stopped");
     }
     isStopped = true;
   }

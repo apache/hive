@@ -127,7 +127,7 @@ public final class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " + nd.getName() + "("
+      LOG.debug("Processing for " + nd.getName() + "("
           + ((Operator) nd).getIdentifier() + ")");
       // script operator is a black-box to hive so no optimization here
       // assuming that nothing can be pushed above the script op
@@ -709,13 +709,19 @@ public final class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
-      for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates()
-          .entrySet()) {
-        LOG.info("Pushdown Predicates of " + nd.getName() + " For Alias : "
-            + e.getKey());
+      if (!LOG.isInfoEnabled()) return;
+      for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates().entrySet()) {
+        StringBuilder sb = new StringBuilder("Pushdown predicates of ").append(nd.getName())
+            .append(" for alias ").append(e.getKey()).append(": ");
+        boolean isFirst = true;
         for (ExprNodeDesc n : e.getValue()) {
-          LOG.info("\t" + n.getExprString());
+          if (!isFirst) {
+            sb.append("; ");
+          }
+          isFirst = false;
+          sb.append(n.getExprString());
         }
+        LOG.info(sb.toString());
       }
     }
 

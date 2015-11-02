@@ -36,21 +36,21 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   private static final Logger LOG = LoggerFactory.getLogger(ObjectCache.class.getName());
-  private static final boolean isInfoEnabled = LOG.isInfoEnabled();
+  private static final boolean isDebugEnabled = LOG.isDebugEnabled();
 
   @Override
   public void release(String key) {
     // nothing to do
-    if (isInfoEnabled) {
-      LOG.info(key + " no longer needed");
+    if (isDebugEnabled) {
+      LOG.debug(key + " no longer needed");
     }
   }
 
   @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
     try {
-      if (isInfoEnabled) {
-        LOG.info("Creating " + key);
+      if (isDebugEnabled) {
+        LOG.debug("Creating " + key);
       }
       return fn.call();
     } catch (Exception e) {

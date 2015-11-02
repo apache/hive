@@ -318,7 +318,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
       mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
       computeMemoryLimits();
-      LOG.info("using hash aggregation processing mode");
+      LOG.debug("using hash aggregation processing mode");
     }
 
     @Override
