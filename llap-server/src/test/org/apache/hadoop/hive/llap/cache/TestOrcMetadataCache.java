@@ -78,6 +78,10 @@ public class TestOrcMetadataCache {
     @Override
     public void updateMaxSize(long maxSize) {
     }
+
+    @Override
+    public void forceReservedMemory(int memoryToEvict) {
+    }
   }
 
   @Test

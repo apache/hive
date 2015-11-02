@@ -40,33 +40,43 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   private final long maxSize;
   private final boolean isDirect;
   private final LlapDaemonCacheMetrics metrics;
-
+  
+  // We don't know the acceptable size for Java array, so we'll use 1Gb boundary.
+  // That is guaranteed to fit any maximum allocation.
+  private static final int MAX_ARENA_SIZE = 1024*1024*1024;
   public BuddyAllocator(Configuration conf, MemoryManager memoryManager,
       LlapDaemonCacheMetrics metrics) {
     isDirect = HiveConf.getBoolVar(conf, ConfVars.LLAP_ORC_CACHE_ALLOCATE_DIRECT);
     minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
     maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
-    arenaSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_SIZE);
+    int arenaCount = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_COUNT);
     long maxSizeVal = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
-    if (LlapIoImpl.LOGL.isInfoEnabled()) {
+    int arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : (int)(maxSizeVal / arenaCount);
+    arenaSizeVal = Math.max(maxAllocation, Math.min(arenaSizeVal, MAX_ARENA_SIZE));
+    if (LlapIoImpl.LOG.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte")
           + " buffers; allocation sizes " + minAllocation + " - " + maxAllocation
-          + ", arena size " + arenaSize + ". total size " + maxSizeVal);
+          + ", arena size " + arenaSizeVal + ". total size " + maxSizeVal);
     }
 
     if (minAllocation < 8) {
       throw new AssertionError("Min allocation must be at least 8: " + minAllocation);
     }
-    if (maxSizeVal < arenaSize || arenaSize < maxAllocation || maxAllocation < minAllocation) {
+    if (maxSizeVal < arenaSizeVal || maxAllocation < minAllocation) {
       throw new AssertionError("Inconsistent sizes of cache, arena and allocations: "
-          + minAllocation + ", " + maxAllocation + ", " + arenaSize + ", " + maxSizeVal);
+          + minAllocation + ", " + maxAllocation + ", " + arenaSizeVal + ", " + maxSizeVal);
     }
-    if ((Integer.bitCount(minAllocation) != 1) || (Integer.bitCount(maxAllocation) != 1)
-        || (Long.bitCount(arenaSize) != 1)) {
-      // Technically, arena size only needs to be divisible by maxAlloc
-      throw new AssertionError("Allocation and arena sizes must be powers of two: "
-          + minAllocation + ", " + maxAllocation + ", " + arenaSize);
+    if ((Integer.bitCount(minAllocation) != 1) || (Integer.bitCount(maxAllocation) != 1)) {
+      throw new AssertionError("Allocation sizes must be powers of two: "
+          + minAllocation + ", " + maxAllocation);
     }
+    if ((arenaSizeVal % maxAllocation) > 0) {
+      long oldArenaSize = arenaSizeVal;
+      arenaSizeVal = (arenaSizeVal / maxAllocation) * maxAllocation;
+      LlapIoImpl.LOG.warn("Rounding arena size to " + arenaSizeVal + " from " + oldArenaSize
+          + " to be divisible by allocation size " + maxAllocation);
+    }
+    arenaSize = arenaSizeVal;
     if ((maxSizeVal % arenaSize) > 0) {
       long oldMaxSize = maxSizeVal;
       maxSizeVal = (maxSizeVal / arenaSize) * arenaSize;
@@ -111,7 +121,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     // TODO: reserving the entire thing is not ideal before we alloc anything. Interleave?
     memoryManager.reserveMemory(dest.length << allocLog2, true);
 
-    int ix = 0;
+    int destAllocIx = 0;
     for (int i = 0; i < dest.length; ++i) {
       if (dest[i] != null) continue;
       dest[i] = createUnallocated(); // TODO: pool of objects?
@@ -123,22 +133,29 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     }
     long threadId = arenaCount > 1 ? Thread.currentThread().getId() : 0;
     {
-      int startIndex = (int)(threadId % arenaCount), index = startIndex;
+      int startArenaIx = (int)(threadId % arenaCount), index = startArenaIx;
       do {
-        int newIx = arenas[index].allocateFast(index, freeListIx, dest, ix, allocationSize);
-        if (newIx == dest.length) return;
-        if (newIx != -1) {  // TODO: check if it can still happen; count should take care of this.
-          ix = newIx;
-        }
-        ix = newIx;
+        int newDestIx = arenas[index].allocateFast(
+            index, freeListIx, dest, destAllocIx, allocationSize);
+        if (newDestIx == dest.length) return;
+        assert newDestIx != -1;
+        destAllocIx = newDestIx;
         if ((++index) == arenaCount) {
           index = 0;
         }
-      } while (index != startIndex);
+      } while (index != startArenaIx);
     }
 
-    // TODO: this is very hacky.
-    // We called reserveMemory so we know that somewhere in there, there's memory waiting for us.
+    // 1) We can get fragmented on large blocks of uncompressed data. The memory might be
+    // in there, but it might be in separate small blocks. This is a complicated problem, and
+    // several solutions (in order of decreasing ugliness and increasing complexity) are: just
+    // ask to evict the exact-sized block (there may be no such block), evict from a particular
+    // arena (policy would know allocator internals somewhat), store buffer mapping and ask to
+    // evict from specific choice of blocks next to each other or next to already-evicted block,
+    // and finally do a compaction (requires a block mapping and complex sync). For now we'd just
+    // force-evict some memory and avoid both complexity and ugliness, since large blocks are rare.
+    // 2) Fragmentation aside (TODO: and this is a very hacky solution for that),
+    // we called reserveMemory so we know that there's memory waiting for us somewhere.
     // However, we have a class of rare race conditions related to the order of locking/checking of
     // different allocation areas. Simple case - say we have 2 arenas, 256Kb available in arena 2.
     // We look at arena 1; someone deallocs 256Kb from arena 1 and allocs the same from arena 2;
@@ -155,22 +172,32 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     // But for now we will just retry 5 times 0_o
     for (int attempt = 0; attempt < 5; ++attempt) {
       // Try to split bigger blocks. TODO: again, ideally we would tryLock at least once
-      for (int i = 0; i < arenaCount; ++i) {
-        int newIx = arenas[i].allocateWithSplit(i, freeListIx, dest, ix, allocationSize);
-        if (newIx == -1) break; // Shouldn't happen.
-        if (newIx == dest.length) return;
-        ix = newIx;
+      {
+        int startArenaIx = (int)((threadId + attempt) % arenaCount), arenaIx = startArenaIx;
+        do {
+          int newDestIx = arenas[arenaIx].allocateWithSplit(
+              arenaIx, freeListIx, dest, destAllocIx, allocationSize);
+          if (newDestIx == dest.length) return;
+          assert newDestIx != -1;
+          destAllocIx = newDestIx;
+          if ((++arenaIx) == arenaCount) {
+            arenaIx = 0;
+          }
+        } while (arenaIx != startArenaIx);
       }
+
       if (attempt == 0) {
         // Try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
-        for (int i = arenaCount; i < arenas.length; ++i) {
-          ix = arenas[i].allocateWithExpand(i, freeListIx, dest, ix, allocationSize);
-          if (ix == dest.length) return;
+        for (int arenaIx = arenaCount; arenaIx < arenas.length; ++arenaIx) {
+          destAllocIx = arenas[arenaIx].allocateWithExpand(
+              arenaIx, freeListIx, dest, destAllocIx, allocationSize);
+          if (destAllocIx == dest.length) return;
         }
       }
+      memoryManager.forceReservedMemory(allocationSize * (dest.length - destAllocIx));
       LlapIoImpl.LOG.warn("Failed to allocate despite reserved memory; will retry " + attempt);
     }
-    String msg = "Failed to allocate " + size + "; at " + ix + " out of " + dest.length;
+    String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of " + dest.length;
     LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
         + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
     throw new AllocatorOutOfMemoryException(msg);

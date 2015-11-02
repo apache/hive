@@ -58,6 +58,10 @@ public class TestBuddyAllocator {
     @Override
     public void updateMaxSize(long maxSize) {
     }
+
+    @Override
+    public void forceReservedMemory(int memoryToEvict) {
+    }
   }
 
   @Test
@@ -280,7 +284,7 @@ public class TestBuddyAllocator {
     Configuration conf = new Configuration();
     conf.setInt(ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.varname, min);
     conf.setInt(ConfVars.LLAP_ORC_CACHE_MAX_ALLOC.varname, max);
-    conf.setInt(ConfVars.LLAP_ORC_CACHE_ARENA_SIZE.varname, arena);
+    conf.setInt(ConfVars.LLAP_ORC_CACHE_ARENA_COUNT.varname, total/arena);
     conf.setLong(ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, total);
     return conf;
   }

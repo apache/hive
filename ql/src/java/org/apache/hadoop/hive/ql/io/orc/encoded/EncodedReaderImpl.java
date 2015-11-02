@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamD
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.DataReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.OutStream;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
@@ -751,7 +752,7 @@ class EncodedReaderImpl implements EncodedReader {
 
   /**
    * To achieve some sort of consistent cache boundaries, we will cache streams deterministically;
-   * in segments starting w/stream start, and going for either stream size or maximum allocation.
+   * in segments starting w/stream start, and going for either stream size or some fixed size.
    * If we are not reading the entire segment's worth of data, then we will not cache the partial
    * RGs; the breakage of cache assumptions (no interleaving blocks, etc.) is way too much PITA
    * to handle just for this case.
@@ -777,87 +778,87 @@ class EncodedReaderImpl implements EncodedReader {
     }
     // Account for maximum cache buffer size.
     long streamLen = streamEnd - streamOffset;
-    int partSize = cache.getAllocator().getMaxAllocation(),
-        partCount = (int)((streamLen / partSize) + (((streamLen % partSize) != 0) ? 1 : 0));
-    long partOffset = streamOffset, partEnd = Math.min(partOffset + partSize, streamEnd);
+    int partSize = determineUncompressedPartSize(), //
+        partCount = (int)(streamLen / partSize) + (((streamLen % partSize) != 0) ? 1 : 0);
 
     CacheChunk lastUncompressed = null;
     MemoryBuffer[] singleAlloc = new MemoryBuffer[1];
+    /*
+Starting pre-read for [12187411,17107411) at start: 12187411 end: 12449555 cache buffer: 0x5f64a8f6(2)
+Processing uncompressed file data at [12187411, 12449555)
+  */
     for (int i = 0; i < partCount; ++i) {
-      long hasEntirePartTo = -1;
-      if (partOffset == current.getOffset()) {
-        hasEntirePartTo = partOffset;
+      long partOffset = streamOffset + (i * partSize),
+           partEnd = Math.min(partOffset + partSize, streamEnd);
+      long hasEntirePartTo = partOffset; // We have 0 bytes of data for this part, for now.
+      assert partOffset <= current.getOffset();
+      if (partOffset == current.getOffset() && current instanceof CacheChunk) {
         // We assume cache chunks would always match the way we read, so check and skip it.
-        if (current instanceof CacheChunk) {
-          lastUncompressed = (CacheChunk)current;
-          assert current.getOffset() == partOffset && current.getEnd() == partEnd;
-          partOffset = partEnd;
-          partEnd = Math.min(partOffset + partSize, streamEnd);
-          continue;
-        }
+        assert current.getOffset() == partOffset && current.getEnd() == partEnd;
+        lastUncompressed = (CacheChunk)current;
+        current = current.next;
+        continue;
       }
       if (current.getOffset() >= partEnd) {
-        // We have no data at all for this part of the stream (could be unneeded), skip.
-        partOffset = partEnd;
-        partEnd = Math.min(partOffset + partSize, streamEnd);
-        continue;
+        continue; // We have no data at all for this part of the stream (could be unneeded), skip.
       }
       if (toRelease == null && dataReader.isTrackingDiskRanges()) {
         toRelease = new ArrayList<ByteBuffer>();
       }
       // We have some disk buffers... see if we have entire part, etc.
-      UncompressedCacheChunk candidateCached = null;
+      UncompressedCacheChunk candidateCached = null; // We will cache if we have the entire part.
       DiskRangeList next = current;
       while (true) {
-        if (next == null || next.getOffset() >= partEnd) {
-          if (hasEntirePartTo < partEnd && candidateCached != null) {
-            // We are missing a section at the end of the part...
-            lastUncompressed = copyAndReplaceCandidateToNonCached(
-                candidateCached, partOffset, hasEntirePartTo, cache, singleAlloc);
-            candidateCached = null;
-          }
-          break;
+        boolean noMoreDataForPart = (next == null || next.getOffset() >= partEnd);
+        if (noMoreDataForPart && hasEntirePartTo < partEnd && candidateCached != null) {
+          // We are missing a section at the end of the part... copy the start to non-cached.
+          lastUncompressed = copyAndReplaceCandidateToNonCached(
+              candidateCached, partOffset, hasEntirePartTo, cache, singleAlloc);
+          candidateCached = null;
         }
         current = next;
-        boolean wasSplit = (current.getEnd() > partEnd);
-        if (wasSplit) {
+        if (noMoreDataForPart) break; // Done with this part.
+
+        boolean wasSplit = false;
+        if (current.getEnd() > partEnd) {
+          // If the current buffer contains multiple parts, split it.
           current = current.split(partEnd);
+          wasSplit = true;
         }
         if (isDebugTracingEnabled) {
           LOG.info("Processing uncompressed file data at ["
               + current.getOffset() + ", " + current.getEnd() + ")");
         }
-        BufferChunk bc = (BufferChunk)current;
+        BufferChunk curBc = (BufferChunk)current;
         if (!wasSplit && toRelease != null) {
-          toRelease.add(bc.getChunk()); // TODO: is it valid to give zcr the modified 2nd part?
+          toRelease.add(curBc.getChunk()); // TODO: is it valid to give zcr the modified 2nd part?
         }
 
         // Track if we still have the entire part.
         long hadEntirePartTo = hasEntirePartTo;
-        if (hasEntirePartTo != -1) {
-          hasEntirePartTo = (hasEntirePartTo == current.getOffset()) ? current.getEnd() : -1;
-        }
-        if (candidateCached != null && hasEntirePartTo == -1) {
-          lastUncompressed = copyAndReplaceCandidateToNonCached(
-              candidateCached, partOffset, hadEntirePartTo, cache, singleAlloc);
-          candidateCached = null;
-        }
-
-        if (hasEntirePartTo != -1) {
+        // We have data until the end of current block if we had it until the beginning.
+        hasEntirePartTo = (hasEntirePartTo == current.getOffset()) ? current.getEnd() : -1;
+        if (hasEntirePartTo == -1) {
+          // We don't have the entire part; copy both whatever we intended to cache, and the rest,
+          // to an allocated buffer. We could try to optimize a bit if we have contiguous buffers
+          // with gaps, but it's probably not needed.
+          if (candidateCached != null) {
+            assert hadEntirePartTo != -1;
+            copyAndReplaceCandidateToNonCached(
+                candidateCached, partOffset, hadEntirePartTo, cache, singleAlloc);
+            candidateCached = null;
+          }
+          lastUncompressed = copyAndReplaceUncompressedToNonCached(curBc, cache, singleAlloc);
+          next = lastUncompressed.next; // There may be more data after the gap.
+        } else {
           // So far we have all the data from the beginning of the part.
           if (candidateCached == null) {
-            candidateCached = new UncompressedCacheChunk(bc);
+            candidateCached = new UncompressedCacheChunk(curBc);
           } else {
-            candidateCached.addChunk(bc);
+            candidateCached.addChunk(curBc);
           }
-          // We will take care of this at the end of the part, or if we find a gap.
           next = current.next;
-          continue;
         }
-        // We don't have the entire part; just copy to an allocated buffer. We could try to
-        // optimize a bit if we have contiguous buffers with gaps, but it's probably not needed.
-        lastUncompressed = copyAndReplaceUncompressedToNonCached(bc, cache, singleAlloc);
-        next = lastUncompressed.next;
       }
       if (candidateCached != null) {
         if (toCache == null) {
@@ -906,6 +907,16 @@ class EncodedReaderImpl implements EncodedReader {
     processCacheCollisions(collisionMask, toCache, targetBuffers, null);
 
     return lastUncompressed;
+  }
+
+
+  private int determineUncompressedPartSize() {
+    // We will break the uncompressed data in the cache in the chunks that are the size
+    // of the prevalent ORC compression buffer (the default), or maximum allocation (since we
+    // cannot allocate bigger chunks), whichever is less.
+    long orcCbSizeDefault = ((Number)OrcConf.BUFFER_SIZE.getDefaultValue()).longValue();
+    int maxAllocSize = cache.getAllocator().getMaxAllocation();
+    return (int)Math.min(maxAllocSize, orcCbSizeDefault);
   }
 
   private static void copyUncompressedChunk(ByteBuffer src, ByteBuffer dest) {
