@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 /**
  * A row-by-row iterator for ORC files.
  */
-public interface RecordReader {
+public interface RecordReader extends org.apache.orc.RecordReader {
   /**
    * Does the reader have more rows available.
    * @return true if there are more rows
@@ -39,40 +39,4 @@ public interface RecordReader {
    * @throws java.io.IOException
    */
   Object next(Object previous) throws IOException;
-
-  /**
-   * Read the next row batch. The size of the batch to read cannot be controlled
-   * by the callers. Caller need to look at VectorizedRowBatch.size of the retunred
-   * object to know the batch size read.
-   * @param previousBatch a row batch object that can be reused by the reader
-   * @return the row batch that was read
-   * @throws java.io.IOException
-   */
-  VectorizedRowBatch nextBatch(VectorizedRowBatch previousBatch) throws IOException;
-
-  /**
-   * Get the row number of the row that will be returned by the following
-   * call to next().
-   * @return the row number from 0 to the number of rows in the file
-   * @throws java.io.IOException
-   */
-  long getRowNumber() throws IOException;
-
-  /**
-   * Get the progress of the reader through the rows.
-   * @return a fraction between 0.0 and 1.0 of rows read
-   * @throws java.io.IOException
-   */
-  float getProgress() throws IOException;
-
-  /**
-   * Release the resources associated with the given reader.
-   * @throws java.io.IOException
-   */
-  void close() throws IOException;
-
-  /**
-   * Seek to a particular row number.
-   */
-  void seekToRow(long rowCount) throws IOException;
 }

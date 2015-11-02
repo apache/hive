@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.orc.TypeDescription;
 import org.junit.Test;
 
 public class TestTypeDescription {

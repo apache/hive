@@ -26,6 +26,20 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.codehaus.jettison.json.JSONArray;
+import org.apache.orc.BinaryColumnStatistics;
+import org.apache.orc.BooleanColumnStatistics;
+import org.apache.orc.ColumnStatistics;
+import org.apache.orc.impl.ColumnStatisticsImpl;
+import org.apache.orc.DateColumnStatistics;
+import org.apache.orc.DecimalColumnStatistics;
+import org.apache.orc.DoubleColumnStatistics;
+import org.apache.orc.IntegerColumnStatistics;
+import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.OrcProto;
+import org.apache.orc.StringColumnStatistics;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
+import org.apache.orc.TimestampColumnStatistics;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONStringer;
@@ -151,7 +165,7 @@ public class JsonFileDump {
             for (int colIdx : rowIndexCols) {
               sargColumns[colIdx] = true;
             }
-            RecordReaderImpl.Index indices = rows.readRowIndex(stripeIx, null, sargColumns);
+            OrcIndex indices = rows.readRowIndex(stripeIx, null, sargColumns);
             writer.key("indexes").array();
             for (int col : rowIndexCols) {
               writer.object();

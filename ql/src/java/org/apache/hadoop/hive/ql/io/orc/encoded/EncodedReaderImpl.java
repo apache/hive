@@ -34,24 +34,18 @@ import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
-import org.apache.hadoop.hive.ql.io.orc.DataReader;
-import org.apache.hadoop.hive.ql.io.orc.OrcConf;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.hive.ql.io.orc.OutStream;
+import org.apache.orc.impl.CompressionCodec;
+import org.apache.orc.DataReader;
+import org.apache.orc.OrcConf;
+import org.apache.orc.impl.OutStream;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
-import org.apache.hadoop.hive.ql.io.orc.StreamName;
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
+import org.apache.orc.impl.StreamName;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.impl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils.ByteBufferAllocatorPool;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
-
-
+import org.apache.orc.OrcProto;
 
 /**
  * Encoded reader implementation.
@@ -135,7 +129,8 @@ class EncodedReaderImpl implements EncodedReader {
 
   /** Helper context for each column being read */
   private static final class ColumnReadContext {
-    public ColumnReadContext(int colIx, ColumnEncoding encoding, RowIndex rowIndex) {
+    public ColumnReadContext(int colIx, OrcProto.ColumnEncoding encoding,
+                             OrcProto.RowIndex rowIndex) {
       this.encoding = encoding;
       this.rowIndex = rowIndex;
       this.colIx = colIx;
@@ -147,7 +142,7 @@ class EncodedReaderImpl implements EncodedReader {
     int streamCount = 0;
     final StreamContext[] streams = new StreamContext[MAX_STREAMS];
     /** Column encoding. */
-    ColumnEncoding encoding;
+    OrcProto.ColumnEncoding encoding;
     /** Column rowindex. */
     OrcProto.RowIndex rowIndex;
     /** Column index in the file. */
@@ -204,7 +199,7 @@ class EncodedReaderImpl implements EncodedReader {
 
   @Override
   public void readEncodedColumns(int stripeIx, StripeInformation stripe,
-      RowIndex[] indexes, List<ColumnEncoding> encodings, List<Stream> streamList,
+      OrcProto.RowIndex[] indexes, List<OrcProto.ColumnEncoding> encodings, List<OrcProto.Stream> streamList,
       boolean[] included, boolean[][] colRgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException {
     // Note: for now we don't have to setError here, caller will setError if we throw.
@@ -351,7 +346,7 @@ class EncodedReaderImpl implements EncodedReader {
           continue; // TODO: this would be invalid with HL cache, where RG x col can be excluded.
         }
         ColumnReadContext ctx = colCtxs[colIxMod];
-        RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),
+        OrcProto.RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),
             nextIndex = isLastRg ? null : ctx.rowIndex.getEntry(rgIx + 1);
         ecb.initColumn(colIxMod, ctx.colIx, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
         for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {

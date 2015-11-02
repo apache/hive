@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.filters;
 
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.orc.OrcProto;
 import org.apache.hive.common.util.BloomFilter;
 
 import com.google.common.primitives.Longs;

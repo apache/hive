@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
+import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
+import org.apache.orc.OrcProto;
 
 public interface EncodedReader {
 
@@ -41,7 +39,8 @@ public interface EncodedReader {
    * @param consumer The sink for data that has been read.
    */
   void readEncodedColumns(int stripeIx, StripeInformation stripe,
-      RowIndex[] index, List<ColumnEncoding> encodings, List<Stream> streams,
+      OrcProto.RowIndex[] index, List<OrcProto.ColumnEncoding> encodings,
+      List<OrcProto.Stream> streams,
       boolean[] included, boolean[][] colRgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException;
 

@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.io.orc.OrcFile.Version;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -67,6 +66,23 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveTestUtils;
+import org.apache.orc.BinaryColumnStatistics;
+import org.apache.orc.BooleanColumnStatistics;
+import org.apache.orc.ColumnStatistics;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.DecimalColumnStatistics;
+import org.apache.orc.DoubleColumnStatistics;
+import org.apache.orc.IntegerColumnStatistics;
+import org.apache.orc.impl.MemoryManager;
+import org.apache.orc.impl.MetadataReader;
+import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.OrcProto;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.StringColumnStatistics;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.Writer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -486,7 +502,7 @@ public class TestVectorOrcFile {
     TypeDescription schema = TypeDescription.createTimestamp();
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000)
-            .bufferSize(10000).version(Version.V_0_11));
+            .bufferSize(10000).version(org.apache.orc.OrcFile.Version.V_0_11));
     List<Timestamp> tslist = Lists.newArrayList();
     tslist.add(Timestamp.valueOf("2037-01-01 00:00:00.000999"));
     tslist.add(Timestamp.valueOf("2003-01-01 00:00:00.000000222"));
@@ -1244,7 +1260,7 @@ public class TestVectorOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(false, reader.rows().hasNext());
-    assertEquals(CompressionKind.NONE, reader.getCompression());
+    assertEquals(CompressionKind.NONE, reader.getCompressionKind());
     assertEquals(0, reader.getNumberOfRows());
     assertEquals(0, reader.getCompressionSize());
     assertEquals(false, reader.getMetadataKeys().iterator().hasNext());
@@ -1743,7 +1759,7 @@ public class TestVectorOrcFile {
     RecordReader rows = reader.rows();
     // get the row index
     MetadataReader meta = ((RecordReaderImpl) rows).getMetadataReader();
-    RecordReaderImpl.Index index =
+    OrcIndex index =
         meta.readRowIndex(reader.getStripes().get(0), null, null, null, null,
             null);
     // check the primitive columns to make sure they have the right number of
@@ -1883,7 +1899,7 @@ public class TestVectorOrcFile {
     }
 
     @Override
-    void addWriter(Path path, long requestedAllocation,
+    public void addWriter(Path path, long requestedAllocation,
                    Callback callback) {
       this.path = path;
       this.lastAllocation = requestedAllocation;
@@ -1891,23 +1907,23 @@ public class TestVectorOrcFile {
     }
 
     @Override
-    synchronized void removeWriter(Path path) {
+    public synchronized void removeWriter(Path path) {
       this.path = null;
       this.lastAllocation = 0;
     }
 
     @Override
-    long getTotalMemoryPool() {
+    public long getTotalMemoryPool() {
       return totalSpace;
     }
 
     @Override
-    double getAllocationScale() {
+    public double getAllocationScale() {
       return rate;
     }
 
     @Override
-    void addedRow(int count) throws IOException {
+    public void addedRow(int count) throws IOException {
       rows += count;
       if (rows % 100 == 0) {
         callback.checkMemory(rate);
@@ -1927,7 +1943,7 @@ public class TestVectorOrcFile {
             .bufferSize(100)
             .rowIndexStride(0)
             .memory(memory)
-            .version(Version.V_0_11));
+            .version(OrcFile.Version.V_0_11));
     assertEquals(testFilePath, memory.path);
     VectorizedRowBatch batch = schema.createRowBatch();
     batch.size = 1;
@@ -1963,7 +1979,7 @@ public class TestVectorOrcFile {
                                          .bufferSize(100)
                                          .rowIndexStride(0)
                                          .memory(memory)
-                                         .version(Version.V_0_12));
+                                         .version(OrcFile.Version.V_0_12));
     VectorizedRowBatch batch = schema.createRowBatch();
     assertEquals(testFilePath, memory.path);
     batch.size = 1;
