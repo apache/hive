@@ -2308,9 +2308,10 @@ public class HiveConf extends Configuration {
     LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.io.cache.orc.alloc.max", 16 * 1024 * 1024,
         "Maximum allocation possible from LLAP low-level cache for ORC. Should be as large as\n" +
         "the largest expected ORC compression buffer size. Must be power of 2."),
-    LLAP_ORC_CACHE_ARENA_SIZE("hive.llap.io.cache.orc.arena.size", 128 * 1024 * 1024,
-        "Arena size for ORC low-level cache; cache will be allocated in arena-sized steps.\n" +
-        "Must presently be a power of two."),
+    LLAP_ORC_CACHE_ARENA_COUNT("hive.llap.io.cache.orc.arena.count", 8,
+        "Arena count for LLAP low-level cache; cache will be allocated in the steps of\n" +
+        "(size/arena_count) bytes. This size must be <= 1Gb and >= max allocation; if it is\n" +
+        "not the case, an adjusted size will be used. Using powers of 2 is recommended."),
     LLAP_ORC_CACHE_MAX_SIZE("hive.llap.io.cache.orc.size", 1024L * 1024 * 1024,
         "Maximum size for ORC low-level cache; must be a multiple of arena size."),
     LLAP_ORC_CACHE_ALLOCATE_DIRECT("hive.llap.io.cache.direct", true,

@@ -71,6 +71,8 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
           try {
             Thread.sleep(Math.min(1000, nextLog));
           } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
           }
         }
         continue;
@@ -88,6 +90,16 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     }
     metrics.incrCacheCapacityUsed(memoryToReserve);
     return true;
+  }
+
+
+  @Override
+  public void forceReservedMemory(int memoryToEvict) {
+    while (memoryToEvict > 0) {
+      long evicted = evictor.evictSomeBlocks(memoryToEvict);
+      if (evicted == 0) return;
+      memoryToEvict -= evicted;
+    }
   }
 
   @Override
