@@ -8,6 +8,7 @@ PREHOOK: Output: default@src2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "3a39d46286e4c2cd2139c9bb248f7b4f",
   "queryText": "create table src2 as select key key2, value value2 from src1",
   "edges": [
@@ -60,6 +61,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "b5b224847b2333e790a2c229434a04c8",
   "queryText": "select * from src1 where key is not null and value is not null limit 3",
   "edges": [
@@ -127,6 +129,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "773d9d0ea92e797eae292ae1eeea11ab",
   "queryText": "select * from src1 where key > 10 and value > 'val' order by key limit 5",
   "edges": [
@@ -199,6 +202,7 @@ PREHOOK: Output: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "712fe958c357bcfc978b95c43eb19084",
   "queryText": "create table dest1 as select * from src1",
   "edges": [
@@ -251,6 +255,7 @@ PREHOOK: Output: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "ecc718a966d8887b18084a55dd96f0bc",
   "queryText": "insert into table dest1 select * from src2",
   "edges": [
@@ -303,6 +308,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "416b6f4cd63edd4f9d8213d2d7819d21",
   "queryText": "select key k, dest1.value from dest1",
   "edges": [
@@ -406,6 +412,7 @@ PREHOOK: Input: default@src2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "50fa3d1074b3fda37ce11dc6ec92ebf3",
   "queryText": "select key from src1 union select key2 from src2 order by key",
   "edges": [
@@ -463,6 +470,7 @@ PREHOOK: Input: default@src2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "a739460bd79c8c91ec35e22c97329769",
   "queryText": "select key k from src1 union select key2 from src2 order by k",
   "edges": [
@@ -519,6 +527,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "3901b5e3a164064736b3234355046340",
   "queryText": "select key, count(1) a from dest1 group by key",
   "edges": [
@@ -588,6 +597,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "0d5a212f10847aeaab31e8c31121e6d4",
   "queryText": "select key k, count(*) from dest1 group by key",
   "edges": [
@@ -657,6 +667,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "56429eccb04ded722f5bd9d9d8cf7260",
   "queryText": "select key k, count(value) from dest1 group by key",
   "edges": [
@@ -726,6 +737,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "7e1cfc3dece85b41b6f7c46365580cde",
   "queryText": "select value, max(length(key)) from dest1 group by value",
   "edges": [
@@ -798,6 +810,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "c6578ce1dd72498c4af33f20f164e483",
   "queryText": "select value, max(length(key)) from dest1 group by value order by value limit 5",
   "edges": [
@@ -856,6 +869,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "91fbcea5cb34362071555cd93e8d0abe",
   "queryText": "select key, length(value) from dest1",
   "edges": [
@@ -959,6 +973,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "3d8a347cc9052111cb328938d37b9b03",
   "queryText": "select length(value) + 3 from dest1",
   "edges": [
@@ -1043,6 +1058,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "bae960bf4376ec00e37258469b17360d",
   "queryText": "select 5 from dest1",
   "edges": [
@@ -1120,6 +1136,7 @@ PREHOOK: Input: default@dest1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "753abad4d55afd3df34fdc73abfcd44d",
   "queryText": "select 3 * 5 from dest1",
   "edges": [
@@ -1201,6 +1218,7 @@ PREHOOK: Output: default@dest2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "386791c174a4999fc916e300b5e76bf2",
   "queryText": "create table dest2 as select * from src1 JOIN src2 ON src1.key = src2.key2",
   "edges": [
@@ -1306,6 +1324,7 @@ PREHOOK: Output: default@dest2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "e494b771d94800dc3430bf5d0810cd9f",
   "queryText": "insert overwrite table dest2 select * from src1 JOIN src2 ON src1.key = src2.key2",
   "edges": [
@@ -1411,6 +1430,7 @@ PREHOOK: Output: default@dest2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "efeaddd0d36105b1013b414627850dc2",
   "queryText": "insert into table dest2 select * from src1 JOIN src2 ON src1.key = src2.key2",
   "edges": [
@@ -1517,6 +1537,7 @@ PREHOOK: Output: default@dest2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "e9450a56b3d103642e06bef0e4f0d482",
   "queryText": "insert into table dest2\n  select * from src1 JOIN src2 ON length(src1.value) = length(src2.value2) + 1",
   "edges": [
@@ -1621,6 +1642,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "4028c94d222d5dd221f651d414386972",
   "queryText": "select * from src1 where length(key) > 2",
   "edges": [
@@ -1697,6 +1719,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "5727531f7743cfcd60d634d8c835515f",
   "queryText": "select * from src1 where length(key) > 2 and value > 'a'",
   "edges": [
@@ -1776,6 +1799,7 @@ PREHOOK: Output: default@dest3
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "a2c4e9a3ec678039814f5d84b1e38ce4",
   "queryText": "create table dest3 as\n  select * from src1 JOIN src2 ON src1.key = src2.key2 WHERE length(key) > 1",
   "edges": [
@@ -1895,6 +1919,7 @@ PREHOOK: Output: default@dest2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "76d84512204ddc576ad4d93f252e4358",
   "queryText": "insert overwrite table dest2\n  select * from src1 JOIN src2 ON src1.key = src2.key2 WHERE length(key) > 3",
   "edges": [
@@ -2029,6 +2054,7 @@ PREHOOK: Output: default@dest_l1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "60b589744e2527dd235a6c8168d6a653",
   "queryText": "INSERT OVERWRITE TABLE dest_l1\nSELECT j.*\nFROM (SELECT t1.key, p1.value\n      FROM src1 t1\n      LEFT OUTER JOIN src p1\n      ON (t1.key = p1.key)\n      UNION ALL\n      SELECT t2.key, p2.value\n      FROM src1 t2\n      LEFT OUTER JOIN src p2\n      ON (t2.key = p2.key)) j",
   "edges": [
@@ -2136,6 +2162,7 @@ PREHOOK: Output: default@tgt
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "f59797e0422d2e51515063374dfac361",
   "queryText": "INSERT INTO TABLE tgt\nSELECT emd.dept_name, emd.name, emd.emp_id, emd.mgr_id, p.project_id, p.project_name\nFROM (\n  SELECT d.dept_name, em.name, em.emp_id, em.mgr_id, em.dept_id\n  FROM (\n    SELECT e.name, e.dept_id, e.emp_id emp_id, m.emp_id mgr_id\n    FROM emp e JOIN emp m ON e.emp_id = m.emp_id\n    ) em\n  JOIN dept d ON d.dept_id = em.dept_id\n  ) emd JOIN project p ON emd.dept_id = p.project_id",
   "edges": [
@@ -2325,6 +2352,7 @@ PREHOOK: Output: default@dest_l2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "e001334e3f8384806b0f25a7c303045f",
   "queryText": "insert into dest_l2 values(0, 1, 100, 10000)",
   "edges": [
@@ -2394,6 +2422,7 @@ PREHOOK: Input: default@dest_l2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "a2c96a96be9d315ede966be5b45ef20e",
   "queryText": "select * from (\n  select c1 + c2 x from dest_l2\n  union all\n  select sum(c3) y from (select c3 from dest_l2) v1) v2 order by x",
   "edges": [
@@ -2448,6 +2477,7 @@ PREHOOK: Output: default@dest_l3
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "09df51ba6ba2d07f2304523ee505f094",
   "queryText": "insert into dest_l3 values(0, \"s1\", \"s2\", 15)",
   "edges": [
@@ -2510,6 +2540,7 @@ PREHOOK: Input: default@dest_l2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "0ae7aa4a0cbd1283210fa79e8a19104a",
   "queryText": "select sum(a.c1) over (partition by a.c1 order by a.id)\nfrom dest_l2 a\nwhere a.c2 != 10\ngroup by a.c1, a.c2, a.id\nhaving count(a.c2) > 0",
   "edges": [
@@ -2583,6 +2614,7 @@ PREHOOK: Input: default@dest_l3
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "01879c619517509d9f5b6ead998bb4bb",
   "queryText": "select sum(a.c1), count(b.c1), b.c2, b.c3\nfrom dest_l2 a join dest_l3 b on (a.id = b.id)\nwhere a.c2 != 10 and b.c3 > 0\ngroup by a.c1, a.c2, a.id, b.c1, b.c2, b.c3\nhaving count(a.c2) > 0\norder by b.c3 limit 5",
   "edges": [
@@ -2739,6 +2771,7 @@ PREHOOK: Output: default@t
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "0d2f15b494111ffe236d5be42a76fa28",
   "queryText": "create table t as\nselect distinct a.c2, a.c3 from dest_l2 a\ninner join dest_l3 b on (a.id = b.id)\nwhere a.id > 0 and b.c3 = 15",
   "edges": [
@@ -2833,6 +2866,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "5b1022708124ee2b80f9e2e8a0dcb15c",
   "queryText": "SELECT substr(src1.key,1,1), count(DISTINCT substr(src1.value,5)),\nconcat(substr(src1.key,1,1),sum(substr(src1.value,5)))\nfrom src1\nGROUP BY substr(src1.key,1,1)",
   "edges": [
@@ -2927,6 +2961,7 @@ PREHOOK: Input: default@relations
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "bb30b94d13d0b35802db85b4e33230b3",
   "queryText": "select identity, ep1_id from relations\n  lateral view explode(ep1_ids) nav_rel as ep1_id",
   "edges": [
@@ -2983,6 +3018,7 @@ PREHOOK: Output: default@rels_exploded
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "e76d2efade744d1d5cf74fda064ba6c6",
   "queryText": "insert into rels_exploded select identity, type,\n  ep1_src_type, ep1_type, ep2_src_type, ep2_type, ep1_id, ep2_id\nfrom relations lateral view explode(ep1_ids) rel1 as ep1_id\n  lateral view explode (ep2_ids) rel2 as ep2_id",
   "edges": [

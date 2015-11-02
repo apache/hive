@@ -13,6 +13,7 @@ PREHOOK: Output: default@d1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "4c9b7b8d89403cef78668f15d393e542",
   "queryText": "from (select a.ctinyint x, b.cstring1 y\nfrom alltypesorc a join alltypesorc b on a.cint = b.cbigint) t\ninsert into table d1 select x + length(y)",
   "edges": [
@@ -84,6 +85,7 @@ PREHOOK: Output: default@d2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "8703e4091ebd4c96afd3cac83e3a2957",
   "queryText": "from (select a.ctinyint x, b.cstring1 y\nfrom alltypesorc a join alltypesorc b on a.cint = b.cbigint) t\ninsert into table d1 select x where y is null\ninsert into table d2 select y where x > 0",
   "edges": [
@@ -186,6 +188,7 @@ PREHOOK: Output: default@t
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "761b3a1f405d8e719d3f0c9147b57a23",
   "queryText": "create table t as\nselect * from\n  (select * from\n     (select key from src1 limit 1) v1) v2",
   "edges": [
@@ -229,6 +232,7 @@ PREHOOK: Output: default@dest_l1@ds=today
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "2b5891d094ff74e23ec6acf5b4990f45",
   "queryText": "insert into table dest_l1 partition (ds='today')\nselect cint, cast(cstring1 as varchar(128)) as cs\nfrom alltypesorc\nwhere cint is not null and cint < 0 order by cint, cs limit 5",
   "edges": [
@@ -298,6 +302,7 @@ PREHOOK: Output: default@dest_l1@ds=tomorrow
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "4ad6338a8abfe3fe0342198fcbd1f11d",
   "queryText": "insert into table dest_l1 partition (ds='tomorrow')\nselect min(cint), cast(min(cstring1) as varchar(128)) as cs\nfrom alltypesorc\nwhere cint is not null and cboolean1 = true\ngroup by csmallint\nhaving min(cbigint) > 10",
   "edges": [
@@ -386,6 +391,7 @@ PREHOOK: Input: default@alltypesorc
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "351b08ec58591554ec10a6ded68ef25f",
   "queryText": "select cint, rank() over(order by cint) from alltypesorc\nwhere cint > 10 and cint < 10000 limit 10",
   "edges": [
@@ -525,6 +531,7 @@ PREHOOK: Input: default@alltypesorc
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "40c3faa7abd1cdb7f12c1047a8a1d2ce",
   "queryText": "select a.ctinyint, a.cint, count(a.cdouble)\n  over(partition by a.ctinyint order by a.cint desc\n    rows between 1 preceding and 1 following)\nfrom alltypesorc a inner join alltypesorc b on a.cint = b.cbigint\norder by a.ctinyint, a.cint",
   "edges": [
@@ -624,6 +631,7 @@ PREHOOK: Input: default@alltypesorc
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "a083a5322b6a83af6f614f299d0361e4",
   "queryText": "with v2 as\n  (select cdouble, count(cint) over() a,\n    sum(cint + cbigint) over(partition by cboolean1) b\n    from (select * from alltypesorc) v1)\nselect cdouble, a, b, a + b, cdouble + a from v2\nwhere cdouble is not null\norder by cdouble, a, b limit 5",
   "edges": [
@@ -844,6 +852,7 @@ PREHOOK: Input: default@alltypesorc
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "afd760470fc5aa6d3e8348dee03af97f",
   "queryText": "select a.cbigint, a.ctinyint, b.cint, b.ctinyint\nfrom\n  (select ctinyint, cbigint from alltypesorc\n   union all\n   select ctinyint, cbigint from alltypesorc) a\n  inner join\n  alltypesorc b\n  on (a.ctinyint = b.ctinyint)\nwhere b.ctinyint < 100 and a.cbigint is not null and b.cint is not null\norder by a.cbigint, a.ctinyint, b.cint, b.ctinyint limit 5",
   "edges": [
@@ -1011,6 +1020,7 @@ PREHOOK: Input: default@alltypesorc
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "3a12ad24b2622a8958df12d0bdc60f8a",
   "queryText": "select x.ctinyint, x.cint, c.cbigint-100, c.cstring1\nfrom alltypesorc c\njoin (\n   select a.ctinyint ctinyint, b.cint cint\n   from (select * from alltypesorc a where cboolean1=false) a\n   join alltypesorc b on (a.cint = b.cbigint - 224870380)\n ) x on (x.cint = c.cint)\nwhere x.ctinyint > 10\nand x.cint < 4.5\nand x.ctinyint + length(c.cstring2) < 1000",
   "edges": [
@@ -1224,6 +1234,7 @@ PREHOOK: Input: default@alltypesorc
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "bc64f8bec21631969a17930ec609cde9",
   "queryText": "select c1, x2, x3\nfrom (\n  select c1, min(c2) x2, sum(c3) x3\n  from (\n    select c1, c2, c3\n    from (\n      select cint c1, ctinyint c2, min(cbigint) c3\n      from alltypesorc\n      where cint is not null\n      group by cint, ctinyint\n      order by cint, ctinyint\n      limit 5\n    ) x\n  ) x2\n  group by c1\n) y\nwhere x2 > 0\norder by x2, c1 desc",
   "edges": [
@@ -1324,6 +1335,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "8b9d63653e36ecf4dd425d3cc3de9199",
   "queryText": "select key, value from src1\nwhere key in (select key+18 from src1) order by key",
   "edges": [
@@ -1403,6 +1415,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "8bf193b0658183be94e2428a79d91d10",
   "queryText": "select * from src1 a\nwhere exists\n  (select cint from alltypesorc b\n   where a.key = b.ctinyint + 300)\nand key > 300",
   "edges": [
@@ -1495,6 +1508,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "9b488fe1d7cf018aad3825173808cd36",
   "queryText": "select key, value from src1\nwhere key not in (select key+18 from src1) order by key",
   "edges": [
@@ -1619,6 +1633,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "53191056e05af9080a30de853e8cea9c",
   "queryText": "select * from src1 a\nwhere not exists\n  (select cint from alltypesorc b\n   where a.key = b.ctinyint + 300)\nand key > 300",
   "edges": [
@@ -1732,6 +1747,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "d40d80b93db06c12df9a6ccdc108a9d1",
   "queryText": "with t as (select key x, value y from src1 where key > '2')\nselect x, y from t where y > 'v' order by x, y limit 5",
   "edges": [
@@ -1812,6 +1828,7 @@ PREHOOK: Input: default@src1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "9180b71a610dbcf5e636a3c03e48ca3b",
   "queryText": "from (select key x, value y from src1 where key > '2') t\nselect x, y where y > 'v' order by x, y limit 5",
   "edges": [
@@ -1895,6 +1912,7 @@ PREHOOK: Output: default@dest_v1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "a3b2d2665c90fd669400f247f751f081",
   "queryText": "create view dest_v1 as\n  select ctinyint, cint from alltypesorc where ctinyint is not null",
   "edges": [
@@ -1959,6 +1977,7 @@ PREHOOK: Input: default@dest_v1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "75e07b246069a5541af4a3983500b439",
   "queryText": "select * from dest_v1 order by ctinyint, cint limit 2",
   "edges": [
@@ -2025,6 +2044,7 @@ PREHOOK: Output: default@dest_v1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "bcab8b0c498b0d94e0967170956392b6",
   "queryText": "alter view dest_v1 as select ctinyint from alltypesorc",
   "edges": [
@@ -2060,6 +2080,7 @@ PREHOOK: Input: default@dest_v1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "b0192d4da86f4bef38fe7ab1fc607906",
   "queryText": "select t.ctinyint from (select * from dest_v1 where ctinyint is not null) t\nwhere ctinyint > 10 order by ctinyint limit 2",
   "edges": [
@@ -2133,6 +2154,7 @@ PREHOOK: Output: default@dest_v2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "eda442b42b9c3a9cbdb7aff1984ad2dd",
   "queryText": "create view dest_v2 (a, b) as select c1, x2\nfrom (\n  select c1, min(c2) x2\n  from (\n    select c1, c2, c3\n    from (\n      select cint c1, ctinyint c2, min(cfloat) c3\n      from alltypesorc\n      group by cint, ctinyint\n      order by cint, ctinyint\n      limit 1\n    ) x\n  ) x2\n  group by c1\n) y\norder by x2,c1 desc",
   "edges": [
@@ -2202,6 +2224,7 @@ PREHOOK: Output: default@dest_v3
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "a0c2481ce1c24895a43a950f93a10da7",
   "queryText": "create view dest_v3 (a1, a2, a3, a4, a5, a6, a7) as\n  select x.csmallint, x.cbigint bint1, x.ctinyint, c.cbigint bint2, x.cint, x.cfloat, c.cstring1\n  from alltypesorc c\n  join (\n     select a.csmallint csmallint, a.ctinyint ctinyint, a.cstring2 cstring2,\n           a.cint cint, a.cstring1 ctring1, b.cfloat cfloat, b.cbigint cbigint\n     from ( select * from alltypesorc a where cboolean1=true ) a\n     join alltypesorc b on (a.csmallint = b.cint)\n   ) x on (x.ctinyint = c.cbigint)\n  where x.csmallint=11\n  and x.cint > 899\n  and x.cfloat > 4.5\n  and c.cstring1 < '7'\n  and x.cint + x.cfloat + length(c.cstring1) < 1000",
   "edges": [
@@ -2422,6 +2445,7 @@ PREHOOK: Output: default@dest_v3
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "949093880975cc807ad1a8003e8a8c7c",
   "queryText": "alter view dest_v3 as\n  select * from (\n    select sum(a.ctinyint) over (partition by a.csmallint order by a.csmallint) a,\n      count(b.cstring1) x, b.cboolean1\n    from alltypesorc a join alltypesorc b on (a.cint = b.cint)\n    where a.cboolean2 = true and b.cfloat > 0\n    group by a.ctinyint, a.csmallint, b.cboolean1\n    having count(a.cint) > 10\n    order by a, x, b.cboolean1 limit 10) t",
   "edges": [
@@ -2557,6 +2581,7 @@ PREHOOK: Input: default@dest_v3
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "40bccc0722002f798d0548b59e369e83",
   "queryText": "select * from dest_v3 limit 2",
   "edges": [
@@ -2728,6 +2753,7 @@ PREHOOK: Output: default@dest_dp1
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "b2d38401a3281e74a003d9650df97060",
   "queryText": "insert into dest_dp1 partition (year) select first, word, year from src_dp",
   "edges": [
@@ -2799,6 +2825,7 @@ PREHOOK: Output: default@dest_dp2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "237302d8ffd62b5b71d9544b22de7770",
   "queryText": "insert into dest_dp2 partition (y, m) select first, word, year, month from src_dp",
   "edges": [
@@ -2889,6 +2916,7 @@ PREHOOK: Output: default@dest_dp2@y=0
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "63e990b47e7ab4eb6f2ea09dfb7453ff",
   "queryText": "insert into dest_dp2 partition (y=0, m) select first, word, month from src_dp where year=0",
   "edges": [
@@ -2977,6 +3005,7 @@ PREHOOK: Output: default@dest_dp3@y=0
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "6bf71a9d02c0612c63b6f40b15c1e8b3",
   "queryText": "insert into dest_dp3 partition (y=0, m, d) select first, word, month m, day d from src_dp where year=0",
   "edges": [
@@ -3102,6 +3131,7 @@ PREHOOK: Output: default@dest_dp3@y=2
 POSTHOOK: LINEAGE: {
   "version": "1.0",
   "engine": "mr",
+  "database": "default",
   "hash": "44f16edbf35cfeaf3d4f7b0113a69b74",
   "queryText": "from src_dp, src_dp1\ninsert into dest_dp1 partition (year) select first, word, year\ninsert into dest_dp2 partition (y, m) select first, word, year, month\ninsert into dest_dp3 partition (y=2, m, d) select first, word, month m, day d where year=2\ninsert into dest_dp2 partition (y=1, m) select f, w, m\ninsert into dest_dp1 partition (year=0) select f, w",
   "edges": [
