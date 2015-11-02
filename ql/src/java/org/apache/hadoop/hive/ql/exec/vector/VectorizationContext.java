@@ -157,7 +157,10 @@ public class VectorizationContext {
   public VectorizationContext(String contextName, List<String> initialColumnNames) {
     this.contextName = contextName;
     level = 0;
-    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level + " initialColumnNames " + initialColumnNames.toString());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("VectorizationContext consructor contextName " + contextName + " level "
+          + level + " initialColumnNames " + initialColumnNames);
+    }
     this.projectionColumnNames = initialColumnNames;
 
     projectedColumns = new ArrayList<Integer>();
@@ -177,8 +180,10 @@ public class VectorizationContext {
   public VectorizationContext(String contextName) {
     this.contextName = contextName;
     level = 0;
-    LOG.info("VectorizationContext consructor contextName " + contextName + " level " + level);
-      projectedColumns = new ArrayList<Integer>();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("VectorizationContext consructor contextName " + contextName + " level " + level);
+    }
+    projectedColumns = new ArrayList<Integer>();
     projectionColumnNames = new ArrayList<String>();
     projectionColumnMap = new HashMap<String, Integer>();
     this.ocm = new OutputColumnManager(0);

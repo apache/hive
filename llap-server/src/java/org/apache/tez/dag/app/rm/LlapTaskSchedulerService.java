@@ -359,12 +359,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   @Override
   public void blacklistNode(NodeId nodeId) {
-    LOG.info("DEBUG: BlacklistNode not supported");
+    LOG.info("BlacklistNode not supported");
   }
 
   @Override
   public void unblacklistNode(NodeId nodeId) {
-    LOG.info("DEBUG: unBlacklistNode not supported");
+    LOG.info("unBlacklistNode not supported");
   }
 
   @Override
@@ -494,7 +494,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   @Override
   public Object deallocateContainer(ContainerId containerId) {
-    LOG.info("DEBUG: Ignoring deallocateContainer for containerId: " + containerId);
+    LOG.debug("Ignoring deallocateContainer for containerId: " + containerId);
     // Containers are not being tracked for re-use.
     // This is safe to ignore since a deallocate task will come in.
     return null;

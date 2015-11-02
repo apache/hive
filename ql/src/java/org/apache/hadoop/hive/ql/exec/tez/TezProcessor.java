@@ -140,11 +140,13 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       return;
     }
 
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
-      // in case of broadcast-join read the broadcast edge inputs
-      // (possibly asynchronously)
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
+    // in case of broadcast-join read the broadcast edge inputs
+    // (possibly asynchronously)
 
-      LOG.info("Running task: " + getContext().getUniqueIdentifier());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Running task: " + getContext().getUniqueIdentifier());
+    }
 
     synchronized (this) {
       if (isMap) {

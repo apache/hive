@@ -52,7 +52,7 @@ public class MapredContext {
         HiveConf.getVar(jobConf, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") ?
             new TezContext(isMap, jobConf) : new MapredContext(isMap, jobConf);
     contexts.set(context);
-    logger.info("MapredContext initialized.");
+    logger.debug("MapredContext initialized.");
     return context;
   }
 

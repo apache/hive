@@ -171,7 +171,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     ioCxtRef.setCurrentBlockStart(startPos);
     ioCxtRef.setBlockPointer(isBlockPointer);
     ioCxtRef.setInputPath(inputPath);
-    LOG.info("Processing file " + inputPath);
+    LOG.debug("Processing file " + inputPath); // Logged at INFO in multiple other places.
     initDone = true;
   }
 

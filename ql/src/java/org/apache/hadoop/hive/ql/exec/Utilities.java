@@ -399,11 +399,11 @@ public final class Utilities {
         } else if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
         } else {
-          LOG.info("***************non-local mode***************");
+          LOG.debug("***************non-local mode***************");
           localPath = new Path(name);
         }
         localPath = path;
-        LOG.info("local path = " + localPath);
+        LOG.debug("local path = " + localPath);
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
           LOG.debug("Loading plan from string: "+path.toUri().getPath());
           String planString = conf.getRaw(path.toUri().getPath());
@@ -415,7 +415,7 @@ public final class Utilities {
           in = new ByteArrayInputStream(planBytes);
           in = new InflaterInputStream(in);
         } else {
-          LOG.info("Open file to read in plan: " + localPath);
+          LOG.debug("Open file to read in plan: " + localPath);
           in = localPath.getFileSystem(conf).open(localPath);
         }
 

@@ -272,7 +272,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             shouldRunTask = false;
           } else {
             // If the task hasn't started, and it is killed - report back to the AM that the task has been killed.
-            LOG.info("DBG: Reporting taskKilled for non-started fragment {}", getRequestId());
+            LOG.debug("Reporting taskKilled for non-started fragment {}", getRequestId());
             reportTaskKilled();
           }
           if (!isStarted.get()) {
@@ -398,7 +398,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       switch(result.getEndReason()) {
         // Only the KILLED case requires a message to be sent out to the AM.
         case SUCCESS:
-          LOG.info("Successfully finished {}", requestId);
+          LOG.debug("Successfully finished {}", requestId);
           metrics.incrExecutorTotalSuccess();
           break;
         case CONTAINER_STOP_REQUESTED:

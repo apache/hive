@@ -417,7 +417,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     // TODO Fix this. There's a race here, where an app may think everything is registered, finish really fast, send events and the consumer will not find the registration.
     Boolean registered = registeredApps.putIfAbsent(applicationIdString, Boolean.valueOf(true));
     if (registered == null) {
-      LOG.info("DEBUG: Registering watches for AppDirs: appId=" + applicationIdString);
+      LOG.debug("Registering watches for AppDirs: appId=" + applicationIdString);
       recordJobShuffleInfo(applicationIdString, user, appToken);
       if (dirWatcher != null) {
         for (String appDir : appDirs) {
@@ -538,7 +538,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
               @Override
               public void onRemoval(
                   RemovalNotification<AttemptPathIdentifier, AttemptPathInfo> notification) {
-                LOG.info("DEBUG: PathCacheEviction: " + notification.getKey() + ", Reason=" +
+                LOG.debug("PathCacheEviction: " + notification.getKey() + ", Reason=" +
                     notification.getCause());
               }
             })
@@ -561,7 +561,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
             Path mapOutputFileName =
                 lDirAlloc.getLocalPathToRead(attemptBase + "/" + DATA_FILE_NAME, conf);
 
-            LOG.info("DEBUG: Loaded : " + key + " via loader");
+            LOG.debug("Loaded : " + key + " via loader");
             if (dirWatcher != null) {
               dirWatcher.attemptInfoFound(key);
             }
@@ -582,7 +582,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
     void registerAttemptDirs(AttemptPathIdentifier identifier,
                                     AttemptPathInfo pathInfo) {
-      LOG.info("DEBUG: Registering " + identifier + " via watcher");
+      LOG.debug("Registering " + identifier + " via watcher");
       pathCache.put(identifier, pathInfo);
     }
 
@@ -748,7 +748,10 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       try {
         AttemptPathIdentifier identifier = new AttemptPathIdentifier(jobId, dagId, user, mapId);
         pathInfo = pathCache.get(identifier);
-        LOG.info("DEBUG: Retrieved pathInfo for " + identifier + " check for corresponding loaded messages to determine whether it was loaded or cached");
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Retrieved pathInfo for " + identifier + " check for corresponding "
+              + "loaded messages to determine whether it was loaded or cached");
+        }
       } catch (ExecutionException e) {
         if (e.getCause() instanceof IOException) {
           throw (IOException) e.getCause();
