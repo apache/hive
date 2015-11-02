@@ -2626,6 +2626,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         String sourceDbName, String sourceTableName, String destDbName,
         String destTableName) throws MetaException, NoSuchObjectException,
         InvalidObjectException, InvalidInputException, TException {
+      exchange_partitions(partitionSpecs, sourceDbName, sourceTableName, destDbName, destTableName);
+      return new Partition();
+    }
+
+    @Override
+    public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
+        String sourceDbName, String sourceTableName, String destDbName,
+        String destTableName) throws MetaException, NoSuchObjectException,
+        InvalidObjectException, InvalidInputException, TException {
       boolean success = false;
       boolean pathCreated = false;
       RawStore ms = getMS();
@@ -2660,6 +2669,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Path destPath = new Path(destinationTable.getSd().getLocation(),
           Warehouse.makePartName(partitionKeysPresent, partValsPresent));
       try {
+        List<Partition> destPartitions = new ArrayList<Partition>();
         for (Partition partition: partitionsToExchange) {
           Partition destPartition = new Partition(partition);
           destPartition.setDbName(destDbName);
@@ -2668,6 +2678,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
           destPartition.getSd().setLocation(destPartitionPath.toString());
           ms.addPartition(destPartition);
+          destPartitions.add(destPartition);
           ms.dropPartition(partition.getDbName(), sourceTable.getTableName(),
             partition.getValues());
         }
@@ -2683,6 +2694,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
          */
         pathCreated = wh.renameDir(sourcePath, destPath);
         success = ms.commitTransaction();
+        return destPartitions;
       } finally {
         if (!success || !pathCreated) {
           ms.rollbackTransaction();
@@ -2691,7 +2703,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
       }
-      return new Partition();
     }
 
     private boolean drop_partition_common(RawStore ms, String db_name, String tbl_name,
