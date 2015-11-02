@@ -18,25 +18,14 @@
 
 package org.apache.hive.jdbc;
 
-import com.google.common.collect.ImmutableSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.processors.DfsProcessor;
-import org.apache.hive.common.util.HiveVersionInfo;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
-import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
-import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
-import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
+import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.InputStream;
@@ -64,9 +53,28 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
-import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
-import static org.junit.Assert.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.processors.DfsProcessor;
+import org.apache.hive.common.util.HiveVersionInfo;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
+import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
+import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
+import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import com.google.common.collect.ImmutableSet;
 
 
 /**
@@ -99,6 +107,8 @@ public class TestJdbcDriver2 {
   private Connection con;
   private static boolean standAloneServer = false;
   private static final float floatCompareDelta = 0.0001f;
+
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   public TestJdbcDriver2() {
     conf = new HiveConf(TestJdbcDriver2.class);
@@ -2499,5 +2509,33 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     for (String expectedLog : expectedLogs) {
       assertTrue(accumulatedLogs.contains(expectedLog));
     }
+  }
+
+  @Test
+  public void testAutoCommit() throws Exception {
+    con.clearWarnings();
+    con.setAutoCommit(true);
+    assertNull(con.getWarnings());
+    con.setAutoCommit(false);
+    SQLWarning warning = con.getWarnings();
+    assertNotNull(warning);
+    assertEquals("Hive does not support autoCommit=false", warning.getMessage());
+    assertNull(warning.getNextWarning());
+    con.clearWarnings();
+  }
+
+  @Test
+  public void setAutoCommitOnClosedConnection() throws Exception {
+    Connection mycon = getConnection("");
+    try {
+      mycon.setAutoCommit(true);
+      mycon.close();
+      thrown.expect(SQLException.class);
+      thrown.expectMessage("Connection is closed");
+      mycon.setAutoCommit(true);
+    } finally {
+      mycon.close();
+    }
+
   }
 }

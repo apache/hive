@@ -86,7 +86,6 @@ import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-
 /**
  * HiveConnection.
  *
@@ -1113,8 +1112,17 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public void setAutoCommit(boolean autoCommit) throws SQLException {
-    if (autoCommit) {
-      throw new SQLException("enabling autocommit is not supported");
+    // Per JDBC spec, if the connection is closed a SQLException should be thrown.
+    if(isClosed) {
+      throw new SQLException("Connection is closed");
+    }
+    // The auto-commit mode is always enabled for this connection. Per JDBC spec,
+    // if setAutoCommit is called and the auto-commit mode is not changed, the call is a no-op.
+    if (!autoCommit) {
+      LOG.warn("Request to set autoCommit to false; Hive does not support autoCommit=false.");
+      SQLWarning warning = new SQLWarning("Hive does not support autoCommit=false");
+      if (warningChain == null) warningChain = warning;
+      else warningChain.setNextWarning(warning);
     }
   }
 
