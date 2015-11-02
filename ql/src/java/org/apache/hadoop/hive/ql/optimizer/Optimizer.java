@@ -84,11 +84,11 @@ public class Optimizer {
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
       final int min = HiveConf.getIntVar(hiveConf,
           HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
-      final boolean extract = HiveConf.getBoolVar(hiveConf,
-          HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZEREXTRACT);
-      final boolean testMode = HiveConf.getBoolVar(hiveConf,
-          HiveConf.ConfVars.HIVE_IN_TEST);
-      transformations.add(new PointLookupOptimizer(min, extract, testMode));
+      transformations.add(new PointLookupOptimizer(min));
+    }
+
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEPARTITIONCOLUMNSEPARATOR)) {
+        transformations.add(new PartitionColumnsSeparator());
     }
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {

@@ -6,7 +6,7 @@ insert overwrite table pcr_t1 partition (ds1='2000-04-09', ds2='2001-04-09') sel
 insert overwrite table pcr_t1 partition (ds1='2000-04-10', ds2='2001-04-10') select * from src where key < 20 order by key;
 
 set hive.optimize.point.lookup.min=2;
-set hive.optimize.point.lookup.extract=true;
+set hive.optimize.partition.columns.separate=true;
 
 explain extended
 select key, value, ds1, ds2
