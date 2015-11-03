@@ -2022,12 +2022,7 @@ public class VectorizationContext {
         variableArgPositions.add(i);
         argDescs[i].setVariable(getInputColumnIndex(((ExprNodeColumnDesc) child).getColumn()));
       } else if (child instanceof ExprNodeConstantDesc) {
-         if (((ExprNodeConstantDesc) child).getValue() == null) {
-           // cannot handle constant null at the moment
-           throw new HiveException("Unable to vectorize custom UDF. Custom udf containing "
-               + "constant null argument cannot be currently vectorized.");
-         }
-        // this is a constant
+        // this is a constant (or null)
         argDescs[i].setConstant((ExprNodeConstantDesc) child);
       } else {
         throw new HiveException("Unable to vectorize custom UDF. Encountered unsupported expr desc : "
