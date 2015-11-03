@@ -423,7 +423,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     for (Path dir : dirs) {
       PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
       Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
-      TableDesc table = part.getTableDesc();
       TableScanOperator tableScan = null;
 
       List<String> aliases =
@@ -446,12 +445,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
       }
 
-      if (!currentDirs.isEmpty() &&
-          inputFormatClass.equals(currentInputFormatClass) &&
-          table.equals(currentTable) &&
-          tableScan == currentTableScan) {
-        currentDirs.add(dir);
-        continue;
+      // Obtain the lock of TableDesc in order to fix HIVE-11749
+      // in case of multiple table scan stage.
+      TableDesc table = part.getTableDesc();
+      synchronized (table) {
+        if (!currentDirs.isEmpty() &&
+                inputFormatClass.equals(currentInputFormatClass) &&
+                table.equals(currentTable) &&
+                tableScan == currentTableScan) {
+          currentDirs.add(dir);
+          continue;
+        }
       }
 
       if (!currentDirs.isEmpty()) {
