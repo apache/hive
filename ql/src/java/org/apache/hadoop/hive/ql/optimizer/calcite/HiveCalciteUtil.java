@@ -714,7 +714,10 @@ public class HiveCalciteUtil {
     ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
         new HashSet<Integer>(), inputRel.getCluster().getTypeFactory());
     for (int index = 0; index < rexInputRefs.size(); index++) {
-      if (exprs.get(index) instanceof RexLiteral) {
+      // The following check is only a guard against failures.
+      // TODO: Knowing which expr is constant in GBY's aggregation function
+      // arguments could be better done using Metadata provider of Calcite.
+      if (exprs != null && index < exprs.size() && exprs.get(index) instanceof RexLiteral) {
         ExprNodeDesc exprNodeDesc = exprConv.visitLiteral((RexLiteral) exprs.get(index));
         exprNodes.add(exprNodeDesc);
       } else {
