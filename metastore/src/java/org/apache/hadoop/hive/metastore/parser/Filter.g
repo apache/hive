@@ -122,6 +122,10 @@ operatorExpression
     :
     betweenExpression
     |
+    inExpression
+    |
+    multiColInExpression
+    |
     binOpExpression
     ;
 
@@ -203,16 +207,229 @@ betweenExpression
         tree.addIntermediateNode(isPositive ? LogicalOperator.AND : LogicalOperator.OR);
     };
 
+inExpression
+@init {
+    List constants = new ArrayList();
+    Object constantV = null;
+    boolean isPositive = true;
+}
+    :
+    (
+        LPAREN key = Identifier RPAREN ( KW_NOT { isPositive = false; } )? IN LPAREN
+        (
+            (
+                constant = DateLiteral
+                {
+                    constantV = FilterLexer.ExtractDate(constant.getText());
+                    constants.add(constantV);
+                }
+                (
+                    COMMA constant = DateLiteral
+                    {
+                        constantV = FilterLexer.ExtractDate(constant.getText());
+                        constants.add(constantV);
+                    }
+                )*
+            )
+            |
+            (
+                constant = StringLiteral
+                {
+                    constantV = TrimQuotes(constant.getText());
+                    constants.add(constantV);
+                }
+                (
+                    COMMA constant = StringLiteral
+                    {
+                        constantV = TrimQuotes(constant.getText());
+                        constants.add(constantV);
+                    }
+                )*
+            )
+            |
+            (
+                constant = IntegralLiteral
+                {
+                    constantV = Long.parseLong(constant.getText());
+                    constants.add(constantV);
+                }
+                (
+                    COMMA constant = IntegralLiteral
+                    {
+                        constantV = Long.parseLong(constant.getText());
+                        constants.add(constantV);
+                    }
+                )*
+            )
+        ) RPAREN
+    )
+    {
+        for (int i = 0; i < constants.size(); i++) {
+            Object value = constants.get(i);
+            LeafNode leaf = new LeafNode();
+            leaf.keyName = key.getText();
+            leaf.value = value;
+            leaf.operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
+            tree.addLeafNode(leaf);
+            if (i != 0) {
+                tree.addIntermediateNode(isPositive ? LogicalOperator.OR : LogicalOperator.AND);
+            }
+        }
+    };
+
+multiColInExpression
+@init {
+    List<String> keyNames = new ArrayList<String>();
+    List constants = new ArrayList();
+    List partialConstants;
+    String keyV = null;
+    Object constantV = null;
+    boolean isPositive = true;
+}
+    :
+    (
+        LPAREN
+        (
+            KW_STRUCT LPAREN key = Identifier
+            {
+                keyV = key.getText();
+                keyNames.add(keyV);
+            }
+            (
+                COMMA key = Identifier
+                {
+                    keyV = key.getText();
+                    keyNames.add(keyV);
+                }
+            )* RPAREN
+        ) RPAREN ( KW_NOT { isPositive = false; } )? IN LPAREN KW_CONST KW_STRUCT LPAREN
+        {
+            partialConstants = new ArrayList();
+        }
+        (
+            constant = DateLiteral
+            {
+                constantV = FilterLexer.ExtractDate(constant.getText());
+                partialConstants.add(constantV);
+            }
+            | constant = StringLiteral
+            {
+                constantV = TrimQuotes(constant.getText());
+                partialConstants.add(constantV);
+            }
+            | constant = IntegralLiteral
+            {
+                constantV = Long.parseLong(constant.getText());
+                partialConstants.add(constantV);
+            }
+        )
+        (
+            COMMA
+            (
+                constant = DateLiteral
+                {
+                    constantV = FilterLexer.ExtractDate(constant.getText());
+                    partialConstants.add(constantV);
+                }
+                | constant = StringLiteral
+                {
+                    constantV = TrimQuotes(constant.getText());
+                    partialConstants.add(constantV);
+                }
+                | constant = IntegralLiteral
+                {
+                    constantV = Long.parseLong(constant.getText());
+                    partialConstants.add(constantV);
+                }
+            )
+        )*
+        {
+            constants.add(partialConstants);
+        }
+        RPAREN
+        (
+            COMMA KW_CONST KW_STRUCT LPAREN
+            {
+                partialConstants = new ArrayList();
+            }
+            (
+                constant = DateLiteral
+                {
+                    constantV = FilterLexer.ExtractDate(constant.getText());
+                    partialConstants.add(constantV);
+                }
+                | constant = StringLiteral
+                {
+                    constantV = TrimQuotes(constant.getText());
+                    partialConstants.add(constantV);
+                }
+                | constant = IntegralLiteral
+                {
+                    constantV = Long.parseLong(constant.getText());
+                    partialConstants.add(constantV);
+                }
+            )
+            (
+                COMMA
+                (
+                    constant = DateLiteral
+                    {
+                        constantV = FilterLexer.ExtractDate(constant.getText());
+                        partialConstants.add(constantV);
+                    }
+                    | constant = StringLiteral
+                    {
+                        constantV = TrimQuotes(constant.getText());
+                        partialConstants.add(constantV);
+                    }
+                    | constant = IntegralLiteral
+                    {
+                        constantV = Long.parseLong(constant.getText());
+                        partialConstants.add(constantV);
+                    }
+                )
+            )*
+            {
+                constants.add(partialConstants);
+            }
+            RPAREN
+        )* RPAREN
+    )
+    {
+        for (int i = 0; i < constants.size(); i++) {
+            List list = (List) constants.get(i);
+            assert keyNames.size() == list.size();
+            for (int j=0; j < list.size(); j++) {
+                String keyName = keyNames.get(j);
+                Object value = list.get(j);
+                LeafNode leaf = new LeafNode();
+                leaf.keyName = keyName;
+                leaf.value = value;
+                leaf.operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
+                tree.addLeafNode(leaf);
+                if (j != 0) {
+                    tree.addIntermediateNode(isPositive ? LogicalOperator.AND : LogicalOperator.OR);
+                }
+            }
+            if (i != 0) {
+                tree.addIntermediateNode(isPositive ? LogicalOperator.OR : LogicalOperator.AND);
+            }
+        }
+    };
+
 // Keywords
 KW_NOT : 'NOT';
 KW_AND : 'AND';
 KW_OR : 'OR';
 KW_LIKE : 'LIKE';
 KW_DATE : 'date';
+KW_CONST : 'CONST';
+KW_STRUCT : 'STRUCT';
 
 // Operators
 LPAREN : '(' ;
 RPAREN : ')' ;
+COMMA : ',' ;
 EQUAL : '=';
 NOTEQUAL : '<>' | '!=';
 LESSTHANOREQUALTO : '<=';
@@ -220,6 +437,7 @@ LESSTHAN : '<';
 GREATERTHANOREQUALTO : '>=';
 GREATERTHAN : '>';
 BETWEEN : 'BETWEEN';
+IN : 'IN';
 
 // LITERALS
 fragment
