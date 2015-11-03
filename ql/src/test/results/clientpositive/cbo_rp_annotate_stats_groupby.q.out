@@ -1,0 +1,1301 @@
+PREHOOK: query: -- hash aggregation is disabled
+
+-- There are different cases for Group By depending on map/reduce side, hash aggregation,
+-- grouping sets and column stats. If we don't have column stats, we just assume hash
+-- aggregation is disabled. Following are the possible cases and rule for cardinality
+-- estimation
+
+-- MAP SIDE:
+-- Case 1: NO column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 2: NO column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+-- Case 3: column stats, hash aggregation, NO grouping sets — Min(numRows / 2, ndvProduct * parallelism)
+-- Case 4: column stats, hash aggregation, grouping sets — Min((numRows * sizeOfGroupingSet) / 2, ndvProduct * parallelism * sizeOfGroupingSet)
+-- Case 5: column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 6: column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+
+-- REDUCE SIDE:
+-- Case 7: NO column stats — numRows / 2
+-- Case 8: column stats, grouping sets — Min(numRows, ndvProduct * sizeOfGroupingSet)
+-- Case 9: column stats, NO grouping sets - Min(numRows, ndvProduct)
+
+create table if not exists loc_staging (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_staging
+POSTHOOK: query: -- hash aggregation is disabled
+
+-- There are different cases for Group By depending on map/reduce side, hash aggregation,
+-- grouping sets and column stats. If we don't have column stats, we just assume hash
+-- aggregation is disabled. Following are the possible cases and rule for cardinality
+-- estimation
+
+-- MAP SIDE:
+-- Case 1: NO column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 2: NO column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+-- Case 3: column stats, hash aggregation, NO grouping sets — Min(numRows / 2, ndvProduct * parallelism)
+-- Case 4: column stats, hash aggregation, grouping sets — Min((numRows * sizeOfGroupingSet) / 2, ndvProduct * parallelism * sizeOfGroupingSet)
+-- Case 5: column stats, NO hash aggregation, NO grouping sets — numRows
+-- Case 6: column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
+
+-- REDUCE SIDE:
+-- Case 7: NO column stats — numRows / 2
+-- Case 8: column stats, grouping sets — Min(numRows, ndvProduct * sizeOfGroupingSet)
+-- Case 9: column stats, NO grouping sets - Min(numRows, ndvProduct)
+
+create table if not exists loc_staging (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc_staging
+PREHOOK: query: create table loc_orc like loc_staging
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_orc
+POSTHOOK: query: create table loc_orc like loc_staging
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc_orc
+PREHOOK: query: alter table loc_orc set fileformat orc
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@loc_orc
+PREHOOK: Output: default@loc_orc
+POSTHOOK: query: alter table loc_orc set fileformat orc
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@loc_orc
+POSTHOOK: Output: default@loc_orc
+PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@loc_staging
+POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@loc_staging
+PREHOOK: query: insert overwrite table loc_orc select * from loc_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_staging
+PREHOOK: Output: default@loc_orc
+POSTHOOK: query: insert overwrite table loc_orc select * from loc_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_staging
+POSTHOOK: Output: default@loc_orc
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: -- numRows: 8 rawDataSize: 796
+explain select * from loc_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: -- numRows: 8 rawDataSize: 796
+explain select * from loc_orc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc
+          Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
+            outputColumnNames: state, locid, zip, year
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            ListSink
+
+PREHOOK: query: -- partial column stats
+analyze table loc_orc compute statistics for columns state
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+POSTHOOK: query: -- partial column stats
+analyze table loc_orc compute statistics for columns state
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+PREHOOK: query: -- inner group by: map - numRows: 8 reduce - numRows: 4
+-- outer group by: map - numRows: 4 reduce numRows: 2
+explain select a, c, min(b)
+from ( select state as a, locid as b, count(*) as c
+       from loc_orc
+       group by state,locid
+     ) sq1
+group by a,c
+PREHOOK: type: QUERY
+POSTHOOK: query: -- inner group by: map - numRows: 8 reduce - numRows: 4
+-- outer group by: map - numRows: 4 reduce numRows: 2
+explain select a, c, min(b)
+from ( select state as a, locid as b, count(*) as c
+       from loc_orc
+       group by state,locid
+     ) sq1
+group by a,c
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: sq1:loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: PARTIAL
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
+              Group By Operator
+                aggregations: count()
+                keys: state (type: string), locid (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 8 Data size: 752 Basic stats: COMPLETE Column stats: PARTIAL
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 8 Data size: 752 Basic stats: COMPLETE Column stats: PARTIAL
+                  value expressions: _col2 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid, $f2
+          Statistics: Num rows: 7 Data size: 658 Basic stats: COMPLETE Column stats: PARTIAL
+          Group By Operator
+            aggregations: min(locid)
+            keys: state (type: string), $f2 (type: bigint)
+            mode: hash
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 7 Data size: 686 Basic stats: COMPLETE Column stats: PARTIAL
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: bigint)
+              sort order: ++
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+              Statistics: Num rows: 7 Data size: 686 Basic stats: COMPLETE Column stats: PARTIAL
+              value expressions: _col2 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: min(VALUE._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
+          mode: mergepartial
+          outputColumnNames: state, $f2, $f2_0
+          Statistics: Num rows: 7 Data size: 686 Basic stats: COMPLETE Column stats: PARTIAL
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 7 Data size: 686 Basic stats: COMPLETE Column stats: PARTIAL
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc compute statistics for columns state,locid,year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+PREHOOK: query: -- Case 5: column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select year from loc_orc group by year
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 5: column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select year from loc_orc group by year
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: year (type: int)
+              outputColumnNames: year
+              Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: year (type: int)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: year
+          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 5: column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 9: column stats, NO grouping sets - caridnality = 8
+explain select state,locid from loc_orc group by state,locid
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 5: column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 9: column stats, NO grouping sets - caridnality = 8
+explain select state,locid from loc_orc group by state,locid
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: state (type: string), locid (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 32
+-- Case 8: column stats, grouping sets - cardinality = 32
+explain select state,locid from loc_orc group by state,locid with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 32
+-- Case 8: column stats, grouping sets - cardinality = 32
+explain select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 24
+-- Case 8: column stats, grouping sets - cardinality = 24
+explain select state,locid from loc_orc group by state,locid with rollup
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 24
+-- Case 8: column stats, grouping sets - cardinality = 24
+explain select state,locid from loc_orc group by state,locid with rollup
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 8
+-- Case 8: column stats, grouping sets - cardinality = 8
+explain select state,locid from loc_orc group by state,locid grouping sets((state))
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 8
+-- Case 8: column stats, grouping sets - cardinality = 8
+explain select state,locid from loc_orc group by state,locid grouping sets((state))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 16
+-- Case 8: column stats, grouping sets - cardinality = 16
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 16
+-- Case 8: column stats, grouping sets - cardinality = 16
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 24
+-- Case 8: column stats, grouping sets - cardinality = 24
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 24
+-- Case 8: column stats, grouping sets - cardinality = 24
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 32
+-- Case 8: column stats, grouping sets - cardinality = 32
+explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 32
+-- Case 8: column stats, grouping sets - cardinality = 32
+explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- map-side parallelism will be 10
+
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 4
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select year from loc_orc group by year
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side parallelism will be 10
+
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 4
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select year from loc_orc group by year
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: year (type: int)
+              outputColumnNames: year
+              Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: year (type: int)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: year
+          Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 4: column stats, hash aggregation, grouping sets - cardinality = 16
+-- Case 8: column stats, grouping sets - cardinality = 16
+explain select state,locid from loc_orc group by state,locid with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 4: column stats, hash aggregation, grouping sets - cardinality = 16
+-- Case 8: column stats, grouping sets - cardinality = 16
+explain select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- ndvProduct becomes 0 as zip does not have column stats
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 4
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select state,zip from loc_orc group by state,zip
+PREHOOK: type: QUERY
+POSTHOOK: query: -- ndvProduct becomes 0 as zip does not have column stats
+-- Case 3: column stats, hash aggregation, NO grouping sets - cardinality = 4
+-- Case 9: column stats, NO grouping sets - caridnality = 2
+explain select state,zip from loc_orc group by state,zip
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: PARTIAL
+            Select Operator
+              expressions: state (type: string), zip (type: bigint)
+              outputColumnNames: state, zip
+              Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
+              Group By Operator
+                keys: state (type: string), zip (type: bigint)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 344 Basic stats: COMPLETE Column stats: PARTIAL
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: bigint)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                  Statistics: Num rows: 4 Data size: 344 Basic stats: COMPLETE Column stats: PARTIAL
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
+          mode: mergepartial
+          outputColumnNames: state, zip
+          Statistics: Num rows: 4 Data size: 344 Basic stats: COMPLETE Column stats: PARTIAL
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 4 Data size: 344 Basic stats: COMPLETE Column stats: PARTIAL
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
+explain select state,locid from loc_orc group by state,locid with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
+explain select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 24
+-- Case 7: NO column stats - cardinality = 12
+explain select state,locid from loc_orc group by state,locid with rollup
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 24
+-- Case 7: NO column stats - cardinality = 12
+explain select state,locid from loc_orc group by state,locid with rollup
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 7: NO column stats - cardinality = 4
+explain select state,locid from loc_orc group by state,locid grouping sets((state))
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 7: NO column stats - cardinality = 4
+explain select state,locid from loc_orc group by state,locid grouping sets((state))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 16
+-- Case 7: NO column stats - cardinality = 8
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 16
+-- Case 7: NO column stats - cardinality = 8
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 24
+-- Case 7: NO column stats - cardinality = 12
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 24
+-- Case 7: NO column stats - cardinality = 12
+explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
+explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
+explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 1: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 7: NO column stats - cardinality = 4
+explain select year from loc_orc group by year
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 1: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 8
+-- Case 7: NO column stats - cardinality = 4
+explain select year from loc_orc group by year
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: year (type: int)
+              outputColumnNames: year
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: year (type: int)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: year
+          Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
+explain select state,locid from loc_orc group by state,locid with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 32
+-- Case 7: NO column stats - cardinality = 16
+explain select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: state (type: string), locid (type: int)
+              outputColumnNames: state, locid
+              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: state (type: string), locid (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: state, locid
+          Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: state, locid
+            Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
