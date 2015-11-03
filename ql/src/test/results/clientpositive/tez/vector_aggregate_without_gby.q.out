@@ -46,7 +46,7 @@ Stage-0
    Fetch Operator
       limit:-1
       Stage-1
-         Reducer 2
+         Reducer 2 vectorized
          File Output Operator [FS_7]
             compressed:false
             Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: NONE
@@ -55,7 +55,7 @@ Stage-0
             |  aggregations:["max(VALUE._col0)","max(VALUE._col1)"]
             |  outputColumnNames:["_col0","_col1"]
             |  Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: NONE
-            |<-Map 1 [SIMPLE_EDGE]
+            |<-Map 1 [SIMPLE_EDGE] vectorized
                Reduce Output Operator [RS_4]
                   sort order:
                   Statistics:Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: NONE

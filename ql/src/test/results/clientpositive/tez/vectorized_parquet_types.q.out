@@ -249,7 +249,7 @@ Stage-0
    Fetch Operator
       limit:-1
       Stage-1
-         Reducer 3
+         Reducer 3 vectorized
          File Output Operator [FS_10]
             compressed:false
             Statistics:Num rows: 11 Data size: 121 Basic stats: COMPLETE Column stats: NONE

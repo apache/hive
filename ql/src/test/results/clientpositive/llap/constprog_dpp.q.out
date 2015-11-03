@@ -50,7 +50,7 @@ Stage-0
    Fetch Operator
       limit:-1
       Stage-1
-         Reducer 4
+         Reducer 4 llap
          File Output Operator [FS_16]
             compressed:false
             Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -60,7 +60,7 @@ Stage-0
             |  keys:{"0":"id (type: int)","1":"_col0 (type: int)"}
             |  outputColumnNames:["_col0"]
             |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            |<-Map 6 [SIMPLE_EDGE]
+            |<-Map 6 [SIMPLE_EDGE] llap
             |  Reduce Output Operator [RS_12]
             |     key expressions:id (type: int)
             |     Map-reduce partition columns:id (type: int)
@@ -69,7 +69,7 @@ Stage-0
             |     TableScan [TS_11]
             |        alias:a
             |        Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            |<-Reducer 3 [SIMPLE_EDGE]
+            |<-Reducer 3 [SIMPLE_EDGE] llap
                Reduce Output Operator [RS_13]
                   key expressions:_col0 (type: int)
                   Map-reduce partition columns:_col0 (type: int)
@@ -82,7 +82,7 @@ Stage-0
                      |  outputColumnNames:["_col0"]
                      |  Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                      |<-Union 2 [SIMPLE_EDGE]
-                        |<-Map 1 [CONTAINS]
+                        |<-Map 1 [CONTAINS] llap
                         |  Reduce Output Operator [RS_8]
                         |     sort order:
                         |     Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
@@ -96,7 +96,7 @@ Stage-0
                         |           TableScan [TS_0]
                         |              alias:tb2
                         |              Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        |<-Map 5 [CONTAINS]
+                        |<-Map 5 [CONTAINS] llap
                            Reduce Output Operator [RS_8]
                               sort order:
                               Statistics:Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
