@@ -46,6 +46,8 @@ public abstract class VectorMapJoinFastLongHashTable
 
   public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashTable.class);
 
+  private transient final boolean isLogDebugEnabled = LOG.isDebugEnabled();
+
   private HashTableKeyType hashTableKeyType;
 
   private boolean isOuterJoin;
@@ -139,7 +141,7 @@ public abstract class VectorMapJoinFastLongHashTable
     }
 
     if (largestNumberOfSteps < i) {
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug("Probed " + i + " slots (the longest so far) to find space");
       }
       largestNumberOfSteps = i;
@@ -199,7 +201,7 @@ public abstract class VectorMapJoinFastLongHashTable
         }
 
         if (newLargestNumberOfSteps < i) {
-          if (LOG.isDebugEnabled()) {
+          if (isLogDebugEnabled) {
             LOG.debug("Probed " + i + " slots (the longest so far) to find space");
           }
           newLargestNumberOfSteps = i;

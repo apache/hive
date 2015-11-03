@@ -138,7 +138,7 @@ public class VectorMapJoinLeftSemiLongOperator extends VectorMapJoinLeftSemiGene
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -192,7 +192,7 @@ public class VectorMapJoinLeftSemiLongOperator extends VectorMapJoinLeftSemiGene
          * Common repeated join result processing.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishLeftSemiRepeated(batch, joinResult, hashSetResults[0]);
@@ -202,7 +202,7 @@ public class VectorMapJoinLeftSemiLongOperator extends VectorMapJoinLeftSemiGene
          * NOT Repeating.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -337,7 +337,7 @@ public class VectorMapJoinLeftSemiLongOperator extends VectorMapJoinLeftSemiGene
           }
         }
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
               " spills " + intArrayToRangesString(spills, spillCount) +
