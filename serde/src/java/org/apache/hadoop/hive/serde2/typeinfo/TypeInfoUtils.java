@@ -256,7 +256,7 @@ public final class TypeInfoUtils {
     };
 
     private static boolean isTypeChar(char c) {
-      return Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == ' ';
+      return Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == ' ' || c == '$';
     }
 
     /**
@@ -266,6 +266,9 @@ public final class TypeInfoUtils {
      *
      * tokenize("map<int,string>") should return
      * ["map","<","int",",","string",">"]
+     * 
+     * Note that we add '$' in new Calcite return path. As '$' will not appear
+     * in any type in Hive, it is safe to do so.
      */
     private static ArrayList<Token> tokenize(String typeInfoString) {
       ArrayList<Token> tokens = new ArrayList<Token>(0);
