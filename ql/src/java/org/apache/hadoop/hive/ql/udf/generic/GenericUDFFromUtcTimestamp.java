@@ -77,12 +77,15 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
       return null;
     }
 
+    Object converted_o0 = timestampConverter.convert(o0);
+    if (converted_o0 == null) {
+      return null;
+    }
+
+    Timestamp timestamp = ((TimestampWritable) converted_o0).getTimestamp();
+
     String tzStr = textConverter.convert(o1).toString();
     TimeZone timezone = TimeZone.getTimeZone(tzStr);
-
-    Timestamp timestamp = ((TimestampWritable) timestampConverter.convert(o0))
-        .getTimestamp();
-
     int offset = timezone.getOffset(timestamp.getTime());
     if (invert()) {
       offset = -offset;
