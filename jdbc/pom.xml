@@ -104,6 +104,13 @@
       <version>${hadoop.version}</version>
       <optional>true</optional>
     </dependency>
+    <!-- test inter-project -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -117,6 +124,7 @@
 
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <resources>
       <resource>
         <directory>${basedir}/src/resources</directory>

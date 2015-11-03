@@ -53,12 +53,13 @@ import org.slf4j.LoggerFactory;
  */
 public class HiveStatement implements java.sql.Statement {
   public static final Logger LOG = LoggerFactory.getLogger(HiveStatement.class.getName());
+  private static final int DEFAULT_FETCH_SIZE = 1000;
   private final HiveConnection connection;
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle = null;
   private final TSessionHandle sessHandle;
   Map<String,String> sessConf = new HashMap<String,String>();
-  private int fetchSize = 1000;
+  private int fetchSize = DEFAULT_FETCH_SIZE;
   private boolean isScrollableResultset = false;
   /**
    * We need to keep a reference to the result set to support the following:
@@ -673,7 +674,16 @@ public class HiveStatement implements java.sql.Statement {
   @Override
   public void setFetchSize(int rows) throws SQLException {
     checkConnection("setFetchSize");
-    fetchSize = rows;
+    if (rows > 0) {
+      fetchSize = rows;
+    } else if (rows == 0) {
+      // Javadoc for Statement interface states that if the value is zero
+      // then "fetch size" hint is ignored.
+      // In this case it means reverting it to the default value.
+      fetchSize = DEFAULT_FETCH_SIZE;
+    } else {
+      throw new SQLException("Fetch size must be greater or equal to 0");
+    }
   }
 
   /*
