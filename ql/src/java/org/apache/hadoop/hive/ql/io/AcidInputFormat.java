@@ -33,7 +33,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -115,11 +114,14 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     private List<Integer> stmtIds;
     
     public DeltaMetaData() {
-      this(0,0,null);
+      this(0,0,new ArrayList<Integer>());
     }
     DeltaMetaData(long minTxnId, long maxTxnId, List<Integer> stmtIds) {
       this.minTxnId = minTxnId;
       this.maxTxnId = maxTxnId;
+      if (stmtIds == null) {
+        throw new IllegalArgumentException("stmtIds == null");
+      }
       this.stmtIds = stmtIds;
     }
     long getMinTxnId() {
@@ -136,9 +138,6 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       out.writeLong(minTxnId);
       out.writeLong(maxTxnId);
       out.writeInt(stmtIds.size());
-      if(stmtIds == null) {
-        return;
-      }
       for(Integer id : stmtIds) {
         out.writeInt(id);
       }
@@ -147,11 +146,8 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     public void readFields(DataInput in) throws IOException {
       minTxnId = in.readLong();
       maxTxnId = in.readLong();
+      stmtIds.clear();
       int numStatements = in.readInt();
-      if(numStatements <= 0) {
-        return;
-      }
-      stmtIds = new ArrayList<>();
       for(int i = 0; i < numStatements; i++) {
         stmtIds.add(in.readInt());
       }
