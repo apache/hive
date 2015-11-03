@@ -436,7 +436,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       int nonSpillCount = subtractFromInputSelected(
               inputSelectedInUse, inputLogicalSize, spills, spillCount, nonSpills);
 
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug("finishOuter spillCount > 0" +
             " nonSpills " + intArrayToRangesString(nonSpills, nonSpillCount));
       }
@@ -452,7 +452,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
         noMatchCount = subtract(nonSpills, nonSpillCount, allMatchs, allMatchCount,
                 noMatchs);
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug("finishOuter spillCount > 0" +
               " noMatchs " + intArrayToRangesString(noMatchs, noMatchCount));
         }
@@ -467,7 +467,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
         noMatchCount = subtractFromInputSelected(
             inputSelectedInUse, inputLogicalSize, allMatchs, allMatchCount, noMatchs);
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug("finishOuter spillCount == 0" +
               " noMatchs " + intArrayToRangesString(noMatchs, noMatchCount));
         }
@@ -501,7 +501,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       batch.size = numSel;
       batch.selectedInUse = true;
 
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug("finishOuter allMatchCount > 0" +
             " batch.selected " + intArrayToRangesString(batch.selected, batch.size));
       }
@@ -519,7 +519,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
         int mergeCount = sortMerge(
                 noMatchs, noMatchCount, batch.selected, batch.size, merged);
     
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug("finishOuter noMatchCount > 0 && batch.size > 0" +
               " merged " + intArrayToRangesString(merged, mergeCount));
         }
@@ -537,7 +537,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
         batch.size = noMatchCount;
         batch.selectedInUse = true;
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug("finishOuter noMatchCount > 0 && batch.size == 0" +
               " batch.selected " + intArrayToRangesString(batch.selected, batch.size));
         }

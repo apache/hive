@@ -445,7 +445,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     outputProjection = projectionMapping.getOutputColumns();
     outputTypeNames = projectionMapping.getTypeNames();
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       int[] orderDisplayable = new int[order.length];
       for (int i = 0; i < order.length; i++) {
         orderDisplayable[i] = (int) order[i];
@@ -507,7 +507,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    * columns and new scratch columns.
    */
   protected void setupVOutContext(List<String> outputColumnNames) {
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor outputColumnNames " + outputColumnNames);
     }
     if (outputColumnNames.size() != outputProjection.length) {
@@ -519,7 +519,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
       int outputColumn = outputProjection[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
 
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator constructor addProjectionColumn " + i + " columnName " + columnName + " outputColumn " + outputColumn);
       }
     }
@@ -552,7 +552,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       // Determine the name of our map or reduce task for debug tracing.
       BaseWork work = Utilities.getMapWork(hconf);
       if (work == null) {
@@ -599,7 +599,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     needCommonSetup = true;
     needHashTableSetup = true;
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       int[] currentScratchColumns = vOutContext.currentScratchColumns();
       LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator initializeOp currentScratchColumns " + Arrays.toString(currentScratchColumns));
 
@@ -736,7 +736,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
 
       overflowBatch.cols[outputColumn] = VectorizedRowBatchCtx.allocateColumnVector(columnVectorTypeName, VectorizedRowBatch.DEFAULT_SIZE);
 
-      if (LOG.isDebugEnabled()) {
+      if (isLogDebugEnabled) {
         LOG.debug(taskName + ", " + getOperatorId() + " VectorMapJoinCommonOperator initializeOp overflowBatch outputColumn " + outputColumn + " class " + overflowBatch.cols[outputColumn].getClass().getSimpleName());
       }
     }
@@ -747,7 +747,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
    */
   protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
 
-    if (LOG.isDebugEnabled()) {
+    if (isLogDebugEnabled) {
       LOG.debug("VectorMapJoinInnerCommonOperator commonSetup begin...");
       displayBatchColumns(batch, "batch");
       displayBatchColumns(overflowBatch, "overflowBatch");

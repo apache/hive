@@ -131,7 +131,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -160,7 +160,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
           ve.evaluate(batch);
         }
         someRowsFilteredOut = (batch.size != inputLogicalSize);
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           if (batch.selectedInUse) {
             if (inputSelectedInUse) {
               LOG.debug(CLASS_NAME +
@@ -247,7 +247,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
          * Common repeated join result processing.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishOuterRepeated(batch, joinResult, hashMapResults[0], someRowsFilteredOut,
@@ -258,7 +258,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
          * NOT Repeating.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -427,7 +427,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
           }
         }
 
-        if (LOG.isDebugEnabled()) {
+        if (isLogDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter +
               " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +
