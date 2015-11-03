@@ -4683,6 +4683,7 @@ Stage-0
                                     Statistics:Num rows: 60 Data size: 5160 Basic stats: COMPLETE Column stats: COMPLETE
                                     Map Join Operator [MAPJOIN_25]
                                     |  condition map:[{"":"Inner Join 0 to 1"}]
+                                    |  HybridGraceHashJoin:true
                                     |  keys:{"Map 1":"_col0 (type: string)","Map 4":"_col0 (type: string)"}
                                     |  outputColumnNames:["_col1"]
                                     |  Statistics:Num rows: 60 Data size: 5160 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6418,6 +6419,7 @@ Stage-0
             |     value expressions:_col0 (type: string)
             |     Map Join Operator [MAPJOIN_28]
             |     |  condition map:[{"":"Inner Join 0 to 1"}]
+            |     |  HybridGraceHashJoin:true
             |     |  keys:{"Map 1":"_col0 (type: string)","Map 3":"_col0 (type: string)"}
             |     |  outputColumnNames:["_col0","_col1"]
             |     |  Statistics:Num rows: 241 Data size: 42898 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6494,6 +6496,7 @@ Stage-0
             |     value expressions:_col0 (type: string)
             |     Map Join Operator [MAPJOIN_28]
             |     |  condition map:[{"":"Inner Join 0 to 1"}]
+            |     |  HybridGraceHashJoin:true
             |     |  keys:{"Map 1":"_col0 (type: string)","Map 3":"_col0 (type: string)"}
             |     |  outputColumnNames:["_col0","_col1"]
             |     |  Statistics:Num rows: 241 Data size: 42898 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6570,6 +6573,7 @@ Stage-0
             |     value expressions:_col0 (type: string)
             |     Map Join Operator [MAPJOIN_28]
             |     |  condition map:[{"":"Inner Join 0 to 1"}]
+            |     |  HybridGraceHashJoin:true
             |     |  keys:{"Map 1":"_col0 (type: string)","Map 3":"_col0 (type: string)"}
             |     |  outputColumnNames:["_col0","_col1"]
             |     |  Statistics:Num rows: 241 Data size: 42898 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6742,6 +6746,7 @@ Stage-0
                                  value expressions:_col5 (type: int)
                                  Map Join Operator [MAPJOIN_21]
                                  |  condition map:[{"":"Inner Join 0 to 1"}]
+                                 |  HybridGraceHashJoin:true
                                  |  keys:{"Map 1":"p_partkey (type: int)","Map 4":"p_partkey (type: int)"}
                                  |  outputColumnNames:["_col1","_col2","_col5"]
                                  |  Statistics:Num rows: 29 Data size: 6467 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7014,6 +7019,7 @@ Stage-0
             table:{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}
             Map Join Operator [MAPJOIN_16]
             |  condition map:[{"":"Inner Join 0 to 1"}]
+            |  HybridGraceHashJoin:true
             |  keys:{"Reducer 2":"_col0 (type: int)","Map 3":"p_partkey (type: int)"}
             |  outputColumnNames:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
             |  Statistics:Num rows: 29 Data size: 17951 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7463,6 +7469,7 @@ Stage-0
                         value expressions:_col5 (type: int), _col7 (type: double)
                         Map Join Operator [MAPJOIN_20]
                         |  condition map:[{"":"Inner Join 0 to 1"}]
+                        |  HybridGraceHashJoin:true
                         |  keys:{"Reducer 2":"_col0 (type: int)","Map 4":"p_partkey (type: int)"}
                         |  outputColumnNames:["_col1","_col2","_col5","_col7"]
                         |  Statistics:Num rows: 29 Data size: 6699 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8247,6 +8254,7 @@ Stage-0
                Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
                Map Join Operator [MAPJOIN_31]
                |  condition map:[{"":"Inner Join 0 to 1"},{"":"Inner Join 1 to 2"},{"":"Inner Join 2 to 3"}]
+               |  HybridGraceHashJoin:true
                |  keys:{"Map 1":"key (type: string)","Map 2":"key (type: string)","Map 3":"key (type: string)","Map 4":"key (type: string)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6","_col10","_col11","_col15","_col16"]
                |  Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
@@ -8327,6 +8335,7 @@ Stage-0
                Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
                Map Join Operator [MAPJOIN_31]
                |  condition map:[{"":"Inner Join 0 to 1"},{"":"Inner Join 1 to 2"},{"":"Inner Join 2 to 3"}]
+               |  HybridGraceHashJoin:true
                |  keys:{"Map 1":"key (type: string)","Map 2":"key (type: string)","Map 3":"key (type: string)","Map 4":"key (type: string)"}
                |  outputColumnNames:["_col0","_col1","_col5","_col6","_col10","_col11","_col15","_col16"]
                |  Statistics:Num rows: 3 Data size: 99 Basic stats: COMPLETE Column stats: NONE
@@ -8417,6 +8426,7 @@ Stage-0
                         value expressions:hash(_col0) (type: int), hash(_col1) (type: int), hash(_col5) (type: int)
                         Map Join Operator [MAPJOIN_18]
                         |  condition map:[{"":"Inner Join 0 to 1"}]
+                        |  HybridGraceHashJoin:true
                         |  keys:{"Map 1":"UDFToDouble(key) (type: double)","Map 2":"(key + 1) (type: double)"}
                         |  outputColumnNames:["_col0","_col1","_col5"]
                         |  Statistics:Num rows: 275 Data size: 23925 Basic stats: COMPLETE Column stats: NONE
@@ -8558,6 +8568,7 @@ Stage-0
                         value expressions:hash(_col0) (type: int), hash(_col6) (type: int)
                         Map Join Operator [MAPJOIN_18]
                         |  condition map:[{"":"Inner Join 0 to 1"}]
+                        |  HybridGraceHashJoin:true
                         |  keys:{"Map 1":"key (type: string)","Map 4":"val (type: string)"}
                         |  outputColumnNames:["_col0","_col6"]
                         |  Statistics:Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
@@ -8621,6 +8632,7 @@ Stage-0
                         value expressions:hash(_col0) (type: int), hash(_col6) (type: int)
                         Map Join Operator [MAPJOIN_18]
                         |  condition map:[{"":"Inner Join 0 to 1"}]
+                        |  HybridGraceHashJoin:true
                         |  keys:{"Map 1":"key (type: string)","Map 4":"key (type: string)"}
                         |  outputColumnNames:["_col0","_col6"]
                         |  Statistics:Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
@@ -8684,6 +8696,7 @@ Stage-0
                         Statistics:Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator [MAPJOIN_18]
                         |  condition map:[{"":"Inner Join 0 to 1"}]
+                        |  HybridGraceHashJoin:true
                         |  keys:{"Map 1":"key (type: string)","Map 4":"key (type: string)"}
                         |  Statistics:Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
                         |<-Map 4 [BROADCAST_EDGE]
@@ -8746,6 +8759,7 @@ Stage-0
                         value expressions:hash(_col0) (type: int), hash(_col1) (type: int), hash(_col5) (type: int)
                         Map Join Operator [MAPJOIN_14]
                         |  condition map:[{"":"Left Outer Join0 to 1"}]
+                        |  HybridGraceHashJoin:true
                         |  keys:{"Map 1":"UDFToDouble(key) (type: double)","Map 4":"(key + 1) (type: double)"}
                         |  outputColumnNames:["_col0","_col1","_col5"]
                         |  Statistics:Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
@@ -8804,6 +8818,7 @@ Stage-0
                         value expressions:hash(_col0) (type: int), hash(_col1) (type: int), hash(_col5) (type: int)
                         Map Join Operator [MAPJOIN_14]
                         |  condition map:[{"":"Right Outer Join0 to 1"}]
+                        |  HybridGraceHashJoin:true
                         |  keys:{"Map 1":"UDFToDouble(key) (type: double)","Map 2":"(key + 1) (type: double)"}
                         |  outputColumnNames:["_col0","_col1","_col5"]
                         |  Statistics:Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
@@ -8927,6 +8942,7 @@ Stage-0
                         value expressions:hash(_col0) (type: int), hash(_col6) (type: int)
                         Map Join Operator [MAPJOIN_14]
                         |  condition map:[{"":"Left Outer Join0 to 1"}]
+                        |  HybridGraceHashJoin:true
                         |  keys:{"Map 1":"(key + 1) (type: double)","Map 4":"UDFToDouble(key) (type: double)"}
                         |  outputColumnNames:["_col0","_col6"]
                         |  Statistics:Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE

@@ -50,6 +50,8 @@ public final class Vertex implements Comparable<Vertex>{
   public final List<Vertex> mergeJoinDummyVertexs = new ArrayList<>();
   // whether this vertex has multiple reduce operators
   public boolean hasMultiReduceOp = false;
+  // execution mode
+  public String executionMode = "";
 
   public Vertex(String name, JSONObject vertexObject, TezJsonParser tezJsonParser) {
     super();
@@ -103,6 +105,8 @@ public final class Vertex implements Comparable<Vertex>{
           } else {
             throw new Exception("Merge File Operator does not have a Map Operator Tree");
           }
+        } else if (key.equals("Execution mode:")) {
+          executionMode = " " + vertexObject.getString(key);
         } else {
           throw new Exception("Unsupported operator tree in vertex " + this.name);
         }
@@ -189,9 +193,10 @@ public final class Vertex implements Comparable<Vertex>{
     }
     parser.printSet.add(this);
     if (type != null) {
-      printer.println(TezJsonParser.prefixString(indentFlag, "|<-") + this.name + " [" + type + "]");
+      printer.println(TezJsonParser.prefixString(indentFlag, "|<-") + this.name + " [" + type + "]"
+          + this.executionMode);
     } else if (this.name != null) {
-      printer.println(TezJsonParser.prefixString(indentFlag) + this.name);
+      printer.println(TezJsonParser.prefixString(indentFlag) + this.name + this.executionMode);
     }
     // print operators
     if (hasMultiReduceOp && !callingVertex.union) {
