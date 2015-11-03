@@ -204,16 +204,14 @@ public class HiveConnection implements java.sql.Connection {
                 .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
         transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
         if (!transport.isOpen()) {
-          LOG.info("Will try to open client transport with JDBC Uri: " + jdbcUriString);
           transport.open();
+          logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
         }
         break;
       } catch (TTransportException e) {
-        LOG.info("Could not open client transport with JDBC Uri: " + jdbcUriString);
         // We'll retry till we exhaust all HiveServer2 nodes from ZooKeeper
-        if ((sessConfMap.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE) != null)
-            && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(sessConfMap
-                .get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE)))) {
+        if (isZkDynamicDiscoveryMode()) {
+          LOG.info("Failed to connect to " + connParams.getHost() + ":" + connParams.getPort());
           try {
             // Update jdbcUriString, host & port variables in connParams
             // Throw an exception if all HiveServer2 nodes have been exhausted,
@@ -228,7 +226,6 @@ public class HiveConnection implements java.sql.Connection {
           jdbcUriString = connParams.getJdbcUriString();
           host = connParams.getHost();
           port = connParams.getPort();
-          LOG.info("Will retry opening client transport");
         } else {
           LOG.info("Transport Used for JDBC connection: " +
             sessConfMap.get(JdbcConnectionParams.TRANSPORT_MODE));
@@ -648,6 +645,18 @@ public class HiveConnection implements java.sql.Connection {
       return true;
     }
     return false;
+  }
+
+  private boolean isZkDynamicDiscoveryMode() {
+    return (sessConfMap.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE) != null)
+      && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(sessConfMap
+      .get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE)));
+  }
+
+  private void logZkDiscoveryMessage(String message) {
+    if (isZkDynamicDiscoveryMode()) {
+      LOG.info(message);
+    }
   }
 
   /**
