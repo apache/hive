@@ -59,13 +59,18 @@ public class VectorUDFArgDesc implements Serializable {
    * during initialization.
    */
   public void prepareConstant() {
-    PrimitiveCategory pc = ((PrimitiveTypeInfo) constExpr.getTypeInfo())
-        .getPrimitiveCategory();
+    final Object writableValue;
+    if (constExpr != null) {
+      PrimitiveCategory pc = ((PrimitiveTypeInfo) constExpr.getTypeInfo())
+          .getPrimitiveCategory();
 
-    // Convert from Java to Writable
-    Object writableValue = PrimitiveObjectInspectorFactory
-        .getPrimitiveJavaObjectInspector(pc).getPrimitiveWritableObject(
-          constExpr.getValue());
+      // Convert from Java to Writable
+      writableValue = PrimitiveObjectInspectorFactory
+          .getPrimitiveJavaObjectInspector(pc).getPrimitiveWritableObject(
+            constExpr.getValue());
+    } else {
+      writableValue = null;
+    }
 
     constObjVal = new GenericUDF.DeferredJavaObject(writableValue);
   }
